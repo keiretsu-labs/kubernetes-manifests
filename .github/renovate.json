@@ -23,10 +23,6 @@
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
-    },
-    {
-      "matchPackageNames": ["lscr.io/linuxserver/qbittorrent"],
-      "replacementVersion": "5.1.4"
     }
   ]
 }
