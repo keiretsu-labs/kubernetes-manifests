@@ -29,6 +29,8 @@ spec:
               value: "1000"
             - name: PGID
               value: "1000"
+            - name: ENCRYPTION_KEY
+              value: "${POCKETID_ENCRYPTION_KEY}"
           ports:
             - containerPort: 1411
           volumeMounts:
