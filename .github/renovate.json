@@ -23,6 +23,11 @@
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
+    },
+    {
+      "description": "Group ARC controller and runner scale set together",
+      "matchPackageNames": ["gha-runner-scale-set", "gha-runner-scale-set-controller"],
+      "groupName": "actions-runner-controller"
     }
   ]
 }
