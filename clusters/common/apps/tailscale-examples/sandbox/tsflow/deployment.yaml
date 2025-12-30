@@ -54,13 +54,13 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /app/data
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "1512Mi"
-            cpu: "1000m"
+        # resources:
+        #   requests:
+        #     memory: "128Mi"
+        #     cpu: "100m"
+        #   limits:
+        #     memory: "1512Mi"
+        #     cpu: "1000m"
       volumes:
       - name: data
         emptyDir: {}
