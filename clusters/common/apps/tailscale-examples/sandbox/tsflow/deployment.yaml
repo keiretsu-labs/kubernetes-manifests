@@ -16,13 +16,15 @@ spec:
     spec:
       containers:
       - name: tsflow
-        image: ghcr.io/rajsinghtech/tsflow:v1.1.5
+        image: ghcr.io/rajsinghtech/tsflow:v1.1.6
         imagePullPolicy: Always
         ports:
         - name: http
           containerPort: 8080
           protocol: TCP
         env:
+        - name: TSFLOW_INITIAL_BACKFILL
+          value: "6h"
         - name: ENVIRONMENT
           value: "production"
         - name: TAILSCALE_TAILNET
