@@ -180,7 +180,7 @@ locals {
     "ENVBUILDER_PUSH_IMAGE" : var.cache_repo == "" ? "" : "true",
     "ENVBUILDER_POST_START_SCRIPT_PATH" : "/workspaces/.devcontainer-setup.sh",
     # Claude Code environment variables
-    "ANTHROPIC_BASE_URL" : "http://llm.coder.svc.cluster.local",
+    "ANTHROPIC_BASE_URL" : "http://ai.coder.svc.cluster.local",
     "ANTHROPIC_AUTH_TOKEN" : "sk-na",
     "API_TIMEOUT_MS" : "3000000",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC" : "1"

@@ -17,8 +17,8 @@ spec:
   values:
     proxyGroup: "common-egress"
     services:
-      - name: llm
-        fqdn: llm.keiretsu.ts.net
+      - name: ai
+        fqdn: ai.keiretsu.ts.net
         ports:
           - port: 80
             protocol: TCP
