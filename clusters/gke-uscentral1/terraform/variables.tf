@@ -22,9 +22,9 @@ variable "cluster_name" {
 }
 
 variable "node_count" {
-  description = "Number of nodes in the node pool"
+  description = "Number of nodes per zone in the node pool"
   type        = number
-  default     = 3
+  default     = 1
 }
 
 variable "machine_type" {
@@ -45,12 +45,6 @@ variable "disk_type" {
   default     = "pd-standard"
 }
 
-variable "kubernetes_version" {
-  description = "Kubernetes version (use 'latest' for most recent)"
-  type        = string
-  default     = "latest"
-}
-
 # Network settings matching cluster-settings.yaml
 variable "pod_cidr" {
   description = "CIDR for pods"
@@ -62,18 +56,6 @@ variable "service_cidr" {
   description = "CIDR for services"
   type        = string
   default     = "10.6.0.0/16"
-}
-
-variable "enable_cilium" {
-  description = "Install Cilium CNI (disables default GKE networking)"
-  type        = bool
-  default     = true
-}
-
-variable "cilium_version" {
-  description = "Cilium Helm chart version"
-  type        = string
-  default     = "1.18.3"
 }
 
 variable "flux_version" {

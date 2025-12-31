@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Bootstrap script for GKE uscentral1 cluster
-# This script installs Cilium CNI and bootstraps Flux CD
+# Bootstraps Flux CD using GKE's default Dataplane V2 CNI
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
@@ -24,12 +24,11 @@ error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 check_prerequisites() {
     log "Checking prerequisites..."
     command -v kubectl >/dev/null 2>&1 || error "kubectl is required"
-    command -v helm >/dev/null 2>&1 || error "helm is required"
     command -v gcloud >/dev/null 2>&1 || error "gcloud is required"
 
     if [[ ! -f "${KUBECONFIG_PATH}" ]]; then
         warn "Kubeconfig not found at ${KUBECONFIG_PATH}"
-        log "Run: gcloud container clusters get-credentials gke-uscentral1 --region us-central1 --project YOUR_PROJECT"
+        log "Run: gcloud container clusters get-credentials raj-cluster --region us-central1 --project tailscale-sandbox"
         log "Then: cp ~/.kube/config ${KUBECONFIG_PATH}"
         exit 1
     fi
@@ -39,39 +38,6 @@ check_prerequisites() {
 wait_for_nodes() {
     log "Waiting for nodes to be ready..."
     kubectl --kubeconfig "${KUBECONFIG_PATH}" wait --for=condition=Ready nodes --all --timeout=300s
-}
-
-# Install Cilium CNI
-install_cilium() {
-    log "Adding Cilium Helm repository..."
-    helm repo add cilium https://helm.cilium.io/ || true
-    helm repo update
-
-    log "Installing Cilium..."
-    # Check if cilium values exist for this cluster
-    CILIUM_VALUES=""
-    if [[ -f "${CLUSTER_DIR}/apps/cilium/app/values.yaml" ]]; then
-        CILIUM_VALUES="-f ${CLUSTER_DIR}/apps/cilium/app/values.yaml"
-    elif [[ -f "${COMMON_DIR}/apps/cilium/app/values.yaml" ]]; then
-        CILIUM_VALUES="-f ${COMMON_DIR}/apps/cilium/app/values.yaml"
-    fi
-
-    helm upgrade --install cilium cilium/cilium \
-        --version 1.18.3 \
-        --namespace kube-system \
-        --kubeconfig "${KUBECONFIG_PATH}" \
-        --set operator.replicas=1 \
-        --set ipam.mode=kubernetes \
-        --set kubeProxyReplacement=true \
-        --set k8sServiceHost="${K8S_SERVICE_HOST:-}" \
-        --set k8sServicePort="${K8S_SERVICE_PORT:-443}" \
-        --set hubble.enabled=true \
-        --set hubble.relay.enabled=true \
-        --set hubble.ui.enabled=true \
-        ${CILIUM_VALUES}
-
-    log "Waiting for Cilium to be ready..."
-    kubectl --kubeconfig "${KUBECONFIG_PATH}" -n kube-system rollout status daemonset/cilium --timeout=300s
 }
 
 # Bootstrap Flux
@@ -104,11 +70,7 @@ verify() {
     kubectl --kubeconfig "${KUBECONFIG_PATH}" get nodes
 
     echo ""
-    log "Cilium status:"
-    kubectl --kubeconfig "${KUBECONFIG_PATH}" -n kube-system get pods -l app.kubernetes.io/part-of=cilium
-
-    echo ""
-    log "Flux status:"
+    log "Flux pods:"
     kubectl --kubeconfig "${KUBECONFIG_PATH}" -n flux-system get pods
 
     echo ""
@@ -126,7 +88,6 @@ main() {
 
     check_prerequisites
     wait_for_nodes
-    install_cilium
     bootstrap_flux
     verify
 
