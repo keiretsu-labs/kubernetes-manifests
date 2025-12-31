@@ -44,7 +44,7 @@ spec:
               value: auto
             # Workload Identity Federation - use client ID instead of auth key
             - name: TS_CLIENT_ID
-              value: "${TS_WIF_CLIENT_ID}"
+              value: "TbqNGJkY5611CNTRL-kF8VA8GYua11CNTRL"
             # Read the K8s OIDC token from the projected volume
             - name: TS_ID_TOKEN
               value: "file:/var/run/secrets/tailscale/serviceaccount/token"
@@ -73,6 +73,6 @@ spec:
             sources:
               - serviceAccountToken:
                   # Audience must match Tailscale OAuth client config
-                  audience: "https://login.tailscale.com"
+                  audience: "api.tailscale.com/TbqNGJkY5611CNTRL-kF8VA8GYua11CNTRL"
                   expirationSeconds: 3600
                   path: token
