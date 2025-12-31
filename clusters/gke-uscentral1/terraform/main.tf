@@ -1,5 +1,5 @@
 # GKE Cluster for uscentral1
-# Configured to match the Flux GitOps pattern used in other clusters
+# Uses GKE Dataplane V2 (eBPF-based) as the default CNI
 
 locals {
   cluster_name = var.cluster_name
@@ -70,7 +70,7 @@ resource "google_compute_router_nat" "nat" {
   }
 }
 
-# GKE Cluster
+# GKE Cluster with Dataplane V2 (default eBPF CNI)
 resource "google_container_cluster" "primary" {
   name     = local.cluster_name
   location = local.location
@@ -95,15 +95,8 @@ resource "google_container_cluster" "primary" {
     services_secondary_range_name = "services"
   }
 
-  # Disable default network policy, we'll use Cilium
-  network_policy {
-    enabled  = false
-    provider = "PROVIDER_UNSPECIFIED"
-  }
-
-  # Datapath provider - use ADVANCED_DATAPATH for better Cilium compatibility
-  # or LEGACY_DATAPATH if using Cilium CNI
-  datapath_provider = var.enable_cilium ? "LEGACY_DATAPATH" : "ADVANCED_DATAPATH"
+  # Use GKE Dataplane V2 (eBPF-based networking)
+  datapath_provider = "ADVANCED_DATAPATH"
 
   # Private cluster configuration
   private_cluster_config {
@@ -158,6 +151,9 @@ resource "google_container_cluster" "primary" {
     }
   }
 
+  # Disable deletion protection for easier teardown
+  deletion_protection = false
+
   # Maintenance window (UTC)
   maintenance_policy {
     daily_maintenance_window {
@@ -178,7 +174,7 @@ resource "google_container_cluster" "primary" {
   }
 }
 
-# Primary node pool - 3 nodes
+# Primary node pool
 resource "google_container_node_pool" "primary" {
   name     = "${local.cluster_name}-primary"
   location = local.location
