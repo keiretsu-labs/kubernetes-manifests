@@ -42,16 +42,11 @@ spec:
               value: "false"
             - name: TS_DEBUG_FIREWALL_MODE
               value: auto
-            # Workload Identity Federation - use client ID instead of auth key
-            - name: TS_CLIENT_ID
-              value: "TbqNGJkY5611CNTRL-kF8VA8GYua11CNTRL"
-            # Read the K8s OIDC token from the projected volume
-            - name: TS_ID_TOKEN
-              value: "file:/var/run/secrets/tailscale/serviceaccount/token"
             - name: TS_ACCEPT_DNS
               value: "true"
+            # Workload Identity Federation via tailscale up flags
             - name: TS_EXTRA_ARGS
-              value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh"
+              value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh --client-id=TbqNGJkY5611CNTRL-kF8VA8GYua11CNTRL --id-token=file:/var/run/secrets/tailscale/serviceaccount/token"
             - name: TS_HOSTNAME
               value: "${LOCATION}-workload-identity"
             - name: POD_NAME
