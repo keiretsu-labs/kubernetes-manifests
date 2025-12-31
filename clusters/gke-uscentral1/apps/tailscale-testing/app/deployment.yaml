@@ -44,7 +44,6 @@ spec:
               value: auto
             - name: TS_ACCEPT_DNS
               value: "true"
-            # Workload Identity Federation via tailscale up flags
             - name: TS_EXTRA_ARGS
               value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh --client-id=TbqNGJkY5611CNTRL-kF8VA8GYua11CNTRL --id-token=file:/var/run/secrets/tailscale/serviceaccount/token"
             - name: TS_HOSTNAME
@@ -62,12 +61,10 @@ spec:
               mountPath: /var/run/secrets/tailscale/serviceaccount
               readOnly: true
       volumes:
-        # Projected K8s service account token with custom audience
         - name: tailscale-token
           projected:
             sources:
               - serviceAccountToken:
-                  # Audience must match Tailscale OAuth client config
                   audience: "api.tailscale.com/TbqNGJkY5611CNTRL-kF8VA8GYua11CNTRL"
                   expirationSeconds: 3600
                   path: token
