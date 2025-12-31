@@ -1,0 +1,27 @@
+# GKE uscentral1 Cluster Configuration
+# Copy this file to terraform.tfvars and update values
+
+# Required: Your GCP project ID
+project_id = "your-gcp-project-id"
+
+# Optional: Override defaults
+# region             = "us-central1"
+# zone               = "us-central1-a"
+# cluster_name       = "gke-uscentral1"
+# node_count         = 3
+# machine_type       = "e2-standard-4"
+# disk_size_gb       = 100
+# disk_type          = "pd-standard"
+# kubernetes_version = "latest"
+
+# Network settings (match cluster-settings.yaml)
+# pod_cidr     = "10.7.0.0/16"
+# service_cidr = "10.6.0.0/16"
+
+# CNI settings
+# enable_cilium  = true
+# cilium_version = "1.18.3"
+
+# Flux settings
+# flux_version = "v2.7.5"
+# github_repo  = "keiretsu-labs/kubernetes-manifests"

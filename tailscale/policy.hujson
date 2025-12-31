@@ -64,6 +64,7 @@
 		"tag:ottawa":       ["tag:k8s-operator", "tag:infra", "group:superuser", "group:ottawa",],
 		"tag:stpetersburg": ["tag:k8s-operator", "tag:infra", "group:superuser", "group:stpetersburg",],
 		"tag:aurora":       ["tag:k8s-operator", "tag:infra", "group:superuser", "group:aurora",],
+		"tag:uscentral1":   ["tag:k8s-operator", "tag:infra", "group:superuser", "group:uscentral1",],
 		"tag:kind":         ["tag:k8s-operator", "tag:infra", "group:superuser", "group:kind",],
 		"tag:udm":          ["tag:infra", "group:superuser"],
 		"tag:ci":           ["tag:k8s-operator", "tag:infra", "group:superuser",],
