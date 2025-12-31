@@ -1,8 +1,8 @@
-# Tailscale Workload Identity Federation on GKE
+ Tailscale Workload Identity Federation on GKE
 
 This guide shows how to authenticate Tailscale containers to your tailnet using GKE's native OIDC tokens instead of auth keys or OAuth secrets.
 
-## Overview
+Overview
 
 There are two approaches to Workload Identity Federation on GKE:
 
@@ -13,13 +13,13 @@ There are two approaches to Workload Identity Federation on GKE:
 
 This guide covers the **Direct OIDC** approach which requires no GCP IAM permissions.
 
-## Prerequisites
+Prerequisites
 
 - GKE cluster (any version with projected service account tokens)
 - Tailscale v1.90.1+ container image
 - Admin access to Tailscale admin console
 
-## Step 1: Get Your GKE OIDC Issuer URL
+Step 1: Get Your GKE OIDC Issuer URL
 
 ```bash
 gcloud container clusters describe <CLUSTER_NAME> \
@@ -48,7 +48,7 @@ Step 2: Create Federated Credential in Tailscale Admin
 
 Step 3: Create Kubernetes Resources
 
-#ServiceAccount
+ServiceAccount
 
 ```yaml
 apiVersion: v1
@@ -58,7 +58,7 @@ metadata:
   namespace: tailscale-testing
 ```
 
-#Deployment
+Deployment
 
 ```yaml
 apiVersion: apps/v1
@@ -156,11 +156,11 @@ Troubleshooting
 | Unauthorized tags | Tag mismatch | Tags in `--advertise-tags` must be allowed in federated credential |
 | Token file not found | Volume not mounted | Check volumeMounts path matches `--id-token=file:` path |
 
-## Alternative: GCP Workload Identity Approach
+Alternative: GCP Workload Identity Approach
 
 If you have GCP IAM permissions and want to use a GCP service account (useful if your workload also needs GCP API access), you can use GCP Workload Identity instead:
 
-### 1. Enable Workload Identity on GKE
+1. Enable Workload Identity on GKE
 
 ```bash
 gcloud container clusters update <CLUSTER_NAME> \
@@ -168,14 +168,14 @@ gcloud container clusters update <CLUSTER_NAME> \
   --workload-pool=<PROJECT_ID>.svc.id.goog
 ```
 
-### 2. Create a GCP Service Account
+2. Create a GCP Service Account
 
 ```bash
 gcloud iam service-accounts create tailscale-wif \
   --display-name="Tailscale WIF"
 ```
 
-### 3. Bind K8s SA to GCP SA
+3. Bind K8s SA to GCP SA
 
 ```bash
 gcloud iam service-accounts add-iam-policy-binding \
@@ -184,7 +184,7 @@ gcloud iam service-accounts add-iam-policy-binding \
   --member="serviceAccount:<PROJECT_ID>.svc.id.goog[<NAMESPACE>/<K8S_SA_NAME>]"
 ```
 
-### 4. Annotate the Kubernetes ServiceAccount
+4. Annotate the Kubernetes ServiceAccount
 
 ```yaml
 apiVersion: v1
@@ -196,12 +196,70 @@ metadata:
     iam.gke.io/gcp-service-account: tailscale-wif@<PROJECT_ID>.iam.gserviceaccount.com
 ```
 
-### 5. Configure Tailscale Federated Credential
+5. Configure Tailscale Federated Credential
 
 In Tailscale admin, use:
 - **Issuer**: `https://accounts.google.com`
 - **Subject**: The GCP service account email (e.g., `tailscale-wif@<PROJECT_ID>.iam.gserviceaccount.com`)
 
-The rest of the deployment configuration remains the same, but the projected token audience would be the GCP service account email instead.
+6. Deploy with GCP Workload Identity
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tailscale-wif
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tailscale-wif
+  template:
+    metadata:
+      labels:
+        app: tailscale-wif
+    spec:
+      serviceAccountName: tailscale
+      initContainers:
+        - name: sysctler
+          image: ghcr.io/tailscale/tailscale:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - sysctl -w net.ipv4.ip_forward=1
+          securityContext:
+            privileged: true
+      containers:
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:latest
+          securityContext:
+            privileged: true
+          env:
+            - name: TS_KUBE_SECRET
+              value: ""
+            - name: TS_USERSPACE
+              value: "false"
+            - name: TS_ACCEPT_DNS
+              value: "true"
+            - name: TS_EXTRA_ARGS
+              value: "--advertise-tags=tag:k8s --client-id=<CLIENT_ID> --id-token=file:/var/run/secrets/tailscale/serviceaccount/token"
+            - name: TS_HOSTNAME
+              value: "my-gke-workload"
+          volumeMounts:
+            - name: tailscale-token
+              mountPath: /var/run/secrets/tailscale/serviceaccount
+              readOnly: true
+      volumes:
+        - name: tailscale-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: "<GCP_SA_EMAIL>"  # e.g., tailscale-wif@my-project.iam.gserviceaccount.com
+                  expirationSeconds: 3600
+                  path: token
+```
+
+Replace:
+- `<CLIENT_ID>`: From Tailscale admin federated credential
+- `<GCP_SA_EMAIL>`: Your GCP service account email (e.g., `tailscale-wif@<PROJECT_ID>.iam.gserviceaccount.com`)
 
 > **Note**: The Direct OIDC approach (main guide above) is simpler and recommended unless you specifically need GCP Workload Identity for other GCP integrations.
