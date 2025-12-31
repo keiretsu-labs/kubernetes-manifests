@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${LOCATION}-workload-identity
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ${LOCATION}-workload-identity
+  template:
+    metadata:
+      labels:
+        app: ${LOCATION}-workload-identity
+    spec:
+      serviceAccountName: "tailscale"
+      initContainers:
+      - args:
+        - sysctl -w net.ipv4.ip_forward=1 && if sysctl net.ipv6.conf.all.forwarding;
+          then sysctl -w net.ipv6.conf.all.forwarding=1; fi
+        command:
+        - /bin/sh
+        - -c
+        image: "ghcr.io/tailscale/tailscale:latest"
+        imagePullPolicy: Always
+        name: sysctler
+        securityContext:
+          privileged: true
+      containers:
+      - name: tailscale
+        imagePullPolicy: Always
+        image: "ghcr.io/tailscale/tailscale:latest"
+        securityContext:
+          privileged: true
+        env:
+        - name: TS_KUBE_SECRET
+          value: ""
+        - name: TS_USERSPACE
+          value: "false"
+        - name: TS_DEBUG_FIREWALL_MODE
+          value: auto
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: ts-oauth
+              key: TS_AUTHKEY_EPHEMERAL
+              optional: true
+        - name: TS_ACCEPT_DNS
+          value: "true"
+        - name: TS_EXTRA_ARGS
+          value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh"
+        - name: TS_HOSTNAME
+          value: "${LOCATION}-workload-identity"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
