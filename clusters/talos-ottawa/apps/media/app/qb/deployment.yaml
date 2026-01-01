@@ -91,7 +91,7 @@ spec:
         - name: gluetun-config
           mountPath: /gluetun
       - name: gluetun-qb-port-sync
-        image: ghcr.io/bjw-s-labs/gluetun-qb-port-sync:latest
+        image: ghcr.io/bjw-s-labs/gluetun-qb-port-sync:0.0.4
         env:
         - name: GLUETUN_CONTROL_SERVER_HOST
           value: localhost
