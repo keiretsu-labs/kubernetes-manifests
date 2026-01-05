@@ -117,7 +117,7 @@
 			"ip":  ["*"],
 		},
 		{
-			"src": ["group:superuser", "tag:bird-ha-test"],
+			"src": ["group:superuser", "tag:bird-ha-test", "10.100.0.0/16", "10.200.0.0/16"],
 			"dst": ["10.100.0.0/16", "10.200.0.0/16"],
 			"ip":  ["*"],
 			"via": ["tag:bird-ha-test"],
