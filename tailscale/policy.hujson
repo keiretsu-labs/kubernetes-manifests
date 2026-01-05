@@ -69,6 +69,7 @@
 		"tag:udm":          ["tag:infra", "group:superuser"],
 		"tag:ci":           ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:singh360":     ["tag:k8s-operator", "tag:infra", "group:superuser",],
+		"tag:bird-ha-test": ["group:superuser",],
 	},
 	"autoApprovers": {
 		"exitNode": ["tag:k8s"],
@@ -78,7 +79,9 @@
 			"192.168.50.0/24":  ["tag:robbinsdale"],
 			"192.168.169.0/24": ["tag:ottawa"],
 			"192.168.73.0/24":  ["tag:stpetersburg"],
-      "192.168.68.0/24":  ["tag:aurora"],
+			"192.168.68.0/24":  ["tag:aurora"],
+			"10.100.0.0/16":    ["tag:bird-ha-test"],
+			"10.200.0.0/16":    ["tag:bird-ha-test"],
 		},
 		"services": {
 			"tag:k8s": ["tag:k8s"],
@@ -106,6 +109,11 @@
 		{
 			"src": ["tag:singh360"],
 			"dst": ["tag:singh360"],
+			"ip":  ["*"],
+		},
+		{
+			"src": ["group:superuser", "tag:bird-ha-test"],
+			"dst": ["tag:bird-ha-test", "10.100.0.0/16", "10.200.0.0/16"],
 			"ip":  ["*"],
 		},
 		{
