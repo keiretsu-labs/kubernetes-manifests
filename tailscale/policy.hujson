@@ -401,7 +401,14 @@
   "attrConfig": {
     "custom:potato":      {"type": "string", "allowSetByNode": true, "broadcastToPeers": ["*"]},
   },
-	"acls": [{
+	"acls": [
+	{
+		// Allow bird-ha-test subnet routers to access both test subnets
+		"action": "accept",
+		"src":    ["tag:bird-ha-test"],
+		"dst":    ["10.100.0.0/16:*", "10.200.0.0/16:*"],
+	},
+	{
 		// Private log streaming enables audit and network logs to be directly
 		// uploaded to a node in your tailnet without exposing it to the public internet.
 		// This access rule provides access for a Tailscale-managed node to upload logs
