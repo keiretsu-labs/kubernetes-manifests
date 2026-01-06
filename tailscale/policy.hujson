@@ -70,6 +70,8 @@
 		"tag:ci":           ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:singh360":     ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:bird-ha-test": ["group:superuser",],
+		"tag:site-a-sr":    ["group:superuser",],
+		"tag:site-b-sr":    ["group:superuser",],
 	},
 	"autoApprovers": {
 		"exitNode": ["tag:k8s"],
@@ -80,8 +82,8 @@
 			"192.168.169.0/24": ["tag:ottawa"],
 			"192.168.73.0/24":  ["tag:stpetersburg"],
 			"192.168.68.0/24":  ["tag:aurora"],
-			"10.100.0.0/16":    ["tag:bird-ha-test"],
-			"10.200.0.0/16":    ["tag:bird-ha-test"],
+			"10.100.0.0/16":    ["tag:site-a-sr"],
+			"10.200.0.0/16":    ["tag:site-b-sr"],
 		},
 		"services": {
 			"tag:k8s": ["tag:k8s"],
@@ -111,22 +113,38 @@
 			"dst": ["tag:singh360"],
 			"ip":  ["*"],
 		},
+		// Site A and Site B subnet routers can reach each other
 		{
-			"src": ["group:superuser", "tag:bird-ha-test"],
-			"dst": ["tag:bird-ha-test"],
+			"src": ["group:superuser", "tag:site-a-sr", "tag:site-b-sr"],
+			"dst": ["tag:site-a-sr", "tag:site-b-sr"],
 			"ip":  ["*"],
 		},
+		// Site A SR can reach Site B subnets via Site B SR
 		{
-			"src": ["group:superuser", "tag:bird-ha-test", "10.100.0.0/16", "10.200.0.0/16"],
-			"dst": ["10.100.0.0/16", "10.200.0.0/16"],
+			"src": ["tag:site-a-sr", "10.100.0.0/16"],
+			"dst": ["10.200.0.0/16"],
 			"ip":  ["*"],
-			"via": ["tag:bird-ha-test"],
+			"via": ["tag:site-b-sr"],
 		},
-		// Direct access between bird-ha-test subnet routers and their subnets
+		// Site B SR can reach Site A subnets via Site A SR
 		{
-			"src": ["tag:bird-ha-test"],
-			"dst": ["tag:bird-ha-test", "10.100.0.0/16", "10.200.0.0/16"],
+			"src": ["tag:site-b-sr", "10.200.0.0/16"],
+			"dst": ["10.100.0.0/16"],
 			"ip":  ["*"],
+			"via": ["tag:site-a-sr"],
+		},
+		// Superusers can reach both subnets via either SR
+		{
+			"src": ["group:superuser"],
+			"dst": ["10.100.0.0/16"],
+			"ip":  ["*"],
+			"via": ["tag:site-a-sr"],
+		},
+		{
+			"src": ["group:superuser"],
+			"dst": ["10.200.0.0/16"],
+			"ip":  ["*"],
+			"via": ["tag:site-b-sr"],
 		},
 		{
 			"src": ["group:superuser", "tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
@@ -403,10 +421,15 @@
   },
 	"acls": [
 	{
-		// Allow bird-ha-test subnet routers to access both test subnets
+		// Allow site-a-sr to access site-b subnets and vice versa
 		"action": "accept",
-		"src":    ["tag:bird-ha-test"],
-		"dst":    ["10.100.0.0/16:*", "10.200.0.0/16:*"],
+		"src":    ["tag:site-a-sr"],
+		"dst":    ["10.200.0.0/16:*"],
+	},
+	{
+		"action": "accept",
+		"src":    ["tag:site-b-sr"],
+		"dst":    ["10.100.0.0/16:*"],
 	},
 	{
 		// Private log streaming enables audit and network logs to be directly
