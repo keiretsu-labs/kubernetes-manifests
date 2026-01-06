@@ -122,6 +122,12 @@
 			"ip":  ["*"],
 			"via": ["tag:bird-ha-test"],
 		},
+		// Direct access between bird-ha-test subnet routers and their subnets
+		{
+			"src": ["tag:bird-ha-test"],
+			"dst": ["tag:bird-ha-test", "10.100.0.0/16", "10.200.0.0/16"],
+			"ip":  ["*"],
+		},
 		{
 			"src": ["group:superuser", "tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
 			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
