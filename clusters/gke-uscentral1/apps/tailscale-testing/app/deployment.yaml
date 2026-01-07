@@ -31,7 +31,7 @@ spec:
             privileged: true
       containers:
         - name: tailscale
-          image: ghcr.io/tailscale/tailscale:latest
+          image: ghcr.io/rajsinghtech/tailscale/tailscale:78
           imagePullPolicy: Always
           securityContext:
             privileged: true
@@ -45,9 +45,13 @@ spec:
             - name: TS_ACCEPT_DNS
               value: "true"
             - name: TS_EXTRA_ARGS
-              value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh --client-id=TbqNGJkY5611CNTRL-kF8VA8GYua11CNTRL --id-token=file:/var/run/secrets/tailscale/serviceaccount/token"
+              value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh"
             - name: TS_HOSTNAME
               value: "${LOCATION}-workload-identity"
+            - name: TS_CLIENT_ID
+              value: "TbqNGJkY5611CNTRL-kF8VA8GYua11CNTRL"
+            - name: TS_ID_TOKEN
+              value: "file:/var/run/secrets/tailscale/serviceaccount/token"
             - name: POD_NAME
               valueFrom:
                 fieldRef:
