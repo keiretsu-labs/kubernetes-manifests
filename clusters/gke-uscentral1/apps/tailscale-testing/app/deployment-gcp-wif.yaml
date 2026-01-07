@@ -1,0 +1,98 @@
+---
+# GCP Workload Identity approach - fetches token from GCP metadata server
+# Requires:
+# 1. GCP SA with Workload Identity User binding to K8s SA
+# 2. Tailscale federated credential with issuer: https://accounts.google.com
+#    and subject: <gcp-sa>@<project>.iam.gserviceaccount.com
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${LOCATION}-workload-identity-gcp
+spec:
+  replicas: 0  # Set to 1 to test (requires IAM binding)
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ${LOCATION}-workload-identity-gcp
+  template:
+    metadata:
+      labels:
+        app: ${LOCATION}-workload-identity-gcp
+    spec:
+      serviceAccountName: tailscale
+      initContainers:
+        - name: sysctler
+          image: ghcr.io/tailscale/tailscale:latest
+          imagePullPolicy: Always
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              sysctl -w net.ipv4.ip_forward=1
+              if sysctl net.ipv6.conf.all.forwarding; then
+                sysctl -w net.ipv6.conf.all.forwarding=1
+              fi
+          securityContext:
+            privileged: true
+        - name: fetch-gcp-token
+          image: curlimages/curl:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              # Fetch Google-signed identity token from GCP metadata server
+              # Token will have:
+              #   iss: https://accounts.google.com
+              #   sub: <gcp-sa>@<project>.iam.gserviceaccount.com
+              echo "Fetching GCP identity token from metadata server..."
+              curl -sf -H "Metadata-Flavor: Google" \
+                "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=api.tailscale.com/${TS_GCP_CLIENT_ID}" \
+                > /var/run/secrets/tailscale/serviceaccount/token
+              if [ $? -eq 0 ]; then
+                echo "Token fetched successfully"
+                # Debug: show token claims (without exposing the full token)
+                cat /var/run/secrets/tailscale/serviceaccount/token | cut -d. -f2 | base64 -d 2>/dev/null | head -c 200
+                echo ""
+              else
+                echo "Failed to fetch token from metadata server"
+                exit 1
+              fi
+          env:
+            - name: TS_GCP_CLIENT_ID
+              value: "REPLACE_WITH_GCP_WIF_CLIENT_ID"
+          volumeMounts:
+            - name: tailscale-token
+              mountPath: /var/run/secrets/tailscale/serviceaccount
+      containers:
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:latest
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          env:
+            - name: TS_KUBE_SECRET
+              value: ""
+            - name: TS_USERSPACE
+              value: "false"
+            - name: TS_DEBUG_FIREWALL_MODE
+              value: auto
+            - name: TS_ACCEPT_DNS
+              value: "true"
+            - name: TS_EXTRA_ARGS
+              value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh --client-id=REPLACE_WITH_GCP_WIF_CLIENT_ID --id-token=file:/var/run/secrets/tailscale/serviceaccount/token"
+            - name: TS_HOSTNAME
+              value: "${LOCATION}-workload-identity-gcp"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          volumeMounts:
+            - name: tailscale-token
+              mountPath: /var/run/secrets/tailscale/serviceaccount
+              readOnly: true
+      volumes:
+        - name: tailscale-token
+          emptyDir: {}

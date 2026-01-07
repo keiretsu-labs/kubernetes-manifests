@@ -5,3 +5,4 @@ namespace: tailscale-testing
 resources:
   - serviceaccount.yaml
   - deployment.yaml
+  - deployment-gcp-wif.yaml
