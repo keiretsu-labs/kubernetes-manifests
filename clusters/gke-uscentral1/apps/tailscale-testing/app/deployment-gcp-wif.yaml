@@ -46,11 +46,11 @@ spec:
               echo "Fetching GCP identity token from metadata server..."
               curl -sf -H "Metadata-Flavor: Google" \
                 "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=api.tailscale.com/${TS_GCP_CLIENT_ID}" \
-                > /var/run/secrets/tailscale/serviceaccount/token
+                > /var/run/secrets/tailscale/idtoken/token
               if [ $? -eq 0 ]; then
                 echo "Token fetched successfully"
                 # Debug: show token claims (without exposing the full token)
-                cat /var/run/secrets/tailscale/serviceaccount/token | cut -d. -f2 | base64 -d 2>/dev/null | head -c 200
+                cat /var/run/secrets/tailscale/idtoken/token | cut -d. -f2 | base64 -d 2>/dev/null | head -c 200
                 echo ""
               else
                 echo "Failed to fetch token from metadata server"
@@ -61,7 +61,7 @@ spec:
               value: "REPLACE_WITH_GCP_WIF_CLIENT_ID"
           volumeMounts:
             - name: tailscale-token
-              mountPath: /var/run/secrets/tailscale/serviceaccount
+              mountPath: /var/run/secrets/tailscale/idtoken
       containers:
         - name: tailscale
           image: ghcr.io/tailscale/tailscale:latest
@@ -78,7 +78,7 @@ spec:
             - name: TS_ACCEPT_DNS
               value: "true"
             - name: TS_EXTRA_ARGS
-              value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh --client-id=REPLACE_WITH_GCP_WIF_CLIENT_ID --id-token=file:/var/run/secrets/tailscale/serviceaccount/token"
+              value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh --client-id=REPLACE_WITH_GCP_WIF_CLIENT_ID --id-token=file:/var/run/secrets/tailscale/idtoken/token"
             - name: TS_HOSTNAME
               value: "${LOCATION}-workload-identity-gcp"
             - name: POD_NAME
@@ -91,7 +91,7 @@ spec:
                   fieldPath: metadata.uid
           volumeMounts:
             - name: tailscale-token
-              mountPath: /var/run/secrets/tailscale/serviceaccount
+              mountPath: /var/run/secrets/tailscale/idtoken
               readOnly: true
       volumes:
         - name: tailscale-token
