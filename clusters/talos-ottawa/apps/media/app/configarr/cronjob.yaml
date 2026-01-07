@@ -13,7 +13,7 @@ spec:
         spec:
           containers:
             - name: configarr
-              image: ghcr.io/raydak-labs/configarr:latest
+              image: ghcr.io/raydak-labs/configarr:1.19
               imagePullPolicy: Always
               tty: true # for color support
               env:
