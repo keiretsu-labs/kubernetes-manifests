@@ -183,10 +183,10 @@ spec:
               # and subject: <GCP_SA_EMAIL>
               curl -s -H "Metadata-Flavor: Google" \
                 "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=api.tailscale.com/<CLIENT_ID>" \
-                > /var/run/secrets/tailscale/serviceaccount/token
+                > /var/run/secrets/tailscale/idtoken/token
           volumeMounts:
             - name: tailscale-token
-              mountPath: /var/run/secrets/tailscale/serviceaccount
+              mountPath: /var/run/secrets/tailscale/idtoken
       containers:
         - name: tailscale
           image: ghcr.io/tailscale/tailscale:latest
@@ -200,12 +200,12 @@ spec:
             - name: TS_ACCEPT_DNS
               value: "true"
             - name: TS_EXTRA_ARGS
-              value: "--advertise-tags=tag:k8s --client-id=<CLIENT_ID> --id-token=file:/var/run/secrets/tailscale/serviceaccount/token"
+              value: "--advertise-tags=tag:k8s --client-id=<CLIENT_ID> --id-token=file:/var/run/secrets/tailscale/idtoken/token"
             - name: TS_HOSTNAME
               value: "my-gke-workload-gcp"
           volumeMounts:
             - name: tailscale-token
-              mountPath: /var/run/secrets/tailscale/serviceaccount
+              mountPath: /var/run/secrets/tailscale/idtoken
               readOnly: true
       volumes:
         - name: tailscale-token
@@ -233,13 +233,17 @@ The init container only fetches the token once at pod startup. For long-running 
 
 Decode and inspect your token:
 ```bash
-# For K8s projected token (Direct OIDC)
+# For K8s projected token (Direct OIDC) - path: /var/run/secrets/tailscale/serviceaccount/token
 kubectl exec -it <pod> -- cat /var/run/secrets/tailscale/serviceaccount/token | \
   cut -d. -f2 | base64 -d 2>/dev/null | jq .
 
 # Expected for Direct OIDC:
 # "iss": "https://container.googleapis.com/v1/projects/<project>/locations/<region>/clusters/<cluster>"
 # "sub": "system:serviceaccount:<namespace>:<sa-name>"
+
+# For GCP Workload Identity - path: /var/run/secrets/tailscale/idtoken/token
+kubectl exec -it <pod> -- cat /var/run/secrets/tailscale/idtoken/token | \
+  cut -d. -f2 | base64 -d 2>/dev/null | jq .
 
 # Expected for GCP Workload Identity:
 # "iss": "https://accounts.google.com"
