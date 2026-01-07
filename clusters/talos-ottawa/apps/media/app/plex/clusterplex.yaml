@@ -116,7 +116,7 @@ spec:
             weight: 100
       containers:
       - name: plex
-        image: lscr.io/linuxserver/plex:latest
+        image: lscr.io/linuxserver/plex:1.42.2
         startupProbe:
           httpGet:
             path: /identity
@@ -219,7 +219,7 @@ spec:
     spec:
       containers:
       - name: plex
-        image: ghcr.io/pabloromeo/clusterplex_orchestrator:latest
+        image: ghcr.io/pabloromeo/clusterplex_orchestrator:1.4.16
         startupProbe:
           httpGet:
             path: /health
@@ -308,7 +308,7 @@ spec:
             weight: 50
       containers:
       - name: plex-worker
-        image: lscr.io/linuxserver/plex:latest
+        image: lscr.io/linuxserver/plex:1.42.2
         startupProbe:
           httpGet:
             path: /health
