@@ -8,7 +8,7 @@
     "analyze": "node analyze.js"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
+    "@anthropic-ai/claude-agent-sdk": "^0.2.0",
     "axios": "^1.7.0",
     "zod": "^4.0.0"
   },
