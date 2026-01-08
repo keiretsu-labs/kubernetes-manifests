@@ -30,9 +30,9 @@
       "groupName": "actions-runner-controller"
     },
     {
-      "description": "Exclude legacy 0.x tags that appear as 8.x/7.x",
+      "description": "Exclude legacy tags with 4-digit build numbers in patch position",
       "matchPackageNames": ["lscr.io/linuxserver/lidarr"],
-      "allowedVersions": "< 4.0.0"
+      "allowedVersions": "/^\\d+\\.\\d+\\.\\d{1,2}$/"
     }
   ]
 }
