@@ -28,6 +28,11 @@
       "description": "Group ARC controller and runner scale set together",
       "matchPackageNames": ["gha-runner-scale-set", "gha-runner-scale-set-controller"],
       "groupName": "actions-runner-controller"
+    },
+    {
+      "description": "Follow latest tag for linuxserver/lidarr due to legacy tag scheme",
+      "matchPackageNames": ["lscr.io/linuxserver/lidarr"],
+      "followTag": "latest"
     }
   ]
 }
