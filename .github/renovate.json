@@ -30,9 +30,9 @@
       "groupName": "actions-runner-controller"
     },
     {
-      "description": "Follow latest tag for linuxserver/lidarr due to legacy tag scheme",
+      "description": "Exclude legacy 0.x tags that appear as 8.x/7.x",
       "matchPackageNames": ["lscr.io/linuxserver/lidarr"],
-      "followTag": "latest"
+      "allowedVersions": "< 4.0.0"
     }
   ]
 }
