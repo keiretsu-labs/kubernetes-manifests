@@ -56,4 +56,5 @@ spec:
           configMap:
             name: aperture-config
         - name: data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: aperture-data
