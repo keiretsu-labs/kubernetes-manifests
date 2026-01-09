@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: tunarr
-          image: chrisbenincasa/tunarr:1.0.16
+          image: chrisbenincasa/tunarr:1.0.17
           ports:
             - name: http
               containerPort: 8000
