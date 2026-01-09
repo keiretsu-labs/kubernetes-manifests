@@ -54,7 +54,7 @@ data:
 
     # MCP servers
     mcp_servers:
-      - url: "http://usez-mcp.tailscale-system.svc.cluster.local/mcp"
+      - url: "http://userz-mcp.tailscale-system.svc.cluster.local/mcp"
         tailnet: false
 
     # Database settings
