@@ -18,6 +18,15 @@ spec:
     spec:
       imagePullSecrets:
         - name: ghcr-regcred
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 10001:10001 /data"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          securityContext:
+            runAsUser: 0
       containers:
         - name: aperture
           image: ghcr.io/rajsinghtech/tailscale/aperture:mcp-proxy
