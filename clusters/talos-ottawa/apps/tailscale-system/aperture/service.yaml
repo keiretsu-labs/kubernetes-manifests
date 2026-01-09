@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aperture
+  namespace: tailscale-system
+  labels:
+    app.kubernetes.io/name: aperture
+spec:
+  selector:
+    app.kubernetes.io/name: aperture
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

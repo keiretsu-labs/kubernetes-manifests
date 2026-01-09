@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aperture-config
+  namespace: tailscale-system
+data:
+  config.yaml: |
+    # MCP Proxy configuration for aperture
+    # Proxies MCP requests to ai.coder over tailnet
+
+    mcp_servers:
+      - url: "http://ai.coder:80/v1/mcp"
+        tailnet: true
+
+    # Database settings
+    database:
+      save_raws: false
+      keep_encrypted_blobs: false
