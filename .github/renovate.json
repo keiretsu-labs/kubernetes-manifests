@@ -33,6 +33,28 @@
       "description": "Exclude legacy tags with 4-digit build numbers in patch position",
       "matchPackageNames": ["lscr.io/linuxserver/lidarr"],
       "allowedVersions": "/^\\d+\\.\\d+\\.\\d{1,2}$/"
+    },
+    {
+      "description": "Rook Ceph operator - UPGRADE FIRST before Ceph images",
+      "matchPackageNames": ["rook-ceph"],
+      "matchManagers": ["flux"],
+      "groupName": "rook-ceph-operator",
+      "labels": ["rook-ceph", "upgrade-order-1"],
+      "automerge": false,
+      "prPriority": 10
+    },
+    {
+      "description": "Ceph container images - UPGRADE AFTER operator",
+      "matchPackageNames": ["quay.io/ceph/ceph"],
+      "groupName": "ceph-images",
+      "labels": ["rook-ceph", "upgrade-order-2"],
+      "automerge": false,
+      "prPriority": 5
+    },
+    {
+      "description": "Pin Ceph images to specific patch versions for production stability",
+      "matchPackageNames": ["quay.io/ceph/ceph"],
+      "allowedVersions": "/^v\\d+\\.\\d+\\.\\d+$/"
     }
   ]
 }
