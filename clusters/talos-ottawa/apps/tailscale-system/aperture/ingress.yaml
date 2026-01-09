@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aperture
+  annotations:
+    tailscale.com/proxy-group: "common-ingress"
+    tailscale.com/tags: "tag:k8s"
+spec:
+  defaultBackend:
+    service:
+      name: aperture
+      port:
+        number: 80
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - aperture

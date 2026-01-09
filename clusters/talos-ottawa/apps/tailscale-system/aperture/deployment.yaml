@@ -1,0 +1,63 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aperture
+  namespace: tailscale-system
+  labels:
+    app.kubernetes.io/name: aperture
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aperture
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aperture
+    spec:
+      imagePullSecrets:
+        - name: ghcr-regcred
+      containers:
+        - name: aperture
+          image: ghcr.io/rajsinghtech/tailscale/aperture:mcp-proxy
+          imagePullPolicy: Always
+          env:
+            - name: LLM_PROXY_CONFIG_PATH
+              value: /config/config.yaml
+            - name: LLM_PROXY_STATE_DIR
+              value: /data/tsnet
+            - name: LLM_PROXY_DB_PATH
+              value: /data/llmproxy.db
+            - name: LLM_PROXY_HOSTNAME
+              value: aperture
+            - name: LLM_PROXY_LOG_LEVEL
+              value: debug
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: ts-authkey
+                  key: TS_AUTHKEY
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: config
+          configMap:
+            name: aperture-config
+        - name: data
+          emptyDir: {}
