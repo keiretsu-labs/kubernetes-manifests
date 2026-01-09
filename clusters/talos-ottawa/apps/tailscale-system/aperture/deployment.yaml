@@ -33,17 +33,11 @@ spec:
               value: aperture
             - name: LLM_PROXY_LOG_LEVEL
               value: debug
-            - name: LLM_PROXY_USE_LOCAL_PORT
-              value: "80"
             - name: TS_AUTHKEY
               valueFrom:
                 secretKeyRef:
                   name: ts-authkey
                   key: TS_AUTHKEY
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
           volumeMounts:
             - name: config
               mountPath: /config
