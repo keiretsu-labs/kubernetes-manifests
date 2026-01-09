@@ -6,9 +6,36 @@ metadata:
   namespace: tailscale-system
 data:
   config.yaml: |
-    # MCP Proxy configuration for aperture
-    # Proxies MCP requests to ai.coder over tailnet
+    # Aperture LLM proxy configuration
+    # Proxies requests to upstream ai.coder aperture instance over tailnet
 
+    providers:
+      # Upstream aperture instance with all LLM providers configured
+      upstream:
+        baseurl: "http://ai.coder:80"
+        tailnet: true
+        name: "Upstream Aperture"
+        description: "Proxied LLM providers (Anthropic, Grok, Gemini, etc)"
+        # Pass through all models from upstream
+        models:
+          - claude-sonnet-4-5
+          - claude-sonnet-4-5-20250929
+          - claude-haiku-4-5
+          - claude-haiku-4-5-20251001
+          - claude-opus-4-1
+          - claude-opus-4-5
+          - claude-opus-4-5-20251101
+          - gpt-5
+          - gpt-5-mini
+          - gpt-5-codex
+          - grok-3
+          - gemini-2.5-pro
+        compatibility:
+          openai_chat: true
+          openai_responses: true
+          anthropic_messages: true
+
+    # MCP servers from upstream
     mcp_servers:
       - url: "http://ai.coder:80/v1/mcp"
         tailnet: true
