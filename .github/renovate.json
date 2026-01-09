@@ -35,6 +35,11 @@
       "allowedVersions": "/^\\d+\\.\\d+\\.\\d{1,2}$/"
     },
     {
+      "description": "Exclude legacy Ubuntu-based tags (20.04.x, 22.04.x) for qbittorrent",
+      "matchPackageNames": ["lscr.io/linuxserver/qbittorrent"],
+      "allowedVersions": "/^[1-9]\\.\\d+\\.\\d+$/"
+    },
+    {
       "description": "Rook Ceph operator - UPGRADE FIRST before Ceph images",
       "matchPackageNames": ["rook-ceph"],
       "matchManagers": ["flux"],
