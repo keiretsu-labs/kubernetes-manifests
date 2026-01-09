@@ -15,30 +15,42 @@ data:
         baseurl: "http://ai.coder:80"
         tailnet: true
         name: "Upstream Aperture"
-        description: "Proxied LLM providers (Anthropic, Grok, Gemini, etc)"
-        # Pass through all models from upstream
+        description: "Proxied LLM providers via ai.coder"
         models:
-          - claude-sonnet-4-5
-          - claude-sonnet-4-5-20250929
+          # Anthropic
           - claude-haiku-4-5
           - claude-haiku-4-5-20251001
           - claude-opus-4-1
           - claude-opus-4-5
           - claude-opus-4-5-20251101
+          - claude-sonnet-4-5
+          - claude-sonnet-4-5-20250929
+          # OpenAI
+          - gpt-4.1
+          - gpt-4.1-mini
+          - gpt-4.1-nano
+          - gpt-4o-mini
           - gpt-5
-          - gpt-5-mini
           - gpt-5-codex
-          - grok-3
-          - gemini-2.5-pro
+          - gpt-5-mini
+          - gpt-5-nano
+          - gpt-5.1-codex
+          - gpt-5.1-codex-mini
+          # OpenRouter
+          - deepseek/deepseek-chat-v3-0324
+          - google/gemma-3-27b-it
+          - meta-llama/llama-3.1-8b-instruct
+          - minimax/minimax-m2
+          - moonshotai/kimi-k2-thinking
+          - openai/gpt-oss-120b
+          - openai/gpt-oss-20b
+          - qwen/qwen3-235b-a22b-2507
+          - x-ai/grok-code-fast-1
+          - z-ai/glm-4.6
         compatibility:
           openai_chat: true
           openai_responses: true
           anthropic_messages: true
-
-    # MCP servers from upstream
-    mcp_servers:
-      - url: "http://ai.coder:80/v1/mcp"
-        tailnet: true
 
     # Database settings
     database:
