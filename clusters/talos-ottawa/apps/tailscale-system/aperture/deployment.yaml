@@ -33,6 +33,8 @@ spec:
               value: aperture
             - name: LLM_PROXY_LOG_LEVEL
               value: debug
+            - name: LLM_PROXY_USE_LOCAL_PORT
+              value: "80"
             - name: TS_AUTHKEY
               valueFrom:
                 secretKeyRef:
