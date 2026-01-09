@@ -52,6 +52,11 @@ data:
           openai_responses: true
           anthropic_messages: true
 
+    # MCP servers
+    mcp_servers:
+      - url: "http://usez-mcp.tailscale-system/mcp"
+        tailnet: false
+
     # Database settings
     database:
       save_raws: false
