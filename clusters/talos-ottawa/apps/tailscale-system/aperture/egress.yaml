@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tailscale-egress
+spec:
+  interval: 1m
+  chart:
+    spec:
+      chart: tailscale-egress
+      version: 0.0.0-latest
+      sourceRef:
+        kind: HelmRepository
+        name: tailscale-k8s-operator-helper-charts
+        namespace: flux-system 
+      interval: 1m
+  releaseName: tailscale-egress
+  values:
+    proxyGroup: "common-egress"
+    services:
+      - name: rajs-tailscale-macbook-pro
+        fqdn: rajs-tailscale-macbook-pro.keiretsu.ts.net
+        ports:
+          - port: 8181
+            protocol: TCP
+      - name: aperture
+        fqdn: aperture.keiretsu.ts.net
+        ports:
+          - port: 80
+            protocol: TCP

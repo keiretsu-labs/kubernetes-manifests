@@ -6,3 +6,4 @@ resources:
   - configmap.yaml
   - pvc.yaml
   - deployment.yaml
+  - egress.yaml
