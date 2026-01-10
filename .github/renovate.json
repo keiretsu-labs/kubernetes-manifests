@@ -40,21 +40,51 @@
       "allowedVersions": "/^[1-9]\\.\\d+\\.\\d+$/"
     },
     {
-      "description": "Rook Ceph operator - UPGRADE FIRST before Ceph images",
+      "description": "Rook Ceph operator - UPGRADE FIRST",
       "matchPackageNames": ["rook-ceph"],
       "matchManagers": ["flux"],
       "groupName": "rook-ceph-operator",
-      "labels": ["rook-ceph", "upgrade-order-1"],
+      "labels": ["CRITICAL-STORAGE", "MERGE-1st-BEFORE-CEPH"],
       "automerge": false,
-      "prPriority": 10
+      "prBodyNotes": [
+        "## :warning: CRITICAL: STORAGE INFRASTRUCTURE",
+        "",
+        "This upgrades the **Rook operator**.",
+        "",
+        "### Before merging:",
+        "- [ ] Read the [Rook upgrade guide](https://rook.io/docs/rook/latest/Upgrade/rook-upgrade/)",
+        "- [ ] Read the [Rook release notes](https://github.com/rook/rook/releases) for this version",
+        "- [ ] Check [Rook GitHub issues](https://github.com/rook/rook/issues) for known bugs with this version",
+        "- [ ] Verify cluster health before proceeding",
+        "",
+        "### After merging:",
+        "- [ ] Wait for operator rollout to complete",
+        "- [ ] Verify cluster returns to healthy state",
+        "- [ ] Then proceed with any pending Ceph image upgrades"
+      ]
     },
     {
-      "description": "Ceph container images - UPGRADE AFTER operator",
+      "description": "Ceph images - UPGRADE AFTER operator",
       "matchPackageNames": ["quay.io/ceph/ceph"],
       "groupName": "ceph-images",
-      "labels": ["rook-ceph", "upgrade-order-2"],
+      "labels": ["CRITICAL-STORAGE", "MERGE-2nd-AFTER-ROOK"],
       "automerge": false,
-      "prPriority": 5
+      "prBodyNotes": [
+        "## :warning: CRITICAL: STORAGE INFRASTRUCTURE",
+        "",
+        "This upgrades **Ceph daemon images**.",
+        "",
+        "### Before merging:",
+        "- [ ] **Is there a pending Rook operator PR?** Merge that FIRST",
+        "- [ ] Read the [Ceph upgrade guide](https://rook.io/docs/rook/latest/Upgrade/ceph-upgrade/)",
+        "- [ ] Check the [Rook release notes](https://github.com/rook/rook/releases) for supported Ceph versions",
+        "- [ ] Search [Rook GitHub issues](https://github.com/rook/rook/issues) for problems with this Ceph version",
+        "- [ ] Verify cluster health before proceeding",
+        "",
+        "### After merging:",
+        "- [ ] Monitor daemon rollouts (OSD, MON, MGR)",
+        "- [ ] Verify cluster returns to healthy state"
+      ]
     },
     {
       "description": "Pin Ceph images to specific patch versions for production stability",
