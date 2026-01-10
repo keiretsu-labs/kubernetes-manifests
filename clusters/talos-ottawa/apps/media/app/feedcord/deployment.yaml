@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: feedcord
-        image: qolors/feedcord:v3.1.0
+        image: qolors/feedcord:latest
         args:
         - /app/config/appsettings.json
         securityContext:
