@@ -8,10 +8,10 @@ data:
   config.yaml: |
     providers:
       upstream:
-        baseurl: "http://ai.coder:80"
+        baseurl: "http://ai.keiretsu.ts.net"
         tailnet: true
         name: "Upstream Aperture"
-        description: "Proxied LLM providers via ai.coder"
+        description: "Proxied LLM providers via ai.keiretsu.ts.net"
         models:
           - claude-haiku-4-5
           - claude-haiku-4-5-20251001
