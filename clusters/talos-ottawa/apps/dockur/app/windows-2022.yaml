@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: windows
-        image: dockurr/windows
+        image: dockurr/windows:5.14
         env:
         - name: RAM_SIZE
           RAM_SIZE: "8G"

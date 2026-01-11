@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: debug
-          image: nicolaka/netshoot:latest
+          image: nicolaka/netshoot:v0.15
           command: ["/bin/sleep", "infinity"]
           securityContext:
             allowPrivilegeEscalation: true

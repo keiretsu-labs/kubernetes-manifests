@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: s3manager
-          image: cloudlena/s3manager:latest 
+          image: cloudlena/s3manager:latest
           ports:
             - containerPort: 8080
           env:
