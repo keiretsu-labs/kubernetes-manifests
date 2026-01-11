@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: macos
-        image: dockurr/macos
+        image: dockurr/macos:2.29
         env:
         - name: RAM_SIZE
           RAM_SIZE: "8G"
