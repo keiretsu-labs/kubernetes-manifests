@@ -56,6 +56,18 @@ data:
     mcp_servers:
       - url: "http://userz-mcp.tailscale-system.svc.cluster.local/mcp"
         tailnet: false
+      # Dynamic backend registration - backends POST to /v1/mcp/register
+      - accept_incoming_registrations: true
+
+    # Temporary grants for admin role (matches group:superuser members)
+    temp_grants:
+      - src:
+          - "rajsinghtech@github"
+          - "kbpersonal@github"
+          - "LukeHouge@github"
+          - "abtars@gmail.com"
+        grants:
+          - role: "admin"
 
     # Database settings
     database:
