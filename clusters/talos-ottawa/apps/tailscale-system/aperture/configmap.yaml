@@ -46,8 +46,8 @@ data:
           anthropic_messages: true
 
     mcp_servers:
-      - url: "http://userz-mcp.tailscale-system.svc.cluster.local/mcp"
-        tailnet: false
+      - url: "http://userz-mcp.keiretsu.ts.net/mcp"
+        tailnet: true
       - accept_incoming_registrations: true
 
     temp_grants:
