@@ -14,7 +14,7 @@ spec:
   ingressClassName: tailscale
   tls:
     - hosts:
-        - tsflow
+        - ${LOCATION}-hello-world-ingress-ha
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -31,4 +31,4 @@ spec:
   ingressClassName: tailscale
   tls:
     - hosts:
-        - tsflow
+        - ${LOCATION}-hello-world-ingress-standalone
