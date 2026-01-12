@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${LOCATION}-hello-world-ingress-ha
+  annotations:
+    tailscale.com/proxy-group: "common-ingress"
+    tailscale.com/tags: "tag:k8s"
+spec:
+  defaultBackend:
+    service:
+      name: hello-world
+      port:
+        number: 80
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - tsflow
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${LOCATION}-hello-world-ingress-standalone
+  annotations:
+    tailscale.com/tags: "tag:k8s"
+spec:
+  defaultBackend:
+    service:
+      name: hello-world
+      port:
+        number: 80
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - tsflow
