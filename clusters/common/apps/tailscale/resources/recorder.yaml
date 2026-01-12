@@ -3,6 +3,7 @@ kind: Recorder
 metadata:
   name: ${LOCATION}-recorder
 spec:
+  replicas: 1
   statefulSet:
     pod:
       container:
