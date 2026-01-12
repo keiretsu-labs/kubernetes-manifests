@@ -12,7 +12,7 @@ resources:
   - prom-plex-exporter.yaml
   - servicemonitor.yaml
   - secret.yaml
-  - clusterplex.yaml
+  # - clusterplex.yaml  # Disabled - caused kernel RCU stall on node rei (2026-01-12)
   - backendtrafficpolicy.yaml
 configMapGenerator:
   - name: plex-dashboards
