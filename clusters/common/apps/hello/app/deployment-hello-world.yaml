@@ -12,20 +12,15 @@ spec:
     metadata:
       labels:
         app: hello-world
-      annotations:
-        tailcar.rajsingh.info/inject: "true"
-        tailcar.rajsingh.info/tailnet: keiretsu-labs-github
+      # annotations:
+      #   tailcar.rajsingh.info/inject: "true"
+      #   tailcar.rajsingh.info/tailnet: keiretsu-labs-github
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
-        volumeMounts:
-        - name: nginx-config
-          mountPath: /etc/nginx/nginx.conf
-          subPath: nginx.conf
+      - name: echo-server
+        image: ealen/echo-server:latest
+        env:
+        - name: PORT
+          value: "80"
         ports:
-        - containerPort: 80
-      volumes:
-      - name: nginx-config
-        configMap:
-          name: nginx-config 
+        - containerPort: 80 
