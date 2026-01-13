@@ -1,0 +1,47 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "packageRules": [
+    {
+      "description": "Group Talos versions together (installer images)",
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["^ghcr\\.io/siderolabs/installer$"],
+      "groupName": "talos",
+      "labels": ["talos", "infrastructure"],
+      "prBodyNotes": [
+        "## Talos Upgrade",
+        "",
+        "This updates the Talos version used by tuppr for node upgrades.",
+        "",
+        "### Before merging:",
+        "- [ ] Review [Talos release notes](https://github.com/siderolabs/talos/releases)",
+        "- [ ] Verify cluster health",
+        "- [ ] Ensure tuppr controller is running"
+      ]
+    },
+    {
+      "description": "Group Kubernetes versions together (kubelet images)",
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["^ghcr\\.io/siderolabs/kubelet$"],
+      "groupName": "kubernetes",
+      "labels": ["kubernetes", "infrastructure"],
+      "prBodyNotes": [
+        "## Kubernetes Upgrade",
+        "",
+        "This updates the Kubernetes version used by tuppr for cluster upgrades.",
+        "",
+        "### Before merging:",
+        "- [ ] Review [Kubernetes release notes](https://github.com/kubernetes/kubernetes/releases)",
+        "- [ ] Check [Talos compatibility matrix](https://www.talos.dev/latest/introduction/support-matrix/)",
+        "- [ ] Verify cluster health",
+        "- [ ] Ensure tuppr controller is running"
+      ]
+    },
+    {
+      "description": "Group tuppr chart updates",
+      "matchDatasources": ["helm"],
+      "matchPackageNames": ["tuppr"],
+      "groupName": "tuppr-chart",
+      "labels": ["tuppr", "infrastructure"]
+    }
+  ]
+}
