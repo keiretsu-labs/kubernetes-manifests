@@ -22,16 +22,18 @@ spec:
             - containerPort: 3909
               name: http
           env:
-            - name: GARAGE_ADMIN_API_URL
+            - name: API_BASE_URL
               value: "http://garage:3903"
-            - name: GARAGE_S3_ENDPOINT
+            - name: S3_ENDPOINT_URL
               value: "http://garage:3900"
-            - name: GARAGE_ADMIN_TOKEN
+            - name: API_ADMIN_KEY
               valueFrom:
                 secretKeyRef:
                   name: garage-admin-token
                   key: token
                   optional: true
+            - name: CONFIG_PATH
+              value: "/etc/garage.toml"
           volumeMounts:
             - name: config
               mountPath: /etc/garage.toml
