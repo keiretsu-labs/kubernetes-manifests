@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: ${LOCATION}-peer-relay
 spec:
-  replicas: 0
+  replicas: 1
   serviceName: ${LOCATION}-peer-relay
   podManagementPolicy: Parallel
   updateStrategy:
