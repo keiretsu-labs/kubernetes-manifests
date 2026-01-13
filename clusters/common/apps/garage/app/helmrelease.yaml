@@ -23,7 +23,7 @@ spec:
   values:
     image:
       repository: dxflrs/garage
-      tag: v1.2.0
+      tag: v2.1.0
     garage:
       existingConfigMap: garage-config
     deployment:
