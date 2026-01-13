@@ -3,3 +3,9 @@ machine:
     kubePrism:
       enabled: true
       port: 7445
+    kubernetesTalosAPIAccess:
+      enabled: true
+      allowedRoles:
+        - os:admin
+      allowedKubernetesNamespaces:
+        - system-upgrade
