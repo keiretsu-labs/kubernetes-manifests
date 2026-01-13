@@ -26,7 +26,7 @@ root_domain = ""
 
 [s3_web]
 bind_addr = "[::]:3902"
-root_domain = ".keiretsu.ts.net"
+root_domain = ".garage"
 index = "index.html"
 
 [admin]

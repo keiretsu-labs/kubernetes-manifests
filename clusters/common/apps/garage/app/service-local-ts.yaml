@@ -4,7 +4,8 @@ kind: Service
 metadata:
   annotations:
     tailscale.com/hostname: ${LOCATION}-garage
-    tailscale.com/proxy-group: common-ingress
+    # tailscale.com/proxy-group: common-ingress
+    # tailscale.com/tags: "tag:k8s"
   name: garage-local-ts
   namespace: garage
 spec:
