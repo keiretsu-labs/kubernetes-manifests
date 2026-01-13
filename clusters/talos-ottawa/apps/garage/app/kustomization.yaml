@@ -4,3 +4,4 @@ kind: Kustomization
 namespace: garage
 resources:
   - helmrelease.yaml
+  - service-ts.yaml

@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/tailnet-hostname: ${LOCATION}-garage
+    tailscale.com/proxy-group: common-ingress
+  name: garage-ts
+  namespace: garage
+spec:
+  ports:
+    - name: s3-api
+      port: 3900
+      protocol: TCP
+      targetPort: 3900
+    - name: s3-web
+      port: 3902
+      protocol: TCP
+      targetPort: 3902
+  selector:
+    app.kubernetes.io/instance: garage
+    app.kubernetes.io/name: garage
+  type: LoadBalancer
+  loadBalancerClass: tailscale
