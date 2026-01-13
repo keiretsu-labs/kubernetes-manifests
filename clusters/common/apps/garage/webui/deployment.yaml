@@ -32,9 +32,17 @@ spec:
                   name: garage-admin-token
                   key: token
                   optional: true
+          volumeMounts:
+            - name: config
+              mountPath: /etc/garage.toml
+              subPath: garage.toml
           resources:
             requests:
               cpu: 10m
               memory: 64Mi
             limits:
               memory: 256Mi
+      volumes:
+        - name: config
+          configMap:
+            name: garage-config
