@@ -2,7 +2,7 @@ metadata_dir = "/mnt/meta"
 data_dir = "/mnt/data"
 db_engine = "lmdb"
 block_size = 1048576
-replication_mode = "3"
+replication_factor = 3
 compression_level = 1
 
 rpc_bind_addr = "[::]:3901"
