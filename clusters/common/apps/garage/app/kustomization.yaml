@@ -13,7 +13,7 @@ configMapGenerator:
       - garage.toml
   - name: garage-grafana-dashboard
     files:
-      - garage.json
+      - dashboard.json
     options:
       labels:
         grafana_dashboard: "1"
