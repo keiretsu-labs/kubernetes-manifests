@@ -1,0 +1,16 @@
+---
+# Source: https://raw.githubusercontent.com/deuxfleurs-org/garage/main/script/telemetry/grafana-garage-dashboard-prometheus.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+configMapGenerator:
+  - name: garage-grafana-dashboard
+    files:
+      - garage.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: Garage
+generatorOptions:
+  disableNameSuffixHash: true
