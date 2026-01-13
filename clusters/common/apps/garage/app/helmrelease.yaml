@@ -21,6 +21,9 @@ spec:
     remediation:
       retries: 3
   values:
+    image:
+      repository: dxflrs/garage
+      tag: v1.2.0
     garage:
       existingConfigMap: garage-config
     deployment:
