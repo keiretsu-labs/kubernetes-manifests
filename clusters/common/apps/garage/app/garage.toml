@@ -8,9 +8,9 @@ compression_level = 1
 rpc_bind_addr = "[::]:3901"
 rpc_secret = "${GARAGE_RPC_SECRET}"
 bootstrap_peers = [
-    "ottawa-garage.garage:3901",
-    "robbinsdale-garage.garage:3901",
-    "stpetersburg-garage.garage:3901"
+    "ottawa-garage:3901",
+    "robbinsdale-garage:3901",
+    "stpetersburg-garage:3901"
 ]
 
 # kubernetes_discovery disabled - using bootstrap_peers via Tailscale egress instead
