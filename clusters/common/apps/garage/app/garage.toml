@@ -1,0 +1,33 @@
+metadata_dir = "/mnt/meta"
+data_dir = "/mnt/data"
+db_engine = "lmdb"
+block_size = 1048576
+replication_mode = "1"
+compression_level = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_secret = "${GARAGE_RPC_SECRET}"
+bootstrap_peers = [
+    "ottawa-garage.garage:3901",
+    "robbinsdale-garage.garage:3901",
+    "stpetersburg-garage.garage:3901"
+]
+
+# kubernetes_discovery disabled - using bootstrap_peers via Tailscale egress instead
+# [kubernetes_discovery]
+# namespace = "garage"
+# service_name = "garage"
+# skip_crd = false
+
+[s3_api]
+s3_region = "${LOCATION}"
+api_bind_addr = "[::]:3900"
+root_domain = ""
+
+[s3_web]
+bind_addr = "[::]:3902"
+root_domain = ".keiretsu.ts.net"
+index = "index.html"
+
+[admin]
+api_bind_addr = "[::]:3903"
