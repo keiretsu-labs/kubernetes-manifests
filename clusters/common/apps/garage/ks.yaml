@@ -1,54 +1,54 @@
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: &app garage
-  namespace: flux-system
-spec:
-  targetNamespace: garage
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *app
-  path: ./clusters/common/apps/garage/app
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: kubernetes-manifests
-  wait: false
-  interval: 30m
-  retryInterval: 1m
-  timeout: 5m
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: cluster-settings
-      - kind: Secret
-        name: common-secrets
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: garage-webui
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: garage
-  targetNamespace: garage
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: garage-webui
-  path: ./clusters/common/apps/garage/webui
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: kubernetes-manifests
-  wait: false
-  interval: 30m
-  retryInterval: 1m
-  timeout: 5m
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: cluster-settings
-      - kind: Secret
-        name: common-secrets
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: &app garage
+#   namespace: flux-system
+# spec:
+#   targetNamespace: garage
+#   commonMetadata:
+#     labels:
+#       app.kubernetes.io/name: *app
+#   path: ./clusters/common/apps/garage/app
+#   prune: true
+#   sourceRef:
+#     kind: GitRepository
+#     name: kubernetes-manifests
+#   wait: false
+#   interval: 30m
+#   retryInterval: 1m
+#   timeout: 5m
+#   postBuild:
+#     substituteFrom:
+#       - kind: ConfigMap
+#         name: cluster-settings
+#       - kind: Secret
+#         name: common-secrets
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: garage-webui
+#   namespace: flux-system
+# spec:
+#   dependsOn:
+#     - name: garage
+#   targetNamespace: garage
+#   commonMetadata:
+#     labels:
+#       app.kubernetes.io/name: garage-webui
+#   path: ./clusters/common/apps/garage/webui
+#   prune: true
+#   sourceRef:
+#     kind: GitRepository
+#     name: kubernetes-manifests
+#   wait: false
+#   interval: 30m
+#   retryInterval: 1m
+#   timeout: 5m
+#   postBuild:
+#     substituteFrom:
+#       - kind: ConfigMap
+#         name: cluster-settings
+#       - kind: Secret
+#         name: common-secrets
