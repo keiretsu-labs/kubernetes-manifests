@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: ${LOCATION}-peer-relay
 spec:
-  replicas: 1
+  replicas: 0
   serviceName: ${LOCATION}-peer-relay
   podManagementPolicy: Parallel
   updateStrategy:
@@ -24,7 +24,7 @@ spec:
         command:
         - /bin/sh
         - -c
-        image: "ghcr.io/tailscale/tailscale:unstable-v1.93.44"
+        image: "ghcr.io/tailscale/tailscale:v1.92.5"
         imagePullPolicy: IfNotPresent
         name: sysctler
         securityContext:
