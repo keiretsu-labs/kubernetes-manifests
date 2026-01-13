@@ -19,7 +19,7 @@ spec:
         - name: garage-webui
           image: khairul169/garage-webui:latest
           ports:
-            - containerPort: 3000
+            - containerPort: 3909
               name: http
           env:
             - name: GARAGE_ADMIN_API_URL
