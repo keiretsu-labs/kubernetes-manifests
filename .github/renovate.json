@@ -3,8 +3,8 @@
   "extends": [
     "config:recommended",
     ":dependencyDashboard",
-    "local>.github/renovate/customManagers.json",
-    "local>.github/renovate/groups.json"
+    "github>keiretsu-labs/kubernetes-manifests//.renovate/customManagers.json",
+    "github>keiretsu-labs/kubernetes-manifests//.renovate/groups.json"
   ],
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
