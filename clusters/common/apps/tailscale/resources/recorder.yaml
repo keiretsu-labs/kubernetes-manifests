@@ -7,8 +7,10 @@ spec:
   statefulSet:
     pod:
       container:
-        image:
-          docker.io/tailscale/tsrecorder:v1.92.5
+        image: docker.io/tailscale/tsrecorder:v1.92.5
+        env:
+          - name: TSRECORDER_SECURE
+            value: "false"
   enableUI: true
   tags:
     - "tag:k8s"
@@ -16,7 +18,7 @@ spec:
     - "tag:${LOCATION}"
   storage:
     s3:
-      endpoint: http://garage.garage.svc.cluster.local:3900
+      endpoint: garage.garage.svc.cluster.local:3900
       bucket: tailscale-recorder
       credentials:
         secret:
