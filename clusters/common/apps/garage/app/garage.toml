@@ -8,16 +8,10 @@ compression_level = 1
 rpc_bind_addr = "[::]:3901"
 rpc_secret = "${GARAGE_RPC_SECRET}"
 bootstrap_peers = [
-    "ottawa-garage.garage.svc.cluster.local:3901",
-    "robbinsdale-garage.garage.svc.cluster.local:3901",
-    "stpetersburg-garage.garage.svc.cluster.local:3901"
+    "bb6ab68f244b5f5a@ottawa-garage.garage.svc.cluster.local:3901",
+    "395215de7e198c16@robbinsdale-garage.garage.svc.cluster.local:3901",
+    "6a0590a7f0c102d8@stpetersburg-garage.garage.svc.cluster.local:3901"
 ]
-
-# kubernetes_discovery disabled - using bootstrap_peers via Tailscale egress instead
-# [kubernetes_discovery]
-# namespace = "garage"
-# service_name = "garage"
-# skip_crd = false
 
 [s3_api]
 s3_region = "${LOCATION}"
