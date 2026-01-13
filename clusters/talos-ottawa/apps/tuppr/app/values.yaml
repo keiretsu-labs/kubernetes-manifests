@@ -1,0 +1,28 @@
+---
+replicaCount: 1
+
+controller:
+  leaderElection:
+    enabled: true
+  metrics:
+    enabled: true
+    secure: false
+
+webhook:
+  enabled: true
+  certManager:
+    enabled: true
+
+monitoring:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    labels:
+      prometheus: kube-prometheus
+
+tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
