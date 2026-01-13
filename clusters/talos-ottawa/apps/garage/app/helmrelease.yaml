@@ -23,6 +23,13 @@ spec:
   values:
     garage:
       replicationMode: "1"
+      s3:
+        api:
+          region: "${LOCATION}-garage"
+          rootDomain: ".keiretsu.ts.net"
+        web:
+          rootDomain: ".keiretsu.ts.net"
+          index: "index.html"
     deployment:
       kind: StatefulSet
       replicaCount: 1
