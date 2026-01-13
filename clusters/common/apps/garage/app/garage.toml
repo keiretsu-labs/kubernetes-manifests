@@ -8,9 +8,9 @@ compression_level = 1
 rpc_bind_addr = "[::]:3901"
 rpc_secret = "${GARAGE_RPC_SECRET}"
 bootstrap_peers = [
-    "e9895fe9799ae862@ottawa-garage.garage.svc.cluster.local:3901",
-    "1c9cffaffc051f9e@robbinsdale-garage.garage.svc.cluster.local:3901",
-    "3dc23dcbd80c25a5@stpetersburg-garage.garage.svc.cluster.local:3901"
+    "e9895fe9799ae862743126c7d76ca2243ce94692d3ec6c4788ff1cce7709d906@ottawa-garage.garage.svc.cluster.local:3901",
+    "1c9cffaffc051f9ee910e4083e9bddeb58f4e3eb29b11e4d4ef04eaaff9c9ba5@robbinsdale-garage.garage.svc.cluster.local:3901",
+    "3dc23dcbd80c25a51f75f2460b4ca9dcb9379b3d4562ec14582e010cd346864d@stpetersburg-garage.garage.svc.cluster.local:3901"
 ]
 
 [s3_api]
