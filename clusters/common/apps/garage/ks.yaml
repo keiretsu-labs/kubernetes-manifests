@@ -9,7 +9,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./clusters/${CLUSTER_NAME}/apps/garage/app
+  path: ./clusters/common/apps/garage/app
   prune: true
   sourceRef:
     kind: GitRepository
