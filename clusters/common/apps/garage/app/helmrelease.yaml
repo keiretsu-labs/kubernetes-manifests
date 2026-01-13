@@ -30,7 +30,7 @@ spec:
       kind: StatefulSet
       replicaCount: 1
     persistence:
-      enabled: false
+      enabled: true
     monitoring:
       metrics:
         enabled: true
