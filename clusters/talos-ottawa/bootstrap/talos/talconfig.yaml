@@ -1,10 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
 ---
 # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-talosVersion: v1.10.6
-# talosVersion: v1.11.5
+talosVersion: v1.12.1
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
-kubernetesVersion: v1.33.1
+kubernetesVersion: v1.34.0
 clusterName: "k8s.killinit.internal"
 endpoint: https://k8s.killinit.internal:6443
 allowSchedulingOnMasters: true
@@ -160,7 +159,6 @@ controlPlane:
   patches:
     - "@./patches/controller/api-access.yaml"
     - "@./patches/controller/disable-proxy.yaml"
-    - "@./patches/controller/disable-registry-discovery.yaml"
     - "@./patches/controller/kubelet-certs.yaml"
     - "@./patches/controller/etcd-metrics-patch.yaml"
 
