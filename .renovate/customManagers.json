@@ -4,8 +4,8 @@
     {
       "customType": "regex",
       "description": "Process annotated dependencies (tuppr, talos configs, talconfig, etc)",
-      "fileMatch": [
-        "(^|/).*\\.ya?ml$"
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
       ],
       "matchStrings": [
         "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*(?:talos|kubernetes)?[Vv]?ersion:\\s*(?<currentValue>\\S+)"
