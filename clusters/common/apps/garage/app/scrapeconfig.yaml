@@ -14,3 +14,6 @@ spec:
         - stpetersburg-garage.garage.svc.cluster.local:3903
   metricsPath: /metrics
   scrapeInterval: 15s
+  relabelings:
+    - targetLabel: job
+      replacement: garage
