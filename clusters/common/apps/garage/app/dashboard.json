@@ -34,7 +34,7 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "mappings": [
@@ -48,12 +48,12 @@
       "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
       "id": 1,
       "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "min(cluster_healthy{job=\"garage\"})", "legendFormat": "Cluster Health", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "min(cluster_healthy{job=\"garage\"})", "legendFormat": "Cluster Health", "refId": "A" }],
       "title": "Cluster Health",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -65,12 +65,12 @@
       "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
       "id": 2,
       "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "max(cluster_connected_nodes{job=\"garage\"})", "legendFormat": "Connected", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "max(cluster_connected_nodes{job=\"garage\"})", "legendFormat": "Connected", "refId": "A" }],
       "title": "Connected Nodes",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -82,12 +82,12 @@
       "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
       "id": 3,
       "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "max(cluster_storage_nodes_ok{job=\"garage\"})", "legendFormat": "Storage Nodes OK", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "max(cluster_storage_nodes_ok{job=\"garage\"})", "legendFormat": "Storage Nodes OK", "refId": "A" }],
       "title": "Storage Nodes OK",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -99,12 +99,12 @@
       "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
       "id": 4,
       "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "max(cluster_partitions_all_ok{job=\"garage\"})", "legendFormat": "Partitions OK", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "max(cluster_partitions_all_ok{job=\"garage\"})", "legendFormat": "Partitions OK", "refId": "A" }],
       "title": "Partitions All OK",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -116,12 +116,12 @@
       "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
       "id": 5,
       "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "max(garage_replication_factor{job=\"garage\"})", "legendFormat": "Replication Factor", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "max(garage_replication_factor{job=\"garage\"})", "legendFormat": "Replication Factor", "refId": "A" }],
       "title": "Replication Factor",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -133,7 +133,7 @@
       "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
       "id": 6,
       "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "max(cluster_partitions{job=\"garage\"})", "legendFormat": "Total Partitions", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "max(cluster_partitions{job=\"garage\"})", "legendFormat": "Total Partitions", "refId": "A" }],
       "title": "Total Partitions",
       "type": "stat"
     },
@@ -146,7 +146,7 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -160,12 +160,12 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
       "id": 10,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "garage_local_disk_avail{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "garage_local_disk_avail{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
       "title": "Disk Available per Node",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -179,7 +179,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
       "id": 11,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "garage_local_disk_avail{job=\"garage\"} / garage_local_disk_total{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "garage_local_disk_avail{job=\"garage\"} / garage_local_disk_total{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
       "title": "Disk Usage % per Node",
       "type": "timeseries"
     },
@@ -192,7 +192,7 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -206,12 +206,12 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
       "id": 20,
       "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (instance) (rate(rpc_request_counter{job=\"garage\"}[$__rate_interval]))", "legendFormat": "{{ instance }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum by (instance) (rate(rpc_request_counter{job=\"garage\"}[$__rate_interval]))", "legendFormat": "{{ instance }}", "refId": "A" }],
       "title": "RPC Requests per Node",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -225,7 +225,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
       "id": 21,
       "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (instance) (rate(rpc_duration_sum{job=\"garage\"}[$__rate_interval])) / sum by (instance) (rate(rpc_duration_count{job=\"garage\"}[$__rate_interval]))", "legendFormat": "{{ instance }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum by (instance) (rate(rpc_duration_sum{job=\"garage\"}[$__rate_interval])) / sum by (instance) (rate(rpc_duration_count{job=\"garage\"}[$__rate_interval]))", "legendFormat": "{{ instance }}", "refId": "A" }],
       "title": "RPC Avg Duration per Node",
       "type": "timeseries"
     },
@@ -238,7 +238,7 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -252,12 +252,12 @@
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
       "id": 30,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (table_name) (table_size{job=\"garage\"})", "legendFormat": "{{ table_name }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum by (table_name) (table_size{job=\"garage\"})", "legendFormat": "{{ table_name }}", "refId": "A" }],
       "title": "Table Sizes",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -271,12 +271,12 @@
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
       "id": 31,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (table_name) (table_merkle_tree_size{job=\"garage\"})", "legendFormat": "{{ table_name }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum by (table_name) (table_merkle_tree_size{job=\"garage\"})", "legendFormat": "{{ table_name }}", "refId": "A" }],
       "title": "Merkle Tree Sizes",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -290,7 +290,7 @@
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
       "id": 32,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "block_rc_size{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "block_rc_size{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
       "title": "Block Reference Count Size",
       "type": "timeseries"
     },
@@ -303,7 +303,7 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -317,12 +317,12 @@
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 33 },
       "id": 40,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "block_resync_queue_length{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "block_resync_queue_length{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
       "title": "Resync Queue per Node",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -336,12 +336,12 @@
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 33 },
       "id": 41,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (table_name) (table_gc_todo_queue_length{job=\"garage\"})", "legendFormat": "{{ table_name }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum by (table_name) (table_gc_todo_queue_length{job=\"garage\"})", "legendFormat": "{{ table_name }}", "refId": "A" }],
       "title": "Table GC Queue",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -355,7 +355,7 @@
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 33 },
       "id": 42,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (table_name) (table_merkle_updater_todo_queue_length{job=\"garage\"})", "legendFormat": "{{ table_name }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum by (table_name) (table_merkle_updater_todo_queue_length{job=\"garage\"})", "legendFormat": "{{ table_name }}", "refId": "A" }],
       "title": "Merkle Updater Queue",
       "type": "timeseries"
     },
@@ -368,7 +368,7 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -382,12 +382,12 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 42 },
       "id": 50,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "block_resync_errored_blocks{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "block_resync_errored_blocks{job=\"garage\"}", "legendFormat": "{{ instance }}", "refId": "A" }],
       "title": "Resync Errored Blocks per Node",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -401,7 +401,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 42 },
       "id": 51,
       "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (instance) (rate(rpc_netapp_error_counter{job=\"garage\"}[$__rate_interval]))", "legendFormat": "{{ instance }}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum by (instance) (rate(rpc_netapp_error_counter{job=\"garage\"}[$__rate_interval]))", "legendFormat": "{{ instance }}", "refId": "A" }],
       "title": "RPC Errors per Node",
       "type": "timeseries"
     }
@@ -410,7 +410,29 @@
   "schemaVersion": 37,
   "style": "dark",
   "tags": ["garage", "s3", "storage"],
-  "templating": { "list": [] },
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
   "time": { "from": "now-1h", "to": "now" },
   "timepicker": {},
   "timezone": "",
