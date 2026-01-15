@@ -22,3 +22,6 @@ data:
 
   # Domain
   CLUSTER_DOMAIN: lukehouge.com
+
+  # Storage
+  STORAGECLASS_LONGTERM: unas-smb

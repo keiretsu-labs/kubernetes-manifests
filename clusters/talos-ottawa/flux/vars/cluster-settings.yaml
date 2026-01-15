@@ -22,3 +22,6 @@ data:
 
   # Domain
   CLUSTER_DOMAIN: killinit.cc
+
+  # Storage
+  STORAGECLASS_LONGTERM: nagato-smb
