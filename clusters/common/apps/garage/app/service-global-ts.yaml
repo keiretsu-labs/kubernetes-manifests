@@ -18,6 +18,10 @@ spec:
       port: 3902
       protocol: TCP
       targetPort: 3902
+    - name: admin
+      port: 3903
+      protocol: TCP
+      targetPort: 3903
   selector:
     app.kubernetes.io/instance: garage
     app.kubernetes.io/name: garage

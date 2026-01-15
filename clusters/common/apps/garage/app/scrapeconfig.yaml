@@ -1,0 +1,16 @@
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: garage
+  namespace: garage
+  labels:
+    release: kube-prometheus-stack
+spec:
+  staticConfigs:
+    - targets:
+        - ottawa-garage.garage.svc.cluster.local:3903
+        - robbinsdale-garage.garage.svc.cluster.local:3903
+        - stpetersburg-garage.garage.svc.cluster.local:3903
+  metricsPath: /metrics
+  scrapeInterval: 15s
