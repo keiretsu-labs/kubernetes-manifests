@@ -55,8 +55,6 @@ spec:
           uid: loki
           url: http://loki.monitoring:3100
       adminPassword: admin
-      testFramework:
-        enabled: false
       persistence:
         enabled: false
       serviceMonitor:
@@ -165,17 +163,17 @@ spec:
           # https://grafana.com/grafana/dashboards/19993-argocd-operational-overview/
           argocd-operational-overview:
             gnetId: 19993
-            revision: 2
+            revision: 5
             datasource: prometheus
           # https://grafana.com/grafana/dashboards/19975-argocd-notifications-overview/
           argocd-notifications-overview:
             gnetId: 19975
-            revision: 2
+            revision: 7
             datasource: prometheus
           # https://grafana.com/grafana/dashboards/19974-argocd-application-overview/
           argocd-application-overview:
             gnetId: 19974
-            revision: 2
+            revision: 5
             datasource: prometheus
         logs:
           # https://grafana.com/grafana/dashboards/15141-kubernetes-service-logs/
@@ -264,7 +262,7 @@ spec:
             spec:
               resources:
                 requests:
-                  storage: 100Gi
+                  storage: 150Gi
         additionalScrapeConfigs:
           - job_name: 'node-exporter'
             static_configs:
