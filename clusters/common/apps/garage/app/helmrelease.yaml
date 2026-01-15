@@ -32,6 +32,7 @@ spec:
     persistence:
       enabled: true
       meta:
+        # storageClass: "${STORAGECLASS_LONGTERM}"
         size: 1Gi
       data:
         storageClass: "${STORAGECLASS_LONGTERM}"
