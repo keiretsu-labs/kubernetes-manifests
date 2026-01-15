@@ -32,8 +32,9 @@ spec:
     persistence:
       enabled: true
       storageClassName: "${STORAGECLASS_LONGTERM}"
+      size: 1Ti
     monitoring:
       metrics:
         enabled: true
         serviceMonitor:
-          enabled: true
+          enabled: false
