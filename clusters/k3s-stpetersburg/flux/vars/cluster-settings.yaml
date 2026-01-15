@@ -22,3 +22,6 @@ data:
 
   # Domain
   CLUSTER_DOMAIN: rajsingh.info
+
+  # Storage
+  STORAGECLASS_LONGTERM: local-path
