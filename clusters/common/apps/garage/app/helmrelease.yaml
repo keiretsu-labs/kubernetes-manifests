@@ -31,8 +31,12 @@ spec:
       replicaCount: 1
     persistence:
       enabled: true
-      storageClassName: "${STORAGECLASS_LONGTERM}"
-      size: 1Ti
+      meta:
+        storageClass: "${STORAGECLASS_LONGTERM}"
+        size: 1Gi
+      data:
+        storageClass: "${STORAGECLASS_LONGTERM}"
+        size: 1Ti
     monitoring:
       metrics:
         enabled: true
