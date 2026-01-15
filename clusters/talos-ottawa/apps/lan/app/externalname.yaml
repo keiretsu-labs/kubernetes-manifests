@@ -1,11 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ottawa-k8s-jetkvm
+  name: jetkvm
   annotations:
     tailscale.com/expose: "true"
-    tailscale.com/hostname: "ottawa-k8s-jetkvm"
+    tailscale.com/hostname: "jetkvm"
     tailscale.com/tag: "${LOCATION}"
+    tailscale.com/proxy-group: "common-ingress"
 spec:
   type: ExternalName
   externalName: jetkvm.killinit.internal
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
