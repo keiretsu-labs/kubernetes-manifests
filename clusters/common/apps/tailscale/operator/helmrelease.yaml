@@ -31,7 +31,7 @@ spec:
       #     value: "true"
       image:
         repo: ghcr.io/rajsinghtech/tailscale/k8s-operator
-        tag: "79"
+        tag: "80"
       hostname: "${LOCATION}-k8s-operator"
       logging: "debug" # info, debug, dev
       defaultTags:
