@@ -7,25 +7,25 @@ spec:
   interval: 30m
   chart:
     spec:
-      chart: charts/garage-operator
+      chart: garage-operator
+      version: "0.0.1"
       sourceRef:
-        kind: GitRepository
+        kind: HelmRepository
         name: garage-operator
         namespace: flux-system
-      reconcileStrategy: Revision
   install:
     remediation:
       retries: 3
+    crds: CreateReplace
   upgrade:
     cleanupOnFail: true
     remediation:
       retries: 3
+    crds: CreateReplace
   values:
     image:
       repository: ghcr.io/rajsinghtech/garage-operator
       tag: v0.0.1
-    crds:
-      install: true
     serviceMonitor:
       enabled: true
       labels:
