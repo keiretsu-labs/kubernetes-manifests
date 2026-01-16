@@ -25,7 +25,7 @@ spec:
       repository: ghcr.io/rajsinghtech/garage-operator
       tag: v0.0.1
     crds:
-      install: false  # CRDs installed via separate Kustomization
+      install: true
     serviceMonitor:
       enabled: true
       labels:
