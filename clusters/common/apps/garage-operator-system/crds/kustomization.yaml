@@ -1,9 +1,0 @@
----
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - https://raw.githubusercontent.com/rajsinghtech/garage-operator/v0.0.1/charts/garage-operator/crds/garage.rajsingh.info_garageadmintokens.yaml
-  - https://raw.githubusercontent.com/rajsinghtech/garage-operator/v0.0.1/charts/garage-operator/crds/garage.rajsingh.info_garagebuckets.yaml
-  - https://raw.githubusercontent.com/rajsinghtech/garage-operator/v0.0.1/charts/garage-operator/crds/garage.rajsingh.info_garageclusters.yaml
-  - https://raw.githubusercontent.com/rajsinghtech/garage-operator/v0.0.1/charts/garage-operator/crds/garage.rajsingh.info_garagekeys.yaml
-  - https://raw.githubusercontent.com/rajsinghtech/garage-operator/v0.0.1/charts/garage-operator/crds/garage.rajsingh.info_garagenodes.yaml
