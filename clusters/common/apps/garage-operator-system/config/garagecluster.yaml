@@ -17,11 +17,9 @@ spec:
     zoneRedundancy: "AtLeast(2)"
 
   storage:
-    # Metadata - benefits from fast storage (SSD) for LMDB database
-    metadata:
-      size: 1Gi
-      storageClassName: "${STORAGECLASS_FAST}"
-    # Data - block storage, can use cheaper/larger storage
+    # Metadata - uses default storage class
+    metadataSize: 1Gi
+    # Data - block storage, uses long-term storage class
     data:
       size: 100Gi
       storageClassName: "${STORAGECLASS_LONGTERM}"
