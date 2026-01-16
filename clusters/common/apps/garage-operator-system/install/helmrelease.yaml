@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: garage-operator
-      version: "0.0.6"
+      version: "0.0.7"
       sourceRef:
         kind: HelmRepository
         name: garage-operator
@@ -25,7 +25,7 @@ spec:
   values:
     image:
       repository: ghcr.io/rajsinghtech/garage-operator
-      tag: v0.0.6
+      tag: v0.0.7
     serviceMonitor:
       enabled: true
       labels:
