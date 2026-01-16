@@ -26,8 +26,8 @@ spec:
 
   network:
     rpcBindPort: 3901
-    # Advertise Tailscale-routable address for cross-cluster RPC connectivity
-    rpcPublicAddr: "${LOCATION}-garage-operator:3901"
+    # Use full Tailscale FQDN so Garage resolves to the external IP, not local proxy
+    rpcPublicAddr: "${LOCATION}-garage-operator.keiretsu.ts.net:3901"
     rpcSecretRef:
       name: garage-rpc-secret
       key: rpc-secret
