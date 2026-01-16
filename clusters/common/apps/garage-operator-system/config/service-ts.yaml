@@ -10,6 +10,9 @@ metadata:
   name: garage-ts
   namespace: garage-operator-system
 spec:
+  # Allow routing to pods before they're ready - essential for multi-cluster
+  # federation bootstrap when pods wait for cluster health
+  publishNotReadyAddresses: true
   ports:
     - name: s3-api
       port: 3900
@@ -44,6 +47,9 @@ metadata:
   name: garage-global-ts
   namespace: garage-operator-system
 spec:
+  # Allow routing to pods before they're ready - essential for multi-cluster
+  # federation bootstrap when pods wait for cluster health
+  publishNotReadyAddresses: true
   ports:
     - name: s3-api
       port: 3900
