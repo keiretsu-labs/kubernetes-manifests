@@ -5,7 +5,7 @@ metadata:
   name: garage
   namespace: garage-operator-system
 spec:
-  replicas: 1
+  replicas: 2
   image: dxflrs/garage:v2.1.0
 
   # Zone is unique per cluster - uses flux substitution
