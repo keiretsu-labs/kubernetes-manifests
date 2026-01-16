@@ -1,0 +1,53 @@
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageCluster
+metadata:
+  name: garage
+  namespace: garage-operator-system
+spec:
+  replicas: 1
+  image: dxflrs/garage:v2.1.0
+
+  # Zone is unique per cluster - uses flux substitution
+  zone: "${LOCATION}"
+
+  replication:
+    factor: 3
+    consistencyMode: consistent
+    zoneRedundancy: "AtLeast(2)"
+
+  storage:
+    metadata:
+      size: 1Gi
+    data:
+      volume:
+        size: 100Gi
+        storageClassName: "${STORAGECLASS_LONGTERM}"
+
+  network:
+    rpcBindPort: 3901
+    rpcSecretRef:
+      name: garage-rpc-secret
+      key: rpc-secret
+    service:
+      type: ClusterIP
+
+  s3Api:
+    enabled: true
+    bindPort: 3900
+    region: garage
+
+  admin:
+    enabled: true
+    bindPort: 3903
+
+  database:
+    engine: lmdb
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi

@@ -1,0 +1,64 @@
+---
+# Tailscale LoadBalancer for cross-cluster RPC connectivity
+# Each cluster gets a unique hostname based on location
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ${LOCATION}-garage-operator
+    tailscale.com/tags: "tag:k8s"
+  name: garage-ts
+  namespace: garage-operator-system
+spec:
+  ports:
+    - name: s3-api
+      port: 3900
+      protocol: TCP
+      targetPort: 3900
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+    - name: s3-web
+      port: 3902
+      protocol: TCP
+      targetPort: 3902
+    - name: admin
+      port: 3903
+      protocol: TCP
+      targetPort: 3903
+  selector:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: garage
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+# Global Tailscale service for unified S3 endpoint
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: garage-operator
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s"
+  name: garage-global-ts
+  namespace: garage-operator-system
+spec:
+  ports:
+    - name: s3-api
+      port: 3900
+      protocol: TCP
+      targetPort: 3900
+    - name: s3-web
+      port: 3902
+      protocol: TCP
+      targetPort: 3902
+    - name: admin
+      port: 3903
+      protocol: TCP
+      targetPort: 3903
+  selector:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: garage
+  type: LoadBalancer
+  loadBalancerClass: tailscale

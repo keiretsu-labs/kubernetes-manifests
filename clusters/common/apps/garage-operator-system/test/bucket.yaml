@@ -1,0 +1,18 @@
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
+  name: test-bucket
+  namespace: garage-operator-system
+spec:
+  clusterRef:
+    name: garage
+
+  quotas:
+    maxSize: 10Gi
+    maxObjects: 100000
+
+  keyPermissions:
+    - keyRef: test-key
+      read: true
+      write: true
