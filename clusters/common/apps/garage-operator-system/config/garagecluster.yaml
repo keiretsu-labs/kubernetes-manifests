@@ -6,39 +6,23 @@ metadata:
   namespace: garage-operator-system
 spec:
   replicas: 1
-  image: dxflrs/garage:v2.1.0
-
-  # Zone is unique per cluster - uses flux substitution
   zone: "${LOCATION}"
 
   replication:
     factor: 3
-    consistencyMode: consistent
     zoneRedundancy: "AtLeast(2)"
 
   storage:
-    # Metadata - uses default storage class
     metadataSize: 1Gi
-    # Data - block storage, uses long-term storage class
     data:
       size: 100Gi
       storageClassName: "${STORAGECLASS_LONGTERM}"
 
   network:
-    rpcBindPort: 3901
-    # Note: rpcPublicAddr is intentionally NOT set. The operator handles cross-cluster
-    # connectivity by overriding node addresses when connecting to remote clusters.
-    # Setting rpcPublicAddr would cause Garage to resolve to the local proxy IP.
     rpcSecretRef:
       name: garage-rpc-secret
       key: rpc-secret
-    service:
-      type: ClusterIP
-    # Bootstrap peers left empty - federation is handled via remoteClusters below
-    bootstrapPeers: []
 
-  # Multi-cluster federation via Tailscale
-  # The operator auto-discovers node IDs from remote Admin APIs and connects them
   remoteClusters:
     - name: ottawa
       zone: ottawa
@@ -62,20 +46,10 @@ spec:
           name: garage-admin-token
           key: admin-token
 
-  s3Api:
-    enabled: true
-    bindPort: 3900
-    region: garage
-
   admin:
-    enabled: true
-    bindPort: 3903
     adminTokenSecretRef:
       name: garage-admin-token
       key: admin-token
-
-  database:
-    engine: lmdb
 
   resources:
     requests:
