@@ -1,0 +1,32 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: garage-operator
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: charts/garage-operator
+      sourceRef:
+        kind: GitRepository
+        name: garage-operator
+        namespace: flux-system
+      reconcileStrategy: Revision
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    image:
+      repository: ghcr.io/rajsinghtech/garage-operator
+      tag: v0.0.1
+    crds:
+      install: false  # CRDs installed via separate Kustomization
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: monitoring
