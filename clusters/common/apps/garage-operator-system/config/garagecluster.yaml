@@ -5,7 +5,7 @@ metadata:
   name: garage
   namespace: garage-operator-system
 spec:
-  replicas: 2
+  replicas: 1
   image: dxflrs/garage:v2.1.0
 
   # Zone is unique per cluster - uses flux substitution
@@ -31,6 +31,11 @@ spec:
       key: rpc-secret
     service:
       type: ClusterIP
+    # Bootstrap peers for multi-cluster via Tailscale egress
+    bootstrapPeers:
+      - "ottawa-garage-operator.garage-operator-system.svc.cluster.local:3901"
+      - "robbinsdale-garage-operator.garage-operator-system.svc.cluster.local:3901"
+      - "stpetersburg-garage-operator.garage-operator-system.svc.cluster.local:3901"
 
   s3Api:
     enabled: true
