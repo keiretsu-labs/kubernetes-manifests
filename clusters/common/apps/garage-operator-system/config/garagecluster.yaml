@@ -5,7 +5,7 @@ metadata:
   name: garage
   namespace: garage-operator-system
 spec:
-  replicas: 2
+  replicas: 1
   zone: "${LOCATION}"
 
   replication:
