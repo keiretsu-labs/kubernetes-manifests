@@ -26,6 +26,13 @@ spec:
     image:
       repository: ghcr.io/rajsinghtech/garage-operator
       tag: v0.0.8
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 10m
+        memory: 128Mi
     serviceMonitor:
       enabled: true
       labels:
