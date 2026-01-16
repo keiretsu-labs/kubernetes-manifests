@@ -26,8 +26,9 @@ spec:
 
   network:
     rpcBindPort: 3901
-    # Use full Tailscale FQDN so Garage resolves to the external IP, not local proxy
-    rpcPublicAddr: "${LOCATION}-garage-operator.keiretsu.ts.net:3901"
+    # Note: rpcPublicAddr is intentionally NOT set. The operator handles cross-cluster
+    # connectivity by overriding node addresses when connecting to remote clusters.
+    # Setting rpcPublicAddr would cause Garage to resolve to the local proxy IP.
     rpcSecretRef:
       name: garage-rpc-secret
       key: rpc-secret
