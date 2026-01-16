@@ -31,11 +31,33 @@ spec:
       key: rpc-secret
     service:
       type: ClusterIP
-    # Bootstrap peers for multi-cluster via Tailscale egress
-    bootstrapPeers:
-      - "ottawa-garage-operator.garage-operator-system.svc.cluster.local:3901"
-      - "robbinsdale-garage-operator.garage-operator-system.svc.cluster.local:3901"
-      - "stpetersburg-garage-operator.garage-operator-system.svc.cluster.local:3901"
+    # Bootstrap peers left empty - federation is handled via remoteClusters below
+    bootstrapPeers: []
+
+  # Multi-cluster federation via Tailscale
+  # The operator auto-discovers node IDs from remote Admin APIs and connects them
+  remoteClusters:
+    - name: ottawa
+      zone: ottawa
+      connection:
+        adminApiEndpoint: "http://ottawa-garage-operator:3903"
+        adminTokenSecretRef:
+          name: garage-admin-token
+          key: admin-token
+    - name: robbinsdale
+      zone: robbinsdale
+      connection:
+        adminApiEndpoint: "http://robbinsdale-garage-operator:3903"
+        adminTokenSecretRef:
+          name: garage-admin-token
+          key: admin-token
+    - name: stpetersburg
+      zone: stpetersburg
+      connection:
+        adminApiEndpoint: "http://stpetersburg-garage-operator:3903"
+        adminTokenSecretRef:
+          name: garage-admin-token
+          key: admin-token
 
   s3Api:
     enabled: true
