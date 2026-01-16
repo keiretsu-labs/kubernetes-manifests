@@ -1,5 +1,5 @@
 ---
-# CRDs must be installed first
+# 1. CRDs must be installed first
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -9,7 +9,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: garage-operator-system-crds
-  path: ./clusters/common/apps/garage-operator-system/config
+  path: ./clusters/common/apps/garage-operator-system/crds
   prune: false
   sourceRef:
     kind: GitRepository
@@ -19,11 +19,11 @@ spec:
   retryInterval: 1m
   timeout: 5m
 ---
-# Operator deployment via HelmRelease
+# 2. Operator deployment via HelmRelease
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app garage-operator-system
+  name: garage-operator-system-install
   namespace: flux-system
 spec:
   dependsOn:
@@ -31,8 +31,37 @@ spec:
   targetNamespace: garage-operator-system
   commonMetadata:
     labels:
-      app.kubernetes.io/name: *app
-  path: ./clusters/common/apps/garage-operator-system/app
+      app.kubernetes.io/name: garage-operator-system-install
+  path: ./clusters/common/apps/garage-operator-system/install
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-settings
+      - kind: Secret
+        name: common-secrets
+---
+# 3. Garage resources (cluster, secrets, services)
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: garage-operator-system-config
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: garage-operator-system-install
+  targetNamespace: garage-operator-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: garage-operator-system-config
+  path: ./clusters/common/apps/garage-operator-system/config
   prune: true
   sourceRef:
     kind: GitRepository
@@ -48,7 +77,7 @@ spec:
       - kind: Secret
         name: common-secrets
 ---
-# Test resources (bucket, key)
+# 4. Test resources (bucket, key)
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -56,7 +85,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: garage-operator-system
+    - name: garage-operator-system-config
   targetNamespace: garage-operator-system
   commonMetadata:
     labels:
