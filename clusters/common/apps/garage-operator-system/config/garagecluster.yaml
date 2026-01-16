@@ -40,6 +40,9 @@ spec:
   admin:
     enabled: true
     bindPort: 3903
+    adminTokenSecretRef:
+      name: garage-admin-token
+      key: admin-token
 
   database:
     engine: lmdb
