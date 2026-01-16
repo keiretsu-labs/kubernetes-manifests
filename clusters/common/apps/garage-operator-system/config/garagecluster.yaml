@@ -17,12 +17,14 @@ spec:
     zoneRedundancy: "AtLeast(2)"
 
   storage:
+    # Metadata - benefits from fast storage (SSD) for LMDB database
     metadata:
       size: 1Gi
+      storageClassName: "${STORAGECLASS_FAST}"
+    # Data - block storage, can use cheaper/larger storage
     data:
-      volume:
-        size: 100Gi
-        storageClassName: "${STORAGECLASS_LONGTERM}"
+      size: 100Gi
+      storageClassName: "${STORAGECLASS_LONGTERM}"
 
   network:
     rpcBindPort: 3901
