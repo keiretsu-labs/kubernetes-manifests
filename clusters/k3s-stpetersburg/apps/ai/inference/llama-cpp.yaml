@@ -251,7 +251,7 @@ spec:
         - "--n-gpu-layers"
         - "99"
         - "-c"
-        - "16384"
+        - "32768"
         - "--parallel"
         - "8"
         - "--threads"
