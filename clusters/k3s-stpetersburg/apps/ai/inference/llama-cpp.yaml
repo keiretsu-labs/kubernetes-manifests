@@ -253,7 +253,7 @@ spec:
         - "-c"
         - "32768"
         - "--parallel"
-        - "4"
+        - "8"
         - "--threads"
         - "8"
         - "--flash-attn"
