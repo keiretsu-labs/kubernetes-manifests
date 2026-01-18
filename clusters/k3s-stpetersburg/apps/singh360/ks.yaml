@@ -14,6 +14,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
+    namespace: flux-system
   wait: false
   interval: 1m
   retryInterval: 1m
