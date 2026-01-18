@@ -13,7 +13,8 @@ spec:
     zoneRedundancy: "AtLeast(2)"
 
   storage:
-    metadataSize: 1Gi
+    metadata:
+      size: 1Gi
     data:
       size: 100Gi
       storageClassName: "${STORAGECLASS_LONGTERM}"
