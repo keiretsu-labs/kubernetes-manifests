@@ -23,9 +23,9 @@ spec:
       retries: 3
     crds: CreateReplace
   values:
-    image:
-      repository: ghcr.io/rajsinghtech/garage-operator
-      tag: v0.0.16
+    # image:
+    #   repository: ghcr.io/rajsinghtech/garage-operator
+    #   tag: v0.0.17
     resources:
       limits:
         cpu: 500m
