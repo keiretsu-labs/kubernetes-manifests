@@ -251,11 +251,15 @@ spec:
         - "--n-gpu-layers"
         - "99"
         - "-c"
-        - "131072"
+        - "16384"
         - "--parallel"
         - "4"
         - "--threads"
         - "8"
+        - "--cache-type-k"
+        - "q4_0"
+        - "--cache-type-v"
+        - "q4_0"
         ports:
         - containerPort: 80
           name: http
@@ -275,14 +279,14 @@ spec:
           httpGet:
             path: /health
             port: http
-          initialDelaySeconds: 90
+          initialDelaySeconds: 60
           periodSeconds: 30
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
             port: http
-          initialDelaySeconds: 45
+          initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
       volumes:
