@@ -23,6 +23,29 @@ spec:
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyClass
 metadata:
+  name: common-userspace
+spec:
+  statefulSet:
+    pod:
+      tailscaleContainer:
+        env:
+          - name: TS_USERSPACE
+            value: "true"
+        securityContext:
+          privileged: false
+          capabilities:
+            drop:
+              - ALL
+      tailscaleInitContainer:
+        securityContext:
+          privileged: false
+          capabilities:
+            drop:
+              - ALL
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
   name: k8s-proxy-l4-test
 spec:
   statefulSet:

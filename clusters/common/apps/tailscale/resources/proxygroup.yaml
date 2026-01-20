@@ -37,3 +37,16 @@ spec:
     - tag:${LOCATION}
   kubeAPIServer:
     mode: auth
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: common-ingress-userspace
+spec:
+  hostnamePrefix: ${LOCATION}-common-ingress
+  tags:
+    - tag:k8s
+    - tag:${LOCATION}
+  proxyClass: common-userspace
+  type: ingress
+  replicas: 2
