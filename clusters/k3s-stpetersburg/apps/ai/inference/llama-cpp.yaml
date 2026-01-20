@@ -25,9 +25,9 @@ data:
 
     MODEL_DIR = "/models"
 
-    # Coder model configuration (Qwen3-Coder-30B)
-    CODER_REPO_ID = "unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF"
-    CODER_MODEL_FILE = "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf"
+    # Flash model configuration (GLM-4.7-Flash 30B MoE)
+    FLASH_REPO_ID = "unsloth/GLM-4.7-Flash-GGUF"
+    FLASH_MODEL_FILE = "GLM-4.7-Flash-UD-Q4_K_XL.gguf"
 
     # Reasoning model configuration (Nemotron-3-Nano-30B)
     REASONING_REPO_ID = "unsloth/Nemotron-3-Nano-30B-A3B-GGUF"
@@ -36,24 +36,24 @@ data:
     # Create directory
     Path(MODEL_DIR).mkdir(parents=True, exist_ok=True)
 
-    # Download coder model
-    coder_model_path = Path(MODEL_DIR) / CODER_MODEL_FILE
-    if not coder_model_path.exists():
+    # Download flash model
+    flash_model_path = Path(MODEL_DIR) / FLASH_MODEL_FILE
+    if not flash_model_path.exists():
         print("=" * 60)
-        print("Downloading Qwen3-Coder-30B coding model...")
-        print(f"Repository: {CODER_REPO_ID}")
-        print(f"File: {CODER_MODEL_FILE} (18.6 GB)")
+        print("Downloading GLM-4.7-Flash reasoning model...")
+        print(f"Repository: {FLASH_REPO_ID}")
+        print(f"File: {FLASH_MODEL_FILE} (~18 GB)")
         print("=" * 60)
 
         hf_hub_download(
-            repo_id=CODER_REPO_ID,
-            filename=CODER_MODEL_FILE,
+            repo_id=FLASH_REPO_ID,
+            filename=FLASH_MODEL_FILE,
             local_dir=MODEL_DIR,
             local_dir_use_symlinks=False
         )
-        print(f"✓ Coder model downloaded: {coder_model_path}\n")
+        print(f"✓ Flash model downloaded: {flash_model_path}\n")
     else:
-        print(f"✓ Coder model already exists: {coder_model_path}")
+        print(f"✓ Flash model already exists: {flash_model_path}")
 
     # Download reasoning model
     reasoning_model_path = Path(MODEL_DIR) / REASONING_MODEL_FILE
@@ -77,7 +77,7 @@ data:
     print("\n" + "=" * 60)
     print("All downloads complete!")
     print("Models available:")
-    print(f"  - Coder:     {CODER_MODEL_FILE}")
+    print(f"  - Flash:     {FLASH_MODEL_FILE}")
     print(f"  - Reasoning: {REASONING_MODEL_FILE}")
     print("=" * 60)
 ---
@@ -93,17 +93,17 @@ data:
     healthCheckTimeout: 120
 
     models:
-      # Code-Specialized Model (text-only, optimized for coding)
-      qwen3-coder-30b:
-        name: "Qwen3-Coder-30B-A3B-Instruct"
-        description: "Qwen3-Coder 30B model with MoE architecture. Specialized for code generation, analysis, and debugging across 90+ programming languages. 256K context window."
+      # Flash Model (GLM-4.7-Flash 30B MoE - reasoning/coding)
+      glm-4.7-flash:
+        name: "GLM-4.7-Flash"
+        description: "Z.ai GLM-4.7-Flash 30B MoE model (~3.6B active). Leads SWE-Bench, GPQA, and reasoning benchmarks. 200K context window."
         cmd: sleep infinity  # Keep-alive command - backend is managed by Kubernetes
-        proxy: "http://qwen-coder:80"
+        proxy: "http://glm-flash:80"
         checkEndpoint: "/health"
         aliases:
-          - "qwen3-coder"
-          - "qwen-coder-30b"
-          - "qwen3-coder-30b-instruct"
+          - "glm-flash"
+          - "glm-4.7"
+          - "glm"
           - "gpt-4-turbo"  # OpenAI-compatible alias for coding
         ttl: 0  # Disable TTL - backend is always running
         concurrencyLimit: 4
@@ -128,28 +128,28 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: qwen-coder
+  name: glm-flash
   namespace: ai
   labels:
-    app: qwen-coder
+    app: glm-flash
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: qwen-coder
+      app: glm-flash
   template:
     metadata:
       labels:
-        app: qwen-coder
+        app: glm-flash
     spec:
       containers:
       - name: llama-cpp
         image: ghcr.io/rajsinghtech/llama.cpp:server-cuda-arm64@sha256:a12de1bbe384329f43e41df69e2c0ef75bfaa2540a6ac5642fc2c80d4de18a89
         args:
         - "-m"
-        - "/models/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf"
+        - "/models/GLM-4.7-Flash-UD-Q4_K_XL.gguf"
         - "--port"
         - "80"
         - "--host"
@@ -159,11 +159,22 @@ spec:
         - "--n-gpu-layers"
         - "99"
         - "-c"
-        - "262144"
+        - "200000"
         - "--parallel"
         - "4"
         - "--threads"
         - "8"
+        - "--jinja"
+        - "--temp"
+        - "0.2"
+        - "--top-k"
+        - "50"
+        - "--top-p"
+        - "0.95"
+        - "--min-p"
+        - "0.01"
+        - "--dry-multiplier"
+        - "1.1"
         ports:
         - containerPort: 80
           name: http
@@ -203,10 +214,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: qwen-coder
+  name: glm-flash
   namespace: ai
   labels:
-    app: qwen-coder
+    app: glm-flash
 spec:
   type: ClusterIP
   ports:
@@ -215,7 +226,7 @@ spec:
     protocol: TCP
     targetPort: http
   selector:
-    app: qwen-coder
+    app: glm-flash
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -409,10 +420,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: qwen-coder-ts
+  name: glm-flash-ts
   namespace: ai
   annotations:
-    tailscale.com/hostname: "${LOCATION}-qwen-coder"
+    tailscale.com/hostname: "${LOCATION}-glm-flash"
     tailscale.com/proxy-class: "common"
     tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
 spec:
@@ -424,7 +435,7 @@ spec:
     protocol: TCP
     targetPort: 80
   selector:
-    app: qwen-coder
+    app: glm-flash
 ---
 apiVersion: v1
 kind: Service
