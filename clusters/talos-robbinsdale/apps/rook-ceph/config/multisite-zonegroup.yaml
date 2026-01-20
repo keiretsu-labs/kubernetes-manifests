@@ -1,7 +1,0 @@
-apiVersion: ceph.rook.io/v1
-kind: CephObjectZoneGroup
-metadata:
-  name: keiretsu
-  namespace: rook-ceph
-spec:
-  realm: multisite-keiretsu
