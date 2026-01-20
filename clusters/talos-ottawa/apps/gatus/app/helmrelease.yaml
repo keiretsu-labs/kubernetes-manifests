@@ -308,7 +308,7 @@ spec:
               send-on-resolved: true
         - name: Bazarr 4k Remux
           group: Media
-          url: http://bazarr-4kremux.media:7878
+          url: http://bazarr-4kremux.media:6767
           interval: 60s
           conditions:
             - "[STATUS] == 200"
@@ -318,7 +318,7 @@ spec:
               send-on-resolved: true
         - name: Bazarr 4k
           group: Media
-          url: http://bazarr-4k.media:7878
+          url: http://bazarr-4k.media:6767
           interval: 60s
           conditions:
             - "[STATUS] == 200"
@@ -328,7 +328,7 @@ spec:
               send-on-resolved: true
         - name: Bazarr 1080p
           group: Media
-          url: http://bazarr-1080p.media:7878
+          url: http://bazarr-1080p.media:6767
           interval: 60s
           conditions:
             - "[STATUS] == 200"
@@ -338,7 +338,7 @@ spec:
               send-on-resolved: true
         - name: Bazarr Anime
           group: Media
-          url: http://bazarr-anime.media:7878
+          url: http://bazarr-anime.media:6767
           interval: 60s
           conditions:
             - "[STATUS] == 200"
