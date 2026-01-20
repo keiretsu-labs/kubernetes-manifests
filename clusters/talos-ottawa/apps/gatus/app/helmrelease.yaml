@@ -163,6 +163,16 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        - name: Plex
+          group: Media
+          url: http://plex.media:32400/identity
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
         - name: Jellyfin
           group: Media
           url: http://jellyfin.media:8096/health
