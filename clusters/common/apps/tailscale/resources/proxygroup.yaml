@@ -23,17 +23,17 @@ spec:
   proxyClass: common
   type: ingress
   replicas: 2
----
-apiVersion: tailscale.com/v1alpha1
-kind: ProxyGroup
-metadata:
-  name: kubernetes-${LOCATION}
-spec:
-  type: kube-apiserver
-  replicas: 2
-  proxyClass: k8s-proxy-l4-test
-  tags:
-    - tag:k8s-operator
-    - tag:${LOCATION}
-  kubeAPIServer:
-    mode: auth
+# ---
+# apiVersion: tailscale.com/v1alpha1
+# kind: ProxyGroup
+# metadata:
+#   name: kubernetes-${LOCATION}
+# spec:
+#   type: kube-apiserver
+#   replicas: 2
+#   proxyClass: common
+#   tags:
+#     - tag:k8s-operator
+#     - tag:${LOCATION}
+#   kubeAPIServer:
+#     mode: auth
