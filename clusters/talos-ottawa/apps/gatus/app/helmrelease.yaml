@@ -56,7 +56,6 @@ spec:
           conditions:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 2000"
-            - "[CERTIFICATE_EXPIRATION] > 168h"
           alerts:
             - type: discord
               send-on-resolved: true
