@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: garage-operator
-      version: "0.0.18"
+      version: "0.0.19"
       sourceRef:
         kind: HelmRepository
         name: garage-operator
@@ -23,9 +23,6 @@ spec:
       retries: 3
     crds: CreateReplace
   values:
-    # image:
-    #   repository: ghcr.io/rajsinghtech/garage-operator
-    #   tag: v0.0.17
     resources:
       limits:
         cpu: 500m
