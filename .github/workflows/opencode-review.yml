@@ -1,0 +1,66 @@
+name: OpenCode PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review (optional, for testing)"
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: TbqNGJkY5611CNTRL-kvAScMUim511CNTRL
+          audience: api.tailscale.com/TbqNGJkY5611CNTRL-kvAScMUim511CNTRL
+          tags: tag:ci
+          version: 1.90.8
+          args: --accept-dns
+
+      - name: Verify Tailscale connectivity
+        run: |
+          tailscale status
+          echo "Testing connectivity to GLM Flash endpoint..."
+          curl -s --connect-timeout 10 http://stpetersburg-glm-flash.keiretsu.ts.net/v1/models || echo "Note: endpoint may require authentication"
+
+      - name: OpenCode Review
+        uses: anomalyco/opencode/github@latest
+        env:
+          OPENAI_API_BASE: http://stpetersburg-glm-flash.keiretsu.ts.net/v1
+          OPENAI_API_KEY: "not-needed"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: openai/glm-4-flash
+          use_github_token: true
+          prompt: |
+            Review this pull request for a GitOps Kubernetes manifests repository.
+
+            Focus on:
+            - YAML syntax and formatting
+            - Kubernetes resource correctness
+            - Security issues (secrets exposure, excessive permissions)
+            - Best practices for Flux CD GitOps
+            - Kustomize configuration validity
+            - Helm values correctness
+            - Resource limits and requests
+            - Network policies and service mesh configuration
+
+            Be concise and actionable in your feedback.
