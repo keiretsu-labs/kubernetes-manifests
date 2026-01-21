@@ -19,12 +19,7 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
-    # Skip bot PRs (renovate, dependabot) as they don't have write permissions
-    if: |
-      (github.event.pull_request.draft == false &&
-       github.actor != 'renovate[bot]' &&
-       github.actor != 'dependabot[bot]') ||
-      github.event_name == 'workflow_dispatch'
+    if: github.event.pull_request.draft == false || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout PR
         if: github.event_name == 'pull_request'
@@ -73,6 +68,7 @@ jobs:
         with:
           model: glm-flash/glm-4.7-flash
           use_github_token: true
+          mentions: renovate[bot],dependabot[bot]
           prompt: |
             Review this pull request for a GitOps Kubernetes manifests repository.
 
