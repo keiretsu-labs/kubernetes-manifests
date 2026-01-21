@@ -2,17 +2,14 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: garage
-resources:
-  - helmrelease.yaml
-  - egress.yaml
-  - service-local-ts.yaml
-  - service-global-ts.yaml
-  - service-admin.yaml
-  - scrapeconfig.yaml
+# resources:
+#   - helmrelease.yaml
+#   - egress.yaml
+#   - service-local-ts.yaml
+#   - service-global-ts.yaml
+#   - service-admin.yaml
+#   - scrapeconfig.yaml
 configMapGenerator:
-  - name: garage-config
-    files:
-      - garage.toml
   - name: garage-grafana-dashboard
     files:
       - dashboard.json
