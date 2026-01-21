@@ -6,17 +6,31 @@ metadata:
 spec:
   clusterRef:
     name: garage
-
   name: "Tailscale Recorder Key"
-
-  # Create secret in tailscale namespace for the recorder
   secretTemplate:
     name: s3-auth
     namespace: tailscale
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
-
   bucketPermissions:
     - bucketRef: tailscale-recorder
+      read: true
+      write: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
+metadata:
+  name: keiretsu-key
+spec:
+  clusterRef:
+    name: garage
+  name: "Keiretsu Backup Key"
+  secretTemplate:
+    name: garage-keiretsu-bucket
+    namespace: flux-system
+    accessKeyIdKey: KEIRETSU_S3_ACCESS_KEY
+    secretAccessKeyKey: KEIRETSU_S3_SECRET_KEY
+  bucketPermissions:
+    - bucketRef: keiretsu
       read: true
       write: true
