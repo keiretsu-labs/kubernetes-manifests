@@ -29,9 +29,9 @@ spec:
       # extraEnv:
       #   - name: "TS_EXPERIMENTAL_KUBE_API_EVENTS"
       #     value: "true"
-      image:
-        repo: ghcr.io/rajsinghtech/tailscale/k8s-operator
-        tag: "81"
+      # image:
+      #   repo: ghcr.io/rajsinghtech/tailscale/k8s-operator
+      #   tag: "80"
       hostname: "${LOCATION}-k8s-operator"
       logging: "debug" # info, debug, dev
       defaultTags:
@@ -39,6 +39,6 @@ spec:
         - "tag:k8s-operator"
     proxyConfig:
       defaultTags: "tag:k8s,tag:${LOCATION}"
-      image:
-        repo: ghcr.io/rajsinghtech/tailscale/tailscale
-        tag: "81"
+      # image:
+      #   repo: ghcr.io/rajsinghtech/tailscale/tailscale
+      #   tag: "80"
