@@ -50,7 +50,7 @@ jobs:
 
       - name: Verify Tailscale connectivity
         run: |
-          tailscale status
+          tailscale status | head -n 1
           echo "Testing connectivity to GLM Flash endpoint..."
           curl -s --connect-timeout 10 http://stpetersburg-glm-flash.keiretsu.ts.net/v1/models || echo "Note: endpoint may require authentication"
 
@@ -79,6 +79,6 @@ jobs:
             - Kustomize configuration validity
             - Helm values correctness
             - Resource limits and requests
-            - Network policies and service mesh configuration
+            - Research online for any known bugs or reasons not to upgrade
 
             Be concise and actionable in your feedback.
