@@ -3,8 +3,8 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    tailscale.com/tailnet-fqdn: ottawa-garage-operator.keiretsu.ts.net
-  name: ottawa-garage-operator
+    tailscale.com/tailnet-fqdn: ottawa-garage.keiretsu.ts.net
+  name: ottawa-garage
 spec:
   externalName: placeholder
   type: ExternalName
@@ -26,8 +26,8 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    tailscale.com/tailnet-fqdn: robbinsdale-garage-operator.keiretsu.ts.net
-  name: robbinsdale-garage-operator
+    tailscale.com/tailnet-fqdn: robbinsdale-garage.keiretsu.ts.net
+  name: robbinsdale-garage
 spec:
   externalName: placeholder
   type: ExternalName
@@ -49,8 +49,8 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    tailscale.com/tailnet-fqdn: stpetersburg-garage-operator.keiretsu.ts.net
-  name: stpetersburg-garage-operator
+    tailscale.com/tailnet-fqdn: stpetersburg-garage.keiretsu.ts.net
+  name: stpetersburg-garage
 spec:
   externalName: placeholder
   type: ExternalName
