@@ -23,7 +23,7 @@ spec:
               name: http
           env:
             - name: API_BASE_URL
-              value: "http://garage-admin:3903"
+              value: "http://garage:3903"
             - name: S3_ENDPOINT_URL
               value: "http://garage:3900"
             - name: API_ADMIN_KEY
@@ -31,20 +31,9 @@ spec:
                 secretKeyRef:
                   name: garage-admin-token
                   key: admin-token
-                  optional: true
-            - name: CONFIG_PATH
-              value: "/etc/garage.toml"
-          volumeMounts:
-            - name: config
-              mountPath: /etc/garage.toml
-              subPath: garage.toml
           resources:
             requests:
               cpu: 10m
               memory: 64Mi
             limits:
               memory: 256Mi
-      volumes:
-        - name: config
-          configMap:
-            name: garage-config
