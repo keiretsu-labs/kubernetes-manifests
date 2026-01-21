@@ -173,8 +173,6 @@ spec:
         - "0.95"
         - "--min-p"
         - "0.01"
-        - "--dry-multiplier"
-        - "1.1"
         ports:
         - containerPort: 80
           name: http
@@ -273,6 +271,7 @@ spec:
         - "q4_0"
         - "--cache-type-v"
         - "q4_0"
+        - "--jinja"
         ports:
         - containerPort: 80
           name: http
