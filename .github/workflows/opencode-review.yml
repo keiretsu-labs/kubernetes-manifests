@@ -32,7 +32,7 @@ jobs:
           oauth-client-id: TbqNGJkY5611CNTRL-kvAScMUim511CNTRL
           audience: api.tailscale.com/TbqNGJkY5611CNTRL-kvAScMUim511CNTRL
           tags: tag:ci
-          version: 1.90.8
+          version: 1.92.5
           args: --accept-dns
 
       - name: Verify Tailscale connectivity
@@ -44,11 +44,9 @@ jobs:
       - name: OpenCode Review
         uses: anomalyco/opencode/github@latest
         env:
-          OPENAI_API_BASE: http://stpetersburg-glm-flash.keiretsu.ts.net/v1
-          OPENAI_API_KEY: "not-needed"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          model: openai/glm-4-flash
+          model: glm-flash/glm-4.7-flash
           use_github_token: true
           prompt: |
             Review this pull request for a GitOps Kubernetes manifests repository.
