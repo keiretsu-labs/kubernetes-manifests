@@ -30,7 +30,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: garage-admin-token
-                  key: token
+                  key: admin-token
                   optional: true
             - name: CONFIG_PATH
               value: "/etc/garage.toml"
