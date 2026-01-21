@@ -1,0 +1,20 @@
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
+  name: tailscale-recorder
+spec:
+  clusterRef:
+    name: garage
+
+  # Alias must match what the recorder expects
+  globalAlias: tailscale-recorder
+
+  quotas:
+    maxSize: 100Gi
+    maxObjects: 1000000
+
+  keyPermissions:
+    - keyRef: tailscale-recorder-key
+      read: true
+      write: true
