@@ -19,7 +19,12 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false || github.event_name == 'workflow_dispatch'
+    # Skip bot PRs (renovate, dependabot) as they don't have write permissions
+    if: |
+      (github.event.pull_request.draft == false &&
+       github.actor != 'renovate[bot]' &&
+       github.actor != 'dependabot[bot]') ||
+      github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout PR
         if: github.event_name == 'pull_request'
