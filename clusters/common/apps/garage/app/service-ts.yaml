@@ -5,10 +5,9 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    tailscale.com/hostname: ${LOCATION}-garage-operator
-    tailscale.com/tags: "tag:k8s"
+    tailscale.com/hostname: ${LOCATION}-garage
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
   name: garage-ts
-  namespace: garage-operator-system
 spec:
   # Allow routing to pods before they're ready - essential for multi-cluster
   # federation bootstrap when pods wait for cluster health
@@ -36,16 +35,14 @@ spec:
   type: LoadBalancer
   loadBalancerClass: tailscale
 ---
-# Global Tailscale service for unified S3 endpoint
 apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    tailscale.com/hostname: garage-operator
+    tailscale.com/hostname: garage
     tailscale.com/proxy-group: common-ingress
     tailscale.com/tags: "tag:k8s"
   name: garage-global-ts
-  namespace: garage-operator-system
 spec:
   # Allow routing to pods before they're ready - essential for multi-cluster
   # federation bootstrap when pods wait for cluster health

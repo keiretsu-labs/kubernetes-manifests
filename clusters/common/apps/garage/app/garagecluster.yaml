@@ -3,7 +3,6 @@ apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageCluster
 metadata:
   name: garage
-  namespace: garage-operator-system
 spec:
   replicas: 1
   zone: "${LOCATION}"
@@ -28,21 +27,21 @@ spec:
     - name: ottawa
       zone: ottawa
       connection:
-        adminApiEndpoint: "http://ottawa-garage-operator:3903"
+        adminApiEndpoint: "http://ottawa-garage:3903"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
     - name: robbinsdale
       zone: robbinsdale
       connection:
-        adminApiEndpoint: "http://robbinsdale-garage-operator:3903"
+        adminApiEndpoint: "http://robbinsdale-garage:3903"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
     - name: stpetersburg
       zone: stpetersburg
       connection:
-        adminApiEndpoint: "http://stpetersburg-garage-operator:3903"
+        adminApiEndpoint: "http://stpetersburg-garage:3903"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
