@@ -45,11 +45,14 @@ jobs:
         uses: anomalyco/opencode/github@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
         with:
           model: glm-flash/glm-4.7-flash
           use_github_token: true
           prompt: |
             Review this pull request for a GitOps Kubernetes manifests repository.
+
+            Use web search to research best practices for any unfamiliar patterns.
 
             Focus on:
             - YAML syntax and formatting
