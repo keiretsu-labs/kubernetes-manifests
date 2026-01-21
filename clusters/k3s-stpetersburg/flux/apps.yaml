@@ -31,6 +31,9 @@ spec:
       - kind: Secret
         name: cluster-user-secrets
         optional: true
+      - kind: Secret
+        name: garage-keiretsu-bucket
+        optional: true
   patches:
     - patch: |-
         apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -57,6 +60,9 @@ spec:
                 optional: true
               - kind: Secret
                 name: cluster-user-secrets
+                optional: true
+              - kind: Secret
+                name: garage-keiretsu-bucket
                 optional: true
       target:
         group: kustomize.toolkit.fluxcd.io
