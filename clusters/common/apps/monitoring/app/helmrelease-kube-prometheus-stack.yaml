@@ -27,6 +27,8 @@ spec:
   values: 
     grafana:
       enabled: true
+      plugins:
+        - victoriametrics-logs-datasource
       admin:
         existingSecret: "grafana-credentials"
         userKey: username
@@ -50,10 +52,12 @@ spec:
           domain: grafana.${CLUSTER_DOMAIN}
       fullnameOverride: grafana
       additionalDataSources:
-        - name: Loki
-          type: loki
-          uid: loki
-          url: http://loki.monitoring:3100
+        - name: VictoriaLogs
+          type: victoriametrics-logs-datasource
+          uid: victorialogs
+          url: http://victoria-logs-server.monitoring:9428
+          jsonData:
+            maxLines: 1000
       adminPassword: admin
       persistence:
         enabled: false
@@ -176,21 +180,11 @@ spec:
             revision: 5
             datasource: prometheus
         logs:
-          # https://grafana.com/grafana/dashboards/15141-kubernetes-service-logs/
-          loki-logs-app:
-            gnetId: 15141
+          # https://grafana.com/grafana/dashboards/22759-victorialogs-explorer/
+          victorialogs-explorer:
+            gnetId: 22759
             revision: 1
-            datasource: loki
-          # https://grafana.com/grafana/dashboards/10880-loki-promtail/
-          loki-dashboard:
-            gnetId: 10880
-            revision: 1
-            datasource: loki
-          # https://grafana.com/grafana/dashboards/16970-container-log-quick-search/
-          kubernetes-logs:
-            gnetId: 16970
-            revision: 1
-            datasource: loki
+            datasource: victorialogs
         nvidia:
           nvidia-dcgm:
             url: https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/main/grafana/dcgm-exporter-dashboard.json
