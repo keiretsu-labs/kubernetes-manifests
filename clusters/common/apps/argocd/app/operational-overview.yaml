@@ -11,7 +11,6 @@ spec:
   folder: ArgoCD
   grafanaCom:
     id: 19993
-    revision: 5
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Prometheus

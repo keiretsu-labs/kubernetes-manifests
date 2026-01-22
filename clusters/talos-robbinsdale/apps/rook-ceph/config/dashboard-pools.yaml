@@ -11,7 +11,7 @@ spec:
   folder: Ceph
   grafanaCom:
     id: 5342
-    revision: 9
+    : 9
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Prometheus
