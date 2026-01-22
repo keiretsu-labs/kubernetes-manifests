@@ -50,29 +50,32 @@ spec:
             Merge_Log           On
             K8S-Logging.Parser  On
             K8S-Logging.Exclude On
-            Namespace_Labels    Off
-            Annotations         Off
 
         [FILTER]
             Name          nest
             Match         kubernetes.*
             Operation     lift
             Nested_under  kubernetes
-            Add_prefix    k_
+            Add_prefix    kubernetes.
+
+        [FILTER]
+            Name          modify
+            Match         kubernetes.*
+            Rename        kubernetes.namespace_name kubernetes.pod_namespace
 
         [FILTER]
             Name          nest
             Match         kubernetes.*
             Operation     lift
-            Nested_under  k_labels
-            Add_prefix    k_labels_
+            Nested_under  kubernetes.labels
+            Add_prefix    kubernetes.pod_labels.
 
         [FILTER]
-            Name          modify
+            Name          nest
             Match         kubernetes.*
-            Rename        k_labels_app.kubernetes.io/name app
-            Rename        k_labels_app app
-            Rename        k_labels_k8s-app app
+            Operation     lift
+            Nested_under  kubernetes.annotations
+            Add_prefix    kubernetes.pod_annotations.
 
       outputs: |
         [OUTPUT]
@@ -80,7 +83,7 @@ spec:
             Match                *
             Host                 victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local
             Port                 9428
-            URI                  /insert/jsonline?_stream_fields=stream,k_namespace_name,k_pod_name,app&_msg_field=log&_time_field=time
+            URI                  /insert/jsonline?_stream_fields=stream,kubernetes.pod_namespace,kubernetes.pod_name,kubernetes.container_name&_msg_field=log&_time_field=time
             Format               json_lines
             Json_date_format     iso8601
             Compress             gzip
