@@ -21,7 +21,6 @@ spec:
       enabled: false
 
     prometheusOperator:
-      fullnameOverride: prometheus
       admissionWebhooks:
         enabled: true
     prometheus:
@@ -53,7 +52,6 @@ spec:
 
     alertmanager:
       enabled: true
-      fullnameOverride: alertmanager
       alertmanagerSpec:
         alertmanagerConfiguration:
           name: alertmanager
@@ -87,12 +85,9 @@ spec:
         - 192.168.169.117
         - 192.168.169.119
 
-    prometheus-node-exporter:
-      fullnameOverride: node-exporter
 
     kube-state-metrics:
       enabled: true
-      fullnameOverride: kube-state-metrics
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
