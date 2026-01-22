@@ -56,12 +56,25 @@ spec:
           annotations off
 
         [FILTER]
+          name nest
+          match kubernetes.*
+          operation lift
+          nested_under kubernetes
+          add_prefix k_
+
+        [FILTER]
+          name nest
+          match kubernetes.*
+          operation lift
+          nested_under k_labels
+          add_prefix k_labels_
+
+        [FILTER]
           name modify
           match kubernetes.*
-          copy kubernetes.namespace_name kubernetes.pod_namespace
-          copy kubernetes.labels.app.kubernetes.io/name app
-          copy kubernetes.labels.app app
-          copy kubernetes.labels.k8s-app app
+          rename k_labels_app.kubernetes.io/name app
+          rename k_labels_app app
+          rename k_labels_k8s-app app
 
       customParsers: |-
         [PARSER]
@@ -77,7 +90,7 @@ spec:
           match kubernetes.*
           host victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local
           port 9428
-          uri /insert/jsonline?_stream_fields=stream,kubernetes.namespace_name,kubernetes.pod_name,kubernetes.container_name,app&_msg_field=log,message,msg,_msg&_time_field=date
+          uri /insert/jsonline?_stream_fields=stream,k_namespace_name,k_pod_name,app&_msg_field=log&_time_field=date
           format json_lines
           json_date_format iso8601
           compress gzip
@@ -88,6 +101,9 @@ spec:
     serviceMonitor:
       enabled: true
     logLevel: warn
+
+    tolerations:
+      - operator: Exists
 
     resources:
       requests:
