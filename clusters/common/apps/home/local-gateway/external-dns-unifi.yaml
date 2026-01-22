@@ -22,6 +22,8 @@ spec:
     remediation:
       retries: 3
   values:
+    serviceMonitor:
+      enabled: true
     fullnameOverride: external-dns-unifi
     logLevel: debug
     provider:
