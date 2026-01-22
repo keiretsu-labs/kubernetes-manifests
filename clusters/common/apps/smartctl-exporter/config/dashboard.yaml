@@ -1,0 +1,271 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smartctl-exporter-dashboard
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: Storage
+data:
+  smartctl-exporter.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "description": "Dashboard for smartctl_exporter - SMART metrics for storage devices",
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "links": [
+        {
+          "asDropdown": false,
+          "icon": "external link",
+          "includeVars": false,
+          "keepTime": false,
+          "tags": [],
+          "targetBlank": true,
+          "title": "Full Dashboard",
+          "tooltip": "View full smartctl-exporter dashboard on Grafana.com",
+          "type": "link",
+          "url": "https://grafana.com/grafana/dashboards/22604"
+        }
+      ],
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 50},
+                  {"color": "red", "value": 65}
+                ]
+              },
+              "unit": "celsius"
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "expr": "smartctl_device_temperature{temperature_type=\"current\"}",
+              "legendFormat": "{{instance}} - {{device}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Device Temperatures",
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {"options": {"0": {"color": "red", "index": 0, "text": "FAILED"}}, "type": "value"},
+                {"options": {"1": {"color": "green", "index": 1, "text": "PASSED"}}, "type": "value"}
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "id": 2,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "expr": "smartctl_device_smart_status",
+              "legendFormat": "{{instance}} - {{device}}",
+              "refId": "A"
+            }
+          ],
+          "title": "SMART Status",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {"type": "linear"},
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {"group": "A", "mode": "none"},
+                "thresholdsStyle": {"mode": "off"}
+              },
+              "mappings": [],
+              "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+              "unit": "bytes"
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 3,
+          "options": {
+            "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "multi", "sort": "none"}
+          },
+          "targets": [
+            {
+              "expr": "smartctl_device_bytes_read",
+              "legendFormat": "{{instance}} - {{device}} read",
+              "refId": "A"
+            },
+            {
+              "expr": "smartctl_device_bytes_written",
+              "legendFormat": "{{instance}} - {{device}} written",
+              "refId": "B"
+            }
+          ],
+          "title": "Device I/O (Total Bytes)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]},
+              "unit": "short"
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 4,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "expr": "smartctl_device_media_errors",
+              "legendFormat": "{{instance}} - {{device}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Media Errors",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "mappings": [],
+              "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+              "unit": "percent"
+            }
+          },
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+          "id": 5,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "targets": [
+            {
+              "expr": "smartctl_device_available_spare * 100",
+              "legendFormat": "{{instance}} - {{device}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Available Spare (%)",
+          "type": "gauge"
+        }
+      ],
+      "refresh": "1m",
+      "schemaVersion": 38,
+      "style": "dark",
+      "tags": ["smartctl", "storage", "disk", "health"],
+      "templating": {
+        "list": [
+          {
+            "current": {},
+            "hide": 0,
+            "includeAll": false,
+            "label": "Datasource",
+            "multi": false,
+            "name": "DS_PROMETHEUS",
+            "options": [],
+            "query": "prometheus",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "type": "datasource"
+          }
+        ]
+      },
+      "time": {"from": "now-1h", "to": "now"},
+      "timepicker": {},
+      "timezone": "",
+      "title": "smartctl-exporter",
+      "uid": "smartctl-exporter",
+      "version": 1
+    }
