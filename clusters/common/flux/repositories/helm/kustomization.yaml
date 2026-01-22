@@ -73,3 +73,4 @@ resources:
   - ./liqo.yaml
   - ./actions-runner-controller.yaml
   - ./victoriametrics.yaml
+  - ./unpoller.yaml
