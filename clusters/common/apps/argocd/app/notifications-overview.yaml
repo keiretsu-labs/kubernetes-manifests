@@ -1,0 +1,16 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: argocd-notifications-overview
+spec:
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: ArgoCD
+  grafanaCom:
+    id: 19975
+    revision: 7
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus
