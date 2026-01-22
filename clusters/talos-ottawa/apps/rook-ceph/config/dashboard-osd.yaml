@@ -9,8 +9,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: Ceph
-  grafanaCom:
-    id: 5336
+  url: https://raw.githubusercontent.com/rook/rook/refs/heads/master/deploy/examples/monitoring/grafana/Ceph%20OSD%20Single%20Dashboard.json
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Prometheus
