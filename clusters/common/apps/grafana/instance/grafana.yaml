@@ -20,6 +20,12 @@ spec:
       replicas: 1
       template:
         spec:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 472
+            runAsGroup: 472
+            fsGroup: 472
+            fsGroupChangePolicy: OnRootMismatch
           containers:
             - name: grafana
               env:
@@ -31,6 +37,7 @@ spec:
             - name: grafana-data
               persistentVolumeClaim:
                 claimName: grafana-pvc
+  disableDefaultSecurityContext: All
   config:
     log:
       mode: console
