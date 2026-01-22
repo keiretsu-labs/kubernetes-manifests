@@ -35,6 +35,8 @@ spec:
       create: true
       grafana:
         create: true
+      selectorLabels:
+        grafana.internal/instance: grafana
     upConfig: |
       [poller]
           debug = false
