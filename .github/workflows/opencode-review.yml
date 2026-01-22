@@ -64,9 +64,10 @@ jobs:
       - name: OpenCode Review
         uses: anomalyco/opencode/github@latest
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         with:
           model: glm-flash/glm-4.7-flash
+          token: ${{ secrets.GH_PAT }}
           mentions: renovate[bot],dependabot[bot]
           prompt: |
             Review this pull request for a GitOps Kubernetes manifests repository.
