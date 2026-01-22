@@ -53,3 +53,6 @@ spec:
                 path: /spec/instanceSelector/matchLabels
                 value:
                   grafana.internal/instance: grafana
+              - op: add
+                path: /spec/folder
+                value: VictoriaMetrics
