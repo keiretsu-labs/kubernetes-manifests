@@ -55,7 +55,7 @@ spec:
       [[unifi.controller]]
           url         = "https://${LAN_GATEWAY_IP}"
           user        = "unpoller"
-          pass        = "${UNIFI_API_KEY}"
+          pass        = "Keiretsu${DEFAULT_PASSWORD}0"
           sites       = ["all"]
           save_ids    = true
           save_dpi    = true
