@@ -43,3 +43,13 @@ spec:
         enabled: true
         spec:
           allowCrossNamespaceImport: true
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: GrafanaDashboard
+            patch: |
+              - op: replace
+                path: /spec/instanceSelector/matchLabels
+                value:
+                  grafana.internal/instance: grafana
