@@ -15,6 +15,8 @@ spec:
           storage: 10Gi
   deployment:
     spec:
+      strategy:
+        type: Recreate
       replicas: 1
       template:
         spec:
@@ -25,6 +27,10 @@ spec:
                   value: victoriametrics-logs-datasource
                 - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
                   value: "${TS_IDP_GRAFANA_CLIENT_SECRET}"
+          volumes:
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc
   config:
     log:
       mode: console
