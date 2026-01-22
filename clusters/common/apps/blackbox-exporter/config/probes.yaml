@@ -1,0 +1,79 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: icmp-servers
+spec:
+  module: icmp
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - silver.local
+        - tank.local
+        - titan.local
+        - stone.local
+        - nas.local
+  metricRelabelings:
+    - targetLabel: service
+      replacement: blackbox-exporter
+      action: replace
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: tcp-kubernetes
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - silver.local:6443
+        - tank.local:6443
+        - titan.local:6443
+        - stone.local:6443
+  metricRelabelings:
+    - targetLabel: service
+      replacement: blackbox-exporter
+      action: replace
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: http-internal-services
+spec:
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - http://jellyfin.media:8096/health
+        - http://jellystat.media:3000
+        - http://jellyseerr.media:5055
+        - http://immich-server.immich:2283/api/server/ping
+  metricRelabelings:
+    - targetLabel: service
+      replacement: blackbox-exporter
+      action: replace
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: http-external-services
+spec:
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://www.rajsingh.info
+        - https://status.rajsingh.info
+  metricRelabelings:
+    - targetLabel: service
+      replacement: blackbox-exporter
+      action: replace
