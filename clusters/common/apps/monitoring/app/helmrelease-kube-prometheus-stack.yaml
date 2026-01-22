@@ -179,12 +179,7 @@ spec:
             gnetId: 19974
             revision: 5
             datasource: prometheus
-        logs:
-          # https://grafana.com/grafana/dashboards/22759-victorialogs-explorer/
-          victorialogs-explorer:
-            gnetId: 22759
-            revision: 1
-            datasource: victorialogs
+        logs: {}
         nvidia:
           nvidia-dcgm:
             url: https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/main/grafana/dcgm-exporter-dashboard.json
