@@ -6,7 +6,7 @@ metadata:
   annotations:
     item.homer.rajsingh.info/name: "VictoriaLogs"
     item.homer.rajsingh.info/subtitle: "Log Storage & Query"
-    item.homer.rajsingh.info/logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/victoria-metrics.png"
+    item.homer.rajsingh.info/logo: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/victoriametrics-white.svg"
     item.homer.rajsingh.info/keywords: "logs, monitoring, observability"
 
     service.homer.rajsingh.info/name: "Infrastructure"
@@ -18,7 +18,7 @@ spec:
       name: ts
       namespace: home
   hostnames:
-    - "victoria-logs.${CLUSTER_DOMAIN}"
+    - "logs.${CLUSTER_DOMAIN}"
   rules:
     # Redirect from / to /select/vmui/
     - matches:

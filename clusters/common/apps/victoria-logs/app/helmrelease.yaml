@@ -40,4 +40,4 @@ spec:
       labels:
         grafana_dashboard: "1"
       annotations:
-        grafana_folder: Logs
+        grafana_folder: VictoriaMetrics
