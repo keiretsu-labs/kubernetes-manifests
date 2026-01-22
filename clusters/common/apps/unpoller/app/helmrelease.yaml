@@ -34,9 +34,7 @@ spec:
     dashboards:
       create: true
       grafana:
-        create: false
-        selectorLabels:
-          grafana.internal/instance: grafana
+        create: true
     upConfig: |
       [poller]
           debug = false
