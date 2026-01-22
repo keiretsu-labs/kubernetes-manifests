@@ -42,14 +42,7 @@ spec:
       grafanaOperator:
         enabled: true
         spec:
+          instanceSelector:
+            matchLabels:
+              grafana.internal/instance: grafana
           allowCrossNamespaceImport: true
-  postRenderers:
-    - kustomize:
-        patches:
-          - target:
-              kind: GrafanaDashboard
-            patch: |
-              - op: replace
-                path: /spec/instanceSelector/matchLabels
-                value:
-                  grafana.internal/instance: grafana
