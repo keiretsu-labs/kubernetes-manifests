@@ -4,6 +4,7 @@ kind: GrafanaDashboard
 metadata:
   name: ceph-cluster
 spec:
+  allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana

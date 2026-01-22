@@ -12,6 +12,5 @@ spec:
     fullnameOverride: *app
     serviceMonitor:
       enabled: true
-    # Watch all namespaces for GrafanaDashboard, GrafanaDatasource, etc.
-    watchNamespaces: []
-    watchNamespaceSelector: {}
+    # Watch all namespaces (default behavior when namespaceScope: false)
+    namespaceScope: false
