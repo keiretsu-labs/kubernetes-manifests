@@ -26,7 +26,8 @@ spec:
         [INPUT]
             Name              tail
             Path              /var/log/containers/*.log
-            Parser            cri
+            Exclude_Path      /var/log/containers/*fluent-bit*.log
+            multiline.parser  docker, cri
             Tag               kube.*
             Refresh_Interval  10
             Mem_Buf_Limit     50MB
@@ -40,57 +41,39 @@ spec:
             Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
             Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
             Merge_Log           On
-            Keep_Log            On
+            Keep_Log            Off
             K8S-Logging.Parser  On
             K8S-Logging.Exclude On
+            Labels              On
+            Annotations         Off
 
         [FILTER]
-            Name          lua
-            Match         kube.*
-            script        /fluent-bit/scripts/rename_fields.lua
-            call          rename_k8s_fields
+            Name         nest
+            Match        kube.*
+            Operation    lift
+            Nested_under kubernetes
+            Add_prefix   kubernetes.
 
       outputs: |
         [OUTPUT]
-            Name                 http
-            Match                *
-            Host                 victoria-logs-victoria-logs-single-server.monitoring.svc
-            Port                 9428
-            URI                  /insert/jsonline?_stream_fields=kubernetes.pod_namespace,kubernetes.pod_name,kubernetes.container_name&_msg_field=log,message,msg
-            Format               json_lines
-            Json_date_key        _time
-            Json_date_format     iso8601
-
-    luaScripts:
-      rename_fields.lua: |
-        function rename_k8s_fields(tag, timestamp, record)
-            if record["kubernetes"] then
-                local k8s = record["kubernetes"]
-                -- Rename namespace_name to pod_namespace
-                if k8s["namespace_name"] then
-                    k8s["pod_namespace"] = k8s["namespace_name"]
-                    k8s["namespace_name"] = nil
-                end
-                -- Rename labels to pod_labels
-                if k8s["labels"] then
-                    k8s["pod_labels"] = k8s["labels"]
-                    k8s["labels"] = nil
-                end
-                -- Rename annotations to pod_annotations
-                if k8s["annotations"] then
-                    k8s["pod_annotations"] = k8s["annotations"]
-                    k8s["annotations"] = nil
-                end
-                record["kubernetes"] = k8s
-            end
-            return 2, timestamp, record
-        end
+            Name             http
+            Match            kube.*
+            Host             victoria-logs-victoria-logs-single-server.monitoring.svc
+            Port             9428
+            URI              /insert/jsonline?_stream_fields=kubernetes.namespace_name,kubernetes.pod_name,kubernetes.container_name,stream&_msg_field=message,log,msg&_time_field=time
+            Format           json_lines
+            Json_date_key    time
+            Json_date_format iso8601
+            compress         gzip
 
     dashboards:
       enabled: true
     serviceMonitor:
       enabled: true
     logLevel: warn
+
+    tolerations:
+      - operator: Exists
 
     resources:
       requests:
