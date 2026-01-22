@@ -1,0 +1,67 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: fluent-bit
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: fluent-bit
+      version: "0.48.0"
+      sourceRef:
+        kind: HelmRepository
+        name: fluent
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    config:
+      inputs: |
+        [INPUT]
+            Name              tail
+            Path              /var/log/containers/*.log
+            Parser            cri
+            Tag               kube.*
+            Refresh_Interval  10
+            Mem_Buf_Limit     50MB
+            Skip_Long_Lines   On
+
+      filters: |
+        [FILTER]
+            Name                kubernetes
+            Match               kube.*
+            Kube_URL            https://kubernetes.default.svc:443
+            Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
+            Merge_Log           On
+            Keep_Log            Off
+            K8S-Logging.Parser  On
+            K8S-Logging.Exclude On
+
+      outputs: |
+        [OUTPUT]
+            Name                 http
+            Match                *
+            Host                 victoria-logs-server.monitoring.svc
+            Port                 9428
+            URI                  /insert/jsonline?_stream_fields=namespace,pod,container&_msg_field=log
+            Format               json_lines
+            Json_date_key        _time
+            Json_date_format     iso8601
+
+    tolerations:
+      - operator: Exists
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
