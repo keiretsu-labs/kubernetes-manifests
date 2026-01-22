@@ -8,7 +8,7 @@
 #   instanceSelector:
 #     matchLabels:
 #       grafana.internal/instance: grafana
-#   folder: VictoriaMetrics
+#   folder: VictoriaMetrics 
 #   grafanaCom:
 #     id: 21550
 #   datasources:
