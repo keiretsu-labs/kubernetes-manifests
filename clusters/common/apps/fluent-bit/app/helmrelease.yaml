@@ -40,7 +40,7 @@ spec:
             Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
             Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
             Merge_Log           On
-            Keep_Log            Off
+            Keep_Log            On
             K8S-Logging.Parser  On
             K8S-Logging.Exclude On
 
@@ -56,7 +56,7 @@ spec:
             Match                *
             Host                 victoria-logs-victoria-logs-single-server.monitoring.svc
             Port                 9428
-            URI                  /insert/jsonline?_stream_fields=namespace,pod,container&_msg_field=log
+            URI                  /insert/jsonline?_stream_fields=kubernetes.pod_namespace,kubernetes.pod_name,kubernetes.container_name&_msg_field=log,message,msg
             Format               json_lines
             Json_date_key        _time
             Json_date_format     iso8601
