@@ -22,6 +22,8 @@ spec:
     remediation:
       retries: 3
   values:
+    serviceMonitor:
+      enabled: true
     provider: pihole
     env:
       - name: EXTERNAL_DNS_PIHOLE_PASSWORD
