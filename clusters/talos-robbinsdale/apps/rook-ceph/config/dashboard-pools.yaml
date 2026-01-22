@@ -1,0 +1,16 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: ceph-pools
+spec:
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Ceph
+  grafanaCom:
+    id: 5342
+    revision: 9
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus

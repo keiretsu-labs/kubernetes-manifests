@@ -1,14 +1,14 @@
-apiVersion: v1
-kind: ConfigMap
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
 metadata:
-  annotations:
-    grafana_folder: Tailscale
-  labels:
-    grafana_dashboard: "1"
-  name: tailscale-grafana-dashboard
-  namespace: monitoring
-data:
-  tailscale.json: |-
+  name: tailscale-network-metrics
+spec:
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Tailscale
+  json: |
     {
       "annotations": {
         "list": [
@@ -30,7 +30,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 46,
+      "id": null,
       "links": [],
       "panels": [
         {
@@ -1167,6 +1167,6 @@ data:
       "timezone": "browser",
       "title": "Tailscale Network Metrics",
       "uid": "de9fpk1payv40c",
-      "version": 8,
+      "version": 1,
       "weekStart": ""
     }

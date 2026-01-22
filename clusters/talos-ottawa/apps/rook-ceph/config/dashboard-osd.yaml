@@ -1,0 +1,16 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: ceph-osd
+spec:
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Ceph
+  grafanaCom:
+    id: 5336
+    revision: 9
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus

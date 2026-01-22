@@ -1,14 +1,67 @@
-apiVersion: v1
-kind: ConfigMap
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
 metadata:
-  annotations:
-    grafana_folder: nvidia
-  labels:
-    grafana_dashboard: "1"
-  name: nvidia-grafana-dashboard
-data:
-  nvidia.json: |-
+  name: nvidia-gpu-metrics
+spec:
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: NVIDIA
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus
+  json: |
     {
+      "__inputs": [
+        {
+          "name": "DS_PROMETHEUS",
+          "label": "Prometheus",
+          "description": "",
+          "type": "datasource",
+          "pluginId": "prometheus",
+          "pluginName": "Prometheus"
+        }
+      ],
+      "__elements": {},
+      "__requires": [
+        {
+          "type": "panel",
+          "id": "bargauge",
+          "name": "Bar gauge",
+          "version": ""
+        },
+        {
+          "type": "panel",
+          "id": "gauge",
+          "name": "Gauge",
+          "version": ""
+        },
+        {
+          "type": "grafana",
+          "id": "grafana",
+          "name": "Grafana",
+          "version": "11.1.0"
+        },
+        {
+          "type": "datasource",
+          "id": "prometheus",
+          "name": "Prometheus",
+          "version": "1.0.0"
+        },
+        {
+          "type": "panel",
+          "id": "stat",
+          "name": "Stat",
+          "version": ""
+        },
+        {
+          "type": "panel",
+          "id": "timeseries",
+          "name": "Time series",
+          "version": ""
+        }
+      ],
       "annotations": {
         "list": [
           {
@@ -28,8 +81,9 @@ data:
       "description": "Nvidia GPU Metrics based on the prometheus metrics from github.com/utkuozdemir/nvidia_gpu_exporter",
       "editable": true,
       "fiscalYearStartMonth": 0,
+      "gnetId": 14574,
       "graphTooltip": 0,
-      "id": 4,
+      "id": null,
       "links": [],
       "panels": [
         {
@@ -50,7 +104,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   }
                 ]
               },
@@ -83,7 +137,7 @@ data:
             "textMode": "name",
             "wideLayout": true
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -128,7 +182,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   }
                 ]
               },
@@ -161,7 +215,7 @@ data:
             "textMode": "value",
             "wideLayout": true
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -181,7 +235,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Percent of time over the past sample period during which one or more kernels was executing on the GPU.\nThe sample period may be between 1 second and 1/6 second depending on the product.",
           "fieldConfig": {
@@ -197,7 +251,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "#EAB839",
@@ -236,7 +290,7 @@ data:
             "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -272,7 +326,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "#EAB839",
@@ -311,7 +365,7 @@ data:
             "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -347,7 +401,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "#EAB839",
@@ -386,7 +440,7 @@ data:
             "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -422,7 +476,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "#EAB839",
@@ -461,7 +515,7 @@ data:
             "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -496,7 +550,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -530,7 +583,7 @@ data:
                 "steps": [
                   {
                     "color": "transparent",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "orange",
@@ -561,12 +614,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -601,7 +653,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   }
                 ]
               },
@@ -634,7 +686,7 @@ data:
             "textMode": "name",
             "wideLayout": true
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -670,7 +722,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   }
                 ]
               },
@@ -703,7 +755,7 @@ data:
             "textMode": "name",
             "wideLayout": true
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -751,7 +803,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   }
                 ]
               },
@@ -768,12 +820,6 @@ data:
           "id": 32,
           "options": {
             "displayMode": "gradient",
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": false
-            },
             "maxVizHeight": 300,
             "minVizHeight": 16,
             "minVizWidth": 8,
@@ -791,7 +837,7 @@ data:
             "text": {},
             "valueMode": "color"
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -799,7 +845,7 @@ data:
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "nvidia_smi_clocks_event_reasons_gpu_idle{uuid=\"$gpu\"} or nvidia_smi_clocks_throttle_reasons_gpu_idle{uuid=\"$gpu\"}",
+              "expr": "nvidia_smi_clocks_throttle_reasons_gpu_idle{uuid=\"$gpu\"}",
               "instant": false,
               "interval": "",
               "legendFormat": "Idle",
@@ -811,7 +857,7 @@ data:
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "nvidia_smi_clocks_event_reasons_hw_thermal_slowdown{uuid=\"$gpu\"} or nvidia_smi_clocks_throttle_reasons_hw_thermal_slowdown{uuid=\"$gpu\"}",
+              "expr": "nvidia_smi_clocks_throttle_reasons_hw_thermal_slowdown{uuid=\"$gpu\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "HW Thermal Slowdown",
@@ -823,7 +869,7 @@ data:
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "nvidia_smi_clocks_event_reasons_sw_power_cap{uuid=\"$gpu\"} or nvidia_smi_clocks_throttle_reasons_sw_power_cap{uuid=\"$gpu\"}",
+              "expr": "nvidia_smi_clocks_throttle_reasons_sw_power_cap{uuid=\"$gpu\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "SW Power Cap",
@@ -835,7 +881,7 @@ data:
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "nvidia_smi_clocks_event_reasons_applications_clocks_setting{uuid=\"$gpu\"} or nvidia_smi_clocks_throttle_reasons_applications_clocks_setting{uuid=\"$gpu\"}",
+              "expr": "nvidia_smi_clocks_throttle_reasons_applications_clocks_setting{uuid=\"$gpu\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "App Clocks Setting",
@@ -847,7 +893,7 @@ data:
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "nvidia_smi_clocks_event_reasons_hw_power_brake_slowdown{uuid=\"$gpu\"} or nvidia_smi_clocks_throttle_reasons_hw_power_brake_slowdown{uuid=\"$gpu\"}",
+              "expr": "nvidia_smi_clocks_throttle_reasons_hw_power_brake_slowdown{uuid=\"$gpu\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "HW Power Brake",
@@ -859,7 +905,7 @@ data:
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "nvidia_smi_clocks_event_reasons_sw_thermal_slowdown{uuid=\"$gpu\"} or nvidia_smi_clocks_throttle_reasons_sw_thermal_slowdown{uuid=\"$gpu\"}",
+              "expr": "nvidia_smi_clocks_throttle_reasons_sw_thermal_slowdown{uuid=\"$gpu\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "SW Thermal Slowdown",
@@ -871,7 +917,7 @@ data:
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "nvidia_smi_clocks_event_reasons_sync_boost{uuid=\"$gpu\"} or nvidia_smi_clocks_throttle_reasons_sync_boost{uuid=\"$gpu\"}",
+              "expr": "nvidia_smi_clocks_throttle_reasons_sync_boost{uuid=\"$gpu\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "Sync Boost",
@@ -900,7 +946,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "#EAB839",
@@ -939,7 +985,7 @@ data:
             "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -975,7 +1021,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "#EAB839",
@@ -1014,7 +1060,7 @@ data:
             "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1050,7 +1096,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "#EAB839",
@@ -1089,7 +1135,7 @@ data:
             "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1125,7 +1171,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "#EAB839",
@@ -1164,7 +1210,7 @@ data:
             "sizing": "auto",
             "text": {}
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1199,7 +1245,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -1233,7 +1278,7 @@ data:
                 "steps": [
                   {
                     "color": "transparent",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "orange",
@@ -1264,12 +1309,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1304,7 +1348,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -1337,7 +1380,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1364,12 +1407,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1404,7 +1446,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -1438,7 +1479,7 @@ data:
                 "steps": [
                   {
                     "color": "transparent",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "orange",
@@ -1469,12 +1510,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1509,7 +1549,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -1542,7 +1581,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1569,12 +1608,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1609,7 +1647,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -1643,7 +1680,7 @@ data:
                 "steps": [
                   {
                     "color": "transparent",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "orange",
@@ -1674,12 +1711,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1714,7 +1750,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -1747,7 +1782,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1774,12 +1809,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1815,7 +1849,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -1848,7 +1881,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1875,12 +1908,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -1916,7 +1948,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -1949,7 +1980,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1976,12 +2007,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -2017,7 +2047,6 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
-                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -2050,7 +2079,7 @@ data:
                 "steps": [
                   {
                     "color": "green",
-                    "value": 0
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -2077,12 +2106,11 @@ data:
               "showLegend": false
             },
             "tooltip": {
-              "hideZeros": false,
               "mode": "multi",
               "sort": "none"
             }
           },
-          "pluginVersion": "12.1.0",
+          "pluginVersion": "11.1.0",
           "targets": [
             {
               "datasource": {
@@ -2101,9 +2129,8 @@ data:
           "type": "timeseries"
         }
       ],
-      "preload": false,
       "refresh": "10s",
-      "schemaVersion": 41,
+      "schemaVersion": 39,
       "tags": [
         "nvidia",
         "nvidia-smi",
@@ -2118,83 +2145,25 @@ data:
               "type": "prometheus",
               "uid": "${DS_PROMETHEUS}"
             },
-            "definition": "label_values(nvidia_smi_index, job)",
-            "includeAll": false,
-            "label": "Job",
-            "name": "job",
-            "options": [],
-            "query": {
-              "query": "label_values(nvidia_smi_index,job)",
-              "refId": "Prometheus-job-Variable-Query"
-            },
-            "refresh": 1,
-            "regex": "",
-            "type": "query"
-          },
-          {
-            "current": {},
-            "datasource": {
-              "type": "prometheus",
-              "uid": "${DS_PROMETHEUS}"
-            },
-            "definition": "label_values(nvidia_smi_index{job=\"$job\"},instance)",
-            "includeAll": false,
-            "label": "Host",
-            "name": "node",
-            "options": [],
-            "query": {
-              "query": "label_values(nvidia_smi_index{job=\"$job\"},instance)",
-              "refId": "Prometheus-node-Variable-Query"
-            },
-            "refresh": 1,
-            "regex": "",
-            "type": "query"
-          },
-          {
-            "current": {},
-            "datasource": {
-              "type": "prometheus",
-              "uid": "${DS_PROMETHEUS}"
-            },
-            "definition": "label_values(nvidia_smi_index{instance=\"$node\"},uuid)",
+            "definition": "label_values(nvidia_smi_index, uuid)",
+            "hide": 0,
             "includeAll": false,
             "label": "GPU",
+            "multi": false,
             "name": "gpu",
             "options": [],
             "query": {
-              "query": "label_values(nvidia_smi_index{instance=\"$node\"},uuid)",
+              "query": "label_values(nvidia_smi_index, uuid)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
             "regex": "",
+            "skipUrlSync": false,
             "sort": 1,
-            "type": "query"
-          },
-          {
-            "current": {
-              "text": "prometheus",
-              "value": "prometheus"
-            },
-            "name": "DS_PROMETHEUS",
-            "options": [
-              {
-                "selected": true,
-                "text": "prometheus",
-                "value": "prometheus"
-              }
-            ],
-            "query": "prometheus",
-            "type": "custom"
-          },
-          {
-            "current": {
-              "text": "",
-              "value": ""
-            },
-            "name": "query0",
-            "options": [],
-            "query": "",
-            "type": "custom"
+            "tagValuesQuery": "",
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
           }
         ]
       },
@@ -2206,5 +2175,6 @@ data:
       "timezone": "",
       "title": "Nvidia GPU Metrics",
       "uid": "vlvPlrgnk",
-      "version": 1
+      "version": 7,
+      "weekStart": ""
     }

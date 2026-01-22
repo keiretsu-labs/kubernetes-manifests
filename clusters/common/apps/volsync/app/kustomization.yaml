@@ -3,5 +3,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: volsync-system
 resources:
-  - helmrelease.yaml 
-  - servicemonitor.yaml
+  - ./helmrelease.yaml
+  - ./servicemonitor.yaml
+  # Dashboards
+  - ./overview.yaml

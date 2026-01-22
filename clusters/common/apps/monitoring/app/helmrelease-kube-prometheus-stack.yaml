@@ -5,14 +5,9 @@ metadata:
   name: kube-prometheus-stack
 spec:
   interval: 30m
-  chart:
-    spec:
-      chart: kube-prometheus-stack
-      version: 81.2.0 # Use a recent stable version
-      sourceRef:
-        kind: HelmRepository
-        name: prometheus-community # Use prometheus-community repo (OCI or web based on previous steps)
-        namespace: flux-system
+  chartRef:
+    kind: OCIRepository
+    name: kube-prometheus-stack
   install:
     remediation:
       retries: 3
@@ -20,211 +15,10 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
-  # valuesFrom:
-  #   - kind: ConfigMap
-  #     name: flux-kube-state-metrics-config
-  #     valuesKey: kube-state-metrics-config.yaml
-  values: 
+  values:
+    cleanPrometheusOperatorObjectNames: true
     grafana:
-      enabled: true
-      plugins:
-        - victoriametrics-logs-datasource
-      admin:
-        existingSecret: "grafana-credentials"
-        userKey: username
-        passwordKey: password
-      envRenderSecret:
-        GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "${TS_IDP_GRAFANA_CLIENT_SECRET}"
-      grafana.ini:
-        auth.generic_oauth:
-          enabled: true
-          name: TailscaleIDP
-          allow_sign_up: true
-          client_id: "${TS_IDP_GRAFANA_CLIENT_ID}"
-          scopes: openid email profile
-          auth_url:  https://${LOCATION}-idp.keiretsu.ts.net/authorize
-          token_url: https://${LOCATION}-idp.keiretsu.ts.net/token
-          api_url:   https://${LOCATION}-idp.keiretsu.ts.net/userinfo
-          redirect_uri: https://grafana.${CLUSTER_DOMAIN}/login/generic_oauth
-          login_attribute: preferred_username
-        server:
-          root_url: https://grafana.${CLUSTER_DOMAIN}
-          domain: grafana.${CLUSTER_DOMAIN}
-      fullnameOverride: grafana
-      additionalDataSources:
-        - name: VictoriaLogs
-          type: victoriametrics-logs-datasource
-          uid: victorialogs
-          url: http://victoria-logs-victoria-logs-single-server.monitoring:9428
-          jsonData:
-            maxLines: 1000
-      adminPassword: admin
-      persistence:
-        enabled: false
-      serviceMonitor:
-        enabled: true
-      dashboardProviders:
-        dashboardproviders.yaml:
-          apiVersion: 1
-          providers:
-            - name: "default"
-              orgId: 1
-              folder: "default"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/default
-            - name: "nvidia"
-              orgId: 1
-              folder: "nvidia"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/nvidia
-            - name: "intel"
-              orgId: 1
-              folder: "intel"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/intel
-            - name: "argocd"
-              orgId: 1
-              folder: "argocd"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/argocd
-            - name: "plex"
-              orgId: 1
-              folder: "plex"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/plex
-            - name: "ceph"
-              orgId: 1
-              folder: "ceph"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/ceph
-            - name: "envoy-gateway"
-              orgId: 1
-              folder: "envoy-gateway"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/envoy-gateway
-            - name: "media"
-              orgId: 1
-              folder: "media"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/media
-            - name: "volsync"
-              orgId: 1
-              folder: "volsync"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/volsync
-            - name: "logs"
-              orgId: 1
-              folder: "logs"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/logs
-            - name: "flux"
-              orgId: 1
-              folder: "flux"
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /var/lib/grafana/dashboards/flux        
-      sidecar:
-        dashboards:
-          enabled: true
-          label: grafana_dashboard
-          folderAnnotation: grafana_folder
-          provider:
-            foldersFromFilesStructure: true
-      dashboards:
-        argocd:
-          # https://grafana.com/grafana/dashboards/19993-argocd-operational-overview/
-          argocd-operational-overview:
-            gnetId: 19993
-            revision: 5
-            datasource: prometheus
-          # https://grafana.com/grafana/dashboards/19975-argocd-notifications-overview/
-          argocd-notifications-overview:
-            gnetId: 19975
-            revision: 7
-            datasource: prometheus
-          # https://grafana.com/grafana/dashboards/19974-argocd-application-overview/
-          argocd-application-overview:
-            gnetId: 19974
-            revision: 5
-            datasource: prometheus
-        nvidia:
-          nvidia-dcgm:
-            url: https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/main/grafana/dcgm-exporter-dashboard.json
-            datasource: prometheus
-          nebius:
-            gnetId: 23423
-            revision: 2
-            datasource: prometheus
-        ceph:
-          ceph-cluster:
-            gnetId: 2842
-            revision: 18
-            datasource: prometheus
-          ceph-osd:
-            gnetId: 5336
-            revision: 9
-            datasource: prometheus
-          ceph-pools:
-            gnetId: 5342
-            revision: 9
-            datasource: prometheus
-        volsync:
-          volsync-overview:
-            gnetId: 21356
-            revision: 3
-            datasource:
-              - name: DS_PROMETHEUS
-                value: Prometheus
-              - name: VAR_REPLICATIONDESTNAME
-                value: ".*-bootstrap"
-        flux:
-          flux-cluster:
-            url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/cluster.json
-            datasource: Prometheus
-          flux-control-plane:
-            url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/control-plane.json
-            datasource: Prometheus
-          flux-logs:
-            url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/logs.json
-            datasource: Prometheus
-        default:
-          external-dns:
-            # renovate: dashboardName="External-DNS"
-            gnetId: 15038
-            revision: 3
-            datasource: Prometheus
+      enabled: false
 
     prometheusOperator:
       fullnameOverride: prometheus
@@ -233,15 +27,23 @@ spec:
     prometheus:
       prometheusSpec:
         serviceMonitorSelector: {}
-        externalUrl: https://prometheus.rajsingh.info
+        externalUrl: https://prometheus.${CLUSTER_DOMAIN}
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false
         probeSelectorNilUsesHelmValues: false
         ruleSelectorNilUsesHelmValues: false
+        scrapeConfigSelectorNilUsesHelmValues: false
         enableRemoteWriteReceiver: true
         enableFeatures:
           - exemplar-storage
-        retention: 30d
+        retention: 14d
+        retentionSize: 100GB
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1Gi
+          limits:
+            memory: 4Gi
         remoteRead:
           - url: http://prometheus.envoy-gateway-system/api/v1/read
             readRecent: true
@@ -250,26 +52,27 @@ spec:
             spec:
               resources:
                 requests:
-                  storage: 150Gi
-        additionalScrapeConfigs:
-          - job_name: 'node-exporter'
-            static_configs:
-              - targets: ['nagato:9100']
-          - job_name: opencost
-            honor_labels: true
-            scrape_interval: 1m
-            scrape_timeout: 10s
-            metrics_path: /metrics
-            scheme: http
-            dns_sd_configs:
-              - names:
-                  - opencost.opencost
-                type: "A"
-                port: 9003
+                  storage: 75Gi
 
     alertmanager:
       enabled: true
       fullnameOverride: alertmanager
+      alertmanagerSpec:
+        alertmanagerConfiguration:
+          name: alertmanager
+        externalUrl: https://alertmanager.${CLUSTER_DOMAIN}
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            memory: 100Mi
+        storage:
+          volumeClaimTemplate:
+            spec:
+              resources:
+                requests:
+                  storage: 1Gi
 
     kubeProxy:
       enabled: false
@@ -324,42 +127,6 @@ spec:
           kind: Service
           name: kube-prometheus-stack-prometheus
           port: 9090
-          weight: 1
-      matches:
-        - path:
-            type: PathPrefix
-            value: /
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: grafana
-  annotations:
-    item.homer.rajsingh.info/name: "Grafana"
-    item.homer.rajsingh.info/subtitle: "Analytics & Monitoring"
-    item.homer.rajsingh.info/logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png"
-    item.homer.rajsingh.info/keywords: "monitoring, metrics, dashboard, visualization"
-
-    service.homer.rajsingh.info/name: "Infrastructure"
-    service.homer.rajsingh.info/icon: "fas fa-server"
-spec:
-  parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: ts
-      namespace: home
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: ts
-      namespace: keiretsu
-  hostnames:
-    - "grafana.${CLUSTER_DOMAIN}"
-  rules:
-    - backendRefs:
-        - group: ""
-          kind: Service
-          name: grafana
-          port: 80
           weight: 1
       matches:
         - path:

@@ -1,0 +1,16 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: nvidia-nebius
+spec:
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: NVIDIA
+  grafanaCom:
+    id: 23423
+    revision: 2
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus

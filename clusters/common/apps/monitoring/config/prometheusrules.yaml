@@ -1,0 +1,183 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: infrastructure-alerts
+spec:
+  groups:
+    - name: container.rules
+      rules:
+        - alert: OomKilled
+          expr: |
+            (kube_pod_container_status_restarts_total - kube_pod_container_status_restarts_total offset 10m >= 1)
+            and ignoring (reason) min_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[10m]) == 1
+          for: 0m
+          annotations:
+            summary: >-
+              Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }}
+              has been OOMKilled {{ $value }} times in the last 10 minutes.
+          labels:
+            severity: critical
+
+        - alert: ContainerHighCpuUtilization
+          expr: |
+            (sum(rate(container_cpu_usage_seconds_total{container!="",pod!=""}[5m])) by (pod, container, namespace)
+            / sum(kube_pod_container_resource_limits{resource="cpu",container!=""}) by (pod, container, namespace)) * 100 > 90
+          for: 15m
+          annotations:
+            summary: >-
+              Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }}
+              is using {{ printf "%.0f" $value }}% of its CPU limit.
+          labels:
+            severity: warning
+
+        - alert: ContainerHighMemoryUtilization
+          expr: |
+            (sum(container_memory_working_set_bytes{container!="",pod!=""}) by (pod, container, namespace)
+            / sum(kube_pod_container_resource_limits{resource="memory",container!=""}) by (pod, container, namespace)) * 100 > 90
+          for: 15m
+          annotations:
+            summary: >-
+              Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }}
+              is using {{ printf "%.0f" $value }}% of its memory limit.
+          labels:
+            severity: warning
+
+    - name: node.rules
+      rules:
+        - alert: NodeHighCpuUsage
+          expr: |
+            (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 > 90
+          for: 15m
+          annotations:
+            summary: >-
+              Node {{ $labels.instance }} has high CPU usage ({{ printf "%.0f" $value }}%).
+          labels:
+            severity: warning
+
+        - alert: NodeHighMemoryUsage
+          expr: |
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+          for: 15m
+          annotations:
+            summary: >-
+              Node {{ $labels.instance }} has high memory usage ({{ printf "%.0f" $value }}%).
+          labels:
+            severity: warning
+
+        - alert: NodeDiskPressure
+          expr: |
+            (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 85
+          for: 15m
+          annotations:
+            summary: >-
+              Filesystem {{ $labels.mountpoint }} on {{ $labels.instance }} is {{ printf "%.0f" $value }}% full.
+          labels:
+            severity: warning
+
+        - alert: NodeDiskCritical
+          expr: |
+            (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 95
+          for: 5m
+          annotations:
+            summary: >-
+              Filesystem {{ $labels.mountpoint }} on {{ $labels.instance }} is {{ printf "%.0f" $value }}% full.
+          labels:
+            severity: critical
+
+        - alert: NodeNotReady
+          expr: |
+            kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 5m
+          annotations:
+            summary: >-
+              Node {{ $labels.node }} is not ready.
+          labels:
+            severity: critical
+
+    - name: kubernetes.rules
+      rules:
+        - alert: KubeAPILatencyHigh
+          expr: |
+            histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{verb!~"WATCH|CONNECT"}[5m])) by (le, verb, resource)) > 4
+          for: 10m
+          annotations:
+            summary: >-
+              Kubernetes API server has high latency for {{ $labels.verb }} {{ $labels.resource }} requests (p99 > 4s).
+          labels:
+            severity: warning
+
+        - alert: KubeAPIErrorsHigh
+          expr: |
+            sum(rate(apiserver_request_total{code=~"5.."}[5m])) by (resource, verb)
+            / sum(rate(apiserver_request_total[5m])) by (resource, verb) * 100 > 5
+          for: 10m
+          annotations:
+            summary: >-
+              Kubernetes API server has high error rate ({{ printf "%.1f" $value }}%) for {{ $labels.verb }} {{ $labels.resource }}.
+          labels:
+            severity: warning
+
+        - alert: PodCrashLooping
+          expr: |
+            increase(kube_pod_container_status_restarts_total[1h]) > 5
+          for: 15m
+          annotations:
+            summary: >-
+              Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping ({{ $value }} restarts in the last hour).
+          labels:
+            severity: warning
+
+        - alert: PodNotReady
+          expr: |
+            sum by (namespace, pod) (kube_pod_status_phase{phase=~"Pending|Unknown"}) > 0
+          for: 15m
+          annotations:
+            summary: >-
+              Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for more than 15 minutes.
+          labels:
+            severity: warning
+
+        - alert: DeploymentReplicasMismatch
+          expr: |
+            kube_deployment_spec_replicas != kube_deployment_status_replicas_available
+          for: 15m
+          annotations:
+            summary: >-
+              Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has {{ $value }} replicas mismatch.
+          labels:
+            severity: warning
+
+    - name: dockerhub.rules
+      rules:
+        - alert: DockerhubRateLimitRisk
+          expr: |
+            count(time() - container_last_seen{image=~"(docker.io).*",container!=""} < 30) > 100
+          for: 5m
+          annotations:
+            summary: >-
+              There are {{ $value }} containers pulling from Dockerhub. This may lead to rate limiting.
+          labels:
+            severity: warning
+
+    - name: prometheus.rules
+      rules:
+        - alert: PrometheusTargetDown
+          expr: |
+            up == 0
+          for: 10m
+          annotations:
+            summary: >-
+              Prometheus target {{ $labels.job }}/{{ $labels.instance }} is down.
+          labels:
+            severity: warning
+
+        - alert: PrometheusStorageFull
+          expr: |
+            (prometheus_tsdb_storage_blocks_bytes / prometheus_tsdb_retention_limit_bytes) * 100 > 90
+          for: 5m
+          annotations:
+            summary: >-
+              Prometheus storage is {{ printf "%.0f" $value }}% full.
+          labels:
+            severity: warning

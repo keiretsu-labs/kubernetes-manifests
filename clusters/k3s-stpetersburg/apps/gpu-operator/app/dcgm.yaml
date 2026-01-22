@@ -1,0 +1,14 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: nvidia-dcgm
+spec:
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: NVIDIA
+  url: https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/main/grafana/dcgm-exporter-dashboard.json
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus
