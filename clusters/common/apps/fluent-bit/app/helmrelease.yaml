@@ -48,7 +48,7 @@ spec:
         [OUTPUT]
             Name                 http
             Match                *
-            Host                 victoria-logs-server.monitoring.svc
+            Host                 victoria-logs-victoria-logs-single-server.monitoring.svc
             Port                 9428
             URI                  /insert/jsonline?_stream_fields=namespace,pod,container&_msg_field=log
             Format               json_lines
