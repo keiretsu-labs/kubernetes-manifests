@@ -50,31 +50,6 @@ spec:
             script        /fluent-bit/scripts/rename_fields.lua
             call          rename_k8s_fields
 
-      luaScripts:
-        rename_fields.lua: |
-          function rename_k8s_fields(tag, timestamp, record)
-              if record["kubernetes"] then
-                  local k8s = record["kubernetes"]
-                  -- Rename namespace_name to pod_namespace
-                  if k8s["namespace_name"] then
-                      k8s["pod_namespace"] = k8s["namespace_name"]
-                      k8s["namespace_name"] = nil
-                  end
-                  -- Rename labels to pod_labels
-                  if k8s["labels"] then
-                      k8s["pod_labels"] = k8s["labels"]
-                      k8s["labels"] = nil
-                  end
-                  -- Rename annotations to pod_annotations
-                  if k8s["annotations"] then
-                      k8s["pod_annotations"] = k8s["annotations"]
-                      k8s["annotations"] = nil
-                  end
-                  record["kubernetes"] = k8s
-              end
-              return 2, timestamp, record
-          end
-
       outputs: |
         [OUTPUT]
             Name                 http
@@ -85,6 +60,31 @@ spec:
             Format               json_lines
             Json_date_key        _time
             Json_date_format     iso8601
+
+    luaScripts:
+      rename_fields.lua: |
+        function rename_k8s_fields(tag, timestamp, record)
+            if record["kubernetes"] then
+                local k8s = record["kubernetes"]
+                -- Rename namespace_name to pod_namespace
+                if k8s["namespace_name"] then
+                    k8s["pod_namespace"] = k8s["namespace_name"]
+                    k8s["namespace_name"] = nil
+                end
+                -- Rename labels to pod_labels
+                if k8s["labels"] then
+                    k8s["pod_labels"] = k8s["labels"]
+                    k8s["labels"] = nil
+                end
+                -- Rename annotations to pod_annotations
+                if k8s["annotations"] then
+                    k8s["pod_annotations"] = k8s["annotations"]
+                    k8s["annotations"] = nil
+                end
+                record["kubernetes"] = k8s
+            end
+            return 2, timestamp, record
+        end
 
     tolerations:
       - operator: Exists
