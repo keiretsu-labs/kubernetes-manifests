@@ -55,7 +55,7 @@ spec:
         - name: VictoriaLogs
           type: victoriametrics-logs-datasource
           uid: victorialogs
-          url: http://victoria-logs-server.monitoring:9428
+          url: http://victoria-logs-victoria-logs-single-server.monitoring:9428
           jsonData:
             maxLines: 1000
       adminPassword: admin
