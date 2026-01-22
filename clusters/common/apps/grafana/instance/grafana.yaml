@@ -1,0 +1,47 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana
+  labels:
+    grafana.internal/instance: grafana
+spec:
+  persistentVolumeClaim:
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+  deployment:
+    spec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+            - name: grafana
+              env:
+                - name: GF_INSTALL_PLUGINS
+                  value: victoriametrics-logs-datasource
+                - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
+                  value: "${TS_IDP_GRAFANA_CLIENT_SECRET}"
+  config:
+    log:
+      mode: console
+    server:
+      root_url: https://grafana.${CLUSTER_DOMAIN}
+      domain: grafana.${CLUSTER_DOMAIN}
+    security:
+      admin_user: admin
+      admin_password: "${DEFAULT_PASSWORD}"
+    auth.generic_oauth:
+      enabled: "true"
+      name: TailscaleIDP
+      allow_sign_up: "true"
+      client_id: "${TS_IDP_GRAFANA_CLIENT_ID}"
+      scopes: openid email profile
+      auth_url: https://${LOCATION}-idp.keiretsu.ts.net/authorize
+      token_url: https://${LOCATION}-idp.keiretsu.ts.net/token
+      api_url: https://${LOCATION}-idp.keiretsu.ts.net/userinfo
+      redirect_uri: https://grafana.${CLUSTER_DOMAIN}/login/generic_oauth
+      login_attribute: preferred_username
