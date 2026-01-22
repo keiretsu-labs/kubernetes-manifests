@@ -4,6 +4,7 @@ kind: GrafanaDashboard
 metadata:
   name: argocd-notifications-overview
 spec:
+  allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
