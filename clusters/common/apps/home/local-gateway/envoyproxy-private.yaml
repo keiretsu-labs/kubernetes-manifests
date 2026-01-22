@@ -8,7 +8,7 @@ spec:
     metrics:
       prometheus:
         compression:
-          type: Zstd
+          type: Gzip
   provider:
     type: Kubernetes
     kubernetes:
