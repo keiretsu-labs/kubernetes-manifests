@@ -7,68 +7,58 @@ spec:
   interval: 1h
   chart:
     spec:
-      chart: app-template
-      version: 3.6.1
+      chart: unpoller
+      version: "*"
       sourceRef:
         kind: HelmRepository
-        name: bjw-s
+        name: unpoller
         namespace: flux-system
   values:
-    controllers:
-      unpoller:
-        containers:
-          app:
-            image:
-              repository: ghcr.io/unpoller/unpoller
-              tag: v2.21.0
-            env:
-              TZ: America/Chicago
-              UP_UNIFI_DEFAULT_ROLE: home-ops
-              UP_UNIFI_DEFAULT_URL: https://${LAN_GATEWAY_IP}
-              UP_PROMETHEUS_HTTP_LISTEN: 0.0.0.0:80
-              UP_INFLUXDB_DISABLE: "true"
-            envFrom:
-              - secretRef:
-                  name: unpoller-secret
-            probes:
-              liveness: &probes
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /health
-                    port: 80
-                  initialDelaySeconds: 0
-                  periodSeconds: 10
-                  timeoutSeconds: 1
-                  failureThreshold: 3
-              readiness: *probes
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
-            resources:
-              requests:
-                cpu: 10m
-              limits:
-                memory: 128Mi
-    defaultPodOptions:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-    service:
-      app:
-        controller: unpoller
-        ports:
-          http:
-            port: 80
-    serviceMonitor:
-      app:
-        serviceName: *app
-        endpoints:
-          - port: http
-            interval: 2m
-            scrapeTimeout: 10s
+    fullnameOverride: *app
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+    dashboards:
+      create: true
+      grafana:
+        create: false
+        selectorLabels:
+          grafana.internal/instance: grafana
+    upConfig: |
+      [poller]
+          debug = false
+          quiet = false
+          plugins = []
+      [prometheus]
+          disable = false
+          http_listen = "0.0.0.0:9130"
+          report_errors = false
+      [influxdb]
+          disable = true
+      [unifi]
+          dynamic = false
+      [loki]
+          disable = true
+      [[unifi.controller]]
+          url         = "https://${LAN_GATEWAY_IP}"
+          user        = "unpoller"
+          pass        = "${UNIFI_API_KEY}"
+          sites       = ["all"]
+          save_ids    = true
+          save_dpi    = true
+          save_sites  = true
+          hash_pii    = false
+          verify_ssl  = false
