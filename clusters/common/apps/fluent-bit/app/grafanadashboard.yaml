@@ -8,7 +8,7 @@ spec:
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
-  folder: Logging
+  folder: FluentBit
   grafanaCom:
     id: 7752
   datasources:
