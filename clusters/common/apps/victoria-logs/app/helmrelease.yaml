@@ -35,3 +35,5 @@ spec:
           memory: 512Mi
       serviceMonitor:
         enabled: true
+    dashboards:
+      enabled: true
