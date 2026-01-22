@@ -4,6 +4,7 @@ kind: GrafanaDashboard
 metadata:
   name: nvidia-dcgm
 spec:
+  allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
