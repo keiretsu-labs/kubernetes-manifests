@@ -34,7 +34,7 @@ spec:
     dashboards:
       create: true
       grafana:
-        create: true
+        create: false
         selectorLabels:
           grafana.internal/instance: grafana
     upConfig: |
