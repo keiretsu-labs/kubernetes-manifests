@@ -22,71 +22,85 @@ spec:
       retries: 3
   values:
     config:
-      inputs: |
+      service: |-
+        [SERVICE]
+          daemon off
+          flush {{ .Values.flush }}
+          log_level {{ .Values.logLevel }}
+          parsers_file /fluent-bit/etc/parsers.conf
+          parsers_file /fluent-bit/etc/conf/custom_parsers.conf
+          http_server on
+          http_listen 0.0.0.0
+          http_port {{ .Values.metricsPort }}
+          health_check on
+
+      inputs: |-
         [INPUT]
-            Name              tail
-            Path              /var/log/containers/*.log
-            Parser            containerd
-            Tag               kubernetes.*
-            Refresh_Interval  10
-            Mem_Buf_Limit     50MB
-            Skip_Long_Lines   On
+          name tail
+          alias kubernetes
+          path /var/log/containers/*.log
+          parser containerd
+          tag kubernetes.*
+          skip_empty_lines on
+          skip_long_lines on
 
-      customParsers: |
+      filters: |-
+        [FILTER]
+          name kubernetes
+          match kubernetes.*
+          merge_log on
+          kube_tag_prefix kubernetes.var.log.containers.
+          k8s-logging.parser on
+          k8s-logging.exclude on
+          namespace_labels off
+          annotations off
+
+        [FILTER]
+          name nest
+          match kubernetes.*
+          operation lift
+          nested_under kubernetes
+          add_prefix k_
+
+        [FILTER]
+          name nest
+          match kubernetes.*
+          operation lift
+          nested_under k_labels
+          add_prefix k_labels_
+
+        [FILTER]
+          name modify
+          match kubernetes.*
+          rename k_labels_app.kubernetes.io/name app
+          rename k_labels_app app
+          rename k_labels_k8s-app app
+
+      customParsers: |-
         [PARSER]
-            Name        containerd
-            Format      regex
-            Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
-            Time_Key    time
-            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+          name containerd
+          format regex
+          regex ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+          time_key time
+          time_format %Y-%m-%dT%H:%M:%S.%L%z
 
-      filters: |
-        [FILTER]
-            Name                kubernetes
-            Match               kubernetes.*
-            Kube_URL            https://kubernetes.default.svc:443
-            Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-            Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
-            Merge_Log           On
-            K8S-Logging.Parser  On
-            K8S-Logging.Exclude On
-
-        [FILTER]
-            Name          nest
-            Match         kubernetes.*
-            Operation     lift
-            Nested_under  kubernetes
-            Add_prefix    kubernetes.
-
-        [FILTER]
-            Name          modify
-            Match         kubernetes.*
-            Rename        kubernetes.namespace_name kubernetes.pod_namespace
-
-        [FILTER]
-            Name          nest
-            Match         kubernetes.*
-            Operation     lift
-            Nested_under  kubernetes.labels
-            Add_prefix    kubernetes.pod_labels.
-
-        [FILTER]
-            Name          nest
-            Match         kubernetes.*
-            Operation     lift
-            Nested_under  kubernetes.annotations
-            Add_prefix    kubernetes.pod_annotations.
-
-      outputs: |
+      outputs: |-
         [OUTPUT]
-            Name                 http
-            Match                *
-            Host                 victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local
-            Port                 9428
-            URI                  /insert/jsonline?_stream_fields=stream,kubernetes.pod_namespace,kubernetes.pod_name,kubernetes.container_name&_msg_field=log&_time_field=time
-            Format               json_lines
-            Json_date_format     iso8601
-            Compress             gzip
+          name http
+          match kubernetes.*
+          host victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local
+          port 9428
+          uri /insert/jsonline?_stream_fields=stream,k_namespace_name,k_pod_name,app&_msg_field=log&_time_field=date
+          format json_lines
+          json_date_format iso8601
+          compress gzip
+          log_response_payload false
+
+    dashboards:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+    logLevel: warn
 
     tolerations:
       - operator: Exists
