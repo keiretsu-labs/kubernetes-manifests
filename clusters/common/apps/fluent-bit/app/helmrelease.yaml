@@ -26,65 +26,64 @@ spec:
         [INPUT]
             Name              tail
             Path              /var/log/containers/*.log
-            Parser            cri
-            Tag               kube.*
+            Parser            containerd
+            Tag               kubernetes.*
             Refresh_Interval  10
             Mem_Buf_Limit     50MB
             Skip_Long_Lines   On
 
+      customParsers: |
+        [PARSER]
+            Name        containerd
+            Format      regex
+            Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+            Time_Key    time
+            Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+
       filters: |
         [FILTER]
             Name                kubernetes
-            Match               kube.*
+            Match               kubernetes.*
             Kube_URL            https://kubernetes.default.svc:443
             Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
             Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
             Merge_Log           On
-            Keep_Log            Off
             K8S-Logging.Parser  On
             K8S-Logging.Exclude On
+            Namespace_Labels    Off
+            Annotations         Off
 
         [FILTER]
-            Name          lua
-            Match         kube.*
-            script        /fluent-bit/scripts/rename_fields.lua
-            call          rename_k8s_fields
+            Name          nest
+            Match         kubernetes.*
+            Operation     lift
+            Nested_under  kubernetes
+            Add_prefix    k_
+
+        [FILTER]
+            Name          nest
+            Match         kubernetes.*
+            Operation     lift
+            Nested_under  k_labels
+            Add_prefix    k_labels_
+
+        [FILTER]
+            Name          modify
+            Match         kubernetes.*
+            Rename        k_labels_app.kubernetes.io/name app
+            Rename        k_labels_app app
+            Rename        k_labels_k8s-app app
 
       outputs: |
         [OUTPUT]
             Name                 http
             Match                *
-            Host                 victoria-logs-victoria-logs-single-server.monitoring.svc
+            Host                 victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local
             Port                 9428
-            URI                  /insert/jsonline?_stream_fields=namespace,pod,container&_msg_field=log
+            URI                  /insert/jsonline?_stream_fields=stream,k_namespace_name,k_pod_name,app&_msg_field=log&_time_field=time
             Format               json_lines
-            Json_date_key        _time
             Json_date_format     iso8601
-
-    luaScripts:
-      rename_fields.lua: |
-        function rename_k8s_fields(tag, timestamp, record)
-            if record["kubernetes"] then
-                local k8s = record["kubernetes"]
-                -- Rename namespace_name to pod_namespace
-                if k8s["namespace_name"] then
-                    k8s["pod_namespace"] = k8s["namespace_name"]
-                    k8s["namespace_name"] = nil
-                end
-                -- Rename labels to pod_labels
-                if k8s["labels"] then
-                    k8s["pod_labels"] = k8s["labels"]
-                    k8s["labels"] = nil
-                end
-                -- Rename annotations to pod_annotations
-                if k8s["annotations"] then
-                    k8s["pod_annotations"] = k8s["annotations"]
-                    k8s["annotations"] = nil
-                end
-                record["kubernetes"] = k8s
-            end
-            return 2, timestamp, record
-        end
+            Compress             gzip
 
     tolerations:
       - operator: Exists
