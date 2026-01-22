@@ -4,3 +4,4 @@ kind: Kustomization
 namespace: fluent-bit
 resources:
   - helmrelease.yaml
+  - grafanadashboard.yaml

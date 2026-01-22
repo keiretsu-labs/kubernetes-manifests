@@ -4,6 +4,11 @@ kind: EnvoyProxy
 metadata:
   name: cdn
 spec:
+  telemetry:
+    metrics:
+      prometheus:
+        compression:
+          type: Zstd
   provider:
     type: Kubernetes
     kubernetes:
@@ -32,6 +37,11 @@ kind: EnvoyProxy
 metadata:
   name: ${LOCATION}
 spec:
+  telemetry:
+    metrics:
+      prometheus:
+        compression:
+          type: Zstd
   provider:
     type: Kubernetes
     kubernetes:

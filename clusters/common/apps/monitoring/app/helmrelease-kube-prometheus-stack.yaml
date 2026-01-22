@@ -44,9 +44,6 @@ spec:
             memory: 1Gi
           limits:
             memory: 4Gi
-        remoteRead:
-          - url: http://prometheus.envoy-gateway-system/api/v1/read
-            readRecent: true
         storageSpec:
           volumeClaimTemplate:
             spec:

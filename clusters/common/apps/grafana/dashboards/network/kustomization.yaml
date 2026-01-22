@@ -2,7 +2,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./flux
-  - ./default
-  - ./kubernetes
-  - ./network
+  - cilium-overview.yaml
+  - cilium-operator.yaml
+  - hubble-overview.yaml
