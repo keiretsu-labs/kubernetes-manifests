@@ -62,3 +62,13 @@ spec:
           save_sites  = true
           hash_pii    = false
           verify_ssl  = false
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: GrafanaDashboard
+            patch: |
+              - op: replace
+                path: /spec/instanceSelector/matchLabels
+                value:
+                  grafana.internal/instance: grafana
