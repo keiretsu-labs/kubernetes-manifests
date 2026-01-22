@@ -2,15 +2,14 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  name: ceph-pools
+  name: envoy-gateway-metrics
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
-  folder: Ceph
-  grafanaCom:
-    id: 5342
+  folder: Envoy Gateway
+  url: https://raw.githubusercontent.com/envoyproxy/gateway/main/charts/gateway-addons-helm/dashboards/envoy-gateway.json
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Prometheus

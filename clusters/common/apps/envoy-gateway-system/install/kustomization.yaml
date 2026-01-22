@@ -4,3 +4,8 @@ kind: Kustomization
 namespace: envoy-gateway-system
 resources:
   - helmrelease.yaml
+  - dashboard-global.yaml
+  - dashboard-upstream.yaml
+  - dashboard-downstream.yaml
+  - dashboard-gateway.yaml
+  - dashboard-proxy.yaml
