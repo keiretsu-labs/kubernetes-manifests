@@ -70,7 +70,7 @@ spec:
       discordConfigs:
         - sendResolved: true
           apiURL:
-            name: alertmanager-secret
+            name: common-secrets
             key: DISCORD_ALERTMANAGER_WEBHOOK_URL
           title: >-
             [${CLUSTER_NAME}] [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}]
