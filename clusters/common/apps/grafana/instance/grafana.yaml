@@ -28,6 +28,13 @@ spec:
             fsGroupChangePolicy: OnRootMismatch
           containers:
             - name: grafana
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: false
+                runAsUser: 472
+                runAsGroup: 472
+                capabilities:
+                  drop: ["ALL"]
               env:
                 - name: GF_INSTALL_PLUGINS
                   value: victoriametrics-logs-datasource
@@ -37,7 +44,6 @@ spec:
             - name: grafana-data
               persistentVolumeClaim:
                 claimName: grafana-pvc
-  disableDefaultSecurityContext: All
   config:
     log:
       mode: console
