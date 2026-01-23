@@ -19,7 +19,10 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false || github.event_name == 'workflow_dispatch'
+    if: |
+      (github.event.pull_request.draft == false || github.event_name == 'workflow_dispatch') &&
+      github.event.pull_request.user.login != 'renovate[bot]' &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
     steps:
       - name: Checkout PR
         if: github.event_name == 'pull_request'
