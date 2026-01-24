@@ -21,6 +21,12 @@ spec:
       name: garage
       namespace: garage
 
+  # Admin API needed for gateway to register with storage cluster
+  admin:
+    adminTokenSecretRef:
+      name: garage-admin-token
+      key: admin-token
+
   resources:
     requests:
       cpu: 50m
