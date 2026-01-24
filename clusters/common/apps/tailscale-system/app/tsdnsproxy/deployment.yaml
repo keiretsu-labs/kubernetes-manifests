@@ -86,6 +86,8 @@ spec:
           value: "tailscale,0.0.0.0:53"  # Listen on both Tailscale and LAN
         - name: TSDNSPROXY_ACCEPT_ROUTES
           value: "true"
+        - name: TSDNSPROXY_USE_TS_DIALER
+          value: "true"
         - name: TSDNSPROXY_ADVERTISE_TAGS
           value: "tag:k8s,tag:${LOCATION}"
         - name: TS_AUTHKEY
