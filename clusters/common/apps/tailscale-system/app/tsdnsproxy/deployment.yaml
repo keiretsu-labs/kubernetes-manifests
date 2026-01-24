@@ -56,7 +56,7 @@ spec:
       serviceAccountName: tsdnsproxy
       containers:
       - name: tsdnsproxy
-        image: ghcr.io/rajsinghtech/tsdnsproxy:1.0.0
+        image: ghcr.io/rajsinghtech/tsdnsproxy:1.1.0
         imagePullPolicy: Always
         ports:
         - containerPort: 53
@@ -84,11 +84,15 @@ spec:
         #   value: "8.8.8.8:53,8.8.4.4:53"  # Configure your default DNS
         - name: TSDNSPROXY_LISTEN_ADDRS
           value: "tailscale,0.0.0.0:53"  # Listen on both Tailscale and LAN
+        - name: TSDNSPROXY_ACCEPT_ROUTES
+          value: "true"
+        - name: TSDNSPROXY_ADVERTISE_TAGS
+          value: "tag:k8s,tag:${LOCATION}"
         - name: TS_AUTHKEY
           valueFrom:
             secretKeyRef:
-              name: ts-authkey
-              key: TS_AUTHKEY
+              name: ts-oauth
+              key: TS_AUTHKEY_EPHEMERAL
         resources:
           requests:
             memory: "128Mi"
@@ -128,7 +132,7 @@ metadata:
   labels:
     app: tsdnsproxy
   annotations:
-    tailscale.com/hostname: ${LOCATION}-tsdnsproxy
+    tailscale.com/hostname: tsdnsproxy
     tailscale.com/proxy-group: common-ingress
     tailscale.com/tags: "tag:k8s"
 spec:
@@ -149,28 +153,3 @@ spec:
     port: 8080
     targetPort: health
     protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: tsdnsproxy-cilium
-  namespace: tsdnsproxy
-spec:
-  ports:
-  - name: dns-udp
-    port: 53
-    targetPort: dns-udp
-    protocol: UDP
-  - name: dns-tcp
-    port: 53
-    targetPort: dns-tcp
-    protocol: TCP
-  - name: health
-    port: 8080
-    targetPort: health
-    protocol: TCP
-  selector:
-    app: tsdnsproxy
-  sessionAffinity: None
-  type: LoadBalancer
-  loadBalancerIP: ${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.69.52
