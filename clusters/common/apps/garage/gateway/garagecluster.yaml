@@ -11,6 +11,11 @@ spec:
   zone: "${LOCATION}"
   gateway: true
 
+  # Must match storage cluster's replication settings
+  replication:
+    factor: 3
+    zoneRedundancy: "AtLeast(2)"
+
   connectTo:
     clusterRef:
       name: garage
