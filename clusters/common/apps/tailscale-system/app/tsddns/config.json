@@ -19,5 +19,15 @@
     "robbinsdale.lan": [
         "192.168.50.1",
         "device:robbinsdale-udm-pro"
+    ],
+
+    "ottawa.k8s": [
+        "svc:tsdnsproxy"
+    ],
+    "robbinsdale.k8s": [
+        "svc:tsdnsproxy"
+    ],
+    "stpetersburg.k8s": [
+        "svc:tsdnsproxy"
     ]
 }
