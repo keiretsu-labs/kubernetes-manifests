@@ -73,8 +73,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        - name: TSDNSPROXY_STATE
-          value: "kube:tsdnsproxy-state"
+        # - name: TSDNSPROXY_STATE
+        #   value: "kube:tsdnsproxy-state"
         - name: TSDNSPROXY_HOSTNAME
           value: $(POD_NAME)
           # value: "${LOCATION}-tsdnsproxy"
