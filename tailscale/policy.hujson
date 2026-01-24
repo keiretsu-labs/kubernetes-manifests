@@ -90,6 +90,7 @@
 			"tag:k8s-operator": ["tag:k8s-operator"],
 			"svc:ottawa-tsflow": ["tag:ottawa"],
 			"svc:robbinsdale-tsflow": ["tag:robbinsdale"],
+			"svc:tsdnsproxy": ["tag:k8s"],
 		},
 	},
 	"ssh": [
@@ -235,6 +236,11 @@
 							"dns":     ["10.2.0.10:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
+						},
+						"stpetersburg.k8s": {
+							"dns":     ["10.4.0.10:53"],
+							"rewrite": "svc.cluster.local",
+							"translateid": -1
 						}
 					}
 				],
@@ -267,6 +273,11 @@
 						},
 						"ottawa.k8s": {
 							"dns":     ["10.2.0.10:53"],
+							"rewrite": "svc.cluster.local",
+							"translateid": -1
+						},
+						"stpetersburg.k8s": {
+							"dns":     ["10.4.0.10:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						}
