@@ -228,17 +228,17 @@
 				"rajsingh.info/cap/tsdnsproxy": [
 					{
 						"robbinsdale.k8s": {
-							"dns":     ["10.0.0.10:53"],
+							"dns":     ["robbinsdale.keiretsu.ts.net"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"ottawa.k8s": {
-							"dns":     ["10.2.0.10:53"],
+							"dns":     ["ottawa-coredns.keiretsu.ts.net"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"stpetersburg.k8s": {
-							"dns":     ["10.4.0.10:53"],
+							"dns":     ["stpetersburg-coredns.keiretsu.ts.net"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						}
@@ -267,17 +267,17 @@
 				"rajsingh.info/cap/tsdnsproxy": [
 					{
 						"robbinsdale.k8s": {
-							"dns":     ["10.0.0.10:53"],
+							"dns":     ["robbinsdale-coredns.keiretsu.ts.net"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"ottawa.k8s": {
-							"dns":     ["10.2.0.10:53"],
+							"dns":     ["ottawa-coredns.keiretsu.ts.net"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"stpetersburg.k8s": {
-							"dns":     ["10.4.0.10:53"],
+							"dns":     ["stpetersburg-coredns.keiretsu.ts.net"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						}
