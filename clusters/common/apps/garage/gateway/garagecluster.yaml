@@ -1,0 +1,25 @@
+---
+# Gateway cluster - stateless S3 API proxies
+# These pods handle API requests and forward to storage nodes
+# Benefits: scale API independently, local metadata for fast routing
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageCluster
+metadata:
+  name: garage-gateway
+spec:
+  replicas: 2
+  zone: "${LOCATION}"
+  gateway: true
+
+  connectTo:
+    clusterRef:
+      name: garage
+      namespace: garage
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
