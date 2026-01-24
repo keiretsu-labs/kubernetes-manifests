@@ -8,3 +8,4 @@ resources:
   - ./iperf
   - ./ds
   - ./tsdnsproxy
+  - ./tsddns
