@@ -52,3 +52,5 @@ spec:
         env:
           - name: DISABLE_DEV_CHAR_SYMLINK_CREATION
             value: "true"
+      toolkit:
+        enabled: false  # Skip validation, toolkit is pre-installed via Talos extension
