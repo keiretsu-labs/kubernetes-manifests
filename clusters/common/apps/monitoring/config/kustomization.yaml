@@ -5,3 +5,4 @@ resources:
   - alertmanagerconfig.yaml
   - scrapeconfig.yaml
   - prometheusrules.yaml
+  - httproute.yaml
