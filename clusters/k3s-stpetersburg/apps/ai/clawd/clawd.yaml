@@ -30,6 +30,11 @@ spec:
       containers:
         - name: clawd
           image: ghcr.io/zot24/clawdbot-docker:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              clawdbot doctor --fix || true
+              exec clawdbot gateway
           ports:
             - containerPort: 18789
               name: gateway
