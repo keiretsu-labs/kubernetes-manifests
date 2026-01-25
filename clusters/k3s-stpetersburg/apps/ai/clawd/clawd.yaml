@@ -54,12 +54,20 @@ spec:
               node dist/index.js onboard --non-interactive --accept-risk \
                 --auth-choice apiKey \
                 --gateway-bind lan \
-                --gateway-auth off \
+                --gateway-auth token \
                 --gateway-port 18789 \
                 --skip-channels \
                 --skip-skills \
                 --skip-health \
                 --no-install-daemon
+              # Disable gateway auth (bind=lan forces token mode in onboarding)
+              echo "Disabling gateway auth for k8s deployment..."
+              node -e "
+                const fs = require('fs');
+                const cfg = JSON.parse(fs.readFileSync('/data/.clawdbot/clawdbot.json'));
+                cfg.gateway.auth = { mode: 'off' };
+                fs.writeFileSync('/data/.clawdbot/clawdbot.json', JSON.stringify(cfg, null, 2));
+              "
           envFrom:
             - configMapRef:
                 name: clawd-config
