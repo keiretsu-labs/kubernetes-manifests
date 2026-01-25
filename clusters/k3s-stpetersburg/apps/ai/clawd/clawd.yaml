@@ -15,6 +15,31 @@ data:
       "messages": {
         "ackReactionScope": "group-mentions"
       },
+      "models": {
+        "mode": "replace",
+        "providers": {
+          "anthropic": {
+            "baseUrl": "http://ai.coder",
+            "apiKey": "sk-na",
+            "auth": "api-key",
+            "api": "anthropic-messages",
+            "models": [
+              {
+                "id": "claude-opus-4-5",
+                "name": "Claude Opus 4.5",
+                "contextWindow": 200000,
+                "maxTokens": 8192
+              },
+              {
+                "id": "claude-sonnet-4-20250514",
+                "name": "Claude Sonnet 4",
+                "contextWindow": 200000,
+                "maxTokens": 8192
+              }
+            ]
+          }
+        }
+      },
       "agents": {
         "defaults": {
           "maxConcurrent": 4,
