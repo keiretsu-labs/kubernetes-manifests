@@ -24,6 +24,7 @@ resources:
   - ./external-dns.yaml
   - ./external-secrets.yaml
   - ./nvidia.yaml
+  - ./nvidia-device-plugin.yaml
   - ./fluent.yaml
   - ./grafana.yaml
   - ./harbor.yaml
