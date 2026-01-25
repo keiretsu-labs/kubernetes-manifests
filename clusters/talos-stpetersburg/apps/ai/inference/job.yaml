@@ -12,7 +12,7 @@ spec:
         - -c
         - |
           pip install huggingface_hub && python /scripts/download-model.py
-        image: python:3.11-slim
+        image: python:3.14-slim
         imagePullPolicy: IfNotPresent
         name: downloader
         resources:
