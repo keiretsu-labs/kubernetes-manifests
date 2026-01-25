@@ -10,6 +10,7 @@ data:
   API_TIMEOUT_MS: "3000000"
   CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
   CLAWDBOT_STATE_DIR: "/data/.clawdbot"
+  CLAWDBOT_GATEWAY_TOKEN: "clawd-k8s-stpetersburg-token"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -54,19 +55,13 @@ spec:
                 --auth-choice apiKey \
                 --gateway-bind lan \
                 --gateway-auth token \
+                --gateway-token "$CLAWDBOT_GATEWAY_TOKEN" \
                 --gateway-port 18789 \
                 --skip-channels \
                 --skip-skills \
                 --skip-health \
                 --no-install-daemon
-              # Disable gateway auth (bind=lan forces token mode in onboarding)
-              echo "Disabling gateway auth for k8s deployment..."
-              node -e "
-                const fs = require('fs');
-                const cfg = JSON.parse(fs.readFileSync('/data/.clawdbot/clawdbot.json'));
-                delete cfg.gateway.auth;
-                fs.writeFileSync('/data/.clawdbot/clawdbot.json', JSON.stringify(cfg, null, 2));
-              "
+              echo "Gateway configured with token auth"
           envFrom:
             - configMapRef:
                 name: clawd-config
