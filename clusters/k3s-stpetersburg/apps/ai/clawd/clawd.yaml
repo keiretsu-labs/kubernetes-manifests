@@ -148,7 +148,7 @@ spec:
     spec:
       initContainers:
         - name: setup-config
-          image: busybox:1.36
+          image: busybox:1.37
           command: ["/bin/sh", "-c"]
           args:
             - |
