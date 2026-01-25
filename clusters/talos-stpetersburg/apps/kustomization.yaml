@@ -10,3 +10,4 @@ resources:
   - ./kuberay
   - ./local-path-storage
   - ./singh360
+  - ./tuppr
