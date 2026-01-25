@@ -6,7 +6,7 @@ metadata:
   namespace: ai
 data:
   ANTHROPIC_BASE_URL: "http://ai.coder"
-  ANTHROPIC_AUTH_TOKEN: "sk-na"
+  ANTHROPIC_API_KEY: "sk-na"
   API_TIMEOUT_MS: "3000000"
   CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
 ---
