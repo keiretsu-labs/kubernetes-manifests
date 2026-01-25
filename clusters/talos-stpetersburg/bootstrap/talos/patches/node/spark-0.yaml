@@ -1,0 +1,7 @@
+# Node-specific configuration for spark-0 (DGX Spark)
+# Add node-specific configurations here after initial boot
+# Example: specific network interfaces, storage configuration, etc.
+machine:
+  nodeLabels:
+    node.kubernetes.io/instance-type: dgx-spark
+    nvidia.com/gpu.product: Blackwell

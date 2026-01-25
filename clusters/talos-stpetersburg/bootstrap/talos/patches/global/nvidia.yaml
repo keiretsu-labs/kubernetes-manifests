@@ -1,0 +1,28 @@
+# NVIDIA GPU configuration for DGX Spark
+# Extensions loaded: nvidia-open-gpu-kernel-modules, nvidia-container-toolkit
+machine:
+  kernel:
+    modules:
+      - name: nvidia
+      - name: nvidia_uvm
+      - name: nvidia_drm
+        parameters:
+          - modeset=1
+          - fbdev=1
+      - name: nvidia_modeset
+  sysctls:
+    # Enable NVIDIA persistence mode via sysctl
+    net.core.bpf_jit_enable: "1"
+  files:
+    # NVIDIA container runtime configuration
+    - content: |
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia]
+          privileged_without_host_devices = false
+          runtime_engine = ""
+          runtime_root = ""
+          runtime_type = "io.containerd.runc.v2"
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
+          BinaryName = "/usr/bin/nvidia-container-runtime"
+          SystemdCgroup = true
+      path: /etc/cri/conf.d/20-nvidia.part
+      op: create

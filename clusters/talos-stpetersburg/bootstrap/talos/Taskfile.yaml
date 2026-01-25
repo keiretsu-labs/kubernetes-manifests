@@ -1,0 +1,128 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  init:
+    desc: Generate and encrypt Talos secrets
+    cmds:
+      - |
+        if [ ! -f "talsecret.sops.yaml" ]; then
+            echo "Generating new Talos secrets..."
+            talhelper gensecret > talsecret.yaml
+            echo "Encrypting secrets with PGP key..."
+            sops --encrypt --pgp FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5 talsecret.yaml > talsecret.sops.yaml
+            rm talsecret.yaml
+            echo "✅ Secrets generated and encrypted"
+        else
+            echo "Secrets file already exists"
+        fi
+
+  genconfig:
+    desc: Generate Talos configuration files
+    cmds:
+      - talhelper genconfig
+    preconditions:
+      - sh: test -f talconfig.yaml
+        msg: Missing talconfig.yaml
+      - sh: test -f talsecret.sops.yaml
+        msg: Missing talsecret.sops.yaml - run 'mise run init' first
+
+  apply:
+    desc: Apply Talos configuration to nodes
+    cmds:
+      - talhelper gencommand apply | bash
+    preconditions:
+      - sh: test -d clusterconfig
+        msg: Missing clusterconfig directory - run 'mise run genconfig' first
+
+  apply-insecure:
+    desc: Apply Talos configuration to nodes in maintenance mode (initial install)
+    cmds:
+      - talhelper gencommand apply --extra-flags="--insecure" | bash
+    preconditions:
+      - sh: test -d clusterconfig
+        msg: Missing clusterconfig directory - run 'mise run genconfig' first
+
+  bootstrap:
+    desc: Bootstrap the etcd cluster on first node
+    cmds:
+      - talhelper gencommand bootstrap | bash
+    preconditions:
+      - sh: test -d clusterconfig
+        msg: Missing clusterconfig directory - run 'mise run genconfig' first
+
+  kubeconfig:
+    desc: Fetch kubeconfig from Talos cluster
+    cmds:
+      - talhelper gencommand kubeconfig --extra-flags="../../ --force" | bash
+      - chmod 600 ../../kubeconfig
+    preconditions:
+      - sh: test -d clusterconfig
+        msg: Missing clusterconfig directory
+
+  dashboard:
+    desc: Open Talos dashboard
+    cmd: talosctl dashboard --nodes spark-0
+
+  health:
+    desc: Check cluster health
+    cmd: talosctl health --server=false
+
+  reset:
+    desc: Reset nodes back to maintenance mode (DESTRUCTIVE)
+    prompt: This will destroy your cluster! Continue?
+    cmd: talhelper gencommand reset --extra-flags="--reboot --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL --graceful=false --wait=false" | bash
+
+  upgrade:
+    desc: Upgrade Talos on a node
+    cmd: talosctl --nodes {{.node}} upgrade --image {{.image}} --wait=true --timeout=10m --preserve=true
+    requires:
+      vars: ["node", "image"]
+    preconditions:
+      - msg: Unable to connect to node
+        sh: talosctl --nodes {{.node}} version
+
+  upgrade-k8s:
+    desc: Upgrade Kubernetes across the cluster
+    cmd: talosctl --nodes {{.controller}} upgrade-k8s --to {{.to}}
+    requires:
+      vars: ["controller", "to"]
+    preconditions:
+      - msg: Unable to connect to controller
+        sh: talosctl --nodes {{.controller}} version
+
+  gpu-status:
+    desc: Check NVIDIA GPU status on nodes
+    cmds:
+      - echo "=== GPU Status on spark-0 ==="
+      - talosctl -n spark-0 -e spark-0 read /proc/driver/nvidia/version || echo "NVIDIA driver not loaded"
+      - talosctl -n spark-0 -e spark-0 dmesg | grep -i nvidia | tail -20
+
+  disk:
+    desc: Show discovered volumes
+    cmd: talosctl -e spark-0 -n spark-0 get discoveredvolumes
+
+  link:
+    desc: Show network link status
+    cmd: talosctl get linkstatus -n spark-0 -e spark-0
+
+  addresses:
+    desc: Show IP addresses
+    cmd: talosctl get addresses -n spark-0 -e spark-0
+
+  service:
+    desc: List services
+    cmd: talosctl service -n spark-0 -e spark-0
+
+  reboot:
+    desc: Reboot node (DISRUPTIVE)
+    cmd: talosctl -e spark-0 -n spark-0 reboot --debug
+
+  logs:
+    desc: Show service logs (usage - task logs SERVICE=kubelet)
+    cmd: talosctl -n spark-0 -e spark-0 logs {{.SERVICE | default "kubelet"}}
+
+  dmesg:
+    desc: Show kernel logs
+    cmd: talosctl -n spark-0 -e spark-0 dmesg
