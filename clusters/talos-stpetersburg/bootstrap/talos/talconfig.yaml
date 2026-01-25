@@ -67,6 +67,25 @@ patches:
   - "@./patches/global/sysctls.yaml"
   - "@./patches/global/nvidia.yaml"
 
+# Inline manifests for cluster bootstrap
+inlineManifests:
+  # Fix RBAC for Talos KubernetesPullController to list nodes
+  - name: talos-nodes-rbac-patch
+    contents: |
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      metadata:
+        name: system:talos-nodes
+        labels:
+          kubernetes.io/bootstrapping: rbac-defaults
+      rules:
+        - apiGroups: ["discovery.k8s.io"]
+          resources: ["endpointslices"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: [""]
+          resources: ["nodes"]
+          verbs: ["get", "list", "watch"]
+
 # Control plane nodes config
 controlPlane:
   schematic:
