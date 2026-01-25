@@ -65,7 +65,7 @@ spec:
               node -e "
                 const fs = require('fs');
                 const cfg = JSON.parse(fs.readFileSync('/data/.clawdbot/clawdbot.json'));
-                cfg.gateway.auth = { mode: 'off' };
+                delete cfg.gateway.auth;
                 fs.writeFileSync('/data/.clawdbot/clawdbot.json', JSON.stringify(cfg, null, 2));
               "
           envFrom:
