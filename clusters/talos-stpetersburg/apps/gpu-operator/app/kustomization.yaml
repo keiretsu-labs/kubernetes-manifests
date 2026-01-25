@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./runtimeclass.yaml
   - ./helmrelease.yaml
+  - ./time-slicing-config.yaml
