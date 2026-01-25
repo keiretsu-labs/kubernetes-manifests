@@ -25,3 +25,6 @@ spec:
     runtimeClassName: nvidia
     deviceListStrategy: envvar
     deviceIDStrategy: uuid
+    failOnInitError: false
+    # Use tegra discovery for Grace-based systems like DGX Spark
+    deviceDiscoveryStrategy: tegra
