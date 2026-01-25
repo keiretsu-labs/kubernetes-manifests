@@ -9,6 +9,20 @@ data:
   ANTHROPIC_API_KEY: "sk-na"
   API_TIMEOUT_MS: "3000000"
   CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+  CLAWDBOT_STATE_DIR: "/data/.clawdbot"
+  CLAWDBOT_GATEWAY_TOKEN: "clawdbot-k8s-gateway-token"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: clawd-config-pvc
+  namespace: ai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -19,6 +33,8 @@ metadata:
     app: clawd
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: clawd
@@ -27,14 +43,37 @@ spec:
       labels:
         app: clawd
     spec:
-      containers:
-        - name: clawd
-          image: ghcr.io/zot24/clawdbot-docker:latest
+      initContainers:
+        - name: onboard
+          image: clawdbot/clawdbot:main
           command: ["/bin/sh", "-c"]
           args:
             - |
-              clawdbot doctor --fix || true
-              exec clawdbot gateway
+              mkdir -p /data/.clawdbot
+              if [ ! -f /data/.clawdbot/clawdbot.json ]; then
+                echo "Running onboarding..."
+                node dist/index.js onboard --non-interactive --accept-risk \
+                  --auth-choice apiKey \
+                  --gateway-bind lan \
+                  --gateway-auth token \
+                  --gateway-port 18789 \
+                  --skip-channels \
+                  --skip-skills \
+                  --skip-health \
+                  --no-install-daemon
+              else
+                echo "Config exists, skipping onboarding"
+              fi
+          envFrom:
+            - configMapRef:
+                name: clawd-config
+          volumeMounts:
+            - name: config
+              mountPath: /data
+      containers:
+        - name: clawd
+          image: clawdbot/clawdbot:main
+          command: ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
           ports:
             - containerPort: 18789
               name: gateway
@@ -42,26 +81,19 @@ spec:
           envFrom:
             - configMapRef:
                 name: clawd-config
+          volumeMounts:
+            - name: config
+              mountPath: /data
           resources:
             requests:
               memory: "512Mi"
               cpu: "500m"
             limits:
               memory: "2Gi"
-          # livenessProbe:
-          #   httpGet:
-          #     path: /health
-          #     port: gateway
-          #   initialDelaySeconds: 30
-          #   periodSeconds: 30
-          #   timeoutSeconds: 10
-          # readinessProbe:
-          #   httpGet:
-          #     path: /health
-          #     port: gateway
-          #   initialDelaySeconds: 10
-          #   periodSeconds: 10
-          #   timeoutSeconds: 5
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: clawd-config-pvc
 ---
 apiVersion: v1
 kind: Service
