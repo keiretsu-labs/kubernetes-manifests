@@ -9,13 +9,7 @@ spec:
     version: v1.12.2
   policy:
     debug: true
-    force: false
+    force: true
     rebootMode: default
     placement: soft
     timeout: 30m
-  healthChecks:
-    - apiVersion: v1
-      kind: Node
-      expr: status.conditions.exists(c, c.type == "Ready" && c.status == "True")
-      description: All nodes must be Ready
-      timeout: 10m
