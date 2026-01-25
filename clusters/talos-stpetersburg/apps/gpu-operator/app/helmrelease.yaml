@@ -28,3 +28,7 @@ spec:
     failOnInitError: false
     # Use tegra discovery for Grace-based systems like DGX Spark
     deviceDiscoveryStrategy: tegra
+    # Time-slicing configuration for GPU sharing
+    config:
+      name: time-slicing-config
+      default: any
