@@ -15,7 +15,7 @@ spec:
     # include kubernetes directory
     !/clusters/template
     !/clusters/common
-    !/clusters/k3s-stpetersburg
+    !/clusters/talos-stpetersburg
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -24,7 +24,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
-  path: ./clusters/k3s-stpetersburg/flux
+  path: ./clusters/talos-stpetersburg/flux
   prune: true
   wait: false
   sourceRef:

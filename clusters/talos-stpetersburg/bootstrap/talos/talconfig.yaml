@@ -23,7 +23,9 @@ additionalApiServerCertSans:
 
 additionalMachineCertSans:
   - "192.168.73.25"
+  - "192.168.73.206"
   - "k8s.stpetersburg.internal"
+  - "spark-0.stpetersburg.internal"
   - "default-kubernetes-stpetersburg-ingress.keiretsu.ts.net"
   - "kubernetes-stpetersburg.keiretsu.ts.net"
   - "kubernetes.stpetersburg.rajsingh.info"
@@ -38,9 +40,10 @@ cniConfig:
 nodes:
   ###################################################################
   - hostname: "spark-0"
-    ipAddress: "spark-0"
-    # Install to first NVMe - update serial after discovering disks
-    installDisk: /dev/nvme0n1
+    ipAddress: "spark-0.stpetersburg.internal"
+    # 4.1TB Samsung NVMe
+    installDiskSelector:
+      serial: "S8C2NG0Y733052"
     controlPlane: true
     networkInterfaces:
       - interface: eth0

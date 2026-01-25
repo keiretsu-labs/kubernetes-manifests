@@ -9,7 +9,7 @@ data:
   FAILOVER: ottawa
   SITE_ID: "3"
   TIMEZONE: America/New_York
-  CLUSTER_NAME: k3s-stpetersburg
+  CLUSTER_NAME: talos-stpetersburg
 
   # K8s
   CLUSTER_POD_CIDR: 10.5.0.0/16
