@@ -50,20 +50,16 @@ spec:
           args:
             - |
               mkdir -p /data/.clawdbot
-              if [ ! -f /data/.clawdbot/clawdbot.json ]; then
-                echo "Running onboarding..."
-                node dist/index.js onboard --non-interactive --accept-risk \
-                  --auth-choice apiKey \
-                  --gateway-bind lan \
-                  --gateway-auth token \
-                  --gateway-port 18789 \
-                  --skip-channels \
-                  --skip-skills \
-                  --skip-health \
-                  --no-install-daemon
-              else
-                echo "Config exists, skipping onboarding"
-              fi
+              echo "Running onboarding..."
+              node dist/index.js onboard --non-interactive --accept-risk \
+                --auth-choice apiKey \
+                --gateway-bind lan \
+                --gateway-auth off \
+                --gateway-port 18789 \
+                --skip-channels \
+                --skip-skills \
+                --skip-health \
+                --no-install-daemon
           envFrom:
             - configMapRef:
                 name: clawd-config
