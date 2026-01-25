@@ -10,6 +10,52 @@ data:
   API_TIMEOUT_MS: "3000000"
   CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
   CLAWDBOT_STATE_DIR: "/data/.clawdbot"
+  clawdbot.json: |
+    {
+      "messages": {
+        "ackReactionScope": "group-mentions"
+      },
+      "agents": {
+        "defaults": {
+          "maxConcurrent": 4,
+          "subagents": {
+            "maxConcurrent": 8
+          },
+          "model": {
+            "primary": "anthropic/claude-opus-4-5",
+            "fallbacks": []
+          },
+          "contextPruning": {
+            "mode": "cache-ttl",
+            "ttl": "1h"
+          },
+          "heartbeat": {
+            "every": "30m"
+          },
+          "compaction": {
+            "mode": "safeguard"
+          },
+          "workspace": "/root/clawd"
+        }
+      },
+      "gateway": {
+        "mode": "local",
+        "port": 18789,
+        "bind": "loopback",
+        "tailscale": {
+          "mode": "off",
+          "resetOnExit": false
+        }
+      },
+      "auth": {
+        "profiles": {
+          "anthropic:default": {
+            "provider": "anthropic",
+            "mode": "api_key"
+          }
+        }
+      }
+    }
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -76,29 +122,20 @@ spec:
         app: clawd
     spec:
       initContainers:
-        - name: onboard
-          image: ghcr.io/clawdbot/clawdbot:main
+        - name: setup-config
+          image: busybox:1.36
           command: ["/bin/sh", "-c"]
           args:
             - |
               mkdir -p /data/.clawdbot
-              echo "Running onboarding..."
-              node dist/index.js onboard --non-interactive --accept-risk \
-                --auth-choice apiKey \
-                --gateway-bind loopback \
-                --gateway-auth off \
-                --gateway-port 18789 \
-                --skip-channels \
-                --skip-skills \
-                --skip-health \
-                --no-install-daemon
-              echo "Gateway configured with token auth"
-          envFrom:
-            - configMapRef:
-                name: clawd-config
+              cp /config-source/clawdbot.json /data/.clawdbot/clawdbot.json
+              echo "Config file installed"
+              cat /data/.clawdbot/clawdbot.json
           volumeMounts:
             - name: config
               mountPath: /data
+            - name: clawd-config-source
+              mountPath: /config-source
       containers:
         - name: proxy
           image: nginx:alpine
@@ -135,6 +172,12 @@ spec:
         - name: nginx-config
           configMap:
             name: clawd-nginx-config
+        - name: clawd-config-source
+          configMap:
+            name: clawd-config
+            items:
+              - key: clawdbot.json
+                path: clawdbot.json
         - name: config
           persistentVolumeClaim:
             claimName: clawd-config-pvc
