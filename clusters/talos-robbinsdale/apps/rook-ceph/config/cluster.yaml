@@ -315,8 +315,8 @@ spec:
     osdMaintenanceTimeout: 30
     # A duration in minutes that the operator will wait for the placement groups to become healthy (active+clean) after a drain was completed and OSDs came back up.
     # Operator will continue with the next drain if the timeout exceeds. It only works if `managePodBudgets` is `true`.
-    # No values or 0 means that the operator will wait until the placement groups are healthy before unblocking the next drain.
-    pgHealthCheckTimeout: 0
+    # Set to 15 minutes to prevent indefinite hangs during Talos node upgrades while still allowing time for PG recovery.
+    pgHealthCheckTimeout: 15
 
   # csi defines CSI Driver settings applied per cluster.
   csi:
