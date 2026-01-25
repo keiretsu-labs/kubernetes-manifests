@@ -10,7 +10,39 @@ data:
   API_TIMEOUT_MS: "3000000"
   CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
   CLAWDBOT_STATE_DIR: "/data/.clawdbot"
-  CLAWDBOT_GATEWAY_TOKEN: "clawd-k8s-stpetersburg-token"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clawd-nginx-config
+  namespace: ai
+data:
+  nginx.conf: |
+    worker_processes 1;
+    error_log /dev/stderr warn;
+    pid /tmp/nginx.pid;
+    events {
+      worker_connections 64;
+    }
+    http {
+      access_log /dev/stdout;
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+      }
+      server {
+        listen 80;
+        location / {
+          proxy_pass http://127.0.0.1:18789;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
+          proxy_set_header Host $host;
+          proxy_read_timeout 86400s;
+          proxy_send_timeout 86400s;
+        }
+      }
+    }
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -53,9 +85,8 @@ spec:
               echo "Running onboarding..."
               node dist/index.js onboard --non-interactive --accept-risk \
                 --auth-choice apiKey \
-                --gateway-bind lan \
-                --gateway-auth token \
-                --gateway-token "$CLAWDBOT_GATEWAY_TOKEN" \
+                --gateway-bind loopback \
+                --gateway-auth off \
                 --gateway-port 18789 \
                 --skip-channels \
                 --skip-skills \
@@ -69,13 +100,25 @@ spec:
             - name: config
               mountPath: /data
       containers:
-        - name: clawd
-          image: ghcr.io/clawdbot/clawdbot:main
-          command: ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
+        - name: proxy
+          image: nginx:alpine
           ports:
-            - containerPort: 18789
+            - containerPort: 80
               name: gateway
               protocol: TCP
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+        - name: clawd
+          image: ghcr.io/clawdbot/clawdbot:main
+          command: ["node", "dist/index.js", "gateway", "--bind", "loopback", "--port", "18789"]
           envFrom:
             - configMapRef:
                 name: clawd-config
@@ -89,6 +132,9 @@ spec:
             limits:
               memory: "2Gi"
       volumes:
+        - name: nginx-config
+          configMap:
+            name: clawd-nginx-config
         - name: config
           persistentVolumeClaim:
             claimName: clawd-config-pvc
