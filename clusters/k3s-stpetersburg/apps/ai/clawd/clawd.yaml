@@ -45,7 +45,7 @@ spec:
     spec:
       initContainers:
         - name: onboard
-          image: clawdbot/clawdbot:main
+          image: ghcr.io/clawdbot/clawdbot:main
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -72,7 +72,7 @@ spec:
               mountPath: /data
       containers:
         - name: clawd
-          image: clawdbot/clawdbot:main
+          image: ghcr.io/clawdbot/clawdbot:main
           command: ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
           ports:
             - containerPort: 18789
