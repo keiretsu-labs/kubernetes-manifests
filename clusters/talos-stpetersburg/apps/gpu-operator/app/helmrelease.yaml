@@ -32,3 +32,6 @@ spec:
     config:
       name: time-slicing-config
       default: any
+    # Disable CDI - tegra devices don't have proper CDI specs
+    cdi:
+      enabled: false
