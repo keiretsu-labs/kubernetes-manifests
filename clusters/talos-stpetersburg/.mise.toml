@@ -1,0 +1,138 @@
+[tools]
+task = "3"
+talhelper = "latest"
+talosctl = "latest"
+sops = "latest"
+kubectl = "latest"
+helmfile = "latest"
+
+[env]
+KUBECONFIG = "{{config_root}}/kubeconfig"
+TALOSCONFIG = "{{config_root}}/bootstrap/talos/clusterconfig/talosconfig"
+# Force Go's native DNS resolver for talosctl hostname resolution
+GODEBUG = "netdns=go"
+
+[tasks.init]
+run = "task -d bootstrap/talos init"
+description = "Initialize Talos secrets (generates and encrypts talsecret.sops.yaml)"
+
+[tasks.bootstrap]
+run = "task -d bootstrap/talos bootstrap"
+description = "Bootstrap the Talos cluster"
+
+[tasks.genconfig]
+run = "task -d bootstrap/talos genconfig"
+description = "Generate Talos configuration"
+
+[tasks.apply]
+run = "task -d bootstrap/talos apply"
+description = "Apply Talos configuration to nodes"
+
+[tasks.apply-insecure]
+run = "task -d bootstrap/talos apply-insecure"
+description = "Apply Talos configuration to nodes in maintenance mode (initial install)"
+
+[tasks.kubeconfig]
+run = "task -d bootstrap/talos kubeconfig"
+description = "Fetch kubeconfig from cluster"
+
+[tasks.health]
+run = "task -d bootstrap/talos health"
+description = "Check cluster health"
+
+[tasks.dashboard]
+run = "task -d bootstrap/talos dashboard"
+description = "Open Talos dashboard"
+
+[tasks.gpu-status]
+run = "task -d bootstrap/talos gpu-status"
+description = "Check NVIDIA GPU status"
+
+[tasks.reset]
+run = """
+echo "[Destructive] This will reset the node!"
+echo ""
+echo "WARNING: This will DESTROY your cluster!"
+echo "Are you absolutely sure you want to proceed? (y/N)"
+read -r response
+
+if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
+  talosctl -n spark-0 -e spark-0 reset --system-labels-to-wipe EPHEMERAL,STATE --graceful=false --reboot --force
+else
+  echo "Reset cancelled."
+fi
+"""
+description = "Reset cluster with confirmation (DESTRUCTIVE)"
+
+[tasks.disk]
+run = "task -d bootstrap/talos disk"
+description = "Show discovered volumes"
+
+[tasks.link]
+run = "task -d bootstrap/talos link"
+description = "Show network link status"
+
+[tasks.addresses]
+run = "task -d bootstrap/talos addresses"
+description = "Show IP addresses"
+
+[tasks.service]
+run = "task -d bootstrap/talos service"
+description = "List services"
+
+[tasks.reboot]
+run = """
+echo "WARNING: This will reboot the node! Press Ctrl+C to cancel..."
+sleep 5
+talosctl -e spark-0 -n spark-0 reboot --debug
+"""
+description = "Reboot node (DISRUPTIVE)"
+
+[tasks.upgrade]
+run = """
+TALOS_VERSION="${1:-v1.12.1}"
+echo "Upgrading to Talos $TALOS_VERSION"
+talosctl upgrade --nodes spark-0 --image ghcr.io/siderolabs/installer:${TALOS_VERSION} -e spark-0 --wait --debug
+"""
+description = "Upgrade Talos version"
+
+[tasks.k9s]
+run = "k9s --context admin@k8s.stpetersburg.internal"
+description = "Launch k9s with cluster context"
+
+[tasks.iso]
+run = """
+echo "Generating ISO from talconfig schematic..."
+SCHEMATIC_ID=$(talhelper genurl installer --config-file bootstrap/talos/talconfig.yaml | grep -oE 'factory.talos.dev/installer/[^:]+' | cut -d'/' -f3)
+TALOS_VERSION=$(grep talosVersion bootstrap/talos/talconfig.yaml | awk '{print $2}')
+echo "Schematic ID: $SCHEMATIC_ID"
+echo "Talos Version: $TALOS_VERSION"
+echo "Downloading ISO..."
+curl -O "https://factory.talos.dev/image/${SCHEMATIC_ID}/${TALOS_VERSION}/metal-amd64.iso"
+echo "ISO downloaded: metal-amd64.iso"
+"""
+description = "Download custom ISO with NVIDIA extensions from talconfig"
+
+[tasks.nodes]
+run = "kubectl get nodes -o wide"
+description = "Show cluster nodes"
+
+[tasks.pods]
+run = "kubectl get pods -A"
+description = "Show all pods in cluster"
+
+[tasks.talos-shell]
+run = "talosctl -n spark-0 -e spark-0 shell"
+description = "Open shell on node"
+
+[tasks.logs]
+run = """
+SERVICE="${1:-kubelet}"
+echo "Showing logs for $SERVICE"
+talosctl -n spark-0 -e spark-0 logs $SERVICE
+"""
+description = "Show service logs (usage: mise run logs [service])"
+
+[tasks.dmesg]
+run = "talosctl -n spark-0 -e spark-0 dmesg"
+description = "Show kernel logs"

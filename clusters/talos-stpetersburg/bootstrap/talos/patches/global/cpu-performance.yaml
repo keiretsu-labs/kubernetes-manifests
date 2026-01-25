@@ -1,0 +1,9 @@
+# DGX Spark CPU performance settings
+# Note: Grace CPU settings will differ from Intel - adjust after first boot
+machine:
+  kernel:
+    modules:
+      - name: nvidia
+      - name: nvidia_uvm
+      - name: nvidia_drm
+      - name: nvidia_modeset

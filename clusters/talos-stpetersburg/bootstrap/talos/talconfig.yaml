@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
+---
+# renovate: datasource=docker depName=ghcr.io/siderolabs/installer
+talosVersion: v1.12.1
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+kubernetesVersion: v1.35.0
+clusterName: "k8s.stpetersburg.internal"
+endpoint: https://k8s.stpetersburg.internal:6443
+allowSchedulingOnMasters: true
+allowSchedulingOnControlPlanes: true
+clusterPodNets:
+  - "10.5.0.0/16"
+clusterSvcNets:
+  - "10.4.0.0/16"
+
+additionalApiServerCertSans:
+  - "192.168.73.25"
+  - "default-kubernetes-stpetersburg-ingress.keiretsu.ts.net"
+  - "kubernetes-stpetersburg.keiretsu.ts.net"
+  - "kubernetes.stpetersburg.rajsingh.info"
+  - "kubernetes-stpetersburg.default.svc.cluster.local"
+  - 127.0.0.1 # KubePrism
+
+additionalMachineCertSans:
+  - "192.168.73.25"
+  - "k8s.stpetersburg.internal"
+  - "default-kubernetes-stpetersburg-ingress.keiretsu.ts.net"
+  - "kubernetes-stpetersburg.keiretsu.ts.net"
+  - "kubernetes.stpetersburg.rajsingh.info"
+  - "kubernetes-stpetersburg.default.svc.cluster.local"
+  - 127.0.0.1 # KubePrism
+
+# Disable built-in Flannel to use Cilium
+cniConfig:
+  name: none
+
+# Per-node specific configuration
+nodes:
+  ###################################################################
+  - hostname: "spark-0"
+    ipAddress: "spark-0"
+    # Install to first NVMe - update serial after discovering disks
+    installDisk: /dev/nvme0n1
+    controlPlane: true
+    networkInterfaces:
+      - interface: eth0
+        dhcp: true
+        vip:
+          ip: "192.168.73.25"
+    patches:
+      - "@./patches/node/spark-0.yaml"
+
+# Global patches
+patches:
+  - "@./patches/global/cluster-discovery.yaml"
+  - "@./patches/global/containerd.yaml"
+  - "@./patches/global/disable-search-domain.yaml"
+  - "@./patches/global/cpu-performance.yaml"
+  - "@./patches/global/hostdns.yaml"
+  - "@./patches/global/kubelet.yaml"
+  - "@./patches/global/local-path-provisioner.yaml"
+  - "@./patches/global/metrics-server.yaml"
+  - "@./patches/global/udev.yaml"
+  - "@./patches/global/sysctls.yaml"
+  - "@./patches/global/nvidia.yaml"
+
+# Control plane nodes config
+controlPlane:
+  schematic:
+    customization:
+      systemExtensions:
+        officialExtensions:
+          # NVIDIA GPU support (LTS drivers for latest GPU support including Blackwell)
+          - siderolabs/nonfree-kmod-nvidia-lts
+          - siderolabs/nvidia-container-toolkit-lts
+          # Utilities
+          - siderolabs/util-linux-tools
+      extraKernelArgs:
+        - apparmor=0
+        - init_on_alloc=0
+        - init_on_free=0
+        - mitigations=off
+        - security=none
+        - talos.auditd.disabled=1
+        - net.ifnames=0
+        - nvidia_drm.modeset=1
+        - nvidia_drm.fbdev=1
+  patches:
+    - "@./patches/controller/api-access.yaml"
+    - "@./patches/controller/disable-proxy.yaml"
+    - "@./patches/controller/kubelet-certs.yaml"
+    - "@./patches/controller/etcd-metrics-patch.yaml"
