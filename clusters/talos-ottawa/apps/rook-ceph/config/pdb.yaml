@@ -1,0 +1,47 @@
+---
+# PodDisruptionBudgets for Ceph components
+# Prevents multiple OSDs/MONs from being evicted simultaneously during node drains/upgrades
+# This ensures Ceph cluster stays healthy and RBD volumes can be properly unmounted
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rook-ceph-osd
+  namespace: rook-ceph
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: rook-ceph-osd
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rook-ceph-mon
+  namespace: rook-ceph
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: rook-ceph-mon
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rook-ceph-mds
+  namespace: rook-ceph
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: rook-ceph-mds
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rook-ceph-mgr
+  namespace: rook-ceph
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: rook-ceph-mgr

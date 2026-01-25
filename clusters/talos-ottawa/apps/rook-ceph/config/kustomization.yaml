@@ -9,6 +9,7 @@ resources:
   - ./storageclass.yaml
   - ./volumesnapshot.yaml
   - ./blockpool.yaml
+  - ./pdb.yaml
   # Dashboards
   - ./dashboard-cluster.yaml
   - ./dashboard-osd.yaml
