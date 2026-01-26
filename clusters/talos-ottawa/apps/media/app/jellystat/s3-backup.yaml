@@ -26,4 +26,10 @@ spec:
       secretAccessKey:
         name: jellystat-s3-backup
         key: AWS_SECRET_ACCESS_KEY
+    wal:
+      additionalCommandArgs:
+        - "--aws-region=garage"
+    data:
+      additionalCommandArgs:
+        - "--aws-region=garage"
   retentionPolicy: "30d"
