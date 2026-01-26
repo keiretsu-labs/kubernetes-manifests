@@ -26,4 +26,8 @@ spec:
       secretAccessKey:
         name: jellystat-s3-backup
         key: AWS_SECRET_ACCESS_KEY
+  instanceSidecarConfiguration:
+    env:
+      - name: AWS_DEFAULT_REGION
+        value: garage
   retentionPolicy: "30d"
