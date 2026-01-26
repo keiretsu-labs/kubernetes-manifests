@@ -104,6 +104,8 @@ nodes:
           xmitHashPolicy: layer2
           lacpRate: fast
           miimon: 1000
+          adSelect: bandwidth
+          minLinks: 2
         dhcp: true
         vip:
           ip: "192.168.169.25"
