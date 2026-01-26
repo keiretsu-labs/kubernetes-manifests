@@ -47,7 +47,9 @@ nodes:
         dhcp: true
       - interface: bond0
         bond:
-          deviceSelectors: [{ hardwareAddr: "58:47:ca:7c:*", driver: i40e }]
+          deviceSelectors:
+            - hardwareAddr: "58:47:ca:7c:02:ce"  # eth2
+            - hardwareAddr: "58:47:ca:7c:02:cf"  # eth3
           mode: 802.3ad
           xmitHashPolicy: layer2
           lacpRate: fast
@@ -70,7 +72,9 @@ nodes:
         dhcp: true
       - interface: bond0
         bond:
-          deviceSelectors: [{ hardwareAddr: "58:47:ca:7c:*", driver: i40e }]
+          deviceSelectors:
+            - hardwareAddr: "58:47:ca:7c:84:c9"  # eth2
+            - hardwareAddr: "58:47:ca:7c:84:ca"  # eth3
           mode: 802.3ad
           xmitHashPolicy: layer2
           lacpRate: fast
@@ -93,7 +97,9 @@ nodes:
         dhcp: true
       - interface: bond0
         bond:
-          deviceSelectors: [{ hardwareAddr: "58:47:ca:7f:*", driver: i40e }]
+          deviceSelectors:
+            - hardwareAddr: "58:47:ca:7f:06:80"  # eth2
+            - hardwareAddr: "58:47:ca:7f:06:81"  # eth3
           mode: 802.3ad
           xmitHashPolicy: layer2
           lacpRate: fast
