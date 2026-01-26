@@ -124,7 +124,6 @@ patches:
   - "@./patches/global/metrics-server.yaml"
   - "@./patches/global/udev.yaml"
   - "@./patches/global/sysctls.yaml"
-  - "@./patches/global/talos-nodes-rbac.yaml"
 
 # Control plane nodes config
 controlPlane:
