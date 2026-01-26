@@ -33,7 +33,7 @@ spec:
       app.kubernetes.io/name: smartctl-exporter
   dependsOn:
     - name: smartctl-exporter
-  path: ./clusters/common/apps/smartctl-exporter/config
+  path: ./clusters/${CLUSTER_NAME}/apps/smartctl-exporter/config
   prune: true
   sourceRef:
     kind: GitRepository
