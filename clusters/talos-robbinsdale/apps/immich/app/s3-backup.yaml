@@ -18,7 +18,7 @@ metadata:
 spec:
   configuration:
     destinationPath: s3://keiretsu/${LOCATION}/immich/postgres/
-    endpointURL: https://nyc3.digitaloceanspaces.com
+    endpointURL: http://${COMMON_S3_ENDPOINT}
     s3Credentials:
       accessKeyId:
         name: immich-s3-backup
