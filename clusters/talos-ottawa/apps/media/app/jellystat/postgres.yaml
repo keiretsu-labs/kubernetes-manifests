@@ -25,15 +25,15 @@ spec:
   backup:
     retentionPolicy: "30d"
   externalClusters:
-  - name: digitalocean
+  - name: keiretsu
     plugin:
       name: barman-cloud.cloudnative-pg.io
       parameters:
         barmanObjectName: jellystat-s3-store
         serverName: jellystat-postgres
-  bootstrap:
-    recovery:
-      source: digitalocean
+  # bootstrap:
+  #   recovery:
+  #     source: keiretsu
 ---
 # S3 backup schedule using Barman Cloud
 apiVersion: postgresql.cnpg.io/v1
