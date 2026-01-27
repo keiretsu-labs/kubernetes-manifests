@@ -16,8 +16,10 @@ spec:
         - host
   egress:
     # Allow Kubernetes API server
-    - toEntities:
-        - kube-apiserver
+    - toServices:
+        - k8sService:
+            serviceName: kubernetes
+            namespace: default
       toPorts:
         - ports:
             - port: "443"
