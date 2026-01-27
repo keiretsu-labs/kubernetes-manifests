@@ -7,4 +7,6 @@ spec:
   endpointSelector:
     matchLabels:
       app: ${LOCATION}-derp-client
-  ingress: []
+  ingressDeny:
+    - fromEntities:
+        - all
