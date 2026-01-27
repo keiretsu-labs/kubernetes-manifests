@@ -15,6 +15,13 @@ spec:
     - fromEntities:
         - host
   egress:
+    # Allow Kubernetes API server
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
     # Allow DNS
     - toEndpoints:
         - matchLabels:
