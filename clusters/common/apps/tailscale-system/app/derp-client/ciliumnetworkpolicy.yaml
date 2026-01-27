@@ -1,17 +1,10 @@
 ---
 apiVersion: cilium.io/v2
-kind: CiliumClusterwideNetworkPolicy
+kind: CiliumNetworkPolicy
 metadata:
   name: ${LOCATION}-derp-client-deny-ingress
 spec:
   endpointSelector:
     matchLabels:
       app: ${LOCATION}-derp-client
-  ingressDeny:
-    - fromEntities:
-        - world
-        - cluster
-        - host
-    - fromCIDR:
-        - 0.0.0.0/0
-        - ::/0
+  ingress: []

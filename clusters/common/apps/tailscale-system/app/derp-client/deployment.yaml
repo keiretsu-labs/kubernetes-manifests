@@ -49,7 +49,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: ts-oauth
-              key: TS_AUTHKEY
+              key: TS_AUTHKEY_EPHEMERAL
               optional: true
         - name: TS_ACCEPT_DNS
           value: "true"
