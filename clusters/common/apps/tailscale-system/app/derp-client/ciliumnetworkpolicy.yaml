@@ -2,13 +2,36 @@
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: ${LOCATION}-derp-client-deny-ingress
+  name: ${LOCATION}-derp-client-nat-simulation
 spec:
   endpointSelector:
     matchLabels:
       app: ${LOCATION}-derp-client
   enableDefaultDeny:
     ingress: true
-  ingressDeny:
-    - fromEntities:
-        - all
+    egress: true
+  egress:
+    # Allow DNS
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    # Allow HTTPS (for DERP over HTTPS, control plane)
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+    # Allow DERP UDP port 3478 (STUN)
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "3478"
+              protocol: UDP
