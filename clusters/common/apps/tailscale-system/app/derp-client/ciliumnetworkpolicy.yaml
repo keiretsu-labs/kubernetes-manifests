@@ -8,3 +8,23 @@ spec:
     matchLabels:
       app: ${LOCATION}-derp-client
   ingress: []
+  egress:
+    # Allow DNS
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    # Allow all TCP (DERP uses HTTPS)
+    - toEntities:
+        - world
+        - cluster
+      toPorts:
+        - ports:
+            - protocol: TCP
+    # Block UDP to world (prevents hole punching)
