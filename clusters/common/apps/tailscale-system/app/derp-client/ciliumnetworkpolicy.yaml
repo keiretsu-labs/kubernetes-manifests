@@ -10,6 +10,10 @@ spec:
   enableDefaultDeny:
     ingress: true
     egress: true
+  ingress:
+    # Allow kubelet (for logs, exec, health checks)
+    - fromEntities:
+        - host
   egress:
     # Allow DNS
     - toEndpoints:
