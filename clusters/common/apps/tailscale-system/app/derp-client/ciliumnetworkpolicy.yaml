@@ -2,48 +2,16 @@
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: ${LOCATION}-derp-client-nat-simulation
+  name: ${LOCATION}-derp-client-drop-wireguard
 spec:
   endpointSelector:
     matchLabels:
       app: ${LOCATION}-derp-client
-  enableDefaultDeny:
-    ingress: true
-    egress: true
-  ingress:
-    # Allow kubelet (for logs, exec, health checks)
+  ingressDeny:
     - fromEntities:
-        - host
-  egress:
-    # Allow cluster-internal traffic (API server, services)
-    - toEntities:
+        - world
         - cluster
-        - host
       toPorts:
         - ports:
-            - port: "443"
-              protocol: TCP
-    # Allow DNS
-    - toEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: kube-system
-      toPorts:
-        - ports:
-            - port: "53"
-              protocol: UDP
-            - port: "53"
-              protocol: TCP
-    # Allow HTTPS (for DERP over HTTPS, control plane)
-    - toEntities:
-        - world
-      toPorts:
-        - ports:
-            - port: "443"
-              protocol: TCP
-    # Allow DERP UDP port 3478 (STUN)
-    - toEntities:
-        - world
-      toPorts:
-        - ports:
-            - port: "3478"
+            - port: "41641"
               protocol: UDP
