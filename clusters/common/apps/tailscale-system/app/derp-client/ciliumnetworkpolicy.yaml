@@ -15,11 +15,9 @@ spec:
     - fromEntities:
         - host
   egress:
-    # Allow Kubernetes API server
-    - toServices:
-        - k8sService:
-            serviceName: kubernetes
-            namespace: default
+    # Allow Kubernetes API server (service CIDR)
+    - toCIDR:
+        - ${CLUSTER_SERVICE_CIDR}
       toPorts:
         - ports:
             - port: "443"
