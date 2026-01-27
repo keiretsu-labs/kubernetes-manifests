@@ -15,9 +15,10 @@ spec:
     - fromEntities:
         - host
   egress:
-    # Allow Kubernetes API server (service CIDR)
-    - toCIDR:
-        - ${CLUSTER_SERVICE_CIDR}
+    # Allow cluster-internal traffic (API server, services)
+    - toEntities:
+        - cluster
+        - host
       toPorts:
         - ports:
             - port: "443"
