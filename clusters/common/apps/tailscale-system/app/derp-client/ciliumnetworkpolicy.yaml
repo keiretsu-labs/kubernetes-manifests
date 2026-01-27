@@ -1,0 +1,10 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: ${LOCATION}-derp-client-deny-ingress
+spec:
+  endpointSelector:
+    matchLabels:
+      app: ${LOCATION}-derp-client
+  ingress: []

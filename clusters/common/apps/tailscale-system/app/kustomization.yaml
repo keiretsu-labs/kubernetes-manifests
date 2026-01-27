@@ -9,3 +9,4 @@ resources:
   - ./ds
   - ./tsdnsproxy
   - ./tsddns
+  - ./derp-client

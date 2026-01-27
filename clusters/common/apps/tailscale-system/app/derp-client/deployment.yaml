@@ -1,20 +1,18 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: ${LOCATION}-peer-relay
+  name: ${LOCATION}-derp-client
 spec:
   replicas: 1
-  serviceName: ${LOCATION}-peer-relay
-  podManagementPolicy: Parallel
-  updateStrategy:
-    type: RollingUpdate
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
-      app: ${LOCATION}-peer-relay
+      app: ${LOCATION}-derp-client
   template:
     metadata:
       labels:
-        app: ${LOCATION}-peer-relay
+        app: ${LOCATION}-derp-client
     spec:
       serviceAccountName: "tailscale"
       initContainers:
@@ -56,7 +54,7 @@ spec:
             fieldRef:
               fieldPath: status.podIP
         - name: TS_KUBE_SECRET
-          value: $(POD_NAME)
+          value: ""
         - name: TS_STATE
           value: kube:$(POD_NAME)
         - name: TS_USERSPACE
@@ -70,14 +68,10 @@ spec:
         - name: TS_ACCEPT_DNS
           value: "true"
         - name: TS_EXTRA_ARGS
-          value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh --advertise-exit-node"
+          value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh"
         - name: TS_ENABLE_METRICS
           value: "true"
         - name: TS_LOCAL_ADDR_PORT
           value: 0.0.0.0:9002
         - name: TS_HOSTNAME
           value: $(POD_NAME)
-        lifecycle:
-          postStart:
-            exec:
-              command: ["/bin/sh", "-c", "sleep 10 && tailscale set --relay-server-port=6969 --relay-server-static-endpoints=${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.100.100:6969"]
