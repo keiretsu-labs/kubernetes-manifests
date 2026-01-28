@@ -9,7 +9,7 @@
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "prConcurrentLimit": 0,
-  "ignorePaths": ["**/*.sops.*"],
+  "ignorePaths": ["**/*.sops.*", "**/clusterplex.yaml"],
   "flux": {
     "managerFilePatterns": ["/clusters/.+\\.ya?ml$/"]
   },
@@ -94,9 +94,9 @@
       "allowedVersions": "/^v\\d+\\.\\d+\\.\\d+$/"
     },
     {
-      "description": "Track official Plex image with loose versioning (format: 1.43.0.10467-hash)",
+      "description": "Track official Plex image (format: 1.43.0.10467-hash)",
       "matchPackageNames": ["docker.io/plexinc/pms-docker", "plexinc/pms-docker"],
-      "versioning": "loose"
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)-(?<revision>[0-9a-fA-F]+)$"
     }
   ]
 }
