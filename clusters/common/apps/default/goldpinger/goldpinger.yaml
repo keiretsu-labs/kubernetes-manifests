@@ -68,7 +68,7 @@ spec:
               value: "http://goldpinger-ottawa:8080 http://goldpinger-robbinsdale:8080 http://goldpinger-ottawa.keiretsu.ts.net:8080 http://goldpinger-robbinsdale.keiretsu.ts.net:8080"
             - name: TCP_TARGETS
               value: "10.50.${SITE_ID}.69:53 10.50.69.50:53"
-          image: "docker.io/bloomberg/goldpinger:3.10.2"
+          image: "docker.io/bloomberg/goldpinger:3.10.3"
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
