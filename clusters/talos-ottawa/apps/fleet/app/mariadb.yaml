@@ -4,7 +4,7 @@ kind: MariaDB
 metadata:
   name: fleet-mariadb
 spec:
-  image: mariadb:11.4
+  image: mariadb:10.11
   rootPasswordSecretKeyRef:
     name: fleet-mariadb-secret
     key: root-password
@@ -31,5 +31,8 @@ spec:
     innodb_autoinc_lock_mode=2
     innodb_buffer_pool_size=256M
     max_allowed_packet=256M
+    character-set-server=utf8mb4
+    collation-server=utf8mb4_unicode_ci
+    sql_mode=TRADITIONAL
   metrics:
     enabled: true

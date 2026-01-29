@@ -7,4 +7,5 @@ resources:
   - redis.yaml
   - mariadb.yaml
   - secret.sops.yaml
+  - certificate.yaml
   - httproute.yaml
