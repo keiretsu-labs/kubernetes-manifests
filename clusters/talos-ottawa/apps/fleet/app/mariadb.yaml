@@ -1,0 +1,35 @@
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: fleet-mariadb
+spec:
+  image: mariadb:11.4
+  rootPasswordSecretKeyRef:
+    name: fleet-mariadb-secret
+    key: root-password
+  username: fleet
+  passwordSecretKeyRef:
+    name: fleet-mariadb-secret
+    key: password
+  database: fleet
+  port: 3306
+  storage:
+    size: 10Gi
+    storageClassName: ceph-block-replicated
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  myCnf: |
+    [mariadb]
+    bind-address=*
+    default_storage_engine=InnoDB
+    binlog_format=row
+    innodb_autoinc_lock_mode=2
+    innodb_buffer_pool_size=256M
+    max_allowed_packet=256M
+  metrics:
+    enabled: true
