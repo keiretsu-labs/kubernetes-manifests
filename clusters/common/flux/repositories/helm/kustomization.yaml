@@ -75,3 +75,4 @@ resources:
   - ./actions-runner-controller.yaml
   - ./victoriametrics.yaml
   - ./unpoller.yaml
+  - ./fleetdm.yaml
