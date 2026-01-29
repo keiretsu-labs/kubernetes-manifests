@@ -25,21 +25,19 @@ spec:
     replicas: 1
     imageTag: v4.63.1
     database:
+      secretName: fleet-mariadb-secret
       address: fleet-mariadb:3306
       database: fleet
       username: fleet
-      passwordSecretKeyRef:
-        name: fleet-mariadb-secret
-        key: password
+      passwordKey: password
       tls:
         enabled: false
     cache:
+      secretName: fleet-dragonfly-secret
       address: dragonfly-fleet:6379
       database: "0"
       usePassword: true
-      passwordSecretKeyRef:
-        name: fleet-dragonfly-secret
-        key: password
+      passwordKey: password
     tls:
       enabled: false
     ingress:
