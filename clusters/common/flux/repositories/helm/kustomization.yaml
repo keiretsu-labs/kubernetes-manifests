@@ -76,3 +76,4 @@ resources:
   - ./victoriametrics.yaml
   - ./unpoller.yaml
   - ./fleetdm.yaml
+  - ./mariadb-operator.yaml
