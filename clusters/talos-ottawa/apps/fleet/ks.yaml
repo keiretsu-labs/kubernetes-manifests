@@ -12,6 +12,7 @@ spec:
   dependsOn:
     - name: dragonfly-operator-system
     - name: mariadb-operator-system
+    - name: cert-manager-issuers
   path: ./clusters/${CLUSTER_NAME}/apps/fleet/app
   prune: true
   sourceRef:
