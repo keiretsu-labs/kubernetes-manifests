@@ -75,5 +75,6 @@ resources:
   - ./actions-runner-controller.yaml
   - ./victoriametrics.yaml
   - ./unpoller.yaml
+  - ./percona.yaml
   - ./fleetdm.yaml
   - ./mariadb-operator.yaml
