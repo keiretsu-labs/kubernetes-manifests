@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: fleet
-      version: "v4.79.1"
+      version: v6.7.10
       sourceRef:
         kind: HelmRepository
         name: fleetdm
@@ -43,10 +43,13 @@ spec:
       enabled: false
     mysql:
       enabled: true
+      image:
+        repository: bitnamilegacy/mysql
+        tag: 8.0
       auth:
         database: fleet
         username: fleet
-        existingSecret: fleet-mysql-secrets
+        existingSecret: mysql
       primary:
         persistence:
           enabled: true
