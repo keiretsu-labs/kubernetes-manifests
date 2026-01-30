@@ -27,7 +27,7 @@ spec:
     database:
       secretName: mysql
       address: fleet-mysql-pxc:3306
-      database: mysql
+      database: fleet
       username: root
       passwordKey: mysql-password
       tls:
