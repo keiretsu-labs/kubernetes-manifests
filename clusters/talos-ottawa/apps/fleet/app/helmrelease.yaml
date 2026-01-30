@@ -40,7 +40,7 @@ spec:
       enabled: true
       image:
         repository: bitnamilegacy/mysql
-        tag: "8.0"
+        tag: "8.4"
       auth:
         database: fleet
         username: fleet
