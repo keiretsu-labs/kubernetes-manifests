@@ -9,7 +9,7 @@ spec:
   secretsName: fleet-mysql-secrets
   pxc:
     size: 1
-    image: percona/percona-xtradb-cluster:8.0.36-28.1
+    image: percona/percona-xtradb-cluster:5.7.44-31.65
     resources:
       requests:
         cpu: 100m
