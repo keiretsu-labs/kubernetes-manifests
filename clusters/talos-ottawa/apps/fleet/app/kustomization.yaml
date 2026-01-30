@@ -5,6 +5,5 @@ namespace: fleet
 resources:
   - helmrelease.yaml
   - redis.yaml
-  - mysql.yaml
   - secret.sops.yaml
   - httproute.yaml

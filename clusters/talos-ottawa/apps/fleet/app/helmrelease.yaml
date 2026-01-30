@@ -42,3 +42,22 @@ spec:
       enabled: false
     ingress:
       enabled: false
+    mysql:
+      enabled: true
+      auth:
+        database: fleet
+        username: fleet
+        existingSecret: fleet-mysql-secrets
+      primary:
+        persistence:
+          enabled: true
+          storageClass: ceph-block-replicated
+          size: 10Gi
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+    redis:
+      enabled: false
