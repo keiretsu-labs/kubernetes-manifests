@@ -6,6 +6,5 @@ resources:
   - helmrelease.yaml
   - redis.yaml
   - mysql.yaml
-  - init-db.yaml
   - secret.sops.yaml
   - httproute.yaml

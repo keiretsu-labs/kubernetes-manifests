@@ -11,7 +11,6 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: dragonfly-operator-system
-    - name: pxc-operator-system
   path: ./clusters/${CLUSTER_NAME}/apps/fleet/app
   prune: true
   sourceRef:
