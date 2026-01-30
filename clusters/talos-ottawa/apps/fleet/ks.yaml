@@ -11,8 +11,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: dragonfly-operator-system
-    - name: mariadb-operator-system
-    - name: cert-manager-common-issuers
+    - name: pxc-operator-system
   path: ./clusters/${CLUSTER_NAME}/apps/fleet/app
   prune: true
   sourceRef:

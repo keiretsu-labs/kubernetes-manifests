@@ -1,0 +1,29 @@
+---
+apiVersion: pxc.percona.com/v1
+kind: PerconaXtraDBCluster
+metadata:
+  name: fleet-mysql
+spec:
+  crVersion: 1.19.0
+  allowUnsafeConfigurations: true
+  secretsName: fleet-mysql-secrets
+  pxc:
+    size: 1
+    image: percona/percona-xtradb-cluster:8.0.36-28.1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    volumeSpec:
+      persistentVolumeClaim:
+        resources:
+          requests:
+            storage: 10Gi
+  haproxy:
+    enabled: false
+  logcollector:
+    enabled: false
+  pmm:
+    enabled: false
