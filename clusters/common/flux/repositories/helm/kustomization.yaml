@@ -78,3 +78,4 @@ resources:
   - ./percona.yaml
   - ./fleetdm.yaml
   - ./mariadb-operator.yaml
+  - ./bitnami.yaml
