@@ -22,7 +22,7 @@ spec:
       retries: 3
   values:
     image:
-      tag: 8.0
+      repository: bitnamilegacy/mysql
     auth:
       database: fleet
       username: fleet
