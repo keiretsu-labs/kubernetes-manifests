@@ -56,4 +56,5 @@ spec:
             memory: 512Mi
           limits:
             memory: 1Gi
- 
+    environments:
+      FLEET_UPGRADES_ALLOW_MISSING_MIGRATIONS: 1
