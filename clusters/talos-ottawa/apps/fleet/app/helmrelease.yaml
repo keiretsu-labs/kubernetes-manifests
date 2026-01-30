@@ -40,12 +40,40 @@ spec:
       enabled: true
       image:
         repository: bitnamilegacy/mysql
-        tag: "8.0.40"
+        tag: "8.4"
       auth:
         database: fleet
         username: fleet
         existingSecret: mysql
       primary:
+        configuration: |-
+          [mysqld]
+          authentication_policy='*,,'
+          skip-name-resolve
+          explicit_defaults_for_timestamp
+          basedir=/opt/bitnami/mysql
+          plugin_dir=/opt/bitnami/mysql/lib/plugin
+          port=3306
+          socket=/opt/bitnami/mysql/tmp/mysql.sock
+          datadir=/bitnami/mysql/data
+          tmpdir=/opt/bitnami/mysql/tmp
+          max_allowed_packet=16M
+          bind-address=*
+          pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+          log-error=/opt/bitnami/mysql/logs/mysqld.log
+          character-set-server=utf8mb4
+          collation-server=utf8mb4_unicode_ci
+          slow_query_log=0
+          long_query_time=10.0
+          [client]
+          port=3306
+          socket=/opt/bitnami/mysql/tmp/mysql.sock
+          default-character-set=utf8mb4
+          plugin_dir=/opt/bitnami/mysql/lib/plugin
+          [manager]
+          port=3306
+          socket=/opt/bitnami/mysql/tmp/mysql.sock
+          pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
         persistence:
           enabled: true
           storageClass: ceph-block-replicated
