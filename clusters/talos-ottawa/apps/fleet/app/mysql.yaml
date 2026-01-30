@@ -16,6 +16,8 @@ spec:
       character-set-server=utf8mb4
       collation-server=utf8mb4_unicode_ci
       default-authentication-plugin=mysql_native_password
+      pxc_strict_mode=DISABLED
+      wsrep_OSU_method=RSU
     resources:
       requests:
         cpu: 100m
