@@ -26,21 +26,15 @@ spec:
     database:
       secretName: mysql
       address: fleet-mysql:3306
-      database: fleet
-      username: fleet
       passwordKey: mysql-password
-      tls:
-        enabled: false
     cache:
       secretName: redis
       address: dragonfly-fleet:6379
-      database: "0"
       usePassword: true
       passwordKey: redis-password
-    tls:
-      enabled: false
-    ingress:
-      enabled: false
+    fleet:
+      tls:
+        enabled: false
     mysql:
       enabled: true
       image:
@@ -61,5 +55,3 @@ spec:
             memory: 512Mi
           limits:
             memory: 1Gi
-    redis:
-      enabled: false
