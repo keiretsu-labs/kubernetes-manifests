@@ -25,19 +25,19 @@ spec:
     replicas: 1
     imageTag: v4.63.1
     database:
-      secretName: fleet-mariadb-secret
-      address: fleet-mariadb:3306
-      database: fleet
-      username: fleet
-      passwordKey: password
+      secretName: mysql
+      address: fleet-mysql-pxc:3306
+      database: mysql
+      username: root
+      passwordKey: mysql-password
       tls:
         enabled: false
     cache:
-      secretName: fleet-dragonfly-secret
+      secretName: redis
       address: dragonfly-fleet:6379
       database: "0"
       usePassword: true
-      passwordKey: password
+      passwordKey: redis-password
     tls:
       enabled: false
     ingress:

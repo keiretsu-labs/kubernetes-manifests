@@ -5,7 +5,6 @@ namespace: fleet
 resources:
   - helmrelease.yaml
   - redis.yaml
-  - mariadb.yaml
+  - mysql.yaml
   - secret.sops.yaml
-  - certificate.yaml
   - httproute.yaml
