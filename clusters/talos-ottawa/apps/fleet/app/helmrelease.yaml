@@ -26,7 +26,7 @@ spec:
     imageTag: v4.63.1
     database:
       secretName: mysql
-      address: fleet-mysql:3306
+      address: fleet-mysql-pxc:3306
       database: fleet
       username: root
       passwordKey: mysql-password
