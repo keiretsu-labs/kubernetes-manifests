@@ -4,7 +4,7 @@ kind: MariaDB
 metadata:
   name: fleet-mariadb
 spec:
-  image: mariadb:10.11
+  image: mariadb:12.1
   rootPasswordSecretKeyRef:
     name: fleet-mariadb-secret
     key: root-password
