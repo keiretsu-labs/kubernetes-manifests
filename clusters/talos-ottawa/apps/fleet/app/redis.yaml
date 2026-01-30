@@ -8,10 +8,11 @@ spec:
   args:
     - --maxmemory=512M
     - --proactor_threads=2
+    - --cluster_mode=emulated
   authentication:
     passwordFromSecret:
-      name: fleet-dragonfly-secret
-      key: password
+      name: redis
+      key: redis-password
   resources:
     requests:
       cpu: 25m
