@@ -1,0 +1,108 @@
+---
+# EnvoyFilter to handle cross-cluster traffic routing preference.
+#
+# Problem: Istio's multi-cluster discovery sees two sets of gateway endpoints:
+#   1. Internal egress proxy pod IPs (10.x.x.x) - these WORK (traffic routes through Tailscale proxy pod)
+#   2. External Tailscale CGNAT IPs (100.64.0.0/10) - these FAIL (pods can't reach tailnet directly)
+# 
+# Both have same priority, so Istio load-balances randomly and fails when it picks a Tailscale IP.
+#
+# Solution: Use aggressive outlier detection to quickly eject failing endpoints (Tailscale IPs)
+# and fall back to working endpoints (internal egress proxies). Combined with passive health
+# checking, this ensures traffic flows through the internal proxies.
+#
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: crosscluster-endpoint-failover
+  namespace: istio-system
+spec:
+  configPatches:
+    # Aggressive outlier detection for ALL outbound clusters to quickly detect and eject
+    # endpoints that fail to connect (like Tailscale IPs that pods can't reach)
+    - applyTo: CLUSTER
+      match:
+        context: SIDECAR_OUTBOUND
+      patch:
+        operation: MERGE
+        value:
+          outlier_detection:
+            # Eject after just 1 consecutive failure - this is aggressive but necessary
+            # because pods will NEVER be able to reach Tailscale CGNAT IPs
+            consecutive_5xx: 1
+            consecutive_gateway_failure: 1
+            # Check quickly
+            interval: 5s
+            # Eject for a long time since the failure is persistent
+            base_ejection_time: 300s
+            # Allow all endpoints to be ejected if needed (will be unejected when healthy)
+            max_ejection_percent: 100
+            # Enforce all failure types
+            enforcing_consecutive_5xx: 100
+            enforcing_consecutive_gateway_failure: 100
+            # Also detect local origin failures (connection refused, timeout)
+            split_external_local_origin_errors: true
+            consecutive_local_origin_failure: 1
+            enforcing_consecutive_local_origin_failure: 100
+            # Success rate based ejection for flaky endpoints
+            enforcing_success_rate: 100
+            success_rate_minimum_hosts: 1
+            success_rate_request_volume: 5
+            success_rate_stdev_factor: 1900  # 1.9 standard deviations
+---
+# Specific configuration for gateway clusters (port 15443) that handle cross-cluster traffic
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: crosscluster-gateway-health
+  namespace: istio-system
+spec:
+  configPatches:
+    # Apply TCP health checks to gateway clusters to proactively detect unreachable endpoints
+    - applyTo: CLUSTER
+      match:
+        context: SIDECAR_OUTBOUND
+        cluster:
+          portNumber: 15443  # East-west gateway TLS port
+      patch:
+        operation: MERGE
+        value:
+          # Health checks for gateway endpoints
+          health_checks:
+            - timeout: 3s
+              interval: 10s
+              unhealthy_threshold: 1  # Mark unhealthy after 1 failed check
+              healthy_threshold: 3    # Need 3 consecutive successes to be healthy again
+              tcp_health_check: {}    # Simple TCP connect check
+              no_traffic_interval: 30s  # Check more frequently when idle
+          # Connection settings
+          connect_timeout: 5s
+          # Circuit breaker settings
+          circuit_breakers:
+            thresholds:
+              - priority: DEFAULT
+                max_connections: 1024
+                max_pending_requests: 1024
+                max_requests: 1024
+                max_retries: 3
+              - priority: HIGH
+                max_connections: 1024
+                max_pending_requests: 1024
+                max_requests: 1024
+                max_retries: 3
+          # Ensure we don't panic route when endpoints are unhealthy
+          common_lb_config:
+            healthy_panic_threshold:
+              value: 0  # Don't panic route - prefer no endpoints over unhealthy ones
+          # More aggressive outlier detection for gateway clusters
+          outlier_detection:
+            consecutive_5xx: 1
+            consecutive_gateway_failure: 1
+            interval: 3s
+            base_ejection_time: 600s  # 10 minute ejection for gateway failures
+            max_ejection_percent: 80  # Keep at least 20% of endpoints
+            enforcing_consecutive_5xx: 100
+            enforcing_consecutive_gateway_failure: 100
+            split_external_local_origin_errors: true
+            consecutive_local_origin_failure: 1
+            enforcing_consecutive_local_origin_failure: 100
