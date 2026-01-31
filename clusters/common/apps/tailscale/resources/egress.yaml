@@ -4,7 +4,7 @@ metadata:
   name: robbinsdale-k8s-operator
   annotations:
     tailscale.com/tailnet-fqdn: robbinsdale-k8s-operator.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-class: common
 spec:
   externalName: placeholder
   type: ExternalName
@@ -19,7 +19,7 @@ metadata:
   name: ottawa-k8s-operator
   annotations:
     tailscale.com/tailnet-fqdn: ottawa-k8s-operator.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-class: common
 spec:
   externalName: placeholder
   type: ExternalName
@@ -34,7 +34,7 @@ metadata:
   name: stpetersburg-k8s-operator
   annotations:
     tailscale.com/tailnet-fqdn: stpetersburg-k8s-operator.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-class: common
 spec:
   externalName: placeholder
   type: ExternalName

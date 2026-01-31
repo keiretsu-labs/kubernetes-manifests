@@ -6,7 +6,7 @@ metadata:
   namespace: istio-system
   annotations:
     tailscale.com/tailnet-fqdn: robbinsdale-istio-eastwestgateway.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-class: common
 spec:
   externalName: placeholder
   type: ExternalName
@@ -31,7 +31,7 @@ metadata:
   namespace: istio-system
   annotations:
     tailscale.com/tailnet-fqdn: ottawa-istio-eastwestgateway.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-class: common
 spec:
   externalName: placeholder
   type: ExternalName
@@ -56,7 +56,7 @@ metadata:
   namespace: istio-system
   annotations:
     tailscale.com/tailnet-fqdn: stpetersburg-istio-eastwestgateway.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-class: common
 spec:
   externalName: placeholder
   type: ExternalName
