@@ -1,0 +1,12 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: immich
+resources:
+  - helmrelease.yaml
+  - pvc-library.yaml
+  - httproute.yaml
+  - secret.sops.yaml
+  - pg.yaml
+  - redis.yaml
+  - s3-backup.yaml

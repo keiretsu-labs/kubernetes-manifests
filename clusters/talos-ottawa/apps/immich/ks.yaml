@@ -1,0 +1,24 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app immich
+  namespace: flux-system
+spec:
+  targetNamespace: immich
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: cnpg-system
+    - name: dragonfly-operator-system
+    - name: volsync
+  path: ./clusters/${CLUSTER_NAME}/apps/immich/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: false
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m

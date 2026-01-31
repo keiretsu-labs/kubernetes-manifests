@@ -1,0 +1,102 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: immich
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: immich
+      version: 0.10.3
+      sourceRef:
+        kind: HelmRepository
+        name: immich
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: false
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      main:
+        containers:
+          main:
+            env:
+              DB_DATABASE_NAME: immich
+              DB_USERNAME:
+                valueFrom:
+                  secretKeyRef:
+                    name: immich-postgres-app
+                    key: username
+              DB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: immich-postgres-app
+                    key: password
+              DB_HOSTNAME: immich-postgres-rw
+              REDIS_HOSTNAME: dragonfly-immich
+              REDIS_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: immich-dragonfly-secret
+                    key: password
+    immich:
+      metrics:
+        enabled: true
+      persistence:
+        library:
+          existingClaim: immich-library
+    valkey:
+      enabled: false
+    server:
+      controllers:
+        main:
+          containers:
+            main:
+              env:
+                DB_DATABASE_NAME: immich
+                DB_USERNAME:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-postgres-app
+                      key: username
+                DB_PASSWORD:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-postgres-app
+                      key: password
+                DB_HOSTNAME: immich-postgres-rw
+                REDIS_HOSTNAME: dragonfly-immich
+                REDIS_PASSWORD:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-dragonfly-secret
+                      key: password
+    machine-learning:
+      controllers:
+        main:
+          containers:
+            main:
+              env:
+                DB_DATABASE_NAME: immich
+                DB_USERNAME:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-postgres-app
+                      key: username
+                DB_PASSWORD:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-postgres-app
+                      key: password
+                DB_HOSTNAME: immich-postgres-rw
+                REDIS_HOSTNAME: dragonfly-immich
+                REDIS_PASSWORD:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-dragonfly-secret
+                      key: password
