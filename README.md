@@ -234,7 +234,7 @@ Modern ingress via Gateway API:
 - [cilium](https://github.com/cilium/cilium) - CNI with custom config
 - [rook-ceph](https://github.com/rook/rook) - Distributed storage cluster
 - [immich](https://github.com/immich-app/immich) - Photo management
-- `media` - Media management stack (Sonarr, Radarr, Prowlarr, Jellyfin)
+- `media` - Media management stack
 - [gatus](https://github.com/TwiN/gatus) - Status page
 - [dockur](https://github.com/dockur/windows) - Docker-in-Kubernetes
 - [tuppr](https://github.com/home-operations/tuppr) - Kubernetes controller to upgrade Talos and Kubernetes
