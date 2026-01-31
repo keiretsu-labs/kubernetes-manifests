@@ -8,3 +8,4 @@ resources:
   - peerauthentication-permissive.yaml
   - kiali.yaml
   - kiali-httproute.yaml
+  - envoyfilter-deprioritize-tailscale-endpoints.yaml
