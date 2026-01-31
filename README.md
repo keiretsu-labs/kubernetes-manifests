@@ -1,6 +1,6 @@
 # Kubernetes GitOps Infrastructure
 
-Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This repository manages four geographically distributed clusters connected via Tailscale mesh networking and Istio multi-cluster service mesh.
+Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This repository manages three geographically distributed Talos Linux clusters connected via Tailscale mesh networking and Istio multi-cluster service mesh.
 
 ## Architecture Overview
 
@@ -9,24 +9,24 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 │                              Tailscale Mesh                                  │
 │                         (keiretsu.ts.net)                                   │
 └─────────────────────────────────────────────────────────────────────────────┘
-         │                    │                    │                 │
-         ▼                    ▼                    ▼                 ▼
-┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│  talos-ottawa   │  │talos-robbinsdale│  │talos-stpetersburg│  │  gke-uscentral1 │
-│    (Ontario)    │  │   (Minnesota)   │  │    (Florida)     │  │     (GCP)       │
-│                 │  │                 │  │                  │  │                 │
-│ • 3 nodes       │  │ • Multi-node    │  │ • GPU nodes      │  │ • Testing       │
-│ • Thunderbolt   │  │ • Rook-Ceph     │  │ • AI/ML workloads│  │ • Tailscale     │
-│ • Rook-Ceph     │  │ • Primary site  │  │ • KubeRay        │  │                 │
-│ • Home apps     │  │ • Home apps     │  │                  │  │                 │
-└─────────────────┘  └─────────────────┘  └──────────────────┘  └─────────────────┘
-         │                    │                    │                 │
-         └────────────────────┴────────────────────┴─────────────────┘
-                                     │
-                    ┌────────────────┴────────────────┐
-                    │   Istio Multi-Cluster Mesh      │
-                    │   (East-West Gateways)          │
-                    └─────────────────────────────────┘
+         │                         │                         │
+         ▼                         ▼                         ▼
+┌─────────────────┐       ┌─────────────────┐       ┌──────────────────┐
+│  talos-ottawa   │       │talos-robbinsdale│       │talos-stpetersburg│
+│    (Ontario)    │       │   (Minnesota)   │       │    (Florida)     │
+│                 │       │                 │       │                  │
+│ • 3 nodes       │       │ • Multi-node    │       │ • GPU nodes      │
+│ • Thunderbolt   │       │ • Rook-Ceph     │       │ • AI/ML workloads│
+│ • Rook-Ceph     │       │ • Primary site  │       │ • KubeRay        │
+│ • Home apps     │       │ • Home apps     │       │                  │
+└─────────────────┘       └─────────────────┘       └──────────────────┘
+         │                         │                         │
+         └─────────────────────────┴─────────────────────────┘
+                                   │
+                  ┌────────────────┴────────────────┐
+                  │   Istio Multi-Cluster Mesh      │
+                  │   (East-West Gateways)          │
+                  └─────────────────────────────────┘
 ```
 
 ## Clusters
@@ -36,7 +36,6 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 | `talos-ottawa` | Ontario, CA | Talos Linux | Primary homelab, 3-node Thunderbolt mesh | killinit.cc |
 | `talos-robbinsdale` | Minnesota, US | Talos Linux | Primary homelab, storage | lukehouge.com |
 | `talos-stpetersburg` | Florida, US | Talos Linux | GPU/AI workloads (NVIDIA) | rajsingh.info |
-| `gke-uscentral1` | US Central | GKE | Cloud testing | rajsingh.info |
 
 ## Directory Structure
 
@@ -67,11 +66,6 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 │   │   ├── apps/                  # GPU operator, KubeRay, KServe
 │   │   ├── bootstrap/talos/
 │   │   └── flux/
-│   │
-│   ├── gke-uscentral1/            # GKE cluster
-│   │   ├── apps/
-│   │   ├── flux/
-│   │   └── terraform/
 │   │
 │   └── template/                  # App templates
 │       ├── app-httproute/         # HTTPRoute + Backend template
@@ -176,7 +170,6 @@ All Talos clusters use Cilium as the CNI:
 | talos-ottawa | Rook-Ceph | SMB (NAS) |
 | talos-robbinsdale | Rook-Ceph | SMB (NAS) |
 | talos-stpetersburg | local-path | - |
-| gke-uscentral1 | GCE PD | - |
 
 ### Gateway API / Envoy Gateway
 
@@ -448,7 +441,6 @@ make validate-kustomize
 | talos-robbinsdale | 10.1.0.0/16 | 10.0.0.0/16 | 10.50.0.0/16 |
 | talos-ottawa | 10.3.0.0/16 | 10.2.0.0/16 | 10.169.0.0/16 |
 | talos-stpetersburg | 10.5.0.0/16 | 10.4.0.0/16 | 10.73.0.0/16 |
-| gke-uscentral1 | 10.7.0.0/16 | 10.6.0.0/16 | 10.70.0.0/16 |
 
 ### Tailscale DNS
 
