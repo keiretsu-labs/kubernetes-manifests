@@ -25,10 +25,7 @@ spec:
   values:
     name: istio-eastwestgateway
     labels:
-      # Note: Using 'istio: eastwestgateway-tailscale' instead of 'istio: eastwestgateway'
-      # to prevent Istio from auto-discovering this LoadBalancer service as a gateway
-      # Remote clusters should use their local egress proxy services (defined in tailscale-eastwest-egress.yaml)
-      istio: eastwestgateway-tailscale
+      istio: eastwestgateway
       app: istio-eastwestgateway
       topology.istio.io/network: ${LOCATION}
     env:
@@ -37,9 +34,6 @@ spec:
       annotations:
         tailscale.com/hostname: ${LOCATION}-istio-eastwestgateway
         tailscale.com/proxy-class: common
-        # Option A: Prevent this service from being exported to remote clusters
-        # This stops Istio from advertising the Tailscale IP as a gateway endpoint
-        networking.istio.io/exportTo: "."
       type: LoadBalancer
       loadBalancerClass: tailscale
       ports:
