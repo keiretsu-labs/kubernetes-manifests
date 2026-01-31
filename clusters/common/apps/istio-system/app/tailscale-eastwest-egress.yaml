@@ -1,4 +1,8 @@
 ---
+# Tailscale egress proxy services for Istio cross-cluster communication.
+# These services route traffic through the Tailscale egress ProxyGroup to reach
+# remote clusters' eastwest gateways, avoiding direct Tailscale CGNAT IPs that
+# pods cannot reach.
 apiVersion: v1
 kind: Service
 metadata:
@@ -6,7 +10,8 @@ metadata:
   namespace: istio-system
   annotations:
     tailscale.com/tailnet-fqdn: robbinsdale-istio-eastwestgateway.keiretsu.ts.net
-    tailscale.com/proxy-class: common
+    # Use ProxyGroup for egress services (not proxy-class)
+    tailscale.com/proxy-group: common-egress
 spec:
   externalName: placeholder
   type: ExternalName
@@ -31,7 +36,8 @@ metadata:
   namespace: istio-system
   annotations:
     tailscale.com/tailnet-fqdn: ottawa-istio-eastwestgateway.keiretsu.ts.net
-    tailscale.com/proxy-class: common
+    # Use ProxyGroup for egress services (not proxy-class)
+    tailscale.com/proxy-group: common-egress
 spec:
   externalName: placeholder
   type: ExternalName
@@ -56,7 +62,8 @@ metadata:
   namespace: istio-system
   annotations:
     tailscale.com/tailnet-fqdn: stpetersburg-istio-eastwestgateway.keiretsu.ts.net
-    tailscale.com/proxy-class: common
+    # Use ProxyGroup for egress services (not proxy-class)
+    tailscale.com/proxy-group: common-egress
 spec:
   externalName: placeholder
   type: ExternalName
