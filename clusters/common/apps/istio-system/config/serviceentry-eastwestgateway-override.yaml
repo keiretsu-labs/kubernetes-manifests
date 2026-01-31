@@ -1,0 +1,89 @@
+---
+# ServiceEntry to override Istio's automatic gateway endpoint discovery
+# 
+# Problem: Istio discovers LoadBalancer external IPs (Tailscale CGNAT) from remote clusters,
+# but pods cannot reach these IPs directly. They need to go through local egress proxies.
+#
+# Solution: Create ServiceEntry resources that define the gateway endpoints as the local
+# egress proxy service ClusterIPs. This overrides the automatic discovery.
+#
+# Note: These ServiceEntries use resolution=DNS to resolve to the local egress proxy services.
+#
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: robbinsdale-eastwestgateway-override
+  namespace: istio-system
+spec:
+  hosts:
+    # This hostname matches what meshNetworks references
+    - robbinsdale-istio-eastwestgateway.istio-system.svc.cluster.local
+  ports:
+    - number: 15443
+      name: tls
+      protocol: TLS
+    - number: 15012
+      name: tls-istiod
+      protocol: TLS
+    - number: 15017
+      name: tls-webhook
+      protocol: TLS
+    - number: 15021
+      name: status-port
+      protocol: TCP
+  location: MESH_INTERNAL
+  resolution: DNS
+  exportTo:
+    - "*"
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: stpetersburg-eastwestgateway-override
+  namespace: istio-system
+spec:
+  hosts:
+    - stpetersburg-istio-eastwestgateway.istio-system.svc.cluster.local
+  ports:
+    - number: 15443
+      name: tls
+      protocol: TLS
+    - number: 15012
+      name: tls-istiod
+      protocol: TLS
+    - number: 15017
+      name: tls-webhook
+      protocol: TLS
+    - number: 15021
+      name: status-port
+      protocol: TCP
+  location: MESH_INTERNAL
+  resolution: DNS
+  exportTo:
+    - "*"
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: ottawa-eastwestgateway-override
+  namespace: istio-system
+spec:
+  hosts:
+    - ottawa-istio-eastwestgateway.istio-system.svc.cluster.local
+  ports:
+    - number: 15443
+      name: tls
+      protocol: TLS
+    - number: 15012
+      name: tls-istiod
+      protocol: TLS
+    - number: 15017
+      name: tls-webhook
+      protocol: TLS
+    - number: 15021
+      name: status-port
+      protocol: TCP
+  location: MESH_INTERNAL
+  resolution: DNS
+  exportTo:
+    - "*"

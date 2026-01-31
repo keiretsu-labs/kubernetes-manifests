@@ -9,3 +9,4 @@ resources:
   - kiali.yaml
   - kiali-httproute.yaml
   - envoyfilter-deprioritize-tailscale-endpoints.yaml
+  - serviceentry-eastwestgateway-override.yaml
