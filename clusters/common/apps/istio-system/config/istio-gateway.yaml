@@ -3,8 +3,10 @@ kind: Gateway
 metadata:
   name: cross-network-gateway
 spec:
+  # Updated to match the eastwestgateway pods which now have
+  # istio: eastwestgateway-tailscale label (from Option A fix)
   selector:
-    istio: eastwestgateway
+    istio: eastwestgateway-tailscale
   servers:
     - port:
         number: 15443
