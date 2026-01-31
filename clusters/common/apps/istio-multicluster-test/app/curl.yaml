@@ -10,6 +10,9 @@ kind: Deployment
 metadata:
   name: curl
   namespace: sample
+  labels:
+    app: curl
+    cluster: ${LOCATION}
 spec:
   replicas: 1
   selector:
@@ -19,10 +22,18 @@ spec:
     metadata:
       labels:
         app: curl
+        cluster: ${LOCATION}
     spec:
       serviceAccountName: curl
       containers:
-      - name: curl
-        image: curlimages/curl
-        command: ["/bin/sleep", "infinity"]
-        imagePullPolicy: IfNotPresent
+        - name: curl
+          image: curlimages/curl:8.5.0
+          command: ["/bin/sleep", "infinity"]
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
