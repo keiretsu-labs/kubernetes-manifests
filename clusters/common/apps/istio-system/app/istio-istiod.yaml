@@ -29,7 +29,8 @@ spec:
         enabled: true
         clusterName: ${LOCATION}
       network: ${LOCATION}
-    meshConfig:
+      # meshNetworks configures cross-cluster routing through gateways
+      # This MUST be under global, not meshConfig!
       meshNetworks:
         robbinsdale:
           endpoints:
