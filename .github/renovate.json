@@ -50,11 +50,6 @@
       "automerge": false
     },
     {
-      "description": "Allow tunarr to automerge despite media namespace",
-      "matchPackageNames": ["chrisbenincasa/tunarr", "docker.io/chrisbenincasa/tunarr"],
-      "automerge": true
-    },
-    {
       "description": "Allow select media apps to automerge",
       "matchPaths": [
         "clusters/**/apps/media/app/autobrr/**",
@@ -62,11 +57,16 @@
         "clusters/**/apps/media/app/bazarr-4k/**",
         "clusters/**/apps/media/app/bazarr-4kremux/**",
         "clusters/**/apps/media/app/bazarr-anime/**",
+        "clusters/**/apps/media/app/configarr/**",
         "clusters/**/apps/media/app/feedcord/**",
+        "clusters/**/apps/media/app/jellyfin/**",
+        "clusters/**/apps/media/app/jellyseerr/**",
         "clusters/**/apps/media/app/jellystat/**",
         "clusters/**/apps/media/app/lidarr/**",
+        "clusters/**/apps/media/app/overseerr/**",
         "clusters/**/apps/media/app/prowlarr/**",
         "clusters/**/apps/media/app/tautulli/**",
+        "clusters/**/apps/media/app/tunarr/**",
         "clusters/**/apps/media/app/wizarr/**"
       ],
       "automerge": true
