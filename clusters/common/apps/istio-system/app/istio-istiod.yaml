@@ -31,23 +31,27 @@ spec:
       network: ${LOCATION}
       # meshNetworks configures cross-cluster routing through gateways
       # This MUST be under global, not meshConfig!
+      # Using 'address' instead of 'service' because the gateway services are
+      # ExternalName types that don't have EndpointSlices. Using address allows
+      # Envoy to resolve the DNS name at runtime and follow the CNAME chain
+      # to the actual egress proxy ClusterIP.
       meshNetworks:
         robbinsdale:
           endpoints:
           - fromRegistry: robbinsdale
           gateways:
-          - service: robbinsdale-istio-eastwestgateway.istio-system
+          - address: robbinsdale-istio-eastwestgateway.istio-system.svc.cluster.local
             port: 15443
         ottawa:
           endpoints:
           - fromRegistry: ottawa
           gateways:
-          - service: ottawa-istio-eastwestgateway.istio-system
+          - address: ottawa-istio-eastwestgateway.istio-system.svc.cluster.local
             port: 15443
         stpetersburg:
           endpoints:
           - fromRegistry: stpetersburg
           gateways:
-          - service: stpetersburg-istio-eastwestgateway.istio-system
+          - address: stpetersburg-istio-eastwestgateway.istio-system.svc.cluster.local
             port: 15443
 

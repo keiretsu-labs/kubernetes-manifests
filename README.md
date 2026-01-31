@@ -234,10 +234,10 @@ Modern ingress via Gateway API:
 - `cilium` - CNI with custom config
 - `rook-ceph` - Distributed storage cluster
 - `immich` - Photo management
-- `media` - Sonarr, Radarr, Prowlarr, Jellyfin
+- `media` - Media management stack
 - `gatus` - Status page
 - `dockur` - Docker-in-Kubernetes
-- `tuppr` - Custom app
+- `[tuppr](https://github.com/home-operations/tuppr)` - Kubernetes controller to upgrade Talos and Kubernetes
 
 ### talos-robbinsdale
 - `cilium` - CNI with custom config
@@ -245,7 +245,8 @@ Modern ingress via Gateway API:
 - `1password` - Secret management
 - `immich` - Photo management
 - `media` - Media management stack
-- `home` - Home Assistant, Homarr
+- `home` - Home Assistant
+- `homarr` - Home dashboard ([homarr.lukehouge.com](https://homarr.lukehouge.com))
 - `typeo` - Typing practice app
 - `strimzi` - Kafka cluster
 
@@ -314,10 +315,19 @@ flux get ks -A --watch
 
 ## Adding a New Application
 
+### Cluster-Specific vs Common Apps
+
+- **`clusters/common/apps/`** - Apps deployed across **ALL** clusters. Only put apps here if you want Flux to deploy them everywhere.
+- **`clusters/<cluster-name>/apps/`** - Apps deployed only to that specific cluster. Use this for cluster-specific workloads, hardware-dependent apps, or apps that shouldn't run everywhere.
+
 ### 1. Create App Directory
 
 ```bash
+# For apps deployed to ALL clusters:
 mkdir -p clusters/common/apps/<namespace>/{app,config}
+
+# For cluster-specific apps:
+mkdir -p clusters/<cluster-name>/apps/<namespace>/{app,config}
 ```
 
 ### 2. Create Kustomization
