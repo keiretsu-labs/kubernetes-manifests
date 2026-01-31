@@ -1,0 +1,59 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: immich-postgres
+  namespace: immich
+spec:
+  instances: 1
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:15-0.3.0
+  postgresql:
+    shared_preload_libraries:
+      - "vchord.so"
+  bootstrap:
+    initdb:
+      database: immich
+      owner: immich
+      dataChecksums: true
+      postInitApplicationSQL:
+        - ALTER USER immich WITH SUPERUSER;
+        - CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
+        - CREATE EXTENSION IF NOT EXISTS "cube";
+        - CREATE EXTENSION IF NOT EXISTS "earthdistance";
+  monitoring:
+    enablePodMonitor: true
+  storage:
+    size: 8Gi
+
+  # Enable Barman Cloud plugin for S3 backups
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: immich-s3-store
+        serverName: immich-postgres
+
+  backup:
+    retentionPolicy: "30d"
+  externalClusters:
+    - name: keiretsu
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: immich-s3-store
+          serverName: immich-postgres
+---
+# S3 backup schedule using Barman Cloud
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: immich-postgres-s3
+  namespace: immich
+spec:
+  schedule: "0 0 23 * * *"  # Daily at 11 PM
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: immich-postgres
