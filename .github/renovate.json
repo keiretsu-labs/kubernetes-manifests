@@ -55,6 +55,23 @@
       "automerge": true
     },
     {
+      "description": "Allow select media apps to automerge",
+      "matchPaths": [
+        "clusters/**/apps/media/app/autobrr/**",
+        "clusters/**/apps/media/app/bazarr-1080p/**",
+        "clusters/**/apps/media/app/bazarr-4k/**",
+        "clusters/**/apps/media/app/bazarr-4kremux/**",
+        "clusters/**/apps/media/app/bazarr-anime/**",
+        "clusters/**/apps/media/app/feedcord/**",
+        "clusters/**/apps/media/app/jellystat/**",
+        "clusters/**/apps/media/app/lidarr/**",
+        "clusters/**/apps/media/app/prowlarr/**",
+        "clusters/**/apps/media/app/tautulli/**",
+        "clusters/**/apps/media/app/wizarr/**"
+      ],
+      "automerge": true
+    },
+    {
       "description": "Group ARC controller and runner scale set together",
       "matchPackageNames": ["gha-runner-scale-set", "gha-runner-scale-set-controller"],
       "groupName": "actions-runner-controller"
