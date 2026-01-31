@@ -27,6 +27,34 @@
       "automerge": true
     },
     {
+      "description": "Auto merge non-critical, non-media cluster updates",
+      "matchManagers": ["flux", "helm-values", "kubernetes", "regex"],
+      "matchPaths": ["clusters/**"],
+      "automerge": true
+    },
+    {
+      "description": "Disable automerge for media apps",
+      "matchPaths": ["clusters/**/apps/media/**", "clusters/**/apps/immich/**"],
+      "automerge": false
+    },
+    {
+      "description": "Disable automerge for cluster-critical components",
+      "matchPaths": [
+        "clusters/**/bootstrap/**",
+        "clusters/**/flux/**",
+        "clusters/**/apps/cilium/**",
+        "clusters/**/apps/rook-ceph/**",
+        "clusters/**/apps/tuppr/**",
+        "clusters/**/apps/cert-manager/**"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Allow tunarr to automerge despite media namespace",
+      "matchPackageNames": ["chrisbenincasa/tunarr", "docker.io/chrisbenincasa/tunarr"],
+      "automerge": true
+    },
+    {
       "description": "Group ARC controller and runner scale set together",
       "matchPackageNames": ["gha-runner-scale-set", "gha-runner-scale-set-controller"],
       "groupName": "actions-runner-controller"
