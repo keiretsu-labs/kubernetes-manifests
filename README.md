@@ -237,7 +237,7 @@ Modern ingress via Gateway API:
 - `media` - Media management stack
 - `gatus` - Status page
 - `dockur` - Docker-in-Kubernetes
-- `[tuppr](https://github.com/home-operations/tuppr)` - Kubernetes controller to upgrade Talos and Kubernetes
+- [tuppr](https://github.com/home-operations/tuppr) - Kubernetes controller to upgrade Talos and Kubernetes
 
 ### talos-robbinsdale
 - `cilium` - CNI with custom config
