@@ -1,0 +1,38 @@
+---
+# Internal ClusterIP service for mesh networking (Option A)
+# 
+# This service has the 'istio: eastwestgateway' label so Istio auto-discovers it as a gateway.
+# It only exposes the internal pod IPs, not the Tailscale LoadBalancer IP.
+# Remote clusters reach this via their local egress proxies (defined in tailscale-eastwest-egress.yaml).
+#
+# The LoadBalancer service (created by istio-eastwestgateway HelmRelease) uses
+# 'istio: eastwestgateway-tailscale' label to prevent Istio auto-discovery.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-eastwestgateway-internal
+  namespace: istio-system
+  labels:
+    # This label enables Istio auto-discovery as a gateway
+    istio: eastwestgateway
+    app: istio-eastwestgateway
+    topology.istio.io/network: ${LOCATION}
+spec:
+  type: ClusterIP
+  selector:
+    # Selects the gateway pods
+    app: istio-eastwestgateway
+  ports:
+    - name: status-port
+      port: 15021
+      targetPort: 15021
+    - name: tls
+      port: 15443
+      targetPort: 15443
+    - name: tls-istiod
+      port: 15012
+      targetPort: 15012
+    - name: tls-webhook
+      port: 15017
+      targetPort: 15017
