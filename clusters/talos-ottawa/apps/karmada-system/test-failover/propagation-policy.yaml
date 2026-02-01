@@ -1,0 +1,72 @@
+---
+# PropagationPolicy for failover-test deployment
+# Configures:
+# - Primary: Ottawa
+# - Failover: Robbinsdale, then St Petersburg
+# - Single replica (only one cluster at a time)
+# - Graceful failover with 60s tolerance
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: failover-test
+  namespace: failover-test
+spec:
+  # Required for application failover to work with dependencies
+  propagateDeps: true
+  
+  # Select resources to propagate
+  resourceSelectors:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: failover-test
+  
+  # Placement configuration
+  placement:
+    # Define cluster affinity with priority (list order = priority)
+    clusterAffinity:
+      clusterNames:
+        - ottawa        # Primary: prefer Ottawa
+        - robbinsdale   # Secondary: failover to Robbinsdale
+        - stpetersburg  # Tertiary: failover to St Petersburg
+    
+    # Spread constraints: run on exactly 1 cluster
+    spreadConstraints:
+      - maxGroups: 1    # Maximum 1 cluster
+        minGroups: 1    # Minimum 1 cluster
+        spreadByField: cluster
+    
+    # Replica scheduling: Duplicated means same replicas on selected cluster
+    replicaScheduling:
+      replicaSchedulingType: Duplicated
+  
+  # Failover configuration
+  failover:
+    application:
+      # Wait 60 seconds of unhealthy state before triggering failover
+      decisionConditions:
+        tolerationSeconds: 60
+      
+      # Gracefully: wait for new replica to be healthy before removing old
+      # Options: Immediately, Graciously, Never
+      purgeMode: Graciously
+      
+      # If using Graciously mode, wait up to 120s for new replica
+      gracePeriodSeconds: 120
+
+---
+# ClusterPropagationPolicy to propagate the namespace first
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: failover-test-namespace
+spec:
+  resourceSelectors:
+    - apiVersion: v1
+      kind: Namespace
+      name: failover-test
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - ottawa
+        - robbinsdale
+        - stpetersburg

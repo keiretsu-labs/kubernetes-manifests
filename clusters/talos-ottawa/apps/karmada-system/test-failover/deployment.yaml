@@ -1,0 +1,43 @@
+---
+# Test deployment for failover
+# This will be scheduled to Ottawa by default, then failover to Robbinsdale/StPetersburg if Ottawa is unhealthy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: failover-test
+  namespace: failover-test
+  labels:
+    app: failover-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: failover-test
+  template:
+    metadata:
+      labels:
+        app: failover-test
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30

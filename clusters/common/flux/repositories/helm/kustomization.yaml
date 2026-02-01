@@ -80,3 +80,4 @@ resources:
   - ./fleetdm.yaml
   - ./mariadb-operator.yaml
   - ./bitnami.yaml
+  - ./karmada.yaml
