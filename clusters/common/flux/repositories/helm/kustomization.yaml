@@ -72,6 +72,7 @@ resources:
   - ./vector.yaml
   - ./kuberay.yaml
   - ./liqo.yaml
+  - ./capi-operator.yaml
   - ./actions-runner-controller.yaml
   - ./victoriametrics.yaml
   - ./unpoller.yaml
