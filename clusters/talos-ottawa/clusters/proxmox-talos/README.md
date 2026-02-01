@@ -107,6 +107,51 @@ This procedure validates that bootstrap works end-to-end without manual CSR appr
    - `kubelet-serving-cert-approver` should schedule and auto-approve kubelet-serving CSRs.
    - Nodes transition to Ready without manual CSR approval.
 
+## Commands: Instantiate vs Delete Cluster
+
+These are the day-to-day commands to create or tear down the workload cluster using Flux + CAPI.
+
+### Instantiate (Create) the Cluster
+
+If the `capi-clusters` Kustomization is already active, Flux will create the cluster automatically from Git. You can force a reconcile like this:
+
+```
+kubectl --kubeconfig ~/.kube/ottawa -n flux-system annotate gitrepository kubernetes-manifests reconcile.fluxcd.io/requestedAt="$(date -u +%Y-%m-%dT%H:%M:%SZ)" --overwrite
+kubectl --kubeconfig ~/.kube/ottawa -n flux-system annotate kustomization capi-clusters reconcile.fluxcd.io/requestedAt="$(date -u +%Y-%m-%dT%H:%M:%SZ)" --overwrite
+```
+
+If it was previously suspended:
+
+```
+kubectl --kubeconfig ~/.kube/ottawa -n flux-system patch kustomization capi-clusters --type=merge -p '{"spec":{"suspend":false}}'
+```
+
+### Delete the Cluster (Tear Down)
+
+Suspend GitOps first to avoid it being recreated immediately:
+
+```
+kubectl --kubeconfig ~/.kube/ottawa -n flux-system patch kustomization capi-clusters --type=merge -p '{"spec":{"suspend":true}}'
+```
+
+Delete the Cluster object (this cascades to infra resources):
+
+```
+kubectl --kubeconfig ~/.kube/ottawa -n default delete cluster.cluster.x-k8s.io ottawa-proxmox
+```
+
+Wait for deletion to complete:
+
+```
+kubectl --kubeconfig ~/.kube/ottawa -n default wait --for=delete cluster.cluster.x-k8s.io/ottawa-proxmox --timeout=15m
+```
+
+Resume GitOps when you’re ready to recreate:
+
+```
+kubectl --kubeconfig ~/.kube/ottawa -n flux-system patch kustomization capi-clusters --type=merge -p '{"spec":{"suspend":false}}'
+```
+
 ## Flux Bootstrap via ClusterResourceSet (Example)
 
 We added an example CRS to show how Cluster API can bootstrap Flux without Helm.
