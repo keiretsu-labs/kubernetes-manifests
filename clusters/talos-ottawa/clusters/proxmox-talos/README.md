@@ -126,6 +126,42 @@ If it was previously suspended:
 kubectl --kubeconfig ~/.kube/ottawa -n flux-system patch kustomization capi-clusters --type=merge -p '{"spec":{"suspend":false}}'
 ```
 
+## Commands: Grab ConfigMaps
+
+### Management Cluster (Flux/CAPI settings)
+
+List cluster settings ConfigMaps in `flux-system`:
+
+```
+kubectl --kubeconfig ~/.kube/ottawa -n flux-system get configmaps
+```
+
+Show the user settings used by this cluster:
+
+```
+kubectl --kubeconfig ~/.kube/ottawa -n flux-system get configmap cluster-user-settings -o yaml
+```
+
+### Workload Cluster (ottawa-proxmox)
+
+First, get kubeconfig for the workload cluster:
+
+```
+kubectl --kubeconfig ~/.kube/ottawa -n default get secret ottawa-proxmox-kubeconfig -o jsonpath='{.data.value}' | base64 --decode > /tmp/ottawa-proxmox.kubeconfig
+```
+
+List all ConfigMaps in the workload cluster:
+
+```
+kubectl --kubeconfig /tmp/ottawa-proxmox.kubeconfig get configmaps -A
+```
+
+Show Cilium config (example):
+
+```
+kubectl --kubeconfig /tmp/ottawa-proxmox.kubeconfig -n kube-system get configmap cilium-config -o yaml
+```
+
 ### Delete the Cluster (Tear Down)
 
 Suspend GitOps first to avoid it being recreated immediately:
