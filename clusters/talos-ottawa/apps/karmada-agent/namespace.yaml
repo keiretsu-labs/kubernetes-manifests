@@ -1,9 +1,0 @@
----
-# Note: karmada-system namespace is already created by karmada control plane
-# This is a no-op but included for consistency with other clusters
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: karmada-system
-  labels:
-    app.kubernetes.io/name: karmada-agent

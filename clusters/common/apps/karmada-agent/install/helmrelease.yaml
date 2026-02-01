@@ -1,7 +1,6 @@
 ---
 # Karmada Agent - Pull mode registration
-# Ottawa is both control plane AND member cluster
-# This agent registers Ottawa as a schedulable member
+# This agent connects to the Karmada control plane and registers this cluster
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -20,12 +19,12 @@ spec:
   install:
     remediation:
       retries: 3
-    crds: Skip  # CRDs already installed by control plane
+    crds: CreateReplace
   upgrade:
     cleanupOnFail: true
     remediation:
       retries: 3
-    crds: Skip
+    crds: CreateReplace
   valuesFrom:
     - kind: Secret
       name: karmada-agent-kubeconfig
@@ -34,9 +33,9 @@ spec:
     # Agent mode - registers with Karmada control plane
     installMode: "agent"
     
-    # Cluster identity
+    # Cluster identity - substituted per-cluster
     agent:
-      clusterName: "ottawa"
+      clusterName: "${CLUSTER_NAME}"
       # clusterEndpoint is auto-detected by agent
       
       labels:
