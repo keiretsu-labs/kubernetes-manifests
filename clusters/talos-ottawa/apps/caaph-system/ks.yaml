@@ -9,7 +9,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./clusters/${CLUSTER_NAME}/apps/caaph-system/install
+  path: ./clusters/${CLUSTER_NAME}/apps/caaph-system/app
   prune: true
   sourceRef:
     kind: GitRepository
