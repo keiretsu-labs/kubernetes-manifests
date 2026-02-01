@@ -17,6 +17,8 @@ spec:
     wait: true
     waitForJobs: true
     timeout: 10m
+    install:
+      includeCRDs: true
   valuesTemplate: |
     ipam:
       mode: kubernetes
