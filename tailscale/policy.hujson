@@ -99,8 +99,8 @@
 			"src":             ["group:superuser", "tag:k8s", "tag:ci"],
 			"dst":             ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
 			"users":           ["root", "autogroup:nonroot"],
-			"recorder":        ["tag:k8s-recorder"],
-			"enforceRecorder": true,
+			// "recorder":        ["tag:k8s-recorder"],
+			// "enforceRecorder": true,
 		},
 	],
 	"grants": [
@@ -216,8 +216,8 @@
 						"impersonate": {
 							"groups": ["system:masters"],
 						},
-						"recorder":        ["tag:k8s-recorder"],
-						"enforceRecorder": true,
+						// "recorder":        ["tag:k8s-recorder"],
+						// "enforceRecorder": true,
 					},
 				],
 				"tailscale.com/cap/tsidp": [
@@ -295,8 +295,8 @@
 						"impersonate": {
 							"groups": ["tailnet-readers"],
 						},
-						"recorder":        ["tag:k8s-recorder"],
-						"enforceRecorder": true,
+						// "recorder":        ["tag:k8s-recorder"],
+						// "enforceRecorder": true,
 					},
 				],
 			},
