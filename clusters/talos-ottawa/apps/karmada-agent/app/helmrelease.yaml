@@ -1,0 +1,58 @@
+---
+# Karmada Agent - Pull mode registration
+# Ottawa is both control plane AND member cluster
+# This agent registers Ottawa as a schedulable member
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: karmada-agent
+spec:
+  interval: 30m
+  timeout: 10m
+  chart:
+    spec:
+      chart: karmada
+      version: "v1.16.0"
+      sourceRef:
+        kind: HelmRepository
+        name: karmada
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+    crds: Skip  # CRDs already installed by control plane
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+    crds: Skip
+  valuesFrom:
+    - kind: Secret
+      name: karmada-agent-kubeconfig
+      valuesKey: kubeconfig.yaml
+  values:
+    # Agent mode - registers with Karmada control plane
+    installMode: "agent"
+    
+    # Cluster identity
+    agent:
+      clusterName: "ottawa"
+      # clusterEndpoint is auto-detected by agent
+      
+      labels:
+        app: karmada-agent
+      
+      replicaCount: 1
+      
+      image:
+        registry: docker.io
+        repository: karmada/karmada-agent
+        tag: "v1.16.0"
+        pullPolicy: IfNotPresent
+      
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          memory: 256Mi
