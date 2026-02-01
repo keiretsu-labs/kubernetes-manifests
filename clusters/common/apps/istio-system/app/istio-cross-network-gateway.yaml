@@ -13,8 +13,8 @@ metadata:
   namespace: istio-system
 spec:
   selector:
-    # Targets the east-west gateway pods
-    istio: eastwestgateway
+    # Targets the east-west gateway pods (label matches HelmRelease values)
+    istio: eastwestgateway-tailscale
   servers:
   - port:
       number: 15443
