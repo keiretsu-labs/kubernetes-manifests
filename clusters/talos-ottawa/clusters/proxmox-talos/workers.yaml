@@ -1,0 +1,84 @@
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: ${CAPI_CLUSTER_NAME}-workers
+  namespace: ${CAPI_NAMESPACE}
+spec:
+  clusterName: ${CAPI_CLUSTER_NAME}
+  replicas: ${CAPI_WORKER_REPLICAS}
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: ${CAPI_CLUSTER_NAME}
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: ${CAPI_CLUSTER_NAME}
+    spec:
+      clusterName: ${CAPI_CLUSTER_NAME}
+      version: ${CAPI_K8S_VERSION}
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+          kind: TalosConfigTemplate
+          name: ${CAPI_CLUSTER_NAME}-worker
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+        kind: ProxmoxMachineTemplate
+        name: ${CAPI_CLUSTER_NAME}-worker
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: ProxmoxMachineTemplate
+metadata:
+  name: ${CAPI_CLUSTER_NAME}-worker
+  namespace: ${CAPI_NAMESPACE}
+spec:
+  template:
+    spec:
+      sourceNode: ${CAPI_PROXMOX_SOURCE_NODE}
+      templateID: ${CAPI_PROXMOX_TEMPLATE_ID}
+      format: ${CAPI_PROXMOX_FORMAT}
+      full: ${CAPI_PROXMOX_FULL}
+      numSockets: ${CAPI_WK_NUM_SOCKETS}
+      numCores: ${CAPI_WK_NUM_CORES}
+      memoryMiB: ${CAPI_WK_MEMORY_MIB}
+      disks:
+        bootVolume:
+          disk: ${CAPI_PROXMOX_BOOT_VOLUME_DISK}
+          sizeGb: ${CAPI_PROXMOX_BOOT_VOLUME_SIZE_GB}
+      network:
+        default:
+          bridge: ${CAPI_PROXMOX_BRIDGE}
+          model: virtio
+      checks:
+        skipCloudInitStatus: true
+      metadataSettings:
+        providerIDInjection: true
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: TalosConfigTemplate
+metadata:
+  name: ${CAPI_CLUSTER_NAME}-worker
+  namespace: ${CAPI_NAMESPACE}
+spec:
+  template:
+    spec:
+      generateType: worker
+      talosVersion: ${CAPI_TALOS_VERSION}
+      strategicPatches:
+        - |-
+            - op: add
+              path: /machine/kubelet/extraArgs
+              value:
+                cloud-provider: external
+            - op: add
+              path: /machine/kubelet/extraArgs/rotate-server-certificates
+              value: "true"
+            - op: add
+              path: /machine/features/kubernetesTalosAPIAccess
+              value:
+                enabled: true
+                allowedRoles:
+                  - os:reader
+                allowedKubernetesNamespaces:
+                  - kube-system

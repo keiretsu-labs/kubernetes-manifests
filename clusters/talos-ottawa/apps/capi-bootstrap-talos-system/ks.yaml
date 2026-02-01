@@ -2,14 +2,14 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app capi-ipam-in-cluster-system-install
+  name: &app capi-bootstrap-talos-system-install
   namespace: flux-system
 spec:
-  targetNamespace: capi-ipam-in-cluster-system
+  targetNamespace: capi-bootstrap-talos-system
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./clusters/${CLUSTER_NAME}/apps/capi-ipam-in-cluster-system/app
+  path: ./clusters/${CLUSTER_NAME}/apps/capi-bootstrap-talos-system/app
   prune: true
   sourceRef:
     kind: GitRepository
