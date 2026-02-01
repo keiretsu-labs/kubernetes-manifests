@@ -75,3 +75,7 @@ spec:
             - op: add
               path: /machine/kubelet/extraArgs/rotate-server-certificates
               value: "true"
+            - op: add
+              path: /cluster/network/cni
+              value:
+                name: none

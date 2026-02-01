@@ -45,6 +45,10 @@ spec:
               path: /machine/kubelet/extraArgs/rotate-server-certificates
               value: "true"
             - op: add
+              path: /cluster/network/cni
+              value:
+                name: none
+            - op: add
               path: /machine/features/kubernetesTalosAPIAccess
               value:
                 enabled: true
