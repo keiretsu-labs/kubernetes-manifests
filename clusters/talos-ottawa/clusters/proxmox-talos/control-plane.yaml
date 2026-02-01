@@ -49,6 +49,9 @@ spec:
               value:
                 name: none
             - op: add
+              path: /cluster/allowSchedulingOnControlPlanes
+              value: true
+            - op: add
               path: /machine/features/kubernetesTalosAPIAccess
               value:
                 enabled: true
