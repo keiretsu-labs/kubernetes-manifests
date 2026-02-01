@@ -4,6 +4,8 @@ kind: Cluster
 metadata:
   name: ${CAPI_CLUSTER_NAME}
   namespace: ${CAPI_NAMESPACE}
+  labels:
+    cni: cilium
 spec:
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
