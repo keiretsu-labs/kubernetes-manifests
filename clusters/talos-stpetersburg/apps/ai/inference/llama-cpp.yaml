@@ -165,6 +165,7 @@ spec:
         - "--threads"
         - "8"
         - "--flash-attn"
+        - "on"
         - "--jinja"
         # GLM-4.7-Flash optimized sampling (Unsloth/Z.ai recommended for tool-calling)
         - "--temp"
