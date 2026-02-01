@@ -31,7 +31,7 @@ spec:
     
     # Cluster identity - substituted per-cluster
     agent:
-      clusterName: "${cluster_name}"
+      clusterName: "${CLUSTER_NAME}"
       
       # Karmada API server credentials (from common-secrets via Flux substitution)
       kubeconfig:
