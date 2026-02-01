@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - helmrelease.yaml
 
+# Create secret from kubeconfig.yaml for HelmRelease valuesFrom
 secretGenerator:
   - name: karmada-agent-kubeconfig
     files:
