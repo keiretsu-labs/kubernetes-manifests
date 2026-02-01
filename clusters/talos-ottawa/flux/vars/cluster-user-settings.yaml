@@ -30,7 +30,7 @@ data:
 
   # Talos + node sizing
   CAPI_TALOS_INSTALL_DISK: /dev/sda
-  CAPI_QEMU_GUEST_AGENT_IMAGE: ghcr.io/siderolabs/qemu-guest-agent:9.0.2
+  CAPI_QEMU_GUEST_AGENT_IMAGE: ghcr.io/siderolabs/qemu-guest-agent:9.2.3
   CAPI_CP_NUM_SOCKETS: "1"
   CAPI_CP_NUM_CORES: "2"
   CAPI_CP_MEMORY_MIB: "4096"
