@@ -21,7 +21,7 @@ spec:
   decryption:
     provider: sops
     secretRef:
-      name: sops-age
+      name: sops-gpg
 ---
 # Karmada Agent - connects this cluster to the Karmada control plane
 # Pull mode: agent pulls workloads from Karmada instead of push
@@ -49,4 +49,4 @@ spec:
   decryption:
     provider: sops
     secretRef:
-      name: sops-age
+      name: sops-gpg
