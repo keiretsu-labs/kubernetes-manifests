@@ -31,3 +31,5 @@ spec:
         name: cluster-secrets
       - kind: Secret
         name: common-secrets
+      - kind: Secret
+        name: karmada-secrets
