@@ -16,6 +16,7 @@ spec:
     name: kubernetes-manifests
   dependsOn:
     - name: capi-operator-system-install
+    - name: capi-system-install
   wait: false
   interval: 30m
   retryInterval: 1m
