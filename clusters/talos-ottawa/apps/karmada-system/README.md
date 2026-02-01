@@ -25,10 +25,14 @@ After the Helm release is deployed, you need to manually join member clusters.
 ### Step 1: Get Karmada kubeconfig
 
 ```bash
-# On Ottawa cluster
-kubectl get secret -n karmada-system karmada-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d > /tmp/karmada.config
+# On Ottawa cluster (via Tailscale operator)
+kubectl --context=ottawa-k8s-operator.keiretsu.ts.net get secret -n karmada-system karmada-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d > /tmp/karmada.config
 
-# Verify it works
+# Note: The kubeconfig uses internal cluster DNS (karmada-apiserver.karmada-system.svc.cluster.local:5443)
+# For external access, you may need to port-forward:
+kubectl --context=ottawa-k8s-operator.keiretsu.ts.net -n karmada-system port-forward svc/karmada-apiserver 5443:5443 &
+
+# Verify it works (from within the cluster or with port-forward)
 kubectl --kubeconfig=/tmp/karmada.config get clusters
 ```
 
