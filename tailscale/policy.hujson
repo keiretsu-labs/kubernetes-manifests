@@ -97,7 +97,7 @@
 		{
 			"action":          "accept",
 			"src":             ["group:superuser", "tag:k8s", "tag:ci"],
-			"dst":             ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
+			"dst":             ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
 			"users":           ["root", "autogroup:nonroot"],
 			// "recorder":        ["tag:k8s-recorder"],
 			// "enforceRecorder": true,
