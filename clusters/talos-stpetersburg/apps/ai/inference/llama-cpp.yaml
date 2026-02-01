@@ -111,7 +111,7 @@ data:
       # Reasoning Model (Nemotron-3-Nano-30B with hybrid MoE)
       nemotron-3-nano-30b:
         name: "Nemotron-3-Nano-30B-A3B"
-        description: "NVIDIA Nemotron-3-Nano-30B with hybrid MoE architecture (3.5B active, 30B total). Excels at reasoning with <think> tokens, math (AIME25: 99.2%), code (LiveCodeBench: 68.3%), and tool calling. 128K context window."
+        description: "NVIDIA Nemotron-3-Nano-30B with hybrid MoE architecture (3.5B active, 30B total). Excels at reasoning with <think> tokens, math (AIME25: 99.2%), code (LiveCodeBench: 68.3%), and tool calling. 1M context window (262K default)."
         cmd: sleep infinity  # Keep-alive command - backend is managed by Kubernetes
         proxy: "http://nemotron:80"
         checkEndpoint: "/health"
@@ -260,7 +260,7 @@ spec:
         - "--n-gpu-layers"
         - "99"
         - "-c"
-        - "32768"
+        - "262144"
         - "--parallel"
         - "8"
         - "--threads"
