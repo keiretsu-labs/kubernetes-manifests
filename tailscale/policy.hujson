@@ -96,7 +96,7 @@
 	"ssh": [
 		{
 			"action":          "accept",
-			"src":             ["group:superuser", "tag:k8s"],
+			"src":             ["group:superuser", "tag:k8s", "tag:ci"],
 			"dst":             ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
 			"users":           ["root", "autogroup:nonroot"],
 			"recorder":        ["tag:k8s-recorder"],
