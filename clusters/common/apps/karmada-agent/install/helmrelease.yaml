@@ -35,13 +35,12 @@ spec:
       
       # Karmada API server credentials (from common-secrets via Flux substitution)
       kubeconfig:
-        server: "https://karmada-apiserver.keiretsu.ts.net:5443"
-        caCrt: |
-          ${KARMADA_CA_CRT}
-        crt: |
-          ${KARMADA_CLIENT_CRT}
-        key: |
-          ${KARMADA_CLIENT_KEY}
+        # Use Tailscale IP directly since pods can't resolve ts.net DNS
+        # karmada-apiserver.keiretsu.ts.net = 100.108.197.80
+        server: "https://100.108.197.80:5443"
+        caCrt: "${KARMADA_CA_CRT}"
+        crt: "${KARMADA_CLIENT_CRT}"
+        key: "${KARMADA_CLIENT_KEY}"
       
       labels:
         app: karmada-agent
