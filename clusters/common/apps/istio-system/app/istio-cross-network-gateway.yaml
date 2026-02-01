@@ -1,0 +1,34 @@
+--- apiVersion:
+
+
+---
+# Cross-network Gateway for east-west traffic
+# This configures the eastwestgateway pods to accept incoming mTLS traffic
+# from remote clusters using SNI-based AUTO_PASSTHROUGH routing.
+#
+# Without this Gateway resource, the east-west gateway pods have no listener
+# configured and will reject cross-cluster traffic with "no healthy upstream".
+#
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: cross-network-gateway
+  namespace: istio-system
+spec:
+  selector:
+    # Targets the east-west gateway pods
+    istio: eastwestgateway
+  servers:
+  - port:
+      number: 15443
+      name: tls
+      protocol: TLS
+    tls:
+      # AUTO_PASSTHROUGH allows the gateway to route traffic based on SNI
+      # without requiring explicit VirtualService configuration.
+      # The SNI header contains the destination service FQDN, which Envoy
+      # uses to route to the correct backend service.
+      mode: AUTO_PASSTHROUGH
+    hosts:
+      # Match all services in the mesh (*.local covers *.svc.cluster.local)
+      - "*.local"
