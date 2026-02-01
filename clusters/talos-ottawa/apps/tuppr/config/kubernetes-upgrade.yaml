@@ -13,3 +13,4 @@ spec:
       expr: status.conditions.exists(c, c.type == "Ready" && c.status == "True")
       description: All nodes must be Ready
       timeout: 10m
+

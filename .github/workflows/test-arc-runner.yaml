@@ -17,3 +17,4 @@ jobs:
           echo "Runner: $RUNNER_NAME"
           echo "OS: $(uname -a)"
           kubectl version --client || echo "kubectl not installed (expected)"
+

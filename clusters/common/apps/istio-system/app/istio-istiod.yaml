@@ -55,3 +55,4 @@ spec:
           - address: stpetersburg-istio-eastwestgateway.istio-system.svc.cluster.local
             port: 15443
 
+

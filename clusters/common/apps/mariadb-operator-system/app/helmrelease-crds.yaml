@@ -22,3 +22,4 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+

@@ -37,3 +37,4 @@ spec:
         - name: config-volume
           persistentVolumeClaim:
             claimName: wizarr-config
+

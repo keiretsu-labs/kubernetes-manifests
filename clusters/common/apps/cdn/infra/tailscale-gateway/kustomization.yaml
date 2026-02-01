@@ -16,3 +16,4 @@ resources:
   - pihole-httproute-location.yaml
   - securitypolicy.yaml
   - secret.yaml
+

@@ -29,3 +29,4 @@ spec:
         http2MaxRequests: 1024
         maxRequestsPerConnection: 2
         idleTimeout: 300s
+

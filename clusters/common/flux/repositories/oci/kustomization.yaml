@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./home-operations.yaml
   - ./garage-operator.yaml
+

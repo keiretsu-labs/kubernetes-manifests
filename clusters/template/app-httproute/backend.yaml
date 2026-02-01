@@ -17,3 +17,4 @@ spec:
     - fqdn:
         hostname: ${APP}.${NAMESPACE}.${FAILOVER}.k8s
         port: ${APP_PORT}
+

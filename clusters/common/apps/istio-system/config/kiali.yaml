@@ -60,3 +60,4 @@ spec:
         - name: stpetersburg
           secret_name: istio-remote-secret-stpetersburg
           network: stpetersburg
+

@@ -38,3 +38,4 @@ jobs:
           tailnet: ${{ secrets.TS_TAILNET }}
           policy-file: tailscale/policy.hujson
           action: test
+

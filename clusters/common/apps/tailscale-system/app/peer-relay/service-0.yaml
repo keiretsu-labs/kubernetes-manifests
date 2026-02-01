@@ -17,3 +17,4 @@ spec:
     targetPort: 9002
     protocol: TCP
   loadBalancerIP: ${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.100.100
+

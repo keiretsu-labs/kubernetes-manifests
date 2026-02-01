@@ -35,3 +35,4 @@ spec:
             path: /var/run/secrets-store-csi-providers
       nodeSelector:
         kubernetes.io/os: linux
+

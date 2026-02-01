@@ -11,3 +11,4 @@ spec:
   ref:
     tag: 11.7.0
   url: oci://ghcr.io/prometheus-community/charts/prometheus-blackbox-exporter
+

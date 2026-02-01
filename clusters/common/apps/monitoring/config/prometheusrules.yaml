@@ -181,3 +181,4 @@ spec:
               Prometheus storage is {{ printf "%.0f" $value }}% full.
           labels:
             severity: warning
+

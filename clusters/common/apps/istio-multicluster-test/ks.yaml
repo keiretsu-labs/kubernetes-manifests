@@ -14,3 +14,4 @@ spec:
   wait: false
   dependsOn:
     - name: istio-system
+

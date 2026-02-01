@@ -11,3 +11,4 @@ resources:
   - ./egress.yaml
   # Dashboards
   - ./network-metrics.yaml
+

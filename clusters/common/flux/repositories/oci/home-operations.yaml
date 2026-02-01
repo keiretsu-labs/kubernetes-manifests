@@ -8,3 +8,4 @@ spec:
   interval: 1h
   type: oci
   url: oci://ghcr.io/home-operations/charts
+

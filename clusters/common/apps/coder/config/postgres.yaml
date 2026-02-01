@@ -35,3 +35,4 @@ metadata:
 type: Opaque
 stringData:
   url: postgres://coder:${DEFAULT_PASSWORD}@coder-postgres-rw.coder.svc.cluster.local:5432/coder?sslmode=disable
+

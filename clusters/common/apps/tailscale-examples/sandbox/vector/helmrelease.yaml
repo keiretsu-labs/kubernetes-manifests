@@ -33,3 +33,4 @@ spec:
             - "splunk_hec"
           encoding:
             codec: "json"
+

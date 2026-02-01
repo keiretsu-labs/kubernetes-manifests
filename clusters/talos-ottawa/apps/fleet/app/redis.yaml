@@ -19,3 +19,4 @@ spec:
       memory: 512Mi
     limits:
       memory: 768Mi
+

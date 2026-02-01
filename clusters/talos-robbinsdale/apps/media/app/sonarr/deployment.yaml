@@ -45,3 +45,4 @@ spec:
         - name: config-volume
           persistentVolumeClaim:
             claimName: sonarr-config-ceph # TODO: move to UNAS
+

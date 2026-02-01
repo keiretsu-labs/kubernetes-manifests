@@ -14,3 +14,4 @@ spec:
       enabled: true
     # Watch all namespaces (default behavior when namespaceScope: false)
     namespaceScope: false
+

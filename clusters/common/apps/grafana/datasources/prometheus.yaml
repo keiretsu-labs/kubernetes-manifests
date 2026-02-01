@@ -18,3 +18,4 @@ spec:
     jsonData:
       timeInterval: 30s
     editable: false
+

@@ -7,3 +7,4 @@ metadata:
 spec:
   interval: 2h
   url: https://percona.github.io/percona-helm-charts/
+

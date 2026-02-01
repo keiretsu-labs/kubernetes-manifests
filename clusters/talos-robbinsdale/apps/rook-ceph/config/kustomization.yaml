@@ -13,3 +13,4 @@ resources:
   - ./dashboard-cluster.yaml
   - ./dashboard-osd.yaml
   - ./dashboard-pools.yaml
+

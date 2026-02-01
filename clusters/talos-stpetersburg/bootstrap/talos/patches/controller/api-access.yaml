@@ -9,3 +9,4 @@ machine:
         - os:admin
       allowedKubernetesNamespaces:
         - system-upgrade
+

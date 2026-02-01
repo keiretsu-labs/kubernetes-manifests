@@ -41,3 +41,4 @@ data:
       cache 30
       forward . 10.169.69.50
     }
+

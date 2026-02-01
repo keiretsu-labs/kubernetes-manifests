@@ -8,3 +8,4 @@ configMapGenerator:
   - name: feedcord-config
     files:
       - appsettings.json
+

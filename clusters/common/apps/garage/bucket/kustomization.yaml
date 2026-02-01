@@ -5,3 +5,4 @@ namespace: garage
 resources:
   - bucket.yaml
   - key.yaml
+

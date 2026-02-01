@@ -14,3 +14,4 @@ spec:
     - port: gpu-metrics
       interval: 30s
       path: /metrics
+

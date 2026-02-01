@@ -31,3 +31,4 @@ spec:
       - name: AWS_DEFAULT_REGION
         value: garage
   retentionPolicy: "30d"
+

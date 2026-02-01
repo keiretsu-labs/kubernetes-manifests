@@ -106,3 +106,4 @@ spec:
             split_external_local_origin_errors: true
             consecutive_local_origin_failure: 1
             enforcing_consecutive_local_origin_failure: 100
+

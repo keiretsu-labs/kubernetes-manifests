@@ -16,3 +16,4 @@ resources:
   - ./smartctl-exporter
   - ./tailscale-system
   - ./tuppr
+

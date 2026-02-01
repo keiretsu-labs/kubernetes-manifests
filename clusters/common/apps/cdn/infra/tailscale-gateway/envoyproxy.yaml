@@ -52,3 +52,4 @@ spec:
           tailscale.com/hostname: ${LOCATION}-envoy-gateway
           tailscale.com/proxy-group: common-ingress
         loadBalancerClass: tailscale
+

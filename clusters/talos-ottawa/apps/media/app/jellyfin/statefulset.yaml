@@ -95,3 +95,4 @@ spec:
         dataSourceRef:
           kind: PersistentVolumeClaim
           name: jellyfin-config
+

@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./helmrelease-crds.yaml
   - ./helmrelease.yaml
+

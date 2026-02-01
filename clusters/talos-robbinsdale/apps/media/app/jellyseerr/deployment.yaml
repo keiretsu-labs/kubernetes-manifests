@@ -41,3 +41,4 @@ spec:
             claimName: jellyseerr-config-ceph 
         - name: logs-volume
           emptyDir: {} 
+

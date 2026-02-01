@@ -126,3 +126,4 @@ tasks:
   dmesg:
     desc: Show kernel logs
     cmd: talosctl -n spark-0 -e spark-0 dmesg
+

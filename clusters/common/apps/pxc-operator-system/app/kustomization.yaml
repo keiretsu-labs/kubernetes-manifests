@@ -4,3 +4,4 @@ kind: Kustomization
 namespace: pxc-operator-system
 resources:
   - helmrelease.yaml
+

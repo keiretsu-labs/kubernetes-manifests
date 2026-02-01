@@ -20,3 +20,4 @@ spec:
   releaseName: aieg
   install:
     createNamespace: false
+

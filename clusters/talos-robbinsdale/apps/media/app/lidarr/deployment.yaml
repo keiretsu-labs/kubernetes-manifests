@@ -45,3 +45,4 @@ spec:
         - name: config-volume
           persistentVolumeClaim:
             claimName: lidarr-config-ceph 
+

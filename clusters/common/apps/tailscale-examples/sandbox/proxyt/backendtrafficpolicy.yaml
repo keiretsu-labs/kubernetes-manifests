@@ -11,3 +11,4 @@ spec:
   httpUpgrade:
     - type: websocket
     - type: tailscale-control-protocol
+

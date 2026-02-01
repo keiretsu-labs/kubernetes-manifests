@@ -42,3 +42,4 @@ jobs:
               --repo="${GITHUB_REPOSITORY}" \
               --title="${release_tag}" \
               --generate-notes
+

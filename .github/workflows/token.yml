@@ -66,3 +66,4 @@ jobs:
           # Make API request to demonstrate access token
           echo "Testing API access..."
           ./tailscale/scripts/get-devices.sh "${ACCESS_TOKEN}" "${{ inputs.tailnet }}"
+

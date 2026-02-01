@@ -45,3 +45,4 @@ spec:
       - name: config
         configMap:
           name: feedcord-config
+

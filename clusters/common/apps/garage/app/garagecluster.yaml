@@ -58,3 +58,4 @@ spec:
     limits:
       cpu: 3000m
       memory: 3Gi
+

@@ -3,3 +3,4 @@ machine:
     hostDNS:
       enabled: false
       forwardKubeDNSToHost: false
+

@@ -43,3 +43,4 @@ spec:
           name: victoria-logs-victoria-logs-single-server
           port: 9428
           weight: 1
+

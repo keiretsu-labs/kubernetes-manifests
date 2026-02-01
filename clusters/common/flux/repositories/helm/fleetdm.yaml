@@ -7,3 +7,4 @@ metadata:
 spec:
   interval: 5m
   url: https://fleetdm.github.io/fleet/charts
+

@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - talos-upgrade.yaml
   - kubernetes-upgrade.yaml
+

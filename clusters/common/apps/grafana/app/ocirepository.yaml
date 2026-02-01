@@ -11,3 +11,4 @@ spec:
   ref:
     tag: 5.21.4
   url: oci://ghcr.io/grafana/helm-charts/grafana-operator
+

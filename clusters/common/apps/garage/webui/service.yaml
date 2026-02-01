@@ -14,3 +14,4 @@ spec:
       name: http
   selector:
     app.kubernetes.io/name: garage-webui
+

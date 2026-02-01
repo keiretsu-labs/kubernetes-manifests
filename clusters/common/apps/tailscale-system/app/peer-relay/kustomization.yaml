@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - statefulset.yaml
   - service-0.yaml
+

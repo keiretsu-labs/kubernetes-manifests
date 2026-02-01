@@ -5,3 +5,4 @@ machine:
   nodeLabels:
     node.kubernetes.io/instance-type: dgx-spark
     nvidia.com/gpu.product: Blackwell
+

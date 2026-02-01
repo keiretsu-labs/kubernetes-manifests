@@ -6,3 +6,4 @@ machine:
       # NVIDIA GPU - character devices
       - KERNEL=="nvidia*", MODE="0666"
       - KERNEL=="nvidia-uvm*", MODE="0666"
+

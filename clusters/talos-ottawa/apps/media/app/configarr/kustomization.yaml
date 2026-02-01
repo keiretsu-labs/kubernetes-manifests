@@ -10,3 +10,4 @@ configMapGenerator:
   - name: configarr
     files:
       - config.yml
+

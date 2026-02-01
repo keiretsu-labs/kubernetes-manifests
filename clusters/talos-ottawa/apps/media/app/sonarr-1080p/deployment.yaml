@@ -40,3 +40,4 @@ spec:
         - name: config-volume
           persistentVolumeClaim:
             claimName: sonarr-1080p-config
+

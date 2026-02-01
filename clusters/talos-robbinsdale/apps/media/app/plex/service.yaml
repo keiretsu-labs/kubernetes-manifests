@@ -50,3 +50,4 @@ spec:
       port: 32469
       protocol: TCP
       targetPort: 32469
+

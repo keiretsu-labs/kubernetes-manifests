@@ -5,3 +5,4 @@ namespace: mariadb-operator-system
 resources:
   - helmrelease-crds.yaml
   - helmrelease.yaml
+

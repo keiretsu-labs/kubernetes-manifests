@@ -66,3 +66,4 @@ spec:
               Device {{ $labels.device }} on instance {{ $labels.instance }} interface is slower than it should be
           labels:
             severity: critical
+

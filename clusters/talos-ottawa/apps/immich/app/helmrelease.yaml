@@ -100,3 +100,4 @@ spec:
                     secretKeyRef:
                       name: immich-dragonfly-secret
                       key: password
+

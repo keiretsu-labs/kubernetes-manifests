@@ -6,3 +6,4 @@ resources:
   - ./secret.yaml
   - ./ingress.yaml
   - ./alert.yaml
+

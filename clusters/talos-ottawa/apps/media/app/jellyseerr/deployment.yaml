@@ -41,3 +41,4 @@ spec:
             claimName: jellyseerr-config 
         - name: logs-volume
           emptyDir: {} 
+

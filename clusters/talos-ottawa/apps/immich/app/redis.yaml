@@ -19,3 +19,4 @@ spec:
       memory: 1000Mi
     limits:
       memory: 1500Mi
+

@@ -12,3 +12,4 @@ spec:
       targetPort: 1883
   type: LoadBalancer
   loadBalancerIP: 10.50.10.11
+

@@ -57,3 +57,4 @@ spec:
     name: barman-cloud.cloudnative-pg.io
   cluster:
     name: immich-postgres
+

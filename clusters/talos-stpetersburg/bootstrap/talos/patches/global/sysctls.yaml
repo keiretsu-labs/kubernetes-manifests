@@ -18,3 +18,4 @@ machine:
 
     # Huge pages for GPU memory and databases
     vm.nr_hugepages: "2048"
+

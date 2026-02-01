@@ -11,3 +11,4 @@ configMapGenerator:
   - name: startup-script
     files:
       - startup.sh
+

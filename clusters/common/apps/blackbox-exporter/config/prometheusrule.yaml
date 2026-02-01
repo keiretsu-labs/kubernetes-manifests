@@ -50,3 +50,4 @@ spec:
               SSL certificate for {{ $labels.instance }} has expired.
           labels:
             severity: critical
+

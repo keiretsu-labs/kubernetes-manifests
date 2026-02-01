@@ -5,3 +5,4 @@ namespace: sample
 resources:
   - location-echo.yaml
   - curl.yaml
+

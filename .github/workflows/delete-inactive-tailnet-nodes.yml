@@ -268,3 +268,4 @@ jobs:
           echo "Fetching updated device list..."
           TAILNET="${{ steps.get_tailnet.outputs.tailnet }}"
           ./tailscale/scripts/list-devices.sh "${{ steps.get_access_token.outputs.access_token }}" "$TAILNET" table || true
+

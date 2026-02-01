@@ -15,3 +15,4 @@ spec:
       port: 80  # Port exposed by the service
       targetPort: 8443  # Port on the pods (matches containerPort in Deployment)
   type: NodePort  # Expose service on a static port on each node
+

@@ -5,3 +5,4 @@ resources:
   - ./prometheus.yaml
   - ./alertmanager.yaml
   - ./victorialogs.yaml
+

@@ -5,3 +5,4 @@ resources:
   - ./probes.yaml
   - ./prometheusrule.yaml
   - ./dashboard.yaml
+

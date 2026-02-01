@@ -24,3 +24,4 @@ spec:
       retries: 3
   values:
     watchAllNamespaces: true
+

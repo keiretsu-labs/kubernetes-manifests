@@ -9,3 +9,4 @@ spec:
   type: oci
   interval: 5m
   url: oci://ghcr.io/stevehipwell/helm-charts
+

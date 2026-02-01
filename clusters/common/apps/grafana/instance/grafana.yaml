@@ -64,3 +64,4 @@ spec:
       api_url: https://${LOCATION}-idp.keiretsu.ts.net/userinfo
       redirect_uri: https://grafana.${CLUSTER_DOMAIN}/login/generic_oauth
       login_attribute: preferred_username
+

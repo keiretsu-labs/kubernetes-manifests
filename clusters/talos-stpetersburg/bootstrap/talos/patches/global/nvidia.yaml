@@ -13,3 +13,4 @@ machine:
       - name: nvidia_modeset
   sysctls:
     net.core.bpf_jit_enable: "1"
+

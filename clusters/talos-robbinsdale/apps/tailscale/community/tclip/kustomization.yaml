@@ -7,3 +7,4 @@ resources:
   - service.yaml
   - ceph.yaml
   - httproute.yaml
+

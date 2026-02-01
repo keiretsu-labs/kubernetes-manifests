@@ -12,3 +12,4 @@ resources:
   - volsync-backup.yaml
   - servicemonitor.yaml
   - dashboard-jellyfin.yaml
+

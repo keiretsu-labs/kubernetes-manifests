@@ -77,3 +77,4 @@ spec:
     - targetLabel: service
       replacement: blackbox-exporter
       action: replace
+

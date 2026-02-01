@@ -8,3 +8,4 @@ resources:
   - nodelocaldns.yaml
   - coredns.yaml
   - bgp.yaml
+

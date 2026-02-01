@@ -72,3 +72,4 @@ spec:
                   audience: "api.tailscale.com/TbqNGJkY5611CNTRL-kF8VA8GYua11CNTRL"
                   expirationSeconds: 3600
                   path: token
+

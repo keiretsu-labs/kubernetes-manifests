@@ -67,3 +67,4 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: aperture-data
+

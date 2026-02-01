@@ -96,3 +96,4 @@ spec:
       volumes:
         - name: tailscale-token
           emptyDir: {}
+

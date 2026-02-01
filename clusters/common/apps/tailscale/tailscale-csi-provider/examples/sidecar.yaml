@@ -75,3 +75,4 @@ spec:
         readOnly: true
         volumeAttributes:
           secretProviderClass: tailscale
+

@@ -45,3 +45,4 @@ spec:
   selector:
     matchLabels:
       app: rook-ceph-mgr
+

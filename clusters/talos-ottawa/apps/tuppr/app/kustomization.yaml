@@ -9,3 +9,4 @@ configMapGenerator:
   - name: tuppr-values
     files:
       - values.yaml
+

@@ -69,3 +69,4 @@ spec:
       hostNetwork: false
       dnsPolicy: ClusterFirst
       restartPolicy: Always
+

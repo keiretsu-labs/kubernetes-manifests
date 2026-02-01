@@ -7,3 +7,4 @@ metadata:
 spec:
   interval: 2h
   url: https://helm.vector.dev
+

@@ -33,3 +33,4 @@ parameters:
   csi.storage.k8s.io/snapshotter-secret-namespace: rook-ceph # namespace:cluster
 deletionPolicy: Delete
 ---
+

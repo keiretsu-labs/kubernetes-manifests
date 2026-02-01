@@ -11,3 +11,4 @@ configMapGenerator:
   - name: install-script
     files:
       - install.bat
+

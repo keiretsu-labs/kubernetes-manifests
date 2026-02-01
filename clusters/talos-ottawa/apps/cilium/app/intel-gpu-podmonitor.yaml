@@ -18,3 +18,4 @@ spec:
     - sourceLabels: [__address__]
       targetLabel: job
       replacement: intel-gpu
+

@@ -13,3 +13,4 @@ spec:
   selector:
     matchLabels:
       app: jellyfin
+

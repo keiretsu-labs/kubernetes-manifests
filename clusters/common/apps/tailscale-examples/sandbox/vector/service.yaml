@@ -16,3 +16,4 @@ spec:
     app.kubernetes.io/name: vector
   loadBalancerClass: tailscale
   type: LoadBalancer
+

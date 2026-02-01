@@ -34,3 +34,4 @@ spec:
       enabled: true
       labels:
         release: monitoring
+

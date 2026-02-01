@@ -28,3 +28,4 @@ spec:
   sessionAffinity: None
   type: LoadBalancer
   loadBalancerIP: ${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.69.50 
+
