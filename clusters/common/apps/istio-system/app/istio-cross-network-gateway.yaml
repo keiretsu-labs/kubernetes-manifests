@@ -1,6 +1,3 @@
---- apiVersion:
-
-
 ---
 # Cross-network Gateway for east-west traffic
 # This configures the eastwestgateway pods to accept incoming mTLS traffic
