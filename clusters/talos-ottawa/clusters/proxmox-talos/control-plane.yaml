@@ -51,6 +51,8 @@ spec:
             - op: add
               path: /cluster/allowSchedulingOnControlPlanes
               value: true
+            - op: remove
+              path: /machine/nodeLabels/node.kubernetes.io~1exclude-from-external-load-balancers
             - op: add
               path: /machine/features/kubernetesTalosAPIAccess
               value:
