@@ -48,7 +48,7 @@ spec:
           - "localhost"
           - "127.0.0.1"
           # Add Tailscale hostname for member cluster access
-          - "ottawa-k8s-operator.keiretsu.ts.net"
+          - "karmada-apiserver.keiretsu.ts.net"
     
     # etcd configuration - internal mode with PVC
     etcd:
