@@ -1,0 +1,10 @@
+---
+apiVersion: operator.cluster.x-k8s.io/v1alpha2
+kind: ControlPlaneProvider
+metadata:
+  name: talos
+  namespace: capi-control-plane-talos-system
+spec:
+  version: v0.5.8
+  fetchConfig:
+    url: https://github.com/siderolabs/cluster-api-control-plane-provider-talos/releases

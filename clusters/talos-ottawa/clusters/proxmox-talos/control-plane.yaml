@@ -1,0 +1,86 @@
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: TalosControlPlane
+metadata:
+  name: ${CAPI_CLUSTER_NAME}-control-plane
+  namespace: ${CAPI_NAMESPACE}
+spec:
+  replicas: ${CAPI_CONTROLPLANE_REPLICAS}
+  version: ${CAPI_K8S_VERSION}
+  controlPlaneConfig:
+    controlplane:
+      generateType: controlplane
+      talosVersion: ${CAPI_TALOS_VERSION}
+      strategicPatches:
+        - |-
+            - op: replace
+              path: /machine/install
+              value:
+                disk: ${CAPI_TALOS_INSTALL_DISK}
+                extensions:
+                  - image: ${CAPI_QEMU_GUEST_AGENT_IMAGE}
+            - op: add
+              path: /machine/install/extraKernelArgs
+              value:
+                - net.ifnames=0
+            - op: add
+              path: /machine/network/interfaces
+              value:
+                - interface: eth0
+                  dhcp: false
+                  vip:
+                    ip: ${CAPI_CONTROL_PLANE_ENDPOINT}
+            - op: add
+              path: /machine/kubelet/extraArgs
+              value:
+                cloud-provider: external
+            - op: add
+              path: /cluster/externalCloudProvider
+              value:
+                enabled: true
+                manifests:
+                  - https://raw.githubusercontent.com/siderolabs/talos-cloud-controller-manager/main/docs/deploy/cloud-controller-manager.yml
+                  - https://raw.githubusercontent.com/alex1989hu/kubelet-serving-cert-approver/main/deploy/standalone-install.yaml
+            - op: add
+              path: /machine/kubelet/extraArgs/rotate-server-certificates
+              value: "true"
+            - op: add
+              path: /machine/features/kubernetesTalosAPIAccess
+              value:
+                enabled: true
+                allowedRoles:
+                  - os:reader
+                allowedKubernetesNamespaces:
+                  - kube-system
+  infrastructureTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    kind: ProxmoxMachineTemplate
+    name: ${CAPI_CLUSTER_NAME}-control-plane
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: ProxmoxMachineTemplate
+metadata:
+  name: ${CAPI_CLUSTER_NAME}-control-plane
+  namespace: ${CAPI_NAMESPACE}
+spec:
+  template:
+    spec:
+      sourceNode: ${CAPI_PROXMOX_SOURCE_NODE}
+      templateID: ${CAPI_PROXMOX_TEMPLATE_ID}
+      format: ${CAPI_PROXMOX_FORMAT}
+      full: ${CAPI_PROXMOX_FULL}
+      numSockets: ${CAPI_CP_NUM_SOCKETS}
+      numCores: ${CAPI_CP_NUM_CORES}
+      memoryMiB: ${CAPI_CP_MEMORY_MIB}
+      disks:
+        bootVolume:
+          disk: ${CAPI_PROXMOX_BOOT_VOLUME_DISK}
+          sizeGb: ${CAPI_PROXMOX_BOOT_VOLUME_SIZE_GB}
+      network:
+        default:
+          bridge: ${CAPI_PROXMOX_BRIDGE}
+          model: virtio
+      checks:
+        skipCloudInitStatus: true
+      metadataSettings:
+        providerIDInjection: true

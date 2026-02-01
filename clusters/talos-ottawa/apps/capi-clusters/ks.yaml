@@ -2,20 +2,24 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app capi-ipam-in-cluster-system-install
+  name: &app capi-clusters
   namespace: flux-system
 spec:
-  targetNamespace: capi-ipam-in-cluster-system
+  targetNamespace: ${CAPI_NAMESPACE}
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./clusters/${CLUSTER_NAME}/apps/capi-ipam-in-cluster-system/app
+  path: ./clusters/${CLUSTER_NAME}/clusters/proxmox-talos
   prune: true
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
   dependsOn:
     - name: capi-operator-system-install
+    - name: capi-system-install
+    - name: capi-bootstrap-talos-system-install
+    - name: capi-control-plane-talos-system-install
+    - name: capmox-system-install
   wait: false
   interval: 30m
   retryInterval: 1m

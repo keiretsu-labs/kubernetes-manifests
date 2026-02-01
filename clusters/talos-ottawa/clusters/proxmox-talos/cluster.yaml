@@ -1,0 +1,33 @@
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CAPI_CLUSTER_NAME}
+  namespace: ${CAPI_NAMESPACE}
+spec:
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+    kind: ProxmoxCluster
+    name: ${CAPI_CLUSTER_NAME}
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+    kind: TalosControlPlane
+    name: ${CAPI_CLUSTER_NAME}-control-plane
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: ProxmoxCluster
+metadata:
+  name: ${CAPI_CLUSTER_NAME}
+  namespace: ${CAPI_NAMESPACE}
+spec:
+  controlPlaneEndpoint:
+    host: ${CAPI_CONTROL_PLANE_ENDPOINT}
+    port: 6443
+  ipv4Config:
+    addresses: ${CAPI_NODE_IP_RANGES}
+    prefix: ${CAPI_NODE_IP_PREFIX}
+    gateway: ${CAPI_NODE_GATEWAY}
+  dnsServers: ${CAPI_DNS_SERVERS}
+  allowedNodes: ${CAPI_PROXMOX_ALLOWED_NODES}
+  schedulerHints:
+    memoryAdjustment: ${CAPI_PROXMOX_MEMORY_ADJUSTMENT}
