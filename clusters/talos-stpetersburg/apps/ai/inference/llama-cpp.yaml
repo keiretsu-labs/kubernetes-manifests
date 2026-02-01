@@ -159,20 +159,22 @@ spec:
         - "--n-gpu-layers"
         - "99"
         - "-c"
-        - "200000"
+        - "65536"
         - "--parallel"
         - "4"
         - "--threads"
         - "8"
+        - "--flash-attn"
         - "--jinja"
+        # GLM-4.7-Flash optimized sampling (Unsloth/Z.ai recommended for tool-calling)
         - "--temp"
-        - "0.2"
-        - "--top-k"
-        - "50"
+        - "0.7"
         - "--top-p"
-        - "0.95"
+        - "1.0"
         - "--min-p"
         - "0.01"
+        - "--repeat-penalty"
+        - "1.0"
         ports:
         - containerPort: 80
           name: http
