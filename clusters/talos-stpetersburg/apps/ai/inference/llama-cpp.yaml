@@ -152,6 +152,8 @@ spec:
         - "/models/GLM-4.7-Flash-UD-Q4_K_XL.gguf"
         - "--alias"
         - "unsloth/GLM-4.7-Flash"
+        - "--fit"
+        - "off"
         - "--port"
         - "80"
         - "--host"
