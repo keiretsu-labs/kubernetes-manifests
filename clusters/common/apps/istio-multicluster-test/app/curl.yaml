@@ -27,7 +27,7 @@ spec:
       serviceAccountName: curl
       containers:
         - name: curl
-          image: curlimages/curl:8.5.0
+          image: curlimages/curl:8.18.0
           command: ["/bin/sleep", "infinity"]
           imagePullPolicy: IfNotPresent
           resources:
