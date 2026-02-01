@@ -1,0 +1,80 @@
+---
+# Service Account for Karmada to access member clusters
+# This RBAC must be applied to EACH member cluster
+#
+# Usage:
+#   kubectl --context=<cluster>-k8s-operator.keiretsu.ts.net apply -f member-cluster-rbac.yaml
+#
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: karmada-cluster
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: karmada-impersonator
+  namespace: karmada-cluster
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: karmada-impersonator-token
+  namespace: karmada-cluster
+  annotations:
+    kubernetes.io/service-account.name: karmada-impersonator
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: karmada-impersonator
+rules:
+  - apiGroups: [""]
+    resources: ["users", "groups", "serviceaccounts"]
+    verbs: ["impersonate"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/exec"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: karmada-impersonator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: karmada-impersonator
+subjects:
+  - kind: ServiceAccount
+    name: karmada-impersonator
+    namespace: karmada-cluster
+---
+# Main service account for Karmada to manage workloads
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: karmada-controller
+  namespace: karmada-cluster
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: karmada-controller-token
+  namespace: karmada-cluster
+  annotations:
+    kubernetes.io/service-account.name: karmada-controller
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: karmada-controller-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: karmada-controller
+    namespace: karmada-cluster

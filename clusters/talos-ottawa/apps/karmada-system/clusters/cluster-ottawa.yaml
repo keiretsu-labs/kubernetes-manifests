@@ -1,0 +1,38 @@
+---
+# Karmada Cluster Registration - Ottawa
+# This resource is applied to the KARMADA API server
+#
+# Prerequisites:
+# 1. Apply member-cluster-rbac.yaml to the Ottawa cluster
+# 2. Create the kubeconfig secret (see bootstrap.sh)
+#
+apiVersion: cluster.karmada.io/v1alpha1
+kind: Cluster
+metadata:
+  name: ottawa
+spec:
+  # Push mode: Karmada control plane pushes workloads to this cluster
+  syncMode: Push
+  
+  # API endpoint via Tailscale k8s-operator proxy
+  apiEndpoint: https://ottawa-k8s-operator.keiretsu.ts.net
+  
+  # Reference to the secret containing kubeconfig credentials
+  secretRef:
+    namespace: karmada-cluster
+    name: ottawa-kubeconfig
+  
+  # Reference to impersonator secret for user impersonation
+  impersonatorSecretRef:
+    namespace: karmada-cluster
+    name: ottawa-impersonator
+  
+  # Skip TLS verification - Tailscale handles TLS termination
+  # The Tailscale proxy presents its own certificate
+  insecureSkipTLSVerification: true
+  
+  # Cluster metadata for scheduling decisions
+  provider: "talos"
+  region: "us-east"
+  zones:
+    - "ottawa"

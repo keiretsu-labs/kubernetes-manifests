@@ -20,9 +20,35 @@ The Karmada control plane includes:
 
 ## Post-Installation Setup
 
-After the Helm release is deployed, you need to manually join member clusters.
+After the Helm release is deployed, you need to register member clusters.
 
-### Step 1: Get Karmada kubeconfig
+### Option 1: GitOps Bootstrap Script (Recommended)
+
+Use the automated bootstrap script in the `clusters/` directory:
+
+```bash
+cd clusters/
+
+# Register all clusters
+./bootstrap.sh
+
+# Or register a single cluster
+./bootstrap.sh ottawa
+```
+
+This script:
+1. Creates service accounts on each member cluster
+2. Extracts tokens and creates secrets in Karmada
+3. Registers Cluster CRs with Karmada
+4. Verifies clusters become Ready
+
+See `clusters/README.md` for detailed documentation.
+
+### Option 2: Manual with karmadactl
+
+If you prefer using karmadactl:
+
+#### Step 1: Get Karmada kubeconfig
 
 ```bash
 # On Ottawa cluster (via Tailscale operator)
@@ -36,7 +62,7 @@ kubectl --context=ottawa-k8s-operator.keiretsu.ts.net -n karmada-system port-for
 kubectl --kubeconfig=/tmp/karmada.config get clusters
 ```
 
-### Step 2: Install karmadactl
+#### Step 2: Install karmadactl
 
 ```bash
 # Download karmadactl
@@ -45,7 +71,7 @@ tar -xzf karmadactl-linux-amd64.tgz
 sudo mv karmadactl /usr/local/bin/
 ```
 
-### Step 3: Join Member Clusters (Push Mode)
+#### Step 3: Join Member Clusters (Push Mode)
 
 Push mode is simpler - the control plane pushes workloads to members.
 
