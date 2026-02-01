@@ -9,6 +9,7 @@ metadata:
   name: karmada-agent-secrets
   namespace: flux-system
 spec:
+  targetNamespace: karmada-system
   dependsOn:
     - name: karmada  # Must wait for control plane to create namespace
   path: ./clusters/${CLUSTER_NAME}/apps/karmada-agent/secrets

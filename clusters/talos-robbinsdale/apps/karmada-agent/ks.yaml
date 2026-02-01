@@ -9,6 +9,7 @@ metadata:
   name: karmada-agent-secrets
   namespace: flux-system
 spec:
+  targetNamespace: karmada-system
   path: ./clusters/${CLUSTER_NAME}/apps/karmada-agent/secrets
   prune: true
   sourceRef:
