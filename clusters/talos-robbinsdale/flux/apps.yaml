@@ -64,6 +64,9 @@ spec:
               - kind: Secret
                 name: garage-keiretsu-bucket
                 optional: true
+              - kind: Secret
+                name: karmada-secrets
+                optional: true
       target:
         group: kustomize.toolkit.fluxcd.io
         kind: Kustomization
