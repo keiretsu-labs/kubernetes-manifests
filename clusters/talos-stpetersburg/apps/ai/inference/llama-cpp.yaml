@@ -150,6 +150,10 @@ spec:
         args:
         - "-m"
         - "/models/GLM-4.7-Flash-UD-Q4_K_XL.gguf"
+        - "--alias"
+        - "unsloth/GLM-4.7-Flash"
+        - "--fit"
+        - "on"
         - "--port"
         - "80"
         - "--host"
