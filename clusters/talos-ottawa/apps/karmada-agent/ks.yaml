@@ -1,4 +1,30 @@
 ---
+# Karmada Agent Secrets - deployed WITHOUT targetNamespace transformer
+# This is needed because the SOPS-encrypted secrets have encrypted metadata
+# which causes kustomize's nameReferenceTransformer to panic when combined
+# with namespace transformers
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: karmada-agent-secrets
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: karmada  # Must wait for control plane to create namespace
+  path: ./clusters/${CLUSTER_NAME}/apps/karmada-agent/secrets
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
 # Karmada Agent - connects this cluster to the Karmada control plane
 # Ottawa is BOTH the control plane host AND a member cluster
 # This allows workloads to be scheduled to Ottawa as well
@@ -14,6 +40,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: karmada  # Must wait for control plane to be ready
+    - name: karmada-agent-secrets  # Must wait for secrets to be deployed
   path: ./clusters/${CLUSTER_NAME}/apps/karmada-agent/app
   prune: true
   sourceRef:
