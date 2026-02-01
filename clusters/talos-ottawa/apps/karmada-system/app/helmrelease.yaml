@@ -5,9 +5,11 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: karmada
+  namespace: karmada-system
 spec:
   interval: 30m
   timeout: 15m
+  targetNamespace: karmada-system
   chart:
     spec:
       chart: karmada
