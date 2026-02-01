@@ -45,3 +45,15 @@ spec:
       autoMount:
         enabled: false
       hostRoot: /sys/fs/cgroup
+    operator:
+      tolerations:
+        - key: node.cloudprovider.kubernetes.io/uninitialized
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/not-ready
+          operator: Exists
+          effect: NoSchedule
+    tolerations:
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        operator: Exists
+        effect: NoSchedule
