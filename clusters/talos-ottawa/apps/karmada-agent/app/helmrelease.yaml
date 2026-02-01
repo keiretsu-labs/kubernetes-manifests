@@ -47,7 +47,7 @@ spec:
       image:
         registry: docker.io
         repository: karmada/karmada-agent
-        tag: "v1.16.0"
+        tag: "v1.16.2"
         pullPolicy: IfNotPresent
       
       resources:
