@@ -75,11 +75,3 @@ spec:
             - op: add
               path: /machine/kubelet/extraArgs/rotate-server-certificates
               value: "true"
-            - op: add
-              path: /machine/features/kubernetesTalosAPIAccess
-              value:
-                enabled: true
-                allowedRoles:
-                  - os:reader
-                allowedKubernetesNamespaces:
-                  - kube-system
