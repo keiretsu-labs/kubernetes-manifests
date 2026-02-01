@@ -1,0 +1,20 @@
+---
+# Expose Karmada API server via Tailscale for member cluster agents
+# This allows agents in other clusters to connect to the Karmada control plane
+apiVersion: v1
+kind: Service
+metadata:
+  name: karmada-apiserver-ts
+  annotations:
+    tailscale.com/expose: "true"
+    tailscale.com/hostname: karmada-apiserver
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app: karmada-apiserver
+  ports:
+    - name: https
+      port: 5443
+      targetPort: 5443
+      protocol: TCP

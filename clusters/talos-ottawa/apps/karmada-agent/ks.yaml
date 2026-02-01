@@ -1,0 +1,29 @@
+---
+# Karmada Agent - connects this cluster to the Karmada control plane
+# Ottawa is BOTH the control plane host AND a member cluster
+# This allows workloads to be scheduled to Ottawa as well
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app karmada-agent
+  namespace: flux-system
+spec:
+  targetNamespace: karmada-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: karmada  # Must wait for control plane to be ready
+  path: ./clusters/${CLUSTER_NAME}/apps/karmada-agent/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 10m
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age

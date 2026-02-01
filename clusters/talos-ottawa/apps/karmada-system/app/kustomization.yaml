@@ -7,3 +7,4 @@ kind: Kustomization
 resources:
   - ../namespace.yaml
   - helmrelease.yaml
+  - tailscale-service.yaml

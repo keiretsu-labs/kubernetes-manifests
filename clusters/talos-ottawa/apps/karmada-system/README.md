@@ -1,16 +1,49 @@
-# Karmada Multi-Cluster Setup
+# Karmada Multi-Cluster Setup (Pull Mode)
 
 Karmada provides multi-cluster workload scheduling with automatic failover.
 
 ## Architecture
 
-- **Control Plane**: Ottawa cluster (primary)
-- **Member Clusters**: Ottawa, Robbinsdale, St Petersburg
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Karmada Control Plane                        │
+│                      (Ottawa Cluster)                           │
+│  ┌─────────────┐ ┌──────────────┐ ┌─────────────┐              │
+│  │  Karmada    │ │   Karmada    │ │  Karmada    │              │
+│  │ API Server  │ │  Controller  │ │  Scheduler  │              │
+│  └──────┬──────┘ └──────────────┘ └─────────────┘              │
+│         │                                                       │
+│         │ Exposed via Tailscale (karmada-apiserver.keiretsu)   │
+└─────────┼───────────────────────────────────────────────────────┘
+          │
+    ┌─────┴─────┬─────────────────┐
+    │           │                 │
+    ▼           ▼                 ▼
+┌───────┐  ┌──────────┐  ┌─────────────┐
+│Ottawa │  │Robbinsdale│  │St Petersburg│
+│ Agent │  │  Agent   │  │    Agent    │
+└───────┘  └──────────┘  └─────────────┘
+```
+
+- **Control Plane**: Ottawa cluster
+- **Member Clusters**: Ottawa, Robbinsdale, St Petersburg (via agents)
 - **Failover Priority**: Ottawa → Robbinsdale → St Petersburg
+
+## Pull Mode vs Push Mode
+
+This setup uses **Pull Mode** with karmada-agents:
+
+| Aspect | Push Mode | Pull Mode (This Setup) |
+|--------|-----------|------------------------|
+| Connection | Control plane → Member clusters | Member clusters → Control plane |
+| Credentials | Control plane needs kubeconfigs for all members | Agents need credentials to control plane |
+| GitOps | Requires bootstrap scripts | Fully declarative |
+| Network | Control plane must reach all members | Only members must reach control plane |
 
 ## Components
 
-The Karmada control plane includes:
+### Control Plane (Ottawa)
+
 - `karmada-apiserver` - API server for Karmada resources
 - `karmada-controller-manager` - Manages propagation and failover
 - `karmada-scheduler` - Schedules workloads to clusters
@@ -18,128 +51,240 @@ The Karmada control plane includes:
 - `karmada-aggregated-apiserver` - Aggregated API server
 - `etcd` - Stores Karmada state
 
-## Post-Installation Setup
+### Member Clusters (All)
 
-After the Helm release is deployed, you need to register member clusters.
+- `karmada-agent` - Connects to control plane, registers cluster, pulls workloads
 
-### Option 1: GitOps Bootstrap Script (Recommended)
+## Directory Structure
 
-Use the automated bootstrap script in the `clusters/` directory:
+```
+clusters/talos-ottawa/apps/
+├── karmada-system/        # Control plane (host mode)
+│   ├── app/
+│   │   ├── helmrelease.yaml      # Karmada control plane
+│   │   ├── tailscale-service.yaml # Expose API via Tailscale
+│   │   └── kustomization.yaml
+│   └── clusters/
+│       └── README.md             # This file
+│
+└── karmada-agent/         # Agent for Ottawa as member
+    └── app/
+        ├── helmrelease.yaml      # Agent deployment
+        └── secret.sops.yaml      # Encrypted credentials
 
-```bash
-cd clusters/
+clusters/talos-robbinsdale/apps/
+└── karmada-agent/         # Agent for Robbinsdale
+    └── app/
+        ├── helmrelease.yaml
+        └── secret.sops.yaml
 
-# Register all clusters
-./bootstrap.sh
-
-# Or register a single cluster
-./bootstrap.sh ottawa
+clusters/talos-stpetersburg/apps/
+└── karmada-agent/         # Agent for St Petersburg
+    └── app/
+        ├── helmrelease.yaml
+        └── secret.sops.yaml
 ```
 
-This script:
-1. Creates service accounts on each member cluster
-2. Extracts tokens and creates secrets in Karmada
-3. Registers Cluster CRs with Karmada
-4. Verifies clusters become Ready
+## Initial Setup
 
-See `clusters/README.md` for detailed documentation.
+### Step 1: Deploy Control Plane
 
-### Option 2: Manual with karmadactl
-
-If you prefer using karmadactl:
-
-#### Step 1: Get Karmada kubeconfig
+The control plane deploys automatically via Flux on Ottawa.
+Wait for it to become ready:
 
 ```bash
-# On Ottawa cluster (via Tailscale operator)
-kubectl --context=ottawa-k8s-operator.keiretsu.ts.net get secret -n karmada-system karmada-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d > /tmp/karmada.config
-
-# Note: The kubeconfig uses internal cluster DNS (karmada-apiserver.karmada-system.svc.cluster.local:5443)
-# For external access, you may need to port-forward:
-kubectl --context=ottawa-k8s-operator.keiretsu.ts.net -n karmada-system port-forward svc/karmada-apiserver 5443:5443 &
-
-# Verify it works (from within the cluster or with port-forward)
-kubectl --kubeconfig=/tmp/karmada.config get clusters
+kubectl --context=ottawa-k8s-operator.keiretsu.ts.net \
+  -n karmada-system get pods
 ```
 
-#### Step 2: Install karmadactl
+### Step 2: Verify Tailscale Exposure
+
+Check that the Karmada API is exposed via Tailscale:
 
 ```bash
-# Download karmadactl
-curl -sLO https://github.com/karmada-io/karmada/releases/download/v1.16.2/karmadactl-linux-amd64.tgz
-tar -xzf karmadactl-linux-amd64.tgz
-sudo mv karmadactl /usr/local/bin/
+kubectl --context=ottawa-k8s-operator.keiretsu.ts.net \
+  -n karmada-system get svc karmada-apiserver-ts
+
+# Should show a Tailscale IP assigned
 ```
 
-#### Step 3: Join Member Clusters (Push Mode)
-
-Push mode is simpler - the control plane pushes workloads to members.
-
+Verify it's reachable:
 ```bash
-# Set Karmada context
-export KUBECONFIG=/tmp/karmada.config
-
-# Join Ottawa (host cluster) as a member
-karmadactl join ottawa \
-  --cluster-kubeconfig=$HOME/.kube/config \
-  --cluster-context=ottawa-k8s-operator.keiretsu.ts.net
-
-# Join Robbinsdale
-karmadactl join robbinsdale \
-  --cluster-kubeconfig=$HOME/.kube/config \
-  --cluster-context=robbinsdale-k8s-operator.keiretsu.ts.net
-
-# Join St Petersburg
-karmadactl join stpetersburg \
-  --cluster-kubeconfig=$HOME/.kube/config \
-  --cluster-context=stpetersburg-k8s-operator.keiretsu.ts.net
-
-# Verify clusters
-kubectl --kubeconfig=/tmp/karmada.config get clusters
+curl -k https://karmada-apiserver.keiretsu.ts.net:5443/healthz
 ```
 
-### Step 4: Deploy Test Failover Application
+### Step 3: Generate Agent Credentials
 
-Apply the test resources:
+Agents need certificates to authenticate to Karmada. Generate them:
+
 ```bash
-kubectl --kubeconfig=/tmp/karmada.config apply -f test-failover/
+# Get Karmada kubeconfig (contains CA cert)
+kubectl --context=ottawa-k8s-operator.keiretsu.ts.net \
+  -n karmada-system get secret karmada-kubeconfig \
+  -o jsonpath='{.data.kubeconfig}' | base64 -d > /tmp/karmada.kubeconfig
+
+# Extract CA certificate
+kubectl --kubeconfig=/tmp/karmada.kubeconfig config view --raw \
+  -o jsonpath='{.clusters[0].cluster.certificate-authority-data}' | base64 -d
+
+# For each cluster, create a certificate signing request
+# Option 1: Use karmadactl (recommended)
+karmadactl register --cluster-name=robbinsdale \
+  --karmada-kubeconfig=/tmp/karmada.kubeconfig \
+  --print-manifest-only > /tmp/agent-robbinsdale.yaml
+
+# Option 2: Manually create CSR and approve
+```
+
+### Step 4: Update SOPS Secrets
+
+For each cluster, update the secret.sops.yaml with real credentials:
+
+```bash
+cd clusters/talos-robbinsdale/apps/karmada-agent/app/
+
+# Edit with real values
+vim secret.sops.yaml
+
+# Encrypt with SOPS
+sops --encrypt --in-place secret.sops.yaml
+```
+
+### Step 5: Commit and Push
+
+```bash
+git add -A
+git commit -m "feat(karmada): Add karmada-agent deployments for Pull mode
+
+Signed-off-by: rajsinghtech <raj@tailscale.com>"
+git push
+```
+
+### Step 6: Verify Agent Registration
+
+After Flux reconciles, verify agents registered:
+
+```bash
+# Get Karmada kubeconfig
+kubectl --context=ottawa-k8s-operator.keiretsu.ts.net \
+  -n karmada-system port-forward svc/karmada-apiserver 5443:5443 &
+
+# Check clusters
+kubectl --kubeconfig=/tmp/karmada.kubeconfig get clusters
+
+# Should show:
+# NAME          VERSION   MODE   READY
+# ottawa        v1.x.x    Pull   True
+# robbinsdale   v1.x.x    Pull   True
+# stpetersburg  v1.x.x    Pull   True
 ```
 
 ## Failover Configuration
 
-The `PropagationPolicy` in `test-failover/` configures:
-- **Cluster Priority**: Ottawa → Robbinsdale → St Petersburg
-- **Toleration**: 60 seconds before triggering failover
-- **Purge Mode**: Gracefully (waits for new replica before removing old)
-- **Single Instance**: Only runs on ONE cluster at a time
+Create a PropagationPolicy for automatic failover:
+
+```yaml
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: my-app-failover
+spec:
+  resourceSelectors:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: my-app
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - ottawa
+        - robbinsdale
+        - stpetersburg
+    replicaScheduling:
+      replicaDivisionPreference: Weighted
+      replicaSchedulingType: Divided
+      weightPreference:
+        staticWeightList:
+          - targetCluster:
+              clusterNames:
+                - ottawa
+            weight: 1
+          - targetCluster:
+              clusterNames:
+                - robbinsdale
+            weight: 0
+          - targetCluster:
+              clusterNames:
+                - stpetersburg
+            weight: 0
+    spreadConstraints:
+      - maxGroups: 1
+        minGroups: 1
+        spreadByField: cluster
+  failover:
+    application:
+      decisionConditions:
+        tolerationSeconds: 60
+      purgeMode: Gracefully
+```
 
 ## Testing Failover
 
+See `test-failover/` directory for example resources.
+
 1. **Verify initial placement**:
    ```bash
-   kubectl --kubeconfig=/tmp/karmada.config get rb failover-test-deployment -o yaml
+   kubectl --kubeconfig=/tmp/karmada.kubeconfig get rb -A
    ```
 
-2. **Simulate Ottawa failure** (cordon all nodes):
+2. **Simulate cluster failure** (cordon nodes):
    ```bash
    kubectl --context=ottawa-k8s-operator.keiretsu.ts.net cordon --all
-   kubectl --context=ottawa-k8s-operator.keiretsu.ts.net delete pod -l app=failover-test
    ```
 
 3. **Watch failover** (wait ~60 seconds):
    ```bash
-   kubectl --kubeconfig=/tmp/karmada.config get rb failover-test-deployment -w
+   kubectl --kubeconfig=/tmp/karmada.kubeconfig get rb -w
    ```
 
-4. **Verify on Robbinsdale**:
-   ```bash
-   kubectl --context=robbinsdale-k8s-operator.keiretsu.ts.net get pods -l app=failover-test
-   ```
-
-5. **Restore Ottawa**:
+4. **Restore cluster**:
    ```bash
    kubectl --context=ottawa-k8s-operator.keiretsu.ts.net uncordon --all
    ```
+
+## Troubleshooting
+
+### Agent not registering
+
+Check agent logs:
+```bash
+kubectl -n karmada-system logs -l app=karmada-agent -f
+```
+
+Check if it can reach Karmada API:
+```bash
+kubectl -n karmada-system exec -it deploy/karmada-agent -- \
+  curl -k https://karmada-apiserver.keiretsu.ts.net:5443/healthz
+```
+
+### Certificate issues
+
+Verify the secret contains valid certs:
+```bash
+kubectl -n karmada-system get secret karmada-agent-kubeconfig -o yaml
+```
+
+### Cluster shows NotReady
+
+Check cluster conditions:
+```bash
+kubectl --kubeconfig=/tmp/karmada.kubeconfig describe cluster <name>
+```
+
+### View controller logs
+
+```bash
+kubectl -n karmada-system logs -l app=karmada-controller-manager -f
+```
 
 ## Key Resources
 
@@ -148,20 +293,8 @@ The `PropagationPolicy` in `test-failover/` configures:
 - **ResourceBinding**: Tracks current placement decisions
 - **OverridePolicy**: Cluster-specific configuration overrides
 
-## Troubleshooting
+## References
 
-### Check cluster health
-```bash
-kubectl --kubeconfig=/tmp/karmada.config describe cluster ottawa
-```
-
-### Check propagation status
-```bash
-kubectl --kubeconfig=/tmp/karmada.config get rb -A
-kubectl --kubeconfig=/tmp/karmada.config describe rb <name>
-```
-
-### View Karmada controller logs
-```bash
-kubectl -n karmada-system logs -l app=karmada-controller-manager -f
-```
+- [Karmada Docs: Cluster Registration](https://karmada.io/docs/userguide/clustermanager/cluster-registration/)
+- [Karmada Docs: Pull Mode](https://karmada.io/docs/userguide/clustermanager/working-with-anp/)
+- [Karmada Helm Charts](https://github.com/karmada-io/karmada/tree/master/charts)
