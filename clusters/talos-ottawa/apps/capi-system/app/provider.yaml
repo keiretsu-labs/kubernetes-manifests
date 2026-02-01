@@ -7,4 +7,4 @@ metadata:
 spec:
   version: v1.9.5
   fetchConfig:
-    url: https://github.com/kubernetes-sigs/cluster-api/releases
+    url: https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.9.5/core-components.yaml

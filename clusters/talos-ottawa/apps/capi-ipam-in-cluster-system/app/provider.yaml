@@ -7,4 +7,4 @@ metadata:
 spec:
   version: v1.0.3
   fetchConfig:
-    url: https://github.com/kubernetes-sigs/cluster-api-ipam-provider-in-cluster/releases
+    url: https://github.com/kubernetes-sigs/cluster-api-ipam-provider-in-cluster/releases/download/v1.0.3/ipam-components.yaml
