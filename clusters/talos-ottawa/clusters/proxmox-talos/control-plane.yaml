@@ -83,5 +83,6 @@ spec:
           model: virtio
       checks:
         skipCloudInitStatus: true
+        skipQemuGuestAgent: true
       metadataSettings:
         providerIDInjection: true
