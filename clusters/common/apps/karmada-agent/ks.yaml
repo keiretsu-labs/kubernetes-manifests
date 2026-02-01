@@ -11,6 +11,8 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: karmada  # Control plane must be ready (only applies to Ottawa)
   path: ./clusters/common/apps/karmada-agent/install
   prune: true
   sourceRef:
@@ -20,3 +22,12 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 10m
+  # Use variable substitution from cluster and common secrets
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-settings
+      - kind: Secret
+        name: cluster-secrets
+      - kind: Secret
+        name: common-secrets

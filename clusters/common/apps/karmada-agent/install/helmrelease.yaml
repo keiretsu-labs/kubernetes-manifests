@@ -1,6 +1,6 @@
 ---
 # Karmada Agent - Pull mode registration
-# This agent connects to the Karmada control plane and registers this cluster
+# Uses Flux variable substitution for credentials from common-secrets
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -19,24 +19,29 @@ spec:
   install:
     remediation:
       retries: 3
-    crds: CreateReplace
+    crds: Skip
   upgrade:
     cleanupOnFail: true
     remediation:
       retries: 3
-    crds: CreateReplace
-  valuesFrom:
-    - kind: Secret
-      name: karmada-agent-kubeconfig
-      valuesKey: kubeconfig.yaml
+    crds: Skip
   values:
     # Agent mode - registers with Karmada control plane
     installMode: "agent"
     
     # Cluster identity - substituted per-cluster
     agent:
-      clusterName: "${CLUSTER_NAME}"
-      # clusterEndpoint is auto-detected by agent
+      clusterName: "${cluster_name}"
+      
+      # Karmada API server credentials (from common-secrets via Flux substitution)
+      kubeconfig:
+        server: "https://karmada-apiserver.keiretsu.ts.net:5443"
+        caCrt: |
+          ${KARMADA_CA_CRT}
+        crt: |
+          ${KARMADA_CLIENT_CRT}
+        key: |
+          ${KARMADA_CLIENT_KEY}
       
       labels:
         app: karmada-agent
