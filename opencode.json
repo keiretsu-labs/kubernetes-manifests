@@ -8,7 +8,7 @@
         "baseURL": "http://stpetersburg-vllm/v1"
       },
       "models": {
-        "THUDM/GLM-4.7-Flash": {
+        "GLM-4.7-Flash": {
           "name": "GLM-4.7-Flash",
           "attachment": false,
           "limit": {
