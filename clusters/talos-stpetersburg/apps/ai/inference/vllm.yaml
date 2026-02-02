@@ -35,7 +35,7 @@ spec:
       enableServiceLinks: false
       containers:
       - name: vllm
-        image: nvcr.io/nvidia/vllm:25.11-py3
+        image: nvcr.io/nvidia/vllm:26.01-py3
         args:
         - "vllm"
         - "serve"
