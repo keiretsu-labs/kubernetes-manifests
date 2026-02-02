@@ -48,7 +48,7 @@ spec:
         - "--port"
         - "8000"
         - "--gpu-memory-utilization"
-        - "0.5"
+        - "0.7"
         - "--max-model-len"
         - "200000"
         - "--max_num_batched_tokens"
