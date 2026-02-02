@@ -1,22 +1,22 @@
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: &app coder
-  namespace: flux-system
-spec:
-  targetNamespace: coder
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *app
-  dependsOn:
-    - name: cnpg-system
-  path: ./clusters/common/apps/coder/app
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: kubernetes-manifests
-  wait: true
-  interval: 30m
-  retryInterval: 1m
-  timeout: 5m
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: &app coder
+#   namespace: flux-system
+# spec:
+#   targetNamespace: coder
+#   commonMetadata:
+#     labels:
+#       app.kubernetes.io/name: *app
+#   dependsOn:
+#     - name: cnpg-system
+#   path: ./clusters/common/apps/coder/app
+#   prune: true
+#   sourceRef:
+#     kind: GitRepository
+#     name: kubernetes-manifests
+#   wait: true
+#   interval: 30m
+#   retryInterval: 1m
+#   timeout: 5m
