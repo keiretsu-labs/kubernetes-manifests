@@ -57,8 +57,6 @@ spec:
         - "/models"
         - "--dtype"
         - "bfloat16"
-        - "--kv-cache-dtype"
-        - "fp8"
         - "--seed"
         - "3407"
         - "--enable-auto-tool-choice"
