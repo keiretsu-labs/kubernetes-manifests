@@ -54,8 +54,8 @@ jobs:
       - name: Verify Tailscale connectivity
         run: |
           tailscale status | head -n 1
-          echo "Testing connectivity to GLM Flash endpoint..."
-          curl -s --connect-timeout 10 http://stpetersburg-glm-flash.keiretsu.ts.net/v1/models || echo "Note: endpoint may require authentication"
+          echo "Testing connectivity to vLLM endpoint..."
+          curl -s --connect-timeout 10 http://stpetersburg-vllm/v1/models | jq -r '.data[].id'
 
       - name: Fetch PR for dispatch
         if: github.event_name == 'workflow_dispatch'
@@ -68,8 +68,9 @@ jobs:
         uses: anomalyco/opencode/github@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          VLLM_BASE_URL: http://stpetersburg-vllm/v1
         with:
-          model: glm-flash/glm-4.7-flash
+          model: vllm/GLM-4.7-Flash
           use_github_token: true
           mentions: renovate[bot],dependabot[bot]
           prompt: |
