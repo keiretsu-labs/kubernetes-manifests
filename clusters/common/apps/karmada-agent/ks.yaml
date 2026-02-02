@@ -1,35 +1,35 @@
----
-# Karmada Agent - connects this cluster to the Karmada control plane
-# Deployed to all clusters so they can be managed by Karmada
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: &app karmada-agent
-  namespace: flux-system
-spec:
-  targetNamespace: karmada-system
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *app
-  dependsOn:
-    - name: karmada  # Control plane must be ready (only applies to Ottawa)
-  path: ./clusters/common/apps/karmada-agent/install
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: kubernetes-manifests
-  wait: true
-  interval: 30m
-  retryInterval: 1m
-  timeout: 10m
-  # Use variable substitution from cluster and common secrets
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: cluster-settings
-      - kind: Secret
-        name: cluster-secrets
-      - kind: Secret
-        name: common-secrets
-      - kind: Secret
-        name: karmada-secrets
+# ---
+# # Karmada Agent - connects this cluster to the Karmada control plane
+# # Deployed to all clusters so they can be managed by Karmada
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: &app karmada-agent
+#   namespace: flux-system
+# spec:
+#   targetNamespace: karmada-system
+#   commonMetadata:
+#     labels:
+#       app.kubernetes.io/name: *app
+#   dependsOn:
+#     - name: karmada  # Control plane must be ready (only applies to Ottawa)
+#   path: ./clusters/common/apps/karmada-agent/install
+#   prune: true
+#   sourceRef:
+#     kind: GitRepository
+#     name: kubernetes-manifests
+#   wait: true
+#   interval: 30m
+#   retryInterval: 1m
+#   timeout: 10m
+#   # Use variable substitution from cluster and common secrets
+#   postBuild:
+#     substituteFrom:
+#       - kind: ConfigMap
+#         name: cluster-settings
+#       - kind: Secret
+#         name: cluster-secrets
+#       - kind: Secret
+#         name: common-secrets
+#       - kind: Secret
+#         name: karmada-secrets

@@ -1,16 +1,16 @@
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: istio-multicluster-test
-  namespace: flux-system
-spec:
-  interval: 10m
-  path: ./clusters/common/apps/istio-multicluster-test/app
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: kubernetes-manifests
-  wait: false
-  dependsOn:
-    - name: istio-system
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: istio-multicluster-test
+#   namespace: flux-system
+# spec:
+#   interval: 10m
+#   path: ./clusters/common/apps/istio-multicluster-test/app
+#   prune: true
+#   sourceRef:
+#     kind: GitRepository
+#     name: kubernetes-manifests
+#   wait: false
+#   dependsOn:
+#     - name: istio-system
