@@ -1,6 +1,7 @@
 ---
 # Karmada Control Plane - deployed on Ottawa (primary cluster)
 # This provides multi-cluster workload scheduling with failover capabilities
+# HA Configuration: Multiple replicas for all components with pod anti-affinity
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -37,6 +38,10 @@ spec:
     # Components to install (empty = default set for host mode)
     components: []
     
+    # Pod Disruption Budget for HA components
+    podDisruptionBudget:
+      minAvailable: 1
+    
     # Certificate configuration - auto-generate
     certs:
       mode: "auto"
@@ -52,11 +57,22 @@ spec:
           # Add Tailscale hostname for member cluster access
           - "karmada-apiserver.keiretsu.ts.net"
     
-    # etcd configuration - internal mode with PVC
+    # etcd configuration - HA with 3 replicas (stacked topology)
     etcd:
       mode: "internal"
+      # Pod anti-affinity to spread across nodes
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - etcd
+              topologyKey: kubernetes.io/hostname
       internal:
-        replicaCount: 1
+        replicaCount: 3
         image:
           registry: registry.k8s.io
           repository: etcd
@@ -69,14 +85,15 @@ spec:
           size: "8Gi"
         resources:
           requests:
-            cpu: 100m
-            memory: 256Mi
+            cpu: 200m
+            memory: 512Mi
           limits:
-            memory: 1Gi
+            cpu: "1"
+            memory: 2Gi
     
-    # Karmada API Server
+    # Karmada API Server - HA with 2 replicas
     apiServer:
-      replicaCount: 1
+      replicaCount: 2
       image:
         registry: registry.k8s.io
         repository: kube-apiserver
@@ -84,16 +101,33 @@ spec:
         pullPolicy: IfNotPresent
       resources:
         requests:
-          cpu: 100m
-          memory: 256Mi
+          cpu: 250m
+          memory: 512Mi
         limits:
-          memory: 1Gi
+          cpu: "2"
+          memory: 2Gi
       serviceType: ClusterIP
       hostNetwork: false
+      # Pod anti-affinity to spread across nodes
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - karmada-apiserver
+              topologyKey: kubernetes.io/hostname
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+          maxSurge: 1
     
-    # Karmada Controller Manager
+    # Karmada Controller Manager - HA with 2 replicas (leader election enabled by default)
     controllerManager:
-      replicaCount: 1
+      replicaCount: 2
       image:
         registry: docker.io
         repository: karmada/karmada-controller-manager
@@ -101,17 +135,36 @@ spec:
         pullPolicy: IfNotPresent
       resources:
         requests:
-          cpu: 100m
+          cpu: 200m
           memory: 256Mi
         limits:
-          memory: 512Mi
+          cpu: "1"
+          memory: 1Gi
       # Enable cluster failover features
       featureGates:
         PropagateDeps: true
+      # Pod anti-affinity to spread across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - karmada-controller-manager
+                topologyKey: kubernetes.io/hostname
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+          maxSurge: 50%
     
-    # Karmada Scheduler
+    # Karmada Scheduler - HA with 2 replicas (leader election enabled by default)
     scheduler:
-      replicaCount: 1
+      replicaCount: 2
       image:
         registry: docker.io
         repository: karmada/karmada-scheduler
@@ -119,14 +172,33 @@ spec:
         pullPolicy: IfNotPresent
       resources:
         requests:
-          cpu: 100m
+          cpu: 200m
           memory: 256Mi
         limits:
-          memory: 512Mi
+          cpu: "1"
+          memory: 1Gi
+      # Pod anti-affinity to spread across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - karmada-scheduler
+                topologyKey: kubernetes.io/hostname
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+          maxSurge: 50%
     
-    # Karmada Webhook
+    # Karmada Webhook - HA with 2 replicas
     webhook:
-      replicaCount: 1
+      replicaCount: 2
       image:
         registry: docker.io
         repository: karmada/karmada-webhook
@@ -134,14 +206,33 @@ spec:
         pullPolicy: IfNotPresent
       resources:
         requests:
-          cpu: 50m
+          cpu: 100m
           memory: 128Mi
         limits:
-          memory: 256Mi
+          cpu: 500m
+          memory: 512Mi
+      # Pod anti-affinity to spread across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - karmada-webhook
+                topologyKey: kubernetes.io/hostname
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+          maxSurge: 50%
     
-    # Karmada Aggregated API Server
+    # Karmada Aggregated API Server - HA with 2 replicas
     aggregatedApiServer:
-      replicaCount: 1
+      replicaCount: 2
       image:
         registry: docker.io
         repository: karmada/karmada-aggregated-apiserver
@@ -149,14 +240,33 @@ spec:
         pullPolicy: IfNotPresent
       resources:
         requests:
-          cpu: 50m
+          cpu: 100m
           memory: 128Mi
         limits:
-          memory: 256Mi
+          cpu: 500m
+          memory: 512Mi
+      # Pod anti-affinity to spread across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - karmada-aggregated-apiserver
+                topologyKey: kubernetes.io/hostname
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+          maxSurge: 50%
     
-    # Kube Controller Manager (for Karmada)
+    # Kube Controller Manager (for Karmada) - HA with 2 replicas
     kubeControllerManager:
-      replicaCount: 1
+      replicaCount: 2
       image:
         registry: registry.k8s.io
         repository: kube-controller-manager
@@ -164,7 +274,26 @@ spec:
         pullPolicy: IfNotPresent
       resources:
         requests:
-          cpu: 100m
+          cpu: 200m
           memory: 256Mi
         limits:
-          memory: 512Mi
+          cpu: "1"
+          memory: 1Gi
+      # Pod anti-affinity to spread across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - kube-controller-manager
+                topologyKey: kubernetes.io/hostname
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+          maxSurge: 50%
