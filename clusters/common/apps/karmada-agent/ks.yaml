@@ -1,4 +1,4 @@
-# ---
+---
 # # Karmada Agent - connects this cluster to the Karmada control plane
 # # Deployed to all clusters so they can be managed by Karmada
 # apiVersion: kustomize.toolkit.fluxcd.io/v1

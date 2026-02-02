@@ -1,4 +1,3 @@
----
 # S3 credentials secret for Immich backups
 apiVersion: v1
 kind: Secret
@@ -8,7 +7,6 @@ metadata:
 stringData:
   AWS_ACCESS_KEY_ID: ${KEIRETSU_S3_ACCESS_KEY}
   AWS_SECRET_ACCESS_KEY: ${KEIRETSU_S3_SECRET_KEY}
----
 # ObjectStore for Barman Cloud backups
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore

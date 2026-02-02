@@ -1,4 +1,3 @@
----
 # GCP Workload Identity approach - fetches token from GCP metadata server
 # Requires:
 # 1. GCP SA with Workload Identity User binding to K8s SA

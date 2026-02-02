@@ -1,4 +1,3 @@
----
 # Example PersistentVolume for static provisioning of S3 bucket
 # Replace placeholders with your actual values:
 # - BUCKET_NAME: Your S3 bucket name

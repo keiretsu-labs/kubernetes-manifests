@@ -44,7 +44,6 @@ spec:
 
   backup:
     retentionPolicy: "30d"
----
 # S3 backup schedule using Barman Cloud
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup

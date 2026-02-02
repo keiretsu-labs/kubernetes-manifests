@@ -1,4 +1,3 @@
----
 # Karmada Control Plane - deployed on Ottawa (primary cluster)
 # This provides multi-cluster workload scheduling with failover capabilities
 # HA Configuration: Multiple replicas for all components with pod anti-affinity

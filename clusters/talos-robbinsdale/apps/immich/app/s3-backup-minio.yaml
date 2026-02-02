@@ -1,4 +1,3 @@
----
 # S3 credentials secret for Immich backups using MinIO
 apiVersion: v1
 kind: Secret
@@ -8,7 +7,6 @@ metadata:
 stringData:
   AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
   AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
----
 # ObjectStore for Barman Cloud backups using MinIO
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
