@@ -1,4 +1,3 @@
----
 # Example PersistentVolumeClaim for S3 storage
 # This should match the corresponding PersistentVolume
 apiVersion: v1

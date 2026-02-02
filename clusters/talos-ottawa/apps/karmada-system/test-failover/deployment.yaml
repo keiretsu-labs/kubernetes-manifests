@@ -1,4 +1,3 @@
----
 # Test deployment for failover
 # This will be scheduled to Ottawa by default, then failover to Robbinsdale/StPetersburg if Ottawa is unhealthy
 apiVersion: apps/v1
