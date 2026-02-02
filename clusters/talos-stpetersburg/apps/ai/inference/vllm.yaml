@@ -32,6 +32,7 @@ spec:
       labels:
         app: vllm
     spec:
+      enableServiceLinks: false
       containers:
       - name: vllm
         image: nvcr.io/nvidia/vllm:25.11-py3
