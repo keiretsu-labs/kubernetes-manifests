@@ -40,4 +40,5 @@ spec:
   wait: true
   interval: 1m
   retryInterval: 1m
-  timeout: 1m 
+  timeout: 1m ---
+---
