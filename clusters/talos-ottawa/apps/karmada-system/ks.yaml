@@ -1,4 +1,4 @@
----
+# ---
 # Single Kustomization for Karmada - follows the same pattern as other apps
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
