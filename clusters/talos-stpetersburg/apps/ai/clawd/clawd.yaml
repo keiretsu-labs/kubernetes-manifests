@@ -223,7 +223,6 @@ spec:
       targetPort: gateway
   selector:
     app: clawd
-# ---
 # apiVersion: v1
 # kind: Service
 # metadata:
