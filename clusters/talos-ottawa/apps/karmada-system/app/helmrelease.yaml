@@ -270,7 +270,7 @@ spec:
       image:
         registry: registry.k8s.io
         repository: kube-controller-manager
-        tag: "v1.31.4"
+        tag: "v1.35.0"
         pullPolicy: IfNotPresent
       resources:
         requests:
