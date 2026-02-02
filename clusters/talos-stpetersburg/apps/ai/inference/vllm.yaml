@@ -35,7 +35,7 @@ spec:
       enableServiceLinks: false
       containers:
       - name: vllm
-        image: nvcr.io/nvidia/vllm:26.01-py3
+        image: scitrera/dgx-spark-vllm:0.15.0-t5
         args:
         - "vllm"
         - "serve"
