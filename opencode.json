@@ -1,19 +1,19 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {
-    "glm-flash": {
+    "vllm": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "GLM-4.7-Flash (stpetersburg)",
+      "name": "vLLM (stpetersburg)",
       "options": {
-        "baseURL": "http://stpetersburg-glm-flash.keiretsu.ts.net/v1"
+        "baseURL": "http://stpetersburg-vllm/v1"
       },
       "models": {
-        "glm-4.7-flash": {
-          "name": "GLM-4.7-Flash",
+        "THUDM/glm-4-9b-chat": {
+          "name": "GLM-4-9B-Chat",
           "attachment": false,
           "limit": {
-            "context": 200000,
-            "output": 16384
+            "context": 32768,
+            "output": 8192
           }
         }
       }
