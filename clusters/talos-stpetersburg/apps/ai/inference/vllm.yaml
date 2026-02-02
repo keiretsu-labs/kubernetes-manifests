@@ -55,7 +55,6 @@ spec:
         - "--trust-remote-code"
         - "--download-dir"
         - "/models"
-        - "glm47"
         - "--dtype"
         - "bfloat16"
         - "--kv-cache-dtype"
