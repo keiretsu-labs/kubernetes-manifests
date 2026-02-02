@@ -8,11 +8,11 @@
         "baseURL": "http://stpetersburg-vllm/v1"
       },
       "models": {
-        "THUDM/glm-4-9b-chat": {
-          "name": "GLM-4-9B-Chat",
+        "THUDM/GLM-4.7-Flash": {
+          "name": "GLM-4.7-Flash",
           "attachment": false,
           "limit": {
-            "context": 32768,
+            "context": 65536,
             "output": 8192
           }
         }
