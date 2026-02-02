@@ -1,4 +1,4 @@
----
+# ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -18,7 +18,6 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
----
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -38,7 +37,6 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
----
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
