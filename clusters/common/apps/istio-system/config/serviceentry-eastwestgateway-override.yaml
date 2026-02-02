@@ -1,4 +1,3 @@
----
 # ServiceEntry to override Istio's automatic gateway endpoint discovery
 # 
 # Problem: Istio discovers LoadBalancer external IPs (Tailscale CGNAT) from remote clusters,

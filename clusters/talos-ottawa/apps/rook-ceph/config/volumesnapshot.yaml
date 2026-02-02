@@ -1,4 +1,3 @@
----
 # 1.17 <= K8s <= v1.19
 # apiVersion: snapshot.storage.k8s.io/v1beta1
 # K8s >= v1.20
@@ -17,7 +16,6 @@ parameters:
   csi.storage.k8s.io/snapshotter-secret-name: rook-csi-rbd-provisioner
   csi.storage.k8s.io/snapshotter-secret-namespace: rook-ceph # namespace:cluster
 deletionPolicy: Delete
----
 # 1.17 <= K8s <= v1.19
 # apiVersion: snapshot.storage.k8s.io/v1beta1
 # K8s >= v1.20

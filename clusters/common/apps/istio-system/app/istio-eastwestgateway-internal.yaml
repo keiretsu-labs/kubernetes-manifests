@@ -1,4 +1,3 @@
----
 # Internal ClusterIP service for mesh networking (Option A)
 # 
 # This service has the 'istio: eastwestgateway' label so Istio auto-discovers it as a gateway.
