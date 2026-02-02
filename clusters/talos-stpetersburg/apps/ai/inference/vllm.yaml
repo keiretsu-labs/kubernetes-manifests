@@ -64,11 +64,14 @@ spec:
         - "glm47"
         - "--reasoning-parser"
         - "glm45"
+        - "--enforce-eager"
         ports:
         - containerPort: 8000
           name: http
           protocol: TCP
         env:
+        - name: TRITON_PTXAS_PATH
+          value: "/usr/local/cuda/bin/ptxas"
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
             secretKeyRef:
