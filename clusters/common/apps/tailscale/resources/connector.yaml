@@ -4,7 +4,7 @@ kind: Connector
 metadata:
   name: &name ${LOCATION}-subnetrouter
 spec:
-  replicas: 2
+  replicas: 10
   proxyClass: common
   tags:
     - tag:k8s

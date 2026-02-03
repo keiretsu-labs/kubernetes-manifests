@@ -305,7 +305,9 @@
 	"nodeAttrs": [
 		{
 			"target": ["*"],
-      "attr": ["traffic-steering"],
+      "attr": [
+        "traffic-steering",
+      ],
 			"app": {
 				"tailscale.com/app-connectors": [
 					// {
