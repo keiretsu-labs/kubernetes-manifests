@@ -1,5 +1,6 @@
 ---
 kind: PersistentVolumeClaim
+---
 apiVersion: v1
 metadata:
   # name: kbench-pvc-block-replicated

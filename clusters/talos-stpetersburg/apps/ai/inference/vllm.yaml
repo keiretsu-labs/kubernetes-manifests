@@ -1,6 +1,7 @@
 # vLLM Deployment for DGX Spark (GB10/ARM/Blackwell)
 # Model: zai-org/GLM-4.7-Flash (non-quantized BF16)
 # Note: FP8 models don't work on GB10 (sm_121) - CUTLASS only compiled for sm_90/sm_100
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

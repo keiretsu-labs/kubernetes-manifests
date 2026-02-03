@@ -1,4 +1,5 @@
 # Example Pod using S3 storage via Mountpoint CSI driver
+---
 apiVersion: v1
 kind: Pod
 metadata:

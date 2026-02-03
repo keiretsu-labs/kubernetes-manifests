@@ -3,6 +3,7 @@
 # 1. GCP SA with Workload Identity User binding to K8s SA
 # 2. Tailscale federated credential with issuer: https://accounts.google.com
 #    and subject: <gcp-sa>@<project>.iam.gserviceaccount.com
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:

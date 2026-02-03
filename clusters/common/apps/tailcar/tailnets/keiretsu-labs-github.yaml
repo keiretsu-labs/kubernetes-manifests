@@ -1,3 +1,4 @@
+---
 apiVersion: tailcar.rajsingh.info/v1alpha1
 kind: Tailnet
 metadata:
