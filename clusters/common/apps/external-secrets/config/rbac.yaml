@@ -1,3 +1,4 @@
+---
 # ServiceAccount for local cluster secret access
 apiVersion: v1
 kind: ServiceAccount
