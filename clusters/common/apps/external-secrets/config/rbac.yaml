@@ -1,11 +1,11 @@
----
+# ---
 # ServiceAccount for local cluster secret access
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: external-secrets-store
   namespace: external-secrets
----
+# ---
 # ClusterRole for reading secrets across namespaces
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -25,7 +25,7 @@ rules:
       - selfsubjectrulesreviews
     verbs:
       - create
----
+# ---
 # Bind the ClusterRole to the ServiceAccount
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

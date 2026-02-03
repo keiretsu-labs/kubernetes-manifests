@@ -1,4 +1,4 @@
----
+# ---
 # S3 API HTTPRoute for direct access to storage cluster
 # Note: S3 uses HTTP for the API protocol, so HTTPRoute works here
 apiVersion: gateway.networking.k8s.io/v1
