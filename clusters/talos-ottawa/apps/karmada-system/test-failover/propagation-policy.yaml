@@ -4,6 +4,7 @@
 # - Failover: Robbinsdale, then St Petersburg
 # - Single replica (only one cluster at a time)
 # - Graceful failover with 60s tolerance
+---
 apiVersion: policy.karmada.io/v1alpha1
 kind: PropagationPolicy
 metadata:
@@ -53,6 +54,7 @@ spec:
       gracePeriodSeconds: 120
 
 # ClusterPropagationPolicy to propagate the namespace first
+---
 apiVersion: policy.karmada.io/v1alpha1
 kind: ClusterPropagationPolicy
 metadata:
