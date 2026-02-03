@@ -41,7 +41,7 @@ spec:
         parameters:
           barmanObjectName: immich-s3-store
           serverName: immich-postgres
----
+# ---
 # S3 backup schedule using Barman Cloud
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
