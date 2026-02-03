@@ -35,7 +35,7 @@ spec:
   # bootstrap:
   #   recovery:
   #     source: keiretsu
-# ---
+---
 # S3 backup schedule using Barman Cloud
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup

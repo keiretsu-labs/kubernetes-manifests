@@ -1,4 +1,4 @@
-# ---
+---
 # Gateway cluster - stateless S3 API proxies
 # These pods handle API requests and forward to storage nodes
 # Benefits: scale API independently, local metadata for fast routing

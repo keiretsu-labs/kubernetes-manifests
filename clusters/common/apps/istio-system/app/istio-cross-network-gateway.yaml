@@ -1,4 +1,4 @@
-# ---
+---
 # Cross-network Gateway for east-west traffic
 # This configures the eastwestgateway pods to accept incoming mTLS traffic
 # from remote clusters using SNI-based AUTO_PASSTHROUGH routing.

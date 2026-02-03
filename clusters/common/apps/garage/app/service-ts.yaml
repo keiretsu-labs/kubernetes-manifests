@@ -1,4 +1,4 @@
-# ---
+---
 # Tailscale LoadBalancer for cross-cluster RPC connectivity
 # Each cluster gets a unique hostname based on location
 apiVersion: v1

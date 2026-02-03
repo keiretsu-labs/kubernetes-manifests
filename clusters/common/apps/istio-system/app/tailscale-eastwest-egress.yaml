@@ -1,4 +1,4 @@
-# ---
+---
 # Tailscale egress proxy services for Istio cross-cluster communication.
 # These services create standalone egress proxies to reach remote clusters'
 # eastwest gateways, avoiding direct Tailscale CGNAT IPs that pods cannot reach.
