@@ -13,9 +13,8 @@ spec:
     requests:
       storage: 13Gi
 ---
-kind: PersistentVolumeClaim
----
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: kbench-pvc-localpath
 spec:
@@ -27,9 +26,8 @@ spec:
     requests:
       storage: 13Gi
 ---
-kind: PersistentVolumeClaim
----
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: kbench-pvc-ceph-block-duplicated-nvme
 spec:
@@ -41,9 +39,8 @@ spec:
     requests:
       storage: 13Gi
 ---
-kind: PersistentVolumeClaim
----
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: kbench-pvc-ceph-block-replicated-nvme
 spec:
@@ -55,9 +52,8 @@ spec:
     requests:
       storage: 13Gi
 ---
-kind: PersistentVolumeClaim
----
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: kbench-pvc-unas-smb
 spec:
