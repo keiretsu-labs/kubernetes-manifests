@@ -4,7 +4,7 @@
 # If one mds daemon per node is too restrictive, see the podAntiAffinity below.
 #  kubectl create -f filesystem.yaml
 #################################################################################################################
-
+---
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystem
 metadata:
@@ -137,6 +137,7 @@ spec:
   #   snapshotRetention:
   #     - path: /
   #       duration: "h 24"
+---
 # create default csi subvolume group
 apiVersion: ceph.rook.io/v1
 kind: CephFilesystemSubVolumeGroup

@@ -7,7 +7,7 @@
 #   kubectl create -f crds.yaml -f common.yaml -f operator.yaml
 #   kubectl create -f cluster.yaml
 #################################################################################################################
-
+---
 apiVersion: ceph.rook.io/v1
 kind: CephCluster
 metadata:
