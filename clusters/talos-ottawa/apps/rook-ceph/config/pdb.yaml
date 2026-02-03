@@ -1,6 +1,7 @@
 # PodDisruptionBudgets for Ceph components
 # Prevents multiple OSDs/MONs from being evicted simultaneously during node drains/upgrades
 # This ensures Ceph cluster stays healthy and RBD volumes can be properly unmounted
+---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

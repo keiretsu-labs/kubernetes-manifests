@@ -1,5 +1,6 @@
 # Expose Karmada API server via Tailscale for member cluster agents
 # This allows agents in other clusters to connect to the Karmada control plane
+---
 apiVersion: v1
 kind: Service
 metadata:

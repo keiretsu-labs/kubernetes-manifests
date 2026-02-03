@@ -1,4 +1,5 @@
 # S3 credentials secret for Immich backups
+---
 apiVersion: v1
 kind: Secret
 metadata:
