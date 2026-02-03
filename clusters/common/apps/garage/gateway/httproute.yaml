@@ -1,3 +1,4 @@
+---
 # S3 API HTTPRoute via gateway cluster
 # Use this for high-throughput S3 access with scalable API tier
 apiVersion: gateway.networking.k8s.io/v1
