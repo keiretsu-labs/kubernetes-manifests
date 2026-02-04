@@ -36,7 +36,7 @@ spec:
       enableServiceLinks: false
       containers:
       - name: vllm
-        image: scitrera/dgx-spark-vllm:0.15.0-t5
+        image: scitrera/dgx-spark-vllm:0.15.1-t5
         args:
         - "vllm"
         - "serve"
