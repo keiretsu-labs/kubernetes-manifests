@@ -89,7 +89,6 @@ kind: Service
 metadata:
   name: ${LOCATION}-sidecar-iperf-server
 spec:
-  clusterIP: None
   selector:
     app: ${LOCATION}-sidecar-iperf-server
   ports:
