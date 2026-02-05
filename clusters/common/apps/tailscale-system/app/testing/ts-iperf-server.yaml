@@ -35,6 +35,10 @@ spec:
         image: nicolaka/netshoot:latest
         imagePullPolicy: IfNotPresent
         command: ["/bin/sh", "-c", "iperf3 -s"]
+        ports:
+        - name: iperf
+          containerPort: 5201
+          protocol: TCP
       - name: tailscale
         imagePullPolicy: IfNotPresent
         image: "ghcr.io/tailscale/tailscale:latest"
@@ -79,6 +83,20 @@ spec:
           value: $(POD_IP):9002
         - name: TS_HOSTNAME
           value: $(POD_NAME)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${LOCATION}-sidecar-iperf-server
+spec:
+  clusterIP: None
+  selector:
+    app: ${LOCATION}-sidecar-iperf-server
+  ports:
+  - name: iperf
+    port: 5201
+    targetPort: 5201
+    protocol: TCP
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
