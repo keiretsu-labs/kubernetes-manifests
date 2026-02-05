@@ -16,9 +16,9 @@ spec:
             - op: replace
               path: /machine/install
               value:
-                disk: ${CAPI_TALOS_INSTALL_DISK}
+                disk: /dev/sda
                 extensions:
-                  - image: ${CAPI_QEMU_GUEST_AGENT_IMAGE}
+                  - image: ghcr.io/siderolabs/qemu-guest-agent:10.2.0
             - op: add
               path: /machine/install/extraKernelArgs
               value:
@@ -79,9 +79,9 @@ spec:
       templateID: ${CAPI_PROXMOX_TEMPLATE_ID}
       format: ${CAPI_PROXMOX_FORMAT}
       full: ${CAPI_PROXMOX_FULL}
-      numSockets: ${CAPI_CP_NUM_SOCKETS}
-      numCores: ${CAPI_CP_NUM_CORES}
-      memoryMiB: ${CAPI_CP_MEMORY_MIB}
+      numSockets: "1"
+      numCores: "2"
+      memoryMiB: "4096"
       disks:
         bootVolume:
           disk: ${CAPI_PROXMOX_BOOT_VOLUME_DISK}

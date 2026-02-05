@@ -50,11 +50,6 @@ spec:
         - "8000"
         - "--gpu-memory-utilization"
         - "0.8"
-        - "--max-model-len"
-        - "170000"
-        - "--max-num-batched-tokens"
-        - "8192"
-        - "--trust-remote-code"
         - "--download-dir"
         - "/models"
         - "--enable-auto-tool-choice"
@@ -62,8 +57,6 @@ spec:
         - "qwen3_coder"
         - "--attention-backend"
         - "flashinfer"
-        - "--kv-cache-dtype"
-        - "fp8"
         - "--enable-prefix-caching"
         - "--load-format"
         - "fastsafetensors"
@@ -74,8 +67,6 @@ spec:
         env:
         - name: NCCL_IGNORE_CPU_AFFINITY
           value: "1"
-        - name: TRITON_PTXAS_PATH
-          value: "/usr/local/cuda/bin/ptxas"
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
             secretKeyRef:
@@ -83,8 +74,6 @@ spec:
               key: HF_TOKEN
         - name: HF_HOME
           value: "/models/huggingface"
-        - name: TRANSFORMERS_CACHE
-          value: "/models/transformers"
         resources:
           requests:
             memory: "16Gi"

@@ -8,11 +8,11 @@
         "baseURL": "http://stpetersburg-vllm/v1"
       },
       "models": {
-        "GLM-4.7-Flash": {
-          "name": "GLM-4.7-Flash",
+        "Qwen3-Coder-Next": {
+          "name": "Qwen3-Coder-Next",
           "attachment": false,
           "limit": {
-            "context": 65536,
+            "context": 170000,
             "output": 8192
           }
         }
