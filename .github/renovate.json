@@ -27,6 +27,17 @@
       "automerge": true
     },
     {
+      "description": "Auto merge terraform updates",
+      "matchManagers": ["terraform"],
+      "automerge": true
+    },
+    {
+      "description": "Auto merge npm updates in .github",
+      "matchManagers": ["npm"],
+      "matchPaths": [".github/**"],
+      "automerge": true
+    },
+    {
       "description": "Auto merge non-critical, non-media cluster updates",
       "matchManagers": ["flux", "helm-values", "kubernetes", "regex"],
       "matchPaths": ["clusters/**"],
