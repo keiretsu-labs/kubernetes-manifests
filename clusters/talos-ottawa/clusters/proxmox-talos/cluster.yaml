@@ -32,4 +32,4 @@ spec:
   dnsServers: ${CAPI_DNS_SERVERS}
   allowedNodes: ${CAPI_PROXMOX_ALLOWED_NODES}
   schedulerHints:
-    memoryAdjustment: ${CAPI_PROXMOX_MEMORY_ADJUSTMENT}
+    memoryAdjustment: "0"
