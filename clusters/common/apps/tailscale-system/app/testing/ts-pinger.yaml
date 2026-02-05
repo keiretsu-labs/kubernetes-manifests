@@ -48,16 +48,17 @@ spec:
         - |
           set -eu
           TARGET="10.3.1.167"
+          SOCK="/var/lib/tailscale/tailscaled.sock"
           echo "Waiting for tailscale to be up + logged in..."
           # Wait until tailscaled is reachable and authenticated
-          until tailscale status >/dev/null 2>&1; do
+          until tailscale --socket="$SOCK" status >/dev/null 2>&1; do
             echo "[$(date)] tailscale not ready yet"
             sleep 1
           done
           echo "[$(date)] tailscale ready; starting ping loop to $TARGET"
           while true; do
             echo "[$(date)] tailscale ping $TARGET"
-            tailscale ping "$TARGET" 2>&1 || true
+            tailscale --socket="$SOCK" ping "$TARGET" 2>&1 || true
             sleep 1
           done
       - name: tailscale
