@@ -47,7 +47,7 @@ spec:
         args:
         - |
           set -eu
-          TARGET="10.3.1.167"
+          TARGET="10.4.0.10"
           SOCK="/var/lib/tailscale/tailscaled.sock"
           echo "Waiting for tailscale to be up + logged in..."
           # Wait until tailscaled is reachable and authenticated
