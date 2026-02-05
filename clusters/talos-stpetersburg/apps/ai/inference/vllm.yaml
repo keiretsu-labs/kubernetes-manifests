@@ -72,6 +72,8 @@ spec:
           name: http
           protocol: TCP
         env:
+        - name: NCCL_IGNORE_CPU_AFFINITY
+          value: "1"
         - name: TRITON_PTXAS_PATH
           value: "/usr/local/cuda/bin/ptxas"
         - name: HUGGING_FACE_HUB_TOKEN
