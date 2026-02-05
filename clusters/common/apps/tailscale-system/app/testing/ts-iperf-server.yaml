@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: sidecar-digger
+  name: ${LOCATION}-sidecar-iperf-server
 spec:
   replicas: 1
-  serviceName: sidecar-digger
+  serviceName: ${LOCATION}-sidecar-iperf-server
   podManagementPolicy: Parallel
   updateStrategy:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: sidecar-digger
+      app: ${LOCATION}-sidecar-iperf-server
   template:
     metadata:
       labels:
-        app: sidecar-digger
+        app: ${LOCATION}-sidecar-iperf-server
     spec:
       serviceAccountName: "tailscale"
       initContainers:
@@ -31,44 +31,15 @@ spec:
         securityContext:
           privileged: true
       containers:
-
-      - name: tailscale-digger
-        image: "ghcr.io/tailscale/tailscale:latest"
+      - name: iperf-server
+        image: nicolaka/netshoot:latest
         imagePullPolicy: IfNotPresent
-        volumeMounts:
-        - name: tailscale-state
-          mountPath: /var/lib/tailscale
-        env:
-        - name: TS_STATE_DIR
-          value: "/var/lib/tailscale"
-        - name: TS_SOCKET
-          value: "/var/lib/tailscale/tailscaled.sock"
-        command: ["/bin/sh","-c"]
-        args:
-        - |
-          set -eu
-          TARGET="k8s.killinit.internal"
-          SOCK="/var/lib/tailscale/tailscaled.sock"
-          echo "Waiting for tailscale to be up + logged in..."
-          # Wait until tailscaled is reachable and authenticated
-          until tailscale --socket="$SOCK" status >/dev/null 2>&1; do
-            echo "[$(date)] tailscale not ready yet"
-            sleep 1
-          done
-          echo "[$(date)] tailscale ready; starting dns query loop for $TARGET"
-          while true; do
-            echo "[$(date)] tailscale dns query $TARGET"
-            tailscale --socket="$SOCK" dns query "$TARGET" 2>&1 || true
-            sleep 1
-          done
+        command: ["/bin/sh", "-c", "iperf3 -s"]
       - name: tailscale
         imagePullPolicy: IfNotPresent
         image: "ghcr.io/tailscale/tailscale:latest"
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: tailscale-state
-          mountPath: /var/lib/tailscale
         ports:
         - name: metrics
           containerPort: 9002
@@ -91,9 +62,7 @@ spec:
         - name: TS_USERSPACE
           value: "false"
         - name: TS_STATE_DIR
-          value: "/var/lib/tailscale"
-        - name: TS_SOCKET
-          value: "/var/lib/tailscale/tailscaled.sock"
+          value: "/dev/shm"
         - name: TS_AUTHKEY
           valueFrom:
             secretKeyRef:
@@ -110,18 +79,15 @@ spec:
           value: $(POD_IP):9002
         - name: TS_HOSTNAME
           value: $(POD_NAME)
-      volumes:
-      - name: tailscale-state
-        emptyDir: {}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
-  name: sidecar-digger
+  name: ${LOCATION}-sidecar-iperf-server
 spec:
   selector:
     matchLabels:
-      app: sidecar-digger
+      app: ${LOCATION}-sidecar-iperf-server
   podMetricsEndpoints:
   - port: metrics
     interval: 15s
