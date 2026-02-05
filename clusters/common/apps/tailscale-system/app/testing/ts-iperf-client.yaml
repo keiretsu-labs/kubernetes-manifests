@@ -39,7 +39,7 @@ spec:
         - -c
         - |
           set +e
-          TARGET_HOST=$(echo $POD_NAME | sed "s/${LOCATION}/${FAILOVER}/")
+          TARGET_HOST="ottawa-sidecar-iperf-server-0.tailscale-system.svc.cluster.local"
           echo "Will continuously test to $TARGET_HOST"
           while true; do
             echo "[$(date)] Connecting to $TARGET_HOST..."
