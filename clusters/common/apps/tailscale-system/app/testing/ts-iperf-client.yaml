@@ -4,7 +4,7 @@ kind: StatefulSet
 metadata:
   name: ${LOCATION}-sidecar-iperf-client
 spec:
-  replicas: 1
+  replicas: 50
   serviceName: ${LOCATION}-sidecar-iperf-client
   podManagementPolicy: Parallel
   updateStrategy:
@@ -42,8 +42,18 @@ spec:
           TARGET_HOST="ottawa-sidecar-iperf-server.tailscale-system.svc.cluster.local"
           echo "Will continuously test to $TARGET_HOST"
           while true; do
+            # Check DNS resolution first
+            RESOLVED_IP=$(dig +short "$TARGET_HOST" 2>/dev/null | head -1)
+            if [ -z "$RESOLVED_IP" ]; then
+              echo "[$(date)] WARNING: DNS resolution failed for $TARGET_HOST"
+              echo "[$(date)] Trying nslookup..."
+              nslookup "$TARGET_HOST" 2>&1 || true
+              sleep 1
+              continue
+            fi
+            echo "[$(date)] Resolved $TARGET_HOST -> $RESOLVED_IP"
             echo "[$(date)] Connecting to $TARGET_HOST..."
-            iperf3 -c $TARGET_HOST -t 300 2>&1 || echo "Connection failed, retrying..."
+            iperf3 -c $TARGET_HOST -t 10 2>&1 || echo "Connection failed, retrying..."
           done
         env:
         - name: POD_NAME
