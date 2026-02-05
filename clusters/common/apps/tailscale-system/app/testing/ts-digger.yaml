@@ -4,7 +4,7 @@ kind: StatefulSet
 metadata:
   name: sidecar-digger
 spec:
-  replicas: 1
+  replicas: 50
   serviceName: sidecar-digger
   podManagementPolicy: Parallel
   updateStrategy:
