@@ -1,6 +1,7 @@
 # vLLM Deployment for DGX Spark (GB10/ARM/Blackwell)
-# Model: zai-org/GLM-4.7-Flash (non-quantized BF16)
-# Note: FP8 models don't work on GB10 (sm_121) - CUTLASS only compiled for sm_90/sm_100
+# Model: Qwen/Qwen3-Coder-Next-FP8 (80B total / 3B active MoE)
+# Reference: https://forums.developer.nvidia.com/t/how-to-run-qwen3-coder-next-on-spark/359571
+# Performance: ~43 tokens/sec on single Spark with flashinfer backend
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -12,7 +13,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Gi
+      storage: 200Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -40,32 +41,30 @@ spec:
         args:
         - "vllm"
         - "serve"
-        - "zai-org/GLM-4.7-Flash"
+        - "Qwen/Qwen3-Coder-Next-FP8"
         - "--served-model-name"
-        - "GLM-4.7-Flash"
+        - "Qwen3-Coder-Next"
         - "--host"
         - "0.0.0.0"
         - "--port"
         - "8000"
         - "--gpu-memory-utilization"
-        - "0.7"
+        - "0.8"
         - "--max-model-len"
-        - "200000"
-        - "--max_num_batched_tokens"
-        - "16384"
+        - "131072"
+        - "--max-num-batched-tokens"
+        - "8192"
         - "--trust-remote-code"
         - "--download-dir"
         - "/models"
-        - "--dtype"
-        - "bfloat16"
-        - "--seed"
-        - "3407"
         - "--enable-auto-tool-choice"
         - "--tool-call-parser"
-        - "glm47"
-        - "--reasoning-parser"
-        - "glm45"
-        - "--enforce-eager"
+        - "qwen3_coder"
+        - "--attention-backend"
+        - "flashinfer"
+        - "--enable-prefix-caching"
+        - "--load-format"
+        - "fastsafetensors"
         ports:
         - containerPort: 8000
           name: http
