@@ -41,6 +41,8 @@ spec:
         env:
         - name: TS_STATE_DIR
           value: "/var/lib/tailscale"
+        - name: TS_SOCKET
+          value: "/var/lib/tailscale/tailscaled.sock"
         command: ["/bin/sh","-c"]
         args:
         - |
@@ -89,6 +91,8 @@ spec:
           value: "false"
         - name: TS_STATE_DIR
           value: "/var/lib/tailscale"
+        - name: TS_SOCKET
+          value: "/var/lib/tailscale/tailscaled.sock"
         - name: TS_AUTHKEY
           valueFrom:
             secretKeyRef:
