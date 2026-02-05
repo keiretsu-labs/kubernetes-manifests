@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: sidecar-digger
+  name: ${LOCATION}-sidecar-iperf-client
 spec:
   replicas: 1
-  serviceName: sidecar-digger
+  serviceName: ${LOCATION}-sidecar-iperf-client
   podManagementPolicy: Parallel
   updateStrategy:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: sidecar-digger
+      app: ${LOCATION}-sidecar-iperf-client
   template:
     metadata:
       labels:
-        app: sidecar-digger
+        app: ${LOCATION}-sidecar-iperf-client
     spec:
       serviceAccountName: "tailscale"
       initContainers:
@@ -31,44 +31,34 @@ spec:
         securityContext:
           privileged: true
       containers:
-
-      - name: tailscale-digger
-        image: "ghcr.io/tailscale/tailscale:latest"
+      - name: iperf-client
+        image: nicolaka/netshoot:latest
         imagePullPolicy: IfNotPresent
-        volumeMounts:
-        - name: tailscale-state
-          mountPath: /var/lib/tailscale
-        env:
-        - name: TS_STATE_DIR
-          value: "/var/lib/tailscale"
-        - name: TS_SOCKET
-          value: "/var/lib/tailscale/tailscaled.sock"
-        command: ["/bin/sh","-c"]
-        args:
+        command:
+        - /bin/sh
+        - -c
         - |
-          set -eu
-          TARGET="k8s.killinit.internal"
-          SOCK="/var/lib/tailscale/tailscaled.sock"
-          echo "Waiting for tailscale to be up + logged in..."
-          # Wait until tailscaled is reachable and authenticated
-          until tailscale --socket="$SOCK" status >/dev/null 2>&1; do
-            echo "[$(date)] tailscale not ready yet"
-            sleep 1
-          done
-          echo "[$(date)] tailscale ready; starting dns query loop for $TARGET"
+          set +e
+          TARGET_HOST=$(echo $POD_NAME | sed "s/${LOCATION}/${FAILOVER}/")
+          echo "Will continuously test to $TARGET_HOST"
           while true; do
-            echo "[$(date)] tailscale dns query $TARGET"
-            tailscale --socket="$SOCK" dns query "$TARGET" 2>&1 || true
-            sleep 1
+            echo "[$(date)] Connecting to $TARGET_HOST..."
+            iperf3 -c $TARGET_HOST -t 300 2>&1 || echo "Connection failed, retrying..."
           done
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: LOCATION
+          value: "${LOCATION}"
+        - name: FAILOVER
+          value: "${FAILOVER}"
       - name: tailscale
         imagePullPolicy: IfNotPresent
         image: "ghcr.io/tailscale/tailscale:latest"
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: tailscale-state
-          mountPath: /var/lib/tailscale
         ports:
         - name: metrics
           containerPort: 9002
@@ -91,9 +81,7 @@ spec:
         - name: TS_USERSPACE
           value: "false"
         - name: TS_STATE_DIR
-          value: "/var/lib/tailscale"
-        - name: TS_SOCKET
-          value: "/var/lib/tailscale/tailscaled.sock"
+          value: "/dev/shm"
         - name: TS_AUTHKEY
           valueFrom:
             secretKeyRef:
@@ -110,18 +98,15 @@ spec:
           value: $(POD_IP):9002
         - name: TS_HOSTNAME
           value: $(POD_NAME)
-      volumes:
-      - name: tailscale-state
-        emptyDir: {}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
-  name: sidecar-digger
+  name: ${LOCATION}-sidecar-iperf-client
 spec:
   selector:
     matchLabels:
-      app: sidecar-digger
+      app: ${LOCATION}-sidecar-iperf-client
   podMetricsEndpoints:
   - port: metrics
     interval: 15s
