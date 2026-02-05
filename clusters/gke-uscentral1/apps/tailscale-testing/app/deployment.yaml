@@ -31,7 +31,7 @@ spec:
             privileged: true
       containers:
         - name: tailscale
-          image: ghcr.io/rajsinghtech/tailscale/tailscale:80
+          image: ghcr.io/rajsinghtech/tailscale/tailscale:81
           imagePullPolicy: Always
           securityContext:
             privileged: true
