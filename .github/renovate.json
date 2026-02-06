@@ -9,6 +9,8 @@
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "prConcurrentLimit": 0,
+  "assignees": [],
+  "reviewers": [],
   "ignorePaths": ["**/*.sops.*", "**/clusterplex.yaml"],
   "flux": {
     "managerFilePatterns": ["/clusters/.+\\.ya?ml$/"]
