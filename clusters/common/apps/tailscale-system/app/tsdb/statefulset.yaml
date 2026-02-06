@@ -28,17 +28,6 @@ spec:
         - name: admin
           containerPort: 8080
           protocol: TCP
-        env:
-        - name: TS_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: ts-oauth
-              key: client_id
-        - name: TS_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: ts-oauth
-              key: client_secret
         volumeMounts:
         - name: tsdb-data
           mountPath: /data/tsdb
