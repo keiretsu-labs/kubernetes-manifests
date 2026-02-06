@@ -44,26 +44,62 @@ spec:
                   "enabled": true,
                   "cdpUrl": "http://localhost:9222"
                 },
+                "models": {
+                  "mode": "merge",
+                  "providers": {
+                    "vllm": {
+                      "baseUrl": "http://stpetersburg-vllm/v1",
+                      "apiKey": "unused",
+                      "api": "openai-completions",
+                      "models": [
+                        {
+                          "id": "Qwen3-Coder-Next",
+                          "name": "Qwen3 Coder Next",
+                          "input": ["text"],
+                          "contextWindow": 131072,
+                          "maxTokens": 8192
+                        }
+                      ]
+                    }
+                  }
+                },
                 "agents": {
-                  "workspace": "/home/node/.openclaw/workspace",
-                  "model": "openai/Qwen3-Coder-Next",
-                  "timezone": "America/New_York",
-                  "timeout": 600,
-                  "maxConcurrency": 1
+                  "defaults": {
+                    "workspace": "/home/node/.openclaw/workspace",
+                    "model": {
+                      "primary": "vllm/Qwen3-Coder-Next"
+                    },
+                    "userTimezone": "America/New_York",
+                    "timeoutSeconds": 600,
+                    "maxConcurrent": 1
+                  }
                 },
                 "session": {
                   "scope": "per-sender",
-                  "idleResetMinutes": 60
+                  "idleMinutes": 60
                 },
                 "logging": {
                   "level": "info",
                   "consoleStyle": "compact",
-                  "redaction": "tools"
+                  "redactSensitive": "tools"
                 },
                 "tools": {
                   "profile": "full",
-                  "webSearch": false,
-                  "webFetch": true
+                  "web": {
+                    "search": {
+                      "enabled": false
+                    },
+                    "fetch": {
+                      "enabled": true
+                    }
+                  }
+                },
+                "channels": {
+                  "discord": {
+                    "dm": {
+                      "policy": "pairing"
+                    }
+                  }
                 }
               }
       persistence:
