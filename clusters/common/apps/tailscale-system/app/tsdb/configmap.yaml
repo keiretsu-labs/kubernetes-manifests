@@ -22,7 +22,6 @@ data:
           "engine": "postgres",
           "host": "jellystat-postgres-rw.media.svc.cluster.local",
           "port": 5432,
-          "ca_file": "/etc/tsdb/certs/ca.crt",
           "admin_user": "postgres",
           "admin_password": "${DEFAULT_PASSWORD}"
         }
