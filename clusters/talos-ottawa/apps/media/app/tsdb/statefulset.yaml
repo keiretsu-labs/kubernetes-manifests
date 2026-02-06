@@ -14,7 +14,7 @@ spec:
       labels:
         app: ${LOCATION}-tsdb
     spec:
-      serviceAccountName: tailscale
+      serviceAccountName: default
       terminationGracePeriodSeconds: 10
       securityContext:
         runAsUser: 0
@@ -35,10 +35,17 @@ spec:
           mountPath: /etc/tsdb/config.hujson
           subPath: config.hujson
           readOnly: true
+        - name: ca-cert
+          mountPath: /etc/tsdb/certs/ca.crt
+          subPath: ca.crt
+          readOnly: true
       volumes:
       - name: config
         configMap:
           name: tsdb-config
+      - name: ca-cert
+        secret:
+          secretName: jellystat-postgres-ca
   volumeClaimTemplates:
   - metadata:
       name: tsdb-data
