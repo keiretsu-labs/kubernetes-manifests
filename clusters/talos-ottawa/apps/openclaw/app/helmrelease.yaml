@@ -39,8 +39,14 @@ spec:
                 "gateway": {
                   "port": 18789,
                   "mode": "local",
+                  "bind": "lan",
                   "auth": {
-                    "mode": "token"
+                    "mode": "token",
+                    "allowTailscale": true
+                  },
+                  "controlUi": {
+                    "enabled": true,
+                    "allowInsecureAuth": true
                   }
                 },
                 "browser": {
