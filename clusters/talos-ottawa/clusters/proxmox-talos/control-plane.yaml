@@ -79,9 +79,9 @@ spec:
       templateID: ${CAPI_PROXMOX_TEMPLATE_ID}
       format: ${CAPI_PROXMOX_FORMAT}
       full: ${CAPI_PROXMOX_FULL}
-      numSockets: "1"
-      numCores: "2"
-      memoryMiB: "4096"
+      numSockets: 1
+      numCores: 2
+      memoryMiB: 4096
       disks:
         bootVolume:
           disk: ${CAPI_PROXMOX_BOOT_VOLUME_DISK}
