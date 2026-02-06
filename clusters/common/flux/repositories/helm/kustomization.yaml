@@ -45,6 +45,7 @@ resources:
   - ./node-feature-discovery.yaml
   - ./ollama.yaml
   - ./open-webui.yaml
+  - ./openclaw.yaml
   - ./opencost.yaml
   - ./openebs.yaml
   - ./openspeedtest.yaml

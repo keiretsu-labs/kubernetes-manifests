@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-vllm
+  annotations:
+    tailscale.com/tailnet-fqdn: stpetersburg-vllm.keiretsu.ts.net
+    tailscale.com/proxy-class: common
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
