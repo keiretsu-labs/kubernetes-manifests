@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tsdb-config
+data:
+  config.hujson: |
+    {
+      "hostname": "${LOCATION}-tsdb",
+      "state_dir": "/data/tsdb",
+      "admin_port": 8080,
+      "log_level": "info",
+      "tags": "tag:k8s,tag:${LOCATION}",
+      "databases": {
+        "jellystat": {
+          "engine": "postgres",
+          "host": "jellystat-postgres-rw.media.svc.cluster.local",
+          "port": 5432,
+          "ca_file": "/etc/tsdb/certs/ca.crt",
+          "admin_user": "postgres",
+          "admin_password": "${DEFAULT_PASSWORD}"
+        }
+      }
+    }

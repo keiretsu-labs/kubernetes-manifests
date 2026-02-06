@@ -229,6 +229,17 @@
 			"ip":  ["*"],
 			"via": ["tag:aurora"],
 		},
+		// Database connector access for superusers and k8s nodes
+		{
+			"src": ["group:superuser", "tag:k8s"],
+			"dst": ["tag:k8s"],
+			"app": {
+				"tailscale.com/cap/databases": [{
+					"databases": ["*"],
+					"roles":     ["*"],
+				}],
+			},
+		},
 		{
 			"src": ["group:superuser",],
 			"dst": ["tag:k8s-operator", "tag:k8s"],

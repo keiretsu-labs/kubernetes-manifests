@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ${LOCATION}-tsdb
+spec:
+  replicas: 1
+  serviceName: ${LOCATION}-tsdb
+  selector:
+    matchLabels:
+      app: ${LOCATION}-tsdb
+  template:
+    metadata:
+      labels:
+        app: ${LOCATION}-tsdb
+    spec:
+      serviceAccountName: tailscale
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: tsdb
+        image: ghcr.io/tailscale/tsdb:latest
+        imagePullPolicy: Always
+        args:
+        - --config=/etc/tsdb/config.hujson
+        ports:
+        - name: admin
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: TS_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: ts-oauth
+              key: client_id
+        - name: TS_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ts-oauth
+              key: client_secret
+        volumeMounts:
+        - name: tsdb-data
+          mountPath: /data/tsdb
+        - name: config
+          mountPath: /etc/tsdb/config.hujson
+          subPath: config.hujson
+          readOnly: true
+        - name: certs
+          mountPath: /etc/tsdb/certs/ca.crt
+          subPath: ca.crt
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: tsdb-config
+      - name: certs
+        secret:
+          secretName: tsdb-internal-ca
+  volumeClaimTemplates:
+  - metadata:
+      name: tsdb-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
