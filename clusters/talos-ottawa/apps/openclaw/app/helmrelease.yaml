@@ -107,6 +107,11 @@ spec:
                   "discord": {
                     "enabled": true,
                     "groupPolicy": "open",
+                    "guilds": {
+                      "*": {
+                        "requireMention": false
+                      }
+                    },
                     "dm": {
                       "policy": "pairing"
                     },
