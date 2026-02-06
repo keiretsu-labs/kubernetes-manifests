@@ -103,6 +103,19 @@ spec:
                     }
                   }
                 },
+                "hooks": {
+                  "internal": {
+                    "enabled": true,
+                    "entries": {
+                      "mission-control": {
+                        "enabled": true,
+                        "env": {
+                          "MISSION_CONTROL_URL": "http://convex-backend:3211/openclaw/event"
+                        }
+                      }
+                    }
+                  }
+                },
                 "channels": {
                   "discord": {
                     "enabled": true,
