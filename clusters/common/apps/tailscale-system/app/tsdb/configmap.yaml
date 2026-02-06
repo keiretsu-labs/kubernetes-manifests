@@ -10,6 +10,8 @@ data:
       "state_dir": "/data/tsdb",
       "admin_port": 8080,
       "log_level": "info",
+      "client_id": "${TS_OAUTH_CLIENT_ID}",
+      "client_secret": "${TS_OAUTH_CLIENT_SECRET}",
       "tags": ["tag:k8s", "tag:${LOCATION}"],
       "databases": {
         "jellystat": {
