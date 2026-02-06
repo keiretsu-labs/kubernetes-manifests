@@ -16,11 +16,11 @@ spec:
         namespace: flux-system
   install:
     remediation:
-      retries: 3
+      retries: 0
   upgrade:
     cleanupOnFail: true
     remediation:
-      retries: 3
+      retries: 0
   values:
     configMode: merge
     app-template:
