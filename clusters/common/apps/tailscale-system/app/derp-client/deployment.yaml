@@ -19,7 +19,7 @@ spec:
       containers:
       - name: tailscale
         imagePullPolicy: IfNotPresent
-        image: "ghcr.io/tailscale/tailscale:unstable-v1.93.44"
+        image: "ghcr.io/tailscale/tailscale:v1.94.1"
         ports:
         - name: metrics
           containerPort: 9002
