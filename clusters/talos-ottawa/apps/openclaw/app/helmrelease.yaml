@@ -106,6 +106,7 @@ spec:
                 "channels": {
                   "discord": {
                     "enabled": true,
+                    "groupPolicy": "open",
                     "dm": {
                       "policy": "pairing"
                     },
