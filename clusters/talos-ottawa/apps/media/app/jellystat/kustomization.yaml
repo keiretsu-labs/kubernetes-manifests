@@ -8,5 +8,4 @@ resources:
   - pvc-backup.yaml
   - httproute.yaml
   - postgres.yaml
-  - certificate.yaml
   - s3-backup.yaml

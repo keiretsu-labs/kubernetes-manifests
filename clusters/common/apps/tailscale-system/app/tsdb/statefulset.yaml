@@ -35,17 +35,10 @@ spec:
           mountPath: /etc/tsdb/config.hujson
           subPath: config.hujson
           readOnly: true
-        - name: certs
-          mountPath: /etc/tsdb/certs/ca.crt
-          subPath: ca.crt
-          readOnly: true
       volumes:
       - name: config
         configMap:
           name: tsdb-config
-      - name: certs
-        secret:
-          secretName: tsdb-internal-ca
   volumeClaimTemplates:
   - metadata:
       name: tsdb-data
