@@ -6,6 +6,11 @@ metadata:
   annotations:
     cnpg.io/skipEmptyWalArchiveCheck: "enabled"
 spec:
+  enableSuperuserAccess: true
+  certificates:
+    serverCASecret: jellystat-postgres-server-tls
+    serverTLSSecret: jellystat-postgres-server-tls
+    replicationTLSSecret: jellystat-postgres-replication-tls
   inheritedMetadata:
     labels:
       app: jellystat-postgres

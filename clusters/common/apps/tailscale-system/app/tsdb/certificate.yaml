@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tsdb-internal-ca
+spec:
+  secretName: tsdb-internal-ca
+  issuerRef:
+    name: internal
+    kind: ClusterIssuer
+  duration: 8760h
+  renewBefore: 720h
+  commonName: tsdb
+  dnsNames:
+    - tsdb
