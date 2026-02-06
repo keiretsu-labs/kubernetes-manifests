@@ -1,0 +1,169 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: convex-backend
+spec:
+  selector:
+    app: convex-backend
+  ports:
+    - name: api
+      port: 3210
+      targetPort: 3210
+    - name: site
+      port: 3211
+      targetPort: 3211
+    - name: dashboard
+      port: 6791
+      targetPort: 6791
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: convex-backend
+spec:
+  serviceName: convex-backend
+  replicas: 1
+  selector:
+    matchLabels:
+      app: convex-backend
+  template:
+    metadata:
+      labels:
+        app: convex-backend
+    spec:
+      containers:
+        - name: dashboard
+          image: ghcr.io/get-convex/convex-dashboard:latest
+          ports:
+            - containerPort: 6791
+              name: dashboard
+          env:
+            - name: NEXT_PUBLIC_DEPLOYMENT_URL
+              value: "https://convex.killinit.cc"
+        - name: backend
+          image: karl8080/convex-backend:latest
+          ports:
+            - containerPort: 3210
+              name: api
+            - containerPort: 3211
+              name: site
+          env:
+            - name: INSTANCE_NAME
+              value: "openclaw-mission-control"
+            - name: INSTANCE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: convex-secrets
+                  key: instance-secret
+            - name: CONVEX_CLOUD_ORIGIN
+              value: "https://convex.${CLUSTER_DOMAIN}"
+            - name: CONVEX_SITE_ORIGIN
+              value: "https://convex.${CLUSTER_DOMAIN}"
+            - name: DO_NOT_REQUIRE_SSL
+              value: "true"
+            - name: RUST_LOG
+              value: "info"
+          livenessProbe:
+            httpGet:
+              path: /version
+              port: 3210
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /version
+              port: 3210
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: data
+              mountPath: /convex/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: convex-backend
+  annotations:
+    item.homer.rajsingh.info/name: "Convex"
+    item.homer.rajsingh.info/subtitle: "Backend Database"
+    item.homer.rajsingh.info/logo: "https://pb.dashboardicons.com/api/files/community_gallery/syov2lst1k14n5m/favicon_kv7wixurym.svg"
+    item.homer.rajsingh.info/keywords: "convex, database, backend"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-database"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+  hostnames:
+    - "convex.${CLUSTER_DOMAIN}"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: convex-backend
+          port: 3211
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /.well-known
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: convex-backend
+          port: 3210
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: convex-dashboard
+  annotations:
+    item.homer.rajsingh.info/name: "Convex Dashboard"
+    item.homer.rajsingh.info/subtitle: "Database UI"
+    item.homer.rajsingh.info/logo: "https://pb.dashboardicons.com/api/files/community_gallery/syov2lst1k14n5m/favicon_kv7wixurym.svg"
+    item.homer.rajsingh.info/keywords: "convex, dashboard, database"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-database"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+  hostnames:
+    - "convex-dashboard.${CLUSTER_DOMAIN}"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: convex-backend
+          port: 6791
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

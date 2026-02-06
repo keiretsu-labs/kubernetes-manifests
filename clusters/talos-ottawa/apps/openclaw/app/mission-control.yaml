@@ -1,0 +1,73 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mission-control
+spec:
+  selector:
+    app: mission-control
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mission-control
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mission-control
+  template:
+    metadata:
+      labels:
+        app: mission-control
+    spec:
+      containers:
+        - name: mission-control
+          image: ghcr.io/rajsinghtech/openclaw-mission-control:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mission-control
+  annotations:
+    item.homer.rajsingh.info/name: "Mission Control"
+    item.homer.rajsingh.info/subtitle: "OpenClaw Dashboard"
+    item.homer.rajsingh.info/logo: "https://pb.dashboardicons.com/api/files/community_gallery/syov2lst1k14n5m/favicon_kv7wixurym.svg"
+    item.homer.rajsingh.info/keywords: "ai, agent, dashboard, mission-control"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-robot"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+  hostnames:
+    - "mission-control.${CLUSTER_DOMAIN}"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: mission-control
+          port: 8080
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
