@@ -10,6 +10,7 @@ spec:
   certificates:
     serverCASecret: jellystat-postgres-server-tls
     serverTLSSecret: jellystat-postgres-server-tls
+    clientCASecret: jellystat-postgres-server-tls
     replicationTLSSecret: jellystat-postgres-replication-tls
   inheritedMetadata:
     labels:

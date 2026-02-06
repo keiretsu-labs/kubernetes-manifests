@@ -16,6 +16,8 @@ spec:
     spec:
       serviceAccountName: tailscale
       terminationGracePeriodSeconds: 10
+      securityContext:
+        runAsUser: 0
       containers:
       - name: tsdb
         image: ghcr.io/tailscale/tsdb:latest
