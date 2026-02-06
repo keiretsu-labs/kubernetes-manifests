@@ -10,7 +10,7 @@ data:
       "state_dir": "/data/tsdb",
       "admin_port": 8080,
       "log_level": "info",
-      "tags": "tag:k8s,tag:${LOCATION}",
+      "tags": ["tag:k8s", "tag:${LOCATION}"],
       "databases": {
         "jellystat": {
           "engine": "postgres",
