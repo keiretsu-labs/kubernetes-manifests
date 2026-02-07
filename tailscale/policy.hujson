@@ -239,6 +239,8 @@
 					"jellystat": {
 						"access": [{"databases": ["postgres", "app"], "roles": ["postgres", "app"]}],
 						"engine": "postgres",
+						"recorder": ["tag:k8s-recorder"],
+						"enforceRecorder": true,
 					},
 				}],
 				"tailscale.com/cap/kubernetes": [
@@ -286,6 +288,8 @@
 					"jellystat": {
 						"access": [{"databases": ["postgres", "app"], "roles": ["postgres", "app"]}],
 						"engine": "postgres",
+						"recorder": ["tag:k8s-recorder"],
+						"enforceRecorder": true,
 					},
 				}],
 				"tailscale.com/cap/kubernetes": [
