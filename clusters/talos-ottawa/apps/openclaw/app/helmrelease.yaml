@@ -132,6 +132,20 @@ spec:
                   },
                   "list": [
                     {
+                      "id": "main",
+                      "default": true,
+                      "identity": {
+                        "name": "OpenClaw",
+                        "emoji": "🦞"
+                      },
+                      "model": {
+                        "primary": "vllm/Qwen3-Coder-Next"
+                      },
+                      "subagents": {
+                        "allowAgents": ["claw-manager"]
+                      }
+                    },
+                    {
                       "id": "claw-manager",
                       "identity": {
                         "name": "Claw Manager",
