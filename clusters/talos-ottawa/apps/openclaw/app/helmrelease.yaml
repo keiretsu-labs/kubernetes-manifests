@@ -26,8 +26,8 @@ spec:
     app-template:
       controllers:
         main:
-          pod:
-            serviceAccountName: tailscale
+          serviceAccount:
+            name: tailscale
           initContainers:
             sysctler:
               image:
