@@ -26,11 +26,46 @@ spec:
     app-template:
       controllers:
         main:
+          pod:
+            serviceAccountName: tailscale
+          initContainers:
+            sysctler:
+              image:
+                repository: ghcr.io/tailscale/tailscale
+                tag: v1.94.1
+              command:
+                - /bin/sh
+                - -c
+              args:
+                - >-
+                  sysctl -w net.ipv4.ip_forward=1 &&
+                  if sysctl net.ipv6.conf.all.forwarding;
+                  then sysctl -w net.ipv6.conf.all.forwarding=1; fi
+              securityContext:
+                privileged: true
           containers:
             main:
               envFrom:
                 - secretRef:
                     name: openclaw-secrets
+            tailscale:
+              image:
+                repository: ghcr.io/tailscale/tailscale
+                tag: v1.94.1
+              securityContext:
+                privileged: true
+              env:
+                TS_KUBE_SECRET: openclaw-ts-state
+                TS_STATE: kube:openclaw-ts-state
+                TS_USERSPACE: "false"
+                TS_AUTHKEY:
+                  valueFrom:
+                    secretKeyRef:
+                      name: ts-oauth
+                      key: TS_AUTHKEY
+                TS_ACCEPT_DNS: "true"
+                TS_EXTRA_ARGS: "--advertise-tags=tag:k8s,tag:ottawa --accept-routes"
+                TS_HOSTNAME: openclaw
       configMaps:
         config:
           data:
