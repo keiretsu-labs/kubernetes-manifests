@@ -70,7 +70,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VLLM_BASE_URL: http://stpetersburg-vllm/v1
         with:
-          model: vllm/GLM-4.7-Flash
+          model: vllm/Qwen3-Coder-Next
           use_github_token: true
           mentions: renovate[bot],dependabot[bot]
           prompt: |
