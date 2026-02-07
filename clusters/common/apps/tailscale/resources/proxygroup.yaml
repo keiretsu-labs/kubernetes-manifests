@@ -10,7 +10,7 @@ spec:
     - tag:${LOCATION}
   proxyClass: common-accept-routes
   type: egress
-  replicas: 3
+  replicas: 2
 ---
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyGroup
