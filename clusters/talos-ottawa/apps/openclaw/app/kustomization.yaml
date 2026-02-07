@@ -7,7 +7,3 @@ resources:
   - secret.sops.yaml
   - egress.yaml
   - httproute.yaml
-  - convex-backend.yaml
-  - convex-secret.sops.yaml
-  - convex-deployer.yaml
-  - mission-control.yaml
