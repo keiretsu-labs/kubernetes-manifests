@@ -7,3 +7,5 @@ resources:
   - secret.sops.yaml
   - egress.yaml
   - httproute.yaml
+  - ts-oauth.yaml
+  - rbac.yaml
