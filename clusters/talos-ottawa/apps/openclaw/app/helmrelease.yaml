@@ -65,9 +65,9 @@ spec:
               securityContext:
                 privileged: true
               env:
-                TS_KUBE_SECRET: openclaw-ts-state
-                TS_STATE: kube:openclaw-ts-state
+                TS_KUBE_SECRET: ""
                 TS_USERSPACE: "false"
+                TS_STATE_DIR: /dev/shm
                 TS_AUTHKEY:
                   valueFrom:
                     secretKeyRef:
