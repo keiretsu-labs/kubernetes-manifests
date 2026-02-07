@@ -74,16 +74,17 @@ jobs:
           use_github_token: true
           mentions: renovate[bot],dependabot[bot]
           prompt: |
-            Review this pull request for a GitOps Kubernetes manifests repository.
+            Review ONLY the changes in this pull request for a GitOps Kubernetes manifests repository.
 
-            Focus on:
-            - YAML syntax and formatting
-            - Kubernetes resource correctness
-            - Security issues (secrets exposure, excessive permissions)
-            - Best practices for Flux CD GitOps
-            - Kustomize configuration validity
-            - Helm values correctness
-            - Resource limits and requests
-            - Research online for any known bugs or reasons not to upgrade
+            IMPORTANT: Run `git diff origin/main...HEAD` to see the actual diff. Only review the changed lines - do NOT review pre-existing code that was not modified in this PR.
 
-            Be concise and actionable in your feedback.
+            For each changed file, focus your review on:
+            - YAML syntax and formatting errors in the changed lines
+            - Kubernetes resource correctness of new/modified resources
+            - Security issues introduced by the changes (secrets exposure, excessive permissions)
+            - Flux CD GitOps best practices for the new/modified configuration
+            - Kustomize and Helm values correctness in modified sections
+            - Resource limits and requests if they were added or changed
+            - Research online for any known bugs or reasons not to upgrade if versions were changed
+
+            Do NOT flag issues in unchanged code. Be concise and actionable.
