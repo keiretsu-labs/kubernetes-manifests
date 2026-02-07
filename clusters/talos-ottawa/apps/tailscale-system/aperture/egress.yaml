@@ -28,8 +28,8 @@ spec:
         ports:
           - port: 80
             protocol: TCP
-      - name: userz-mcp
-        fqdn: userz-mcp.keiretsu.ts.net
-        ports:
-          - port: 80
-            protocol: TCP
+      # - name: userz-mcp
+      #   fqdn: userz-mcp.keiretsu.ts.net
+      #   ports:
+      #     - port: 80
+      #       protocol: TCP
