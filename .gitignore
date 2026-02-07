@@ -51,3 +51,6 @@ clusters/common/bootstrap/flux/secret.yaml
 
 # Python virtual environment
 venv/
+
+# Tailscale daemon PID (created by CI runners)
+tailscaled.pid

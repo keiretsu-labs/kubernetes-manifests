@@ -12,7 +12,7 @@ on:
 
 permissions:
   id-token: write
-  contents: write
+  contents: read
   pull-requests: write
   issues: write
 
@@ -74,6 +74,8 @@ jobs:
           use_github_token: true
           mentions: renovate[bot],dependabot[bot]
           prompt: |
+            You are a code reviewer. This is a REVIEW ONLY task. Do NOT modify any files, do NOT create commits, do NOT push code. Only provide written feedback.
+
             Review ONLY the changes in this pull request for a GitOps Kubernetes manifests repository.
 
             IMPORTANT: Run `git diff origin/main...HEAD` to see the actual diff. Only review the changed lines - do NOT review pre-existing code that was not modified in this PR.
@@ -84,7 +86,8 @@ jobs:
             - Security issues introduced by the changes (secrets exposure, excessive permissions)
             - Flux CD GitOps best practices for the new/modified configuration
             - Kustomize and Helm values correctness in modified sections
+            - Helm values correctness in modified sections
             - Resource limits and requests if they were added or changed
             - Research online for any known bugs or reasons not to upgrade if versions were changed
 
-            Do NOT flag issues in unchanged code. Be concise and actionable.
+            Do NOT flag issues in unchanged code. Do NOT edit or write any files. Be concise and actionable.
