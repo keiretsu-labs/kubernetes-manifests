@@ -56,7 +56,7 @@ spec:
                 PUID: "0"
                 PGID: "0"
                 TZ: America/New_York
-                DEFAULT_WORKSPACE: /data
+                DEFAULT_WORKSPACE: /home/node/.openclaw
                 PASSWORD: ${DEFAULT_PASSWORD}
             tailscale:
               image:
@@ -177,7 +177,5 @@ spec:
           accessMode: ReadWriteOnce
           advancedMounts:
             main:
-              main:
-                - path: /data
               code-server:
-                - path: /data
+                - path: /home/node/.openclaw
