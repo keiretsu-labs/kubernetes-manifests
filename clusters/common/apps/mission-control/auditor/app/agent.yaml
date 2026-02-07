@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mission-control-auditor
+  namespace: mission-control
+  labels:
+    app.kubernetes.io/name: mission-control-auditor
+    app.kubernetes.io/component: auditor
+    app.kubernetes.io/version: v1.0.0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mission-control-auditor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mission-control-auditor
+        app.kubernetes.io/component: auditor
+        app.kubernetes.io/version: v1.0.0
+      annotations:
+        tailscale.com/expose: "true"
+    spec:
+      serviceAccountName: mission-control-agent
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: agent
+          image: ghcr.io/keiretsu-labs/mission-control-agent:v1.0.0
+          args:
+            - --agent-name
+            - auditor
+            - --agent-role
+            - auditor
+            - --mission-control-url
+            - http://mission-control-core.mission-control.svc.cluster.local:8080
+            - --schedule
+            - every_1h
+          ports:
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: TALOS_ENDPOINTS
+              valueFrom:
+                configMapKeyRef:
+                  name: cluster-config
+                  key: talos-endpoints
+            - name: KUBECONFIG
+              value: /etc/kubernetes/kubeconfig
+            - name: AGENT_MEMORY_RETENTION_DAYS
+              value: "30"
+            - name: AGENT_CAPABILITIES
+              value: "security_scanning,compliance_checks,vulnerability_assessment"
+          volumeMounts:
+            - name: config
+              mountPath: /etc/mission-control
+              readOnly: true
+            - name: kubeconfig
+              mountPath: /etc/kubernetes
+              readOnly: true
+            - name: logs
+              mountPath: /var/log/mission-control
+      volumes:
+        - name: config
+          configMap:
+            name: mission-control-config
+        - name: kubeconfig
+          secret:
+            secretName: mission-control-kubeconfig
+        - name: logs
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mission-control-auditor
+  namespace: mission-control
+  labels:
+    app.kubernetes.io/name: mission-control-auditor
+    app.kubernetes.io/component: auditor
+spec:
+  selector:
+    app.kubernetes.io/name: mission-control-auditor
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  type: ClusterIP
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mission-control-auditor
+  namespace: mission-control
+  labels:
+    app.kubernetes.io/name: mission-control-auditor
+    app.kubernetes.io/component: auditor
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mission-control-auditor
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics

@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mission-control-messages
+  namespace: mission-control
+  labels:
+    app.kubernetes.io/name: mission-control
+data:
+  agents.json: |
+    {
+      "architect": {"status": "idle", "last_task": null},
+      "operator": {"status": "idle", "last_task": null},
+      "observer": {"status": "idle", "last_task": null},
+      "auditor": {"status": "idle", "last_task": null},
+      "optimizer": {"status": "idle", "last_task": null}
+    }
+  
+  tasks.json: |
+    []
+
+  logs.jsonl: |
+    {}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mission-control-core-config
+  namespace: mission-control
+  labels:
+    app.kubernetes.io/name: mission-control-core
+data:
+  config.yaml: |
+    port: 8080
+    message_bus_path: /var/mission-control/messages
+    agent_config_path: /etc/mission-control/agents.yaml
+    log_level: info
+    cluster_name: keiretsu-labs
+    tailscale_hostname: mission-control-operator

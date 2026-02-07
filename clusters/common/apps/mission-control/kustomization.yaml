@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ./architect
+  - ./operator
+  - ./observer
+  - ./auditor
+  - ./optimizer
+  - ./mission-control-core
+
+commonLabels:
+  app.kubernetes.io/name: mission-control
+  app.kubernetes.io/part-of: mission-control
+  app.kubernetes.io/version: v1.0.0
+
+commonAnnotations:
+  fluxcd.io/sync-checksum: v1.0.0

@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mission-control-config
+  namespace: mission-control
+  labels:
+    app.kubernetes.io/name: mission-control
+data:
+  agents.yaml: |
+    architect:
+      enabled: true
+      schedule: "0 6 * * *"
+      model: vllm/Qwen3-Coder-Next
+      memory_retention_days: 365
+      capabilities:
+        - capacity_planning
+        - resource_forecasting
+        - design_review
+    
+    operator:
+      enabled: true
+      schedule: continuous
+      model: vllm/Qwen3-Coder-Next
+      memory_retention_days: 7
+      capabilities:
+        - real_time_monitoring
+        - auto_remediation
+        - incident_response
+      auto_remediation:
+        enabled: true
+        rules:
+          - name: node-maintenance
+            trigger: "node_not_ready"
+            action: "cordone_node"
+          - name: pod-restart
+            trigger: "pod_crash_looping"
+            action: "restart_pod"
+    
+    observer:
+      enabled: true
+      schedule: every_5m
+      model: vllm/Qwen3-Coder-Next
+      memory_retention_days: 7
+      capabilities:
+        - cluster_health
+        - anomaly_detection
+        - performance_monitoring
+    
+    auditor:
+      enabled: false
+      schedule: every_1h
+      model: vllm/Qwen3-Coder-Next
+      memory_retention_days: 30
+      capabilities:
+        - security_scanning
+        - compliance_checks
+        - vulnerability_assessment
+    
+    optimizer:
+      enabled: true
+      schedule: every_1h
+      model: vllm/Qwen3-Coder-Next
+      memory_retention_days: 30
+      capabilities:
+        - cost_optimization
+        - performance_tuning
+        - auto_scaling_recommendations
