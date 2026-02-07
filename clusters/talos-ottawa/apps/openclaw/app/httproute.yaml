@@ -24,7 +24,7 @@ spec:
     - backendRefs:
         - group: ""
           kind: Service
-          name: openclaw
+          name: openclaw-main
           port: 18789
           weight: 1
       matches:
