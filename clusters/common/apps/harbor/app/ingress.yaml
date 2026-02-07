@@ -5,7 +5,7 @@ metadata:
   name: ${LOCATION}-harbor
   annotations:
     tailscale.com/funnel: "true"
-    tailscale.com/proxy-class: "common"
+    tailscale.com/proxy-group: "common-ingress"
 spec:
   defaultBackend:
     service:
