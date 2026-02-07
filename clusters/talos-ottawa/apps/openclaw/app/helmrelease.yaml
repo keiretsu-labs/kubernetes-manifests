@@ -48,6 +48,16 @@ spec:
               envFrom:
                 - secretRef:
                     name: openclaw-secrets
+            code-server:
+              image:
+                repository: lscr.io/linuxserver/code-server
+                tag: latest
+              env:
+                PUID: "0"
+                PGID: "0"
+                TZ: America/New_York
+                DEFAULT_WORKSPACE: /data
+                PASSWORD: ${DEFAULT_PASSWORD}
             tailscale:
               image:
                 repository: ghcr.io/tailscale/tailscale
@@ -154,8 +164,20 @@ spec:
                   }
                 }
               }
+      service:
+        code-server:
+          controller: main
+          ports:
+            http:
+              port: 8443
       persistence:
         data:
           enabled: true
           size: 5Gi
           accessMode: ReadWriteOnce
+          advancedMounts:
+            main:
+              main:
+                - path: /data
+              code-server:
+                - path: /data
