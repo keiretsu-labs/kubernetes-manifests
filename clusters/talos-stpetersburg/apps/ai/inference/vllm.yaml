@@ -152,7 +152,7 @@ metadata:
   namespace: ai
   annotations:
     tailscale.com/hostname: "${LOCATION}-vllm"
-    tailscale.com/proxy-class: "common"
+    tailscale.com/proxy-group: common-ingress
     tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
 spec:
   type: LoadBalancer

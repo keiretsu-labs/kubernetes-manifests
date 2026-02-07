@@ -33,7 +33,7 @@ spec:
     service:
       annotations:
         tailscale.com/hostname: ${LOCATION}-istio-eastwestgateway
-        tailscale.com/proxy-class: common
+        tailscale.com/proxy-group: common-ingress
       type: LoadBalancer
       loadBalancerClass: tailscale
       ports:

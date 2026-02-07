@@ -4,7 +4,7 @@ kind: Service
 metadata:
   annotations:
     tailscale.com/tailnet-fqdn: ottawa-idp.keiretsu.ts.net
-    tailscale.com/proxy-class: common
+    tailscale.com/proxy-group: common-egress
   name: ottawa-idp-egress
 spec:
   externalName: placeholder   # any value - will be overwritten by operator
@@ -19,7 +19,7 @@ kind: Service
 metadata:
   annotations:
     tailscale.com/tailnet-fqdn: robbinsdale-idp.keiretsu.ts.net
-    tailscale.com/proxy-class: common
+    tailscale.com/proxy-group: common-egress
   name: robbinsdale-idp-egress
 spec:
   externalName: placeholder   # any value - will be overwritten by operator
