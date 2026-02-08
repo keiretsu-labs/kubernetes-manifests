@@ -1,38 +1,40 @@
-# ---
-# # Tailscale LoadBalancer for cross-cluster RPC connectivity
-# # Each cluster gets a unique hostname based on location
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   annotations:
-#     tailscale.com/hostname: ${LOCATION}-garage
-#     tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
-#     # tailscale.com/proxy-group: "common-ingress"
-#   name: garage-ts
-# spec:
-#   publishNotReadyAddresses: true
-#   ports:
-#     - name: s3-api
-#       port: 3900
-#       protocol: TCP
-#       targetPort: 3900
-#     - name: rpc
-#       port: 3901
-#       protocol: TCP
-#       targetPort: 3901
-#     - name: s3-web
-#       port: 3902
-#       protocol: TCP
-#       targetPort: 3902
-#     - name: admin
-#       port: 3903
-#       protocol: TCP
-#       targetPort: 3903
-#   selector:
-#     app.kubernetes.io/name: garage
-#     app.kubernetes.io/instance: garage
-#   type: LoadBalancer
-#   loadBalancerClass: tailscale
+---
+# Tailscale LoadBalancer for cross-cluster RPC connectivity
+# Each cluster gets a unique hostname based on location
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ${LOCATION}-garage
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-ts
+spec:
+  # Allow routing to pods before they're ready - essential for multi-cluster
+  # federation bootstrap when pods wait for cluster health
+  publishNotReadyAddresses: true
+  ports:
+    - name: s3-api
+      port: 3900
+      protocol: TCP
+      targetPort: 3900
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+    - name: s3-web
+      port: 3902
+      protocol: TCP
+      targetPort: 3902
+    - name: admin
+      port: 3903
+      protocol: TCP
+      targetPort: 3903
+  selector:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: garage
+  type: LoadBalancer
+  loadBalancerClass: tailscale
 ---
 apiVersion: v1
 kind: Service
@@ -43,6 +45,8 @@ metadata:
     tailscale.com/tags: "tag:k8s"
   name: garage-global-ts
 spec:
+  # Allow routing to pods before they're ready - essential for multi-cluster
+  # federation bootstrap when pods wait for cluster health
   publishNotReadyAddresses: true
   ports:
     - name: s3-api
