@@ -113,6 +113,8 @@ spec:
         - "--cache-type-v"
         - "q4_0"
         - "--jinja"
+        - "-a"
+        - "Qwen3-Coder-Next"
         - "--temp"
         - "1.0"
         - "--top-p"
