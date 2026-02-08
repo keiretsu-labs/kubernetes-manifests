@@ -4,5 +4,6 @@ kind: Kustomization
 namespace: ai
 
 resources:
-  - vllm.yaml
+  - llama-cpp.yaml
+  # - vllm.yaml
   - secret.yaml

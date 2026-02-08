@@ -1,166 +1,166 @@
-# vLLM Deployment for DGX Spark (GB10/ARM/Blackwell)
-# Model: Qwen/Qwen3-Coder-Next-FP8 (80B total / 3B active MoE)
-# Reference: https://forums.developer.nvidia.com/t/how-to-run-qwen3-coder-next-on-spark/359571
-# Performance: ~43 tokens/sec on single Spark with flashinfer backend
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: vllm-models
-  namespace: ai
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 200Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: vllm
-  namespace: ai
-  labels:
-    app: vllm
-spec:
-  replicas: 1
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app: vllm
-  template:
-    metadata:
-      labels:
-        app: vllm
-    spec:
-      enableServiceLinks: false
-      containers:
-      - name: vllm
-        image: scitrera/dgx-spark-vllm:0.15.1-t5
-        args:
-        - "vllm"
-        - "serve"
-        - "Qwen/Qwen3-Coder-Next-FP8"
-        - "--served-model-name"
-        - "Qwen3-Coder-Next"
-        - "--host"
-        - "0.0.0.0"
-        - "--port"
-        - "8000"
-        - "--gpu-memory-utilization"
-        - "0.75"
-        - "--max-model-len"
-        - "32768"
-        - "--kv-cache-dtype"
-        - "fp8"
-        - "--max-num-seqs"
-        - "8"
-        - "--download-dir"
-        - "/models"
-        - "--enable-auto-tool-choice"
-        - "--tool-call-parser"
-        - "qwen3_coder"
-        - "--attention-backend"
-        - "flashinfer"
-        - "--enable-chunked-prefill"
-        - "--load-format"
-        - "fastsafetensors"
-        ports:
-        - containerPort: 8000
-          name: http
-          protocol: TCP
-        env:
-        - name: NCCL_IGNORE_CPU_AFFINITY
-          value: "1"
-        - name: HUGGING_FACE_HUB_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: hf-secret
-              key: HF_TOKEN
-        - name: HF_HOME
-          value: "/models/huggingface"
-        resources:
-          requests:
-            memory: "16Gi"
-            cpu: "4000m"
-            nvidia.com/gpu: "1"
-          limits:
-            memory: "96Gi"
-            nvidia.com/gpu: "1"
-        volumeMounts:
-        - name: models
-          mountPath: /models
-        - name: shm
-          mountPath: /dev/shm
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 300
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 5
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 120
-          periodSeconds: 10
-          timeoutSeconds: 5
-        startupProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 60
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 30
-      volumes:
-      - name: models
-        persistentVolumeClaim:
-          claimName: vllm-models
-      - name: shm
-        emptyDir:
-          medium: Memory
-          sizeLimit: 32Gi
-      nodeSelector:
-        nvidia.com/gpu.present: "true"
-      terminationGracePeriodSeconds: 120
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: vllm
-  namespace: ai
-  labels:
-    app: vllm
-spec:
-  type: ClusterIP
-  ports:
-  - name: http
-    port: 8000
-    protocol: TCP
-    targetPort: http
-  selector:
-    app: vllm
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: vllm-ts
-  namespace: ai
-  annotations:
-    tailscale.com/hostname: "${LOCATION}-vllm"
-    tailscale.com/proxy-group: common-ingress
-    tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
-spec:
-  type: LoadBalancer
-  loadBalancerClass: tailscale
-  ports:
-  - name: http
-    port: 80
-    protocol: TCP
-    targetPort: 8000
-  selector:
-    app: vllm
+# # vLLM Deployment for DGX Spark (GB10/ARM/Blackwell)
+# # Model: Qwen/Qwen3-Coder-Next-FP8 (80B total / 3B active MoE)
+# # Reference: https://forums.developer.nvidia.com/t/how-to-run-qwen3-coder-next-on-spark/359571
+# # Performance: ~43 tokens/sec on single Spark with flashinfer backend
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: vllm-models
+#   namespace: ai
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 200Gi
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: vllm
+#   namespace: ai
+#   labels:
+#     app: vllm
+# spec:
+#   replicas: 1
+#   strategy:
+#     type: Recreate
+#   selector:
+#     matchLabels:
+#       app: vllm
+#   template:
+#     metadata:
+#       labels:
+#         app: vllm
+#     spec:
+#       enableServiceLinks: false
+#       containers:
+#       - name: vllm
+#         image: scitrera/dgx-spark-vllm:0.15.1-t5
+#         args:
+#         - "vllm"
+#         - "serve"
+#         - "Qwen/Qwen3-Coder-Next-FP8"
+#         - "--served-model-name"
+#         - "Qwen3-Coder-Next"
+#         - "--host"
+#         - "0.0.0.0"
+#         - "--port"
+#         - "8000"
+#         - "--gpu-memory-utilization"
+#         - "0.75"
+#         - "--max-model-len"
+#         - "32768"
+#         - "--kv-cache-dtype"
+#         - "fp8"
+#         - "--max-num-seqs"
+#         - "8"
+#         - "--download-dir"
+#         - "/models"
+#         - "--enable-auto-tool-choice"
+#         - "--tool-call-parser"
+#         - "qwen3_coder"
+#         - "--attention-backend"
+#         - "flashinfer"
+#         - "--enable-chunked-prefill"
+#         - "--load-format"
+#         - "fastsafetensors"
+#         ports:
+#         - containerPort: 8000
+#           name: http
+#           protocol: TCP
+#         env:
+#         - name: NCCL_IGNORE_CPU_AFFINITY
+#           value: "1"
+#         - name: HUGGING_FACE_HUB_TOKEN
+#           valueFrom:
+#             secretKeyRef:
+#               name: hf-secret
+#               key: HF_TOKEN
+#         - name: HF_HOME
+#           value: "/models/huggingface"
+#         resources:
+#           requests:
+#             memory: "16Gi"
+#             cpu: "4000m"
+#             nvidia.com/gpu: "1"
+#           limits:
+#             memory: "96Gi"
+#             nvidia.com/gpu: "1"
+#         volumeMounts:
+#         - name: models
+#           mountPath: /models
+#         - name: shm
+#           mountPath: /dev/shm
+#         livenessProbe:
+#           httpGet:
+#             path: /health
+#             port: http
+#           initialDelaySeconds: 300
+#           periodSeconds: 30
+#           timeoutSeconds: 10
+#           failureThreshold: 5
+#         readinessProbe:
+#           httpGet:
+#             path: /health
+#             port: http
+#           initialDelaySeconds: 120
+#           periodSeconds: 10
+#           timeoutSeconds: 5
+#         startupProbe:
+#           httpGet:
+#             path: /health
+#             port: http
+#           initialDelaySeconds: 60
+#           periodSeconds: 30
+#           timeoutSeconds: 10
+#           failureThreshold: 30
+#       volumes:
+#       - name: models
+#         persistentVolumeClaim:
+#           claimName: vllm-models
+#       - name: shm
+#         emptyDir:
+#           medium: Memory
+#           sizeLimit: 32Gi
+#       nodeSelector:
+#         nvidia.com/gpu.present: "true"
+#       terminationGracePeriodSeconds: 120
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: vllm
+#   namespace: ai
+#   labels:
+#     app: vllm
+# spec:
+#   type: ClusterIP
+#   ports:
+#   - name: http
+#     port: 8000
+#     protocol: TCP
+#     targetPort: http
+#   selector:
+#     app: vllm
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: vllm-ts
+#   namespace: ai
+#   annotations:
+#     tailscale.com/hostname: "${LOCATION}-vllm"
+#     tailscale.com/proxy-group: common-ingress
+#     tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
+# spec:
+#   type: LoadBalancer
+#   loadBalancerClass: tailscale
+#   ports:
+#   - name: http
+#     port: 80
+#     protocol: TCP
+#     targetPort: 8000
+#   selector:
+#     app: vllm

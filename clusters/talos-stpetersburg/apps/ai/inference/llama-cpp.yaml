@@ -1,0 +1,208 @@
+# llama.cpp Deployment for DGX Spark (GB10/ARM/Blackwell)
+# Model: Qwen3-Coder-Next 4-bit GGUF (~46GB) via Unsloth
+# Replaces vLLM FP8 (~85GB) for lower RAM usage and faster inference
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: llama-cpp-models
+  namespace: ai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llama-cpp-scripts
+  namespace: ai
+data:
+  download-model.py: |
+    #!/usr/bin/env python3
+    import os
+    from pathlib import Path
+    from huggingface_hub import hf_hub_download
+
+    MODEL_DIR = "/models"
+    REPO_ID = "unsloth/Qwen3-Coder-Next-GGUF"
+    MODEL_FILE = "Qwen3-Coder-Next-UD-Q4_K_XL.gguf"
+
+    Path(MODEL_DIR).mkdir(parents=True, exist_ok=True)
+
+    model_path = Path(MODEL_DIR) / MODEL_FILE
+    if not model_path.exists():
+        print(f"Downloading {MODEL_FILE} from {REPO_ID}...")
+        hf_hub_download(
+            repo_id=REPO_ID,
+            filename=MODEL_FILE,
+            local_dir=MODEL_DIR,
+            local_dir_use_symlinks=False
+        )
+        print(f"Downloaded: {model_path}")
+    else:
+        print(f"Already exists: {model_path}")
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llama-cpp
+  namespace: ai
+  labels:
+    app: llama-cpp
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: llama-cpp
+  template:
+    metadata:
+      labels:
+        app: llama-cpp
+    spec:
+      initContainers:
+      - name: download-model
+        image: python:3.14
+        command: ["python3", "/scripts/download-model.py"]
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: HF_TOKEN
+        - name: HF_HOME
+          value: "/models/huggingface"
+        volumeMounts:
+        - name: models
+          mountPath: /models
+        - name: scripts
+          mountPath: /scripts
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+      containers:
+      - name: llama-cpp
+        image: ghcr.io/rajsinghtech/llama.cpp:server-cuda-arm64@sha256:a12de1bbe384329f43e41df69e2c0ef75bfaa2540a6ac5642fc2c80d4de18a89
+        args:
+        - "-m"
+        - "/models/Qwen3-Coder-Next-UD-Q4_K_XL.gguf"
+        - "--port"
+        - "8000"
+        - "--host"
+        - "0.0.0.0"
+        - "-n"
+        - "16384"
+        - "--n-gpu-layers"
+        - "99"
+        - "-c"
+        - "65536"
+        - "--parallel"
+        - "4"
+        - "--threads"
+        - "8"
+        - "--flash-attn"
+        - "--cache-type-k"
+        - "q4_0"
+        - "--cache-type-v"
+        - "q4_0"
+        - "--jinja"
+        - "--temp"
+        - "1.0"
+        - "--top-p"
+        - "0.95"
+        - "--top-k"
+        - "40"
+        - "--min-p"
+        - "0.01"
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            memory: "16Gi"
+            cpu: "4000m"
+            nvidia.com/gpu: "1"
+          limits:
+            memory: "96Gi"
+            nvidia.com/gpu: "1"
+        volumeMounts:
+        - name: models
+          mountPath: /models
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 30
+      volumes:
+      - name: models
+        persistentVolumeClaim:
+          claimName: llama-cpp-models
+      - name: scripts
+        configMap:
+          name: llama-cpp-scripts
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+      terminationGracePeriodSeconds: 120
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llama-cpp
+  namespace: ai
+  labels:
+    app: llama-cpp
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: llama-cpp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llama-cpp-ts
+  namespace: ai
+  annotations:
+    tailscale.com/hostname: "${LOCATION}-llama-cpp"
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: llama-cpp
