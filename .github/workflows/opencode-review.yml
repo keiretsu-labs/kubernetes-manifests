@@ -64,7 +64,7 @@ jobs:
         run: |
           gh pr checkout ${{ inputs.pr_number }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: OpenCode Review
         uses: anomalyco/opencode/github@latest
