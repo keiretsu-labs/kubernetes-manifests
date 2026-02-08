@@ -28,6 +28,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/checkout@v6
         with:
+          token: ${{ secrets.GH_PAT }}
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
@@ -35,6 +36,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v6
         with:
+          token: ${{ secrets.GH_PAT }}
           fetch-depth: 0
 
       - name: Configure git identity
@@ -62,7 +64,7 @@ jobs:
         run: |
           gh pr checkout ${{ inputs.pr_number }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: OpenCode Review
         uses: anomalyco/opencode/github@latest
@@ -71,7 +73,7 @@ jobs:
           VLLM_BASE_URL: http://stpetersburg-vllm/v1
         with:
           model: vllm/Qwen3-Coder-Next
-          use_github_token: true
+          use_github_token: false
           mentions: renovate[bot],dependabot[bot]
           prompt: |
             You are a code reviewer. This is a REVIEW ONLY task. Do NOT modify any files, do NOT create commits, do NOT push code. Only provide written feedback.
