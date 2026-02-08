@@ -70,6 +70,7 @@ resources:
   - ./homer-operator.yaml
   - ./aws-mountpoint-s3-csi.yaml
   - ./keda.yaml
+  - ./kubeshark.yaml
   - ./vector.yaml
   - ./kuberay.yaml
   - ./liqo.yaml
