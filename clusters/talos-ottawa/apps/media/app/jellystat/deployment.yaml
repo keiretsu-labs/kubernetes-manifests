@@ -53,10 +53,10 @@ spec:
               value: "my-secret-jwt-key"
             - name: TZ
               value: "${TIMEZONE}"
-          volumeMounts:
-            - name: jellystat-backup-data
-              mountPath: /app/backend/backup-data
-      volumes:
-        - name: jellystat-backup-data
-          persistentVolumeClaim:
-            claimName: jellystat-backup 
+      #     volumeMounts:
+      #       - name: jellystat-backup-data
+      #         mountPath: /app/backend/backup-data
+      # volumes:
+      #   - name: jellystat-backup-data
+      #     persistentVolumeClaim:
+      #       claimName: jellystat-backup 

@@ -25,6 +25,8 @@ spec:
       main:
         containers:
           main:
+            image:
+              tag: v2.5.5
             env:
               DB_DATABASE_NAME: immich
               DB_USERNAME:
@@ -57,8 +59,6 @@ spec:
         main:
           containers:
             main:
-            image:
-              tag: v2.5.5
               env:
                 DB_DATABASE_NAME: immich
                 DB_USERNAME:
