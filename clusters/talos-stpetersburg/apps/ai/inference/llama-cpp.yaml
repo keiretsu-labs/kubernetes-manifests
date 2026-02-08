@@ -67,7 +67,7 @@ spec:
       initContainers:
       - name: download-model
         image: python:3.14
-        command: ["python3", "/scripts/download-model.py"]
+        command: ["sh", "-c", "pip install -q huggingface_hub && python3 /scripts/download-model.py"]
         env:
         - name: HF_TOKEN
           valueFrom:
