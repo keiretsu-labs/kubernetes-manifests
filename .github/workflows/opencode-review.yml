@@ -30,12 +30,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
 
       - name: Checkout for dispatch
         if: github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
 
       - name: Configure git identity
         run: |
@@ -69,9 +71,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VLLM_BASE_URL: http://stpetersburg-vllm/v1
+          ANTHROPIC_API_KEY: ""
         with:
           model: vllm/Qwen3-Coder-Next
-          use_github_token: true
+          use_github_token: false
           mentions: renovate[bot],dependabot[bot]
           prompt: |
             You are a code reviewer. This is a REVIEW ONLY task. Do NOT modify any files, do NOT create commits, do NOT push code. Only provide written feedback.
