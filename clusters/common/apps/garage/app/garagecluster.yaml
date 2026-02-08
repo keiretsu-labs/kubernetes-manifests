@@ -27,21 +27,21 @@ spec:
     - name: ottawa
       zone: ottawa
       connection:
-        adminApiEndpoint: "http://ottawa-garage.garage.svc.cluster.local:3903"
+        adminApiEndpoint: "http://ottawa-garage.keiretsu.ts.net:3903"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
     - name: robbinsdale
       zone: robbinsdale
       connection:
-        adminApiEndpoint: "http://robbinsdale-garage.garage.svc.cluster.local:3903"
+        adminApiEndpoint: "http://robbinsdale-garage.keiretsu.ts.net:3903"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
     - name: stpetersburg
       zone: stpetersburg
       connection:
-        adminApiEndpoint: "http://stpetersburg-garage.garage.svc.cluster.local:3903"
+        adminApiEndpoint: "http://stpetersburg-garage.keiretsu.ts.net:3903"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
