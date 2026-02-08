@@ -48,6 +48,14 @@ spec:
               envFrom:
                 - secretRef:
                     name: openclaw-secrets
+                - secretRef:
+                    name: openclaw-gmail-secrets
+              env:
+                - name: OPENCLAW_HOOK_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: openclaw-gmail-secrets
+                      key: OPENCLAW_HOOK_TOKEN
             code-server:
               image:
                 repository: lscr.io/linuxserver/code-server
@@ -169,6 +177,30 @@ spec:
                   "consoleStyle": "compact",
                   "redactSensitive": "tools"
                 },
+                "hooks": {
+                  "enabled": true,
+                  "token": "OPENCLAW_HOOK_TOKEN",
+                  "path": "/hooks",
+                  "presets": ["gmail"],
+                  "gmail": {
+                    "model": "openai/gpt-5.2-mini",
+                    "thinking": "off",
+                    "allowUnsafeExternalContent": false
+                  },
+                  "mappings": [
+                    {
+                      "match": { "path": "gmail" },
+                      "action": "agent",
+                      "wakeMode": "now",
+                      "name": "Gmail",
+                      "sessionKey": "hook:gmail:{{messages[0].id}}",
+                      "messageTemplate": "New email from {{messages[0].from}}\nSubject: {{messages[0].subject}}\n{{messages[0].snippet}}\n{{messages[0].body}}",
+                      "model": "openai/gpt-5.2-mini",
+                      "deliver": true,
+                      "channel": "last"
+                    }
+                  ]
+                },
                 "tools": {
                   "profile": "full",
                   "web": {
@@ -211,3 +243,13 @@ spec:
             main:
               code-server:
                 - path: /home/node/.openclaw
+        gmail-auth:
+          enabled: true
+          type: secret
+          secretName: openclaw-gmail-secrets
+          mountPath: /home/node/.openclaw/gmail
+          items:
+            - key: credentials.json
+              path: credentials.json
+            - key: token.json
+              path: token.json
