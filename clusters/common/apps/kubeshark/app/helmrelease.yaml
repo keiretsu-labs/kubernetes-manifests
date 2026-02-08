@@ -1,0 +1,49 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kubeshark
+  namespace: kubeshark
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: kubeshark
+      version: 52.12.0
+      sourceRef:
+        kind: HelmRepository
+        name: kubeshark
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    tap:
+      packetCapture: af_packet
+      storageLimit: 5Gi
+      persistentStorage: false
+      resources:
+        hub:
+          limits:
+            memory: 2Gi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        sniffer:
+          limits:
+            memory: 2Gi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        tracer:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+      telemetry:
+        enabled: false
