@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-buggy-pod
+  namespace: mission-control
+spec:
+  containers:
+  - name: buggy-container
+    image: nginx:latest
+    securityContext:
+      privileged: true
+      runAsRoot: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-buggy-deployment
+  namespace: mission-control
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: buggy-app
+  template:
+    metadata:
+      labels:
+        app: buggy-app
+    spec:
+      containers:
+      - name: app
+        image: redis:alpine
+        # Missing: resources.limits, resources.requests
+        # Missing: livenessProbe, readinessProbe
+        securityContext:
+          # Missing: allowPrivilegeEscalation: false
+          # Missing: runAsNonRoot: true
+          runAsUser: 0
