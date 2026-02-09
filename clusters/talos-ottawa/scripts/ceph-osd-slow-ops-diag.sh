@@ -102,6 +102,11 @@ PV_MAP=""
 AFFECTED_NODES=""
 OSD_PERF_RAW=""
 SUMMARY_ROWS=""
+NODE_NVME_UTIL=""
+SLOW_OP_THRESHOLD=""
+SLOW_OP_LIFETIME=""
+SLOW_OP_COUNT_THRESHOLD=""
+SLOW_KV_COUNTS=""
 
 # ---------------------------------------------------------------------------
 # Helper functions
@@ -165,6 +170,22 @@ check_ceph_health() {
 
     SLOW_OSDS_SPACE=$(echo "$SLOW_OSDS" | tr '\n' ' ')
     echo -e "${YELLOW}⚠${NC} Affected OSDs: $SLOW_OSDS_SPACE"
+
+    progress "Querying alert thresholds..."
+    SLOW_OP_THRESHOLD=$(ceph_cmd ceph config get osd bluestore_kv_sync_util_logging_s 2>/dev/null || echo "10")
+    SLOW_OP_COUNT_THRESHOLD=$(ceph_cmd ceph config get osd bluestore_slow_ops_warn_threshold 2>/dev/null || echo "1")
+    SLOW_OP_LIFETIME=$(ceph_cmd ceph config get osd bluestore_slow_ops_warn_lifetime 2>/dev/null || echo "86400")
+    clear_progress
+
+    echo -e "  ${BOLD}Alert config:${NC}"
+    echo -e "    bluestore_kv_sync_util_logging_s  = ${YELLOW}${SLOW_OP_THRESHOLD}${NC}"
+    echo -e "    bluestore_slow_ops_warn_threshold = ${YELLOW}${SLOW_OP_COUNT_THRESHOLD}${NC}"
+    echo -e "    bluestore_slow_ops_warn_lifetime  = ${YELLOW}${SLOW_OP_LIFETIME}${NC}"
+    local lifetime_h
+    lifetime_h=$(python3 -c "print(f'{int(${SLOW_OP_LIFETIME})/3600:.0f}')")
+    local threshold_clean
+    threshold_clean=$(python3 -c "print(f'{float(\"${SLOW_OP_THRESHOLD}\"):.0f}')")
+    echo -e "  Meaning: warning fires when >=${SLOW_OP_COUNT_THRESHOLD} op(s) exceed ${threshold_clean}s within ${lifetime_h}h"
 }
 
 # ---------------------------------------------------------------------------
@@ -223,20 +244,25 @@ check_osd_performance() {
 
     progress "Querying OSD perf..."
     OSD_PERF_RAW=$(ceph_cmd ceph osd perf 2>&1) || { echo -e "  ${RED}ERROR${NC}: ceph osd perf failed"; return 0; }
-    local write_tp write_ops
+    local write_tp write_ops slow_kv_json
     write_tp=$(prom_query "rate(ceph_osd_op_w_in_bytes[$RATE_WINDOW])")
     write_ops=$(prom_query "rate(ceph_osd_op_w[$RATE_WINDOW])")
+    slow_kv_json=$(prom_query "increase(ceph_bluestore_slow_committed_kv_count[${SLOW_OP_LIFETIME:-86400}s])")
     clear_progress
+
+    SLOW_KV_COUNTS="$slow_kv_json"
 
     local cf="0"; $USE_COLOR && cf="1"
 
-    printf "  %-8s %14s  %14s  %10s  %11s\n" "OSD" "Commit Lat(ms)" "Apply Lat(ms)" "Write MB/s" "Write Ops/s"
-    printf "  %-8s %14s  %14s  %10s  %11s\n" "---" "--------------" "--------------" "----------" "-----------"
+    local lifetime_label
+    lifetime_label=$(python3 -c "print(f'{int(${SLOW_OP_LIFETIME:-86400})/3600:.0f}h')")
+    printf "  %-8s %14s  %14s  %10s  %11s  %12s\n" "OSD" "Commit Lat(ms)" "Apply Lat(ms)" "Write MB/s" "Write Ops/s" "SlowKV(${lifetime_label})"
+    printf "  %-8s %14s  %14s  %10s  %11s  %12s\n" "---" "--------------" "--------------" "----------" "-----------" "------------"
 
     python3 -c "
 import json, sys
-slow = set(sys.argv[1].split()); uc = sys.argv[5] == '1'
-R = '\033[0;31m' if uc else ''; Y = '\033[1;33m' if uc else ''; N = '\033[0m' if uc else ''
+slow = set(sys.argv[1].split()); uc = sys.argv[6] == '1'
+Y = '\033[1;33m' if uc else ''; N = '\033[0m' if uc else ''
 perf = {}
 for ln in sys.argv[2].strip().split('\n'):
     p = ln.split()
@@ -247,14 +273,21 @@ for r in json.loads(sys.argv[3]).get('data',{}).get('result',[]):
 ops = {}
 for r in json.loads(sys.argv[4]).get('data',{}).get('result',[]):
     ops[r['metric'].get('ceph_daemon','').replace('osd.','')] = float(r['value'][1])
+kv = {}
+for r in json.loads(sys.argv[5]).get('data',{}).get('result',[]):
+    kv[r['metric'].get('ceph_daemon','').replace('osd.','')] = int(float(r['value'][1]))
 for oid in sorted(perf, key=int):
     c, a = perf[oid]; t = tp.get(oid,0); o = ops.get(oid,0)
+    k = kv.get(oid, 0)
     if oid in slow:
-        clr = R if int(c) > 30 else Y
-        print(f'  {clr}osd.{oid:<4s} {c:>14s}  {a:>14s}  {t:>10.2f}  {o:>11.1f} <--{N}')
+        print(f'  {Y}osd.{oid:<4s} {c:>14s}  {a:>14s}  {t:>10.2f}  {o:>11.1f}  {k:>12d}{N}')
     else:
-        print(f'  osd.{oid:<4s} {c:>14s}  {a:>14s}  {t:>10.2f}  {o:>11.1f}')
-" "$SLOW_OSDS_SPACE" "$OSD_PERF_RAW" "$write_tp" "$write_ops" "$cf"
+        print(f'  osd.{oid:<4s} {c:>14s}  {a:>14s}  {t:>10.2f}  {o:>11.1f}  {k:>12d}')
+" "$SLOW_OSDS_SPACE" "$OSD_PERF_RAW" "$write_tp" "$write_ops" "$slow_kv_json" "$cf"
+
+    echo ""
+    echo -e "  Highlighted rows = OSDs flagged in ${BOLD}ceph health detail${NC}"
+    echo -e "  ${BOLD}SlowKV(${lifetime_label})${NC} = KV commits exceeding ${SLOW_OP_THRESHOLD:-10}s in the last ${lifetime_label} (matches warning window)"
 }
 
 # ---------------------------------------------------------------------------
@@ -287,6 +320,18 @@ if data.get('status') == 'success':
         print(f'    {dev:<10s} {c}{val:>5.1f}%{n} {c}{s}{n}')
 " "$cf"
         echo
+
+        local max_nvme
+        max_nvme=$(echo "$util_json" | python3 -c "
+import json, sys
+data = json.load(sys.stdin); mx = 0
+if data.get('status') == 'success':
+    for r in data['data']['result']:
+        if r['metric'].get('device','').startswith('nvme'):
+            v = float(r['value'][1])
+            if v > mx: mx = v
+print(f'{mx:.1f}')")
+        NODE_NVME_UTIL+="${node}	${max_nvme}"$'\n'
     done
 }
 
@@ -334,7 +379,15 @@ for pv in data['items']:
             --field-selector spec.nodeName="$node" -o name 2>/dev/null | head -1)
         rbd_list=""
         if [[ -n "$osd_pod" ]]; then
-            rbd_list=$(kc exec -n "$CEPH_NAMESPACE" "$osd_pod" -c osd -- rbd device list 2>/dev/null || true)
+            rbd_list=$(kc exec -n "$CEPH_NAMESPACE" "$osd_pod" -c osd -- rbd device list --format json 2>/dev/null || true)
+        fi
+        if [[ -z "$rbd_list" || "$rbd_list" = "[]" ]]; then
+            local csi_pod
+            csi_pod=$(kc get pods -n "$CEPH_NAMESPACE" -l app=csi-rbdplugin \
+                --field-selector spec.nodeName="$node" -o name 2>/dev/null | head -1)
+            if [[ -n "$csi_pod" ]]; then
+                rbd_list=$(kc exec -n "$CEPH_NAMESPACE" "$csi_pod" -c csi-rbdplugin -- rbd device list --format json 2>/dev/null || true)
+            fi
         fi
         clear_progress
 
@@ -362,12 +415,14 @@ for ln in pv_raw.strip().split('\n'):
     if '|' in ln: i, p = ln.split('|',1); img2pvc[i] = p
 
 dev2img = {}
-for ln in rbd_raw.strip().split('\n'):
-    pp = ln.split()
-    if len(pp) >= 4 and pp[0].isdigit():
-        im = next((x for x in pp if x.startswith('csi-vol-')), '?')
-        dv = next((x for x in pp if x.startswith('/dev/')), '?')
-        dev2img[dv.replace('/dev/','')] = im
+try:
+    for entry in json.loads(rbd_raw):
+        im = entry.get('name', '')
+        dv = entry.get('device', '')
+        if im and dv:
+            dev2img[dv.replace('/dev/', '')] = im
+except (json.JSONDecodeError, TypeError):
+    pass
 
 def mmap(d):
     o = {}
@@ -379,8 +434,8 @@ iops, util, wbps = mmap(iops_d), mmap(util_d), mmap(write_d)
 combined = []
 for dev in set(list(iops)+list(util)+list(wbps)):
     i, u, w = iops.get(dev,0), util.get(dev,0), wbps.get(dev,0)
-    im = dev2img.get(dev,'?'); pvc = img2pvc.get(im,'')
-    label = pvc if pvc else im
+    im = dev2img.get(dev,''); pvc = img2pvc.get(im,'')
+    label = pvc if pvc else (im if im else dev)
     if i > 0.1 or u > 1: combined.append((dev, label, i, u, w))
 combined.sort(key=lambda x: x[2], reverse=True)
 
@@ -415,12 +470,14 @@ for ln in pv_raw.strip().split('\n'):
     if '|' in ln: i, p = ln.split('|',1); img2pvc[i] = p
 
 dev2img = {}
-for ln in rbd_raw.strip().split('\n'):
-    pp = ln.split()
-    if len(pp) >= 4 and pp[0].isdigit():
-        im = next((x for x in pp if x.startswith('csi-vol-')), None)
-        dv = next((x for x in pp if x.startswith('/dev/')), None)
-        if im and dv: dev2img[dv.replace('/dev/','')] = im
+try:
+    for entry in json.loads(rbd_raw):
+        im = entry.get('name', '')
+        dv = entry.get('device', '')
+        if im and dv:
+            dev2img[dv.replace('/dev/', '')] = im
+except (json.JSONDecodeError, TypeError):
+    pass
 
 def mmap(d):
     o = {}
@@ -441,8 +498,9 @@ for dev in set(list(iops)+list(util)+list(wbps)):
     i, u, w = iops.get(dev,0), util.get(dev,0), wbps.get(dev,0)
     if i < 0.1 and u < 1: continue
     im = dev2img.get(dev,''); pvc = img2pvc.get(im,'')
-    pod = pvc2pod.get(pvc,'?')
+    pod = pvc2pod.get(pvc,'')
     if not pvc: pvc = im if im else dev
+    if not pod: pod = '<unmapped>'
     print(f'{node}\t{pod}\t{pvc}\t{i:.1f}\t{u:.1f}\t{w/1024/1024:.2f}')
 ")
 
@@ -507,8 +565,14 @@ show_pool_io() {
 show_summary_table() {
     echo ""
     echo ""
+    local lifetime_h
+    lifetime_h=$(python3 -c "print(f'{int(${SLOW_OP_LIFETIME:-86400})/3600:.0f}h')")
+
     echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${BOLD}  SLOW OSD ROOT CAUSE CORRELATION${NC}"
+    local threshold_clean2
+    threshold_clean2=$(python3 -c "print(f'{float(\"${SLOW_OP_THRESHOLD:-10}\"):.0f}')")
+    echo -e "  bluestore_kv_sync_util_logging_s=${YELLOW}${threshold_clean2}${NC}  bluestore_slow_ops_warn_threshold=${YELLOW}${SLOW_OP_COUNT_THRESHOLD:-1}${NC}  bluestore_slow_ops_warn_lifetime=${YELLOW}${SLOW_OP_LIFETIME:-86400}${NC} (${lifetime_h})"
     echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
     if [[ -z "$SUMMARY_ROWS" ]]; then
@@ -526,12 +590,25 @@ disk_occ  = json.loads(sys.argv[1])
 slow_osds = set(sys.argv[2].split())
 perf_raw  = sys.argv[3]
 uc        = sys.argv[4] == '1'
+nvme_raw  = sys.argv[5]
+kv_data   = json.loads(sys.argv[6])
 
 if uc:
     R, G, Y, C, B, N = '\033[0;31m', '\033[0;32m', '\033[1;33m', '\033[0;36m', '\033[1m', '\033[0m'
     RBOLD = '\033[1;31m'
 else:
     R = G = Y = C = B = N = RBOLD = ''
+
+node_nvme = {}
+for ln in nvme_raw.strip().split('\n'):
+    if '\t' in ln:
+        n, v = ln.split('\t', 1)
+        node_nvme[n] = float(v)
+
+osd_kv = {}
+if kv_data.get('status') == 'success':
+    for r in kv_data['data']['result']:
+        osd_kv[r['metric'].get('ceph_daemon','').replace('osd.','')] = int(float(r['value'][1]))
 
 node2osds = {}
 if disk_occ.get('status') == 'success':
@@ -559,25 +636,36 @@ for ln in lines.split('\n'):
 
 rows.sort(key=lambda x: (x[0], -x[3]))
 
+OC = 20
 print()
-hdr = f'  {B}{\"HOST\":<7s} {\"SLOW OSDs\":<18s} {\"NAMESPACE/POD\":<43s} {\"PVC\":<32s} {\"WR IOPS\":>8s} {\"DISK %\":>8s}{N}'
+hdr = f'  {B}{\"HOST\":<7s} {\"SLOW OSDs\":<{OC}s} {\"Lat(ms)\":>8s} {\"SlowKV\":>7s} {\"NVMe\":>6s}  {\"NAMESPACE/POD\":<43s} {\"PVC\":<32s} {\"WR IOPS\":>8s} {\"DISK %\":>8s}{N}'
 print(hdr)
-sep = f'  {\"─\"*7} {\"─\"*18} {\"─\"*43} {\"─\"*32} {\"─\"*8} {\"─\"*8}'
+sep = f'  {\"─\"*7} {\"─\"*OC} {\"─\"*8} {\"─\"*7} {\"─\"*6}  {\"─\"*43} {\"─\"*32} {\"─\"*8} {\"─\"*8}'
 print(sep)
 
 prev_node = ''
 for node, pod, pvc, iops, util, wr in rows:
     osds = node2osds.get(node, [])
-    osd_strs = [f'osd.{o}' for o in osds]
     max_lat = max((osd_lat.get(o, 0) for o in osds), default=0)
-    osd_col = ','.join(osd_strs) + f' ({max_lat}ms)' if osd_strs else '?'
+    total_kv = sum(osd_kv.get(o, 0) for o in osds)
+    osd_str = 'osd.' + ','.join(osds) if osds else '-'
 
     if node == prev_node:
         node_disp = ''
         osd_disp = ''
+        lat_disp = f'{\"\":>8s}'
+        kv_disp = f'{\"\":>7s}'
+        nvme_disp = f'{\"\":>6s}'
     else:
         node_disp = node
-        osd_disp = osd_col
+        osd_disp = osd_str
+        lat_disp = f'{max_lat:>8d}'
+        kv_disp = f'{Y}{total_kv:>7d}{N}' if total_kv > 0 else f'{total_kv:>7d}'
+        nv = node_nvme.get(node, 0)
+        if nv > 75: nc = RBOLD
+        elif nv > 50: nc = Y
+        else: nc = Y
+        nvme_disp = f'{nc}{nv:>5.0f}%{N}'
     prev_node = node
 
     if '/' in pvc:
@@ -585,25 +673,27 @@ for node, pod, pvc, iops, util, wr in rows:
     else:
         pvc_disp = pvc
 
-    pod_disp = pod[:43] if len(pod) <= 43 else pod[:40] + '...'
+    pod_disp = pod if pod != '?' else '<unmapped>'
+    pod_disp = pod_disp[:43] if len(pod_disp) <= 43 else pod_disp[:40] + '...'
     pvc_disp = pvc_disp[:32] if len(pvc_disp) <= 32 else pvc_disp[:29] + '...'
 
-    if util > 50:
+    if iops >= 10:
         clr = RBOLD
         tag = ' !!!'
-    elif util > 20:
+    elif iops >= 2:
         clr = Y
         tag = ''
     else:
-        clr = G
+        clr = Y
         tag = ''
 
-    print(f'  {clr}{node_disp:<7s} {osd_disp:<18s} {pod_disp:<43s} {pvc_disp:<32s} {iops:>8.1f} {util:>7.1f}%{tag}{N}')
+    print(f'  {clr}{node_disp:<7s} {osd_disp:<{OC}s}{N} {lat_disp} {kv_disp} {nvme_disp}  {clr}{pod_disp:<43s} {pvc_disp:<32s} {iops:>8.1f} {util:>7.1f}%{tag}{N}')
 
 print()
-print(f'  {RBOLD}!!!{N} = disk util >50% (primary suspect)    {Y}yellow{N} = >20% (contributing)    {G}green{N} = low impact')
+print(f'  {RBOLD}!!!{N} = heavy writer (>=10 IOPS)    {Y}yellow{N} = on node with slow OSDs')
+print(f'  Lat(ms) = avg OSD commit latency    SlowKV = KV ops exceeding threshold in warning window')
 print()
-" "$DISK_OCC" "$SLOW_OSDS_SPACE" "$OSD_PERF_RAW" "$cf"
+" "$DISK_OCC" "$SLOW_OSDS_SPACE" "$OSD_PERF_RAW" "$cf" "$NODE_NVME_UTIL" "$SLOW_KV_COUNTS"
 }
 
 # ---------------------------------------------------------------------------
