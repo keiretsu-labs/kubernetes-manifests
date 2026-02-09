@@ -56,58 +56,65 @@ spec:
                   ARCH=$(uname -m)
                   case "$ARCH" in x86_64) ARCH=amd64;; aarch64) ARCH=arm64;; esac
 
-                  dl() { curl -fsSL "$1" 2>/dev/null || wget -qO- "$1"; }
-                  dlf() { curl -fsSL -o "$2" "$1" 2>/dev/null || wget -qO "$2" "$1"; }
-                  ghver() { dl "https://api.github.com/repos/$1/releases/latest" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).tag_name))"; }
+                  # Use curl exclusively (available in openclaw image)
+                  fetch() { curl -fsSL -o "$1" "$2"; }
+                  fetch_tar() { curl -fsSL "$1" -o /tmp/_dl.tar.gz && tar xzf /tmp/_dl.tar.gz -C "$2" $3 && rm -f /tmp/_dl.tar.gz; }
+
+                  # Resolve latest GitHub release tag via HTTP redirect (no API, no rate limits)
+                  ghrel() { curl -fsSIL "https://github.com/$1/releases/latest" 2>/dev/null | sed -n 's|.*location: .*/tag/\(.*\)\r|\1|p' | tail -1; }
+
+                  # Remove stale 0-byte files from previous failed installs
+                  find "$BIN" -maxdepth 1 -type f -empty -delete 2>/dev/null
 
                   if [ ! -f "$BIN/kubectl" ]; then
                     log "Installing kubectl..."
-                    KVER=$(dl https://dl.k8s.io/release/stable.txt) &&
-                    dlf "https://dl.k8s.io/release/$KVER/bin/linux/$ARCH/kubectl" "$BIN/kubectl" &&
+                    KVER=$(curl -fsSL https://dl.k8s.io/release/stable.txt) &&
+                    fetch "$BIN/kubectl" "https://dl.k8s.io/release/$KVER/bin/linux/$ARCH/kubectl" &&
                     chmod +x "$BIN/kubectl" &&
                     log "Installed kubectl $KVER" || log "WARNING: kubectl install failed"
                   fi
 
                   if [ ! -f "$BIN/flux" ]; then
                     log "Installing flux..."
-                    VER=$(ghver fluxcd/flux2) && VER=${VER#v} &&
-                    dl "https://github.com/fluxcd/flux2/releases/download/v${VER}/flux_${VER}_linux_${ARCH}.tar.gz" | tar xz -C "$BIN" flux &&
+                    VER=$(ghrel fluxcd/flux2) && VER=${VER#v} &&
+                    fetch_tar "https://github.com/fluxcd/flux2/releases/download/v${VER}/flux_${VER}_linux_${ARCH}.tar.gz" "$BIN" flux &&
                     log "Installed flux v$VER" || log "WARNING: flux install failed"
                   fi
 
                   if [ ! -f "$BIN/helm" ]; then
                     log "Installing helm..."
-                    VER=$(ghver helm/helm) &&
-                    dl "https://get.helm.sh/helm-${VER}-linux-${ARCH}.tar.gz" | tar xz -C /tmp &&
-                    mv /tmp/linux-${ARCH}/helm "$BIN/" &&
+                    VER=$(ghrel helm/helm) &&
+                    fetch_tar "https://get.helm.sh/helm-${VER}-linux-${ARCH}.tar.gz" /tmp "" &&
+                    mv /tmp/linux-${ARCH}/helm "$BIN/" && rm -rf /tmp/linux-${ARCH} &&
                     log "Installed helm $VER" || log "WARNING: helm install failed"
                   fi
 
                   if [ ! -f "$BIN/kustomize" ]; then
                     log "Installing kustomize..."
-                    VER=$(dl "https://api.github.com/repos/kubernetes-sigs/kustomize/releases" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const r=JSON.parse(d).find(x=>x.tag_name.startsWith('kustomize/'));console.log(r.tag_name.split('/')[1])})") &&
-                    dl "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${VER}/kustomize_${VER}_linux_${ARCH}.tar.gz" | tar xz -C "$BIN" &&
+                    VER=$(ghrel kubernetes-sigs/kustomize) &&
+                    VER=$(echo "$VER" | sed 's|kustomize/||') &&
+                    fetch_tar "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${VER}/kustomize_${VER}_linux_${ARCH}.tar.gz" "$BIN" "" &&
                     log "Installed kustomize $VER" || log "WARNING: kustomize install failed"
                   fi
 
                   if [ ! -f "$BIN/yq" ]; then
                     log "Installing yq..."
-                    dlf "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}" "$BIN/yq" &&
+                    fetch "$BIN/yq" "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}" &&
                     chmod +x "$BIN/yq" &&
                     log "Installed yq" || log "WARNING: yq install failed"
                   fi
 
                   if [ ! -f "$BIN/sops" ]; then
                     log "Installing sops..."
-                    VER=$(ghver getsops/sops) &&
-                    dlf "https://github.com/getsops/sops/releases/download/${VER}/sops-${VER}.linux.${ARCH}" "$BIN/sops" &&
+                    VER=$(ghrel getsops/sops) &&
+                    fetch "$BIN/sops" "https://github.com/getsops/sops/releases/download/${VER}/sops-${VER}.linux.${ARCH}" &&
                     chmod +x "$BIN/sops" &&
                     log "Installed sops $VER" || log "WARNING: sops install failed"
                   fi
 
                   if ! command -v jq >/dev/null 2>&1 && [ ! -f "$BIN/jq" ]; then
                     log "Installing jq..."
-                    dlf "https://github.com/jqlang/jq/releases/latest/download/jq-linux-${ARCH}" "$BIN/jq" &&
+                    fetch "$BIN/jq" "https://github.com/jqlang/jq/releases/latest/download/jq-linux-${ARCH}" &&
                     chmod +x "$BIN/jq" &&
                     log "Installed jq" || log "WARNING: jq install failed"
                   fi
