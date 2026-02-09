@@ -224,8 +224,8 @@ spec:
                 "models": {
                   "mode": "merge",
                   "providers": {
-                    "vllm": {
-                      "baseUrl": "http://stpetersburg-vllm/v1",
+                    "llama-cpp": {
+                      "baseUrl": "http://stpetersburg-llama-cpp/v1",
                       "apiKey": "unused",
                       "api": "openai-completions",
                       "models": [
@@ -244,7 +244,7 @@ spec:
                   "defaults": {
                     "workspace": "/home/node/.openclaw/workspace",
                     "model": {
-                      "primary": "vllm/Qwen3-Coder-Next"
+                      "primary": "llama-cpp/Qwen3-Coder-Next"
                     },
                     "userTimezone": "America/New_York",
                     "timeoutSeconds": 600,
@@ -262,7 +262,7 @@ spec:
                         "emoji": "🦞"
                       },
                       "model": {
-                        "primary": "vllm/Qwen3-Coder-Next"
+                        "primary": "llama-cpp/Qwen3-Coder-Next"
                       },
                       "subagents": {
                         "allowAgents": ["claw-manager"]
@@ -275,7 +275,7 @@ spec:
                         "emoji": "🦞"
                       },
                       "model": {
-                        "primary": "vllm/Qwen3-Coder-Next"
+                        "primary": "llama-cpp/Qwen3-Coder-Next"
                       },
                       "subagents": {
                         "allowAgents": ["*"]
