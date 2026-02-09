@@ -1,0 +1,40 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: zot
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: zot
+      version: 0.1.98
+      sourceRef:
+        kind: HelmRepository
+        name: zot
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    service:
+      type: ClusterIP
+      port: 5000
+    persistence: true
+    pvc:
+      create: true
+      storage: 20Gi
+      accessModes:
+        - ReadWriteOnce
+    mountConfig: true
+    configFiles:
+      config.json: |-
+        {
+          "storage": { "rootDirectory": "/var/lib/registry" },
+          "http": { "address": "0.0.0.0", "port": "5000" },
+          "log": { "level": "info" }
+        }
