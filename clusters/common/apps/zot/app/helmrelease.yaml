@@ -31,10 +31,32 @@ spec:
       accessModes:
         - ReadWriteOnce
     mountConfig: true
+    mountSecret: true
     configFiles:
       config.json: |-
         {
           "storage": { "rootDirectory": "/var/lib/registry" },
-          "http": { "address": "0.0.0.0", "port": "5000" },
+          "http": {
+            "address": "0.0.0.0",
+            "port": "5000",
+            "auth": { "htpasswd": { "path": "/secret/htpasswd" } },
+            "accessControl": {
+              "repositories": {
+                "**": {
+                  "policies": [{
+                    "users": ["admin"],
+                    "actions": ["read", "create", "update", "delete"]
+                  }],
+                  "defaultPolicy": []
+                }
+              },
+              "adminPolicy": {
+                "users": ["admin"],
+                "actions": ["read", "create", "update", "delete"]
+              }
+            }
+          },
           "log": { "level": "info" }
         }
+    secretFiles:
+      htpasswd: "${COMMON_OCI}"
