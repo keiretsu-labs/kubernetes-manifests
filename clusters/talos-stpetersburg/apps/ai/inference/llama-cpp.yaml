@@ -89,7 +89,7 @@ spec:
             memory: "4Gi"
       containers:
       - name: llama-cpp
-        image: ghcr.io/rajsinghtech/llama.cpp:server-cuda-arm64@sha256:a12de1bbe384329f43e41df69e2c0ef75bfaa2540a6ac5642fc2c80d4de18a89
+        image: ghcr.io/ardge-labs/llama-cpp-dgx-spark:server
         args:
         - "-m"
         - "/models/Qwen3-Coder-Next-UD-Q4_K_XL.gguf"
