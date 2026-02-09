@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: stpetersburg-vllm
+  name: stpetersburg-llama-cpp
   annotations:
-    tailscale.com/tailnet-fqdn: stpetersburg-vllm.keiretsu.ts.net
+    tailscale.com/tailnet-fqdn: stpetersburg-llama-cpp.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
   externalName: placeholder
