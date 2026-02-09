@@ -10,5 +10,3 @@ resources:
   - httproute-code.yaml
   - ts-oauth.yaml
   - rbac.yaml
-  - volsync-backup.yaml
-  - volsync-restore.yaml
