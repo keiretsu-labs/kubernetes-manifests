@@ -1,12 +1,12 @@
 ---
-apiVersion: cilium.io/v2alpha1
+apiVersion: cilium.io/v2
 kind: CiliumBGPClusterConfig
 metadata:
   name: unifi
 spec:
   nodeSelector:
     matchLabels:
-      beta.kubernetes.io/os: linux
+      kubernetes.io/os: linux
   bgpInstances:
     - name: opnsense
       localASN: 64514
@@ -17,7 +17,7 @@ spec:
           peerConfigRef:
             name: cilium-peer
 ---
-apiVersion: cilium.io/v2alpha1
+apiVersion: cilium.io/v2
 kind: CiliumBGPPeerConfig
 metadata:
   name: cilium-peer
@@ -36,7 +36,7 @@ spec:
         matchLabels:
           advertise: bgp
 ---
-apiVersion: cilium.io/v2alpha1
+apiVersion: cilium.io/v2
 kind: CiliumBGPAdvertisement
 metadata:
   name: bgp-advertisements
