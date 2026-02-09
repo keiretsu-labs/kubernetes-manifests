@@ -18,7 +18,7 @@ spec:
       name: ts
       namespace: home
   hostnames:
-    - "oci.${COMMON_DOMAIN}"
+    - "oci.${CLUSTER_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
