@@ -108,6 +108,7 @@ spec:
         - "--threads"
         - "8"
         - "--flash-attn"
+        - "on"
         - "--cache-type-k"
         - "q4_0"
         - "--cache-type-v"
