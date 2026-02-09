@@ -56,105 +56,97 @@ spec:
                   ARCH=$(uname -m)
                   case "$ARCH" in x86_64) ARCH=amd64;; aarch64) ARCH=arm64;; esac
 
-                  # Download helpers
-                  fetch() { curl -fsSL -o "$1" "$2"; }
-                  fetch_tar() {
-                    curl -fsSL "$1" -o /tmp/_dl.tar.gz && tar xzf /tmp/_dl.tar.gz -C "$2" $3
-                    local rc=$?; rm -f /tmp/_dl.tar.gz; return $rc
-                  }
-
-                  # Resolve latest GitHub release tag via node (no API rate limits)
-                  ghrel() {
-                    node -e "
-                      const https=require('https');
-                      https.get({hostname:'github.com',path:'/'+process.argv[1]+'/releases/latest',headers:{'User-Agent':'oc'}},r=>{
-                        const tag=(r.headers.location||'').split('/').pop();
-                        if(!tag){process.stderr.write('no tag found\n');process.exit(1)}
-                        process.stdout.write(tag)
-                      }).on('error',e=>{process.stderr.write(e.message+'\n');process.exit(1)})
-                    " "$1"
-                  }
-
                   # Remove stale 0-byte files from previous failed installs
                   find "$BIN" -maxdepth 1 -type f -empty -delete 2>/dev/null
 
-                  install_bin() {
-                    local name=$1 url=$2
-                    if [ ! -f "$BIN/$name" ]; then
-                      log "Installing $name..."
-                      fetch "$BIN/$name" "$url" && chmod +x "$BIN/$name" &&
-                      log "Installed $name" || { rm -f "$BIN/$name"; log "WARNING: $name install failed"; }
-                    fi
-                  }
-
-                  install_tar() {
-                    local name=$1 url=$2 extract=$3 dest=${4:-$BIN}
-                    if [ ! -f "$BIN/$name" ]; then
-                      log "Installing $name..."
-                      fetch_tar "$url" "$dest" "$extract" &&
-                      log "Installed $name" || log "WARNING: $name install failed"
-                    fi
-                  }
-
-                  # kubectl (uses dl.k8s.io, not GitHub)
-                  if [ ! -f "$BIN/kubectl" ]; then
-                    log "Installing kubectl..."
-                    KVER=$(curl -fsSL https://dl.k8s.io/release/stable.txt) &&
-                    fetch "$BIN/kubectl" "https://dl.k8s.io/release/$KVER/bin/linux/$ARCH/kubectl" &&
-                    chmod +x "$BIN/kubectl" &&
-                    log "Installed kubectl $KVER" || log "WARNING: kubectl install failed"
-                  fi
-
-                  # flux
-                  if [ ! -f "$BIN/flux" ]; then
-                    VER=$(ghrel fluxcd/flux2) && VER=${VER#v}
-                    if [ -n "$VER" ]; then
-                      install_tar flux "https://github.com/fluxcd/flux2/releases/download/v${VER}/flux_${VER}_linux_${ARCH}.tar.gz" flux
+                  # Check which tools are missing
+                  MISSING=""
+                  for t in kubectl flux helm kustomize yq sops jq; do
+                    [ ! -f "$BIN/$t" ] && MISSING="$MISSING $t"
+                  done
+                  if [ -z "$MISSING" ]; then
+                    log "All tools already installed, skipping downloads"
+                  else
+                    log "Missing tools:$MISSING"
+                    # Connectivity gate — init containers often lack egress before sidecars start.
+                    # Wait up to 15s for github.com to be reachable, bail if not.
+                    ONLINE=false
+                    for i in 1 2 3; do
+                      if curl -fsSo /dev/null --connect-timeout 5 "https://github.com" 2>/dev/null; then
+                        ONLINE=true; break
+                      fi
+                      log "Waiting for network... (attempt $i/3)"
+                      sleep 2
+                    done
+                    if [ "$ONLINE" = false ]; then
+                      log "WARNING: github.com unreachable from init container — skipping tool downloads"
+                      log "Tools can be installed later via: kubectl exec -n openclaw <pod> -c main -- sh -c '...'"
                     else
-                      log "WARNING: could not detect flux version"
+                      # Version resolver via curl redirect header (no API, no rate limits)
+                      ghrel() { curl -sI --connect-timeout 10 "https://github.com/$1/releases/latest" 2>/dev/null | grep -i "^location:" | grep -oE '[^/]+$' | tr -d '\r\n'; }
+                      fetch() { curl -fsSL --connect-timeout 15 --retry 2 -o "$1" "$2"; }
+                      fetch_tar() {
+                        curl -fsSL --connect-timeout 15 --retry 2 "$1" -o /tmp/_dl.tar.gz && tar xzf /tmp/_dl.tar.gz -C "$2" $3
+                        local rc=$?; rm -f /tmp/_dl.tar.gz; return $rc
+                      }
+
+                      if [ ! -f "$BIN/kubectl" ]; then
+                        log "Installing kubectl..."
+                        KVER=$(curl -fsSL --connect-timeout 10 https://dl.k8s.io/release/stable.txt) &&
+                        fetch "$BIN/kubectl" "https://dl.k8s.io/release/$KVER/bin/linux/$ARCH/kubectl" &&
+                        chmod +x "$BIN/kubectl" &&
+                        log "Installed kubectl $KVER" || log "WARNING: kubectl install failed"
+                      fi
+
+                      if [ ! -f "$BIN/flux" ]; then
+                        VER=$(ghrel fluxcd/flux2); VER=${VER#v}
+                        if [ -n "$VER" ]; then
+                          log "Installing flux v$VER..."
+                          fetch_tar "https://github.com/fluxcd/flux2/releases/download/v${VER}/flux_${VER}_linux_${ARCH}.tar.gz" "$BIN" flux &&
+                          log "Installed flux" || log "WARNING: flux install failed"
+                        else log "WARNING: could not detect flux version"; fi
+                      fi
+
+                      if [ ! -f "$BIN/helm" ]; then
+                        VER=$(ghrel helm/helm)
+                        if [ -n "$VER" ]; then
+                          log "Installing helm $VER..."
+                          fetch_tar "https://get.helm.sh/helm-${VER}-linux-${ARCH}.tar.gz" /tmp "" &&
+                          mv /tmp/linux-${ARCH}/helm "$BIN/" && rm -rf /tmp/linux-${ARCH} &&
+                          log "Installed helm" || log "WARNING: helm install failed"
+                        else log "WARNING: could not detect helm version"; fi
+                      fi
+
+                      if [ ! -f "$BIN/kustomize" ]; then
+                        VER=$(ghrel kubernetes-sigs/kustomize); VER=$(echo "$VER" | sed 's|kustomize/||')
+                        if [ -n "$VER" ]; then
+                          log "Installing kustomize $VER..."
+                          fetch_tar "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${VER}/kustomize_${VER}_linux_${ARCH}.tar.gz" "$BIN" "" &&
+                          log "Installed kustomize" || log "WARNING: kustomize install failed"
+                        else log "WARNING: could not detect kustomize version"; fi
+                      fi
+
+                      if [ ! -f "$BIN/yq" ]; then
+                        log "Installing yq..."
+                        fetch "$BIN/yq" "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}" &&
+                        chmod +x "$BIN/yq" && log "Installed yq" || { rm -f "$BIN/yq"; log "WARNING: yq install failed"; }
+                      fi
+
+                      if [ ! -f "$BIN/sops" ]; then
+                        VER=$(ghrel getsops/sops)
+                        if [ -n "$VER" ]; then
+                          log "Installing sops $VER..."
+                          fetch "$BIN/sops" "https://github.com/getsops/sops/releases/download/${VER}/sops-${VER}.linux.${ARCH}" &&
+                          chmod +x "$BIN/sops" && log "Installed sops" || { rm -f "$BIN/sops"; log "WARNING: sops install failed"; }
+                        else log "WARNING: could not detect sops version"; fi
+                      fi
+
+                      if ! command -v jq >/dev/null 2>&1 && [ ! -f "$BIN/jq" ]; then
+                        log "Installing jq..."
+                        fetch "$BIN/jq" "https://github.com/jqlang/jq/releases/latest/download/jq-linux-${ARCH}" &&
+                        chmod +x "$BIN/jq" && log "Installed jq" || { rm -f "$BIN/jq"; log "WARNING: jq install failed"; }
+                      fi
                     fi
-                  fi
-
-                  # helm
-                  if [ ! -f "$BIN/helm" ]; then
-                    VER=$(ghrel helm/helm)
-                    if [ -n "$VER" ]; then
-                      log "Installing helm..."
-                      fetch_tar "https://get.helm.sh/helm-${VER}-linux-${ARCH}.tar.gz" /tmp "" &&
-                      mv /tmp/linux-${ARCH}/helm "$BIN/" && rm -rf /tmp/linux-${ARCH} &&
-                      log "Installed helm $VER" || log "WARNING: helm install failed"
-                    else
-                      log "WARNING: could not detect helm version"
-                    fi
-                  fi
-
-                  # kustomize
-                  if [ ! -f "$BIN/kustomize" ]; then
-                    VER=$(ghrel kubernetes-sigs/kustomize)
-                    VER=$(echo "$VER" | sed 's|kustomize/||')
-                    if [ -n "$VER" ]; then
-                      install_tar kustomize "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${VER}/kustomize_${VER}_linux_${ARCH}.tar.gz" ""
-                    else
-                      log "WARNING: could not detect kustomize version"
-                    fi
-                  fi
-
-                  # yq (direct binary, uses GitHub latest redirect)
-                  install_bin yq "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}"
-
-                  # sops
-                  if [ ! -f "$BIN/sops" ]; then
-                    VER=$(ghrel getsops/sops)
-                    if [ -n "$VER" ]; then
-                      install_bin sops "https://github.com/getsops/sops/releases/download/${VER}/sops-${VER}.linux.${ARCH}"
-                    else
-                      log "WARNING: could not detect sops version"
-                    fi
-                  fi
-
-                  # jq (direct binary, uses GitHub latest redirect)
-                  if ! command -v jq >/dev/null 2>&1; then
-                    install_bin jq "https://github.com/jqlang/jq/releases/latest/download/jq-linux-${ARCH}"
                   fi
 
                   mkdir -p /home/node/.openclaw/workspace/skills
