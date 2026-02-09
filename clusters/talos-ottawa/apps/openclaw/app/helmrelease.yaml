@@ -48,119 +48,64 @@ spec:
                 - sh
                 - -c
                 - |
+                  set -e
                   log() { echo "[$(date -Iseconds)] [init-skills] $*"; }
-                  log "Starting tools and skills initialization"
+                  BIN=/home/node/.openclaw/bin; mkdir -p "$BIN"
+                  ARCH=$(uname -m); case "$ARCH" in x86_64) ARCH=amd64;; aarch64) ARCH=arm64;; esac
 
-                  BIN=/home/node/.openclaw/bin
-                  mkdir -p "$BIN"
-                  ARCH=$(uname -m)
-                  case "$ARCH" in x86_64) ARCH=amd64;; aarch64) ARCH=arm64;; esac
-
-                  # Remove stale 0-byte files from previous failed installs
+                  # — Tool installation (idempotent, cached on PVC) —
                   find "$BIN" -maxdepth 1 -type f -empty -delete 2>/dev/null
+                  TOOLS="kubectl flux helm kustomize yq sops jq"
+                  MISSING=""; for t in $TOOLS; do [ ! -f "$BIN/$t" ] && MISSING="$MISSING $t"; done
 
-                  # Check which tools are missing
-                  MISSING=""
-                  for t in kubectl flux helm kustomize yq sops jq; do
-                    [ ! -f "$BIN/$t" ] && MISSING="$MISSING $t"
-                  done
-                  if [ -z "$MISSING" ]; then
-                    log "All tools already installed, skipping downloads"
-                  else
-                    log "Missing tools:$MISSING"
-                    # Connectivity gate — init containers often lack egress before sidecars start.
-                    # Wait up to 15s for github.com to be reachable, bail if not.
-                    ONLINE=false
-                    for i in 1 2 3; do
-                      if curl -fsSo /dev/null --connect-timeout 5 "https://github.com" 2>/dev/null; then
-                        ONLINE=true; break
-                      fi
-                      log "Waiting for network... (attempt $i/3)"
-                      sleep 2
+                  if [ -n "$MISSING" ]; then
+                    log "Missing:$MISSING — checking connectivity"
+                    OK=false; for i in 1 2 3; do
+                      curl -fsSo /dev/null --connect-timeout 5 "https://github.com" 2>/dev/null && OK=true && break
+                      log "Waiting for network ($i/3)..."; sleep 2
                     done
-                    if [ "$ONLINE" = false ]; then
-                      log "WARNING: github.com unreachable from init container — skipping tool downloads"
-                      log "Tools can be installed later via: kubectl exec -n openclaw <pod> -c main -- sh -c '...'"
+                    if ! $OK; then
+                      log "No egress — install tools manually: kubectl exec -n openclaw <pod> -c main -- sh"
                     else
-                      # Version resolver via curl redirect header (no API, no rate limits)
-                      ghrel() { curl -sI --connect-timeout 10 "https://github.com/$1/releases/latest" 2>/dev/null | grep -i "^location:" | grep -oE '[^/]+$' | tr -d '\r\n'; }
-                      fetch() { curl -fsSL --connect-timeout 15 --retry 2 -o "$1" "$2"; }
-                      fetch_tar() {
-                        curl -fsSL --connect-timeout 15 --retry 2 "$1" -o /tmp/_dl.tar.gz && tar xzf /tmp/_dl.tar.gz -C "$2" $3
-                        local rc=$?; rm -f /tmp/_dl.tar.gz; return $rc
+                      # resolve latest GitHub tag from redirect header (no API, no rate limit)
+                      ghver() { curl -sI --connect-timeout 10 "https://github.com/$1/releases/latest" 2>/dev/null | grep -i ^location: | grep -oE '[^/]+$' | tr -d '\r\n'; }
+                      grab() { curl -fsSL --connect-timeout 15 --retry 2 -o "$1" "$2" && chmod +x "$1"; }
+                      grab_tar() { curl -fsSL --connect-timeout 15 --retry 2 "$1" -o /tmp/_t.tgz && tar xzf /tmp/_t.tgz -C "$2" $3; rm -f /tmp/_t.tgz; }
+
+                      install_tool() {
+                        [ -f "$BIN/$1" ] && return 0
+                        log "Installing $1..."
+                        case "$1" in
+                          kubectl)  V=$(curl -fsSL --connect-timeout 10 https://dl.k8s.io/release/stable.txt)
+                                    grab "$BIN/kubectl" "https://dl.k8s.io/release/$V/bin/linux/$ARCH/kubectl" ;;
+                          flux)     V=$(ghver fluxcd/flux2); V=${V#v}; [ -z "$V" ] && return 1
+                                    grab_tar "https://github.com/fluxcd/flux2/releases/download/v${V}/flux_${V}_linux_${ARCH}.tar.gz" "$BIN" flux ;;
+                          helm)     V=$(ghver helm/helm); [ -z "$V" ] && return 1
+                                    grab_tar "https://get.helm.sh/helm-${V}-linux-${ARCH}.tar.gz" /tmp ""
+                                    mv /tmp/linux-${ARCH}/helm "$BIN/"; rm -rf /tmp/linux-${ARCH} ;;
+                          kustomize) V=$(ghver kubernetes-sigs/kustomize); V=${V#kustomize/}; [ -z "$V" ] && return 1
+                                    grab_tar "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${V}/kustomize_${V}_linux_${ARCH}.tar.gz" "$BIN" "" ;;
+                          yq)       grab "$BIN/yq" "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}" ;;
+                          sops)     V=$(ghver getsops/sops); [ -z "$V" ] && return 1
+                                    grab "$BIN/sops" "https://github.com/getsops/sops/releases/download/${V}/sops-${V}.linux.${ARCH}" ;;
+                          jq)       grab "$BIN/jq" "https://github.com/jqlang/jq/releases/latest/download/jq-linux-${ARCH}" ;;
+                        esac
                       }
-
-                      if [ ! -f "$BIN/kubectl" ]; then
-                        log "Installing kubectl..."
-                        KVER=$(curl -fsSL --connect-timeout 10 https://dl.k8s.io/release/stable.txt) &&
-                        fetch "$BIN/kubectl" "https://dl.k8s.io/release/$KVER/bin/linux/$ARCH/kubectl" &&
-                        chmod +x "$BIN/kubectl" &&
-                        log "Installed kubectl $KVER" || log "WARNING: kubectl install failed"
-                      fi
-
-                      if [ ! -f "$BIN/flux" ]; then
-                        VER=$(ghrel fluxcd/flux2); VER=${VER#v}
-                        if [ -n "$VER" ]; then
-                          log "Installing flux v$VER..."
-                          fetch_tar "https://github.com/fluxcd/flux2/releases/download/v${VER}/flux_${VER}_linux_${ARCH}.tar.gz" "$BIN" flux &&
-                          log "Installed flux" || log "WARNING: flux install failed"
-                        else log "WARNING: could not detect flux version"; fi
-                      fi
-
-                      if [ ! -f "$BIN/helm" ]; then
-                        VER=$(ghrel helm/helm)
-                        if [ -n "$VER" ]; then
-                          log "Installing helm $VER..."
-                          fetch_tar "https://get.helm.sh/helm-${VER}-linux-${ARCH}.tar.gz" /tmp "" &&
-                          mv /tmp/linux-${ARCH}/helm "$BIN/" && rm -rf /tmp/linux-${ARCH} &&
-                          log "Installed helm" || log "WARNING: helm install failed"
-                        else log "WARNING: could not detect helm version"; fi
-                      fi
-
-                      if [ ! -f "$BIN/kustomize" ]; then
-                        VER=$(ghrel kubernetes-sigs/kustomize); VER=$(echo "$VER" | sed 's|kustomize/||')
-                        if [ -n "$VER" ]; then
-                          log "Installing kustomize $VER..."
-                          fetch_tar "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${VER}/kustomize_${VER}_linux_${ARCH}.tar.gz" "$BIN" "" &&
-                          log "Installed kustomize" || log "WARNING: kustomize install failed"
-                        else log "WARNING: could not detect kustomize version"; fi
-                      fi
-
-                      if [ ! -f "$BIN/yq" ]; then
-                        log "Installing yq..."
-                        fetch "$BIN/yq" "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}" &&
-                        chmod +x "$BIN/yq" && log "Installed yq" || { rm -f "$BIN/yq"; log "WARNING: yq install failed"; }
-                      fi
-
-                      if [ ! -f "$BIN/sops" ]; then
-                        VER=$(ghrel getsops/sops)
-                        if [ -n "$VER" ]; then
-                          log "Installing sops $VER..."
-                          fetch "$BIN/sops" "https://github.com/getsops/sops/releases/download/${VER}/sops-${VER}.linux.${ARCH}" &&
-                          chmod +x "$BIN/sops" && log "Installed sops" || { rm -f "$BIN/sops"; log "WARNING: sops install failed"; }
-                        else log "WARNING: could not detect sops version"; fi
-                      fi
-
-                      if ! command -v jq >/dev/null 2>&1 && [ ! -f "$BIN/jq" ]; then
-                        log "Installing jq..."
-                        fetch "$BIN/jq" "https://github.com/jqlang/jq/releases/latest/download/jq-linux-${ARCH}" &&
-                        chmod +x "$BIN/jq" && log "Installed jq" || { rm -f "$BIN/jq"; log "WARNING: jq install failed"; }
-                      fi
+                      for t in $MISSING; do install_tool "$t" && log "OK: $t" || { rm -f "$BIN/$t"; log "FAILED: $t"; }; done
                     fi
+                  else
+                    log "All tools present"
                   fi
 
+                  # — ClawHub skills —
                   mkdir -p /home/node/.openclaw/workspace/skills
                   cd /home/node/.openclaw/workspace
-                  for skill in weather; do
-                    if [ -n "$skill" ] && [ ! -d "skills/${skill##*/}" ]; then
-                      log "Installing skill: $skill"
-                      npx -y clawhub install "$skill" --no-input || log "WARNING: Failed to install skill: $skill"
-                    else
-                      log "Skill already installed: $skill"
-                    fi
+                  for s in weather; do
+                    [ -d "skills/$s" ] && continue
+                    log "Installing skill: $s"
+                    npx -y clawhub install "$s" --no-input 2>/dev/null || log "FAILED: skill $s"
                   done
-
-                  log "Tools and skills initialization complete"
+                  log "Done"
               env:
                 HOME: /tmp
                 NPM_CONFIG_CACHE: /tmp/.npm
