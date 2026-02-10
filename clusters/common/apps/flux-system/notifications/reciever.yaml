@@ -15,3 +15,5 @@ spec:
   resources:
     - kind: GitRepository
       name: kubernetes-manifests
+    - kind: GitRepository
+      name: openclaw-workspace
