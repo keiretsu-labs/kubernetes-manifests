@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: jetson-exporter
+  namespace: flux-system
+spec:
+  path: ./clusters/talos-stpetersburg/apps/jetson-exporter
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: DaemonSet
+      name: jetson-exporter
+      namespace: jetson-exporter
+  interval: 15m
+  retryInterval: 1m
+  targetNamespace: jetson-exporter
+  timeout: 5m
+  wait: true

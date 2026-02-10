@@ -1,0 +1,19 @@
+---
+# Service to expose jetson-exporter metrics
+apiVersion: v1
+kind: Service
+metadata:
+  name: jetson-exporter
+  namespace: jetson-exporter
+  labels:
+    app.kubernetes.io/name: jetson-exporter
+    app.kubernetes.io/component: metrics-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: jetson-exporter
+  ports:
+    - name: http-metrics
+      port: 9101
+      targetPort: 9101
+      protocol: TCP

@@ -1,0 +1,35 @@
+---
+# ServiceMonitor to scrape jetson-exporter metrics by Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: jetson-exporter
+  namespace: jetson-exporter
+  labels:
+    app.kubernetes.io/name: jetson-exporter
+    prometheus.io/instance: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jetson-exporter
+  namespaceSelector:
+    matchNames:
+      - jetson-exporter
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      relabelings:
+        - sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: node
+        - sourceLabels:
+            - __meta_kubernetes_pod_name
+          targetLabel: pod
+      metricRelabelings:
+        # Keep only Jetson/Tegra specific metrics
+        - sourceLabels:
+            - __name__
+          regex: 'tegra_.*'
+          action: keep

@@ -1,0 +1,103 @@
+---
+# DaemonSet to run jetson-exporter on all Jetson GPU nodes
+# The GB10 is an aarch64 Jetson platform - DCGM won't work here.
+# This uses tegrastats via the waggle/jetson-exporter image.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jetson-exporter
+  namespace: jetson-exporter
+  labels:
+    app.kubernetes.io/name: jetson-exporter
+    app.kubernetes.io/component: metrics-exporter
+    app.kubernetes.io/part-of: gpu-monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jetson-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jetson-exporter
+        app.kubernetes.io/component: metrics-exporter
+        app.kubernetes.io/part-of: gpu-monitoring
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: "arm64"
+        # Label to select Jetson GPU nodes - customize based on your node labels
+        resource.gpu: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      hostNetwork: true
+      hostPID: true
+      containers:
+        - name: jetson-exporter
+          image: waggle/jetson-exporter:0.0.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - "/app/jetson-exporter"
+          args:
+            - "--loadpath"
+            - "/host/sys/devices/gpu.0/load"
+          env:
+            - name: PORT
+              value: "9101"
+            - name: KUBENODE
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          ports:
+            - name: http-metrics
+              containerPort: 9101
+              hostPort: 9101
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          volumeMounts:
+            - name: sys
+              mountPath: /host/sys
+              mountPropagation: HostToContainer
+              readOnly: true
+            - name: proc
+              mountPath: /host/proc
+              mountPropagation: HostToContainer
+              readOnly: true
+            - name: nvgpu
+              mountPath: /dev/nvgpu
+              readOnly: true
+            - name: tegra-firmware
+              mountPath: /lib/firmware
+              readOnly: true
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+      volumes:
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: nvgpu
+          hostPath:
+            path: /dev/nvgpu
+        - name: tegra-firmware
+          hostPath:
+            path: /lib/firmware
+      restartPolicy: Always
+      serviceAccountName: jetson-exporter
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jetson-exporter
+  namespace: jetson-exporter

@@ -1,0 +1,55 @@
+---
+# Grafana Dashboard for Jetson GPU metrics
+# Uses the grafana-operator CRD
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: jetson-exporter-dashboard
+  namespace: jetson-exporter
+spec:
+  allowCrossNamespaceImport: true
+  folder: NVIDIA
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus
+  json: >
+    {
+      "title": "Jetson GPU Metrics",
+      "tags": ["nvidia", "jetson", "gpu"],
+      "timezone": "browser",
+      "schemaVersion": 36,
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": 1,
+          "title": "GPU Utilization",
+          "type": "stat",
+          "targets": [{"expr": "tegra_gpu_util_percentage"}],
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+        },
+        {
+          "id": 2,
+          "title": "GPU Temperature",
+          "type": "stat",
+          "targets": [{"expr": "tegra_temperature_celcius"}],
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+        },
+        {
+          "id": 3,
+          "title": "GPU Frequency",
+          "type": "graph",
+          "targets": [{"expr": "tegra_gpu_frequency_hz"}],
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+        },
+        {
+          "id": 4,
+          "title": "Power Draw",
+          "type": "graph",
+          "targets": [{"expr": "tegra_power_draw_watts"}],
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+        }
+      ]
+    }
