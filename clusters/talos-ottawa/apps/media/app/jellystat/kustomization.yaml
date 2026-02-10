@@ -8,4 +8,5 @@ resources:
   - pvc-backup.yaml
   - httproute.yaml
   - postgres.yaml
+  - superuser-secret.yaml
   - s3-backup.yaml
