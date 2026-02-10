@@ -1,0 +1,37 @@
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
+  name: zot
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: zot
+  quotas:
+    maxSize: 500Gi
+    maxObjects: 10000000
+  keyPermissions:
+    - keyRef: zot-key
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
+metadata:
+  name: zot-key
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Zot Registry Key"
+  secretTemplate:
+    name: garage-s3-auth
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef: zot
+      read: true
+      write: true
+      owner: true

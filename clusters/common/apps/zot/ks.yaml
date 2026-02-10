@@ -5,6 +5,8 @@ metadata:
   name: &app zot
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: garage
   targetNamespace: zot
   commonMetadata:
     labels:
