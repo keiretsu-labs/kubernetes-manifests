@@ -73,7 +73,7 @@ jobs:
           VLLM_BASE_URL: http://stpetersburg-vllm/v1
         with:
           model: vllm/Qwen3-Coder-Next
-          use_github_token: false
+          use_github_token: true
           mentions: renovate[bot],dependabot[bot]
           prompt: |
             You are a code reviewer. This is a REVIEW ONLY task. Do NOT modify any files, do NOT create commits, do NOT push code. Only provide written feedback.
