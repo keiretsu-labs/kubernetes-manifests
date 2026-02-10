@@ -7,6 +7,8 @@ metadata:
     cnpg.io/skipEmptyWalArchiveCheck: "enabled"
 spec:
   enableSuperuserAccess: true
+  superuserSecret:
+    name: jellystat-postgres-superuser-creds
   inheritedMetadata:
     labels:
       app: jellystat-postgres
