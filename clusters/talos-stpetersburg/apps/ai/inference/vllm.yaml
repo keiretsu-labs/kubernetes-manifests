@@ -42,7 +42,7 @@ spec:
         args:
         - "vllm"
         - "serve"
-        - "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-NVFP4"
+        - "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8"
         - "--served-model-name"
         - "Nemotron-3-Nano"
         - "--host"
@@ -73,8 +73,6 @@ spec:
           name: http
           protocol: TCP
         env:
-        - name: VLLM_USE_FLASHINFER_MOE_FP4
-          value: "1"
         - name: NCCL_IGNORE_CPU_AFFINITY
           value: "1"
         - name: HUGGING_FACE_HUB_TOKEN
