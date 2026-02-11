@@ -5,6 +5,5 @@ namespace: ai
 
 resources:
   - llama-cpp.yaml
-  - nemotron-cpp.yaml
-  # - vllm.yaml
+  - vllm.yaml
   - secret.yaml
