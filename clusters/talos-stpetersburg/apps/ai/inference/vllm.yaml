@@ -50,7 +50,7 @@ spec:
         - "--port"
         - "8000"
         - "--gpu-memory-utilization"
-        - "0.50"
+        - "0.30"
         - "--max-model-len"
         - "16384"
         - "--kv-cache-dtype"
