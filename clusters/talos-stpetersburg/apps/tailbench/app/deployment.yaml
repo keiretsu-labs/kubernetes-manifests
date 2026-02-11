@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tailbench
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tailbench
+  template:
+    metadata:
+      labels:
+        app: tailbench
+    spec:
+      containers:
+        - name: tailbench
+          image: ghcr.io/rajsinghtech/tailbench:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
