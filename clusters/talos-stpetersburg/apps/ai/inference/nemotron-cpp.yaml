@@ -1,203 +1,203 @@
-# llama.cpp Deployment for DGX Spark (GB10/ARM/Blackwell)
-# Model: NVIDIA Nemotron-3-Nano-30B-A3B 4-bit GGUF (~24.6GB)
-# Reasoning specialist with hybrid MoE architecture (3.5B active, 30B total)
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: nemotron-cpp-models
-  namespace: ai
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 50Gi
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nemotron-cpp-scripts
-  namespace: ai
-data:
-  download-model.py: |
-    #!/usr/bin/env python3
-    import os
-    from pathlib import Path
-    from huggingface_hub import hf_hub_download
-
-    MODEL_DIR = "/models"
-    REPO_ID = "unsloth/Nemotron-3-Nano-30B-A3B-GGUF"
-    MODEL_FILE = "Nemotron-3-Nano-30B-A3B-Q4_K_M.gguf"
-
-    Path(MODEL_DIR).mkdir(parents=True, exist_ok=True)
-
-    model_path = Path(MODEL_DIR) / MODEL_FILE
-    if not model_path.exists():
-        print(f"Downloading {MODEL_FILE} from {REPO_ID}...")
-        hf_hub_download(
-            repo_id=REPO_ID,
-            filename=MODEL_FILE,
-            local_dir=MODEL_DIR,
-            local_dir_use_symlinks=False
-        )
-        print(f"Downloaded: {model_path}")
-    else:
-        print(f"Already exists: {model_path}")
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nemotron-cpp
-  namespace: ai
-  labels:
-    app: nemotron-cpp
-spec:
-  replicas: 1
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app: nemotron-cpp
-  template:
-    metadata:
-      labels:
-        app: nemotron-cpp
-    spec:
-      initContainers:
-      - name: download-model
-        image: python:3.14
-        command: ["sh", "-c", "pip install -q huggingface_hub && python3 /scripts/download-model.py"]
-        env:
-        - name: HF_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: hf-secret
-              key: HF_TOKEN
-        - name: HF_HOME
-          value: "/models/huggingface"
-        volumeMounts:
-        - name: models
-          mountPath: /models
-        - name: scripts
-          mountPath: /scripts
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "1000m"
-          limits:
-            memory: "4Gi"
-      containers:
-      - name: llama-cpp
-        image: ghcr.io/ardge-labs/llama-cpp-dgx-spark:server
-        args:
-        - "-m"
-        - "/models/Nemotron-3-Nano-30B-A3B-Q4_K_M.gguf"
-        - "-a"
-        - "Nemotron-3-Nano-30B-A3B-Q4_K_M.gguf"
-        - "--host"
-        - "0.0.0.0"
-        - "--port"
-        - "8000"
-        - "--n-gpu-layers"
-        - "99"
-        - "-c"
-        - "131072"
-        - "--parallel"
-        - "1"
-        - "--seed"
-        - "3407"
-        - "--temp"
-        - "1.0"
-        - "--top-p"
-        - "0.95"
-        - "--min-p"
-        - "0.01"
-        - "--top-k"
-        - "40"
-        - "--jinja"
-        ports:
-        - containerPort: 8000
-          name: http
-          protocol: TCP
-        resources:
-          requests:
-            memory: "16Gi"
-            cpu: "4000m"
-            nvidia.com/gpu: "1"
-          limits:
-            memory: "96Gi"
-            nvidia.com/gpu: "1"
-        volumeMounts:
-        - name: models
-          mountPath: /models
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 120
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 5
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 5
-        startupProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 60
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 30
-      volumes:
-      - name: models
-        persistentVolumeClaim:
-          claimName: nemotron-cpp-models
-      - name: scripts
-        configMap:
-          name: nemotron-cpp-scripts
-      nodeSelector:
-        nvidia.com/gpu.present: "true"
-      terminationGracePeriodSeconds: 120
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nemotron
-  namespace: ai
-  labels:
-    app: nemotron-cpp
-spec:
-  type: ClusterIP
-  ports:
-  - name: http
-    port: 80
-    protocol: TCP
-    targetPort: http
-  selector:
-    app: nemotron-cpp
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nemotron-cpp-ts
-  namespace: ai
-  annotations:
-    tailscale.com/hostname: "${LOCATION}-nemotron"
-    tailscale.com/proxy-group: common-ingress
-    tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
-spec:
-  type: LoadBalancer
-  loadBalancerClass: tailscale
-  ports:
-  - name: http
-    port: 80
-    protocol: TCP
-    targetPort: 8000
-  selector:
-    app: nemotron-cpp
+# # llama.cpp Deployment for DGX Spark (GB10/ARM/Blackwell)
+# # Model: NVIDIA Nemotron-3-Nano-30B-A3B 4-bit GGUF (~24.6GB)
+# # Reasoning specialist with hybrid MoE architecture (3.5B active, 30B total)
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: nemotron-cpp-models
+#   namespace: ai
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 50Gi
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: nemotron-cpp-scripts
+#   namespace: ai
+# data:
+#   download-model.py: |
+#     #!/usr/bin/env python3
+#     import os
+#     from pathlib import Path
+#     from huggingface_hub import hf_hub_download
+# 
+#     MODEL_DIR = "/models"
+#     REPO_ID = "unsloth/Nemotron-3-Nano-30B-A3B-GGUF"
+#     MODEL_FILE = "Nemotron-3-Nano-30B-A3B-Q4_K_M.gguf"
+# 
+#     Path(MODEL_DIR).mkdir(parents=True, exist_ok=True)
+# 
+#     model_path = Path(MODEL_DIR) / MODEL_FILE
+#     if not model_path.exists():
+#         print(f"Downloading {MODEL_FILE} from {REPO_ID}...")
+#         hf_hub_download(
+#             repo_id=REPO_ID,
+#             filename=MODEL_FILE,
+#             local_dir=MODEL_DIR,
+#             local_dir_use_symlinks=False
+#         )
+#         print(f"Downloaded: {model_path}")
+#     else:
+#         print(f"Already exists: {model_path}")
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: nemotron-cpp
+#   namespace: ai
+#   labels:
+#     app: nemotron-cpp
+# spec:
+#   replicas: 1
+#   strategy:
+#     type: Recreate
+#   selector:
+#     matchLabels:
+#       app: nemotron-cpp
+#   template:
+#     metadata:
+#       labels:
+#         app: nemotron-cpp
+#     spec:
+#       initContainers:
+#       - name: download-model
+#         image: python:3.14
+#         command: ["sh", "-c", "pip install -q huggingface_hub && python3 /scripts/download-model.py"]
+#         env:
+#         - name: HF_TOKEN
+#           valueFrom:
+#             secretKeyRef:
+#               name: hf-secret
+#               key: HF_TOKEN
+#         - name: HF_HOME
+#           value: "/models/huggingface"
+#         volumeMounts:
+#         - name: models
+#           mountPath: /models
+#         - name: scripts
+#           mountPath: /scripts
+#         resources:
+#           requests:
+#             memory: "1Gi"
+#             cpu: "1000m"
+#           limits:
+#             memory: "4Gi"
+#       containers:
+#       - name: llama-cpp
+#         image: ghcr.io/ardge-labs/llama-cpp-dgx-spark:server
+#         args:
+#         - "-m"
+#         - "/models/Nemotron-3-Nano-30B-A3B-Q4_K_M.gguf"
+#         - "-a"
+#         - "Nemotron-3-Nano-30B-A3B-Q4_K_M.gguf"
+#         - "--host"
+#         - "0.0.0.0"
+#         - "--port"
+#         - "8000"
+#         - "--n-gpu-layers"
+#         - "99"
+#         - "-c"
+#         - "131072"
+#         - "--parallel"
+#         - "1"
+#         - "--seed"
+#         - "3407"
+#         - "--temp"
+#         - "1.0"
+#         - "--top-p"
+#         - "0.95"
+#         - "--min-p"
+#         - "0.01"
+#         - "--top-k"
+#         - "40"
+#         - "--jinja"
+#         ports:
+#         - containerPort: 8000
+#           name: http
+#           protocol: TCP
+#         resources:
+#           requests:
+#             memory: "16Gi"
+#             cpu: "4000m"
+#             nvidia.com/gpu: "1"
+#           limits:
+#             memory: "96Gi"
+#             nvidia.com/gpu: "1"
+#         volumeMounts:
+#         - name: models
+#           mountPath: /models
+#         livenessProbe:
+#           httpGet:
+#             path: /health
+#             port: http
+#           initialDelaySeconds: 120
+#           periodSeconds: 30
+#           timeoutSeconds: 10
+#           failureThreshold: 5
+#         readinessProbe:
+#           httpGet:
+#             path: /health
+#             port: http
+#           initialDelaySeconds: 60
+#           periodSeconds: 10
+#           timeoutSeconds: 5
+#         startupProbe:
+#           httpGet:
+#             path: /health
+#             port: http
+#           initialDelaySeconds: 60
+#           periodSeconds: 30
+#           timeoutSeconds: 10
+#           failureThreshold: 30
+#       volumes:
+#       - name: models
+#         persistentVolumeClaim:
+#           claimName: nemotron-cpp-models
+#       - name: scripts
+#         configMap:
+#           name: nemotron-cpp-scripts
+#       nodeSelector:
+#         nvidia.com/gpu.present: "true"
+#       terminationGracePeriodSeconds: 120
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: nemotron
+#   namespace: ai
+#   labels:
+#     app: nemotron-cpp
+# spec:
+#   type: ClusterIP
+#   ports:
+#   - name: http
+#     port: 80
+#     protocol: TCP
+#     targetPort: http
+#   selector:
+#     app: nemotron-cpp
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: nemotron-cpp-ts
+#   namespace: ai
+#   annotations:
+#     tailscale.com/hostname: "${LOCATION}-nemotron"
+#     tailscale.com/proxy-group: common-ingress
+#     tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
+# spec:
+#   type: LoadBalancer
+#   loadBalancerClass: tailscale
+#   ports:
+#   - name: http
+#     port: 80
+#     protocol: TCP
+#     targetPort: 8000
+#   selector:
+#     app: nemotron-cpp
