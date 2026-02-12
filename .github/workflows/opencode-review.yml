@@ -57,7 +57,7 @@ jobs:
         run: |
           tailscale status | head -n 1
           echo "Testing connectivity to vLLM endpoint..."
-          curl -s --connect-timeout 10 http://stpetersburg-vllm/v1/models | jq -r '.data[].id'
+          curl -s --connect-timeout 10 http://stpetersburg-llama-cpp/v1/models | jq -r '.data[].id'
 
       - name: Fetch PR for dispatch
         if: github.event_name == 'workflow_dispatch'
@@ -72,7 +72,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           VLLM_BASE_URL: http://stpetersburg-llama-cpp/v1
         with:
-          model: vllm/Qwen3-Coder-Next
+          model: llama-cpp/Qwen3-Coder-Next
           use_github_token: true
           mentions: renovate[bot],dependabot[bot]
           prompt: |
