@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: gluetun
-        image: ghcr.io/qdm12/gluetun:v3.41.0
+        image: ghcr.io/qdm12/gluetun:v3.41.1
         securityContext:
           capabilities:
             add:
