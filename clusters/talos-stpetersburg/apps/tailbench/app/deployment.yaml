@@ -16,6 +16,7 @@ spec:
       containers:
         - name: tailbench
           image: ghcr.io/rajsinghtech/tailbench:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           resources:
