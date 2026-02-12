@@ -1,0 +1,23 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app netbox
+  namespace: flux-system
+spec:
+  targetNamespace: netbox
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: cnpg-system
+    - name: dragonfly-operator-system
+  path: ./clusters/${CLUSTER_NAME}/apps/netbox/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: false
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m

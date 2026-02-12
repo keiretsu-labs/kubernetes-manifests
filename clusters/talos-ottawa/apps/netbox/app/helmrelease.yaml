@@ -1,0 +1,106 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: netbox
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: netbox
+      version: 7.4.8
+      sourceRef:
+        kind: HelmRepository
+        name: netbox
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: false
+    remediation:
+      retries: 3
+  values:
+    image:
+      pullPolicy: IfNotPresent
+
+    # Superuser credentials from SOPS secret
+    superuser:
+      existingSecret: netbox-superuser
+
+    # Django secret key from SOPS secret
+    existingSecret: netbox-secret
+
+    # Disable bundled PostgreSQL — we use CNPG
+    postgresql:
+      enabled: false
+    externalDatabase:
+      host: netbox-postgres-rw
+      port: 5432
+      database: netbox
+      username: netbox
+      existingSecretName: netbox-postgres-app
+      existingSecretKey: password
+
+    # Disable bundled Valkey/Redis — we use Dragonfly
+    valkey:
+      enabled: false
+
+    # Tasks Redis (db 0) — points to Dragonfly
+    tasksDatabase:
+      host: dragonfly-netbox
+      port: 6379
+      database: 0
+      existingSecretName: netbox-dragonfly-secret
+      existingSecretKey: password
+      ssl: false
+
+    # Caching Redis (db 1) — points to Dragonfly
+    cachingDatabase:
+      host: dragonfly-netbox
+      port: 6379
+      database: 1
+      existingSecretName: netbox-dragonfly-secret
+      existingSecretKey: password
+      ssl: false
+
+    # NetBox configuration
+    allowedHosts:
+      - "*"
+    enforceGlobalUnique: true
+    loginRequired: false
+    graphQlEnabled: true
+    metricsEnabled: true
+    timeZone: America/New_York
+
+    # Persistence for media files
+    persistence:
+      enabled: true
+      storageClass: ceph-block-replicated-nvme
+      size: 5Gi
+
+    # Resource requests/limits
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+
+    # Worker for background tasks
+    worker:
+      enabled: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+        limits:
+          memory: 512Mi
+
+    # Prometheus metrics
+    metrics:
+      enabled: true
+
+    # Disable built-in ingress — we use HTTPRoute
+    ingress:
+      enabled: false

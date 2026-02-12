@@ -1,0 +1,59 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: unifi2netbox-sync
+  namespace: netbox
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          initContainers:
+            - name: clone-repo
+              image: alpine/git:latest
+              command:
+                - git
+                - clone
+                - --depth=1
+                - https://github.com/mrzepa/unifi2netbox.git
+                - /app
+              volumeMounts:
+                - name: app-code
+                  mountPath: /app
+          containers:
+            - name: unifi2netbox
+              image: python:3.12-slim
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  pip install --no-cache-dir pynetbox requests pyotp PyYAML python-dotenv python-slugify urllib3 && \
+                  cd /app && python main.py
+              envFrom:
+                - secretRef:
+                    name: netbox-unifi-sync
+              volumeMounts:
+                - name: config
+                  mountPath: /app/config/config.yaml
+                  subPath: config.yaml
+                - name: app-code
+                  mountPath: /app
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  memory: 256Mi
+          volumes:
+            - name: config
+              configMap:
+                name: unifi2netbox-config
+            - name: app-code
+              emptyDir: {}

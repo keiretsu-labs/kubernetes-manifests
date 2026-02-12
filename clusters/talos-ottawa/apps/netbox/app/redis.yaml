@@ -1,0 +1,21 @@
+---
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: dragonfly-netbox
+spec:
+  replicas: 2
+  args:
+    - --maxmemory=512M
+    - --proactor_threads=2
+    - --cluster_mode=emulated
+  authentication:
+    passwordFromSecret:
+      name: netbox-dragonfly-secret
+      key: password
+  resources:
+    requests:
+      cpu: 25m
+      memory: 512Mi
+    limits:
+      memory: 768Mi

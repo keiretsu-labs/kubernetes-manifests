@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unifi2netbox-config
+  namespace: netbox
+data:
+  config.yaml: |
+    UNIFI:
+      URLS:
+        - https://192.168.169.1
+        - https://192.168.50.1
+      USE_SITE_MAPPING: false
+      SITE_MAPPINGS:
+        "Default": "Ottawa"
+    NETBOX:
+      URL: http://netbox.netbox.svc.cluster.local:80
+      ROLES:
+        WIRELESS: "Wireless AP"
+        LAN: "Switch"
+      TENANT: "Keiretsu Labs"

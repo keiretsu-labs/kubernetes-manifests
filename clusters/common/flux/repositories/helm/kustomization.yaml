@@ -83,4 +83,5 @@ resources:
   - ./mariadb-operator.yaml
   - ./bitnami.yaml
   - ./karmada.yaml
+  - ./netbox.yaml
   - ./zot.yaml
