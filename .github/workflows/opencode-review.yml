@@ -70,7 +70,7 @@ jobs:
         uses: anomalyco/opencode/github@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          VLLM_BASE_URL: http://stpetersburg-vllm/v1
+          VLLM_BASE_URL: http://stpetersburg-llama-cpp/v1
         with:
           model: vllm/Qwen3-Coder-Next
           use_github_token: true
