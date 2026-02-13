@@ -31,6 +31,8 @@ spec:
           datastores:
             default:
               sql:
+                createDatabase: false
+                manageSchema: true
                 pluginName: postgres12
                 driverName: postgres12
                 databaseName: temporal
@@ -43,6 +45,8 @@ spec:
                 maxIdleConns: 20
             visibility:
               sql:
+                createDatabase: false
+                manageSchema: true
                 pluginName: postgres12
                 driverName: postgres12
                 databaseName: temporal_visibility
