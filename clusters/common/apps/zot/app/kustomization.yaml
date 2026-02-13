@@ -7,3 +7,4 @@ resources:
   - bucket.yaml
   - helmrelease.yaml
   - httproute.yaml
+  - ingress.yaml
