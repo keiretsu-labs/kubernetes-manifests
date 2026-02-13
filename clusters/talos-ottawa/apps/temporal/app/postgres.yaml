@@ -17,7 +17,7 @@ spec:
     enablePodMonitor: true
   storage:
     size: 10Gi
-    storageClassName: ceph-block-replicated-nvme
+    storageClass: ceph-block-replicated-nvme
   plugins:
     - name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true
