@@ -203,18 +203,18 @@
 			"ip":  ["*"],
 		},
 		// TailGrant JIT grants - admin gets full access, debug gets limited
-		// sourcePosture requires the requester's device to have the posture attribute set by TailGrant
+		// srcPosture requires the requester's device to have the posture attribute set by TailGrant
 		{
 			"src": ["tag:admin-granted"],
 			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
 			"ip":  ["*"],
-			"sourcePosture": ["posture:jitAdmin"],
+			"srcPosture": ["posture:jitAdmin"],
 		},
 		{
 			"src": ["tag:debug-granted"],
 			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
 			"ip":  ["*"],
-			"sourcePosture": ["posture:jitDebug"],
+			"srcPosture": ["posture:jitDebug"],
 		},
 		// Allow Funnel ingress traffic to reach tag:k8s nodes
 		{
