@@ -5,3 +5,4 @@ namespace: fluent-bit
 resources:
   - helmrelease.yaml
   - grafanadashboard.yaml
+  - service-tcp.yaml

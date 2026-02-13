@@ -33,6 +33,15 @@ spec:
             Mem_Buf_Limit     50MB
             Skip_Long_Lines   On
 
+        [INPUT]
+            Name        tcp
+            Listen      0.0.0.0
+            Port        5170
+            Tag         talos.*
+            Format      json
+            Chunk_Size  32KB
+            Buffer_Size 128KB
+
       filters: |
         [FILTER]
             Name                kubernetes
@@ -66,6 +75,22 @@ spec:
             Json_date_format iso8601
             compress         gzip
 
+        [OUTPUT]
+            Name             http
+            Match            talos.*
+            Host             victoria-logs-victoria-logs-single-server.monitoring.svc
+            Port             9428
+            URI              /insert/jsonline?_stream_fields=talos-service,cluster&_msg_field=msg&_time_field=talos-time
+            Format           json_lines
+            Json_date_key    talos-time
+            Json_date_format iso8601
+            compress         gzip
+
+    extraPorts:
+      - port: 5170
+        containerPort: 5170
+        protocol: TCP
+        name: tcp-talos
     dashboards:
       enabled: true
     serviceMonitor:
