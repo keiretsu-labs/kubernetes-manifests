@@ -7,3 +7,4 @@ resources:
   - postgres.yaml
   - s3-backup.yaml
   - httproute.yaml
+  - service-ts.yaml
