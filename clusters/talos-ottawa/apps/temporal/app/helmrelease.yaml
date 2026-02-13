@@ -41,8 +41,8 @@ spec:
                 user: temporal
                 existingSecret: temporal-postgres-app
                 secretKey: password
-                maxConns: 20
-                maxIdleConns: 20
+                maxConns: 10
+                maxIdleConns: 10
             visibility:
               sql:
                 createDatabase: false
@@ -55,8 +55,8 @@ spec:
                 user: temporal
                 existingSecret: temporal-postgres-app
                 secretKey: password
-                maxConns: 20
-                maxIdleConns: 20
+                maxConns: 10
+                maxIdleConns: 10
       frontend:
         replicaCount: 1
         resources:

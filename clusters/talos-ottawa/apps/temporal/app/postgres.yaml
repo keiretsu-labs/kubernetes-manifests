@@ -6,6 +6,9 @@ metadata:
   namespace: temporal
 spec:
   instances: 3
+  postgresql:
+    parameters:
+      max_connections: "200"
   bootstrap:
     initdb:
       database: temporal
