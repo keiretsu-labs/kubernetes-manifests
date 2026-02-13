@@ -25,30 +25,34 @@ spec:
       replicaCount: 1
       config:
         persistence:
-          default:
-            driver: sql
-            sql:
-              driver: postgres12
-              host: temporal-postgres-rw.temporal.svc.cluster.local
-              port: 5432
-              database: temporal
-              user: temporal
-              existingSecret: temporal-postgres-app
-              secretKey: password
-              maxConns: 20
-              maxIdleConns: 20
-          visibility:
-            driver: sql
-            sql:
-              driver: postgres12
-              host: temporal-postgres-rw.temporal.svc.cluster.local
-              port: 5432
-              database: temporal_visibility
-              user: temporal
-              existingSecret: temporal-postgres-app
-              secretKey: password
-              maxConns: 20
-              maxIdleConns: 20
+          defaultStore: default
+          visibilityStore: visibility
+          numHistoryShards: 512
+          datastores:
+            default:
+              sql:
+                pluginName: postgres12
+                driverName: postgres12
+                databaseName: temporal
+                connectAddr: "temporal-postgres-rw.temporal.svc.cluster.local:5432"
+                connectProtocol: "tcp"
+                user: temporal
+                existingSecret: temporal-postgres-app
+                secretKey: password
+                maxConns: 20
+                maxIdleConns: 20
+            visibility:
+              sql:
+                pluginName: postgres12
+                driverName: postgres12
+                databaseName: temporal_visibility
+                connectAddr: "temporal-postgres-rw.temporal.svc.cluster.local:5432"
+                connectProtocol: "tcp"
+                user: temporal
+                existingSecret: temporal-postgres-app
+                secretKey: password
+                maxConns: 20
+                maxIdleConns: 20
       frontend:
         replicaCount: 1
         resources:
