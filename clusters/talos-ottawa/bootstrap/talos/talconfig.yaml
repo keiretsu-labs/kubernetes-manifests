@@ -165,6 +165,7 @@ controlPlane:
         - talos.auditd.disabled=1
         - net.ifnames=0
         - cpufreq.default_governor=performance
+        - talos.logging.kernel=tcp://10.169.69.51:5170/
   patches:
     - "@./patches/controller/api-access.yaml"
     - "@./patches/controller/disable-proxy.yaml"

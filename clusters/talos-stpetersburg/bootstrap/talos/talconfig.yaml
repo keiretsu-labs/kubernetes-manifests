@@ -89,6 +89,7 @@ controlPlane:
         - net.ifnames=0
         - nvidia_drm.modeset=1
         - nvidia_drm.fbdev=1
+        - talos.logging.kernel=tcp://10.73.69.51:5170/
   patches:
     - "@./patches/controller/api-access.yaml"
     - "@./patches/controller/disable-proxy.yaml"
