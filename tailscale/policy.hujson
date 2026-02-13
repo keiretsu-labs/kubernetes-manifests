@@ -77,9 +77,13 @@
 		"tag:udm":          ["tag:infra", "group:superuser"],
 		"tag:ci":           ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:singh360":     ["tag:k8s-operator", "tag:infra", "group:superuser",],
-		"tag:bird-ha-test": ["group:superuser",],
-		"tag:site-a-sr":    ["group:superuser",],
-		"tag:site-b-sr":    ["group:superuser",],
+		"tag:bird-ha-test":     ["group:superuser",],
+		"tag:site-a-sr":        ["group:superuser",],
+		"tag:site-b-sr":        ["group:superuser",],
+		"tag:tailgrant-worker": ["tag:k8s-operator", "tag:infra", "group:superuser",],
+		"tag:ssh-granted":      ["tag:tailgrant-worker", "group:superuser",],
+		"tag:admin-granted":    ["tag:tailgrant-worker", "group:superuser",],
+		"tag:debug-granted":    ["tag:tailgrant-worker", "group:superuser",],
 	},
 	"autoApprovers": {
 		"exitNode": ["tag:k8s"],
@@ -113,6 +117,15 @@
 		{
 			"action":          "accept",
 			"src":             ["group:superuser", "tag:k8s", "tag:ci"],
+			"dst":             ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
+			"users":           ["root", "autogroup:nonroot"],
+			"recorder":        ["tag:k8s-recorder"],
+			"enforceRecorder": true,
+		},
+		// TailGrant JIT SSH access
+		{
+			"action":          "accept",
+			"src":             ["tag:ssh-granted"],
 			"dst":             ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
 			"users":           ["root", "autogroup:nonroot"],
 			"recorder":        ["tag:k8s-recorder"],
@@ -182,6 +195,17 @@
 		{
 			"src": ["group:superuser", "tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
 			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
+			"ip":  ["*"],
+		},
+		// TailGrant JIT grants - admin gets full access, debug gets limited
+		{
+			"src": ["tag:admin-granted"],
+			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
+			"ip":  ["*"],
+		},
+		{
+			"src": ["tag:debug-granted"],
+			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
 			"ip":  ["*"],
 		},
 		// Allow Funnel ingress traffic to reach tag:k8s nodes
