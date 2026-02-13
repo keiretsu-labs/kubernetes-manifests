@@ -62,6 +62,34 @@ spec:
           subtitle: "Private Mesh Network"
           tagstyle: "is-info"
           url: "https://login.tailscale.com/admin/machines"
+    - parameters:
+        name: "Talos Machine Logs"
+        icon: "fas fa-scroll"
+      items:
+      - parameters:
+          name: "All Talos Logs"
+          logo: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/victoriametrics-white.svg"
+          subtitle: "All machine-level logs"
+          tagstyle: "is-success"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3A*&g0.range_input=5m&g0.relative_time=last_5_minutes"
+      - parameters:
+          name: "machined"
+          logo: "https://www.talos.dev/images/logo.svg"
+          subtitle: "Talos machined service logs"
+          tagstyle: "is-warning"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Amachined&g0.range_input=5m&g0.relative_time=last_5_minutes"
+      - parameters:
+          name: "apid"
+          logo: "https://www.talos.dev/images/logo.svg"
+          subtitle: "Talos API daemon logs"
+          tagstyle: "is-warning"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Aapid&g0.range_input=5m&g0.relative_time=last_5_minutes"
+      - parameters:
+          name: "kubelet"
+          logo: "https://www.talos.dev/images/logo.svg"
+          subtitle: "Talos-level kubelet logs"
+          tagstyle: "is-warning"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Akubelet&g0.range_input=5m&g0.relative_time=last_5_minutes"
   gatewaySelector:
     matchLabels:
       external-dns: ts
