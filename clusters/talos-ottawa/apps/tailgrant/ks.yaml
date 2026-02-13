@@ -20,6 +20,8 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: temporal
   path: ./kustomization
   prune: true
   sourceRef:
