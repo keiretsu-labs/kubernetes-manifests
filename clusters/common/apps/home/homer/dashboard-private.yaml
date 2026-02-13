@@ -73,23 +73,59 @@ spec:
           tagstyle: "is-success"
           url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3A*&g0.range_input=5m&g0.relative_time=last_5_minutes"
       - parameters:
+          name: "kernel"
+          logo: "https://www.talos.dev/images/logo.svg"
+          subtitle: "Kernel / dmesg logs"
+          tagstyle: "is-danger"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Akernel&g0.range_input=5m&g0.relative_time=last_5_minutes"
+      - parameters:
           name: "machined"
           logo: "https://www.talos.dev/images/logo.svg"
-          subtitle: "Talos machined service logs"
+          subtitle: "Talos core daemon"
           tagstyle: "is-warning"
           url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Amachined&g0.range_input=5m&g0.relative_time=last_5_minutes"
       - parameters:
           name: "apid"
           logo: "https://www.talos.dev/images/logo.svg"
-          subtitle: "Talos API daemon logs"
+          subtitle: "Talos API daemon"
           tagstyle: "is-warning"
           url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Aapid&g0.range_input=5m&g0.relative_time=last_5_minutes"
       - parameters:
           name: "kubelet"
           logo: "https://www.talos.dev/images/logo.svg"
-          subtitle: "Talos-level kubelet logs"
+          subtitle: "Talos-level kubelet"
           tagstyle: "is-warning"
           url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Akubelet&g0.range_input=5m&g0.relative_time=last_5_minutes"
+      - parameters:
+          name: "etcd"
+          logo: "https://www.talos.dev/images/logo.svg"
+          subtitle: "etcd cluster logs"
+          tagstyle: "is-warning"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Aetcd&g0.range_input=5m&g0.relative_time=last_5_minutes"
+      - parameters:
+          name: "containerd"
+          logo: "https://www.talos.dev/images/logo.svg"
+          subtitle: "Container runtime"
+          tagstyle: "is-info"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Acontainerd&g0.range_input=5m&g0.relative_time=last_5_minutes"
+      - parameters:
+          name: "trustd"
+          logo: "https://www.talos.dev/images/logo.svg"
+          subtitle: "Certificate management"
+          tagstyle: "is-info"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Atrustd&g0.range_input=5m&g0.relative_time=last_5_minutes"
+      - parameters:
+          name: "udevd"
+          logo: "https://www.talos.dev/images/logo.svg"
+          subtitle: "Device manager"
+          tagstyle: "is-info"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Audevd&g0.range_input=5m&g0.relative_time=last_5_minutes"
+      - parameters:
+          name: "cri"
+          logo: "https://www.talos.dev/images/logo.svg"
+          subtitle: "Container runtime interface"
+          tagstyle: "is-info"
+          url: "https://logs.${CLUSTER_DOMAIN}/select/vmui/#/?query=talos-service%3Acri&g0.range_input=5m&g0.relative_time=last_5_minutes"
   gatewaySelector:
     matchLabels:
       gateway: private
