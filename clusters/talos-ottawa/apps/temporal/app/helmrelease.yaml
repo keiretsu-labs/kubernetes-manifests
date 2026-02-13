@@ -1,0 +1,108 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: temporal
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: temporal
+      version: 1.0.0-rc.2
+      sourceRef:
+        kind: HelmRepository
+        name: temporal
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    server:
+      replicaCount: 1
+      config:
+        persistence:
+          default:
+            driver: sql
+            sql:
+              driver: postgres12
+              host: temporal-postgres-rw.temporal.svc.cluster.local
+              port: 5432
+              database: temporal
+              user: temporal
+              existingSecret: temporal-postgres-app
+              secretKey: password
+              maxConns: 20
+              maxIdleConns: 20
+          visibility:
+            driver: sql
+            sql:
+              driver: postgres12
+              host: temporal-postgres-rw.temporal.svc.cluster.local
+              port: 5432
+              database: temporal_visibility
+              user: temporal
+              existingSecret: temporal-postgres-app
+              secretKey: password
+              maxConns: 20
+              maxIdleConns: 20
+      frontend:
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
+      history:
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
+      matching:
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+      worker:
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+    web:
+      replicaCount: 1
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          memory: 128Mi
+    schema:
+      setup:
+        enabled: true
+      update:
+        enabled: true
+    cassandra:
+      enabled: false
+    mysql:
+      enabled: false
+    postgresql:
+      enabled: false
+    prometheus:
+      enabled: false
+    grafana:
+      enabled: false
+    elasticsearch:
+      enabled: false
