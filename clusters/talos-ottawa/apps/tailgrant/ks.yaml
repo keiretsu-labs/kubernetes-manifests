@@ -1,0 +1,31 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: tailgrant
+  namespace: flux-system
+spec:
+  interval: 5m
+  url: https://github.com/rajsinghtech/TailGrant
+  ref:
+    branch: main
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app tailgrant
+  namespace: flux-system
+spec:
+  targetNamespace: tailgrant
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./kustomization
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: tailgrant
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
