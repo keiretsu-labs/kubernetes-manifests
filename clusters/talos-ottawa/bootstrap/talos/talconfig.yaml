@@ -3,7 +3,7 @@
 # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
 talosVersion: v1.12.2
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
-kubernetesVersion: v1.35.0
+kubernetesVersion: v1.35.1
 clusterName: "k8s.killinit.internal"
 endpoint: https://k8s.killinit.internal:6443
 allowSchedulingOnMasters: true
