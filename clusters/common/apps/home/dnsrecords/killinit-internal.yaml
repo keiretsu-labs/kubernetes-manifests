@@ -1,0 +1,31 @@
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: killinit-internal
+spec:
+  endpoints:
+    - dnsName: k8s.killinit.internal
+      recordType: A
+      targets:
+        - 192.168.169.25
+    - dnsName: rei.killinit.internal
+      recordType: A
+      targets:
+        - 192.168.169.118
+    - dnsName: asuka.killinit.internal
+      recordType: A
+      targets:
+        - 192.168.169.117
+    - dnsName: kaji.killinit.internal
+      recordType: A
+      targets:
+        - 192.168.169.119
+    - dnsName: nagato.killinit.internal
+      recordType: A
+      targets:
+        - 192.168.169.111
+    - dnsName: jetkvm.killinit.internal
+      recordType: A
+      targets:
+        - 192.168.169.69

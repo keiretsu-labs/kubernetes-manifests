@@ -71,14 +71,20 @@ spec:
     extraArgs:
       - --ignore-ingress-tls-spec
       - --gateway-label-filter=external-dns==private
+      - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
+      - --crd-source-kind=DNSEndpoint
     policy: sync
     sources:
+      - crd
       - gateway-httproute
-      - gateway-tlsroute 
+      - gateway-tlsroute
       - gateway-tcproute
       - gateway-udproute
       - service
-    domainFilters: 
+    domainFilters:
       - ${CLUSTER_DOMAIN}
+      - killinit.internal
+      - stpetersburg.internal
+      - robbinsdale.internal
     txtOwnerId: ${LOCATION}-${CLUSTER_DOMAIN//./-}
     txtPrefix: k8s.${LOCATION}.
