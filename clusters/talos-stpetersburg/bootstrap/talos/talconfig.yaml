@@ -66,6 +66,7 @@ patches:
   - "@./patches/global/udev.yaml"
   - "@./patches/global/sysctls.yaml"
   - "@./patches/global/nvidia.yaml"
+  - "@./patches/global/machine-logging.yaml"
 
 # Control plane nodes config
 controlPlane:

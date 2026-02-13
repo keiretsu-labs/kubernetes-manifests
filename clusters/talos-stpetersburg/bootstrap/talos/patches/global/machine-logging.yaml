@@ -1,0 +1,7 @@
+machine:
+  logging:
+    destinations:
+      - endpoint: "tcp://10.73.69.51:5170/"
+        format: "json_lines"
+        extraTags:
+          cluster: stpetersburg
