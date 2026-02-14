@@ -53,7 +53,7 @@ func probeOne(ctx context.Context, target ProbeTarget) ProbeResult {
 		result.Error = err.Error()
 		return result
 	}
-	conn.Close()
+	_ = conn.Close()
 	result.Reachable = true
 	return result
 }
