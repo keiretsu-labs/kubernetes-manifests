@@ -1,0 +1,36 @@
+name: Swarm Test
+
+on:
+  pull_request:
+    paths:
+      - "swarm/**"
+  push:
+    branches: ["main"]
+    paths:
+      - "swarm/**"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: swarm/go.mod
+
+      - name: Vet
+        working-directory: swarm
+        run: go vet ./...
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          working-directory: swarm
+
+      - name: Test
+        working-directory: swarm
+        run: go test -race -coverprofile=coverage.out ./...

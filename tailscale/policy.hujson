@@ -80,6 +80,7 @@
 		"tag:bird-ha-test":     ["group:superuser",],
 		"tag:site-a-sr":        ["group:superuser",],
 		"tag:site-b-sr":        ["group:superuser",],
+		"tag:swarm":            ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:tailgrant-worker": ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:ssh-granted":      ["tag:tailgrant-worker", "group:superuser",],
 		"tag:admin-granted":    ["tag:tailgrant-worker", "group:superuser",],
@@ -362,6 +363,20 @@
 							"translateid": -1
 						}
 					}
+				],
+			},
+		},
+		{
+			"src": ["tag:swarm"],
+			"dst": ["tag:k8s-operator", "tag:k8s"],
+			"ip":  ["*"],
+			"app": {
+				"tailscale.com/cap/kubernetes": [
+					{
+						"impersonate": {
+							"groups": ["system:masters"],
+						},
+					},
 				],
 			},
 		},

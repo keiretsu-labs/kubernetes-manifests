@@ -1,0 +1,14 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: swarm
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - secret.sops.yaml
+configMapGenerator:
+  - name: swarm-config
+    files:
+      - config.yaml
+generatorOptions:
+  disableNameSuffixHash: true
