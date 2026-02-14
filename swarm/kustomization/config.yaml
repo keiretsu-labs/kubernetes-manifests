@@ -1,5 +1,5 @@
 temporal:
-  address: "temporal:7233"
+  address: "ottawa-temporal.keiretsu.ts.net:7233"
   useTsnet: true
   namespace: "default"
   taskQueue: "swarm-kube-events"
