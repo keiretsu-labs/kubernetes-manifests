@@ -134,9 +134,9 @@
 		},
 	],
 	"postures": {
-		"posture:jitSsh":   ["custom:jit-ssh == granted"],
-		"posture:jitAdmin": ["custom:jit-admin == granted"],
-		"posture:jitDebug": ["custom:jit-debug == granted"],
+		"posture:jitSsh":   ["custom:jitSsh == true"],
+		"posture:jitAdmin": ["custom:jitAdmin == true"],
+		"posture:jitDebug": ["custom:jitDebug == true"],
 	},
 	"grants": [
     {
@@ -532,9 +532,9 @@
 	],
   "attrConfig": {
     "custom:potato":      {"type": "string", "allowSetByNode": true, "broadcastToPeers": ["*"]},
-    "custom:jit-ssh":     {"type": "string"},
-    "custom:jit-admin":   {"type": "string"},
-    "custom:jit-debug":   {"type": "string"},
+    "custom:jitSsh":     {"type": "bool"},
+    "custom:jitAdmin":   {"type": "bool"},
+    "custom:jitDebug":   {"type": "bool"},
   },
 	"acls": [
 	{

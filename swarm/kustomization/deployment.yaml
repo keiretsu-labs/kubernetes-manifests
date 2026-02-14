@@ -28,6 +28,12 @@ spec:
           image: oci.killinit.cc/swarm/swarm-kube-events:latest
           imagePullPolicy: Always
           command: ["/usr/local/bin/swarm-kube-events"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
           env:
             - name: CONFIG_PATH
               value: /etc/swarm/config.yaml
