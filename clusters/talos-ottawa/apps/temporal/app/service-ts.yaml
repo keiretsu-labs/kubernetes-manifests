@@ -22,3 +22,27 @@ spec:
       port: 7243
       targetPort: 7243
       protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: temporal-frontend-global-ts
+  annotations:
+    tailscale.com/hostname: temporal
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app.kubernetes.io/name: temporal
+    app.kubernetes.io/component: frontend
+  ports:
+    - name: grpc
+      port: 7233
+      targetPort: 7233
+      protocol: TCP
+    - name: http
+      port: 7243
+      targetPort: 7243
+      protocol: TCP
