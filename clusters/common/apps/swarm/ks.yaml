@@ -9,8 +9,6 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: temporal
   path: ./swarm/kustomization
   prune: true
   sourceRef:
