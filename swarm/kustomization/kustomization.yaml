@@ -6,6 +6,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - httproute.yaml
+  - pull-secret.yaml
   - secret.sops.yaml
 configMapGenerator:
   - name: swarm-config
