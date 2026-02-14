@@ -11,6 +11,20 @@ type Config struct {
 	Temporal  TemporalConfig  `yaml:"temporal"`
 	Tailscale TailscaleConfig `yaml:"tailscale"`
 	Clusters  []ClusterConfig `yaml:"clusters"`
+	Lifecycle LifecycleConfig `yaml:"lifecycle"`
+}
+
+type LifecycleConfig struct {
+	CleanupTags      []string      `yaml:"cleanupTags"`
+	InactiveDays     int           `yaml:"inactiveDays"`
+	DryRun           bool          `yaml:"dryRun"`
+	ProbeTargets     []ProbeTarget `yaml:"probeTargets"`
+	ProbeDynamicTags []string      `yaml:"probeDynamicTags"`
+}
+
+type ProbeTarget struct {
+	Name    string `yaml:"name"`
+	Address string `yaml:"address"`
 }
 
 type TemporalConfig struct {
@@ -54,7 +68,10 @@ func applyDefaults(cfg *Config) {
 		cfg.Temporal.Namespace = "default"
 	}
 	if cfg.Temporal.TaskQueue == "" {
-		cfg.Temporal.TaskQueue = "swarm-kube-events"
+		cfg.Temporal.TaskQueue = "swarm"
+	}
+	if cfg.Lifecycle.InactiveDays == 0 {
+		cfg.Lifecycle.InactiveDays = 30
 	}
 }
 

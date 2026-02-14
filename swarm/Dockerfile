@@ -9,10 +9,10 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -o /out/swarm-kube-events ./cmd/swarm-kube-events
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -o /out/swarm ./cmd/swarm
 
 FROM gcr.io/distroless/static-debian12:nonroot
 
-COPY --from=builder /out/swarm-kube-events /usr/local/bin/swarm-kube-events
+COPY --from=builder /out/swarm /usr/local/bin/swarm
 
 USER nonroot:nonroot

@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swarm</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%236c8cff'/><path d='M16 4l10 5.5v11L16 26 6 20.5v-11L16 4z' fill='%230a0c10' opacity='.85'/><path d='M16 6.5l8 4.4v8.8L16 24l-8-4.3v-8.8L16 6.5z' fill='none' stroke='%236c8cff' stroke-width='1'/><circle cx='16' cy='15.5' r='2' fill='%236c8cff'/><circle cx='11' cy='12.5' r='1.2' fill='%236c8cff' opacity='.5'/><circle cx='21' cy='12.5' r='1.2' fill='%236c8cff' opacity='.5'/><circle cx='11' cy='18.5' r='1.2' fill='%236c8cff' opacity='.5'/><circle cx='21' cy='18.5' r='1.2' fill='%236c8cff' opacity='.5'/><line x1='13.5' y1='14' x2='11.8' y2='13.2' stroke='%236c8cff' stroke-width='.7' opacity='.4'/><line x1='18.5' y1='14' x2='20.2' y2='13.2' stroke='%236c8cff' stroke-width='.7' opacity='.4'/><line x1='13.5' y1='17' x2='11.8' y2='17.8' stroke='%236c8cff' stroke-width='.7' opacity='.4'/><line x1='18.5' y1='17' x2='20.2' y2='17.8' stroke='%236c8cff' stroke-width='.7' opacity='.4'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10;
+  --surface: #13161d;
+  --surface-raised: #1a1e28;
+  --border: #232836;
+  --border-hover: #353b4d;
+  --text: #e2e5f0;
+  --text-secondary: #9096ab;
+  --text-dim: #5c6278;
+  --accent: #6c8cff;
+  --accent-glow: rgba(108,140,255,0.15);
+  --accent-hover: #8aa4ff;
+  --green: #34d399;
+  --green-dim: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.12);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.12);
+  --orange: #fb923c;
+  --orange-dim: rgba(251,146,60,0.12);
+  --font: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'IBM Plex Mono', 'SF Mono', monospace;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo svg { width: 20px; height: 20px; }
+
+.header-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.header-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-glow);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.status-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+
+.status-badge.degraded .dot { background: var(--yellow); }
+.status-badge.critical .dot { background: var(--red); }
+
+/* Section headers */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.section-label .count {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: var(--surface);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* Cluster overview cards */
+.cluster-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.cluster-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.cluster-card:hover { border-color: var(--border-hover); }
+
+.cluster-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+}
+
+.cluster-card.healthy::before { background: var(--green); }
+.cluster-card.degraded::before { background: var(--yellow); }
+.cluster-card.critical::before { background: var(--red); }
+
+.cluster-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.cluster-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.cluster-card-loc {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.cluster-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--mono);
+  letter-spacing: -0.02em;
+}
+
+.stat-value.ok { color: var(--green); }
+.stat-value.warn { color: var(--yellow); }
+.stat-value.err { color: var(--red); }
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.badge-healthy { background: var(--green-dim); color: var(--green); }
+.badge-healthy::before { background: var(--green); animation: pulse 2s infinite; }
+.badge-degraded { background: var(--yellow-dim); color: var(--yellow); }
+.badge-degraded::before { background: var(--yellow); }
+.badge-critical { background: var(--red-dim); color: var(--red); }
+.badge-critical::before { background: var(--red); animation: pulse 1.5s infinite; }
+.badge-running { background: var(--green-dim); color: var(--green); }
+.badge-running::before { background: var(--green); animation: pulse 2s infinite; }
+.badge-stopped { background: rgba(92,98,120,0.15); color: var(--text-dim); }
+.badge-stopped::before { background: var(--text-dim); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Alerts section */
+.alerts-section { margin-bottom: 32px; }
+
+.alert-filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.filter-btn {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-btn:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+.filter-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alert-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.5fr) auto auto;
+  gap: 14px;
+  align-items: center;
+  transition: border-color 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.alert-row:hover { border-color: var(--border-hover); }
+
+.alert-row::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+}
+
+.alert-row.sev-error::before { background: var(--red); }
+.alert-row.sev-warning::before { background: var(--yellow); }
+
+.alert-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.alert-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alert-msg {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alert-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.alert-chip {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--mono);
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.chip-cluster { background: var(--accent-glow); color: var(--accent); }
+.chip-ns { background: var(--surface-raised); color: var(--text-secondary); border: 1px solid var(--border); }
+
+.alert-detector {
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text-dim);
+}
+
+.alert-source {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.alert-timing {
+  text-align: right;
+  min-width: 80px;
+}
+
+.alert-count {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--mono);
+}
+
+.alert-count.high { color: var(--red); }
+.alert-count.med { color: var(--yellow); }
+.alert-count.low { color: var(--text-secondary); }
+
+.alert-time {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--text-dim);
+}
+
+.alert-severity {
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sev-tag-error { background: var(--red-dim); color: var(--red); }
+.sev-tag-warning { background: var(--yellow-dim); color: var(--yellow); }
+
+/* Flux section */
+.flux-section { margin-bottom: 32px; }
+
+.flux-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.flux-tab {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flux-tab:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+.flux-tab.active { background: var(--surface-raised); border-color: var(--border-hover); color: var(--text); }
+
+.flux-tab .tab-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.flux-tab.active .tab-count { background: var(--accent-glow); color: var(--accent); border-color: transparent; }
+
+.flux-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flux-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) auto minmax(0, 1.5fr) auto;
+  gap: 14px;
+  align-items: center;
+  font-size: 12.5px;
+  transition: border-color 0.15s;
+}
+
+.flux-row:hover { border-color: var(--border-hover); }
+
+.flux-name {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flux-name span {
+  font-weight: 400;
+  color: var(--text-dim);
+  font-size: 11px;
+  margin-left: 6px;
+}
+
+.flux-kind {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--mono);
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.kind-ks { background: var(--accent-glow); color: var(--accent); }
+.kind-hr { background: var(--orange-dim); color: var(--orange); }
+
+.flux-msg {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flux-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.flux-status::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.flux-ready { background: var(--green-dim); color: var(--green); }
+.flux-ready::before { background: var(--green); }
+.flux-failed { background: var(--red-dim); color: var(--red); }
+.flux-failed::before { background: var(--red); }
+.flux-suspended { background: rgba(92,98,120,0.15); color: var(--text-dim); }
+.flux-suspended::before { background: var(--text-dim); }
+
+/* Workflows section */
+.workflows-section { margin-bottom: 32px; }
+
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.workflow-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: border-color 0.15s;
+}
+
+.workflow-card:hover { border-color: var(--border-hover); }
+
+.workflow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.workflow-id {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workflow-type {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+
+.workflow-meta {
+  display: flex;
+  gap: 10px;
+}
+
+.workflow-stat {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.workflow-stat svg {
+  width: 11px;
+  height: 11px;
+  opacity: 0.5;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-dim);
+  font-size: 13px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.empty-state-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  color: #fff;
+  z-index: 1000;
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.toast-success { background: var(--green); color: #000; }
+.toast-error { background: var(--red); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Loading shimmer */
+.loading-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  height: 90px;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Update timer */
+.update-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+
+.update-bar svg {
+  width: 13px;
+  height: 13px;
+  opacity: 0.5;
+}
+
+.update-live {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.update-live .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .cluster-cards { grid-template-columns: 1fr; }
+  .alert-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .alert-row .alert-main { grid-column: 1 / -1; }
+  .flux-row {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+  .flux-msg { display: none; }
+}
+
+@media (max-width: 600px) {
+  .app { padding: 20px 16px 48px; }
+  .header { flex-direction: column; gap: 12px; align-items: flex-start; }
+  .cluster-cards { grid-template-columns: 1fr; }
+  .alert-row { grid-template-columns: 1fr; }
+  .workflow-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0a0c10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L3 7v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V7l-9-5z"/>
+          <circle cx="12" cy="12" r="2" fill="#0a0c10"/>
+        </svg>
+      </div>
+      <span class="header-title">Swarm</span>
+      <span class="header-tag">Monitor</span>
+    </div>
+    <div class="status-badge" id="system-status">
+      <span class="dot"></span>
+      <span>connecting...</span>
+    </div>
+  </div>
+
+  <div class="update-bar" id="update-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    <span id="last-update">loading...</span>
+    <span class="update-live" id="conn-status"><span class="dot"></span> live</span>
+  </div>
+
+  <!-- Clusters -->
+  <div class="section-label">Clusters <span class="count" id="cluster-count">0</span></div>
+  <div class="cluster-cards" id="cluster-cards">
+    <div class="loading-card"></div>
+    <div class="loading-card"></div>
+    <div class="loading-card"></div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alerts-section">
+    <div class="section-label">Active Alerts <span class="count" id="alert-count">0</span></div>
+    <div class="alert-filters" id="alert-filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="error">Errors</button>
+      <button class="filter-btn" data-filter="warning">Warnings</button>
+      <button class="filter-btn" data-filter="cluster-health">Cluster Health</button>
+      <button class="filter-btn" data-filter="flux-reconciler">Flux</button>
+    </div>
+    <div id="alerts-wrap">
+      <div class="empty-state"><div class="empty-state-icon">&#9711;</div>No active alerts</div>
+    </div>
+  </div>
+
+  <!-- Flux Resources -->
+  <div class="flux-section">
+    <div class="section-label">Flux Resources</div>
+    <div class="flux-tabs" id="flux-tabs"></div>
+    <div id="flux-wrap">
+      <div class="empty-state"><div class="empty-state-icon">&#9711;</div>No flux resources</div>
+    </div>
+  </div>
+
+  <!-- Workflows -->
+  <div class="workflows-section">
+    <div class="section-label">Workflows <span class="count" id="workflow-count">0</span></div>
+    <div class="workflow-grid" id="workflow-grid"></div>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+let currentAlertFilter = 'all';
+let currentFluxCluster = null;
+let alertsData = [];
+let fluxData = {};
+let clustersData = [];
+let workflowsData = [];
+let apiConnected = false;
+
+async function api(path) {
+  const res = await fetch(API + path);
+  if (!res.ok) throw new Error(res.statusText);
+  return res.json();
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function relativeTime(iso) {
+  if (!iso || iso === '0001-01-01T00:00:00Z') return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 0) return 'just now';
+  const secs = Math.floor(diff / 1000);
+  if (secs < 60) return secs + 's ago';
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return mins + 'm ago';
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + 'h ago';
+  return Math.floor(hours / 24) + 'd ago';
+}
+
+function clusterStatus(alerts) {
+  const errs = alerts.filter(a => a.severity === 'error' && !a.resolved).length;
+  const warns = alerts.filter(a => a.severity === 'warning' && !a.resolved).length;
+  if (errs > 0) return 'critical';
+  if (warns > 0) return 'degraded';
+  return 'healthy';
+}
+
+function renderClusters(clusters, alerts) {
+  const container = document.getElementById('cluster-cards');
+  document.getElementById('cluster-count').textContent = clusters.length;
+
+  if (!clusters.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#9711;</div>No clusters connected</div>';
+    return;
+  }
+
+  container.innerHTML = clusters.map(c => {
+    const clusterAlerts = alerts.filter(a => a.cluster === c.name && !a.resolved);
+    const status = clusterStatus(clusterAlerts);
+    const errCount = clusterAlerts.filter(a => a.severity === 'error').length;
+    const warnCount = clusterAlerts.filter(a => a.severity === 'warning').length;
+    const flux = fluxData[c.name] || { ready: 0, failed: 0, suspended: 0, total: 0 };
+
+    return '<div class="cluster-card ' + status + '">' +
+      '<div class="cluster-card-header">' +
+        '<div>' +
+          '<div class="cluster-card-name">' + esc(c.name) + '</div>' +
+          '<div class="cluster-card-loc">' + esc(c.endpoint) + '</div>' +
+        '</div>' +
+        '<span class="badge badge-' + status + '">' + status + '</span>' +
+      '</div>' +
+      '<div class="cluster-card-stats">' +
+        '<div class="stat"><span class="stat-value' + (errCount > 0 ? ' err' : ' ok') + '">' + errCount + '</span><span class="stat-label">Errors</span></div>' +
+        '<div class="stat"><span class="stat-value' + (warnCount > 0 ? ' warn' : ' ok') + '">' + warnCount + '</span><span class="stat-label">Warnings</span></div>' +
+        '<div class="stat"><span class="stat-value ok">' + flux.ready + '</span><span class="stat-label">Flux Ready</span></div>' +
+        '<div class="stat"><span class="stat-value' + (flux.failed > 0 ? ' err' : '') + '">' + flux.failed + '</span><span class="stat-label">Flux Failed</span></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderAlerts(alerts) {
+  const active = alerts.filter(a => !a.resolved);
+  document.getElementById('alert-count').textContent = active.length;
+
+  let filtered = active;
+  if (currentAlertFilter === 'error') filtered = active.filter(a => a.severity === 'error');
+  else if (currentAlertFilter === 'warning') filtered = active.filter(a => a.severity === 'warning');
+  else if (currentAlertFilter === 'cluster-health') filtered = active.filter(a => a.source === 'cluster-health');
+  else if (currentAlertFilter === 'flux-reconciler') filtered = active.filter(a => a.source === 'flux-reconciler');
+
+  const wrap = document.getElementById('alerts-wrap');
+  if (!filtered.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#9711;</div>No ' +
+      (currentAlertFilter !== 'all' ? esc(currentAlertFilter) + ' ' : '') + 'alerts</div>';
+    return;
+  }
+
+  wrap.innerHTML = '<div class="alert-list">' + filtered.map(a => {
+    const countClass = a.count >= 10 ? 'high' : a.count >= 5 ? 'med' : 'low';
+    return '<div class="alert-row sev-' + esc(a.severity) + '">' +
+      '<div class="alert-main">' +
+        '<div class="alert-name">' + esc(a.kind) + '/' + esc(a.name) + '</div>' +
+        '<div class="alert-msg">' + esc(a.message) + '</div>' +
+      '</div>' +
+      '<div class="alert-meta">' +
+        '<span class="alert-chip chip-cluster">' + esc(a.cluster) + '</span>' +
+        '<span class="alert-chip chip-ns">' + esc(a.namespace) + '</span>' +
+      '</div>' +
+      '<div class="alert-detector">' + esc(a.detector) + '<div class="alert-source">' + esc(a.source) + '</div></div>' +
+      '<div class="alert-severity sev-tag-' + esc(a.severity) + '">' + esc(a.severity) + '</div>' +
+      '<div class="alert-timing">' +
+        '<div class="alert-count ' + countClass + '">&times;' + a.count + '</div>' +
+        '<div class="alert-time">' + relativeTime(a.lastSeen) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function renderFluxTabs(data) {
+  const tabs = document.getElementById('flux-tabs');
+  const names = Object.keys(data);
+
+  if (!names.length) {
+    tabs.innerHTML = '';
+    return;
+  }
+
+  if (!currentFluxCluster || !data[currentFluxCluster]) currentFluxCluster = names[0];
+
+  tabs.innerHTML = names.map(n => {
+    const s = data[n];
+    return '<button class="flux-tab' + (n === currentFluxCluster ? ' active' : '') + '" data-cluster="' + esc(n) + '">' +
+      esc(n) + ' <span class="tab-count">' + (s.total || 0) + '</span></button>';
+  }).join('');
+
+  tabs.querySelectorAll('.flux-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentFluxCluster = btn.dataset.cluster;
+      renderFluxTabs(fluxData);
+      renderFluxResources(currentFluxCluster);
+    });
+  });
+
+  renderFluxResources(currentFluxCluster);
+}
+
+function renderFluxResources(cluster) {
+  const wrap = document.getElementById('flux-wrap');
+  const summary = fluxData[cluster];
+
+  if (!summary || !summary.resources || !summary.resources.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#9711;</div>No resources for ' + esc(cluster) + '</div>';
+    return;
+  }
+
+  wrap.innerHTML = '<div class="flux-list">' + summary.resources.map(r => {
+    const kindClass = r.kind === 'Kustomization' ? 'kind-ks' : 'kind-hr';
+    const kindLabel = r.kind === 'Kustomization' ? 'KS' : 'HR';
+    let statusClass = 'flux-ready';
+    let statusLabel = 'Ready';
+    if (r.suspended) { statusClass = 'flux-suspended'; statusLabel = 'Suspended'; }
+    else if (!r.ready) { statusClass = 'flux-failed'; statusLabel = r.reason || 'Failed'; }
+
+    return '<div class="flux-row">' +
+      '<div class="flux-name">' + esc(r.name) + '<span>' + esc(r.namespace) + '</span></div>' +
+      '<span class="flux-kind ' + kindClass + '">' + kindLabel + '</span>' +
+      '<div class="flux-msg">' + esc(r.message || r.revision || '') + '</div>' +
+      '<span class="flux-status ' + statusClass + '">' + statusLabel + '</span>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function renderWorkflows(workflows) {
+  const grid = document.getElementById('workflow-grid');
+  document.getElementById('workflow-count').textContent = workflows.length;
+
+  if (!workflows.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">&#9711;</div>No workflows</div>';
+    return;
+  }
+
+  grid.innerHTML = workflows.map(w => {
+    const statusClass = w.running ? 'running' : 'stopped';
+    return '<div class="workflow-card">' +
+      '<div class="workflow-header">' +
+        '<div>' +
+          '<div class="workflow-id">' + esc(w.id) + '</div>' +
+          '<div class="workflow-type">' + esc(w.type) + '</div>' +
+        '</div>' +
+        '<span class="badge badge-' + statusClass + '">' + statusClass + '</span>' +
+      '</div>' +
+      '<div class="workflow-meta">' +
+        '<span class="workflow-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>' + (w.continues || 0) + ' continues</span>' +
+        '<span class="workflow-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>' + relativeTime(w.startedAt) + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+document.getElementById('alert-filters').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  currentAlertFilter = btn.dataset.filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+  renderAlerts(alertsData);
+});
+
+function updateSystemStatus() {
+  const el = document.getElementById('system-status');
+  const activeAlerts = alertsData.filter(a => !a.resolved);
+  const errs = activeAlerts.filter(a => a.severity === 'error').length;
+  const warns = activeAlerts.filter(a => a.severity === 'warning').length;
+
+  if (errs > 0) {
+    el.className = 'status-badge critical';
+    el.innerHTML = '<span class="dot"></span><span>' + errs + ' error' + (errs > 1 ? 's' : '') + '</span>';
+  } else if (warns > 0) {
+    el.className = 'status-badge degraded';
+    el.innerHTML = '<span class="dot"></span><span>' + warns + ' warning' + (warns > 1 ? 's' : '') + '</span>';
+  } else {
+    el.className = 'status-badge';
+    el.innerHTML = '<span class="dot"></span><span>all clear</span>';
+  }
+}
+
+function updateConnectionStatus() {
+  const el = document.getElementById('conn-status');
+  const ts = document.getElementById('last-update');
+  ts.textContent = 'updated ' + new Date().toLocaleTimeString();
+  if (apiConnected) {
+    el.innerHTML = '<span class="dot"></span> live';
+    el.style.color = '';
+  } else {
+    el.innerHTML = 'mock data';
+    el.style.color = 'var(--yellow)';
+  }
+}
+
+function loadMockData() {
+  const ago = (mins) => new Date(Date.now() - mins * 60000).toISOString();
+
+  clustersData = [
+    { name: 'robbinsdale', endpoint: 'robbinsdale-k8s-operator.keiretsu.ts.net:443' },
+    { name: 'ottawa', endpoint: 'ottawa-k8s-operator.keiretsu.ts.net:443' },
+    { name: 'stpetersburg', endpoint: 'stpetersburg-k8s-operator.keiretsu.ts.net:443' },
+  ];
+
+  alertsData = [
+    { id: 'a1', source: 'cluster-health', detector: 'crash-loop', severity: 'error', cluster: 'robbinsdale', namespace: 'media', name: 'jellyfin-7f4b8c-xk2p', kind: 'Pod', message: 'Back-off restarting failed container', count: 14, firstSeen: ago(45), lastSeen: ago(2), resolved: false },
+    { id: 'a2', source: 'cluster-health', detector: 'oom-killed', severity: 'error', cluster: 'ottawa', namespace: 'media', name: 'radarr-4k-5d8a', kind: 'Pod', message: 'OOMKilled: memory limit 512Mi exceeded', count: 3, firstSeen: ago(20), lastSeen: ago(5), resolved: false },
+    { id: 'a3', source: 'flux-reconciler', detector: 'flux-not-ready', severity: 'warning', cluster: 'robbinsdale', namespace: 'flux-system', name: 'monitoring', kind: 'Kustomization', message: 'Reconciliation failed: HelmRelease not ready', count: 7, firstSeen: ago(60), lastSeen: ago(8), resolved: false },
+    { id: 'a4', source: 'cluster-health', detector: 'image-pull', severity: 'warning', cluster: 'stpetersburg', namespace: 'ai', name: 'ollama-6c9d-p2x', kind: 'Pod', message: 'Failed to pull image: context deadline exceeded', count: 2, firstSeen: ago(15), lastSeen: ago(12), resolved: false },
+    { id: 'a5', source: 'cluster-health', detector: 'stuck-rollout', severity: 'warning', cluster: 'ottawa', namespace: 'media', name: 'sonarr-1080p', kind: 'Deployment', message: 'Deployment does not have minimum availability', count: 1, firstSeen: ago(10), lastSeen: ago(10), resolved: false },
+  ];
+
+  fluxData = {
+    robbinsdale: {
+      ready: 42, failed: 2, suspended: 3, total: 47,
+      resources: [
+        { name: 'cilium', namespace: 'cilium', kind: 'HelmRelease', ready: true, message: 'Helm install succeeded', revision: 'v1.16.1', suspended: false },
+        { name: 'monitoring', namespace: 'monitoring', kind: 'Kustomization', ready: false, reason: 'HealthCheckFailed', message: 'HelmRelease not ready', revision: 'main@sha1:ca759b44', suspended: false },
+        { name: 'cert-manager', namespace: 'cert-manager', kind: 'HelmRelease', ready: true, message: 'Helm upgrade succeeded', revision: 'v1.15.3', suspended: false },
+        { name: 'rook-ceph', namespace: 'rook-ceph', kind: 'Kustomization', ready: true, message: 'Applied revision: main@sha1:f91da620', revision: 'main@sha1:f91da620', suspended: false },
+        { name: 'tailscale', namespace: 'tailscale-system', kind: 'Kustomization', ready: true, message: 'Applied revision: main@sha1:ca759b44', revision: 'main@sha1:ca759b44', suspended: false },
+        { name: 'jellyfin', namespace: 'media', kind: 'HelmRelease', ready: false, reason: 'UpgradeFailed', message: 'Helm upgrade failed: timed out waiting for condition', revision: 'v0.4.1', suspended: false },
+        { name: 'home-assistant', namespace: 'home', kind: 'HelmRelease', ready: true, message: 'Helm install succeeded', revision: 'v2024.12', suspended: false },
+        { name: 'frigate', namespace: 'home', kind: 'Kustomization', ready: true, message: 'Applied revision', suspended: true },
+      ],
+    },
+    ottawa: {
+      ready: 58, failed: 1, suspended: 1, total: 60,
+      resources: [
+        { name: 'cilium', namespace: 'cilium', kind: 'HelmRelease', ready: true, message: 'Helm install succeeded', revision: 'v1.16.1', suspended: false },
+        { name: 'sonarr-1080p', namespace: 'media', kind: 'HelmRelease', ready: false, reason: 'UpgradeFailed', message: 'Upgrade retries exhausted', revision: 'v4.0.8', suspended: false },
+        { name: 'radarr-4k', namespace: 'media', kind: 'HelmRelease', ready: true, message: 'Helm install succeeded', revision: 'v5.9.1', suspended: false },
+        { name: 'prowlarr', namespace: 'media', kind: 'HelmRelease', ready: true, message: 'Helm install succeeded', revision: 'v1.24.3', suspended: false },
+        { name: 'rook-ceph', namespace: 'rook-ceph', kind: 'Kustomization', ready: true, message: 'Applied revision', revision: 'main@sha1:f91da620', suspended: false },
+        { name: 'qbittorrent', namespace: 'media', kind: 'HelmRelease', ready: true, message: 'Helm install succeeded', revision: 'v4.6.7', suspended: true },
+      ],
+    },
+    stpetersburg: {
+      ready: 12, failed: 0, suspended: 0, total: 12,
+      resources: [
+        { name: 'cilium', namespace: 'cilium', kind: 'HelmRelease', ready: true, message: 'Helm install succeeded', revision: 'v1.16.1', suspended: false },
+        { name: 'gpu-operator', namespace: 'gpu-operator', kind: 'HelmRelease', ready: true, message: 'Helm install succeeded', revision: 'v24.9.0', suspended: false },
+        { name: 'ollama', namespace: 'ai', kind: 'Kustomization', ready: true, message: 'Applied revision', revision: 'main@sha1:ca759b44', suspended: false },
+        { name: 'kserve', namespace: 'kserve', kind: 'Kustomization', ready: true, message: 'Applied revision', revision: 'main@sha1:ca759b44', suspended: false },
+      ],
+    },
+  };
+
+  workflowsData = [
+    { id: 'cluster-watch-robbinsdale', type: 'ClusterWatchWorkflow', running: true, continues: 247, startedAt: ago(1440) },
+    { id: 'cluster-watch-ottawa', type: 'ClusterWatchWorkflow', running: true, continues: 251, startedAt: ago(1440) },
+    { id: 'cluster-watch-stpetersburg', type: 'ClusterWatchWorkflow', running: true, continues: 243, startedAt: ago(1440) },
+    { id: 'flux-watch-robbinsdale', type: 'FluxWatchWorkflow', running: true, continues: 89, startedAt: ago(720) },
+    { id: 'flux-watch-ottawa', type: 'FluxWatchWorkflow', running: true, continues: 91, startedAt: ago(720) },
+    { id: 'flux-watch-stpetersburg', type: 'FluxWatchWorkflow', running: true, continues: 87, startedAt: ago(720) },
+    { id: 'swarm-alerts', type: 'AlertsWorkflow', running: true, continues: 42, startedAt: ago(1440) },
+    { id: 'ts-device-cleanup', type: 'DeviceCleanupWorkflow', running: true, continues: 1, startedAt: ago(1440) },
+  ];
+}
+
+async function loadData() {
+  let gotData = false;
+  try {
+    const [alerts, clusters, flux, workflows] = await Promise.all([
+      api('/alerts').catch(() => null),
+      api('/clusters').catch(() => null),
+      api('/flux').catch(() => null),
+      api('/workflows').catch(() => null),
+    ]);
+    if (alerts) { alertsData = alerts; gotData = true; }
+    if (clusters) { clustersData = clusters; gotData = true; }
+    if (flux) { fluxData = flux; gotData = true; }
+    if (workflows) { workflowsData = workflows; gotData = true; }
+  } catch {
+    // API not available
+  }
+
+  apiConnected = gotData;
+
+  renderClusters(clustersData, alertsData);
+  renderAlerts(alertsData);
+  renderFluxTabs(fluxData);
+  renderWorkflows(workflowsData);
+  updateSystemStatus();
+  updateConnectionStatus();
+}
+
+// Init
+loadMockData();
+loadData();
+setInterval(loadData, 5000);
+</script>
+</body>
+</html>

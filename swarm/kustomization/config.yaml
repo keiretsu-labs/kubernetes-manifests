@@ -2,9 +2,9 @@ temporal:
   address: "ottawa-temporal.keiretsu.ts.net:7233"
   useTsnet: true
   namespace: "default"
-  taskQueue: "swarm-kube-events"
+  taskQueue: "swarm"
 tailscale:
-  hostname: "${LOCATION}-swarm-kube"
+  hostname: "${LOCATION}-swarm"
   tags:
     - "tag:swarm"
 clusters:
@@ -14,3 +14,15 @@ clusters:
     endpoint: "ottawa-k8s-operator.keiretsu.ts.net:443"
   - name: stpetersburg
     endpoint: "stpetersburg-k8s-operator.keiretsu.ts.net:443"
+lifecycle:
+  cleanupTags:
+    - "tag:k8s"
+  inactiveDays: 30
+  dryRun: true
+  probeTargets:
+    - name: robbinsdale
+      address: "robbinsdale-k8s-operator.keiretsu.ts.net:443"
+    - name: ottawa
+      address: "ottawa-k8s-operator.keiretsu.ts.net:443"
+    - name: stpetersburg
+      address: "stpetersburg-k8s-operator.keiretsu.ts.net:443"
