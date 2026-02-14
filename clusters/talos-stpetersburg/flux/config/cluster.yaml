@@ -15,7 +15,7 @@ spec:
     # include kubernetes directory
     !/clusters/template
     !/clusters/common
-    !/clusters/swarm
+    !/swarm
     !/clusters/talos-stpetersburg
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
