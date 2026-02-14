@@ -5,5 +5,5 @@ resources:
   # - ts-pinger.yaml
   # - ts-digger.yaml
   # - ts-iperf-client.yaml
-  - ts-iperf-server.yaml
+  # - ts-iperf-server.yaml
   - ts-coredns.yaml
