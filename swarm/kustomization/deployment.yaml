@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swarm-kube-events
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: swarm-kube-events
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: swarm-kube-events
+    spec:
+      securityContext:
+        fsGroup: 65532
+        runAsUser: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+      imagePullSecrets:
+        - name: zot-pull-secret
+      containers:
+        - name: swarm-kube-events
+          image: oci.killinit.cc/swarm/swarm-kube-events:latest
+          imagePullPolicy: Always
+          command: ["/usr/local/bin/swarm-kube-events"]
+          env:
+            - name: CONFIG_PATH
+              value: /etc/swarm/config.yaml
+            - name: TS_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: swarm-secrets
+                  key: TS_OAUTH_CLIENT_ID
+            - name: TS_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: swarm-secrets
+                  key: TS_OAUTH_CLIENT_SECRET
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/swarm
+              readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: config
+          configMap:
+            name: swarm-config
