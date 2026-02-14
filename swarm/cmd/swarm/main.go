@@ -20,6 +20,7 @@ import (
 	"github.com/keiretsu-labs/kubernetes-manifests/swarm/internal/platform"
 	"github.com/keiretsu-labs/kubernetes-manifests/swarm/internal/tslifecycle"
 	"github.com/keiretsu-labs/kubernetes-manifests/swarm/ui"
+	enumspb "go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 	"k8s.io/client-go/kubernetes"
@@ -94,14 +95,15 @@ func main() {
 	for _, cluster := range cfg.Clusters {
 		workflowID := fmt.Sprintf("cluster-watch-%s", cluster.Name)
 		_, err := tc.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
-			ID:        workflowID,
-			TaskQueue: cfg.Temporal.TaskQueue,
+			ID:                    workflowID,
+			TaskQueue:             cfg.Temporal.TaskQueue,
+			WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_TERMINATE_EXISTING,
 		}, kubevents.ClusterWatchWorkflow, kubevents.ClusterWatchInput{
 			Name:     cluster.Name,
 			Endpoint: cluster.Endpoint,
 		})
 		if err != nil {
-			slog.Warn("workflow may already be running", "workflow", workflowID, "error", err)
+			slog.Warn("workflow start failed", "workflow", workflowID, "error", err)
 		} else {
 			slog.Info("started workflow", "workflow", workflowID)
 		}
@@ -114,14 +116,15 @@ func main() {
 	for _, cluster := range cfg.Clusters {
 		workflowID := fmt.Sprintf("flux-watch-%s", cluster.Name)
 		_, err := tc.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
-			ID:        workflowID,
-			TaskQueue: cfg.Temporal.TaskQueue,
+			ID:                    workflowID,
+			TaskQueue:             cfg.Temporal.TaskQueue,
+			WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_TERMINATE_EXISTING,
 		}, fluxmon.FluxWatchWorkflow, fluxmon.FluxWatchInput{
 			Name:     cluster.Name,
 			Endpoint: cluster.Endpoint,
 		})
 		if err != nil {
-			slog.Warn("workflow may already be running", "workflow", workflowID, "error", err)
+			slog.Warn("workflow start failed", "workflow", workflowID, "error", err)
 		} else {
 			slog.Info("started workflow", "workflow", workflowID)
 		}
@@ -129,11 +132,12 @@ func main() {
 
 	// Start alerts aggregation workflow
 	_, err = tc.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
-		ID:        alerts.WorkflowID,
-		TaskQueue: cfg.Temporal.TaskQueue,
+		ID:                    alerts.WorkflowID,
+		TaskQueue:             cfg.Temporal.TaskQueue,
+		WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_TERMINATE_EXISTING,
 	}, alerts.AlertsWorkflow, alerts.AlertsInput{})
 	if err != nil {
-		slog.Warn("alerts workflow may already be running", "error", err)
+		slog.Warn("alerts workflow start failed", "error", err)
 	} else {
 		slog.Info("started alerts workflow")
 	}
