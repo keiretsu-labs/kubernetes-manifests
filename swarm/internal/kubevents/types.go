@@ -7,8 +7,8 @@ const (
 	SignalEvents          = "events"
 	SignalResourceVersion = "resource-version"
 	QueryRecentEvents     = "recent-events"
-	MaxBufferSize         = 1000
-	ContinueAsNewInterval = 5 * time.Minute
+	MaxBufferSize         = 200
+	ContinueAsNewInterval = 1 * time.Minute
 )
 
 type ClusterWatchInput struct {

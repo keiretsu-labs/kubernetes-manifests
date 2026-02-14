@@ -50,7 +50,7 @@ func watchOnce(ctx context.Context, tc client.Client, cs *kubernetes.Clientset, 
 	logger.Info("watch started", "resourceVersion", rv)
 
 	var batch []kubevents.KubeEvent
-	flushTicker := time.NewTicker(2 * time.Second)
+	flushTicker := time.NewTicker(5 * time.Second)
 	defer flushTicker.Stop()
 
 	flush := func() {
