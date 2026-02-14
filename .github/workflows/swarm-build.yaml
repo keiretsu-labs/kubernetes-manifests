@@ -17,7 +17,7 @@ permissions:
 
 env:
   REGISTRY: oci.killinit.cc
-  IMAGE: swarm/swarm-kube-events
+  IMAGE: swarm/swarm
 
 jobs:
   build:
@@ -49,8 +49,8 @@ jobs:
           file: swarm/Dockerfile
           platforms: linux/amd64
           outputs: type=docker,dest=amd64.tar
-          cache-from: type=gha,scope=swarm-kube-events-amd64
-          cache-to: type=gha,scope=swarm-kube-events-amd64,mode=max
+          cache-from: type=gha,scope=swarm-amd64
+          cache-to: type=gha,scope=swarm-amd64,mode=max
           provenance: false
 
       - name: Build arm64
@@ -60,8 +60,8 @@ jobs:
           file: swarm/Dockerfile
           platforms: linux/arm64
           outputs: type=docker,dest=arm64.tar
-          cache-from: type=gha,scope=swarm-kube-events-arm64
-          cache-to: type=gha,scope=swarm-kube-events-arm64,mode=max
+          cache-from: type=gha,scope=swarm-arm64
+          cache-to: type=gha,scope=swarm-arm64,mode=max
           provenance: false
 
       - name: Push per-arch images with skopeo
