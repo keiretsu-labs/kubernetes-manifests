@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: swarm-kube-events
+  name: swarm
 spec:
   replicas: 1
   revisionHistoryLimit: 3
@@ -10,11 +10,11 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: swarm-kube-events
+      app.kubernetes.io/name: swarm
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: swarm-kube-events
+        app.kubernetes.io/name: swarm
     spec:
       securityContext:
         fsGroup: 65532
@@ -24,10 +24,10 @@ spec:
       imagePullSecrets:
         - name: zot-pull-secret
       containers:
-        - name: swarm-kube-events
-          image: oci.killinit.cc/swarm/swarm-kube-events:latest
+        - name: swarm
+          image: oci.killinit.cc/swarm/swarm:latest
           imagePullPolicy: Always
-          command: ["/usr/local/bin/swarm-kube-events"]
+          command: ["/usr/local/bin/swarm"]
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -53,6 +53,17 @@ spec:
               memory: 128Mi
             limits:
               memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            periodSeconds: 30
           volumeMounts:
             - name: config
               mountPath: /etc/swarm

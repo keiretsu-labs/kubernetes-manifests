@@ -3,7 +3,7 @@ package kubevents
 import "time"
 
 const (
-	TaskQueue             = "swarm-kube-events"
+	TaskQueue             = "swarm"
 	SignalEvents          = "events"
 	SignalResourceVersion = "resource-version"
 	QueryRecentEvents     = "recent-events"
