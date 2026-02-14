@@ -4,7 +4,7 @@ temporal:
   namespace: "default"
   taskQueue: "swarm-kube-events"
 tailscale:
-  hostname: "swarm-kube"
+  hostname: "${LOCATION}-swarm-kube"
   tags:
     - "tag:swarm"
 clusters:
