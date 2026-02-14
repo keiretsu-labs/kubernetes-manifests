@@ -25,7 +25,7 @@ spec:
         - name: zot-pull-secret
       containers:
         - name: swarm
-          image: oci.killinit.cc/swarm/swarm:latest
+          image: oci.${CLUSTER_DOMAIN}/swarm/swarm:latest
           imagePullPolicy: Always
           command: ["/usr/local/bin/swarm"]
           securityContext:
