@@ -154,11 +154,8 @@ func main() {
 		}
 	}()
 
-	// Health check on regular network for kubelet probes
-	healthSrv := &http.Server{Addr: ":8080", Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"status":"ok"}`))
-	})}
+	// Serve full API on regular network for gateway routing and kubelet probes
+	healthSrv := &http.Server{Addr: ":8080", Handler: apiHandler.Mux()}
 	go func() {
 		if err := healthSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("health server error", "error", err)

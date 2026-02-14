@@ -4,6 +4,8 @@ kind: Kustomization
 namespace: swarm
 resources:
   - deployment.yaml
+  - service.yaml
+  - httproute.yaml
   - secret.sops.yaml
 configMapGenerator:
   - name: swarm-config
