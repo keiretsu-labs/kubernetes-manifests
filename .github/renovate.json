@@ -8,6 +8,7 @@
   ],
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
+  "platformAutomerge": false,
   "prConcurrentLimit": 0,
   "assignees": [],
   "reviewers": [],
@@ -23,14 +24,24 @@
   },
   "packageRules": [
     {
-      "description": "Auto merge GitHub Actions minor/patch",
+      "description": "Auto merge GitHub Actions updates",
       "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },
     {
       "description": "Auto merge terraform updates",
       "matchManagers": ["terraform"],
+      "automerge": true
+    },
+    {
+      "description": "Auto merge Go module updates",
+      "matchManagers": ["gomod"],
+      "automerge": true
+    },
+    {
+      "description": "Auto merge Docker tags in CI",
+      "matchManagers": ["dockerfile", "docker-compose"],
+      "matchPaths": [".github/**"],
       "automerge": true
     },
     {
