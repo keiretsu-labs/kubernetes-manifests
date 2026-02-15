@@ -10,6 +10,8 @@ const (
 	QuerySummary          = "summary"
 	MaxStatusBuffer       = 2000
 	ContinueAsNewInterval = 10 * time.Minute
+	PollInterval          = 30 * time.Second
+	MaxPollIterations     = 20 // ~10min at 30s intervals before ContinueAsNew
 )
 
 type FluxWatchInput struct {
@@ -47,4 +49,12 @@ type ClusterSummary struct {
 
 func ResourceKey(s FluxResourceStatus) string {
 	return s.Kind + "/" + s.Namespace + "/" + s.Name
+}
+
+type PollFluxInput struct {
+	ClusterName string `json:"clusterName"`
+}
+
+type PollFluxResult struct {
+	Resources []FluxResourceStatus `json:"resources"`
 }

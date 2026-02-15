@@ -8,7 +8,10 @@ const (
 	SignalResourceVersion = "resource-version"
 	QueryRecentEvents     = "recent-events"
 	MaxBufferSize         = 200
-	ContinueAsNewInterval = 1 * time.Minute
+	ContinueAsNewInterval = 5 * time.Minute
+	PollInterval          = 10 * time.Second
+	PollWatchTimeout      = int64(8) // seconds for K8s watch per poll
+	MaxPollIterations     = 30       // ~5min at 10s intervals before ContinueAsNew
 )
 
 type ClusterWatchInput struct {
@@ -35,8 +38,12 @@ type EventBatch struct {
 	Events []KubeEvent `json:"events"`
 }
 
-type WatchClusterEventsInput struct {
-	ClusterName     string
-	Endpoint        string
-	ResourceVersion string
+type PollEventsInput struct {
+	ClusterName     string `json:"clusterName"`
+	ResourceVersion string `json:"resourceVersion"`
+}
+
+type PollEventsResult struct {
+	Events          []KubeEvent `json:"events"`
+	ResourceVersion string      `json:"resourceVersion"`
 }

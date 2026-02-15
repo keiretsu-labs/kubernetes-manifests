@@ -23,6 +23,7 @@ import (
 	enumspb "go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -62,6 +63,7 @@ func main() {
 	defer tc.Close()
 
 	kubeClients := make(map[string]*kubernetes.Clientset)
+	dynamicClients := make(map[string]dynamic.Interface)
 	for _, cluster := range cfg.Clusters {
 		cs, err := platform.NewKubeClient(srv, cluster.Endpoint)
 		if err != nil {
@@ -69,7 +71,15 @@ func main() {
 			os.Exit(1)
 		}
 		kubeClients[cluster.Name] = cs
-		slog.Info("kube client created", "cluster", cluster.Name, "endpoint", cluster.Endpoint)
+
+		dc, err := platform.NewDynamicKubeClient(srv, cluster.Endpoint)
+		if err != nil {
+			slog.Error("dynamic kube client failed", "cluster", cluster.Name, "error", err)
+			os.Exit(1)
+		}
+		dynamicClients[cluster.Name] = dc
+
+		slog.Info("kube clients created", "cluster", cluster.Name, "endpoint", cluster.Endpoint)
 	}
 
 	w := worker.New(tc, cfg.Temporal.TaskQueue, worker.Options{})
@@ -77,10 +87,13 @@ func main() {
 	// Register kube-events workflows and activities
 	kubeActivities := &kubevents.Activities{KubeClients: kubeClients}
 	w.RegisterWorkflow(kubevents.ClusterWatchWorkflow)
+	w.RegisterWorkflow(kubevents.ClusterWatchWorkflowWithState)
 	w.RegisterActivity(kubeActivities)
 
-	// Register flux monitoring workflow
+	// Register flux monitoring workflow and activities
+	fluxActivities := &fluxmon.FluxActivities{DynamicClients: dynamicClients}
 	w.RegisterWorkflow(fluxmon.FluxWatchWorkflow)
+	w.RegisterActivity(fluxActivities)
 
 	// Register alerts workflow
 	w.RegisterWorkflow(alerts.AlertsWorkflow)
@@ -91,12 +104,12 @@ func main() {
 	w.RegisterWorkflow(tslifecycle.ConnectivityProbeWorkflow)
 	w.RegisterActivity(tsActivities)
 
-	// Start cluster watch workflows (kube events + health detection)
+	// Start cluster watch workflows — activities now poll K8s events internally
 	for _, cluster := range cfg.Clusters {
 		workflowID := fmt.Sprintf("cluster-watch-%s", cluster.Name)
 		_, err := tc.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
-			ID:                    workflowID,
-			TaskQueue:             cfg.Temporal.TaskQueue,
+			ID:                       workflowID,
+			TaskQueue:                cfg.Temporal.TaskQueue,
 			WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_TERMINATE_EXISTING,
 		}, kubevents.ClusterWatchWorkflow, kubevents.ClusterWatchInput{
 			Name:     cluster.Name,
@@ -107,17 +120,14 @@ func main() {
 		} else {
 			slog.Info("started workflow", "workflow", workflowID)
 		}
-
-		cs := kubeClients[cluster.Name]
-		go platform.WatchAndSignal(ctx, tc, cs, cluster.Name, workflowID)
 	}
 
-	// Start flux watch workflows
+	// Start flux watch workflows — activities now poll Flux resources internally
 	for _, cluster := range cfg.Clusters {
 		workflowID := fmt.Sprintf("flux-watch-%s", cluster.Name)
 		_, err := tc.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
-			ID:                    workflowID,
-			TaskQueue:             cfg.Temporal.TaskQueue,
+			ID:                       workflowID,
+			TaskQueue:                cfg.Temporal.TaskQueue,
 			WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_TERMINATE_EXISTING,
 		}, fluxmon.FluxWatchWorkflow, fluxmon.FluxWatchInput{
 			Name:     cluster.Name,
@@ -132,8 +142,8 @@ func main() {
 
 	// Start alerts aggregation workflow
 	_, err = tc.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
-		ID:                    alerts.WorkflowID,
-		TaskQueue:             cfg.Temporal.TaskQueue,
+		ID:                       alerts.WorkflowID,
+		TaskQueue:                cfg.Temporal.TaskQueue,
 		WorkflowIDConflictPolicy: enumspb.WORKFLOW_ID_CONFLICT_POLICY_TERMINATE_EXISTING,
 	}, alerts.AlertsWorkflow, alerts.AlertsInput{})
 	if err != nil {

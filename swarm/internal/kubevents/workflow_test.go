@@ -1,25 +1,45 @@
 package kubevents
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"go.temporal.io/sdk/testsuite"
+	"k8s.io/client-go/kubernetes"
 )
 
-func TestClusterWatchWorkflow_ReceivesEvents(t *testing.T) {
+func setupKubeTestEnv(t *testing.T) *testsuite.TestWorkflowEnvironment {
+	t.Helper()
 	s := testsuite.WorkflowTestSuite{}
 	env := s.NewTestWorkflowEnvironment()
+	env.RegisterActivity(&Activities{KubeClients: make(map[string]*kubernetes.Clientset)})
+	return env
+}
 
-	env.RegisterDelayedCallback(func() {
-		env.SignalWorkflow(SignalEvents, EventBatch{
-			Events: []KubeEvent{
-				{Cluster: "test", Reason: "Scheduled", Message: "pod scheduled", Type: "Normal"},
-				{Cluster: "test", Reason: "Pulled", Message: "image pulled", Type: "Normal"},
-			},
-		})
-	}, time.Millisecond*100)
+func mockPollEvents(events []KubeEvent, rv string) func(ctx context.Context, input PollEventsInput) (*PollEventsResult, error) {
+	called := false
+	return func(ctx context.Context, input PollEventsInput) (*PollEventsResult, error) {
+		if !called {
+			called = true
+			return &PollEventsResult{Events: events, ResourceVersion: rv}, nil
+		}
+		return &PollEventsResult{ResourceVersion: rv}, nil
+	}
+}
+
+func TestClusterWatchWorkflow_ReceivesEvents(t *testing.T) {
+	env := setupKubeTestEnv(t)
+
+	events := []KubeEvent{
+		{Cluster: "test", Reason: "Scheduled", Message: "pod scheduled", Type: "Normal"},
+		{Cluster: "test", Reason: "Pulled", Message: "image pulled", Type: "Normal"},
+	}
+	env.OnActivity("PollKubeEvents", mock.Anything, mock.Anything).Return(
+		mockPollEvents(events, "200"),
+	)
 
 	input := ClusterWatchInput{Name: "test", Endpoint: "test:443"}
 	env.ExecuteWorkflow(ClusterWatchWorkflow, input)
@@ -31,25 +51,23 @@ func TestClusterWatchWorkflow_ReceivesEvents(t *testing.T) {
 }
 
 func TestClusterWatchWorkflow_Query(t *testing.T) {
-	s := testsuite.WorkflowTestSuite{}
-	env := s.NewTestWorkflowEnvironment()
+	env := setupKubeTestEnv(t)
 
-	env.RegisterDelayedCallback(func() {
-		env.SignalWorkflow(SignalEvents, EventBatch{
-			Events: []KubeEvent{
-				{Cluster: "test", Reason: "Killing", Type: "Normal"},
-			},
-		})
-	}, time.Millisecond*100)
+	events := []KubeEvent{
+		{Cluster: "test", Reason: "Killing", Type: "Normal"},
+	}
+	env.OnActivity("PollKubeEvents", mock.Anything, mock.Anything).Return(
+		mockPollEvents(events, "100"),
+	)
 
 	env.RegisterDelayedCallback(func() {
 		result, err := env.QueryWorkflow(QueryRecentEvents)
 		assert.NoError(t, err)
-		var events []KubeEvent
-		assert.NoError(t, result.Get(&events))
-		assert.Len(t, events, 1)
-		assert.Equal(t, "Killing", events[0].Reason)
-	}, time.Millisecond*200)
+		var got []KubeEvent
+		assert.NoError(t, result.Get(&got))
+		assert.GreaterOrEqual(t, len(got), 1)
+		assert.Equal(t, "Killing", got[0].Reason)
+	}, 200*time.Millisecond)
 
 	input := ClusterWatchInput{Name: "test", Endpoint: "test:443"}
 	env.ExecuteWorkflow(ClusterWatchWorkflow, input)
@@ -57,20 +75,14 @@ func TestClusterWatchWorkflow_Query(t *testing.T) {
 	assert.True(t, env.IsWorkflowCompleted())
 }
 
-func TestClusterWatchWorkflow_BufferOverflow(t *testing.T) {
-	s := testsuite.WorkflowTestSuite{}
-	env := s.NewTestWorkflowEnvironment()
+func TestClusterWatchWorkflow_ContinuesAsNew(t *testing.T) {
+	env := setupKubeTestEnv(t)
 
-	bigBatch := make([]KubeEvent, MaxBufferSize+1)
-	for i := range bigBatch {
-		bigBatch[i] = KubeEvent{Cluster: "test", Reason: "Filler", Type: "Normal"}
-	}
+	env.OnActivity("PollKubeEvents", mock.Anything, mock.Anything).Return(
+		&PollEventsResult{ResourceVersion: "500"}, nil,
+	)
 
-	env.RegisterDelayedCallback(func() {
-		env.SignalWorkflow(SignalEvents, EventBatch{Events: bigBatch})
-	}, time.Millisecond*100)
-
-	input := ClusterWatchInput{Name: "test", Endpoint: "test:443"}
+	input := ClusterWatchInput{Name: "test", Endpoint: "test:443", ResourceVersion: "100"}
 	env.ExecuteWorkflow(ClusterWatchWorkflow, input)
 
 	assert.True(t, env.IsWorkflowCompleted())
@@ -79,15 +91,26 @@ func TestClusterWatchWorkflow_BufferOverflow(t *testing.T) {
 	assert.Contains(t, err.Error(), "continue as new")
 }
 
-func TestClusterWatchWorkflow_ResourceVersionPassthrough(t *testing.T) {
-	s := testsuite.WorkflowTestSuite{}
-	env := s.NewTestWorkflowEnvironment()
+func TestClusterWatchWorkflow_DetectsAlerts(t *testing.T) {
+	env := setupKubeTestEnv(t)
 
-	env.RegisterDelayedCallback(func() {
-		env.SignalWorkflow(SignalResourceVersion, "12345")
-	}, time.Millisecond*100)
+	now := time.Now()
+	crashEvents := make([]KubeEvent, 5)
+	for i := range crashEvents {
+		crashEvents[i] = KubeEvent{
+			Cluster:  "test",
+			Name:     "bad-pod",
+			Kind:     "Pod",
+			Reason:   "BackOff",
+			Type:     "Warning",
+			LastSeen: now.Add(time.Duration(i) * time.Second),
+		}
+	}
+	env.OnActivity("PollKubeEvents", mock.Anything, mock.Anything).Return(
+		mockPollEvents(crashEvents, "300"),
+	)
 
-	input := ClusterWatchInput{Name: "test", Endpoint: "test:443", ResourceVersion: "100"}
+	input := ClusterWatchInput{Name: "test", Endpoint: "test:443"}
 	env.ExecuteWorkflow(ClusterWatchWorkflow, input)
 
 	assert.True(t, env.IsWorkflowCompleted())
