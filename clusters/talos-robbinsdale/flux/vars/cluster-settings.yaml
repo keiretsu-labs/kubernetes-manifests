@@ -25,3 +25,4 @@ data:
 
   # Storage
   STORAGECLASS_LONGTERM: smb
+  STORAGECLASS_BLOCK: ceph-block-replicated
