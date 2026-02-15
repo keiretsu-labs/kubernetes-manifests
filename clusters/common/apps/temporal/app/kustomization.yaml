@@ -8,4 +8,5 @@ resources:
   - s3-backup.yaml
   - httproute.yaml
   - service-ts.yaml
+  - egress.yaml
   - cluster-mesh.yaml
