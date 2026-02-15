@@ -38,7 +38,7 @@ spec:
                     fi
                     echo "Upserting $$remote..."
                     temporal operator cluster upsert \
-                      --frontend-address "$$remote-temporal.keiretsu.ts.net:7233" \
+                      --frontend-address "$$remote-temporal.temporal.svc.cluster.local:7233" \
                       --enable-connection
                   done
 
