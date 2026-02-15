@@ -1,5 +1,5 @@
 temporal:
-  address: "ottawa-temporal.keiretsu.ts.net:7233"
+  address: "${LOCATION}-temporal.keiretsu.ts.net:7233"
   useTsnet: true
   namespace: "default"
   taskQueue: "swarm"

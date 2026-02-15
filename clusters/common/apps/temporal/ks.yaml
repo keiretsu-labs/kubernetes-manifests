@@ -11,7 +11,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: cnpg-system
-  path: ./clusters/${CLUSTER_NAME}/apps/temporal/app
+  path: ./clusters/common/apps/temporal/app
   prune: true
   sourceRef:
     kind: GitRepository
