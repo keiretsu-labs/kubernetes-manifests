@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: zot
+  name: zot-internal
 spec:
   interval: 30m
   chart:
@@ -21,13 +21,12 @@ spec:
     remediation:
       retries: 3
   values:
-    replicaCount: 2
+    replicaCount: 1
     service:
       type: ClusterIP
       port: 5000
     persistence: false
     mountConfig: true
-    mountSecret: true
     env:
       - name: AWS_ACCESS_KEY_ID
         valueFrom:
@@ -75,23 +74,7 @@ spec:
           },
           "http": {
             "address": "0.0.0.0",
-            "port": "5000",
-            "auth": { "htpasswd": { "path": "/secret/htpasswd" } },
-            "accessControl": {
-              "repositories": {
-                "**": {
-                  "policies": [{
-                    "users": ["admin"],
-                    "actions": ["read", "create", "update", "delete"]
-                  }],
-                  "defaultPolicy": []
-                }
-              },
-              "adminPolicy": {
-                "users": ["admin"],
-                "actions": ["read", "create", "update", "delete"]
-              }
-            }
+            "port": "5000"
           },
           "extensions": {
             "search": { "enable": true },
@@ -111,5 +94,3 @@ spec:
           },
           "log": { "level": "info" }
         }
-    secretFiles:
-      htpasswd: "${COMMON_OCI}"

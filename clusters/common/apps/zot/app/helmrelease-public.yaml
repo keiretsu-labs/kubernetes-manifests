@@ -1,0 +1,115 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: zot-public
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: zot
+      version: 0.1.98
+      sourceRef:
+        kind: HelmRepository
+        name: zot
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    replicaCount: 2
+    service:
+      type: ClusterIP
+      port: 5000
+    persistence: false
+    mountConfig: true
+    mountSecret: true
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: garage-s3-auth
+            key: AWS_ACCESS_KEY_ID
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: garage-s3-auth
+            key: AWS_SECRET_ACCESS_KEY
+    configFiles:
+      config.json: |-
+        {
+          "storage": {
+            "rootDirectory": "/var/lib/registry",
+            "dedupe": false,
+            "gc": true,
+            "gcDelay": "1h",
+            "gcInterval": "6h",
+            "retention": {
+              "policies": [{
+                "repositories": ["**"],
+                "deleteReferrers": true,
+                "deleteUntagged": true,
+                "keepTags": [{
+                  "mostRecentlyPushedCount": 10,
+                  "mostRecentlyPulledCount": 10,
+                  "pulledWithin": "720h",
+                  "pushedWithin": "720h"
+                }]
+              }]
+            },
+            "storageDriver": {
+              "name": "s3",
+              "rootdirectory": "/zot",
+              "region": "garage",
+              "regionendpoint": "http://garage.garage.svc.cluster.local:3900",
+              "bucket": "zot",
+              "forcepathstyle": true,
+              "secure": false,
+              "skipverify": false,
+              "multipartcopymaxconcurrency": 20
+            }
+          },
+          "http": {
+            "address": "0.0.0.0",
+            "port": "5000",
+            "auth": { "htpasswd": { "path": "/secret/htpasswd" } },
+            "accessControl": {
+              "repositories": {
+                "**": {
+                  "policies": [{
+                    "users": ["admin"],
+                    "actions": ["read", "create", "update", "delete"]
+                  }],
+                  "defaultPolicy": []
+                }
+              },
+              "adminPolicy": {
+                "users": ["admin"],
+                "actions": ["read", "create", "update", "delete"]
+              }
+            }
+          },
+          "extensions": {
+            "search": { "enable": true },
+            "ui": { "enable": true },
+            "sync": {
+              "enable": false,
+              "registries": [{
+                "urls": ["https://ghcr.io"],
+                "content": [{
+                  "prefix": "rajsinghtech/**"
+                }],
+                "onDemand": true,
+                "pollInterval": "6h",
+                "tlsVerify": true
+              }]
+            }
+          },
+          "log": { "level": "info" }
+        }
+    secretFiles:
+      htpasswd: "${COMMON_OCI}"

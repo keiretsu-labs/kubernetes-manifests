@@ -5,6 +5,8 @@ namespace: zot
 resources:
   - backendtrafficpolicy.yaml
   - bucket.yaml
-  - helmrelease.yaml
-  - httproute.yaml
-  - ingress.yaml
+  - helmrelease-internal.yaml
+  - helmrelease-public.yaml
+  - httproute-internal.yaml
+  - httproute-public.yaml
+  - ingress-internal.yaml
