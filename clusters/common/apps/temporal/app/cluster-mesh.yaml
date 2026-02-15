@@ -1,72 +1,77 @@
 ---
 apiVersion: batch/v1
-kind: Job
+kind: CronJob
 metadata:
   name: temporal-cluster-mesh
   namespace: temporal
 spec:
-  ttlSecondsAfterFinished: 86400
-  backoffLimit: 10
-  template:
+  schedule: "0 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
     spec:
-      restartPolicy: OnFailure
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        seccompProfile:
-          type: RuntimeDefault
-      containers:
-        - name: cluster-mesh
-          image: temporalio/admin-tools:1.26.2
+      ttlSecondsAfterFinished: 3600
+      backoffLimit: 3
+      template:
+        spec:
+          restartPolicy: OnFailure
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-          command:
-            - /bin/sh
-            - -c
-            - |
-              set -e
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: cluster-mesh
+              image: temporalio/admin-tools:1.26.2
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
 
-              # Wait for local frontend
-              until temporal operator cluster health; do
-                echo "Waiting for local Temporal..."
-                sleep 5
-              done
+                  # Wait for local frontend
+                  until temporal operator cluster health; do
+                    echo "Waiting for local Temporal..."
+                    sleep 5
+                  done
 
-              # Upsert all remote clusters (idempotent)
-              # $$ escapes to literal $ after Flux envsubst
-              for remote in robbinsdale ottawa stpetersburg; do
-                if [ "$$remote" = "${LOCATION}" ]; then
-                  continue
-                fi
-                echo "Upserting $$remote..."
-                temporal operator cluster upsert \
-                  --frontend-address "$$remote-temporal.temporal.svc.cluster.local:7233" \
-                  --enable-connection
-              done
+                  # Upsert all remote clusters (idempotent)
+                  # $$ escapes to literal $ after Flux envsubst
+                  for remote in robbinsdale ottawa stpetersburg; do
+                    if [ "$$remote" = "${LOCATION}" ]; then
+                      continue
+                    fi
+                    echo "Upserting $$remote..."
+                    temporal operator cluster upsert \
+                      --frontend-address "$$remote-temporal.temporal.svc.cluster.local:7233" \
+                      --enable-connection
+                  done
 
-              # Create + promote default namespace to global (master only)
-              # Non-master clusters receive it via replication
-              if [ "${LOCATION}" = "ottawa" ]; then
-                temporal operator namespace create -n default \
-                  --retention 168h 2>/dev/null || true
-                temporal operator namespace update -n default \
-                  --promote-global 2>/dev/null || true
-                temporal operator namespace update -n default \
-                  --cluster robbinsdale \
-                  --cluster ottawa \
-                  --cluster stpetersburg 2>/dev/null || true
-              fi
+                  # Create + promote default namespace to global (master only)
+                  # Non-master clusters receive it via replication
+                  if [ "${LOCATION}" = "ottawa" ]; then
+                    temporal operator namespace create -n default \
+                      --retention 168h 2>/dev/null || true
+                    temporal operator namespace update -n default \
+                      --promote-global 2>/dev/null || true
+                    temporal operator namespace update -n default \
+                      --cluster robbinsdale \
+                      --cluster ottawa \
+                      --cluster stpetersburg 2>/dev/null || true
+                  fi
 
-              echo "Cluster mesh OK from ${LOCATION}"
-          env:
-            - name: TEMPORAL_ADDRESS
-              value: "temporal-frontend.temporal.svc.cluster.local:7233"
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              memory: 128Mi
+                  echo "Cluster mesh OK from ${LOCATION}"
+              env:
+                - name: TEMPORAL_ADDRESS
+                  value: "temporal-frontend.temporal.svc.cluster.local:7233"
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  memory: 128Mi
