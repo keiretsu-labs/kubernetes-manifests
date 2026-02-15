@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	"go.temporal.io/sdk/activity"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -13,7 +15,7 @@ type Activities struct {
 	KubeClients map[string]*kubernetes.Clientset
 }
 
-func (a *Activities) ListRecentEvents(ctx context.Context, input WatchClusterEventsInput) ([]KubeEvent, error) {
+func (a *Activities) PollKubeEvents(ctx context.Context, input PollEventsInput) (*PollEventsResult, error) {
 	logger := activity.GetLogger(ctx)
 
 	cs, ok := a.KubeClients[input.ClusterName]
@@ -21,15 +23,35 @@ func (a *Activities) ListRecentEvents(ctx context.Context, input WatchClusterEve
 		return nil, fmt.Errorf("no kube client for cluster %s", input.ClusterName)
 	}
 
-	list, err := cs.CoreV1().Events("").List(ctx, metav1.ListOptions{
-		Limit: 100,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("listing events: %w", err)
+	rv := input.ResourceVersion
+	if rv == "" {
+		list, err := cs.CoreV1().Events("").List(ctx, metav1.ListOptions{Limit: 1})
+		if err != nil {
+			return nil, fmt.Errorf("listing events for initial rv: %w", err)
+		}
+		rv = list.ResourceVersion
 	}
 
+	timeout := PollWatchTimeout
+	watcher, err := cs.CoreV1().Events("").Watch(ctx, metav1.ListOptions{
+		ResourceVersion: rv,
+		TimeoutSeconds:  &timeout,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("starting watch from rv %s: %w", rv, err)
+	}
+	defer watcher.Stop()
+
 	var events []KubeEvent
-	for _, ev := range list.Items {
+	for event := range watcher.ResultChan() {
+		if event.Type == watch.Error {
+			break
+		}
+		ev, ok := event.Object.(*corev1.Event)
+		if !ok {
+			continue
+		}
+		rv = ev.ResourceVersion
 		ke := KubeEvent{
 			Cluster:   input.ClusterName,
 			Namespace: ev.Namespace,
@@ -50,6 +72,6 @@ func (a *Activities) ListRecentEvents(ctx context.Context, input WatchClusterEve
 		events = append(events, ke)
 	}
 
-	logger.Info("listed events", "cluster", input.ClusterName, "count", len(events))
-	return events, nil
+	logger.Info("polled events", "cluster", input.ClusterName, "count", len(events), "rv", rv)
+	return &PollEventsResult{Events: events, ResourceVersion: rv}, nil
 }

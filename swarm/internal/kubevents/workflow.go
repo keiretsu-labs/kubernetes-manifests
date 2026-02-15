@@ -1,13 +1,15 @@
 package kubevents
 
 import (
+	"time"
+
 	"github.com/keiretsu-labs/kubernetes-manifests/swarm/internal/clusterhealth"
+	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
-// clusterWatchState is the internal state carried through ContinueAsNew.
 type clusterWatchState struct {
-	Input         ClusterWatchInput            `json:"input"`
+	Input         ClusterWatchInput           `json:"input"`
 	DetectorState *clusterhealth.DetectorState `json:"detectorState,omitempty"`
 }
 
@@ -15,7 +17,6 @@ func ClusterWatchWorkflow(ctx workflow.Context, input ClusterWatchInput) error {
 	return clusterWatchWorkflowImpl(ctx, clusterWatchState{Input: input})
 }
 
-// ClusterWatchWorkflowWithState is the ContinueAsNew entrypoint that carries detector state.
 func ClusterWatchWorkflowWithState(ctx workflow.Context, state clusterWatchState) error {
 	return clusterWatchWorkflowImpl(ctx, state)
 }
@@ -39,16 +40,16 @@ func clusterWatchWorkflowImpl(ctx workflow.Context, state clusterWatchState) err
 	input := state.Input
 	logger.Info("ClusterWatchWorkflow started", "cluster", input.Name, "resourceVersion", input.ResourceVersion)
 
-	events := make([]KubeEvent, 0, MaxBufferSize)
-	lastResourceVersion := input.ResourceVersion
-
+	rv := input.ResourceVersion
 	detectorState := state.DetectorState
 	if detectorState == nil {
 		detectorState = clusterhealth.NewDetectorState()
 	}
 
+	var recentEvents []KubeEvent
+
 	if err := workflow.SetQueryHandler(ctx, QueryRecentEvents, func() ([]KubeEvent, error) {
-		return events, nil
+		return recentEvents, nil
 	}); err != nil {
 		return err
 	}
@@ -59,20 +60,29 @@ func clusterWatchWorkflowImpl(ctx workflow.Context, state clusterWatchState) err
 		return err
 	}
 
-	rvCh := workflow.GetSignalChannel(ctx, SignalResourceVersion)
-	eventsCh := workflow.GetSignalChannel(ctx, SignalEvents)
-	timer := workflow.NewTimer(ctx, ContinueAsNewInterval)
+	activityCtx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+		StartToCloseTimeout: 30 * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			InitialInterval:    2 * time.Second,
+			BackoffCoefficient: 2.0,
+			MaximumInterval:    30 * time.Second,
+			MaximumAttempts:    3,
+		},
+	})
 
-	for {
-		sel := workflow.NewSelector(ctx)
+	for i := 0; i < MaxPollIterations; i++ {
+		var result PollEventsResult
+		err := workflow.ExecuteActivity(activityCtx, "PollKubeEvents", PollEventsInput{
+			ClusterName:     input.Name,
+			ResourceVersion: rv,
+		}).Get(ctx, &result)
 
-		sel.AddReceive(eventsCh, func(ch workflow.ReceiveChannel, more bool) {
-			var batch EventBatch
-			ch.Receive(ctx, &batch)
-			events = append(events, batch.Events...)
-
+		if err != nil {
+			logger.Warn("poll failed, will retry next iteration", "cluster", input.Name, "error", err)
+		} else {
+			rv = result.ResourceVersion
 			now := workflow.Now(ctx)
-			for _, ev := range batch.Events {
+			for _, ev := range result.Events {
 				he := toHealthEvent(ev)
 				clusterhealth.DetectCrashLoop(he, detectorState, now)
 				clusterhealth.DetectOOMKilled(he, detectorState, now)
@@ -81,30 +91,27 @@ func clusterWatchWorkflowImpl(ctx workflow.Context, state clusterWatchState) err
 			}
 			clusterhealth.ResolveStaleAlerts(detectorState, now)
 
-			logger.Info("received events", "cluster", input.Name, "batch", len(batch.Events), "total", len(events), "alerts", len(detectorState.ActiveAlerts))
-		})
+			recentEvents = append(recentEvents, result.Events...)
+			if len(recentEvents) > MaxBufferSize {
+				recentEvents = recentEvents[len(recentEvents)-MaxBufferSize:]
+			}
 
-		sel.AddReceive(rvCh, func(ch workflow.ReceiveChannel, more bool) {
-			ch.Receive(ctx, &lastResourceVersion)
-		})
+			if len(result.Events) > 0 {
+				logger.Info("processed events", "cluster", input.Name, "batch", len(result.Events), "alerts", len(detectorState.ActiveAlerts))
+			}
+		}
 
-		sel.AddFuture(timer, func(f workflow.Future) {
-			_ = f.Get(ctx, nil)
-		})
-
-		sel.Select(ctx)
-
-		if len(events) >= MaxBufferSize || timer.IsReady() {
-			break
+		if err := workflow.Sleep(ctx, PollInterval); err != nil {
+			return err
 		}
 	}
 
-	logger.Info("continuing as new", "cluster", input.Name, "buffered", len(events), "rv", lastResourceVersion, "alerts", len(detectorState.ActiveAlerts))
+	logger.Info("continuing as new", "cluster", input.Name, "rv", rv, "alerts", len(detectorState.ActiveAlerts))
 	return workflow.NewContinueAsNewError(ctx, ClusterWatchWorkflowWithState, clusterWatchState{
 		Input: ClusterWatchInput{
 			Name:            input.Name,
 			Endpoint:        input.Endpoint,
-			ResourceVersion: lastResourceVersion,
+			ResourceVersion: rv,
 		},
 		DetectorState: detectorState,
 	})

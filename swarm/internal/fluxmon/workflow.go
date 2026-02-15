@@ -1,7 +1,10 @@
 package fluxmon
 
 import (
+	"time"
+
 	"github.com/keiretsu-labs/kubernetes-manifests/swarm/internal/alerts"
+	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
@@ -13,7 +16,6 @@ func FluxWatchWorkflow(ctx workflow.Context, input FluxWatchInput) error {
 	if resources == nil {
 		resources = make(map[string]FluxResourceStatus)
 	}
-	var updateCount int
 
 	if err := workflow.SetQueryHandler(ctx, QueryResources, func() (map[string]FluxResourceStatus, error) {
 		return resources, nil
@@ -68,35 +70,45 @@ func FluxWatchWorkflow(ctx workflow.Context, input FluxWatchInput) error {
 		return err
 	}
 
-	statusCh := workflow.GetSignalChannel(ctx, SignalStatusUpdate)
-	timer := workflow.NewTimer(ctx, ContinueAsNewInterval)
+	activityCtx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+		StartToCloseTimeout: 60 * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			InitialInterval:    5 * time.Second,
+			BackoffCoefficient: 2.0,
+			MaximumInterval:    60 * time.Second,
+			MaximumAttempts:    3,
+		},
+	})
 
-	for {
-		sel := workflow.NewSelector(ctx)
+	for i := 0; i < MaxPollIterations; i++ {
+		var result PollFluxResult
+		err := workflow.ExecuteActivity(activityCtx, "PollFluxResources", PollFluxInput{
+			ClusterName: input.Name,
+		}).Get(ctx, &result)
 
-		sel.AddReceive(statusCh, func(ch workflow.ReceiveChannel, more bool) {
-			var batch FluxStatusBatch
-			ch.Receive(ctx, &batch)
-			for _, s := range batch.Statuses {
-				key := ResourceKey(s)
-				if s.Deleted {
-					delete(resources, key)
-				} else {
-					resources[key] = s
-				}
-				updateCount++
+		if err != nil {
+			logger.Warn("flux poll failed, will retry next iteration", "cluster", input.Name, "error", err)
+		} else {
+			// Mark all existing resources as potentially deleted
+			seen := make(map[string]bool)
+			for _, r := range result.Resources {
+				key := ResourceKey(r)
+				seen[key] = true
+				resources[key] = r
 			}
-			logger.Info("received statuses", "cluster", input.Name, "batch", len(batch.Statuses), "tracked", len(resources))
-		})
+			// Mark resources not seen in this poll as deleted
+			for key, r := range resources {
+				if !seen[key] && !r.Deleted {
+					r.Deleted = true
+					resources[key] = r
+				}
+			}
 
-		sel.AddFuture(timer, func(f workflow.Future) {
-			_ = f.Get(ctx, nil)
-		})
+			logger.Info("processed flux resources", "cluster", input.Name, "tracked", len(resources))
+		}
 
-		sel.Select(ctx)
-
-		if updateCount >= MaxStatusBuffer || timer.IsReady() {
-			break
+		if err := workflow.Sleep(ctx, PollInterval); err != nil {
+			return err
 		}
 	}
 
