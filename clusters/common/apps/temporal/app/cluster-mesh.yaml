@@ -15,9 +15,19 @@ spec:
       template:
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
           containers:
             - name: cluster-mesh
               image: temporalio/admin-tools:1.26.2
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
               command:
                 - /bin/sh
                 - -c
@@ -42,14 +52,14 @@ spec:
                       --enable-connection
                   done
 
-                  # Promote default namespace to global and replicate
-                  # Only run from master cluster to avoid conflicts
+                  # Create + promote default namespace to global (master only)
+                  # Non-master clusters receive it via replication
                   if [ "${LOCATION}" = "ottawa" ]; then
-                    temporal operator namespace update \
-                      --namespace default \
+                    temporal operator namespace create -n default \
+                      --retention 168h 2>/dev/null || true
+                    temporal operator namespace update -n default \
                       --promote-global 2>/dev/null || true
-                    temporal operator namespace update \
-                      --namespace default \
+                    temporal operator namespace update -n default \
                       --cluster robbinsdale \
                       --cluster ottawa \
                       --cluster stpetersburg 2>/dev/null || true
