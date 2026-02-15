@@ -8,3 +8,4 @@ resources:
   - s3-backup.yaml
   - httproute.yaml
   - service-ts.yaml
+  - cluster-mesh.yaml

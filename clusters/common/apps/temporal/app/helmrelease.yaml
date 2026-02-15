@@ -23,7 +23,22 @@ spec:
   values:
     server:
       replicaCount: 1
+      dynamicConfig:
+        system.enableNamespaceNotActiveAutoForwarding:
+          - value: true
+            constraints: {}
       config:
+        clusterMetadata:
+          enableGlobalNamespace: true
+          failoverVersionIncrement: 10
+          masterClusterName: "ottawa"
+          currentClusterName: "${LOCATION}"
+          clusterInformation:
+            ${LOCATION}:
+              enabled: true
+              initialFailoverVersion: ${SITE_ID}
+              rpcAddress: "127.0.0.1:7233"
+              httpAddress: "127.0.0.1:7243"
         persistence:
           defaultStore: default
           visibilityStore: visibility
