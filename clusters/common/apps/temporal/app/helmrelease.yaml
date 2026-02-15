@@ -32,7 +32,7 @@ spec:
         clusterMetadata:
           enableGlobalNamespace: true
           failoverVersionIncrement: 10
-          masterClusterName: "ottawa"
+          masterClusterName: "${LOCATION}"
           currentClusterName: "${LOCATION}"
           clusterInformation:
             ${LOCATION}:
