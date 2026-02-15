@@ -95,7 +95,19 @@ spec:
           },
           "extensions": {
             "search": { "enable": true },
-            "ui": { "enable": true }
+            "ui": { "enable": true },
+            "sync": {
+              "enable": false,
+              "registries": [{
+                "urls": ["https://ghcr.io"],
+                "content": [{
+                  "prefix": "rajsinghtech/**"
+                }],
+                "onDemand": true,
+                "pollInterval": "6h",
+                "tlsVerify": true
+              }]
+            }
           },
           "log": { "level": "info" }
         }
