@@ -29,6 +29,8 @@ spec:
           - value: true
             constraints: {}
       config:
+        dcRedirectionPolicy:
+          policy: "selected-apis-forwarding"
         clusterMetadata:
           enableGlobalNamespace: true
           failoverVersionIncrement: 10
