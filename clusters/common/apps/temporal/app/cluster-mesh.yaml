@@ -17,7 +17,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: cluster-mesh
-              image: temporalio/admin-tools:1.26.2
+              image: temporalio/admin-tools:1.27.1
               command:
                 - /bin/sh
                 - -c
