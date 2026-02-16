@@ -30,11 +30,11 @@ spec:
           env:
             - name: PASSWORD
               value: "${DEFAULT_PASSWORD}"
-            - name: ANTHROPIC_API_KEY
+            - name: CLAUDE_CODE_OAUTH_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: laptop-secrets
-                  key: ANTHROPIC_API_KEY
+                  key: CLAUDE_CODE_OAUTH_TOKEN
             - name: GITHUB_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -51,7 +51,7 @@ spec:
               mountPath: /home/coder/.kube
               readOnly: true
             - name: startup
-              mountPath: /home/coder/entrypoint.d
+              mountPath: /entrypoint.d
       terminationGracePeriodSeconds: 30
       volumes:
         - name: data
