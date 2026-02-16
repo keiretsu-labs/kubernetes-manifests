@@ -30,7 +30,7 @@ spec:
           env:
             - name: PASSWORD
               value: "${DEFAULT_PASSWORD}"
-            - name: ANTHROPIC_API_KEY
+            - name: ANTHROPIC_AUTH_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: laptop-secrets
