@@ -30,4 +30,24 @@ spec:
       matches:
         - path:
             type: PathPrefix
-            value: / 
+            value: /
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: hubble-oidc
+  namespace: hubble-ui
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: hubble
+  oidc:
+    provider:
+      issuer: "https://pocket-id.${CLUSTER_DOMAIN}"
+    clientID: "${ENVOY_GATEWAY_OIDC_CLIENT_ID}"
+    clientSecret:
+      name: hubble-oidc-secret
+    redirectURL: "https://hubble.${CLUSTER_DOMAIN}/oauth2/callback"
+    logoutPath: "/logout"
+    cookieDomain: "${CLUSTER_DOMAIN}"
