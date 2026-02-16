@@ -8,6 +8,8 @@ spec:
     labels:
       app: gatus-postgres
   instances: 3
+  nodeMaintenanceWindow:
+    reusePVC: false
   storage:
     size: 10Gi
     storageClass: ceph-block-replicated-nvme
