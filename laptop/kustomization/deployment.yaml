@@ -51,7 +51,7 @@ spec:
               mountPath: /home/coder/.kube
               readOnly: true
             - name: startup
-              mountPath: /home/coder/entrypoint.d
+              mountPath: /entrypoint.d
       terminationGracePeriodSeconds: 30
       volumes:
         - name: data
