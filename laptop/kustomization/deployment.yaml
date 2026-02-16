@@ -1,0 +1,77 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laptop
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: laptop
+  template:
+    metadata:
+      annotations:
+        tailcar.rajsingh.info/inject: "true"
+        tailcar.rajsingh.info/tailnet: keiretsu-labs-github
+      labels:
+        app.kubernetes.io/name: laptop
+    spec:
+      imagePullSecrets:
+        - name: zot-pull-secret
+      containers:
+        - name: laptop
+          image: oci.${CLUSTER_DOMAIN}/laptop/laptop:latest
+          imagePullPolicy: Always
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: America/New_York
+            - name: DEFAULT_WORKSPACE
+              value: /workspace
+            - name: DEFAULT_SHELL
+              value: /usr/bin/zsh
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: laptop-secrets
+                  key: ANTHROPIC_API_KEY
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: laptop-secrets
+                  key: GITHUB_TOKEN
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: laptop-secrets
+                  key: PASSWORD
+          ports:
+            - name: http
+              containerPort: 8443
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: kubeconfig
+              mountPath: /config/.kube
+              readOnly: true
+            - name: startup
+              mountPath: /custom-cont-init.d
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: laptop-config
+        - name: kubeconfig
+          secret:
+            secretName: laptop-kubeconfig
+        - name: startup
+          configMap:
+            name: laptop-startup
+            defaultMode: 0755
