@@ -76,7 +76,7 @@ spec:
         image:
           registry: registry.k8s.io
           repository: etcd
-          tag: "3.6.7-0"
+          tag: "3.6.8-0"
           pullPolicy: IfNotPresent
         # Use PVC instead of hostPath for persistence
         storageType: "pvc"
