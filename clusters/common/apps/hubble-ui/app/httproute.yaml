@@ -44,7 +44,7 @@ spec:
       name: hubble
   oidc:
     provider:
-      issuer: "https://pocket-id.${CLUSTER_DOMAIN}"
+      issuer: "https://pocket-id.killinit.cc"
     clientID: "${ENVOY_GATEWAY_OIDC_CLIENT_ID}"
     clientSecret:
       name: hubble-oidc-secret
