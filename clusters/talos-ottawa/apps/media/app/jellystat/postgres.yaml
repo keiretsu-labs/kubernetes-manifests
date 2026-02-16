@@ -13,6 +13,8 @@ spec:
     labels:
       app: jellystat-postgres
   instances: 3
+  nodeMaintenanceWindow:
+    reusePVC: false
   storage:
     size: 20Gi
   monitoring:
