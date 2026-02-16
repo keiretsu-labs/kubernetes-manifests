@@ -30,11 +30,11 @@ spec:
           env:
             - name: PASSWORD
               value: "${DEFAULT_PASSWORD}"
-            - name: ANTHROPIC_AUTH_TOKEN
+            - name: CLAUDE_CODE_OAUTH_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: laptop-secrets
-                  key: ANTHROPIC_API_KEY
+                  key: CLAUDE_CODE_OAUTH_TOKEN
             - name: GITHUB_TOKEN
               valueFrom:
                 secretKeyRef:

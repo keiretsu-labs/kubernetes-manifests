@@ -16,6 +16,11 @@ else
   echo "[laptop-init] kubernetes-manifests already cloned, skipping"
 fi
 
+echo "[laptop-init] Configuring Claude Code..."
+if [ ! -f /home/coder/.claude.json ]; then
+  echo '{"hasCompletedOnboarding":true}' > /home/coder/.claude.json
+fi
+
 echo "[laptop-init] Configuring shell..."
 touch /home/coder/.zshrc
 grep -q 'KUBECONFIG' /home/coder/.zshrc 2>/dev/null || echo 'export KUBECONFIG=/home/coder/.kube/config' >> /home/coder/.zshrc
