@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: laptop-config
+  name: laptop-data
 spec:
   accessModes:
     - ReadWriteOnce
