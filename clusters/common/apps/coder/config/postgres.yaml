@@ -6,6 +6,8 @@ metadata:
   namespace: coder
 spec:
   instances: 1
+  nodeMaintenanceWindow:
+    reusePVC: false
   bootstrap:
     initdb:
       database: coder

@@ -6,6 +6,8 @@ metadata:
   namespace: temporal
 spec:
   instances: 3
+  nodeMaintenanceWindow:
+    reusePVC: false
   postgresql:
     parameters:
       max_connections: "200"
