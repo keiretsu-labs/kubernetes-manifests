@@ -9,7 +9,7 @@ spec:
     version: v1.12.4
   policy:
     debug: true
-    force: false
+    force: true
     rebootMode: default
     placement: soft
     timeout: 30m
