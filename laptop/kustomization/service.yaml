@@ -9,7 +9,7 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 8443
+      targetPort: 8080
       protocol: TCP
 ---
 apiVersion: v1
@@ -28,5 +28,5 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 8443
+      targetPort: 8080
       protocol: TCP

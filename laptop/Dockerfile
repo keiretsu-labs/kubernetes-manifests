@@ -53,19 +53,17 @@ RUN curl -fsSL --retry 5 --retry-delay 2 \
       "https://github.com/cli/cli/releases/download/v${GH_V}/gh_${GH_V}_linux_${TARGETARCH}.tar.gz" \
     | tar xz --strip-components=2 "gh_${GH_V}_linux_${TARGETARCH}/bin/gh"
 
-# Stage 2: final image
-FROM lscr.io/linuxserver/code-server:latest
+# Stage 2: final image — coder/code-server (Fedora 39, user=coder, port=8080)
+FROM ghcr.io/coder/code-server:4.109.2-39
 
 USER root
 
 COPY --from=tools /tools/ /usr/local/bin/
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      zsh \
-      git \
-      nodejs \
-      npm \
-    && rm -rf /var/lib/apt/lists/* \
+RUN dnf install -y nodejs npm \
+    && dnf clean all \
     && npm install -g @anthropic-ai/claude-code \
     && npm cache clean --force \
-    && chsh -s /usr/bin/zsh abc
+    && chsh -s /usr/bin/zsh coder
+
+USER 1000

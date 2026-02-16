@@ -19,6 +19,8 @@ spec:
       labels:
         app.kubernetes.io/name: laptop
     spec:
+      securityContext:
+        fsGroup: 1000
       imagePullSecrets:
         - name: zot-pull-secret
       containers:
@@ -26,16 +28,8 @@ spec:
           image: oci.${CLUSTER_DOMAIN}/laptop/laptop:latest
           imagePullPolicy: Always
           env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: America/New_York
-            - name: DEFAULT_WORKSPACE
-              value: /workspace
-            - name: DEFAULT_SHELL
-              value: /usr/bin/zsh
+            - name: PASSWORD
+              value: "${DEFAULT_PASSWORD}"
             - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -46,25 +40,23 @@ spec:
                 secretKeyRef:
                   name: laptop-secrets
                   key: GITHUB_TOKEN
-            - name: PASSWORD
-              value: "${DEFAULT_PASSWORD}"
           ports:
             - name: http
-              containerPort: 8443
+              containerPort: 8080
               protocol: TCP
           volumeMounts:
-            - name: config
-              mountPath: /config
+            - name: data
+              mountPath: /home/coder
             - name: kubeconfig
-              mountPath: /config/.kube
+              mountPath: /home/coder/.kube
               readOnly: true
             - name: startup
-              mountPath: /custom-cont-init.d
+              mountPath: /home/coder/entrypoint.d
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: config
+        - name: data
           persistentVolumeClaim:
-            claimName: laptop-config
+            claimName: laptop-data
         - name: kubeconfig
           secret:
             secretName: laptop-kubeconfig
