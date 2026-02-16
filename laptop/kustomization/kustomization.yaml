@@ -5,6 +5,7 @@ namespace: laptop
 resources:
   - deployment.yaml
   - service.yaml
+  - httproute.yaml
   - pvc.yaml
   - pull-secret.yaml
   - secret.sops.yaml

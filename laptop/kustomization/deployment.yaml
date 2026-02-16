@@ -47,10 +47,7 @@ spec:
                   name: laptop-secrets
                   key: GITHUB_TOKEN
             - name: PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: laptop-secrets
-                  key: PASSWORD
+              value: "${DEFAULT_PASSWORD}"
           ports:
             - name: http
               containerPort: 8443
