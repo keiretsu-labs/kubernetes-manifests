@@ -17,7 +17,16 @@ else
 fi
 
 echo "[laptop-init] Configuring Claude Code..."
-if [ ! -f /home/coder/.claude.json ]; then
+if [ -f /home/coder/.claude.json ]; then
+  python3 -c "
+import json
+with open('/home/coder/.claude.json', 'r') as f:
+    d = json.load(f)
+d['hasCompletedOnboarding'] = True
+with open('/home/coder/.claude.json', 'w') as f:
+    json.dump(d, f, indent=2)
+"
+else
   echo '{"hasCompletedOnboarding":true}' > /home/coder/.claude.json
 fi
 
