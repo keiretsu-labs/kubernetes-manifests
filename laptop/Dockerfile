@@ -54,7 +54,7 @@ RUN curl -fsSL --retry 5 --retry-delay 2 \
     | tar xz --strip-components=2 "gh_${GH_V}_linux_${TARGETARCH}/bin/gh"
 
 # Stage 2: final image — coder/code-server (Fedora 39, user=coder, port=8080)
-FROM ghcr.io/coder/code-server:4.109.2-39
+FROM ghcr.io/coder/code-server:39
 
 USER root
 
