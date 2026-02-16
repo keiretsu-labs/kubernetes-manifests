@@ -4,6 +4,15 @@ machine:
       validSubnets:
         - 192.168.169.0/24
     extraArgs:
-      feature-gates: GracefulNodeShutdown=true
       rotate-server-certificates: "true"
       max-pods: "400"
+    extraConfig:
+      shutdownGracePeriod: "0s"
+      shutdownGracePeriodCriticalPods: "0s"
+      shutdownGracePeriodByPodPriority:
+        - priority: 0
+          shutdownGracePeriodSeconds: 80
+        - priority: 2000000000
+          shutdownGracePeriodSeconds: 20
+        - priority: 2000001000
+          shutdownGracePeriodSeconds: 30
