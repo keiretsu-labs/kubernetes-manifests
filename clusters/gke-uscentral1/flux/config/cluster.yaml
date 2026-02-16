@@ -16,6 +16,7 @@ spec:
     !/clusters/template
     !/clusters/common
     !/swarm
+    !/laptop
     !/clusters/gke-uscentral1
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
