@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: pocket-id
-          image: ghcr.io/pocket-id/pocket-id:v2
+          image: ghcr.io/pocket-id/pocket-id:v2.2.0
           env:
             - name: APP_URL
               value: "https://pocket-id.${CLUSTER_DOMAIN}"
