@@ -11,8 +11,8 @@ on:
         type: string
 
 permissions:
-  id-token: write
-  contents: read
+  id-token: write    # Required for Tailscale OIDC auth
+  contents: read     # Read-only: prevents bot from committing
   pull-requests: write
   issues: write
 
@@ -28,7 +28,6 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/checkout@v6
         with:
-          token: ${{ secrets.GH_PAT }}
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
@@ -36,13 +35,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v6
         with:
-          token: ${{ secrets.GH_PAT }}
           fetch-depth: 0
-
-      - name: Configure git identity
-        run: |
-          git config --global user.email "opencode[bot]@users.noreply.github.com"
-          git config --global user.name "opencode[bot]"
 
       - name: Connect to Tailscale
         uses: tailscale/github-action@v4
@@ -64,16 +57,15 @@ jobs:
         run: |
           gh pr checkout ${{ inputs.pr_number }}
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ github.token }}
 
       - name: OpenCode Review
         uses: anomalyco/opencode/github@latest
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
           VLLM_BASE_URL: http://stpetersburg-llama-cpp/v1
         with:
           model: llama-cpp/Qwen3-Coder-Next
-          use_github_token: true
           mentions: renovate[bot],dependabot[bot]
           prompt: |
             You are a code reviewer. This is a REVIEW ONLY task. Do NOT modify any files, do NOT create commits, do NOT push code. Only provide written feedback.
