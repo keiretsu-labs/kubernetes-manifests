@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-raj
+  annotations:
+    tailscale.com/hostname: ai-raj
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s"
+spec:
+  ports:
+  - name: http-web
+    port: 80  
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: ts-raj
+  type: LoadBalancer
+  loadBalancerClass: tailscale
