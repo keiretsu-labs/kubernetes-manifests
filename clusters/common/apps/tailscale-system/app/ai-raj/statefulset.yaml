@@ -1,0 +1,83 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ts-raj
+spec:
+  replicas: 1
+  serviceName: ts-raj
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: ts-raj
+  template:
+    metadata:
+      labels:
+        app: ts-raj
+    spec:
+      serviceAccountName: "tailscale"
+      initContainers:
+      - args:
+        - sysctl -w net.ipv4.ip_forward=1 && if sysctl net.ipv6.conf.all.forwarding;
+          then sysctl -w net.ipv6.conf.all.forwarding=1; fi
+        command:
+        - /bin/sh
+        - -c
+        image: "ghcr.io/tailscale/tailscale:v1.94.2"
+        imagePullPolicy: IfNotPresent
+        name: sysctler
+        securityContext:
+          privileged: true
+      containers:
+      - name: tailscale
+        imagePullPolicy: IfNotPresent
+        image: "ghcr.io/tailscale/tailscale:v1.94.2"
+        securityContext:
+          privileged: true
+        ports:
+        - name: metrics
+          containerPort: 9002
+          protocol: TCP
+        - name: relay
+          containerPort: 6969
+          protocol: UDP
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: TS_KUBE_SECRET
+          value: $(POD_NAME)
+        - name: TS_STATE
+          value: kube:$(POD_NAME)
+        - name: TS_USERSPACE
+          value: "false"
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: ts-raj
+              key: TS_AUTHKEY
+        - name: TS_ACCEPT_DNS
+          value: "true"
+        - name: TS_EXTRA_ARGS
+          value: "--accept-routes --ssh"
+        - name: TS_ENABLE_METRICS
+          value: "true"
+        - name: TS_LOCAL_ADDR_PORT
+          value: 0.0.0.0:9002
+        - name: TS_HOSTNAME
+          value: $(POD_NAME)
+        - name: TS_DEBUG_FIREWALL_MODE
+          value: nftables
+        - name: TS_TAILNET_TARGET_IP
+          value: 100.81.69.95
