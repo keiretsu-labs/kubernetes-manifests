@@ -23,17 +23,16 @@ spec:
   postRenderers:
     - kustomize:
         patches:
-          - patch: |
-              apiVersion: apps/v1
+          - target:
               kind: Deployment
-              metadata:
-                name: temporal-worker-controller-manager
-              spec:
-                template:
-                  spec:
-                    securityContext:
-                      runAsUser: 65532
-                      runAsGroup: 65532
+              name: temporal-worker-controller-manager
+            patch: |
+              - op: add
+                path: /spec/template/spec/securityContext/runAsUser
+                value: 65532
+              - op: add
+                path: /spec/template/spec/securityContext/runAsGroup
+                value: 65532
   values:
     replicas: 1
     resources:
