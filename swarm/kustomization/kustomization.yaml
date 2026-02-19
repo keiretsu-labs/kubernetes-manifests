@@ -3,7 +3,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: swarm
 resources:
-  - deployment.yaml
+  - connection.yaml
+  - worker-deployment.yaml
   - service.yaml
   - httproute.yaml
   - pull-secret.yaml
