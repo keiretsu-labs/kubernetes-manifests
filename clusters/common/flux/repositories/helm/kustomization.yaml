@@ -84,4 +84,5 @@ resources:
   - ./bitnami.yaml
   - ./karmada.yaml
   - ./temporal.yaml
+  - ./temporal-worker-controller.yaml
   - ./zot.yaml

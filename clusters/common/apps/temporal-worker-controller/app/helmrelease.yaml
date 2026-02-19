@@ -1,0 +1,38 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: temporal-worker-controller
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: temporal-worker-controller
+      version: 0.12.0
+      sourceRef:
+        kind: HelmRepository
+        name: temporal-worker-controller
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 5
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+    metrics:
+      enabled: true
+      disableAuth: true
+    authProxy:
+      enabled: false
+    securityContext:
+      seccompProfile:
+        enabled: true
