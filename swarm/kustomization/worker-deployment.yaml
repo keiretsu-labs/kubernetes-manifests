@@ -1,0 +1,75 @@
+---
+apiVersion: temporal.io/v1alpha1
+kind: TemporalWorkerDeployment
+metadata:
+  name: swarm
+spec:
+  workerOptions:
+    connectionRef:
+      name: swarm
+    temporalNamespace: "default"
+  rollout:
+    strategy: AllAtOnce
+  sunset:
+    scaledownDelay: 1h
+    deleteDelay: 24h
+  replicas: 1
+  template:
+    spec:
+      securityContext:
+        fsGroup: 65532
+        runAsUser: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+      imagePullSecrets:
+        - name: zot-pull-secret
+      containers:
+        - name: swarm
+          image: oci.${CLUSTER_DOMAIN}/swarm/swarm:latest
+          imagePullPolicy: Always
+          command: ["/usr/local/bin/swarm"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: CONFIG_PATH
+              value: /etc/swarm/config.yaml
+            - name: TS_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: swarm-secrets
+                  key: TS_OAUTH_CLIENT_ID
+            - name: TS_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: swarm-secrets
+                  key: TS_OAUTH_CLIENT_SECRET
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            periodSeconds: 30
+          volumeMounts:
+            - name: config
+              mountPath: /etc/swarm
+              readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: config
+          configMap:
+            name: swarm-config

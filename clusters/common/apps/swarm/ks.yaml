@@ -11,6 +11,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: temporal
+    - name: temporal-worker-controller
   path: ./swarm/kustomization
   prune: true
   sourceRef:

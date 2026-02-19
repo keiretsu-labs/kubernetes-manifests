@@ -1,0 +1,7 @@
+---
+apiVersion: temporal.io/v1alpha1
+kind: TemporalConnection
+metadata:
+  name: swarm
+spec:
+  hostPort: "temporal-frontend.temporal.svc.cluster.local:7233"
