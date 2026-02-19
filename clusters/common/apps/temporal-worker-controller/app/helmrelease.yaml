@@ -20,6 +20,20 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  postRenderers:
+    - kustomize:
+        patches:
+          - patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: temporal-worker-controller-manager
+              spec:
+                template:
+                  spec:
+                    securityContext:
+                      runAsUser: 65532
+                      runAsGroup: 65532
   values:
     replicas: 1
     resources:
@@ -35,4 +49,4 @@ spec:
       enabled: false
     securityContext:
       seccompProfile:
-        enabled: true
+        enabled: false
