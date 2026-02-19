@@ -6,7 +6,7 @@ metadata:
   annotations:
     item.homer.rajsingh.info/name: "Swarm"
     item.homer.rajsingh.info/subtitle: "Cluster Health & Monitoring"
-    item.homer.rajsingh.info/logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/temporal.png"
+    item.homer.rajsingh.info/logo: "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/temporal.svg"
     item.homer.rajsingh.info/keywords: "monitoring, health, flux, temporal"
     service.homer.rajsingh.info/name: "Infrastructure"
     service.homer.rajsingh.info/icon: "fas fa-server"
