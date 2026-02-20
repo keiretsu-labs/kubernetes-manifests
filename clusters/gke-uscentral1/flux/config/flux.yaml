@@ -19,7 +19,6 @@ spec:
   interval: 10m
   path: ./
   prune: true
-  wait: true
   sourceRef:
     kind: OCIRepository
     name: flux-manifests

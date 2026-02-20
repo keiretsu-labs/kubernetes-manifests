@@ -16,7 +16,6 @@ spec:
     name: kubernetes-manifests
   dependsOn:
     - name: cert-manager
-  wait: true
   interval: 1m
   retryInterval: 1m
   timeout: 1m 
@@ -37,7 +36,6 @@ spec:
     name: kubernetes-manifests
   dependsOn:
     - name: tailcar-install
-  wait: true
   interval: 1m
   retryInterval: 1m
   timeout: 1m 
