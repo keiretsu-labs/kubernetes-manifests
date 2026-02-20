@@ -9,12 +9,7 @@ spec:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
   targets:
     staticConfig:
-      static:
-        - silver.local
-        - tank.local
-        - titan.local
-        - stone.local
-        - nas.local
+      static: []
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter
@@ -30,11 +25,7 @@ spec:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
   targets:
     staticConfig:
-      static:
-        - silver.local:6443
-        - tank.local:6443
-        - titan.local:6443
-        - stone.local:6443
+      static: []
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter
