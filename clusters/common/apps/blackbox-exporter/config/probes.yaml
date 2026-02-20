@@ -54,6 +54,37 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
+  name: http-common-cluster-services
+spec:
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://argocd.${CLUSTER_DOMAIN}
+        - https://grafana.${CLUSTER_DOMAIN}
+        - https://prometheus.${CLUSTER_DOMAIN}
+        - https://headlamp.${CLUSTER_DOMAIN}
+        - https://hubble.${CLUSTER_DOMAIN}
+        - https://coder.${CLUSTER_DOMAIN}
+        - https://code.${CLUSTER_DOMAIN}
+        - https://garage.${CLUSTER_DOMAIN}
+        - https://logs.${CLUSTER_DOMAIN}
+        - https://opencost.${CLUSTER_DOMAIN}
+        - https://pihole.${CLUSTER_DOMAIN}
+        - https://speedtest.${CLUSTER_DOMAIN}
+        - https://temporal.${CLUSTER_DOMAIN}
+        - https://tsflow.${CLUSTER_DOMAIN}
+        - https://s3-gateway.${CLUSTER_DOMAIN}
+  metricRelabelings:
+    - targetLabel: service
+      replacement: blackbox-exporter
+      action: replace
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
   name: http-external-services
 spec:
   module: http_2xx
