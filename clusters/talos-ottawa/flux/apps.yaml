@@ -5,6 +5,7 @@ metadata:
   name: cluster-apps
   namespace: flux-system
 spec:
+  wait: false
   interval: 30m
   path: ./clusters/talos-ottawa/apps
   prune: true
@@ -41,6 +42,7 @@ spec:
         metadata:
           name: not-used
         spec:
+          wait: false
           decryption:
             provider: sops
             secretRef:
