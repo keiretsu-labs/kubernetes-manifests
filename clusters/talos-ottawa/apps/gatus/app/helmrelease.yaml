@@ -26,7 +26,7 @@ spec:
     config:
       alerting:
         discord:
-          webhook-url: "${DISCORD_WEBHOOK_URL}"
+          webhook-url: "$${DISCORD_WEBHOOK_URL}"
           failure-threshold: 3
           success-threshold: 2
       ui:
@@ -39,9 +39,10 @@ spec:
           - name: "GitOps Repository"
             link: "https://github.com/keiretsu-labs/kubernetes-manifests"
           # - name: "Portfolio"
-          #   link: "https://www.${CLUSTER_DOMAIN}"
+          #   link: "https://www.$${CLUSTER_DOMAIN}"
       endpoints:
-        # === Storage (see below) ===
+        # === Tailscale ===
+        - name: (K8s Cluster) Ottawa
           group: Tailscale
           url: https://ottawa-k8s-operator.keiretsu.ts.net:443/readyz
           interval: 60s
@@ -143,7 +144,7 @@ spec:
               send-on-resolved: true
         - name: Envoy-Public
           group: Networking
-          url: https://status.${CLUSTER_DOMAIN}
+          url: https://status.$${CLUSTER_DOMAIN}
           interval: 60s
           client:
             dns-resolver: "tcp://1.1.1.1:53"
@@ -156,7 +157,7 @@ spec:
               send-on-resolved: true
         - name: Envoy-Tailscale
           group: Networking
-          url: https://status.${CLUSTER_DOMAIN}
+          url: https://status.$${CLUSTER_DOMAIN}
           interval: 60s
           client:
             dns-resolver: "tcp://ts-pihole-dns.home:53"
@@ -169,7 +170,7 @@ spec:
               send-on-resolved: true
         - name: Envoy-Private
           group: Networking
-          url: https://status.${CLUSTER_DOMAIN}
+          url: https://status.$${CLUSTER_DOMAIN}
           interval: 60s
           conditions:
             - "[STATUS] == 200"
