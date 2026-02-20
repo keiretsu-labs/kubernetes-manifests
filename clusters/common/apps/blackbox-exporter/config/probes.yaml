@@ -63,7 +63,6 @@ spec:
     staticConfig:
       static:
         - https://www.rajsingh.info
-        - https://status.rajsingh.info
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter
