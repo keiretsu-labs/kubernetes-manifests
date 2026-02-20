@@ -10,5 +10,4 @@ resources:
   - httproute.yaml
   - volsync-restore.yaml
   - volsync-backup.yaml
-  - servicemonitor.yaml
   - dashboard-jellyfin.yaml
