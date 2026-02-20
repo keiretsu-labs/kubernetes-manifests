@@ -356,3 +356,218 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        # === NEW: Kubernetes Control Plane ===
+        - name: etcd
+          group: Kubernetes
+          url: tcp://kube-etcd:2379
+          interval: 60s
+          conditions:
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 500"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: CoreDNS
+          group: Kubernetes
+          url: http://kube-dns.kube-system:9153/health
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Kubelet Rei
+          group: Kubernetes
+          url: https://rei.killinit.internal:10250/healthz
+          interval: 60s
+          client:
+            insecure: true
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Kubelet Asuka
+          group: Kubernetes
+          url: https://asuka.killinit.internal:10250/healthz
+          interval: 60s
+          client:
+            insecure: true
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Kubelet Kaji
+          group: Kubernetes
+          url: https://kaji.killinit.internal:10250/healthz
+          interval: 60s
+          client:
+            insecure: true
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === NEW: Cilium CNI ===
+        - name: Cilium Operator
+          group: Networking
+          url: http://cilium-operator.kube-system:6969/healthz
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === NEW: Rook Ceph ===
+        - name: Ceph Mon
+          group: Storage
+          url: tcp://rook-ceph-mon-a.rook-ceph:6789
+          interval: 60s
+          conditions:
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Ceph MGR Dashboard
+          group: Storage
+          url: http://rook-ceph-mgr-dashboard.rook-ceph:7000
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === NEW: Monitoring Stack ===
+        - name: Prometheus
+          group: Monitoring
+          url: http://kube-prometheus-stack-prometheus.monitoring:9090/-/healthy
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Alertmanager
+          group: Monitoring
+          url: http://kube-prometheus-stack-alertmanager.monitoring:9093/-/healthy
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Grafana
+          group: Monitoring
+          url: http://grafana-service.monitoring:3000/api/health
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === NEW: Garage S3 ===
+        - name: Garage
+          group: Storage
+          url: http://garage.garage:3900/health
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Garage WebUI
+          group: Storage
+          url: http://garage-webui.garage:80
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === NEW: Immich ===
+        - name: Immich Server
+          group: Applications
+          url: http://immich-server.immich:8081/api/server-info/ping
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Immich Machine Learning
+          group: Applications
+          url: http://immich-machine-learning.immich:3003/health
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 5000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === NEW: Temporal ===
+        - name: Temporal Frontend
+          group: Applications
+          url: http://temporal-frontend.temporal:7233/health
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Temporal Web UI
+          group: Applications
+          url: http://temporal-web.temporal:8088
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === NEW: Flux ===
+        - name: Flux Kustomize Controller
+          group: GitOps
+          url: http://kustomize-controller.flux-system:8080/healthz
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Flux Source Controller
+          group: GitOps
+          url: http://source-controller.flux-system:8080/healthz
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === NEW: Envoy Gateway ===
+        - name: Envoy Gateway
+          group: Networking
+          url: http://envoy-gateway.envoy-gateway-system:8081/healthz
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
