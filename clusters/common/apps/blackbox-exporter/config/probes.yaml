@@ -77,6 +77,10 @@ spec:
         - https://temporal.${CLUSTER_DOMAIN}
         - https://tsflow.${CLUSTER_DOMAIN}
         - https://s3-gateway.${CLUSTER_DOMAIN}
+        - https://chat.${CLUSTER_DOMAIN}
+        - https://capacitor.${CLUSTER_DOMAIN}
+        - https://kubeshark.${CLUSTER_DOMAIN}
+        - https://proxyt.${CLUSTER_DOMAIN}
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter
