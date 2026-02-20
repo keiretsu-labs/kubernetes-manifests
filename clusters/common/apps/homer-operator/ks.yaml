@@ -14,7 +14,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
-  wait: true
   interval: 1m
   retryInterval: 1m
   timeout: 1m 

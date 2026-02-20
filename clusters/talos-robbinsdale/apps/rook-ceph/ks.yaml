@@ -11,7 +11,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
-  wait: true
   interval: 30m
   retryInterval: 1m
   timeout: 5m
@@ -34,7 +33,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
-  wait: true
   interval: 30m
   retryInterval: 1m
   timeout: 15m # Increased timeout for cluster setup

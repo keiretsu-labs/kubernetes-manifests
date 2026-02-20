@@ -349,7 +349,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
-  wait: true
   interval: 30m
 ```
 
