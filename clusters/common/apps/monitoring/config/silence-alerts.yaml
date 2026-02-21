@@ -9,14 +9,11 @@ spec:
     groupWait: 0s
     groupInterval: 0s
     repeatInterval: 0s
-    receiver: 'null'
+    receiver: 'blackhole'
     matchers:
       - name: alertname
         matchType: equal
         value: DockerhubRateLimitRisk
-  receivers:
-    - name: 'null'
-      nullReceiver: {}
 ---
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: AlertmanagerConfig
@@ -29,11 +26,8 @@ spec:
     groupWait: 0s
     groupInterval: 0s
     repeatInterval: 0s
-    receiver: 'null'
+    receiver: 'blackhole'
     matchers:
       - name: alertname
         matchType: equal
         value: ProbeFailed
-  receivers:
-    - name: 'null'
-      nullReceiver: {}
