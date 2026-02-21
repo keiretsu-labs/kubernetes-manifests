@@ -60,13 +60,13 @@ Commit and push to `main`. Two CI pipelines may trigger depending on what change
 
 ```bash
 # List recent workflow runs
-gh run list --repo rajsinghtech/openclaw-workspace --limit 5
+gh run list --repo keiretsu-labs/kubernetes-manifests --limit 5
 
 # Watch a specific run
-gh run watch <run-id> --repo rajsinghtech/openclaw-workspace
+gh run watch <run-id> --repo keiretsu-labs/kubernetes-manifests
 
 # Check if the run succeeded
-gh run view <run-id> --repo rajsinghtech/openclaw-workspace
+gh run view <run-id> --repo keiretsu-labs/kubernetes-manifests
 ```
 
 ### 3. Reconcile Flux
@@ -75,10 +75,10 @@ After CI completes and images are pushed, tell Flux to pick up the new git state
 
 ```bash
 # Reconcile source + kustomization in one shot
-flux reconcile kustomization openclaw-workspace --with-source
+flux reconcile kustomization openclaw --with-source
 
 # Wait for it
-flux get kustomization openclaw-workspace
+flux get kustomization openclaw
 ```
 
 ### 4. Force Image Pull
@@ -164,7 +164,7 @@ After modifying secrets:
 3. ☐ Check escaping: `grep -n '${' openclaw.json | grep -v '$${' ` → should be empty
 4. ☐ `git add && git commit && git push`
 5. ☐ Wait for CI (if image changes): `gh run watch`
-6. ☐ `flux reconcile kustomization openclaw-workspace --with-source`
+6. ☐ `flux reconcile kustomization openclaw --with-source`
 7. ☐ `kubectl rollout restart deployment openclaw -n openclaw` (if images changed)
 8. ☐ `kubectl get pods -n openclaw` — verify Running
 9. ☐ `kubectl logs ... -c openclaw --tail=20` — verify startup

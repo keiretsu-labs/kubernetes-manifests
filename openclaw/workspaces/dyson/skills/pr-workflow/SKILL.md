@@ -8,12 +8,12 @@ description: >
   config, namespace labels, or any manifest change. This is the standard
   workflow for making changes via pull request.
 
-  Don't use when: The change is in openclaw-workspace repo (that's a direct
-  push to main, not a PR to kubernetes-manifests). Don't use for diagnosing
+  Don't use when: The change is only to openclaw workspace content (that's a direct
+  push to main in the kubernetes-manifests monorepo). Don't use for diagnosing
   issues (use cluster-health, flux-ops, or storage-ops first, then come here
   to fix). Don't use when you're unsure what to change — diagnose first.
 
-  Outputs: A pull request on rajsinghtech/kubernetes-manifests with validated
+  Outputs: A pull request on keiretsu-labs/kubernetes-manifests with validated
   changes, conventional commit message, and descriptive PR body.
 requires: []
 ---
@@ -31,16 +31,16 @@ requires: []
 - Someone says "open a PR to fix this"
 
 ### Don't Use This Skill When
-- The change is to openclaw-workspace repo → commit directly to main
+- The change is only to openclaw workspace content → commit directly to main in the kubernetes-manifests monorepo
 - You haven't diagnosed the issue yet → use **cluster-health**, **flux-ops**, or **storage-ops** first
 - You're only inspecting/reading manifests → just use `kubectl` or clone and read
-- The issue is with CI workflows → those live in openclaw-workspace, not kubernetes-manifests
+- The issue is with CI workflows → those live under openclaw/ in the kubernetes-manifests monorepo
 
 ## Pre-Flight
 
 Before starting, check for duplicate PRs:
 ```bash
-gh pr list --repo rajsinghtech/kubernetes-manifests --state open
+gh pr list --repo keiretsu-labs/kubernetes-manifests --state open
 ```
 If an open PR already addresses this issue, comment on it instead of creating a new one.
 
@@ -49,7 +49,7 @@ If an open PR already addresses this issue, comment on it instead of creating a 
 ```bash
 # Always clean up stale clones first — leftover state from previous sessions causes confusion
 rm -rf /tmp/k8s-manifests
-git clone https://github.com/rajsinghtech/kubernetes-manifests.git /tmp/k8s-manifests
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/k8s-manifests
 cd /tmp/k8s-manifests
 ```
 
@@ -148,7 +148,7 @@ Commit message conventions:
 ## Create PR
 
 ```bash
-gh pr create --repo rajsinghtech/kubernetes-manifests \
+gh pr create --repo keiretsu-labs/kubernetes-manifests \
   --title "fix(ottawa): increase coredns memory limit to prevent OOM" \
   --body "$(cat <<'EOF'
 ## Problem
@@ -190,7 +190,7 @@ EOF
 After creating the PR, report:
 ```
 [ottawa] PR opened: fix(ottawa): increase coredns memory limit
-URL: https://github.com/rajsinghtech/kubernetes-manifests/pull/123
+URL: https://github.com/keiretsu-labs/kubernetes-manifests/pull/123
 Files changed: apps/kube-system/coredns/deployment.yaml
 ```
 
@@ -200,7 +200,7 @@ Files changed: apps/kube-system/coredns/deployment.yaml
 - **Never skip validation** — kustomize build must pass
 - **One concern per PR** — don't mix unrelated fixes
 - **Include context** — PR body must explain the problem, fix, and affected resources
-- **Check for duplicates first** — `gh pr list --repo rajsinghtech/kubernetes-manifests --state open`
+- **Check for duplicates first** — `gh pr list --repo keiretsu-labs/kubernetes-manifests --state open`
 
 ## Edge Cases
 

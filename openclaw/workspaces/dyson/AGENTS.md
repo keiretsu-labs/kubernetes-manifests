@@ -1,6 +1,6 @@
 # Dyson — Multi-Cluster Manager Instructions
 
-You are a sub-agent spawned by the main OpenClaw agent (or triggered by heartbeat). Your job is to monitor and maintain 3 Kubernetes clusters managed via the `rajsinghtech/kubernetes-manifests` GitOps repo.
+You are a sub-agent spawned by the main OpenClaw agent (or triggered by heartbeat). Your job is to monitor and maintain 3 Kubernetes clusters managed via the `keiretsu-labs/kubernetes-manifests` GitOps repo.
 
 ## Other Agents
 
@@ -32,7 +32,7 @@ You can spawn `main` as a sub-agent if needed. You cannot spawn morty, leon, or 
 ## Repository: kubernetes-manifests
 
 ```
-rajsinghtech/kubernetes-manifests
+keiretsu-labs/kubernetes-manifests
 ├── clusters/
 │   ├── talos-ottawa/          # Ottawa cluster config
 │   ├── talos-robbinsdale/     # Robbinsdale cluster config
@@ -47,7 +47,7 @@ rajsinghtech/kubernetes-manifests
 Authenticated as `rajsinghtechbot` via GITHUB_TOKEN.
 
 ```bash
-git clone https://github.com/rajsinghtech/kubernetes-manifests.git /tmp/k8s-manifests
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/k8s-manifests
 cd /tmp/k8s-manifests
 git checkout -b fix/cluster-issue-description
 # ... make changes ...

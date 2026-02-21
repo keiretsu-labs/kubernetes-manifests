@@ -42,7 +42,7 @@ requires: [jq, yq]
 
 ```bash
 # Clone fresh
-git clone https://github.com/rajsinghtech/openclaw-workspace.git /tmp/oc-audit
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/oc-audit
 cd /tmp/oc-audit
 ```
 

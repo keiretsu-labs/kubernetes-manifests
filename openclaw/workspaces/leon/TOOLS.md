@@ -19,11 +19,11 @@ find /path/to/code -type f -name "*.go" | head -20
 
 ```bash
 # Clone repos
-gh repo clone rajsinghtech/openclaw-workspace -- /tmp/oc-audit
+gh repo clone keiretsu-labs/kubernetes-manifests -- /tmp/oc-audit
 
 # Check CI status
-gh run list --repo rajsinghtech/openclaw-workspace --limit 5
-gh run view <id> --repo rajsinghtech/openclaw-workspace
+gh run list --repo keiretsu-labs/kubernetes-manifests --limit 5
+gh run view <id> --repo keiretsu-labs/kubernetes-manifests
 
 # Create PRs (for non-trivial changes)
 gh pr create --title "fix: ..." --body "..."
