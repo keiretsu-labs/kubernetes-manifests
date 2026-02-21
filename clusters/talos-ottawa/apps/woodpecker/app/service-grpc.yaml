@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: woodpecker-server-grpc
+  labels:
+    app: woodpecker-server
+spec:
+  type: LoadBalancer
+  loadBalancerIP: ${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.0.80
+  selector:
+    app.kubernetes.io/name: server
+    app.kubernetes.io/instance: woodpecker-server
+  ports:
+    - name: grpc
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
