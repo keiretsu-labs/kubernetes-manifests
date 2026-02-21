@@ -1,0 +1,28 @@
+---
+apiVersion: addons.cluster.x-k8s.io/v1alpha1
+kind: HelmChartProxy
+metadata:
+  name: flux
+spec:
+  clusterSelector:
+    matchLabels:
+      fluxBootstrap: enabled
+  repoURL: https://fluxcd-community.github.io/helm-charts
+  chartName: flux
+  options:
+    waitForJobs: true
+    wait: true
+    timeout: 10m
+  install:
+    createNamespace: true
+    set:
+      - name: "installCRDs"
+        value: "true"
+      - name: "imagePullSecrets"
+        value: ""
+      - name: "sourceController.secret"
+        value: "false"
+      - name: "imageautomationController.secret"
+        value: "false"
+      - name: "imageReflectionController.secret"
+        value: "false"
