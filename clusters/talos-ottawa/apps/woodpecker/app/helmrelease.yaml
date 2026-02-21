@@ -7,8 +7,8 @@ spec:
   interval: 30m
   chart:
     spec:
-      chart: server
-      version: 3.0.1
+      chart: woodpecker
+      version: 3.5.1
       sourceRef:
         kind: HelmRepository
         name: woodpecker
@@ -21,13 +21,17 @@ spec:
     remediation:
       retries: 3
   values:
-    env:
-      WOODPECKER_HOST: "https://woodpecker.keiretsu.ts.net"
-      WOODPECKER_ADMIN: "rajsinghtech"
-      WOODPECKER_GITHUB: "true"
-      WOODPECKER_GITHUB_CLIENT: "${WOODPECKER_GITHUB_CLIENT}"
-      WOODPECKER_GITHUB_SECRET: "${WOODPECKER_GITHUB_SECRET}"
-      WOODPECKER_AGENT_SECRET: "${WOODPECKER_AGENT_SECRET}"
-      WOODPECKER_DATABASE_DRIVER: "postgres"
-      WOODPECKER_DATABASE_DATASOURCE: "postgres://woodpecker-postgres-app:${WOODPECKER_DB_PASSWORD}@woodpecker-postgres-rw:5432/app?sslmode=disable"
-      WOODPECKER_WEBHOOK_HOST: "https://${LOCATION}-woodpecker-webhook.keiretsu.ts.net"
+    agent:
+      enabled: false
+    server:
+      enabled: true
+      env:
+        WOODPECKER_HOST: "https://woodpecker.keiretsu.ts.net"
+        WOODPECKER_ADMIN: "rajsinghtech"
+        WOODPECKER_GITHUB: "true"
+        WOODPECKER_GITHUB_CLIENT: "${WOODPECKER_GITHUB_CLIENT}"
+        WOODPECKER_GITHUB_SECRET: "${WOODPECKER_GITHUB_SECRET}"
+        WOODPECKER_AGENT_SECRET: "${WOODPECKER_AGENT_SECRET}"
+        WOODPECKER_DATABASE_DRIVER: "postgres"
+        WOODPECKER_DATABASE_DATASOURCE: "postgres://woodpecker-postgres-app:${WOODPECKER_DB_PASSWORD}@woodpecker-postgres-rw:5432/app?sslmode=disable"
+        WOODPECKER_WEBHOOK_HOST: "https://${LOCATION}-woodpecker-webhook.keiretsu.ts.net"
