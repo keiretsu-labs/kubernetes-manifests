@@ -8,4 +8,3 @@ resources:
   - service-grpc.yaml
   - ingress.yaml
   - ingress-webhook.yaml
-  - secret.sops.yaml
