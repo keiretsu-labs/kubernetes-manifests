@@ -7,3 +7,4 @@ resources:
   - scrapeconfig.yaml
   - prometheusrules.yaml
   - httproute.yaml
+  - silence-alerts.yaml
