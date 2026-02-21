@@ -1,80 +1,51 @@
----
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: AlertmanagerConfig
 metadata:
   name: alertmanager
+  namespace: monitoring
 spec:
   route:
-    receiver: discord
     groupBy:
       - alertname
       - cluster
       - job
     groupInterval: 5m
     groupWait: 1m
+    receiver: discord
     repeatInterval: 12h
     routes:
-      - receiver: blackhole
-        matchers:
-          - name: alertname
+      - matchers:
+          - matchType: "="
+            name: alertname
             value: InfoInhibitor
-            matchType: "="
-      - receiver: blackhole
-        matchers:
-          - name: alertname
+        receiver: blackhole
+      - matchers:
+          - matchType: "="
+            name: alertname
             value: Watchdog
-            matchType: "="
-      - receiver: discord
-        matchers:
-          - name: severity
+        receiver: blackhole
+      - matchers:
+          - matchType: "=~"
+            name: severity
             value: critical|error|warning
-            matchType: "=~"
-
-  inhibitRules:
-    - sourceMatch:
-        - name: severity
-          value: critical
-          matchType: "="
-      targetMatch:
-        - name: severity
-          value: error|warning|info
-          matchType: "=~"
-      equal:
-        - namespace
-        - alertname
-    - sourceMatch:
-        - name: severity
-          value: error
-          matchType: "="
-      targetMatch:
-        - name: severity
-          value: warning|info
-          matchType: "=~"
-      equal:
-        - namespace
-        - alertname
-    - sourceMatch:
-        - name: alertname
-          value: InfoInhibitor
-          matchType: "="
-      targetMatch:
-        - name: severity
-          value: info
-          matchType: "="
-      equal:
-        - namespace
-
+        receiver: discord
+      # Silenced alerts
+      - matchers:
+          - matchType: "="
+            name: alertname
+            value: DockerhubRateLimitRisk
+        receiver: blackhole
+      - matchers:
+          - matchType: "="
+            name: alertname
+            value: ProbeFailed
+        receiver: blackhole
   receivers:
     - name: blackhole
-    - name: discord
-      discordConfigs:
-        - sendResolved: true
-          apiURL:
-            name: alertmanager-secret
+    - discordConfigs:
+        - apiURL:
             key: DISCORD_ALERTMANAGER_WEBHOOK_URL
-          title: >-
-            [${CLUSTER_NAME}] [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}]
-            {{ .GroupLabels.alertname }}
+            name: alertmanager-secret
           message: |-
             {{- range .Alerts }}
               {{- if ne .Annotations.description "" }}
@@ -93,3 +64,39 @@ spec:
                 {{- end }}
               {{- end }}
             {{- end }}
+          sendResolved: true
+          title: '[talos-robbinsdale] [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.alertname }}'
+      name: discord
+  inhibitRules:
+    - equal:
+        - namespace
+        - alertname
+      sourceMatch:
+        - matchType: "="
+          name: severity
+          value: critical
+      targetMatch:
+        - matchType: "=~"
+          name: severity
+          value: error|warning|info
+    - equal:
+        - namespace
+        - alertname
+      sourceMatch:
+        - matchType: "="
+          name: severity
+          value: error
+      targetMatch:
+        - matchType: "=~"
+          name: severity
+          value: warning|info
+    - equal:
+        - namespace
+      sourceMatch:
+        - matchType: "="
+          name: alertname
+          value: InfoInhibitor
+      targetMatch:
+        - matchType: "="
+          name: severity
+          value: info
