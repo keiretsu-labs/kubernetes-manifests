@@ -13,7 +13,7 @@ description: >
   Don't use when: You haven't done a session review yet (do that first with
   session-review). Don't use for live debugging (use the appropriate
   troubleshooting skill). Don't use for changes to kubernetes-manifests
-  repo (Dyson's pr-workflow handles that).
+  repo (use the pr-workflow skill for that).
 
   Outputs: Pull request(s) on keiretsu-labs/kubernetes-manifests with validated
   fixes to workspace docs, skills, or config. Max 2 PRs per run.
@@ -33,7 +33,7 @@ requires: [gh, git, kubectl, jq, yq]
 
 ### Don't Use This Skill When
 - You haven't reviewed sessions yet → use **session-review** first
-- The fix is in cluster configs, not openclaw workspace content → use Dyson's **pr-workflow**
+- The fix is in cluster configs, not openclaw workspace content → use **pr-workflow**
 - Debugging a live issue → use the appropriate troubleshooting skill
 - The change is config (openclaw.json), not docs → be careful — config changes affect runtime
 
@@ -92,7 +92,7 @@ jq '.agents.list[].id' kustomization/openclaw.json
 
 ```bash
 # Skill directories that exist
-ls workspaces/main/skills/ workspaces/morty/skills/ workspaces/robert/skills/
+ls workspaces/main/skills/
 
 # Skills referenced in AGENTS.md
 grep -n "skill" workspaces/*/AGENTS.md
@@ -128,10 +128,10 @@ Skip if an open PR already addresses the same issue.
 
 ```bash
 # Always clean up stale clones — leftover state causes confusion
-rm -rf /tmp/robert-review
-git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/robert-review
-cd /tmp/robert-review
-git checkout -b robert/<topic>-$(date +%Y-%m-%d)
+rm -rf /tmp/workspace-review
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/workspace-review
+cd /tmp/workspace-review
+git checkout -b workspace/<topic>-$(date +%Y-%m-%d)
 ```
 
 ⚠️ **Always `rm -rf` before cloning.** Previous session clones will have wrong branches and stale state.
@@ -158,7 +158,7 @@ kustomize build kustomization/ > /dev/null
 ```bash
 git add <specific-files>
 git commit -m "<type>: <description>"
-git push origin robert/<topic>-$(date +%Y-%m-%d)
+git push origin workspace/<topic>-$(date +%Y-%m-%d)
 
 gh pr create \
   --title "<type>: <description>" \

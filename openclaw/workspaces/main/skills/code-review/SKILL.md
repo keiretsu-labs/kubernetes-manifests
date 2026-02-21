@@ -112,7 +112,7 @@ gh pr review <number> --repo rajsinghtech/<repo> --comment --body "## Review
 ## Code Review
 
 **PR:** #<number> — <title>
-**Reviewer:** Leon
+**Reviewer:** OpenClaw
 **Verdict:** ✅ Approved / ⚠️ Changes Requested / 🚫 Blocked
 
 ### Summary

@@ -7,7 +7,7 @@ description: >
   Use when: Running periodic session reviews (cron), investigating agent
   reliability issues, looking for recurring failure patterns, or identifying
   workspace improvements from real usage. This is the primary skill for
-  Robert's review cron job.
+  the daily review cron job.
 
   Don't use when: You're making changes to fix issues (use
   workspace-improvement for that). Don't use for live debugging of a
@@ -34,8 +34,8 @@ requires: []
 ### Don't Use This Skill When
 - You already have findings and need to open PRs → use **workspace-improvement**
 - An issue is happening right now and needs live debugging → route to the appropriate agent
-- Reviewing a PR's code quality → use **code-review** (leon)
-- Looking at cluster health, not agent sessions → use **cluster-health** (dyson)
+- Reviewing a PR's code quality → use **code-review**
+- Looking at cluster health, not agent sessions → use **cluster-health**
 
 ## Gathering Sessions
 
@@ -64,7 +64,7 @@ Use the built-in `sessions_list` and `sessions_history` tools (OpenClaw tool cal
 
 ### Agents to review
 
-Check sessions for ALL agents: **main**, **morty**, **dyson**, **leon**, **robert**.
+Check sessions for: **main**.
 
 ## Error Patterns to Detect
 
@@ -107,7 +107,7 @@ For each finding, record:
 | Field | Value |
 |-------|-------|
 | Session ID | `<id>` |
-| Agent | `main` / `morty` / `dyson` / `leon` / `robert` |
+| Agent | `main` |
 | Timestamp | When the error occurred |
 | Category | `tool-failure` / `retry` / `knowledge-gap` / `stale-docs` / `missing-skill` / `config-drift` |
 | Severity | `breaking` / `misleading` / `enhancement` |
@@ -129,11 +129,7 @@ For each finding, record:
 
 **Period:** <start> to <end>
 **Sessions analyzed:** <N>
-- main: <W> sessions
-- morty: <X> sessions
-- dyson: <Y> sessions
-- leon: <Z> sessions
-- robert: <R> sessions
+- main: <N> sessions
 
 ## Findings
 
