@@ -9,13 +9,13 @@ Check for open PRs that haven't been reviewed on kubernetes-manifests (primary f
 
 ```bash
 # Open PRs on kubernetes-manifests — PRIORITY REPO
-gh pr list --repo rajsinghtech/kubernetes-manifests --state open --json number,title,author,createdAt,reviewDecision
+gh pr list --repo keiretsu-labs/kubernetes-manifests --state open --json number,title,author,createdAt,reviewDecision
 ```
 
 For each unreviewed PR:
-1. `gh pr diff <number> --repo rajsinghtech/kubernetes-manifests` — read the diff
+1. `gh pr diff <number> --repo keiretsu-labs/kubernetes-manifests` — read the diff
 2. Check for: syntax errors, logic bugs, security issues, missing validation
-3. Post review: `gh pr review <number> --repo rajsinghtech/kubernetes-manifests --comment --body "..."`
+3. Post review: `gh pr review <number> --repo keiretsu-labs/kubernetes-manifests --comment --body "..."`
 
 ## Only Report Problems
 

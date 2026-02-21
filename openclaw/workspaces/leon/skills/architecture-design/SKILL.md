@@ -130,4 +130,4 @@ Provide recommendations with:
 
 - **Premature optimization:** If the system works and is maintainable, don't refactor for theoretical future scale
 - **Brownfield vs greenfield:** Existing code has existing users — always consider migration cost
-- **Cross-repo dependencies:** Changes spanning openclaw-workspace and kubernetes-manifests need coordinated PRs
+- **Cross-directory dependencies:** Changes spanning openclaw/ and cluster configs in the same monorepo should be coordinated in a single PR

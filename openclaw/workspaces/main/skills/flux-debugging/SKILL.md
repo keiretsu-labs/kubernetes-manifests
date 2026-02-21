@@ -50,7 +50,7 @@ flux get sources git -A | grep openclaw
 flux get kustomizations -A | grep openclaw
 
 # 3. Events — what went wrong?
-flux events -A --for Kustomization/openclaw-workspace
+flux events -A --for Kustomization/openclaw
 kubectl get events -n flux-system --sort-by='.lastTimestamp' | tail -20
 ```
 
@@ -68,16 +68,16 @@ kubectl get events -n flux-system --sort-by='.lastTimestamp' | tail -20
 
 ```bash
 # Force full reconciliation (source + apply)
-flux reconcile kustomization openclaw-workspace --with-source
+flux reconcile kustomization openclaw --with-source
 
 # Suspend for manual debugging
-flux suspend kustomization openclaw-workspace
+flux suspend kustomization openclaw
 
 # Resume after manual fixes
-flux resume kustomization openclaw-workspace
+flux resume kustomization openclaw
 
 # Nuclear: force re-fetch and re-apply everything
-flux reconcile kustomization openclaw-workspace --with-source --force
+flux reconcile kustomization openclaw --with-source --force
 ```
 
 ## Edge Cases
