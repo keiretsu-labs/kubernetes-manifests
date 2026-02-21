@@ -86,3 +86,4 @@ resources:
   - ./temporal.yaml
   - ./temporal-worker-controller.yaml
   - ./zot.yaml
+  - ./woodpecker.yaml

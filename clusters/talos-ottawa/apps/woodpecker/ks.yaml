@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app woodpecker-server
+  namespace: flux-system
+spec:
+  targetNamespace: woodpecker
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: woodpecker
+    - name: cnpg-system
+  path: ./clusters/${CLUSTER_NAME}/apps/woodpecker/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
