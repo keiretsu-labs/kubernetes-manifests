@@ -1,0 +1,166 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openclaw
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: openclaw
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: openclaw
+    spec:
+      serviceAccountName: tailscale
+      imagePullSecrets:
+        - name: zot-pull-secret
+      initContainers:
+        - name: sysctler
+          image: ghcr.io/tailscale/tailscale:v1.94.1
+          command: [/bin/sh, -c]
+          args:
+            - >-
+              sysctl -w net.ipv4.ip_forward=1 &&
+              if sysctl net.ipv6.conf.all.forwarding;
+              then sysctl -w net.ipv6.conf.all.forwarding=1; fi
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            privileged: true
+        - name: init-workspace
+          image: busybox:1.37.0
+          command: [sh, -c]
+          args:
+            - |
+              set -e
+              echo "[init-workspace] Updating workspaces from OCI image..."
+              rm -rf /home/node/.openclaw/workspaces
+              cp -a /opt/workspace/workspaces /home/node/.openclaw/workspaces
+              echo "[init-workspace] Updating config..."
+              rm -f /home/node/.openclaw/clawdbot.json
+              cp /opt/config/openclaw.json /home/node/.openclaw/clawdbot.json
+              echo "[init-workspace] Updating cron jobs..."
+              mkdir -p /home/node/.openclaw/cron
+              cp /opt/config/cron-jobs.json /home/node/.openclaw/cron/jobs.json
+              echo "[init-workspace] Setting up git config..."
+              cat > /home/node/.openclaw/.gitconfig <<'GITCFG'
+              [credential "https://github.com"]
+                helper = !gh auth git-credential
+              [user]
+                name = rajsinghtechbot
+                email = king360raj@gmail.com
+              GITCFG
+              echo "[init-workspace] Fixing ownership..."
+              chown -R 1000:1000 /home/node/.openclaw
+              echo "[init-workspace] Done"
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/.openclaw
+            - name: workspace
+              mountPath: /opt/workspace
+              readOnly: true
+            - name: config
+              mountPath: /opt/config
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      containers:
+        - name: openclaw
+          image: oci.killinit.cc/openclaw/openclaw:latest
+          imagePullPolicy: Always
+          env:
+            - name: KUBECONFIG
+              value: /home/node/.kube/config
+            - name: GIT_CONFIG_GLOBAL
+              value: /home/node/.openclaw/.gitconfig
+            - name: GIT_AUTHOR_NAME
+              value: rajsinghtechbot
+            - name: GIT_AUTHOR_EMAIL
+              value: king360raj@gmail.com
+            - name: GIT_COMMITTER_NAME
+              value: rajsinghtechbot
+            - name: GIT_COMMITTER_EMAIL
+              value: king360raj@gmail.com
+          envFrom:
+            - secretRef:
+                name: openclaw-secrets
+          # WORKAROUND: probes removed — gateway binds to loopback only
+          # (openclaw/openclaw#19004) so kubelet can't reach it. Restore
+          # tcpSocket probes on port 18789 once #19004 is fixed and bind
+          # reverts to lan.
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/.openclaw
+            - name: kubeconfig
+              mountPath: /home/node/.kube
+              readOnly: true
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:v1.94.1
+          securityContext:
+            privileged: true
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+            - name: TS_KUBE_SECRET
+              value: ""
+            - name: TS_USERSPACE
+              value: "false"
+            - name: TS_STATE_DIR
+              value: /dev/shm
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: ts-oauth
+                  key: TS_AUTHKEY
+            - name: TS_ACCEPT_DNS
+              value: "true"
+            - name: TS_EXTRA_ARGS
+              value: "--advertise-tags=tag:k8s,tag:ottawa --accept-routes"
+            - name: TS_HOSTNAME
+              value: $(POD_NAME)
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: openclaw-data
+        - name: workspace
+          image:
+            reference: oci.killinit.cc/openclaw/workspace:latest
+            pullPolicy: Always
+        - name: config
+          configMap:
+            name: openclaw-config
+        - name: kubeconfig
+          secret:
+            secretName: openclaw-kubeconfig

@@ -1,0 +1,30 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: openclaw
+resources:
+  - deployment.yaml
+  - service-main.yaml
+  - chromium-deployment.yaml
+  - chromium-service.yaml
+  - httproute.yaml
+  - httproute-code.yaml
+  - egress.yaml
+  - rbac.yaml
+  - secret.sops.yaml
+  - ts-oauth.yaml
+  - pull-secret.yaml
+  - pvc.yaml
+  - volsync-backup.yaml
+  - volsync-restore.yaml
+configMapGenerator:
+  - name: openclaw-config
+    files:
+      - openclaw.json
+      - cron-jobs.json
+secretGenerator:
+  - name: openclaw-kubeconfig
+    files:
+      - config=kubeconfig.yaml
+generatorOptions:
+  disableNameSuffixHash: true

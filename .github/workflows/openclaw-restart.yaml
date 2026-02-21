@@ -1,0 +1,43 @@
+name: Restart OpenClaw
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "openclaw/kustomization/openclaw.json"
+  workflow_run:
+    workflows: ["Build & Push OpenClaw Image", "Build & Push Workspace Image"]
+    types: [completed]
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: restart-openclaw
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  restart:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Install Flux CLI
+        uses: fluxcd/flux2/action@main
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: TbqNGJkY5611CNTRL-kz4CwX2LK721CNTRL
+          audience: api.tailscale.com/TbqNGJkY5611CNTRL-kz4CwX2LK721CNTRL
+          tags: tag:ci
+          args: --accept-dns
+
+      - name: Reconcile and restart
+        run: |
+          sudo tailscale configure kubeconfig ottawa-k8s-operator.keiretsu.ts.net
+          sudo env "PATH=$PATH" flux reconcile kustomization openclaw -n flux-system --with-source
+          sudo kubectl rollout restart deployment openclaw -n openclaw
+          sudo kubectl rollout status deployment openclaw -n openclaw --timeout=120s

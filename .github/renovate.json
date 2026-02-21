@@ -41,7 +41,7 @@
     {
       "description": "Auto merge Docker tags in CI and app Dockerfiles",
       "matchManagers": ["dockerfile", "docker-compose"],
-      "matchPaths": [".github/**", "laptop/**", "swarm/**"],
+      "matchPaths": [".github/**", "laptop/**", "swarm/**", "openclaw/**"],
       "automerge": true
     },
     {
