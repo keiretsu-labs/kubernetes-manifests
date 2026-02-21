@@ -13,16 +13,8 @@ spec:
     waitForJobs: true
     wait: true
     timeout: 10m
-  install:
-    createNamespace: true
-    set:
-      - name: "installCRDs"
-        value: "true"
-      - name: "imagePullSecrets"
-        value: ""
-      - name: "sourceController.secret"
-        value: "false"
-      - name: "imageautomationController.secret"
-        value: "false"
-      - name: "imageReflectionController.secret"
-        value: "false"
+    install:
+      createNamespace: true
+      set:
+        - name: "installCRDs"
+          value: "true"
