@@ -57,9 +57,8 @@ spec:
     alertmanager:
       enabled: true
       alertmanagerSpec:
-        alertmanagerConfigSelector:
-          matchLabels:
-            team: monitoring
+        alertmanagerConfiguration:
+          name: alertmanager
         externalUrl: https://alertmanager.${CLUSTER_DOMAIN}
         resources:
           requests:
