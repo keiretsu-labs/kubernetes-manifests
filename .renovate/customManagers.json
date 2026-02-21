@@ -11,6 +11,81 @@
         "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*(?:talos|kubernetes)?[Vv]?ersion:\\s*(?<currentValue>\\S+)"
       ],
       "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}docker{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": "OpenClaw base image version",
+      "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
+      "matchStrings": ["FROM ghcr\\.io/openclaw/openclaw:(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "ghcr.io/openclaw/openclaw",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "description": "OpenClaw kubectl version",
+      "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
+      "matchStrings": ["ARG KUBECTL_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "kubernetes/kubernetes",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "OpenClaw Flux CLI version",
+      "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
+      "matchStrings": ["ARG FLUX_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "fluxcd/flux2",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "OpenClaw Helm version",
+      "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
+      "matchStrings": ["ARG HELM_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "helm/helm",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "OpenClaw Kustomize version",
+      "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
+      "matchStrings": ["ARG KUSTOMIZE_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "kubernetes-sigs/kustomize",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^kustomize/(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "OpenClaw yq version",
+      "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
+      "matchStrings": ["ARG YQ_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "mikefarah/yq",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "OpenClaw SOPS version",
+      "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
+      "matchStrings": ["ARG SOPS_V=(?<currentValue>v[\\d.]+)"],
+      "depNameTemplate": "getsops/sops",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "OpenClaw jq version",
+      "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
+      "matchStrings": ["ARG JQ_V=(?<currentValue>jq-[\\d.]+)"],
+      "depNameTemplate": "jqlang/jq",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "OpenClaw GitHub CLI version",
+      "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
+      "matchStrings": ["ARG GH_V=(?<currentValue>[\\d.]+)"],
+      "depNameTemplate": "cli/cli",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
     }
   ]
 }

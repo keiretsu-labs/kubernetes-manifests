@@ -1,0 +1,87 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openclaw-chromium
+  labels:
+    app.kubernetes.io/name: openclaw-chromium
+    app.kubernetes.io/component: browser
+    app.kubernetes.io/part-of: openclaw
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: openclaw-chromium
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: openclaw-chromium
+        app.kubernetes.io/component: browser
+        app.kubernetes.io/part-of: openclaw
+    spec:
+      containers:
+      - name: chromium
+        image: zenika/alpine-chrome:124
+        imagePullPolicy: IfNotPresent
+        command:
+        - chromium-browser
+        args:
+        - --headless
+        - --disable-gpu
+        - --no-sandbox
+        - --disable-dev-shm-usage
+        - --remote-debugging-address=0.0.0.0
+        - --remote-debugging-port=9222
+        - --user-data-dir=/tmp/chromium
+        env:
+        - name: XDG_CACHE_HOME
+          value: /tmp
+        ports:
+        - name: cdp
+          containerPort: 9222
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        livenessProbe:
+          tcpSocket:
+            port: 9222
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          failureThreshold: 6
+          timeoutSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: 9222
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        startupProbe:
+          tcpSocket:
+            port: 9222
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 12
+          timeoutSeconds: 5
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: tmp
+        emptyDir: {}

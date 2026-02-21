@@ -1,0 +1,83 @@
+name: Build & Push OpenClaw Image
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "openclaw/Dockerfile.openclaw"
+      - ".github/workflows/openclaw-build.yaml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  REGISTRY: oci.killinit.cc
+  IMAGE: openclaw/openclaw
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: imjasonh/setup-crane@v0.5
+
+      - name: Login to registry
+        run: |
+          echo "${{ secrets.ZOT_PASSWORD }}" | docker login "${{ env.REGISTRY }}" -u "${{ secrets.ZOT_USERNAME }}" --password-stdin
+          crane auth login "${{ env.REGISTRY }}" -u "${{ secrets.ZOT_USERNAME }}" -p "${{ secrets.ZOT_PASSWORD }}"
+
+      - name: Compute tags
+        id: tags
+        run: |
+          SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build amd64
+        uses: docker/build-push-action@v6
+        with:
+          context: ./openclaw
+          file: openclaw/Dockerfile.openclaw
+          platforms: linux/amd64
+          outputs: type=docker,dest=amd64.tar
+          cache-from: type=gha,scope=openclaw-amd64
+          cache-to: type=gha,scope=openclaw-amd64,mode=max
+          provenance: false
+
+      - name: Build arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: ./openclaw
+          file: openclaw/Dockerfile.openclaw
+          platforms: linux/arm64
+          outputs: type=docker,dest=arm64.tar
+          cache-from: type=gha,scope=openclaw-arm64
+          cache-to: type=gha,scope=openclaw-arm64,mode=max
+          provenance: false
+
+      - name: Push per-arch images with skopeo
+        run: |
+          set -e
+          CREDS="${{ secrets.ZOT_USERNAME }}:${{ secrets.ZOT_PASSWORD }}"
+          for ARCH in amd64 arm64; do
+            skopeo copy \
+              "docker-archive:${ARCH}.tar" \
+              "docker://${{ env.REGISTRY }}/${{ env.IMAGE }}:build-${ARCH}" \
+              --dest-creds "$CREDS"
+          done
+
+      - name: Create and push multi-arch manifest
+        run: |
+          set -e
+          for TAG in "${{ steps.tags.outputs.sha }}" "latest"; do
+            crane index append \
+              --manifest "${{ env.REGISTRY }}/${{ env.IMAGE }}:build-amd64" \
+              --manifest "${{ env.REGISTRY }}/${{ env.IMAGE }}:build-arm64" \
+              --tag "${{ env.REGISTRY }}/${{ env.IMAGE }}:${TAG}"
+          done

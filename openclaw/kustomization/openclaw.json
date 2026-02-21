@@ -1,0 +1,251 @@
+{
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "trustedProxies": [
+      "10.3.0.0/16",
+      "10.2.0.0/16"
+    ],
+    "auth": {
+      "mode": "token",
+      "token": "${DEFAULT_PASSWORD}"
+    },
+    "controlUi": {
+      "enabled": true,
+      "allowInsecureAuth": true
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "aperture": {
+        "baseUrl": "http://aperture",
+        "apiKey": "unused",
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "MiniMax-M2.5",
+            "name": "MiniMax M2.5",
+            "input": [
+              "text"
+            ],
+            "contextWindow": 204800,
+            "maxTokens": 16384,
+            "reasoning": true
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "/home/node/.openclaw/workspaces/main",
+      "model": {
+        "primary": "aperture/MiniMax-M2.5"
+      },
+      "userTimezone": "America/New_York",
+      "timeoutSeconds": 600,
+      "maxConcurrent": 3,
+      "subagents": {
+        "maxConcurrent": 16
+      },
+      "compaction": {
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 4000
+        }
+      },
+      "memorySearch": {
+        "enabled": true,
+        "experimental": {
+          "sessionMemory": true
+        },
+        "sources": [
+          "memory",
+          "sessions"
+        ]
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "identity": {
+          "name": "OpenClaw",
+          "emoji": "🦞"
+        },
+        "model": {
+          "primary": "aperture/MiniMax-M2.5"
+        },
+        "subagents": {
+          "allowAgents": [
+            "main",
+            "morty",
+            "dyson",
+            "robert",
+            "leon"
+          ]
+        },
+        "heartbeat": {
+          "every": "30m",
+          "model": "aperture/MiniMax-M2.5",
+          "target": "discord",
+          "activeHours": {
+            "start": "08:00",
+            "end": "23:00",
+            "timezone": "America/New_York"
+          }
+        }
+      },
+      {
+        "id": "morty",
+        "identity": {
+          "name": "Morty",
+          "emoji": "🔧"
+        },
+        "workspace": "/home/node/.openclaw/workspaces/morty",
+        "model": {
+          "primary": "aperture/MiniMax-M2.5"
+        },
+        "subagents": {
+          "model": "aperture/MiniMax-M2.5",
+          "allowAgents": [
+            "main"
+          ]
+        }
+      },
+      {
+        "id": "dyson",
+        "identity": {
+          "name": "Dyson",
+          "emoji": "🌀"
+        },
+        "workspace": "/home/node/.openclaw/workspaces/dyson",
+        "model": {
+          "primary": "aperture/MiniMax-M2.5"
+        },
+        "subagents": {
+          "model": "aperture/MiniMax-M2.5",
+          "allowAgents": [
+            "main"
+          ]
+        },
+        "heartbeat": {
+          "every": "30m",
+          "model": "aperture/MiniMax-M2.5",
+          "target": "discord",
+          "activeHours": {
+            "start": "06:00",
+            "end": "23:59",
+            "timezone": "America/New_York"
+          }
+        }
+      },
+      {
+        "id": "robert",
+        "identity": {
+          "name": "Robert",
+          "emoji": "📋"
+        },
+        "workspace": "/home/node/.openclaw/workspaces/robert",
+        "model": {
+          "primary": "aperture/MiniMax-M2.5"
+        },
+        "subagents": {
+          "allowAgents": [
+            "main"
+          ]
+        }
+      },
+      {
+        "id": "leon",
+        "identity": {
+          "name": "Leon",
+          "emoji": "💻"
+        },
+        "workspace": "/home/node/.openclaw/workspaces/leon",
+        "model": {
+          "primary": "aperture/MiniMax-M2.5"
+        },
+        "subagents": {
+          "allowAgents": [
+            "main"
+          ]
+        }
+      }
+    ]
+  },
+  "session": {
+    "scope": "per-sender",
+    "idleMinutes": 60
+  },
+  "browser": {
+    "enabled": true,
+    "defaultProfile": "openclaw",
+    "profiles": {
+      "openclaw": {
+        "cdpUrl": "http://openclaw-chromium:9222",
+        "color": "#4285F4"
+      }
+    }
+  },
+  "logging": {
+    "level": "info",
+    "consoleStyle": "compact",
+    "redactSensitive": "tools"
+  },
+  "skills": {
+    "entries": {
+      "gog": {
+        "enabled": true,
+        "env": {
+          "GOG_ACCOUNT": "$${GOG_ACCOUNT}"
+        }
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "discord": {
+        "enabled": true
+      }
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "tools": {
+    "profile": "full",
+    "agentToAgent": {
+      "enabled": true
+    },
+    "web": {
+      "search": {
+        "enabled": true
+      },
+      "fetch": {
+        "enabled": true
+      }
+    }
+  },
+  "channels": {
+    "discord": {
+      "enabled": true,
+      "groupPolicy": "open",
+      "guilds": {
+        "*": {
+          "requireMention": false
+        }
+      },
+      "dmPolicy": "pairing",
+      "configWrites": true
+    }
+  },
+  "commands": {
+    "useAccessGroups": false,
+    "ownerAllowFrom": [
+      "*"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "robert-review",
+      "name": "Robert Review",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6 * * *",
+        "tz": "America/New_York"
+      },
+      "agentId": "robert",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run your session review and workspace improvement workflow. Check sessions from the last 24 hours, identify issues, and open PRs for any improvements."
+      }
+    }
+  ]
+}
