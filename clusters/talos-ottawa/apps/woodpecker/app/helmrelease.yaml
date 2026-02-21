@@ -1,0 +1,33 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: woodpecker-server
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: server
+      version: 3.0.1
+      sourceRef:
+        kind: HelmRepository
+        name: woodpecker
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    env:
+      WOODPECKER_HOST: "https://woodpecker.${CLUSTER_DOMAIN}"
+      WOODPECKER_ADMIN: "rajsinghtech"
+      WOODPECKER_GITHUB: "true"
+      WOODPECKER_GITHUB_CLIENT: "${WOODPECKER_GITHUB_CLIENT}"
+      WOODPECKER_GITHUB_SECRET: "${WOODPECKER_GITHUB_SECRET}"
+      WOODPECKER_AGENT_SECRET: "${WOODPECKER_AGENT_SECRET}"
+      WOODPECKER_DATABASE_DRIVER: "postgres"
+      WOODPECKER_DATABASE_DATASOURCE: "postgres://woodpecker-postgres-app:${WOODPECKER_DB_PASSWORD}@woodpecker-postgres-rw:5432/app?sslmode=disable"
+      WOODPECKER_WEBHOOK_HOST: "https://${LOCATION}-woodpecker-webhook.keiretsu.ts.net"
