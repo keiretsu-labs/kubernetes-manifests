@@ -17,6 +17,7 @@ spec:
     !/clusters/common
     !/swarm
     !/laptop
+    !/openclaw
     !/clusters/talos-ottawa
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
