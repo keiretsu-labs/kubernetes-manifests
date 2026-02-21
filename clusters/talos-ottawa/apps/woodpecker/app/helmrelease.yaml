@@ -33,5 +33,5 @@ spec:
         WOODPECKER_GITHUB_SECRET: "${WOODPECKER_GITHUB_SECRET}"
         WOODPECKER_AGENT_SECRET: "${WOODPECKER_AGENT_SECRET}"
         WOODPECKER_DATABASE_DRIVER: "postgres"
-        WOODPECKER_DATABASE_DATASOURCE: "postgres://woodpecker-postgres-app:${WOODPECKER_DB_PASSWORD}@woodpecker-postgres-rw:5432/app?sslmode=disable"
+        WOODPECKER_DATABASE_DATASOURCE: "postgres://app:${WOODPECKER_DB_PASSWORD}@woodpecker-postgres-rw:5432/app?sslmode=disable"
         WOODPECKER_WEBHOOK_HOST: "https://${LOCATION}-woodpecker-webhook.keiretsu.ts.net"
