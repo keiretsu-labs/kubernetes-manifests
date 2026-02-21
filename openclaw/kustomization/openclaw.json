@@ -78,59 +78,6 @@
         "model": {
           "primary": "aperture/MiniMax-M2.5"
         },
-        "subagents": {
-          "allowAgents": [
-            "main",
-            "morty",
-            "dyson",
-            "robert",
-            "leon"
-          ]
-        },
-        "heartbeat": {
-          "every": "30m",
-          "model": "aperture/MiniMax-M2.5",
-          "target": "discord",
-          "activeHours": {
-            "start": "08:00",
-            "end": "23:00",
-            "timezone": "America/New_York"
-          }
-        }
-      },
-      {
-        "id": "morty",
-        "identity": {
-          "name": "Morty",
-          "emoji": "🔧"
-        },
-        "workspace": "/home/node/.openclaw/workspaces/morty",
-        "model": {
-          "primary": "aperture/MiniMax-M2.5"
-        },
-        "subagents": {
-          "model": "aperture/MiniMax-M2.5",
-          "allowAgents": [
-            "main"
-          ]
-        }
-      },
-      {
-        "id": "dyson",
-        "identity": {
-          "name": "Dyson",
-          "emoji": "🌀"
-        },
-        "workspace": "/home/node/.openclaw/workspaces/dyson",
-        "model": {
-          "primary": "aperture/MiniMax-M2.5"
-        },
-        "subagents": {
-          "model": "aperture/MiniMax-M2.5",
-          "allowAgents": [
-            "main"
-          ]
-        },
         "heartbeat": {
           "every": "30m",
           "model": "aperture/MiniMax-M2.5",
@@ -140,38 +87,6 @@
             "end": "23:59",
             "timezone": "America/New_York"
           }
-        }
-      },
-      {
-        "id": "robert",
-        "identity": {
-          "name": "Robert",
-          "emoji": "📋"
-        },
-        "workspace": "/home/node/.openclaw/workspaces/robert",
-        "model": {
-          "primary": "aperture/MiniMax-M2.5"
-        },
-        "subagents": {
-          "allowAgents": [
-            "main"
-          ]
-        }
-      },
-      {
-        "id": "leon",
-        "identity": {
-          "name": "Leon",
-          "emoji": "💻"
-        },
-        "workspace": "/home/node/.openclaw/workspaces/leon",
-        "model": {
-          "primary": "aperture/MiniMax-M2.5"
-        },
-        "subagents": {
-          "allowAgents": [
-            "main"
-          ]
         }
       }
     ]
