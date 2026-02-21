@@ -9,6 +9,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
   name: http-garage-internal
+  namespace: monitoring
 spec:
   module: http_2xx
   prober:
