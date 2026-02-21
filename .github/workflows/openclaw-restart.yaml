@@ -30,8 +30,8 @@ jobs:
       - name: Connect to Tailscale
         uses: tailscale/github-action@v4
         with:
-          oauth-client-id: TbqNGJkY5611CNTRL-kz4CwX2LK721CNTRL
-          audience: api.tailscale.com/TbqNGJkY5611CNTRL-kz4CwX2LK721CNTRL
+          oauth-client-id: TbqNGJkY5611CNTRL-kvAScMUim511CNTRL
+          audience: api.tailscale.com/TbqNGJkY5611CNTRL-kvAScMUim511CNTRL
           tags: tag:ci
           args: --accept-dns
 
