@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: media
 resources:
   - pvc-media.yaml
+  - probes.yaml
   - ./jellyfin  
   - ./autobrr
   - ./prowlarr 

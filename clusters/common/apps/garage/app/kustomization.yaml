@@ -9,6 +9,7 @@ resources:
   - garagecluster.yaml
   - rpc-secret.yaml
   - httproute-s3.yaml
+  - probes.yaml
 configMapGenerator:
   - name: garage-grafana-dashboard
     files:
