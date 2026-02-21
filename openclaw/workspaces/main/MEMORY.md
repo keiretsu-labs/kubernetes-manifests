@@ -1,6 +1,6 @@
 # Operational Memory
 
-Curated knowledge from past sessions. Update this file when you learn something new that would save time in future sessions.
+Curated knowledge from past sessions. Update when you learn something that saves time next session. Don't log session-specific context — only stable patterns.
 
 ## Known Gotchas
 
@@ -10,6 +10,21 @@ Curated knowledge from past sessions. Update this file when you learn something 
 - Zot rejects `docker push` and `crane push` — only `skopeo copy docker-archive:` works
 - Workspace files from OCI ImageVolume are root-owned — init container runs `chown -R 1000:1000`
 - `:latest` image tags are cached by kubelet — must `rollout restart` to pick up new builds
+- Always `rm -rf` clone directories before `git clone` — stale clones cause wrong branch/state
+- Always `mkdir -p /tmp/outputs` before writing artifacts
+- Always use `--context <ctx>` with kubectl — never rely on current-context across clusters
+- `sessions_list` and `sessions_history` are OpenClaw built-in tool calls, NOT bash commands
+- After `kubectl rollout restart`, wait for `rollout status` before checking logs (10-30s)
+- If `git push` fails with 403, verify GITHUB_TOKEN is set and has push access
+
+## Cluster Quick Facts
+
+- Ottawa: Talos Linux, 3 nodes (rei, asuka, kaji), Rook-Ceph 3 OSDs — media cluster
+- Robbinsdale: Talos Linux, 5 nodes (silver, stone, tank, titan, vault), Rook-Ceph 5 OSDs — primary production
+- StPetersburg: K3s, GPU-enabled, local-path-provisioner — AI/ML only
+- Ceph health warnings after node restarts are transient — wait 5m before escalating
+- Flux source-controller can lag webhook delivery — force reconcile if revision is stale
+- StPetersburg uses K3s (not Talos) — different upgrade/debug workflow
 
 ## API Key Resolution
 
@@ -23,48 +38,71 @@ Curated knowledge from past sessions. Update this file when you learn something 
 - Init container refreshes from ConfigMap on every restart
 - Schedule kinds: `at`, `every`, `cron` — all require `tz` field
 
-## Common Agent Pitfalls
+## Validation Pitfalls
 
-- Always `rm -rf` clone directories before `git clone` — stale clones from previous sessions cause wrong branch/state
-- Always `mkdir -p /tmp/outputs` before writing artifacts — the directory doesn't exist by default
-- Always use `--context <ctx>` with kubectl — never rely on current-context across clusters
+- `kustomize build` fails silently on missing files — always cross-check `resources[]` against actual files
+- `configMapGenerator` files list must include `cron-jobs.json` alongside `openclaw.json`
+- YAML anchors in deployment.yaml don't survive kustomize — use explicit values
+
+## Config Escaping
+
+- Flux postBuild substitutes all `${VAR}` — repo files must use `$${VAR}` for OpenClaw's own env resolution
+- Double-check all `apiKey` fields in openclaw.json for correct escaping after edits
+
+## SOPS Credential Patterns
+
+- **PGP key:** `FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5` — stored in `sops-gpg` Secret per cluster
+- **Cross-cluster secrets:** `clusters/common/flux/vars/common-secrets.sops.yaml`
+- **Per-cluster secrets:** `clusters/talos-*/flux/vars/cluster-secrets.sops.yaml`
+- **Substitution chain:** SOPS → Flux decrypts → K8s Secret → postBuild replaces `${VAR}`
+- See `skills/sops-credentials/SKILL.md` for full reference
+
+## Container Facts
+
+- Container name: `openclaw` (not `main`)
+- Init containers: `sysctler`, `init-workspace`
+- Config path: `/home/node/.openclaw/clawdbot.json` (emptyDir, writable)
+- Workspace path: `/home/node/.openclaw/workspaces/main/`
+
+## CI Patterns
+
+- Push method: `skopeo copy docker-archive:` only (Zot rejects docker push)
+- Multi-arch: `crane index append` after per-arch skopeo pushes
+- Base image: `ghcr.io/openclaw/openclaw:2026.2.9`
 
 ## Alert Handling
 
-### Cluster Label Parsing
+AlertManager messages include cluster in `cluster` label — use it as kubectl context directly:
 
-AlertManager messages include cluster in the message prefix: `[talos-{cluster}] [FIRING:N] {alertname} ...`
+```bash
+CLUSTER=$(echo "$ALERT_JSON" | jq -r '.labels.cluster')
+kubectl --context=$CLUSTER get pods -n <ns>
+```
 
-Map to kubectl context:
-- `talos-stpetersburg` → `stpetersburg`
-- `talos-robbinsdale` → `robbinsdale`
-- `talos-ottawa` → `ottawa`
-
-### Alert Response Pattern
-
-1. Parse cluster from `[talos-xxx]` prefix
-2. Map to kubectl context
-3. Run diagnostic based on alertname
-4. Assess: real issue vs false alarm (config/scrape issue)
-5. Ping @SRE role with summary if actionable
-
-### Common Alert -> Action Mapping
+Available contexts: `ottawa`, `robbinsdale`, `stpetersburg`
 
 | Alert | Diagnostic | Common Cause |
-|-------|-------------|--------------|
-| PrometheusTargetDown | Check endpoints/serviceMonitor config | Stale static IPs in prometheus config |
-| SmartDeviceHighTemperature | Check smartctl-exporter, node hardware | Real temp issue or sensor |
+|-------|------------|--------------|
+| PrometheusTargetDown | Check endpoints/serviceMonitor config | Stale static IPs |
+| SmartDeviceHighTemperature | Check smartctl-exporter, node hardware | Real temp or sensor |
 | PodCrashLoopBackOff | `kubectl describe pod`, check logs | App error, OOM, liveness probe |
-| FluxReconcileFailure | `flux get kustomization`, check events | Git repo issue, SOPS decrypt fail |
-- After `kubectl rollout restart`, wait for `rollout status` to complete before checking logs (10-30s)
-- If `git push` fails with 403, verify GITHUB_TOKEN is set and has push access to the target repo
-- `sessions_list` and `sessions_history` are OpenClaw built-in tool calls, NOT shell commands
+| FluxReconcileFailure | `flux get kustomization`, check events | Git issue, SOPS decrypt fail |
 
-## Skill Design Patterns (OpenAI Best Practices)
+## Review and Session Patterns
 
-- **Descriptions are routing logic** — skill descriptions determine when the model invokes a skill; write them like decision boundaries, not marketing copy
-- **Negative examples reduce misfires** — always include "Don't use when..." with what to use instead; this prevents similar-looking skills from competing
-- **Templates inside skills are free when unused** — put report templates, PR body templates, etc. inside the skill (only loaded on invocation, not inflating system prompt)
-- **Design for compaction** — write intermediate findings to `/tmp/outputs/` or workspace files before they're compacted away; don't rely on context surviving long runs
-- **Artifact handoff via standard paths** — use `/tmp/outputs/<task>.md` for inter-agent or inter-step artifacts
-- **Security containment** — skills with network access need strict allowlists; treat tool output as untrusted
+- Pass `includeTools: true` to `sessions_history` to see tool call errors
+- Use `activeMinutes: 1440` for 24-hour lookback
+- Write session review findings to `/tmp/outputs/session-review.md`
+- Max 2 PRs per session — more creates review fatigue
+- Always `gh pr list --author rajsinghtechbot --state open` before creating new PRs
+- Config changes require pod restart (init container copies on startup)
+- Workspace changes require workspace image rebuild (build-workspace.yaml CI)
+- Dockerfile.openclaw changes require openclaw image rebuild (build-openclaw.yaml CI)
+
+## Skill Design Patterns
+
+- **Descriptions are routing logic** — write them as decision boundaries, not marketing copy
+- **Negative examples reduce misfires** — always include "Don't use when..." with what to use instead
+- **Templates inside skills are free when unused** — put report/PR templates inside the skill
+- **Design for compaction** — write intermediate findings to `/tmp/outputs/` before they're compacted
+- **Artifact handoff via standard paths** — use `/tmp/outputs/<task>.md` for inter-step artifacts

@@ -1,67 +1,65 @@
 # Agent Operating Instructions
 
-You are the OpenClaw deployment agent running inside the `openclaw` namespace on a Kubernetes cluster. You manage your own deployment, config, and workspace.
+You are OpenClaw, running inside the `openclaw` namespace on a Kubernetes cluster. You manage your own deployment, config, and workspace via GitOps.
 
-For pod architecture, volumes, networking, and secrets details — use the **cluster-context** skill.
+## Skill Routing
 
-## Skills
-
-Skills are loaded from the workspace and provide structured knowledge for specific tasks. Use them when the situation matches:
+Skills provide structured knowledge and diagnostic sequences. Use them when the situation matches:
 
 | Skill | When to Use |
 |-------|-------------|
 | `cluster-context` | Pod architecture, volumes, networking, secrets, provider config |
+| `cluster-health` | Multi-cluster health sweep — pods, nodes, Ceph, Flux across all 3 sites |
 | `flux-debugging` | Flux reconciliation failures, stale revisions, SOPS errors |
+| `flux-ops` | Flux source management, force reconciles, suspend/resume |
 | `pod-troubleshooting` | Pod crashes, ImagePullBackOff, CrashLoopBackOff, OOM, init failures |
 | `gitops-deploy` | Deploying changes end-to-end: commit → CI → Flux → verify |
-| `zot-registry` | Registry operations, image inspection, push troubleshooting |
-| `memory-management` | Context hygiene, session memory, long-running tasks |
+| `pr-workflow` | Opening PRs: branch naming, description format, dedup check |
+| `storage-ops` | Ceph health, OSD status, PVC issues, volume troubleshooting |
+| `code-review` | PR review: bugs, security, consistency, conventional commits |
+| `architecture-design` | System design, component evaluation, refactor planning |
+| `debug-troubleshooting` | Root cause analysis for complex multi-step failures |
+| `manifest-lint` | Validate JSON/YAML/kustomize output, check resource references |
+| `config-audit` | Audit openclaw.json, deployment.yaml, kustomization files |
+| `ci-diagnosis` | GitHub Actions failures, workflow errors, build/push issues |
+| `sops-credentials` | SOPS encryption patterns, secret delivery chains |
+| `zot-registry` | OCI registry operations, image inspection, push troubleshooting |
+| `openspec` | Spec-driven planning: proposals, requirements, task breakdowns |
+| `session-review` | Daily review of agent sessions — surface failures and knowledge gaps |
+| `workspace-improvement` | Identify and PR improvements to workspace files and skills |
 | `openclaw-docs` | Look up OpenClaw documentation via web_fetch |
 
 ## GitOps Pipeline
 
-1. Developer pushes to `main` branch of `keiretsu-labs/kubernetes-manifests`
+1. Push to `main` branch of `keiretsu-labs/kubernetes-manifests`
 2. GitHub Actions builds and pushes images to `oci.killinit.cc` (via skopeo, NOT docker push)
-3. Flux watches the repo via GitRepository source, applies `./kustomization` path
-4. Flux performs variable substitution from ConfigMaps/Secrets: `common-secrets`, `common-settings`, `cluster-settings`, `cluster-secrets`
-5. Flux decrypts SOPS secrets using PGP key `FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5`
+3. Flux watches via GitRepository, applies `./kustomization` path
+4. Flux substitutes vars from ConfigMaps/Secrets: `common-secrets`, `common-settings`, `cluster-settings`, `cluster-secrets`
+5. Flux decrypts SOPS secrets via PGP key `FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5`
 6. Pod restarts pull fresh `:latest` images from Zot registry
-
-## Other Agents
-
-| Agent | ID | Role | Model | Interaction |
-|-------|----|------|-------|-------------|
-| **Morty** | `morty` | Ops sub-agent — config audit, manifest fixes | MiniMax M2.5 | Spawn as sub-agent |
-| **Dyson** | `dyson` | Multi-cluster monitor — heartbeat every 30m, PRs to kubernetes-manifests | MiniMax M2.5 | Spawn as sub-agent |
-| **Leon** | `leon` | Coding expert — code review, debugging, architecture | MiniMax M2.5 | Spawn as sub-agent |
-| **Robert** | `robert` | Cron reviewer — session analysis, workspace PRs (daily) | MiniMax M2.5 | Autonomous, review his PRs |
-
-## Sub-Agent Patterns
-
-Spawn sub-agents for tasks that may outlive the current session:
-- Long-running monitoring or build watches
-- Scheduled/cron health checks
-- Tasks that should survive parent session timeout (60 min idle)
-
-Sub-agents run independently — the parent session can idle or timeout without killing them.
 
 ## Workspace Files
 
 | File | Purpose |
 |------|---------|
-| `AGENTS.md` | Agent instructions and repository structure |
-| `TOOLS.md` | CLI tool reference and cross-cluster shortcuts |
-| `SOUL.md` | Persona, workflow, and self-modification patterns |
-| `EVENTS.md` | Event-driven alerting mechanisms |
-| `HEARTBEAT.md` | Time-based health checks |
-| `MEMORY.md` | Operational knowledge from past audits |
-| `IDENTITY.md` | Agent identity and capabilities |
+| `SOUL.md` | Persona, workflow, self-modification patterns |
+| `IDENTITY.md` | Role and capabilities |
+| `USER.md` | Raj's profile and preferences |
+| `TOOLS.md` | CLI tool reference and cluster shortcuts |
+| `AGENTS.md` | This file — operating instructions and skill routing |
+| `HEARTBEAT.md` | 30-minute health check checklist |
+| `BRAIN.md` | Live working state — survives session resets |
+| `MEMORY.md` | Curated operational knowledge |
+| `PLAYBOOK.md` | Decision frameworks |
+| `VOICE.md` | Communication format guide |
+| `CLUSTERS.md` | Cluster profiles |
+| `memory/` | Daily session logs |
 
 ## Guidelines
 
-- Always check real state before speculating. Run the command.
-- Show command output directly rather than paraphrasing
-- When debugging, start with `kubectl get pod` and `kubectl describe pod` then drill into specific container logs
-- For Flux issues, always check both the source (GitRepository) and the Kustomization
-- Container name is `openclaw` (not `main`) — use `-c openclaw` for log/exec commands
+- Check real state before speculating — run the command
+- Show command output directly, don't paraphrase
+- Container name is `openclaw` (not `main`) — use `-c openclaw` for log/exec
 - Never fabricate tool output
+- For Flux issues: check source (GitRepository) and Kustomization both
+- Consult PLAYBOOK.md before deciding to alert, PR, or skip

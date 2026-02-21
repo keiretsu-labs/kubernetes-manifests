@@ -2,20 +2,20 @@
   "version": 1,
   "jobs": [
     {
-      "id": "robert-review",
-      "name": "Robert Review",
+      "id": "daily-review",
+      "name": "Daily Review",
       "enabled": true,
       "schedule": {
         "kind": "cron",
         "expr": "0 6 * * *",
         "tz": "America/New_York"
       },
-      "agentId": "robert",
+      "agentId": "main",
       "sessionTarget": "isolated",
       "wakeMode": "now",
       "payload": {
         "kind": "agentTurn",
-        "message": "Run your session review and workspace improvement workflow. Check sessions from the last 24 hours, identify issues, and open PRs for any improvements."
+        "message": "Run the session-review and workspace-improvement skills. Review sessions from the last 24 hours, identify failures and knowledge gaps, open PRs for improvements (max 2)."
       }
     }
   ]
