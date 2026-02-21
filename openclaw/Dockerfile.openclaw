@@ -59,7 +59,7 @@ RUN curl -fsSL --retry 5 --retry-delay 2 \
     | tar xz gog
 
 # Stage 2: final image
-FROM ghcr.io/openclaw/openclaw:2026.2.19
+FROM ghcr.io/openclaw/openclaw:2026.2.21
 
 USER root
 COPY --from=tools /tools/ /usr/local/bin/
