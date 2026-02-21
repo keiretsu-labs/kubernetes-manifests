@@ -1,6 +1,6 @@
 # ==============================================================================
 # COMMON PROBES - Internal services shared across all clusters
-# These use cluster-local DNS and should work from within the cluster
+# These use cluster-local DNS and work from within any cluster
 # ==============================================================================
 
 ---
@@ -56,69 +56,6 @@ spec:
     staticConfig:
       static:
         - http://immich-server.immich:2283/api/server/ping
-  metricRelabelings:
-    - targetLabel: service
-      replacement: blackbox-exporter
-      action: replace
-
----
-# ==============================================================================
-# CLUSTER-SPECIFIC PROBES - Only include endpoints that are internally reachable
-# ==============================================================================
-
----
-# Garage and storage (internally accessible)
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: http-storage-garage
-spec:
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - https://garage.${CLUSTER_DOMAIN}
-  metricRelabelings:
-    - targetLabel: service
-      replacement: blackbox-exporter
-      action: replace
-
----
-# Development platforms (internally accessible)
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: http-dev-platforms
-spec:
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - https://code.${CLUSTER_DOMAIN}
-        - https://temporal.${CLUSTER_DOMAIN}
-  metricRelabelings:
-    - targetLabel: service
-      replacement: blackbox-exporter
-      action: replace
-
----
-# External/public endpoints (reachable from cluster)
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: http-external-endpoints
-spec:
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - https://www.rajsingh.info
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter
