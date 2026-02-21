@@ -15,7 +15,7 @@ description: >
   troubleshooting skill). Don't use for changes to kubernetes-manifests
   repo (Dyson's pr-workflow handles that).
 
-  Outputs: Pull request(s) on rajsinghtech/openclaw-workspace with validated
+  Outputs: Pull request(s) on keiretsu-labs/kubernetes-manifests with validated
   fixes to workspace docs, skills, or config. Max 2 PRs per run.
 requires: [gh, git, kubectl, jq, yq]
 ---
@@ -33,7 +33,7 @@ requires: [gh, git, kubectl, jq, yq]
 
 ### Don't Use This Skill When
 - You haven't reviewed sessions yet → use **session-review** first
-- The fix is in kubernetes-manifests, not openclaw-workspace → use Dyson's **pr-workflow**
+- The fix is in cluster configs, not openclaw workspace content → use Dyson's **pr-workflow**
 - Debugging a live issue → use the appropriate troubleshooting skill
 - The change is config (openclaw.json), not docs → be careful — config changes affect runtime
 
@@ -119,7 +119,7 @@ grep -n "tailscale" workspaces/*/AGENTS.md
 ### 1. Check for Duplicates
 
 ```bash
-gh pr list --repo rajsinghtech/openclaw-workspace --author rajsinghtechbot --state open
+gh pr list --repo keiretsu-labs/kubernetes-manifests --author rajsinghtechbot --state open
 ```
 
 Skip if an open PR already addresses the same issue.
@@ -129,7 +129,7 @@ Skip if an open PR already addresses the same issue.
 ```bash
 # Always clean up stale clones — leftover state causes confusion
 rm -rf /tmp/robert-review
-git clone https://github.com/rajsinghtech/openclaw-workspace.git /tmp/robert-review
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/robert-review
 cd /tmp/robert-review
 git checkout -b robert/<topic>-$(date +%Y-%m-%d)
 ```

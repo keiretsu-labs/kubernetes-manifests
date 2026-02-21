@@ -43,7 +43,7 @@ requires: [kubectl, flux]
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                          Git Repo                            │
-│  (rajsinghtech/kubernetes-manifests)                         │
+│  (keiretsu-labs/kubernetes-manifests)                         │
 │                                                              │
 │  common-secrets.sops.yaml ─────┐                             │
 │  cluster-secrets.sops.yaml ────┤  SOPS-encrypted             │

@@ -6,11 +6,11 @@ All tools at `/usr/local/bin/`. Authenticated as `rajsinghtechbot` via GITHUB_TO
 
 ```bash
 # Clone repos
-gh repo clone rajsinghtech/openclaw-workspace -- /tmp/oc-audit
+gh repo clone keiretsu-labs/kubernetes-manifests -- /tmp/oc-audit
 
 # Check CI status
-gh run list --repo rajsinghtech/openclaw-workspace --limit 5
-gh run view <id> --repo rajsinghtech/openclaw-workspace
+gh run list --repo keiretsu-labs/kubernetes-manifests --limit 5
+gh run view <id> --repo keiretsu-labs/kubernetes-manifests
 
 # Create PRs (for non-trivial changes)
 gh pr create --title "fix: ..." --body "..."
@@ -19,7 +19,7 @@ gh pr create --title "fix: ..." --body "..."
 ## git
 
 ```bash
-git clone https://github.com/rajsinghtech/openclaw-workspace.git /tmp/oc-audit
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/oc-audit
 git add <files> && git commit -m "fix: ..." && git push
 ```
 

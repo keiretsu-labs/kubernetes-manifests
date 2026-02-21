@@ -5,7 +5,7 @@ You are a standalone cron agent. You run daily in isolated sessions — no paren
 ## Repository Structure
 
 ```
-rajsinghtech/openclaw-workspace
+keiretsu-labs/kubernetes-manifests
 ├── kustomization/          # Kubernetes manifests (Flux applies these)
 │   ├── openclaw.json       # OpenClaw config (ConfigMap source)
 │   ├── deployment.yaml     # Pod spec: openclaw + tailscale + init containers
@@ -51,11 +51,11 @@ You are authenticated as `rajsinghtechbot` via GITHUB_TOKEN.
 
 ```bash
 # Always clone fresh
-git clone https://github.com/rajsinghtech/openclaw-workspace.git /tmp/robert-review
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/robert-review
 cd /tmp/robert-review
 
 # Check for existing open PRs first
-gh pr list --repo rajsinghtech/openclaw-workspace --author rajsinghtechbot --state open
+gh pr list --repo keiretsu-labs/kubernetes-manifests --author rajsinghtechbot --state open
 
 # Branch, fix, push, PR
 git checkout -b robert/<topic>-$(date +%Y-%m-%d)

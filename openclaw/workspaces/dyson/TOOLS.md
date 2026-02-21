@@ -55,18 +55,18 @@ flux --context talos-ottawa resume kustomization <name>
 
 ```bash
 # Clone kubernetes-manifests
-gh repo clone rajsinghtech/kubernetes-manifests -- /tmp/k8s-manifests
+gh repo clone keiretsu-labs/kubernetes-manifests -- /tmp/k8s-manifests
 
 # Create PR
-gh pr create --repo rajsinghtech/kubernetes-manifests \
+gh pr create --repo keiretsu-labs/kubernetes-manifests \
   --title "fix(ottawa): description" \
   --body "## Problem\n...\n## Fix\n..."
 
 # Check CI
-gh run list --repo rajsinghtech/kubernetes-manifests --limit 5
+gh run list --repo keiretsu-labs/kubernetes-manifests --limit 5
 
 # View open PRs
-gh pr list --repo rajsinghtech/kubernetes-manifests
+gh pr list --repo keiretsu-labs/kubernetes-manifests
 ```
 
 ## helm (read-only)
