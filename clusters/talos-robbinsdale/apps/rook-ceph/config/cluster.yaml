@@ -269,9 +269,6 @@ spec:
   storage: # cluster level storage configuration and selection
     useAllNodes: false
     useAllDevices: false
-    # Exclude destroyed disk /dev/sda on tank node (OSD 11)
-    # Only use disks sdb-sdz (non-destructive filter)
-    deviceFilter: ^sd[b-z]
     config:
       # crushRoot: "custom-root" # specify a non-default root label for the CRUSH map
       # metadataDevice: "md0" # specify a non-rotational storage so ceph-volume will use it as block db device of bluestore.
@@ -283,7 +280,7 @@ spec:
     allowOsdCrushWeightUpdate: true # whether to allow resizing the OSD crush weight after osd pvc is increased
     # Individual nodes and their config can be specified as well, but 'useAllNodes' above must be set to false. Then, only the named
     # nodes below will be used as storage resources.  Each node's 'name' field should match their 'kubernetes.io/hostname' label.
-    # Exclude tank node - has destroyed disk (sda, OSD 11)
+    # Exclude tank node entirely - has destroyed disk (sda, OSD 11)
     nodes:
       - name: "stone"
       - name: "titan"
