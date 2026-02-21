@@ -23,7 +23,7 @@ spec:
   monitoring:
     enablePodMonitor: true
   storage:
-    size: 8Gi
+    size: 16Gi
   # Enable Barman Cloud plugin for S3 backups
   plugins:
     - name: barman-cloud.cloudnative-pg.io
