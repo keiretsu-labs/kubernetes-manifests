@@ -5,3 +5,4 @@ namespace: woodpecker
 resources:
   - helmrelease.yaml
   - secret.yaml
+  - egress.yaml
