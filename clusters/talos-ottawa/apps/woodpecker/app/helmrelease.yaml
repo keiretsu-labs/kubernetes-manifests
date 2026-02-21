@@ -22,7 +22,7 @@ spec:
       retries: 3
   values:
     env:
-      WOODPECKER_HOST: "https://woodpecker.${CLUSTER_DOMAIN}"
+      WOODPECKER_HOST: "https://woodpecker.keiretsu.ts.net"
       WOODPECKER_ADMIN: "rajsinghtech"
       WOODPECKER_GITHUB: "true"
       WOODPECKER_GITHUB_CLIENT: "${WOODPECKER_GITHUB_CLIENT}"

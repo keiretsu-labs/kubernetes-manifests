@@ -2,8 +2,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: woodpecker
+  name: ${LOCATION}-woodpecker-webhook
   annotations:
+    tailscale.com/funnel: "true"
     tailscale.com/proxy-class: "common"
 spec:
   defaultBackend:
@@ -14,4 +15,4 @@ spec:
   ingressClassName: tailscale
   tls:
     - hosts:
-        - woodpecker
+        - ${LOCATION}-woodpecker-webhook

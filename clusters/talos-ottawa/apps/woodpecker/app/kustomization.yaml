@@ -6,6 +6,6 @@ resources:
   - helmrelease.yaml
   - pg.yaml
   - service-grpc.yaml
-  - httproute.yaml
   - ingress.yaml
+  - ingress-webhook.yaml
   - secret.sops.yaml
