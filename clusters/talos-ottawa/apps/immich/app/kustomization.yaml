@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: immich
 resources:
   - helmrelease.yaml
+  - probes.yaml
   - pvc-library.yaml
   - httproute.yaml
   - secret.sops.yaml

@@ -1,62 +1,8 @@
 # ==============================================================================
-# COMMON PROBES - Internal services shared across all clusters
-# These use cluster-local DNS and work from within any cluster
+# BLACKBOX EXPORTER CONFIG
+# Note: Probes are now defined in their respective app directories:
+# - clusters/common/apps/garage/app/probes.yaml
+# - clusters/talos-ottawa/apps/media/app/probes.yaml
+# - clusters/talos-ottawa/apps/immich/app/probes.yaml
+# - clusters/talos-robbinsdale/apps/immich/app/probes.yaml
 # ==============================================================================
-
----
-# Media services (shared across clusters with media namespace)
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: http-common-media-services
-spec:
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        # Jellyfin stack
-        - http://jellyfin.media:8096/health
-        - http://jellystat.media:3000
-        - http://jellyseerr.media:5055
-        # Plex
-        - http://plex.media:32400/identity
-        # Radarr
-        - http://radarr-4kremux.media:7878
-        - http://radarr-4k.media:7878
-        - http://radarr-1080p.media:7878
-        - http://radarr-anime.media:7878
-        # Sonarr
-        - http://sonarr-4k.media:8989
-        - http://sonarr-1080p.media:8989
-        - http://sonarr-anime.media:8989
-        # Other
-        - http://prowlarr.media:9696
-        - http://bazarr-4kremux.media:6767
-        - http://bazarr-4k.media:6767
-        - http://bazarr-1080p.media:6767
-        - http://bazarr-anime.media:6767
-  metricRelabelings:
-    - targetLabel: service
-      replacement: blackbox-exporter
-      action: replace
-
----
-# Immich services
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: http-common-immich
-spec:
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - http://immich-server.immich:2283/api/server/ping
-  metricRelabelings:
-    - targetLabel: service
-      replacement: blackbox-exporter
-      action: replace
