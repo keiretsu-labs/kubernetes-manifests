@@ -8,3 +8,4 @@ resources:
   - service-grpc.yaml
   - ingress.yaml
   - ingress-webhook.yaml
+  - httproute.yaml
