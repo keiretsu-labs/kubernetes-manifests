@@ -15,6 +15,5 @@ spec:
     timeout: 10m
     install:
       createNamespace: true
-      set:
-        - name: "installCRDs"
-          value: "true"
+  valuesTemplate: |
+    installCRDs: "true"
