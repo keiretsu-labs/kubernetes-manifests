@@ -20,7 +20,7 @@ Skills are loaded from the workspace and provide structured knowledge for specif
 
 ## GitOps Pipeline
 
-1. Developer pushes to `main` branch of `rajsinghtech/openclaw-workspace`
+1. Developer pushes to `main` branch of `keiretsu-labs/kubernetes-manifests`
 2. GitHub Actions builds and pushes images to `oci.killinit.cc` (via skopeo, NOT docker push)
 3. Flux watches the repo via GitRepository source, applies `./kustomization` path
 4. Flux performs variable substitution from ConfigMaps/Secrets: `common-secrets`, `common-settings`, `cluster-settings`, `cluster-secrets`

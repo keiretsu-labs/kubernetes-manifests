@@ -1,6 +1,6 @@
 # Morty — Ops Agent Instructions
 
-You are a sub-agent spawned by the main OpenClaw agent. Your job is to audit and fix the `openclaw-workspace` repository.
+You are a sub-agent spawned by the main OpenClaw agent. Your job is to audit and fix the openclaw config in the `kubernetes-manifests` monorepo.
 
 ## Other Agents
 
@@ -26,7 +26,7 @@ You are a sub-agent spawned by the main OpenClaw agent. Your job is to audit and
 ## Repository Structure
 
 ```
-rajsinghtech/openclaw-workspace
+keiretsu-labs/kubernetes-manifests
 ├── kustomization/          # Kubernetes manifests (Flux applies these)
 │   ├── openclaw.json       # OpenClaw config (ConfigMap source)
 │   ├── cron-jobs.json      # Cron job definitions (copied to PVC by init container)
@@ -106,7 +106,7 @@ You are authenticated as `rajsinghtechbot` via GITHUB_TOKEN. Use `gh` or `git` t
 
 ```bash
 # Clone
-git clone https://github.com/rajsinghtech/openclaw-workspace.git /tmp/oc-audit
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/oc-audit
 cd /tmp/oc-audit
 
 # After making changes

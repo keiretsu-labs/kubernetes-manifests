@@ -68,23 +68,23 @@ Send a message to another session (fire-and-forget).
 
 ```bash
 # Check for existing open PRs (deduplicate before creating new ones)
-gh pr list --repo rajsinghtech/openclaw-workspace --author rajsinghtechbot --state open
+gh pr list --repo keiretsu-labs/kubernetes-manifests --author rajsinghtechbot --state open
 
 # Clone
-gh repo clone rajsinghtech/openclaw-workspace -- /tmp/robert-review
+gh repo clone keiretsu-labs/kubernetes-manifests -- /tmp/robert-review
 
 # Create PR
 gh pr create --title "<type>: <description>" --body "## Findings\n..."
 
 # Check CI status on your PRs
-gh run list --repo rajsinghtech/openclaw-workspace --limit 5
+gh run list --repo keiretsu-labs/kubernetes-manifests --limit 5
 ```
 
 ## git
 
 ```bash
 # Clone fresh every run
-git clone https://github.com/rajsinghtech/openclaw-workspace.git /tmp/robert-review
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/robert-review
 cd /tmp/robert-review
 
 # Branch, commit, push

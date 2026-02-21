@@ -9,10 +9,10 @@ Source shows an old commit hash. Either the repo webhook didn't fire or source-c
 kubectl logs -n flux-system deployment/source-controller --tail=50
 
 # Force source fetch
-flux reconcile source git openclaw-workspace
+flux reconcile source git kubernetes-manifests
 
 # Verify new revision appears
-flux get source git openclaw-workspace
+flux get source git kubernetes-manifests
 ```
 
 ## Failed Apply
@@ -21,13 +21,13 @@ Kustomization is `Ready=False` with an apply error. Usually a manifest syntax is
 
 ```bash
 # Get the error message
-flux get kustomization openclaw-workspace -o yaml | yq '.status.conditions[] | select(.type=="Ready")'
+flux get kustomization openclaw -o yaml | yq '.status.conditions[] | select(.type=="Ready")'
 
 # Preview what kustomize would render (if repo is available)
 kustomize build ./kustomization
 
 # Force re-apply after fixing
-flux reconcile kustomization openclaw-workspace --with-source
+flux reconcile kustomization openclaw --with-source
 ```
 
 ## Dependency Not Ready

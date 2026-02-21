@@ -4,7 +4,7 @@ Curated knowledge from code review and debugging sessions. Update when you ident
 
 ## Repository Conventions
 
-- openclaw-workspace: workspace content + k8s manifests + CI workflows
+- kubernetes-manifests: monorepo containing openclaw workspace, k8s manifests, CI workflows
 - kubernetes-manifests: GitOps repo for all 3 clusters (Flux CD)
 - Commits follow conventional commits: `fix:`, `feat:`, `docs:`, `chore:`
 - PRs from Robert land on `robert/<topic>-YYYY-MM-DD` branches

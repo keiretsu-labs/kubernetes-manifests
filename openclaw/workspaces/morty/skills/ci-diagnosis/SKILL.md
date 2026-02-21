@@ -41,13 +41,13 @@ requires: [gh]
 
 ### 1. Check Recent Runs
 ```bash
-gh run list --repo rajsinghtech/openclaw-workspace --limit 10
+gh run list --repo keiretsu-labs/kubernetes-manifests --limit 10
 ```
 
 ### 2. Inspect a Failed Run
 ```bash
-gh run view <run-id> --repo rajsinghtech/openclaw-workspace
-gh run view <run-id> --repo rajsinghtech/openclaw-workspace --log-failed
+gh run view <run-id> --repo keiretsu-labs/kubernetes-manifests
+gh run view <run-id> --repo keiretsu-labs/kubernetes-manifests --log-failed
 ```
 
 ### 3. Common Failures
@@ -82,14 +82,14 @@ gh run view <run-id> --repo rajsinghtech/openclaw-workspace --log-failed
 ### 4. Fix Pattern
 ```bash
 # Clone, fix the issue
-git clone https://github.com/rajsinghtech/openclaw-workspace.git /tmp/oc-fix
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/oc-fix
 cd /tmp/oc-fix
 # edit the file...
 git add <file> && git commit -m "fix: ..." && git push
 
 # Watch the new run
-gh run list --repo rajsinghtech/openclaw-workspace --limit 1
-gh run watch <new-run-id> --repo rajsinghtech/openclaw-workspace
+gh run list --repo keiretsu-labs/kubernetes-manifests --limit 1
+gh run watch <new-run-id> --repo keiretsu-labs/kubernetes-manifests
 ```
 
 ## Diagnosis Template

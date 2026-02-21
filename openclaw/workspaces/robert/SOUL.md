@@ -62,11 +62,11 @@ Prioritize by severity:
 
 ```bash
 # Clone fresh
-git clone https://github.com/rajsinghtech/openclaw-workspace.git /tmp/robert-review
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/robert-review
 cd /tmp/robert-review
 
 # Check for existing PRs to avoid duplicates
-gh pr list --repo rajsinghtech/openclaw-workspace --author rajsinghtechbot --state open
+gh pr list --repo keiretsu-labs/kubernetes-manifests --author rajsinghtechbot --state open
 
 # Create branch
 git checkout -b robert/<topic>-$(date +%Y-%m-%d)
