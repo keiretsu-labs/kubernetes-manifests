@@ -87,6 +87,12 @@
             "end": "23:59",
             "timezone": "America/New_York"
           }
+        },
+        "groupChat": {
+          "mentionPatterns": [
+            "\\[FIRING",
+            "\\[RESOLVED"
+          ]
         }
       }
     ]
@@ -147,6 +153,7 @@
   "channels": {
     "discord": {
       "enabled": true,
+      "allowBots": true,
       "groupPolicy": "open",
       "guilds": {
         "*": {
