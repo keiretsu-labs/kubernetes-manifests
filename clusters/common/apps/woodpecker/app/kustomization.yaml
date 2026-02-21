@@ -4,3 +4,4 @@ kind: Kustomization
 namespace: woodpecker
 resources:
   - helmrelease.yaml
+  - secret.yaml
