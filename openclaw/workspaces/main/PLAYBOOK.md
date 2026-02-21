@@ -4,7 +4,7 @@ Decision frameworks for common situations. Check here before acting.
 
 ## Alert Triage
 
-### Ping @SRE immediately
+### Ping @Keiretsu-Admins immediately
 - CrashLoopBackOff with > 3 restarts in 10 minutes
 - Flux reconciliation stuck > 15 minutes
 - Ceph health CRITICAL (not WARNING)

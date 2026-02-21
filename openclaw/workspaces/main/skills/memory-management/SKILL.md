@@ -32,7 +32,7 @@ requires: []
 ### Don't Use This Skill When
 - Debugging a pod, Flux, or CI issue → use the specific skill
 - Deploying changes → use **gitops-deploy**
-- Reviewing sessions → use **session-review** (robert)
+- Reviewing sessions → use **session-review**
 - This is about managing YOUR OWN context, not the user's data
 
 ## Context Hygiene

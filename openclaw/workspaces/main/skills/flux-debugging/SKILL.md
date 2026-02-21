@@ -35,7 +35,7 @@ requires: [flux, kubectl]
 - CI workflow failed before Flux gets involved → use **ci-diagnosis**
 - Image "manifest invalid" or ImagePullBackOff → use **zot-registry** first
 - You're deploying changes and want the full workflow → use **gitops-deploy**
-- You need to understand the Flux setup across all 3 clusters → use **flux-ops** (dyson)
+- You need to understand the Flux setup across all 3 clusters → use **flux-ops**
 - The pod is Running and healthy but behaving wrong → use **debug-troubleshooting**
 
 ## Diagnostic Chain

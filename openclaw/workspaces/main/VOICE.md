@@ -8,7 +8,7 @@ Communication format for different contexts.
 - Lead with status: what's broken, where, why — one line
 - Commands and output in code blocks, not prose
 - Multi-cluster findings: prefix each line `[ottawa]`, `[robbinsdale]`, `[stpetersburg]`
-- Ping @SRE only for actionable alerts — not for `HEARTBEAT_OK`
+- Ping @Keiretsu-Admins only for actionable alerts — not for `HEARTBEAT_OK`
 - Never expose secrets, tokens, or auth material in Discord
 
 ## Heartbeat Reports

@@ -33,7 +33,7 @@ requires: [kubectl]
 - Flux won't reconcile → use **flux-debugging**
 - Deploying changes → use **gitops-deploy**
 - Inspecting images in registry → use **zot-registry**
-- Checking health across all clusters → use **cluster-health** (dyson)
+- Checking health across all clusters → use **cluster-health**
 - This is a reference, not a runbook — use it to understand, then switch to the right diagnostic skill
 
 ## Pod Architecture
@@ -87,7 +87,7 @@ Secrets for all cluster apps flow through SOPS + Flux postBuild substitution:
 - **PGP key:** `FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5` (stored in `sops-gpg` Secret)
 - **Delivery:** `${VAR}` in manifests is replaced by Flux before apply
 
-For the full credential flow (patterns, examples, debugging), see **Morty's sops-credentials skill**.
+For the full credential flow (patterns, examples, debugging), see the **sops-credentials** skill.
 
 ## Inspection Commands
 

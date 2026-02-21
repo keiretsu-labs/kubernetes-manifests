@@ -11,7 +11,7 @@ description: >
 
   Don't use when: You're debugging why a deployment failed (use
   flux-debugging or pod-troubleshooting). Don't use for changes to
-  kubernetes-manifests repo (Dyson's pr-workflow handles that). Don't use
+  kubernetes-manifests repo (use pr-workflow for that). Don't use
   for registry/image inspection (use zot-registry).
 
   Outputs: Deployed changes verified in the running pod. Confirmation
@@ -38,9 +38,9 @@ requires: [kubectl, flux, sops]
 ### Don't Use This Skill When
 - Flux kustomization is failing to reconcile → use **flux-debugging**
 - Pod is crashing after deployment → use **pod-troubleshooting**
-- CI build failed → use **ci-diagnosis** (morty)
+- CI build failed → use **ci-diagnosis**
 - You're inspecting images in the registry → use **zot-registry**
-- You're making changes to kubernetes-manifests repo → use **pr-workflow** (dyson)
+- You're making changes to kubernetes-manifests repo → use **pr-workflow**
 - You're only editing workspace docs with no need to deploy → just commit and push
 
 ## Full Deployment Flow

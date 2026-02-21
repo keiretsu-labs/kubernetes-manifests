@@ -99,7 +99,7 @@ Alerts arrive in Discord with format: `[talos-{cluster}] [FIRING:N] {alertname} 
 2. **Context** - Map `talos-{cluster}` to kubectl context (stpetersburg/robbinsdale/ottawa)
 3. **Diagnose** - Run cluster-specific kubectl commands based on alertname
 4. **Assess** - Determine if real issue vs config/scrape false alarm
-5. **Notify** - Ping @SRE role with formatted summary if actionable
+5. **Notify** - Ping @Keiretsu-Admins with formatted summary if actionable
 
 ### Alert Notification Template
 

@@ -33,7 +33,7 @@ Document templates and workflow patterns for spec-driven development.
 
 ### Don't Use This Skill When
 - Debugging a runtime issue -> use the appropriate troubleshooting skill
-- Changing Kubernetes manifests -> use **pr-workflow** (dyson)
+- Changing Kubernetes manifests -> use **pr-workflow**
 - Reviewing a PR -> use **code-review**
 - The task is small enough to just do without a spec -> skip planning
 
