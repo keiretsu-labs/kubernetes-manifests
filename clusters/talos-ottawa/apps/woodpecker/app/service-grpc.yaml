@@ -5,9 +5,12 @@ metadata:
   name: woodpecker-server-grpc
   labels:
     app: woodpecker-server
+  annotations:
+    tailscale.com/expose: "true"
+    tailscale.com/hostname: "${LOCATION}-woodpecker-grpc"
+    tailscale.com/proxy-class: "common"
 spec:
-  type: LoadBalancer
-  loadBalancerIP: ${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.0.80
+  type: ClusterIP
   selector:
     app.kubernetes.io/name: server
     app.kubernetes.io/instance: woodpecker-server
