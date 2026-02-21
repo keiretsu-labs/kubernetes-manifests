@@ -40,6 +40,26 @@ spec:
             name: alertname
             value: ProbeFailed
         receiver: blackhole
+      - matchers:
+          - matchType: "="
+            name: alertname
+            value: ProbeSlowResponse
+        receiver: blackhole
+      - matchers:
+          - matchType: "="
+            name: alertname
+            value: SmartDeviceHighTemperature
+        receiver: blackhole
+      - matchers:
+          - matchType: "="
+            name: alertname
+            value: SmartDeviceTestFailed
+        receiver: blackhole
+      - matchers:
+          - matchType: "="
+            name: alertname
+            value: NodeDiskIOSaturation
+        receiver: blackhole
   receivers:
     - name: blackhole
     - discordConfigs:
