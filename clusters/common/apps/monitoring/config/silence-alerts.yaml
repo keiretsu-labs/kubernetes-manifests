@@ -12,7 +12,7 @@ spec:
     receiver: 'blackhole'
     matchers:
       - name: alertname
-        matchType: equal
+        matchType: "="
         value: DockerhubRateLimitRisk
 ---
 apiVersion: monitoring.coreos.com/v1alpha1
@@ -29,5 +29,5 @@ spec:
     receiver: 'blackhole'
     matchers:
       - name: alertname
-        matchType: equal
+        matchType: "="
         value: ProbeFailed
