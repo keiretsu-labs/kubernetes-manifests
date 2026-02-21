@@ -27,7 +27,7 @@ spec:
       enabled: true
       replicaCount: 2
       env:
-        WOODPECKER_SERVER: "ottawa-woodpecker-grpc.keiretsu.ts.net:9000"
+        WOODPECKER_SERVER: "ottawa-woodpecker-grpc:9000"
         WOODPECKER_AGENT_SECRET: "${WOODPECKER_AGENT_SECRET}"
         WOODPECKER_BACKEND: "kubernetes"
         WOODPECKER_BACKEND_K8S_NAMESPACE: "woodpecker"
