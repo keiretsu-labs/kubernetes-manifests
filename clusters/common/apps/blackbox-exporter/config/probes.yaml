@@ -56,7 +56,6 @@ spec:
     staticConfig:
       static:
         - http://immich-server.immich:2283/api/server/ping
-        - http://immich-machine-learning.immich:3003/health
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter
@@ -64,52 +63,11 @@ spec:
 
 ---
 # ==============================================================================
-# CLUSTER-SPECIFIC PROBES - These vary by cluster
-# These use ${CLUSTER_DOMAIN} variable substitution
+# CLUSTER-SPECIFIC PROBES - Only include endpoints that are internally reachable
 # ==============================================================================
 
 ---
-# Monitoring stack (prometheus, grafana, alertmanager)
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: http-monitoring-stack
-spec:
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - https://prometheus.${CLUSTER_DOMAIN}
-        - https://grafana.${CLUSTER_DOMAIN}
-        - https://alertmanager.${CLUSTER_DOMAIN}
-  metricRelabelings:
-    - targetLabel: service
-      replacement: blackbox-exporter
-      action: replace
-
----
-# GitOps tools
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: http-gitops-tools
-spec:
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - https://argocd.${CLUSTER_DOMAIN}
-  metricRelabelings:
-    - targetLabel: service
-      replacement: blackbox-exporter
-      action: replace
-
----
-# Garage and storage
+# Garage and storage (internally accessible)
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
@@ -122,14 +80,13 @@ spec:
     staticConfig:
       static:
         - https://garage.${CLUSTER_DOMAIN}
-        - https://s3-gateway.${CLUSTER_DOMAIN}
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter
       action: replace
 
 ---
-# Development platforms
+# Development platforms (internally accessible)
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
@@ -141,7 +98,6 @@ spec:
   targets:
     staticConfig:
       static:
-        - https://coder.${CLUSTER_DOMAIN}
         - https://code.${CLUSTER_DOMAIN}
         - https://temporal.${CLUSTER_DOMAIN}
   metricRelabelings:
@@ -150,7 +106,7 @@ spec:
       action: replace
 
 ---
-# External/public endpoints
+# External/public endpoints (reachable from cluster)
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
