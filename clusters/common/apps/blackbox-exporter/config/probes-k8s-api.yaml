@@ -1,0 +1,29 @@
+# ==============================================================================
+# KUBERNETES API PROBES - Cross-cluster monitoring via Tailscale
+# ==============================================================================
+
+---
+# Kubernetes API via Tailscale operators
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-k8s-api-tcp
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        # Kubernetes API via Tailscale operators
+        - ottawa-k8s-operator.tailscale:443
+        - robbinsdale-k8s-operator.tailscale:443
+        - stpetersburg-k8s-operator.tailscale:443
+  metricRelabelings:
+    - targetLabel: service
+      replacement: kubernetes-api
+    - targetLabel: cluster
+      replacement: ottawa
+    - targetLabel: target
+      replacement: tailscale-operator
+      action: replace
