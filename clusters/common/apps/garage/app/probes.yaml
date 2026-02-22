@@ -42,7 +42,6 @@ spec:
     staticConfig:
       static:
         - garage.garage:3900  # HTTP
-        - garage.garage:3901  # RPC
         - garage.garage:3903  # Admin
   metricRelabelings:
     - targetLabel: service
