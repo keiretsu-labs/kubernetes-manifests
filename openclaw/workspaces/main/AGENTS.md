@@ -16,10 +16,12 @@ Skills provide structured knowledge and diagnostic sequences. Use them when the 
 | `gitops-deploy` | Deploying changes end-to-end: commit → CI → Flux → verify |
 | `pr-workflow` | Opening PRs: branch naming, description format, dedup check |
 | `storage-ops` | Ceph health, OSD status, PVC issues, volume troubleshooting |
+| `testing-strategies` | Test coverage gap analysis, test case design, testing approach selection |
 | `code-review` | PR review: bugs, security, consistency, conventional commits |
 | `architecture-design` | System design, component evaluation, refactor planning |
 | `debug-troubleshooting` | Root cause analysis for complex multi-step failures |
 | `manifest-lint` | Validate JSON/YAML/kustomize output, check resource references |
+| `memory-management` | Session and context management — compaction, memory files, artifact handoff |
 | `config-audit` | Audit openclaw.json, deployment.yaml, kustomization files |
 | `ci-diagnosis` | GitHub Actions failures, workflow errors, build/push issues |
 | `sops-credentials` | SOPS encryption patterns, secret delivery chains |
