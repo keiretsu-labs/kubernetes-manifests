@@ -14,8 +14,8 @@ spec:
   targets:
     staticConfig:
       static:
-        - http://zot-internal.zot:5000/v2/
-        - http://zot-public.zot:5000/v2/
+        - http://zot-internal.zot:5000/
+        - http://zot-public.zot:5000/
   metricRelabelings:
     - targetLabel: service
       replacement: zot
