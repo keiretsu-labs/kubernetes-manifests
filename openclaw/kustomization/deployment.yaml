@@ -223,7 +223,7 @@ spec:
             - name: TS_KUBE_SECRET
               value: ""
             - name: TS_USERSPACE
-              value: "false"
+              value: "true"
             - name: TS_STATE_DIR
               value: /dev/shm
             - name: TS_AUTHKEY
