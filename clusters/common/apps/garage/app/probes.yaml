@@ -1,6 +1,5 @@
 ---
 # Garage TCP ports - RPC, API, Admin
-apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
   name: app-garage-tcp-local
@@ -11,8 +10,8 @@ spec:
   targets:
     staticConfig:
       static:
-        - garage.garage:3900  # HTTP
-        - garage.garage:3903  # Admin
+        - garage.garage:3900
+        - garage.garage:3903
   metricRelabelings:
     - targetLabel: service
       replacement: garage
@@ -23,7 +22,6 @@ spec:
       action: replace
 
 ---
-# Cross-cluster Garage - Robbinsdale via Tailscale
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
@@ -46,7 +44,6 @@ spec:
       replacement: cross-cluster
       action: replace
 ---
-# Cross-cluster Garage - Ottawa via Tailscale
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
@@ -59,7 +56,6 @@ spec:
     staticConfig:
       static:
         - ottawa-garage.garage:3900
-        - ottawa-garage.garage:3901
         - ottawa-garage.garage:3903
   metricRelabelings:
     - targetLabel: service
@@ -70,7 +66,6 @@ spec:
       replacement: cross-cluster
       action: replace
 ---
-# Cross-cluster Garage - StPetersburg via Tailscale
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
