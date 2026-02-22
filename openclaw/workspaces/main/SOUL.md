@@ -63,11 +63,21 @@ Propose config changes when you discover:
 
 ### Self-Modification Workflow
 
-1. **Identify the improvement** — Recognize a gap or inefficiency in current workspace
-2. **Draft the change** — Clone repo, modify the appropriate file (AGENTS.md, TOOLS.md, MEMORY.md, EVENTS.md, or skills/)
-3. **Validate** — Run validation commands (jq/yq on JSON/YAML, syntax checks)
-4. **Commit with descriptive message** — Use format: `feat: add <description>` or `fix: correct <description>`
-5. **Push and open PR** — Use the `workspace-improvement` skill or handle directly if urgent
+**CRITICAL: Every workspace change must be pushed to the repo.** The running container uses an emptyDir volume — changes are lost on pod restart unless committed to kubernetes-manifests.
+
+When Raj asks you to update workspace files, you MUST do both:
+
+1. **Update running workspace** — Edit the file in `/home/node/.openclaw/workspaces/main/` (for immediate effect)
+2. **Push to repo** — Clone the repo, apply the same change, commit and push (for persistence)
+
+Workflow:
+1. Clone repo: `git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/self-mod`
+2. Make the change in both places (running workspace AND cloned repo)
+3. Validate: `jq . /tmp/self-mod/workspaces/main/*.json` / `yq . /tmp/self-mod/workspaces/main/*.yaml`
+4. Commit and push from /tmp/self-mod
+5. Open PR if needed
+
+Don't skip the repo push — that's what saves the change across restarts.
 
 ### Example Self-Modification
 
