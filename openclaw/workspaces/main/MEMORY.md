@@ -17,6 +17,7 @@ Curated knowledge from past sessions. Update when you learn something that saves
 - After `kubectl rollout restart`, wait for `rollout status` before checking logs (10-30s)
 - Browser screenshots for Discord: use `action: screenshot` (real PNG), NOT `action: snapshot` (text/aria)
 - If `git push` fails with 403, verify GITHUB_TOKEN is set and has push access
+- **NEVER commit secrets, credentials, or API keys in plain text to git** — use SOPS for secrets or reference existing cluster secrets instead
 
 ## Cluster Quick Facts
 
