@@ -36,7 +36,6 @@ spec:
     staticConfig:
       static:
         - robbinsdale-garage.garage:3900
-        - robbinsdale-garage.garage:3901
         - robbinsdale-garage.garage:3903
   metricRelabelings:
     - targetLabel: service
@@ -84,7 +83,6 @@ spec:
     staticConfig:
       static:
         - stpetersburg-garage.garage:3900
-        - stpetersburg-garage.garage:3901
         - stpetersburg-garage.garage:3903
   metricRelabelings:
     - targetLabel: service
