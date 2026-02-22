@@ -118,3 +118,4 @@ gh pr create --title "feat: add cross-cluster kubectl shortcuts" --body "Added c
 - Don't change container images without coordination
 - Don't modify Flux config without testing
 - Keep changes focused and atomic
+- **Never use `kubectl apply` or `kubectl edit` directly** — all cluster changes must go through the repo (GitOps workflow)
