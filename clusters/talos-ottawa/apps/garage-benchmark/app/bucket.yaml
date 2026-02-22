@@ -1,0 +1,13 @@
+---
+apiVersion: objectBucket.io/v1alpha1
+kind: Bucket
+metadata:
+  name: benchmark
+spec:
+  endpoint:
+    address: garage.garage
+    port: 3900
+    insecure: true
+  secretRef:
+    name: garage-benchmark-s3-credentials
+  region: garage

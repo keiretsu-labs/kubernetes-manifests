@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: garage-benchmark
+  labels:
+    app.kubernetes.io/name: garage-benchmark
