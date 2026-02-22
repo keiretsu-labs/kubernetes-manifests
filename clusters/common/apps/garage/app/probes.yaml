@@ -1,5 +1,6 @@
 ---
-# Garage TCP ports - RPC, API, Admin
+# Garage TCP ports - HTTP, Admin
+apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
   name: app-garage-tcp-local
