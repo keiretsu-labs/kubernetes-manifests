@@ -1,13 +1,16 @@
 # ==============================================================================
 # GARAGE PROBES - S3-compatible storage
-# Deployed in garage namespace, probes use blackbox-exporter via FQDN
+# 
+# TCP probes for garage ports + cross-cluster monitoring
+# Each cluster probes its own garage + other clusters via Tailscale
 # ==============================================================================
 
 ---
+# Garage HTTP health check (webui)
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-garage-health
+  name: app-garage-webui
 spec:
   module: http_2xx
   prober:
@@ -19,4 +22,86 @@ spec:
   metricRelabelings:
     - targetLabel: service
       replacement: garage
+    - targetLabel: cluster
+      replacement: ottawa
+    - targetLabel: target
+      replacement: local-webui
+      action: replace
+
+---
+# Garage TCP ports - RPC, API, Admin
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-tcp-local
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - tcp://garage.garage:3900  # HTTP
+        - tcp://garage.garage:3901  # RPC
+        - tcp://garage.garage:3902  # API
+        - tcp://garage.garage:3903  # Admin
+  metricRelabelings:
+    - targetLabel: service
+      replacement: garage
+    - targetLabel: cluster
+      replacement: ottawa
+    - targetLabel: target
+      replacement: local
+      action: replace
+
+---
+# Cross-cluster Garage - Robbinsdale via Tailscale
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-tcp-robbinsdale
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - tcp://ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3900
+        - tcp://ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3901
+        - tcp://ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3902
+        - tcp://ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3903
+  metricRelabelings:
+    - targetLabel: service
+      replacement: garage
+    - targetLabel: cluster
+      replacement: robbinsdale
+    - targetLabel: target
+      replacement: cross-cluster
+      action: replace
+
+---
+# Cross-cluster Garage - StPetersburg via Tailscale
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-tcp-stpetersburg
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - tcp://ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3900
+        - tcp://ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3901
+        - tcp://ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3902
+        - tcp://ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3903
+  metricRelabelings:
+    - targetLabel: service
+      replacement: garage
+    - targetLabel: cluster
+      replacement: stpetersburg
+    - targetLabel: target
+      replacement: cross-cluster
       action: replace
