@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: benchmark
+spec:
+  restartPolicy: Always
+  containers:
+  - name: benchmark
+    image: amazon/aws-cli:latest
+    command: ["/bin/sh", "-c"]
+    args:
+      - |
+        echo "Garage Benchmark Pod Ready"
+        sleep infinity
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 10m
+        memory: 64Mi

@@ -5,4 +5,4 @@ namespace: garage-benchmark
 resources:
   - namespace.yaml
   - s3-credentials.yaml
-  - helmrelease.yaml
+  - pod.yaml
