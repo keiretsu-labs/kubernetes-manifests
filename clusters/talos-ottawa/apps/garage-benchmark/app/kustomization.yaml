@@ -5,5 +5,4 @@ namespace: garage-benchmark
 resources:
   - namespace.yaml
   - s3-credentials.yaml
-  - bucket.yaml
   - helmrelease.yaml
