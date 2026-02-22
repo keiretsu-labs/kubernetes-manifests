@@ -15,6 +15,7 @@ Curated knowledge from past sessions. Update when you learn something that saves
 - Always use `--context <ctx>` with kubectl — never rely on current-context across clusters
 - `sessions_list` and `sessions_history` are OpenClaw built-in tool calls, NOT bash commands
 - After `kubectl rollout restart`, wait for `rollout status` before checking logs (10-30s)
+- Browser screenshots for Discord: use `action: screenshot` (real PNG), NOT `action: snapshot` (text/aria)
 - If `git push` fails with 403, verify GITHUB_TOKEN is set and has push access
 
 ## Cluster Quick Facts
