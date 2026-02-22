@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "openclaw/workspaces/**"
+      - "openclaw/workspaces/main/**"
       - "openclaw/Dockerfile.workspace"
       - ".github/workflows/openclaw-workspace-build.yaml"
   workflow_dispatch:
