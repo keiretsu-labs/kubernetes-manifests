@@ -10,7 +10,7 @@ spec:
   secretRef:
     name: kubernetes-manifests-github-token
   username: fluxcd-bot
-  commitStatusExpr: "'${LOCATION}/' + event.involvedObject.kind + '/' + event.involvedObject.name"
+  commitStatusExpr: "event.involvedObject.kind + '/' + '${LOCATION}/' + event.involvedObject.name"
 ---
 apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Alert
