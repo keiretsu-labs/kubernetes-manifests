@@ -106,7 +106,7 @@
     "defaultProfile": "openclaw",
     "profiles": {
       "openclaw": {
-        "cdpUrl": "http://openclaw-chromium:9222",
+        "cdpUrl": "http://localhost:9222",
         "color": "#4285F4"
       }
     }
