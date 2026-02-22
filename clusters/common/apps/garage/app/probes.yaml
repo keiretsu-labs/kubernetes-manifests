@@ -1,0 +1,22 @@
+# ==============================================================================
+# GARAGE PROBES - S3-compatible storage
+# Deployed in garage namespace, probes use blackbox-exporter via FQDN
+# ==============================================================================
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-health
+spec:
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - http://garage.garage:3900/health
+  metricRelabelings:
+    - targetLabel: service
+      replacement: garage
+      action: replace
