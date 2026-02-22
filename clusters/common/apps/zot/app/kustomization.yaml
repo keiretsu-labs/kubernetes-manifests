@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: zot
 resources:
   - backendtrafficpolicy.yaml
+  - probes.yaml
   - bucket.yaml
   - helmrelease-internal.yaml
   - helmrelease-public.yaml

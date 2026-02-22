@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./prometheusrule.yaml
   - ./dashboard.yaml
+  - ./probes-k8s-api.yaml
