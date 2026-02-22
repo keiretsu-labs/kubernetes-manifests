@@ -15,7 +15,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - http://garage.garage:3900/health
+        - http://garage-webui.garage.svc.cluster.local/
   metricRelabelings:
     - targetLabel: service
       replacement: garage
