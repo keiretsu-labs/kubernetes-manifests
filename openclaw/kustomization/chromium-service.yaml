@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/component: browser
     app.kubernetes.io/part-of: openclaw
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app.kubernetes.io/name: openclaw-chromium
   ports:
