@@ -1,33 +1,3 @@
-# ==============================================================================
-# GARAGE PROBES - S3-compatible storage
-# 
-# TCP probes for garage ports + cross-cluster monitoring
-# Each cluster probes its own garage + other clusters via Tailscale
-# ==============================================================================
-
----
-# Garage HTTP health check (webui)
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-garage-webui
-spec:
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - http://garage-webui.garage.svc.cluster.local/
-  metricRelabelings:
-    - targetLabel: service
-      replacement: garage
-    - targetLabel: cluster
-      replacement: ottawa
-    - targetLabel: target
-      replacement: local-webui
-      action: replace
-
 ---
 # Garage TCP ports - RPC, API, Admin
 apiVersion: monitoring.coreos.com/v1
@@ -76,7 +46,30 @@ spec:
     - targetLabel: target
       replacement: cross-cluster
       action: replace
-
+---
+# Cross-cluster Garage - Ottawa via Tailscale
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-tcp-ottawa
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - ottawa-garage.garage:3900
+        - ottawa-garage.garage:3901
+        - ottawa-garage.garage:3903
+  metricRelabelings:
+    - targetLabel: service
+      replacement: garage
+    - targetLabel: cluster
+      replacement: ottawa
+    - targetLabel: target
+      replacement: cross-cluster
+      action: replace
 ---
 # Cross-cluster Garage - StPetersburg via Tailscale
 apiVersion: monitoring.coreos.com/v1
