@@ -41,10 +41,10 @@ spec:
   targets:
     staticConfig:
       static:
-        - tcp://garage.garage:3900  # HTTP
-        - tcp://garage.garage:3901  # RPC
-        - tcp://garage.garage:3902  # API
-        - tcp://garage.garage:3903  # Admin
+        - garage.garage:3900  # HTTP
+        - garage.garage:3901  # RPC
+        - garage.garage:3902  # API
+        - garage.garage:3903  # Admin
   metricRelabelings:
     - targetLabel: service
       replacement: garage
@@ -67,10 +67,10 @@ spec:
   targets:
     staticConfig:
       static:
-        - tcp://ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3900
-        - tcp://ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3901
-        - tcp://ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3902
-        - tcp://ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3903
+        - ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3900
+        - ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3901
+        - ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3902
+        - ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3903
   metricRelabelings:
     - targetLabel: service
       replacement: garage
@@ -93,10 +93,10 @@ spec:
   targets:
     staticConfig:
       static:
-        - tcp://ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3900
-        - tcp://ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3901
-        - tcp://ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3902
-        - tcp://ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3903
+        - ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3900
+        - ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3901
+        - ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3902
+        - ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3903
   metricRelabelings:
     - targetLabel: service
       replacement: garage
