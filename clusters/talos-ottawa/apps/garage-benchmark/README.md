@@ -20,13 +20,13 @@ flux reconcile kustomization cluster-apps -n flux-system --with-source
 ### From inside the cluster
 
 ```bash
-# Exec into the benchmark pod
-kubectl exec -n garage-benchmark benchmark -it -- /bin/sh
+# Get credentials from secret
+AWS_ACCESS_KEY_ID=$(kubectl get secret garage-benchmark-s3-credentials -n garage-benchmark -o jsonpath='{.data.AWS_ACCESS_KEY_ID}' | base64 -d)
+AWS_SECRET_ACCESS_KEY=$(kubectl get secret garage-benchmark-s3-credentials -n garage-benchmark -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}' | base64 -d)
 
-# Set credentials
-export AWS_ACCESS_KEY_ID="GK1902dac35c3dd5a0cdc2d1e4"
-export AWS_SECRET_ACCESS_KEY="f299b08ae91464ac7a1d98e771124ce33f22259f19b4f08c34fa9776c19f8f9b"
-export AWS_DEFAULT_REGION="garage"
+export AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY
+export AWS_DEFAULT_REGION=garage
 
 # List buckets
 aws s3 ls --endpoint-url http://garage.garage:3900 --no-verify-ssl
@@ -49,22 +49,26 @@ aws s3 rb s3://benchmark --endpoint-url http://garage.garage:3900 --no-verify-ss
 ### Quick benchmark script
 
 ```bash
-kubectl exec -n garage-benchmark benchmark -- /bin/sh -c '
-export AWS_ACCESS_KEY_ID="GK1902dac35c3dd5a0cdc2d1e4"
-export AWS_SECRET_ACCESS_KEY="f299b08ae91464ac7a1d98e771124ce33f22259f19b4f08c34fa9776c19f8f9b"
-export AWS_DEFAULT_REGION="garage"
+# Get credentials from secret
+AWS_ACCESS_KEY_ID=$(kubectl get secret garage-benchmark-s3-credentials -n garage-benchmark -o jsonpath='{.data.AWS_ACCESS_KEY_ID}' | base64 -d)
+AWS_SECRET_ACCESS_KEY=$(kubectl get secret garage-benchmark-s3-credentials -n garage-benchmark -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}' | base64 -d)
+
+kubectl exec -n garage-benchmark benchmark -- /bin/sh -c "
+export AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'
+export AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'
+export AWS_DEFAULT_REGION=garage
 
 # 100MB test
 dd if=/dev/zero of=/tmp/testfile bs=1M count=100
-echo "=== Upload 100MB ==="
+echo '=== Upload 100MB ==='
 time aws s3 cp /tmp/testfile s3://benchmark/testfile --endpoint-url http://garage.garage:3900 --no-verify-ssl
 
-echo "=== Download 100MB ==="
+echo '=== Download 100MB ==='
 time aws s3 cp s3://benchmark/testfile /tmp/downloaded --endpoint-url http://garage.garage:3900 --no-verify-ssl
 
 # Cleanup
 aws s3 rm s3://benchmark/testfile --endpoint-url http://garage.garage:3900 --no-verify-ssl
-'
+"
 ```
 
 ## Results Interpretation
