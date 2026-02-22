@@ -66,9 +66,9 @@ spec:
   targets:
     staticConfig:
       static:
-        - ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3900
-        - ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3901
-        - ts-robbinsdale-garage-wtkkr.tailscale.svc.cluster.local:3903
+        - robbinsdale-garage.garage:3900
+        - robbinsdale-garage.garage:3901
+        - robbinsdale-garage.garage:3903
   metricRelabelings:
     - targetLabel: service
       replacement: garage
@@ -91,9 +91,9 @@ spec:
   targets:
     staticConfig:
       static:
-        - ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3900
-        - ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3901
-        - ts-stpetersburg-garage-wxfgl.tailscale.svc.cluster.local:3903
+        - stpetersburg-garage.garage:3900
+        - stpetersburg-garage.garage:3901
+        - stpetersburg-garage.garage:3903
   metricRelabelings:
     - targetLabel: service
       replacement: garage
