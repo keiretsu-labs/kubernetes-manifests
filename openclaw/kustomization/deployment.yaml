@@ -207,42 +207,6 @@ spec:
             periodSeconds: 5
             failureThreshold: 12
             timeoutSeconds: 5
-        - name: chromium-ts
-          image: ghcr.io/tailscale/tailscale:v1.94.1
-          securityContext:
-            privileged: true
-          env:
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: POD_UID
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.uid
-            - name: TS_KUBE_SECRET
-              value: ""
-            - name: TS_USERSPACE
-              value: "false"
-            - name: TS_STATE_DIR
-              value: /dev/shm
-            - name: TS_AUTHKEY
-              valueFrom:
-                secretKeyRef:
-                  name: ts-oauth
-                  key: TS_AUTHKEY
-            - name: TS_ACCEPT_DNS
-              value: "true"
-            - name: TS_EXTRA_ARGS
-              value: "--advertise-tags=tag:k8s,tag:ottawa --accept-routes"
-            - name: TS_HOSTNAME
-              value: $(POD_NAME)-chromium
-          resources:
-            requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              memory: 512Mi
       terminationGracePeriodSeconds: 60
       volumes:
         - name: data
