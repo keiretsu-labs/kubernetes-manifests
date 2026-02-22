@@ -5,8 +5,6 @@ namespace: openclaw
 resources:
   - deployment.yaml
   - service-main.yaml
-  - chromium-deployment.yaml
-  - chromium-service.yaml
   - httproute.yaml
   - httproute-code.yaml
   - egress.yaml
