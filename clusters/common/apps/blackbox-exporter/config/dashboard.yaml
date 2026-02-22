@@ -14,3 +14,19 @@ spec:
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Prometheus
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: blackbox-http-prober
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Network
+  grafanaCom:
+    id: 13659
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus
