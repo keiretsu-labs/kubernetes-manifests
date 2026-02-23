@@ -15,6 +15,58 @@ Skills are higher-level knowledge packages that build on the CLI tools below. Ch
 
 Use skills first for common tasks — they encode tested diagnostic sequences and known gotchas.
 
+## Scrapling MCP (Web Scraping — preferred over browser)
+
+Scrapling runs as a sidecar MCP server on `localhost:8000`. Access it via the `mcp` tool. **Always prefer Scrapling over the browser tool for fetching web content** — it's faster, more reliable, returns clean markdown, and doesn't get blocked by CAPTCHAs.
+
+### Available tools
+
+| Tool | Use case |
+|------|----------|
+| `get` | Fast HTTP-only fetch (no JS). Best for static pages, APIs, simple HTML. |
+| `fetch` | Playwright-based with full JS execution. Handles SPAs, dynamic content. |
+| `stealthy_fetch` | Anti-bot bypass mode. Use for sites that block scrapers (Google, Cloudflare-protected). |
+| `bulk_get` | Batch HTTP fetch for multiple URLs at once. |
+| `bulk_fetch` | Batch Playwright fetch for multiple URLs. |
+| `bulk_stealthy_fetch` | Batch anti-bot fetch for multiple URLs. |
+
+### Quick reference
+
+```
+# List all Scrapling tools
+mcp action=list
+
+# Fetch a page (with JS support)
+mcp action=call server=scrapling tool=fetch args={"url":"https://example.com"}
+
+# Fast HTTP-only fetch (no JS, faster)
+mcp action=call server=scrapling tool=get args={"url":"https://example.com"}
+
+# Anti-bot fetch (for protected sites like Google, Cloudflare)
+mcp action=call server=scrapling tool=stealthy_fetch args={"url":"https://example.com"}
+
+# Extract specific content with CSS selector
+mcp action=call server=scrapling tool=fetch args={"url":"https://example.com","css_selector":"article"}
+
+# Get raw HTML instead of markdown
+mcp action=call server=scrapling tool=fetch args={"url":"https://example.com","extraction_type":"html"}
+```
+
+### When to use which tool
+
+- **`get`** — Default for most pages. Fast, lightweight, no browser overhead.
+- **`fetch`** — When `get` returns incomplete content (JS-rendered pages, SPAs).
+- **`stealthy_fetch`** — When `fetch` gets blocked (403, CAPTCHA, bot detection).
+- **`bulk_*`** — When scraping multiple URLs in one task. More efficient than sequential calls.
+
+### Notes
+
+- Returns structured JSON with `status`, `content` (markdown by default), and `url`
+- Supports `extraction_type`: `markdown` (default), `html`, `text`
+- Supports `css_selector` for targeted extraction
+- Supports custom `headers` and `cookies` for authenticated requests
+- The browser tool is disabled — Scrapling replaces it for all web content tasks
+
 ## gh
 
 GitHub CLI. Authenticated as `rajsinghtechbot` via GITHUB_TOKEN env var.
