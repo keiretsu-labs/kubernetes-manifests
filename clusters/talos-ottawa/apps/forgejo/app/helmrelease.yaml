@@ -36,10 +36,26 @@ spec:
       admin:
         username: rajsingh
         email: rajsinghcpre@gmail.com
+      additionalConfigFromEnvs:
+        - name: FORGEJO__database__PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: forgejo-postgres-app
+              key: password
       config:
         server:
           DOMAIN: forgejo.${CLUSTER_DOMAIN}
           ROOT_URL: https://forgejo.${CLUSTER_DOMAIN}
           SSH_DOMAIN: forgejo.${CLUSTER_DOMAIN}
+        database:
+          DB_TYPE: postgres
+          HOST: forgejo-postgres-rw:5432
+          NAME: forgejo
+          USER: forgejo
+          SSL_MODE: require
+        cache:
+          ADAPTER: memory
+        session:
+          PROVIDER: db
         service:
           DISABLE_REGISTRATION: "true"

@@ -1,0 +1,20 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: forgejo-postgres
+spec:
+  inheritedMetadata:
+    labels:
+      app: forgejo-postgres
+  instances: 3
+  bootstrap:
+    initdb:
+      database: forgejo
+      owner: forgejo
+      dataChecksums: true
+  storage:
+    size: 10Gi
+    storageClass: ceph-block-replicated
+  monitoring:
+    enablePodMonitor: true
