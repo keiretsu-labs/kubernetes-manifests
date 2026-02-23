@@ -37,11 +37,12 @@ spec:
           securityContext:
             privileged: true
         - name: init-workspace
-          image: instrumentisto/rsync:alpine3.21
+          image: alpine:3.21
           command: [sh, -c]
           args:
             - |
               set -e
+              apk add --no-cache rsync >/dev/null 2>&1
               echo "[init-workspace] Syncing workspaces from OCI image (preserving agent changes)..."
               rsync -av --update /opt/workspace/workspaces/ /home/node/.openclaw/workspaces/
               echo "[init-workspace] Updating config..."
