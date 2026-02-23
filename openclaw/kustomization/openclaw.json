@@ -130,6 +130,19 @@
     "entries": {
       "discord": {
         "enabled": true
+      },
+      "mcp-integration": {
+        "enabled": true,
+        "config": {
+          "enabled": true,
+          "servers": {
+            "scrapling": {
+              "enabled": true,
+              "transport": "http",
+              "url": "http://localhost:8000/mcp"
+            }
+          }
+        }
       }
     }
   },

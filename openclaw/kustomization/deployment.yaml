@@ -206,6 +206,37 @@ spec:
             periodSeconds: 5
             failureThreshold: 12
             timeoutSeconds: 5
+        - name: scrapling
+          image: pyd4vinci/scrapling:latest
+          args: ["mcp", "--http", "--host", "0.0.0.0", "--port", "8000"]
+          ports:
+            - name: mcp
+              containerPort: 8000
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1536Mi
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+          startupProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 12
       terminationGracePeriodSeconds: 60
       volumes:
         - name: data
