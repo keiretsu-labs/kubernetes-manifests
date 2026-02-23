@@ -2,7 +2,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app rajsingh
+  name: &app rajsingh-gateway
   namespace: flux-system
 spec:
   targetNamespace: rajsingh
@@ -10,8 +10,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: rajsingh-gateway
-  path: ./clusters/${CLUSTER_NAME}/apps/rajsingh/app
+    - name: envoy-gateway-system-install
+  path: ./clusters/common/apps/rajsingh/gateway
   prune: true
   sourceRef:
     kind: GitRepository
