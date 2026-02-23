@@ -85,7 +85,7 @@
 		"tag:ssh-granted":      ["tag:tailgrant-worker", "group:superuser",],
 		"tag:admin-granted":    ["tag:tailgrant-worker", "group:superuser",],
 		"tag:debug-granted":    ["tag:tailgrant-worker", "group:superuser",],
-		"tag:raj-workspace":    ["tag:k8s-operator", "tag:infra", "group:superuser",],
+		"tag:raj-workspace":    ["tag:k8s-operator", "rajsinghtech@github",],
 	},
 	"autoApprovers": {
 		"exitNode": ["tag:k8s"],
