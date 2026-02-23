@@ -61,8 +61,9 @@ Curated knowledge from past sessions. Update when you learn something that saves
 
 ## Container Facts
 
-- Container name: `openclaw` (not `main`)
-- Init containers: `sysctler`, `init-workspace`
+- Main container: `openclaw` (not `main`)
+- Sidecar containers: `tailscale` (networking), `scrapling` (MCP server on localhost:8000)
+- Init containers: `sysctler`, `init-workspace`, `init-extensions`
 - Config path: `/home/node/.openclaw/clawdbot.json` (emptyDir, writable)
 - Workspace path: `/home/node/.openclaw/workspaces/main/`
 
