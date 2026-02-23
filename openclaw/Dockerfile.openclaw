@@ -63,15 +63,4 @@ FROM ghcr.io/openclaw/openclaw:2026.2.22
 
 USER root
 COPY --from=tools /tools/ /usr/local/bin/
-
-# Install MCP integration plugin for connecting to external MCP servers (e.g. Scrapling)
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
-    && mkdir -p /home/node/.openclaw/extensions/openclaw-mcp-plugin \
-    && cd /home/node/.openclaw/extensions/openclaw-mcp-plugin \
-    && curl -fsSL https://github.com/lunarpulse/openclaw-mcp-plugin/archive/refs/heads/main.tar.gz \
-       | tar xz --strip-components=1 \
-    && npm install --production \
-    && chown -R node:node /home/node/.openclaw/extensions \
-    && apt-get purge -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
-
 USER node
