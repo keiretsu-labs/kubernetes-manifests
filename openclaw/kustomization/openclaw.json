@@ -13,8 +13,7 @@
     },
     "controlUi": {
       "enabled": true,
-      "allowInsecureAuth": true,
-      "dangerouslyDisableDeviceAuth": true
+      "allowInsecureAuth": true
     }
   },
   "models": {
@@ -103,14 +102,7 @@
     "idleMinutes": 60
   },
   "browser": {
-    "enabled": true,
-    "defaultProfile": "openclaw",
-    "profiles": {
-      "openclaw": {
-        "cdpUrl": "http://localhost:9222",
-        "color": "#4285F4"
-      }
-    }
+    "enabled": false
   },
   "logging": {
     "level": "info",
