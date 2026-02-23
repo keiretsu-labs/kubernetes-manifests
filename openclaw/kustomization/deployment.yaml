@@ -45,6 +45,12 @@ spec:
               apk add --no-cache rsync >/dev/null 2>&1
               echo "[init-workspace] Syncing workspaces from OCI image (preserving agent changes)..."
               rsync -av --update /opt/workspace/workspaces/ /home/node/.openclaw/workspaces/
+              echo "[init-workspace] Downloading MCP integration plugin..."
+              if [ ! -f /home/node/.openclaw/extensions/openclaw-mcp-plugin/package.json ]; then
+                mkdir -p /home/node/.openclaw/extensions/openclaw-mcp-plugin
+                wget -qO- https://github.com/lunarpulse/openclaw-mcp-plugin/archive/refs/heads/main.tar.gz \
+                  | tar xz --strip-components=1 -C /home/node/.openclaw/extensions/openclaw-mcp-plugin
+              fi
               echo "[init-workspace] Updating config..."
               cp /opt/config/openclaw.json /home/node/.openclaw/clawdbot.json
               echo "[init-workspace] Updating cron jobs..."
@@ -74,6 +80,29 @@ spec:
             requests:
               cpu: 100m
               memory: 128Mi
+            limits:
+              memory: 512Mi
+        - name: init-extensions
+          image: oci.killinit.cc/openclaw/openclaw:latest
+          imagePullPolicy: Always
+          command: [sh, -c]
+          args:
+            - |
+              set -e
+              cd /home/node/.openclaw/extensions/openclaw-mcp-plugin
+              if [ ! -d node_modules ]; then
+                echo "[init-extensions] Installing MCP plugin dependencies..."
+                npm install --production
+              else
+                echo "[init-extensions] Dependencies already installed, skipping."
+              fi
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/.openclaw
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
             limits:
               memory: 512Mi
       containers:
