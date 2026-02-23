@@ -41,20 +41,5 @@ spec:
           DOMAIN: forgejo.${CLUSTER_DOMAIN}
           ROOT_URL: https://forgejo.${CLUSTER_DOMAIN}
           SSH_DOMAIN: forgejo.${CLUSTER_DOMAIN}
-        database:
-          DB_TYPE: postgres
         service:
           DISABLE_REGISTRATION: "true"
-    postgresql:
-      enabled: true
-      primary:
-        persistence:
-          enabled: true
-          storageClass: ${STORAGECLASS_BLOCK}
-          size: 5Gi
-    postgresql-ha:
-      enabled: false
-    redis-cluster:
-      enabled: false
-    redis:
-      enabled: false
