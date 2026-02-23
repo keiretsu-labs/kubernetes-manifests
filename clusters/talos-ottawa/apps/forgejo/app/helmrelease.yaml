@@ -1,0 +1,60 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: forgejo
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: forgejo
+      version: 16.2.0
+      sourceRef:
+        kind: HelmRepository
+        name: forgejo
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    service:
+      http:
+        type: ClusterIP
+        port: 3000
+      ssh:
+        type: ClusterIP
+        port: 22
+    persistence:
+      enabled: true
+      storageClass: ${STORAGECLASS_BLOCK}
+      size: 10Gi
+    gitea:
+      admin:
+        username: rajsingh
+        email: rajsinghcpre@gmail.com
+      config:
+        server:
+          DOMAIN: forgejo.${CLUSTER_DOMAIN}
+          ROOT_URL: https://forgejo.${CLUSTER_DOMAIN}
+          SSH_DOMAIN: forgejo.${CLUSTER_DOMAIN}
+        database:
+          DB_TYPE: postgres
+        service:
+          DISABLE_REGISTRATION: "true"
+    postgresql:
+      enabled: true
+      primary:
+        persistence:
+          enabled: true
+          storageClass: ${STORAGECLASS_BLOCK}
+          size: 5Gi
+    postgresql-ha:
+      enabled: false
+    redis-cluster:
+      enabled: false
+    redis:
+      enabled: false

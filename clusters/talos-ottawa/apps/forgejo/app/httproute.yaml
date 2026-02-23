@@ -1,0 +1,32 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: forgejo
+  annotations:
+    item.homer.rajsingh.info/name: "Forgejo"
+    item.homer.rajsingh.info/subtitle: "Git Forge"
+    item.homer.rajsingh.info/logo: "https://forgejo.org/favicon.svg"
+    item.homer.rajsingh.info/keywords: "git, forge, code, repository"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-code-branch"
+spec:
+  hostnames:
+    - forgejo.${CLUSTER_DOMAIN}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+  rules:
+    - backendRefs:
+        - name: forgejo-http
+          port: 3000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
