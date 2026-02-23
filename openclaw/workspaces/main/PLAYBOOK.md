@@ -72,6 +72,29 @@ Follow in order — don't skip steps:
 
 ---
 
+## Web Research
+
+When asked to look something up online, search, or research a topic:
+
+1. **Always use `mcp` scrapling tools** — NOT `web_fetch` or `web_search` (both are broken/unconfigured)
+2. **Search engines:** Use `stealthy_fetch` for DuckDuckGo/Google (avoids bot detection)
+   ```
+   mcp action=call server=scrapling tool=stealthy_fetch args={"url":"https://duckduckgo.com/?q=your+search+terms&ia=web"}
+   ```
+3. **Scrape results:** Use `fetch` for normal sites, `stealthy_fetch` for protected ones
+4. **Parallel fetches:** Call multiple `mcp` tool invocations at once for speed
+5. **Never fall back to training data** when asked to research online — always scrape live content first
+
+### Tool priority for web content
+- `mcp` scrapling `stealthy_fetch` → search engines, Cloudflare-protected sites
+- `mcp` scrapling `fetch` → normal websites (GitHub, blogs, docs)
+- `mcp` scrapling `get` → fast static pages, APIs
+- `web_fetch` → **DO NOT USE** (broken, returns "fetch failed")
+- `web_search` → **DO NOT USE** (Brave API key misconfigured)
+- `browser` → **DISABLED** (chromium removed)
+
+---
+
 ## Session Review (daily cron)
 
 1. `sessions_list` with `activeMinutes: 1440` — last 24 hours
