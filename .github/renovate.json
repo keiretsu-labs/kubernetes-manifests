@@ -22,6 +22,9 @@
   "kubernetes": {
     "managerFilePatterns": ["/clusters/.+\\.ya?ml$/"]
   },
+  "dockerfile": {
+    "managerFilePatterns": ["!/^openclaw/Dockerfile\\.openclaw$/"]
+  },
   "packageRules": [
     {
       "description": "Auto merge GitHub Actions updates",
