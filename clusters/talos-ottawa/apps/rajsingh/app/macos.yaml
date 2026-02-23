@@ -42,6 +42,8 @@ spec:
               value: "64G"
             - name: NETWORK
               value: "passt"
+            - name: VM_NET_MASK
+              value: "255.255.255.0"
           ports:
             - containerPort: 8006
               name: http
