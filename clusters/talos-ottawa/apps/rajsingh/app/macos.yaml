@@ -40,6 +40,8 @@ spec:
               value: "15"
             - name: DISK_SIZE
               value: "64G"
+            - name: NETWORK
+              value: "passt"
           ports:
             - containerPort: 8006
               name: http
