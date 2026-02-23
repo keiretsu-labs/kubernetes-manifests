@@ -30,3 +30,20 @@ spec:
     - keyRef: keiretsu-key
       read: true
       write: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
+  name: rajsingh
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: rajsingh
+  quotas:
+    maxSize: 100Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef: rajsingh-key
+      read: true
+      write: true
+      owner: true
