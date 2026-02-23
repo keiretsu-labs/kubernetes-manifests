@@ -35,6 +35,9 @@ spec:
       - kind: Secret
         name: garage-keiretsu-bucket
         optional: true
+      - kind: Secret
+        name: garage-rajsingh-bucket
+        optional: true
   patches:
     - patch: |-
         apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -65,6 +68,9 @@ spec:
                 optional: true
               - kind: Secret
                 name: garage-keiretsu-bucket
+                optional: true
+              - kind: Secret
+                name: garage-rajsingh-bucket
                 optional: true
               - kind: Secret
                 name: karmada-secrets

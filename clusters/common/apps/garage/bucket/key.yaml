@@ -34,3 +34,22 @@ spec:
     - bucketRef: keiretsu
       read: true
       write: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
+metadata:
+  name: rajsingh-key
+spec:
+  clusterRef:
+    name: garage
+  name: "Rajsingh Workspace Key"
+  secretTemplate:
+    name: garage-rajsingh-bucket
+    namespace: flux-system
+    accessKeyIdKey: RAJSINGH_S3_ACCESS_KEY
+    secretAccessKeyKey: RAJSINGH_S3_SECRET_KEY
+  bucketPermissions:
+    - bucketRef: rajsingh
+      read: true
+      write: true
+      owner: true
