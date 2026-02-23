@@ -7,79 +7,115 @@ A macOS VM running in Kubernetes for development and testing.
 - **VNC**: Connect via the Tailscale IP (raj-mac.keiretsu.ts.net)
 - **HTTP**: http://raj-mac.keiretsu.ts.net (port 8006)
 
-## Backup to Garage S3
+## VolSync Backup to Garage S3
 
-### Prerequisites
+The macOS PVC is backed up to Garage S3 using VolSync with Restic.
 
-The VM has access to the Garage S3 bucket. Use the same credentials as other apps:
+### Current Configuration
+
+The backup uses:
+- **Schedule**: Daily at 2:00 AM (0 2 * * *)
+- **Retention**: Daily: 3, Weekly: 4, Monthly: 2, Yearly: 1
+- **Storage**: Garage S3 (keiretsu bucket)
+
+### Add VolSync Backup
+
+To enable VolSync backup for the macOS PVC:
 
 ```bash
-# Get credentials from cluster secret
-AWS_ACCESS_KEY_ID=$(kubectl get secret garage-benchmark-s3-credentials -n garage-benchmark -o jsonpath='{.data.AWS_ACCESS_KEY_ID}' | base64 -d)
-AWS_SECRET_ACCESS_KEY=$(kubectl get secret garage-benchmark-s3-credentials -n garage-benchmark -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}' | base64 -d)
-
-export AWS_ACCESS_KEY_ID
-export AWS_SECRET_ACCESS_KEY
-export AWS_DEFAULT_REGION=garage
-export AWS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+# Create the volsync-backup.yaml in the app directory
+cat > volsync-backup.yaml << 'EOF'
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: raj-macos
+spec:
+  sourcePVC: macos-pvc
+  trigger:
+    schedule: "0 2 * * *"  # Daily at 2am
+  restic:
+    pruneIntervalDays: 14
+    repository: restic-rajsingh-macos
+    retain:
+      hourly: 1
+      daily: 3
+      weekly: 4
+      monthly: 2
+      yearly: 1
+    copyMethod: Direct
+    storageClassName: ceph-block-replicated-nvme
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: restic-rajsingh-macos
+type: Opaque
+stringData:
+  RESTIC_REPOSITORY: s3:http://garage.garage:3900/keiretsu/ottawa/rajsingh/macos
+  RESTIC_PASSWORD: <your-restic-password>
+  AWS_ACCESS_KEY_ID: <your-s3-access-key>
+  AWS_SECRET_ACCESS_KEY: <your-s3-secret-key>
+EOF
 ```
 
-### Backup Commands
-
-#### Full Disk Image (recommended)
+### Get S3 Credentials
 
 ```bash
-# Create a compressed disk image of /Users
-dd if=/dev/sda | gzip | aws s3 cp - s3://rajsingh/macos-backup-$(date +%Y%m%d).img.gz \
-  --endpoint-url http://garage.garage:3900 \
-  --no-verify-ssl
-
-# Or using rclone (if installed)
-rclone copy /Users remote:rajsingh/macos-backup-$(date +%Y%m%d) \
-  --s3-endpoint http://garage.garage:3900 \
-  --s3-no-check-certificate
+# Get Garage S3 credentials from an existing secret
+kubectl get secret garaged-s3-credentials -n garage -o jsonpath='{.data}'
 ```
 
-#### Using rsync (for incremental backups)
+### Check Backup Status
 
 ```bash
-# Install rsync if needed
-brew install rsync
+# Check replication source status
+kubectl get replicationsource raj-macos -n rajsingh -o yaml
 
-# Sync specific directories
-rsync -avz --progress /Users/Documents remote:rajsingh/documents-backup/ \
-  --s3-endpoint http://garage.garage:3900 \
-  --s3-no-check-certificate
-
-rsync -avz --progress /Users/Pictures remote:rajsingh/pictures-backup/ \
-  --s3-endpoint http://garage.garage:3900 \
-  --s3-no-check-certificate
+# List restic snapshots
+kubectl exec -n rajsingh deploy/macos -- /bin/sh -c '
+  apt-get update && apt-get install -y restic 2>/dev/null
+  export RESTIC_REPOSITORY=s3:http://garage.garage:3900/keiretsu/ottawa/rajsingh/macos
+  export RESTIC_PASSWORD=<your-password>
+  restic snapshots
+'
 ```
 
 ### Restore from Backup
 
 ```bash
-# Download and restore disk image
-aws s3 cp s3://rajsingh/macos-backup-20240101.img.gz - | gunzip | dd of=/dev/sda \
-  --endpoint-url http://garage.garage:3900 \
-  --no-verify-ssl
+# Create a restore CR
+cat > volsync-restore.yaml << 'EOF'
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: raj-macos-restore
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: restic-rajsingh-macos
+    destinationPVC: macos-pvc-restore
+    storageClassName: ceph-block-replicated-nvme
+    capacity: 64Gi
+EOF
 
-# Or restore specific files
-aws s3 sync s3://rajsingh/documents-backup/ /Users/Documents/ \
-  --endpoint-url http://garage.garage:3900 \
-  --no-verify-ssl
+kubectl apply -f volsync-restore.yaml -n rajsingh
+
+# Check restore status
+kubectl get replicationdestination raj-macos-restore -n rajsingh -o yaml
 ```
 
-### Automated Backups (cron)
+## Manual Backup (alternative)
 
-Add to crontab on the macOS VM:
+If VolSync is not configured, you can manually backup using rclone or aws-cli from within the VM:
 
 ```bash
-# Edit crontab
-crontab -e
-
-# Add daily backup at 2am
-0 2 * * * /usr/bin/rsync -avz --delete /Users/Documents s3://rajsingh/documents-backup-$(hostname)/ --s3-endpoint http://garage.garage:3900 --s3-no-check-certificate >> /var/log/backup.log 2>&1
+# Using rclone
+rclone copy /Users s3:rajsingh/macos-backup \
+  --s3-endpoint http://garage.garage:3900 \
+  --s3-no-check-certificate
 ```
 
 ## Storage
@@ -91,4 +127,4 @@ crontab -e
 
 - **KVM not available**: Ensure the node has `/dev/kvm` exposed
 - **Slow performance**: Increase RAM_SIZE or CPU_CORES in deployment
-- **Backup fails**: Check network connectivity to Garage S3 endpoint
+- **Backup fails**: Check VolSync and Restic pod logs
