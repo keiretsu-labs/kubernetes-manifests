@@ -41,5 +41,5 @@ spec:
       - gateway-udproute
     domainFilters:
       - rajsingh.info
-    txtOwnerId: ${LOCATION}-rajsingh-info
-    txtPrefix: k8s.${LOCATION}.rajsingh.info.
+    txtOwnerId: ${LOCATION}-rajsingh-cdn
+    txtPrefix: k8s.${LOCATION}.cdn.rajsingh.info.
