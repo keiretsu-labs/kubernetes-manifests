@@ -1,0 +1,21 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: cdn
+spec:
+  telemetry:
+    metrics:
+      prometheus:
+        compression:
+          type: Gzip
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+      envoyService:
+        annotations:
+          tailscale.com/hostname: ${LOCATION}-rajsingh-cdn-gateway
+          tailscale.com/proxy-group: common-ingress
+        loadBalancerClass: tailscale
