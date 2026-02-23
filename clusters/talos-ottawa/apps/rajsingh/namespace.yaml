@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rajsingh
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    kustomize.toolkit.fluxcd.io/prune: disabled

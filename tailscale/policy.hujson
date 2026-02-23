@@ -85,6 +85,7 @@
 		"tag:ssh-granted":      ["tag:tailgrant-worker", "group:superuser",],
 		"tag:admin-granted":    ["tag:tailgrant-worker", "group:superuser",],
 		"tag:debug-granted":    ["tag:tailgrant-worker", "group:superuser",],
+		"tag:raj-workspace":    ["tag:k8s-operator", "tag:infra", "group:superuser",],
 	},
 	"autoApprovers": {
 		"exitNode": ["tag:k8s"],
@@ -163,6 +164,11 @@
 		{
 			"src": ["tag:singh360"],
 			"dst": ["tag:singh360"],
+			"ip":  ["*"],
+		},
+		{
+			"src": ["rajsinghtech@github"],
+			"dst": ["tag:raj-workspace"],
 			"ip":  ["*"],
 		},
 		// Site A and Site B subnet routers can reach each other

@@ -1,0 +1,92 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: macos-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 64Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: macos
+  labels:
+    name: macos
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: macos
+  template:
+    metadata:
+      labels:
+        app: macos
+    spec:
+      containers:
+        - name: macos
+          image: dockurr/macos:2.29
+          env:
+            - name: RAM_SIZE
+              value: "8G"
+            - name: CPU_CORES
+              value: "4"
+            - name: VERSION
+              value: "15"
+            - name: DISK_SIZE
+              value: "64G"
+          ports:
+            - containerPort: 8006
+              name: http
+              protocol: TCP
+            - containerPort: 5900
+              name: vnc
+              protocol: TCP
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+            privileged: true
+          volumeMounts:
+            - mountPath: /storage
+              name: storage
+            - mountPath: /dev/kvm
+              name: dev-kvm
+            - mountPath: /dev/net/tun
+              name: dev-tun
+      terminationGracePeriodSeconds: 120
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: macos-pvc
+        - name: dev-kvm
+          hostPath:
+            path: /dev/kvm
+        - name: dev-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: raj-mac
+  annotations:
+    tailscale.com/hostname: raj-mac
+    tailscale.com/proxy-class: common
+    tailscale.com/tags: "tag:raj-workspace"
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8006
+  selector:
+    app: macos
+  type: LoadBalancer
+  loadBalancerClass: tailscale
