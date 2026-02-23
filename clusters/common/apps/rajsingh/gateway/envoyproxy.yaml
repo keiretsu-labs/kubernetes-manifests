@@ -17,5 +17,6 @@ spec:
       envoyService:
         annotations:
           tailscale.com/hostname: ${LOCATION}-rajsingh-cdn-gateway
+          tailscale.com/tags: tag:raj-workspace
           tailscale.com/proxy-group: common-ingress
         loadBalancerClass: tailscale
