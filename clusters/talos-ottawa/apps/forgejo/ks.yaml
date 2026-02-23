@@ -10,6 +10,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
+    - name: garage
     - name: cnpg-system
   path: ./clusters/${CLUSTER_NAME}/apps/forgejo/app
   prune: true
