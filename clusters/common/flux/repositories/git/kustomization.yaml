@@ -6,3 +6,4 @@ resources:
   - 360-ai.yaml
   - bitbucket-ssh-secret.sops.yaml
   - garage.yaml
+  - kueue.yaml
