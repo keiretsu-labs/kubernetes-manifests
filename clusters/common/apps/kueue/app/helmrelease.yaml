@@ -16,16 +16,11 @@ spec:
         namespace: flux-system
   values:
     controllerManager:
-      kubeRbacProxy:
-        image:
-          repository: gcr.io/kubebuilder/kube-rbac-proxy
       manager:
         image:
-          repository: ghcr.io/kubernetes-sigs/kueue/kueue
-        tag: v0.16.1
+          tag: v0.16.1
     webhook:
       image:
-        repository: ghcr.io/kubernetes-sigs/kueue/kueue
         tag: v0.16.1
     metrics:
       enabled: true
