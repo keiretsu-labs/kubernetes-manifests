@@ -16,7 +16,7 @@ spec:
   backup:
     retentionPolicy: "30d"
     barmanObjectStore:
-      destinationPath: s3://woodpecker-postgres/
+      destinationPath: s3://woodpecker/
       endpointURL: http://garage.garage.svc.cluster.local:3900
       serverName: woodpecker-postgres
       s3Credentials:
