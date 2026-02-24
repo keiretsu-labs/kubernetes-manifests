@@ -12,6 +12,7 @@ spec:
   dependsOn:
     - name: woodpecker
     - name: cnpg-system
+    - name: garage
   path: ./clusters/${CLUSTER_NAME}/apps/woodpecker/app
   prune: true
   sourceRef:

@@ -13,3 +13,27 @@ spec:
     storageClass: ceph-block-replicated
   monitoring:
     enablePodMonitor: true
+  backup:
+    retentionPolicy: "30d"
+    barmanObjectStore:
+      destinationPath: s3://woodpecker-postgres/
+      endpointURL: http://garage.garage.svc.cluster.local:3900
+      serverName: woodpecker-postgres
+      s3Credentials:
+        accessKeyId:
+          name: garage-s3-auth
+          key: AWS_ACCESS_KEY_ID
+        secretAccessKey:
+          name: garage-s3-auth
+          key: AWS_SECRET_ACCESS_KEY
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: woodpecker-postgres
+spec:
+  schedule: "@weekly"
+  immediate: true
+  backupOwnerReference: self
+  cluster:
+    name: woodpecker-postgres
