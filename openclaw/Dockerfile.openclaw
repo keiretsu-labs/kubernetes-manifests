@@ -8,7 +8,7 @@ ARG KUSTOMIZE_V=v5.8.1
 ARG YQ_V=v4.52.4
 ARG SOPS_V=v3.12.1
 ARG JQ_V=jq-1.8.1
-ARG GH_V=2.87.2
+ARG GH_V=2.87.3
 ARG GOGCLI_V=0.9.0
 
 # Stage 1: download tools (each RUN = cached layer)
