@@ -8,10 +8,10 @@ spec:
   interval: 30m
   chart:
     spec:
-      chart: kueue
+      chart: charts/kueue
       version: "0.16.1"
       sourceRef:
-        kind: OCIRepository
+        kind: GitRepository
         name: kueue
         namespace: flux-system
   values:
