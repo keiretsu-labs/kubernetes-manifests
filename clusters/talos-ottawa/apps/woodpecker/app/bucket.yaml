@@ -1,0 +1,37 @@
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
+  name: woodpecker-postgres
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: woodpecker-postgres
+  quotas:
+    maxSize: 50Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef: woodpecker-key
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
+metadata:
+  name: woodpecker-key
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Woodpecker Postgres Backup Key"
+  secretTemplate:
+    name: garage-s3-auth
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef: woodpecker-postgres
+      read: true
+      write: true
+      owner: true
