@@ -93,6 +93,14 @@ When looking for prior context:
 3. Check pod logs for operational history: `kubectl logs -c openclaw --tail=200`
 4. Review Kubernetes events: `kubectl get events -n openclaw --sort-by='.lastTimestamp'`
 
+### Memory Search Failures
+
+If `memory_search` returns `disabled: true` or an embedding error:
+- This indicates the embedding service is unavailable
+- Fall back to direct file reads: `read` tool on MEMORY.md, BRAIN.md
+- Check workspace file paths: `/home/node/.openclaw/workspaces/main/*.md`
+- Escalate to user if embedding is needed for large codebase queries
+
 ## Compaction Design Principles
 
 From OpenAI's guidance on long-running agents:
