@@ -45,8 +45,4 @@ spec:
             claimName: homeassistant-config
         - name: homeassistant-http-config
           configMap:
-
-            name: homeassistant-config
-
             name: homeassistant-http-config
-
