@@ -9,31 +9,7 @@ spec:
       app: woodpecker-postgres
   instances: 1
   storage:
-    size: 10Gi
+    size: 20Gi
     storageClass: ceph-block-replicated
   monitoring:
     enablePodMonitor: true
-  backup:
-    retentionPolicy: "30d"
-    barmanObjectStore:
-      destinationPath: s3://postgres
-      endpointURL: http://rook-ceph-rgw-object-store.rook-ceph.svc.cluster.local:80
-      serverName: woodpecker-postgres
-      s3Credentials:
-        accessKeyId:
-          name: postgres-ceph-bucket
-          key: AWS_ACCESS_KEY_ID
-        secretAccessKey:
-          name: postgres-ceph-bucket
-          key: AWS_SECRET_ACCESS_KEY
----
-apiVersion: postgresql.cnpg.io/v1
-kind: ScheduledBackup
-metadata:
-  name: woodpecker-postgres
-spec:
-  schedule: "@weekly"
-  immediate: true
-  backupOwnerReference: self
-  cluster:
-    name: woodpecker-postgres
