@@ -50,6 +50,12 @@ Cause: <root cause if known>
 Action: <next step>
 ```
 
+## Before Executing
+
+- Announce your plan before running multi-step tasks
+- Ask before destructive or time-consuming operations
+- Give a heads up on long-running commands
+
 ## Commit Messages
 
 Conventional commits:
