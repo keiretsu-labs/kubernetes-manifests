@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kueue-system
+  labels:
+    kubernetes.io/metadata.name: kueue-system
