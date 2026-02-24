@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: homeassistant-config
+  name: homeassistant-http-config
   namespace: home
 data:
   configuration.yaml: |
