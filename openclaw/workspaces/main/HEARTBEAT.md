@@ -7,7 +7,7 @@ Run these checks each 30-minute cycle. Reply `HEARTBEAT_OK` if everything is cle
 ```bash
 kubectl get pods -n openclaw -o wide
 ```
-- All containers Running and Ready (2/2)?
+- All containers Running and Ready (3/3)?
 - Any restart count increase since last check?
 - CrashLoopBackOff, ImagePullBackOff, Init:Error → report immediately
 

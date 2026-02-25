@@ -13,6 +13,7 @@
       "agentId": "main",
       "sessionTarget": "isolated",
       "wakeMode": "now",
+      "thinking": "low",
       "payload": {
         "kind": "agentTurn",
         "message": "Run the session-review and workspace-improvement skills. Review sessions from the last 24 hours, identify failures and knowledge gaps, open PRs for improvements (max 2)."
@@ -30,9 +31,46 @@
       "agentId": "main",
       "sessionTarget": "isolated",
       "wakeMode": "now",
+      "thinking": "minimal",
       "payload": {
         "kind": "agentTurn",
         "message": "Run flux-ops skill to check kustomization health across all 3 clusters (ottawa, robbinsdale, stpetersburg). Report any reconciliation failures or stale revisions."
+      }
+    },
+    {
+      "id": "resource-audit",
+      "name": "Weekly Resource Audit",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * 1",
+        "tz": "America/New_York"
+      },
+      "agentId": "main",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "thinking": "low",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run cluster-health skill across all 3 clusters. Check for pods in non-Running state, nodes with pressure conditions, Ceph health warnings, PVCs near capacity, and certificates expiring within 14 days. Summarize findings and alert on anything critical."
+      }
+    },
+    {
+      "id": "backup-verify",
+      "name": "Backup Verification",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * 3",
+        "tz": "America/New_York"
+      },
+      "agentId": "main",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "thinking": "minimal",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check VolSync ReplicationSource status across all clusters. Verify last successful backup timestamps are within expected windows. Report any ReplicationSources with failed or stale conditions. Run: kubectl get replicationsource -A -o wide for each cluster context."
       }
     }
   ]

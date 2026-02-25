@@ -15,8 +15,17 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: openclaw
+        app.kubernetes.io/component: agent
+        app.kubernetes.io/part-of: openclaw
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "18789"
+        prometheus.io/path: /metrics
     spec:
       serviceAccountName: tailscale
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       imagePullSecrets:
         - name: zot-pull-secret
       initContainers:
@@ -43,29 +52,42 @@ spec:
             - |
               set -e
               apk add --no-cache rsync >/dev/null 2>&1
+
               echo "[init-workspace] Syncing workspaces from OCI image (preserving agent changes)..."
               rsync -av --update /opt/workspace/workspaces/ /home/node/.openclaw/workspaces/
+
               echo "[init-workspace] Downloading MCP integration plugin..."
               PLUGIN_DIR=/home/node/.openclaw/extensions/openclaw-mcp-plugin
               if [ ! -f "$PLUGIN_DIR/package.json" ]; then
                 mkdir -p "$PLUGIN_DIR"
-                wget -qO- https://github.com/lunarpulse/openclaw-mcp-plugin/archive/refs/heads/main.tar.gz \
-                  | tar xz --strip-components=1 -C "$PLUGIN_DIR"
+                for attempt in 1 2 3; do
+                  if wget -qO- https://github.com/lunarpulse/openclaw-mcp-plugin/archive/refs/heads/main.tar.gz \
+                    | tar xz --strip-components=1 -C "$PLUGIN_DIR"; then
+                    echo "[init-workspace] MCP plugin downloaded (attempt $attempt)"
+                    break
+                  fi
+                  echo "[init-workspace] Download failed (attempt $attempt/3), retrying in ${attempt}s..."
+                  sleep "$attempt"
+                  [ "$attempt" -eq 3 ] && echo "[init-workspace] WARNING: MCP plugin download failed after 3 attempts"
+                done
               fi
-              if [ ! -f "$PLUGIN_DIR/openclaw.plugin.json" ]; then
-                cat > "$PLUGIN_DIR/openclaw.plugin.json" <<'MANIFEST'
-              {"id":"mcp-integration","configSchema":{"type":"object","properties":{"enabled":{"type":"boolean"},"servers":{"type":"object"}},"additionalProperties":true}}
-              MANIFEST
+
+              if [ -f "$PLUGIN_DIR/package.json" ]; then
+                [ ! -f "$PLUGIN_DIR/openclaw.plugin.json" ] && \
+                  printf '{"id":"mcp-integration","configSchema":{"type":"object","properties":{"enabled":{"type":"boolean"},"servers":{"type":"object"}},"additionalProperties":true}}' \
+                  > "$PLUGIN_DIR/openclaw.plugin.json"
+                [ ! -f "$PLUGIN_DIR/index.js" ] && \
+                  echo 'export { default } from "./src/index.js";' > "$PLUGIN_DIR/index.js"
+                [ -f "$PLUGIN_DIR/src/http-transport.js" ] && \
+                  grep -q 'options\.sessionId || null' "$PLUGIN_DIR/src/http-transport.js" && \
+                  sed -i 's/options\.sessionId || null/options?.sessionId/' "$PLUGIN_DIR/src/http-transport.js"
               fi
-              if [ ! -f "$PLUGIN_DIR/index.js" ]; then
-                echo 'export { default } from "./src/index.js";' > "$PLUGIN_DIR/index.js"
-              fi
-              sed -i 's/options\.sessionId || null/options?.sessionId/' "$PLUGIN_DIR/src/http-transport.js"
+
               echo "[init-workspace] Updating config..."
               cp /opt/config/openclaw.json /home/node/.openclaw/clawdbot.json
-              echo "[init-workspace] Updating cron jobs..."
               mkdir -p /home/node/.openclaw/cron
               cp /opt/config/cron-jobs.json /home/node/.openclaw/cron/jobs.json
+
               echo "[init-workspace] Setting up git config..."
               cat > /home/node/.openclaw/.gitconfig <<'GITCFG'
               [credential "https://github.com"]
@@ -74,6 +96,7 @@ spec:
                 name = rajsinghtechbot
                 email = king360raj@gmail.com
               GITCFG
+
               echo "[init-workspace] Fixing ownership..."
               chown -R 1000:1000 /home/node/.openclaw
               echo "[init-workspace] Done"
@@ -119,6 +142,17 @@ spec:
         - name: openclaw
           image: oci.killinit.cc/openclaw/openclaw:latest
           imagePullPolicy: Always
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          lifecycle:
+            preStop:
+              exec:
+                command: [sh, -c, "sleep 5"]
           env:
             - name: KUBECONFIG
               value: /home/node/.kube/config
@@ -135,10 +169,25 @@ spec:
           envFrom:
             - secretRef:
                 name: openclaw-secrets
-          # WORKAROUND: probes removed — gateway binds to loopback only
-          # (openclaw/openclaw#19004) so kubelet can't reach it. Restore
-          # tcpSocket probes on port 18789 once #19004 is fixed and bind
-          # reverts to lan.
+          startupProbe:
+            exec:
+              command: [sh, -c, "curl -sf http://127.0.0.1:18789/healthz || exit 1"]
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 30
+            timeoutSeconds: 3
+          readinessProbe:
+            exec:
+              command: [sh, -c, "curl -sf http://127.0.0.1:18789/healthz || exit 1"]
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            exec:
+              command: [sh, -c, "curl -sf http://127.0.0.1:18789/healthz || exit 1"]
+            periodSeconds: 30
+            failureThreshold: 5
+            timeoutSeconds: 5
           resources:
             requests:
               cpu: 250m
@@ -190,6 +239,11 @@ spec:
         - name: scrapling
           image: pyd4vinci/scrapling:latest
           args: ["mcp", "--http", "--host", "0.0.0.0", "--port", "8000"]
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
           ports:
             - name: mcp
               containerPort: 8000

@@ -4,7 +4,7 @@ kind: ReplicationSource
 metadata:
   name: openclaw-data
 spec:
-  sourcePVC: openclaw
+  sourcePVC: openclaw-data
   trigger:
     schedule: "0 5 * * *"
   restic:
