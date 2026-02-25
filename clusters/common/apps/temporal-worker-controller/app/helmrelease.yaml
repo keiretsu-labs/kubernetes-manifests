@@ -8,7 +8,6 @@ spec:
   chart:
     spec:
       chart: temporal-worker-controller
-      version: latest
       sourceRef:
         kind: HelmRepository
         name: temporal-worker-controller
