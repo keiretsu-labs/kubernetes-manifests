@@ -240,10 +240,7 @@ spec:
           image: pyd4vinci/scrapling:latest
           args: ["mcp", "--http", "--host", "0.0.0.0", "--port", "8000"]
           securityContext:
-            runAsNonRoot: true
             allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
           ports:
             - name: mcp
               containerPort: 8000
