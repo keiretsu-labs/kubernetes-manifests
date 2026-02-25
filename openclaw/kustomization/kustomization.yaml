@@ -6,7 +6,6 @@ resources:
   - deployment.yaml
   - service-main.yaml
   - httproute.yaml
-  - httproute-code.yaml
   - egress.yaml
   - rbac.yaml
   - secret.sops.yaml
