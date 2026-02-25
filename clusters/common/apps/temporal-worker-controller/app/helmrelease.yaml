@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: temporal-worker-controller
-      version: 0.12.0
+      version: v1.2.0
       sourceRef:
         kind: HelmRepository
         name: temporal-worker-controller
