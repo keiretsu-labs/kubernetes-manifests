@@ -43,13 +43,15 @@
     "defaults": {
       "workspace": "/home/node/.openclaw/workspaces/main",
       "model": {
-        "primary": "aperture/MiniMax-M2.5"
+        "primary": "aperture/MiniMax-M2.5",
+        "fallback": "anthropic/claude-sonnet-4-5-20250514"
       },
       "userTimezone": "America/New_York",
       "timeoutSeconds": 600,
       "maxConcurrent": 3,
       "subagents": {
-        "maxConcurrent": 16
+        "maxConcurrent": 16,
+        "model": "aperture/MiniMax-M2.5"
       },
       "compaction": {
         "memoryFlush": {
@@ -66,6 +68,9 @@
           "memory",
           "sessions"
         ]
+      },
+      "sandbox": {
+        "enabled": true
       }
     },
     "list": [
@@ -77,11 +82,13 @@
           "emoji": "🦞"
         },
         "model": {
-          "primary": "aperture/MiniMax-M2.5"
+          "primary": "aperture/MiniMax-M2.5",
+          "fallback": "anthropic/claude-sonnet-4-5-20250514"
         },
         "heartbeat": {
           "every": "30m",
           "model": "aperture/MiniMax-M2.5",
+          "thinking": "minimal",
           "target": "discord",
           "activeHours": {
             "start": "06:00",
@@ -100,7 +107,8 @@
   },
   "session": {
     "scope": "per-sender",
-    "idleMinutes": 60
+    "idleMinutes": 60,
+    "maxIdleSessions": 10
   },
   "browser": {
     "enabled": false
@@ -172,9 +180,9 @@
     }
   },
   "commands": {
-    "useAccessGroups": false,
+    "useAccessGroups": true,
     "ownerAllowFrom": [
-      "*"
+      "discord"
     ]
   }
 }
