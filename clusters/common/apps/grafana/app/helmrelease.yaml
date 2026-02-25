@@ -14,3 +14,9 @@ spec:
       enabled: true
     # Watch all namespaces (default behavior when namespaceScope: false)
     namespaceScope: false
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
