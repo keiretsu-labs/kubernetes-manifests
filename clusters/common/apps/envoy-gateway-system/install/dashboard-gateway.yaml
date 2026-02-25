@@ -9,7 +9,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: Envoy Gateway
-  url: https://raw.githubusercontent.com/envoyproxy/gateway/main/charts/gateway-addons-helm/dashboards/envoy-gateway.json
+  url: https://raw.githubusercontent.com/envoyproxy/gateway/main/charts/gateway-addons-helm/dashboards/envoy-gateway-global.json
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Prometheus
