@@ -43,7 +43,6 @@
     "defaults": {
       "workspace": "/home/node/.openclaw/workspaces/main",
       "model": "aperture/MiniMax-M2.5",
-      "fallbackModel": "anthropic/claude-sonnet-4-5-20250514",
       "userTimezone": "America/New_York",
       "timeoutSeconds": 600,
       "maxConcurrent": 3,
@@ -78,7 +77,6 @@
           "emoji": "🦞"
         },
         "model": "aperture/MiniMax-M2.5",
-        "fallbackModel": "anthropic/claude-sonnet-4-5-20250514",
         "heartbeat": {
           "every": "30m",
           "model": "aperture/MiniMax-M2.5",
