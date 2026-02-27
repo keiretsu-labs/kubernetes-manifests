@@ -17,6 +17,19 @@
       "dangerouslyDisableDeviceAuth": true
     }
   },
+  "acp": {
+    "enabled": true,
+    "dispatch": {
+      "enabled": true
+    },
+    "backend": "acpx",
+    "defaultAgent": "codex",
+    "allowedAgents": ["pi", "claude", "codex", "opencode", "gemini"],
+    "maxConcurrentSessions": 8,
+    "runtime": {
+      "ttlMinutes": 120
+    }
+  },
   "models": {
     "mode": "merge",
     "providers": {
@@ -98,7 +111,12 @@
   },
   "session": {
     "scope": "per-sender",
-    "idleMinutes": 60
+    "idleMinutes": 60,
+    "threadBindings": {
+      "enabled": true,
+      "idleHours": 24,
+      "maxAgeHours": 0
+    }
   },
   "browser": {
     "enabled": false
@@ -166,7 +184,10 @@
         }
       },
       "dmPolicy": "pairing",
-      "configWrites": true
+      "configWrites": true,
+      "threadBindings": {
+        "spawnAcpSessions": true
+      }
     }
   },
   "commands": {
