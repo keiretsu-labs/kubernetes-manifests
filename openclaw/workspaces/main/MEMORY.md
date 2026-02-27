@@ -101,6 +101,7 @@ Available contexts: `ottawa`, `robbinsdale`, `stpetersburg`
 - Config changes require pod restart (init container copies on startup)
 - Workspace changes require workspace image rebuild (build-workspace.yaml CI)
 - Dockerfile.openclaw changes require openclaw image rebuild (build-openclaw.yaml CI)
+- **Always scan diff for secrets before pushing** — check for hardcoded passwords, API keys, tokens. Use `git diff` and grep for patterns like `password:`, `secret:`, `key:`, `token:`, `AKIA...`, `ghp...`, `postgres://.*@`
 
 ## Skill Design Patterns
 
