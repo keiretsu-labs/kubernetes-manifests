@@ -9,7 +9,8 @@ Before pushing openclaw.json changes to repo:
 2. **Check current config first:** `kubectl exec -n openclaw deployment/openclaw -c openclaw -- cat /home/node/.openclaw/clawdbot.json | jq "."` — understand structure before editing
 3. **Search docs for exact field names:** Don't guess — look up the exact config key in docs first
 4. **Make minimal edits:** Only change what's needed, don't rewrite entire sections
-5. **Test locally if possible:** If editing in repo, verify structure matches what Flux will produce
+
+After pushing, the user will run `openclaw doctor` locally to validate before merging.
 
 OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to refuse to start. Run `openclaw doctor` to check.
 
