@@ -48,6 +48,7 @@ Pod: openclaw
   containers:
     openclaw        -> OpenClaw server (oci.killinit.cc/openclaw/openclaw:latest)
     tailscale       -> Tailscale sidecar for mesh networking
+    scrapling       -> MCP server for web scraping (localhost:8000)
 ```
 
 ## Model Providers
