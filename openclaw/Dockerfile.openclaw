@@ -58,9 +58,15 @@ RUN curl -fsSL --retry 5 --retry-delay 2 \
       "https://github.com/steipete/gogcli/releases/download/v${GOGCLI_V}/gogcli_${GOGCLI_V}_linux_${TARGETARCH}.tar.gz" \
     | tar xz gog
 
-# Stage 2: final image
+# Stage 2: install OpenClaw CLI
+FROM node:22-bookworm AS openclaw-cli
+
+RUN npm install -g openclaw@latest
+
+# Stage 3: final image
 FROM ghcr.io/openclaw/openclaw:2026.2.26
 
 USER root
 COPY --from=tools /tools/ /usr/local/bin/
+COPY --from=openclaw-cli /usr/local/bin/openclaw /usr/local/bin/openclaw
 USER node
