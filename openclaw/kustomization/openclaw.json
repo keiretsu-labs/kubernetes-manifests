@@ -198,13 +198,6 @@
     "useAccessGroups": true,
     "ownerAllowFrom": [
       "discord"
-    ],
-    "accessGroups": {
-      "admins": {
-        "discord": [
-          "572486853027168279"
-        ]
-      }
-    }
+    ]
   }
 }
