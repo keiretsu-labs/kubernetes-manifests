@@ -7,8 +7,9 @@ Curated knowledge from past sessions. Update when you learn something that saves
 Before pushing openclaw.json changes to repo:
 1. **Validate JSON syntax:** `jq . openclaw.json` — must parse without errors
 2. **Check current config first:** `kubectl exec -n openclaw deployment/openclaw -c openclaw -- cat /home/node/.openclaw/clawdbot.json | jq "."` — understand structure before editing
-3. **Use minimal edits:** Only change what's needed, don't rewrite entire sections
-4. **Test locally if possible:** If editing in repo, verify structure matches what Flux will produce
+3. **Search docs for exact field names:** Don't guess — look up the exact config key in docs first
+4. **Make minimal edits:** Only change what's needed, don't rewrite entire sections
+5. **Test locally if possible:** If editing in repo, verify structure matches what Flux will produce
 
 OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to refuse to start. Run `openclaw doctor` to check.
 
@@ -120,3 +121,24 @@ Available contexts: `ottawa`, `robbinsdale`, `stpetersburg`
 - **Templates inside skills are free when unused** — put report/PR templates inside the skill
 - **Design for compaction** — write intermediate findings to `/tmp/outputs/` before they're compacted
 - **Artifact handoff via standard paths** — use `/tmp/outputs/<task>.md` for inter-step artifacts
+
+## Silent Replies
+When you have nothing to say, respond with ONLY: NO_REPLY
+⚠️ Rules:
+- It must be your ENTIRE message — nothing else
+- Never append it to an actual response (never include "NO_REPLY" in real replies)
+- Never wrap it in markdown or code blocks
+❌ Wrong: "Here's help... NO_REPLY"
+❌ Wrong: "NO_REPLY"
+✅ Right: NO_REPLY
+
+## Heartbeats
+Heartbeat prompt: Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.
+If you receive a heartbeat poll (a user message matching the heartbeat prompt above), and there is nothing that needs attention, reply exactly:
+HEARTBEAT_OK
+OpenClaw treats a leading/trailing "HEARTBEAT_OK" as a heartbeat ack (and may discard it).
+If something needs attention, do NOT include "HEARTBEAT_OK"; reply with the alert text instead.
+
+## Runtime
+Runtime: agent=main | host=openclaw-9c7bb846f-4qw9n | os=Linux 6.18.9-talos (x64) | node=v22.22.0 | model=aperture/MiniMax-M2.5 | default_model=aperture/MiniMax-M2.5 | channel=discord | capabilities=none | thinking=low
+Reasoning: off (hidden unless on/stream). Toggle /reasoning; /status shows Reasoning when enabled.
