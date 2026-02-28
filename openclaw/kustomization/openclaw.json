@@ -113,9 +113,7 @@
     "scope": "per-sender",
     "idleMinutes": 60,
     "threadBindings": {
-      "enabled": true,
-      "idleHours": 24,
-      "maxAgeHours": 0
+      "enabled": true
     }
   },
   "browser": {
