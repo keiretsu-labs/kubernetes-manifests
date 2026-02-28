@@ -59,7 +59,7 @@ RUN curl -fsSL --retry 5 --retry-delay 2 \
     | tar xz gog
 
 # Stage 2: install OpenClaw CLI
-FROM node:22-bookworm AS openclaw-cli
+FROM node:24-bookworm AS openclaw-cli
 
 RUN npm install -g openclaw@latest
 
