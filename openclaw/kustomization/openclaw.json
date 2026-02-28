@@ -24,7 +24,13 @@
     },
     "backend": "acpx",
     "defaultAgent": "codex",
-    "allowedAgents": ["pi", "claude", "codex", "opencode", "gemini"],
+    "allowedAgents": [
+      "pi",
+      "claude",
+      "codex",
+      "opencode",
+      "gemini"
+    ],
     "maxConcurrentSessions": 8,
     "runtime": {
       "ttlMinutes": 120
@@ -192,6 +198,13 @@
     "useAccessGroups": true,
     "ownerAllowFrom": [
       "discord"
-    ]
+    ],
+    "accessGroups": {
+      "admins": {
+        "discord": [
+          "572486853027168279"
+        ]
+      }
+    }
   }
 }
