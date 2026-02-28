@@ -2,6 +2,16 @@
 
 Curated knowledge from past sessions. Update when you learn something that saves time next session. Don't log session-specific context — only stable patterns.
 
+## Config Validation (IMPORTANT)
+
+Before pushing openclaw.json changes to repo:
+1. **Validate JSON syntax:** `jq . openclaw.json` — must parse without errors
+2. **Check current config first:** `kubectl exec -n openclaw deployment/openclaw -c openclaw -- cat /home/node/.openclaw/clawdbot.json | jq "."` — understand structure before editing
+3. **Use minimal edits:** Only change what's needed, don't rewrite entire sections
+4. **Test locally if possible:** If editing in repo, verify structure matches what Flux will produce
+
+OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to refuse to start. Run `openclaw doctor` to check.
+
 ## Known Gotchas
 
 - Container name is `openclaw`, never `main` — all kubectl `-c` flags must use `openclaw`
