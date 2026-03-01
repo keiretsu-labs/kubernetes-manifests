@@ -191,11 +191,6 @@
       "configWrites": true,
       "threadBindings": {
         "spawnAcpSessions": true
-      },
-      "allowFrom": {
-        "discord": [
-          "572486853027168279"
-        ]
       }
     }
   },
