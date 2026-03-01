@@ -63,4 +63,10 @@ FROM ghcr.io/openclaw/openclaw:2026.2.26
 
 USER root
 COPY --from=tools /tools/ /usr/local/bin/
+
+# Install OpenClaw CLI for config validation (persists across restarts)
+RUN mkdir -p /home/node/.local/bin && \
+    npm install -g openclaw@latest --prefix /home/node/.local && \
+    ln -sf /home/node/.local/bin/openclaw /usr/local/bin/openclaw
+
 USER node
