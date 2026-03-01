@@ -203,11 +203,6 @@
     "useAccessGroups": true,
     "ownerAllowFrom": [
       "discord"
-    ],
-    "allowFrom": {
-      "discord": [
-        "572486853027168279"
-      ]
-    }
+    ]
   }
 }
