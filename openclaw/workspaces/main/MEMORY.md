@@ -2,6 +2,14 @@
 
 Curated knowledge from past sessions. Update when you learn something that saves time next session. Don't log session-specific context — only stable patterns.
 
+**Security:** This file loads in direct sessions only. Keep sensitive preferences out of shared contexts (group chats, public channels).
+
+## Hard Lessons
+
+Mistakes that became permanent knowledge. Never repeat these.
+
+- *(none yet — add entries here when corrections or failures occur)*
+
 ## Config Validation (IMPORTANT)
 
 Before pushing openclaw.json changes to repo:
