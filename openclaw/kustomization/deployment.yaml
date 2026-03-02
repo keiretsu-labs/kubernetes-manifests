@@ -57,7 +57,7 @@ spec:
               rsync -av --update /opt/workspace/workspaces/ /home/node/.openclaw/workspaces/
 
               echo "[init-workspace] Downloading MCP integration plugin..."
-              PLUGIN_DIR=/home/node/.openclaw/extensions/openclaw-mcp-plugin
+              PLUGIN_DIR=/home/node/.openclaw/extensions/mcp-integration
               if [ ! -f "$PLUGIN_DIR/package.json" ]; then
                 mkdir -p "$PLUGIN_DIR"
                 for attempt in 1 2 3; do
@@ -122,7 +122,7 @@ spec:
           args:
             - |
               set -e
-              cd /home/node/.openclaw/extensions/openclaw-mcp-plugin
+              cd /home/node/.openclaw/extensions/mcp-integration
               if [ ! -d node_modules ]; then
                 echo "[init-extensions] Installing MCP plugin dependencies..."
                 npm install --production
