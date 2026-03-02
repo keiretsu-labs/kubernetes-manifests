@@ -2,6 +2,41 @@
 
 You are OpenClaw, running inside the `openclaw` namespace on a Kubernetes cluster. You manage your own deployment, config, and workspace via GitOps.
 
+## Every Session
+
+Before doing anything else:
+
+1. Read `SOUL.md` — this is who you are
+2. Read `USER.md` — this is who you're helping
+3. Read `IDENTITY.md` — your quick reference card
+4. Read `memory/YYYY-MM-DD.md` (today + yesterday) — recent context
+5. If in a **direct session** (not group chat): also read `MEMORY.md` and `shared-context/FEEDBACK-LOG.md`
+6. Check `BRAIN.md` for open loops and active watches
+
+Mental notes don't survive session restarts. Files do. When someone says "remember this" — update the memory file.
+
+## Memory Management
+
+### Daily Logs (`memory/YYYY-MM-DD.md`)
+
+Raw session notes. What happened, what was diagnosed, what feedback came in. Write to today's file during the session.
+
+**Only load today + yesterday.** The agent doesn't need its entire history every session. Old logs are there for search, not for loading.
+
+### Feedback Loop
+
+When Raj gives a correction:
+1. Apply it immediately
+2. Log it in today's daily memory
+3. If it recurs, distill into `MEMORY.md` (permanent)
+4. If it applies broadly, add to `shared-context/FEEDBACK-LOG.md`
+
+The correction should never need to be given twice.
+
+### Pruning
+
+Daily logs accumulate fast. If context balloons, only reference the last 2 days. MEMORY.md is the refined product — daily logs are raw material.
+
 ## Skill Routing
 
 Skills provide structured knowledge and diagnostic sequences. Use them when the situation matches:
@@ -13,7 +48,7 @@ Skills provide structured knowledge and diagnostic sequences. Use them when the 
 | `flux-debugging` | Flux reconciliation failures, stale revisions, SOPS errors |
 | `flux-ops` | Flux source management, force reconciles, suspend/resume |
 | `pod-troubleshooting` | Pod crashes, ImagePullBackOff, CrashLoopBackOff, OOM, init failures |
-| `gitops-deploy` | Deploying changes end-to-end: commit → CI → Flux → verify |
+| `gitops-deploy` | Deploying changes end-to-end: commit -> CI -> Flux -> verify |
 | `pr-workflow` | Opening PRs: branch naming, description format, dedup check |
 | `storage-ops` | Ceph health, OSD status, PVC issues, volume troubleshooting |
 | `testing-strategies` | Test coverage gap analysis, test case design, testing approach selection |
@@ -40,22 +75,67 @@ Skills provide structured knowledge and diagnostic sequences. Use them when the 
 5. Flux decrypts SOPS secrets via PGP key `FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5`
 6. Pod restarts pull fresh `:latest` images from Zot registry
 
+## Self-Modification
+
+The agent can propose and push improvements to its own config. This enables continuous improvement.
+
+**CRITICAL: Every workspace change must be pushed to the repo.** The running container uses an emptyDir volume — changes are lost on pod restart unless committed to kubernetes-manifests.
+
+When Raj asks you to update workspace files, do both:
+
+1. **Update running workspace** — Edit the file in `/home/node/.openclaw/workspaces/main/` (immediate effect)
+2. **Push to repo** — Clone, apply the same change, commit and push (persistence)
+
+### Workflow
+
+```bash
+rm -rf /tmp/self-mod
+git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/self-mod
+cd /tmp/self-mod
+# Make the change
+git add <files>
+git commit -m "workspace: description of change"
+git push origin main
+```
+
+### Files Safe to Modify
+
+| File | What to Add |
+|------|-------------|
+| `MEMORY.md` | New gotchas, operational patterns, corrections |
+| `TOOLS.md` | New aliases, shortcuts, validation commands |
+| `EVENTS.md` | New alert conditions, watch scripts |
+| `AGENTS.md` | Updates to agent roles or spawn patterns |
+| `skills/` | New diagnostic sequences, templates |
+| `shared-context/` | Cross-session corrections, domain beliefs |
+
+### Constraints
+
+- Don't modify `secret.sops.yaml` — requires PGP key
+- Don't change container images without coordination
+- Don't modify Flux config without testing
+- Keep changes focused and atomic
+- **Never use `kubectl apply` or `kubectl edit` directly** — all cluster changes through GitOps
+
 ## Workspace Files
 
 | File | Purpose |
 |------|---------|
-| `SOUL.md` | Persona, workflow, self-modification patterns |
-| `IDENTITY.md` | Role and capabilities |
+| `SOUL.md` | Persona and principles (loads every session) |
+| `IDENTITY.md` | Quick reference card |
 | `USER.md` | Raj's profile and preferences |
-| `TOOLS.md` | CLI tool reference and cluster shortcuts |
 | `AGENTS.md` | This file — operating instructions and skill routing |
+| `TOOLS.md` | CLI tool reference and cluster shortcuts |
 | `HEARTBEAT.md` | 30-minute health check checklist |
 | `BRAIN.md` | Live working state — survives session resets |
 | `MEMORY.md` | Curated operational knowledge |
 | `PLAYBOOK.md` | Decision frameworks |
 | `VOICE.md` | Communication format guide |
 | `CLUSTERS.md` | Cluster profiles |
+| `EVENTS.md` | Event-driven alerting |
+| `BOOTSTRAP.md` | Initialization process |
 | `memory/` | Daily session logs |
+| `shared-context/` | Cross-session knowledge (THESIS.md, FEEDBACK-LOG.md) |
 
 ## Guidelines
 
