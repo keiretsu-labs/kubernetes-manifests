@@ -43,6 +43,7 @@ OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to ref
 - Browser screenshots for Discord: use `action: screenshot` (real PNG), NOT `action: snapshot` (text/aria)
 - If `git push` fails with 403, verify GITHUB_TOKEN is set and has push access
 - **NEVER commit secrets, credentials, or API keys in plain text to git** — use SOPS for secrets or reference existing cluster secrets instead
+- Cluster contexts are `ottawa`, `robbinsdale`, `stpetersburg` — NOT `talos-ottawa`, `talos-robbinsdale`, `talos-stpetersburg` (the `talos-` prefix is wrong)
 
 ## Cluster Quick Facts
 
