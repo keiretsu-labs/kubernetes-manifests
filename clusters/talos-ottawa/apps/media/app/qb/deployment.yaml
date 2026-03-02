@@ -25,33 +25,14 @@ spec:
           allowPrivilegeEscalation: false
         env:
         - name: VPN_SERVICE_PROVIDER
-          value: custom
+          value: protonvpn
         - name: VPN_TYPE
           value: wireguard
-        - name: VPN_INTERFACE
-          value: wg0
-        - name: WIREGUARD_ENDPOINT_IP
-          valueFrom:
-            secretKeyRef:
-              name: qbittorrent-secret
-              key: WIREGUARD_ENDPOINT_IP
-        - name: WIREGUARD_ENDPOINT_PORT
-          value: "51820"
-        - name: WIREGUARD_PUBLIC_KEY
-          valueFrom:
-            secretKeyRef:
-              name: qbittorrent-secret
-              key: WIREGUARD_PUBLIC_KEY
         - name: WIREGUARD_PRIVATE_KEY
           valueFrom:
             secretKeyRef:
               name: qbittorrent-secret
               key: WIREGUARD_PRIVATE_KEY
-        - name: WIREGUARD_ADDRESSES
-          valueFrom:
-            secretKeyRef:
-              name: qbittorrent-secret
-              key: WIREGUARD_ADDRESSES
         - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
           value: 14s
         - name: WIREGUARD_MTU
@@ -60,8 +41,8 @@ spec:
           value: 5s
         - name: VPN_PORT_FORWARDING
           value: "on"
-        - name: VPN_PORT_FORWARDING_PROVIDER
-          value: protonvpn
+        - name: PORT_FORWARD_ONLY
+          value: "on"
         - name: DOT
           value: "off"
         # - name: DNS_KEEP_NAMESERVER
