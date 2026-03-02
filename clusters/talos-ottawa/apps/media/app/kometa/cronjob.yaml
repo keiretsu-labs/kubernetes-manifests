@@ -17,11 +17,10 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - |
-                  mkdir -p /config/metadata/overlays/fonts
-                  if [ ! -f /config/metadata/overlays/fonts/Montserrat-Bold.ttf ]; then
-                    apk add --no-cache unzip
+                  mkdir -p /config/metadata/overlays
+                  if [ ! -f /config/metadata/overlays/fonts/Adlib.ttf ]; then
                     wget -q https://raw.githubusercontent.com/Kometa-Team/Community-Configs/master/bullmoose20/fonts.zip -O /tmp/fonts.zip
-                    unzip -o /tmp/fonts.zip -d /config/metadata/overlays/fonts/
+                    unzip -o /tmp/fonts.zip -d /config/metadata/overlays/
                     rm /tmp/fonts.zip
                   fi
               volumeMounts:
