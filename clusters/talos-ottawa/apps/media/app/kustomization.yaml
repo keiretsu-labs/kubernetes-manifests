@@ -28,6 +28,7 @@ resources:
   - ./lidarr 
   - ./wizarr
   - ./configarr
+  - ./kometa
   - ./qb
   - ./qb-pvt
   - ./feedcord

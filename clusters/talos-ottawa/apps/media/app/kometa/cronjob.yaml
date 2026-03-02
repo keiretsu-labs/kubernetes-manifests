@@ -1,0 +1,78 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kometa
+spec:
+  schedule: "0 6 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: kometa
+              image: kometateam/kometa:latest
+              command:
+                - /bin/sh
+                - -c
+              args:
+                - |
+                  python3 kometa.py --run --read-only-config --run-libraries "Movies";
+                  python3 kometa.py --run --read-only-config --run-libraries "4K Movies";
+                  python3 kometa.py --run --read-only-config --run-libraries "4K Remux Movies";
+                  python3 kometa.py --run --read-only-config --run-libraries "Anime Movies";
+                  python3 kometa.py --run --read-only-config --run-libraries "TV Shows";
+                  python3 kometa.py --run --read-only-config --run-libraries "4K TV Shows";
+                  python3 kometa.py --run --read-only-config --run-libraries "Anime";
+              env:
+                - name: TZ
+                  value: ${TIMEZONE}
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 4Gi
+                limits:
+                  memory: 8Gi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                - name: config-secret
+                  mountPath: /config/config.yml
+                  subPath: config.yml
+                - name: movies
+                  mountPath: /config/movies.yml
+                  subPath: movies.yml
+                - name: tv
+                  mountPath: /config/tv.yml
+                  subPath: tv.yml
+                - name: logs
+                  mountPath: /config/logs
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 100
+            fsGroup: 100
+            fsGroupChangePolicy: OnRootMismatch
+          volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: kometa
+            - name: config-secret
+              secret:
+                secretName: kometa
+            - name: movies
+              configMap:
+                name: kometa-movies
+            - name: tv
+              configMap:
+                name: kometa-tv
+            - name: logs
+              emptyDir: {}
+          restartPolicy: Never
