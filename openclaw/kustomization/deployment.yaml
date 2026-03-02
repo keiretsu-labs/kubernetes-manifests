@@ -173,7 +173,6 @@ spec:
             httpGet:
               path: /healthz
               port: 18789
-              host: 127.0.0.1
             initialDelaySeconds: 15
             periodSeconds: 5
             failureThreshold: 30
@@ -182,7 +181,6 @@ spec:
             httpGet:
               path: /readyz
               port: 18789
-              host: 127.0.0.1
             periodSeconds: 15
             failureThreshold: 3
             timeoutSeconds: 3
@@ -190,7 +188,6 @@ spec:
             httpGet:
               path: /healthz
               port: 18789
-              host: 127.0.0.1
             periodSeconds: 30
             failureThreshold: 5
             timeoutSeconds: 5

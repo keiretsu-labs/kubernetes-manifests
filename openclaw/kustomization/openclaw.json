@@ -2,7 +2,7 @@
   "gateway": {
     "port": 18789,
     "mode": "local",
-    "bind": "loopback",
+    "bind": "lan",
     "trustedProxies": [
       "10.3.0.0/16",
       "10.2.0.0/16"
