@@ -18,7 +18,7 @@ spec:
               args:
                 - |
                   mkdir -p /config/metadata/overlays/fonts
-                  if [ ! -f /config/metadata/overlays/fonts/Adlib.ttf ]; then
+                  if [ ! -f /config/metadata/overlays/fonts/Montserrat-Bold.ttf ]; then
                     apk add --no-cache unzip
                     wget -q https://raw.githubusercontent.com/Kometa-Team/Community-Configs/master/bullmoose20/fonts.zip -O /tmp/fonts.zip
                     unzip -o /tmp/fonts.zip -d /config/metadata/overlays/fonts/
