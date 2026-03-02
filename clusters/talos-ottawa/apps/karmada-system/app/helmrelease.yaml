@@ -236,7 +236,7 @@ spec:
       image:
         registry: docker.io
         repository: karmada/karmada-aggregated-apiserver
-        tag: "v1.16.2"
+        tag: "v1.17.0"
         pullPolicy: IfNotPresent
       resources:
         requests:
