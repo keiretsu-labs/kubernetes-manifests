@@ -11,6 +11,22 @@ spec:
     spec:
       template:
         spec:
+          initContainers:
+            - name: download-fonts
+              image: alpine:3.21
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  mkdir -p /config/metadata/overlays/fonts
+                  if [ ! -f /config/metadata/overlays/fonts/Adlib.ttf ]; then
+                    apk add --no-cache unzip
+                    wget -q https://raw.githubusercontent.com/Kometa-Team/Community-Configs/master/bullmoose20/fonts.zip -O /tmp/fonts.zip
+                    unzip -o /tmp/fonts.zip -d /config/metadata/overlays/fonts/
+                    rm /tmp/fonts.zip
+                  fi
+              volumeMounts:
+                - name: config
+                  mountPath: /config
           containers:
             - name: kometa
               image: kometateam/kometa:latest
@@ -19,13 +35,13 @@ spec:
                 - -c
               args:
                 - |
-                  python3 kometa.py --run --read-only-config --run-libraries "Movies";
-                  python3 kometa.py --run --read-only-config --run-libraries "4K Movies";
-                  python3 kometa.py --run --read-only-config --run-libraries "4K Remux Movies";
-                  python3 kometa.py --run --read-only-config --run-libraries "Anime Movies";
-                  python3 kometa.py --run --read-only-config --run-libraries "TV Shows";
-                  python3 kometa.py --run --read-only-config --run-libraries "4K TV Shows";
-                  python3 kometa.py --run --read-only-config --run-libraries "Anime";
+                  python3 kometa.py --run --read-only-config --run-libraries "Movies-1080p";
+                  python3 kometa.py --run --read-only-config --run-libraries "Movies-4K";
+                  python3 kometa.py --run --read-only-config --run-libraries "Movies-4KRemux";
+                  python3 kometa.py --run --read-only-config --run-libraries "Movies-Anime";
+                  python3 kometa.py --run --read-only-config --run-libraries "TV-1080p";
+                  python3 kometa.py --run --read-only-config --run-libraries "TV-4K";
+                  python3 kometa.py --run --read-only-config --run-libraries "TV-Anime";
               env:
                 - name: TZ
                   value: ${TIMEZONE}
