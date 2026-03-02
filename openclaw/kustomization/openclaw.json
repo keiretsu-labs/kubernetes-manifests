@@ -16,7 +16,7 @@
       "allowInsecureAuth": true,
       "dangerouslyDisableDeviceAuth": true,
       "allowedOrigins": [
-        "https://openclaw.$${CLUSTER_DOMAIN}"
+        "https://openclaw.killinit.cc"
       ]
     }
   },
