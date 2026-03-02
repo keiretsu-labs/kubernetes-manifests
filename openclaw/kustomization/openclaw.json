@@ -14,7 +14,10 @@
     "controlUi": {
       "enabled": true,
       "allowInsecureAuth": true,
-      "dangerouslyDisableDeviceAuth": true
+      "dangerouslyDisableDeviceAuth": true,
+      "allowedOrigins": [
+        "https://openclaw.$${CLUSTER_DOMAIN}"
+      ]
     }
   },
   "acp": {
