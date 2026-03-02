@@ -1,0 +1,14 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - cronjob.yaml
+  - pvc.yaml
+  - secret.yaml
+configMapGenerator:
+  - name: kometa-movies
+    files:
+      - movies.yml
+  - name: kometa-tv
+    files:
+      - tv.yml
