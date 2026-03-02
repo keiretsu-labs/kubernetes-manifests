@@ -141,6 +141,7 @@
     }
   },
   "plugins": {
+    "allow": ["mcp-integration"],
     "entries": {
       "discord": {
         "enabled": true
@@ -195,7 +196,7 @@
     }
   },
   "commands": {
-    "useAccessGroups": true,
+    "useAccessGroups": false,
     "ownerAllowFrom": [
       "discord"
     ]
