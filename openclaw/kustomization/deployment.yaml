@@ -166,6 +166,10 @@ spec:
               value: rajsinghtechbot
             - name: GIT_COMMITTER_EMAIL
               value: king360raj@gmail.com
+            - name: OPENAI_API_KEY
+              value: "unused"
+            - name: OPENAI_BASE_URL
+              value: "http://stpetersburg-llama-cpp/v1"
           envFrom:
             - secretRef:
                 name: openclaw-secrets
