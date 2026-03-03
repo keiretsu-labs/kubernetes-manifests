@@ -90,6 +90,114 @@
         "kind": "agentTurn",
         "message": "Check VolSync ReplicationSource status across all clusters. Verify last successful backup timestamps are within expected windows. Report any ReplicationSources with failed or stale conditions. Run: kubectl get replicationsource -A -o wide for each cluster context."
       }
+    },
+    {
+      "id": "media-stack-health",
+      "name": "Media Stack Health",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 */4 * * *",
+        "tz": "America/New_York"
+      },
+      "agentId": "main",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "thinking": "minimal",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check the Ottawa media stack health. For each service in the media namespace (sonarr-1080p, sonarr-4k, sonarr-anime, radarr-1080p, radarr-4k, radarr-4kremux, radarr-anime, prowlarr, lidarr, bazarr-1080p, bazarr-4k, bazarr-4kremux, bazarr-anime, jellyfin, plex, qbittorrent, qbittorrent-pvt, sabnzbd, autobrr, jellyseerr, overseerr, tautulli, jellystat, feedcord, wizarr, configarr): verify pod is Running and not restarting. For download clients (qbittorrent, qbittorrent-pvt, sabnzbd), check logs for connection errors. Check PVC usage for any media-related PVCs approaching capacity using: kubectl exec into any pod with df or use kubectl get pv and check capacity vs usage. Report failures to Discord only if something is actually broken - do NOT report if everything is healthy."
+      }
+    },
+    {
+      "id": "tailscale-network-health",
+      "name": "Tailscale Network Health",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 7 * * *",
+        "tz": "America/New_York"
+      },
+      "agentId": "main",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "thinking": "low",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Audit Tailscale networking across all clusters. For each cluster context (ottawa, robbinsdale, stpetersburg): (1) Check tailscale operator pod health in tailscale-system namespace. (2) Verify Connectors are in ConnectorCreated status: kubectl get connectors -A. (3) Verify ProxyGroups are in ProxyGroupReady status: kubectl get proxygroups -A. (4) Check Recorder status: kubectl get recorders -A. (5) Verify cross-cluster Kubernetes API access by running kubectl --context <ctx> get nodes for each context from the openclaw pod. (6) Check for any tailscale-related pods in CrashLoopBackOff or Error state. Report any degraded Tailscale resources or cross-cluster connectivity failures."
+      }
+    },
+    {
+      "id": "cert-watch",
+      "name": "Certificate Expiry Watch",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 11 * * *",
+        "tz": "America/New_York"
+      },
+      "agentId": "main",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "thinking": "minimal",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check TLS certificate health across all clusters. For each context (ottawa, robbinsdale, stpetersburg): (1) Run kubectl get certificates -A and check for any not in Ready=True state. (2) Check certificate expiry dates - flag anything expiring within 30 days. (3) Check cert-manager pod health. (4) Look for any CertificateRequest resources stuck in pending. Only report to Discord if there are actual issues found."
+      }
+    },
+    {
+      "id": "cross-cluster-connectivity",
+      "name": "Cross-Cluster Connectivity",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 */12 * * *",
+        "tz": "America/New_York"
+      },
+      "agentId": "main",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "thinking": "minimal",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Verify cross-cluster mesh connectivity. (1) For each cluster context (ottawa, robbinsdale, stpetersburg), run kubectl get nodes to confirm API server reachability. (2) Check egress services in tailscale-system: kubectl get egressservices -A - verify they have valid status. (3) Check DNSConfig status: kubectl get dnsconfig -A. (4) Verify the ProxyGroup replicas match desired count. (5) Check Tailscale operator logs for recent errors: kubectl logs -n tailscale-system deployment/operator --tail=50 --since=12h | grep -i error. Only report if connectivity is degraded."
+      }
+    },
+    {
+      "id": "stale-resource-cleanup",
+      "name": "Stale Resource Cleanup",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * 6",
+        "tz": "America/New_York"
+      },
+      "agentId": "main",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "thinking": "low",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Identify stale Kubernetes resources across all clusters. For each context (ottawa, robbinsdale, stpetersburg): (1) Find completed/failed Jobs older than 7 days: kubectl get jobs -A. (2) Find pods in Evicted or Error state: kubectl get pods -A --field-selector=status.phase=Failed. (3) Find CrashLoopBackOff pods that have been crashing for >24 hours. (4) Check for orphaned PVCs not bound to any pod. (5) Check for stuck VolSync jobs (running >24 hours with 0 completions). Report all findings with recommended cleanup actions. Do NOT delete anything automatically - just report what should be cleaned up."
+      }
+    },
+    {
+      "id": "ceph-deep-dive",
+      "name": "Ceph Storage Deep Dive",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 10 * * 2,5",
+        "tz": "America/New_York"
+      },
+      "agentId": "main",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "thinking": "low",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Deep Ceph storage analysis for Ottawa and Robbinsdale clusters. For each cluster with rook-ceph: (1) Check CephCluster CR status: kubectl get cephcluster -n rook-ceph -o yaml. (2) Verify all OSDs are running: kubectl get pods -n rook-ceph -l app=rook-ceph-osd. (3) Check for any OSD pods in CrashLoopBackOff or pending state. (4) Get Ceph health details from toolbox if available: kubectl exec -n rook-ceph deploy/rook-ceph-tools -- ceph status. (5) Check PG health: kubectl exec -n rook-ceph deploy/rook-ceph-tools -- ceph pg stat. (6) Check capacity: kubectl exec -n rook-ceph deploy/rook-ceph-tools -- ceph df. (7) Look for slow OSD operations or blocked requests. Report degraded OSDs, unhealthy PGs, or capacity warnings (>75% usage)."
+      }
     }
   ]
 }
