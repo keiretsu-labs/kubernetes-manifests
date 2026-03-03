@@ -88,6 +88,22 @@ spec:
               mkdir -p /home/node/.openclaw/cron
               cp /opt/config/cron-jobs.json /home/node/.openclaw/cron/jobs.json
 
+              echo "[init-workspace] Validating config schema..."
+              VALIDATE_OUTPUT=$(openclaw config validate --json 2>&1) || {
+                echo "[init-workspace] ERROR: Config validation failed:"
+                echo "$VALIDATE_OUTPUT" | jq .
+                echo "[init-workspace] Fix the errors above and redeploy."
+                exit 1
+              }
+              VALID=$(echo "$VALIDATE_OUTPUT" | jq -r '.valid')
+              if [ "$VALID" = "true" ]; then
+                echo "[init-workspace] Config schema valid ✓"
+              else
+                echo "[init-workspace] ERROR: Invalid config detected:"
+                echo "$VALIDATE_OUTPUT" | jq .
+                exit 1
+              fi
+
               echo "[init-workspace] Setting up git config..."
               cat > /home/node/.openclaw/.gitconfig <<'GITCFG'
               [credential "https://github.com"]
