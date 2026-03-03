@@ -80,7 +80,12 @@
       },
       "memorySearch": {
         "enabled": true,
-        "provider": "local",
+        "provider": "openai",
+        "model": "Qwen3-Coder-Next",
+        "remote": {
+          "baseUrl": "http://stpetersburg-llama-cpp/v1",
+          "apiKey": "unused"
+        },
         "sources": [
           "memory",
           "sessions"

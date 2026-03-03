@@ -116,6 +116,7 @@ spec:
         - "--top-k"
         - "40"
         - "--jinja"
+        - "--embeddings"
         ports:
         - containerPort: 8000
           name: http
