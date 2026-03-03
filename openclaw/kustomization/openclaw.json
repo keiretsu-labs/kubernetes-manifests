@@ -80,6 +80,7 @@
       },
       "memorySearch": {
         "enabled": true,
+        "provider": "none",
         "experimental": {
           "sessionMemory": true
         },
