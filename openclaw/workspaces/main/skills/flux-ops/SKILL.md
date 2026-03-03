@@ -44,9 +44,9 @@ requires: []
 
 | Cluster | Context |
 |---------|---------|
-| Ottawa | `talos-ottawa` |
-| Robbinsdale | `talos-robbinsdale` |
-| StPetersburg | `talos-stpetersburg` |
+| Ottawa | `ottawa` |
+| Robbinsdale | `robbinsdale` |
+| StPetersburg | `stpetersburg` |
 
 ## Diagnostic Chain
 
