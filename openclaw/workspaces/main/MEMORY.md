@@ -97,7 +97,7 @@ OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to ref
 
 - Push method: `skopeo copy docker-archive:` only (Zot rejects docker push)
 - Multi-arch: `crane index append` after per-arch skopeo pushes
-- Base image: `ghcr.io/openclaw/openclaw:2026.2.9`
+- Base image: `oci.killinit.cc/openclaw/openclaw:latest`
 
 ## Alert Handling
 
