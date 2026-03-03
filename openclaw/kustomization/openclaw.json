@@ -79,7 +79,15 @@
         }
       },
       "memorySearch": {
-        "enabled": false
+        "enabled": true,
+        "provider": "local",
+        "sources": [
+          "memory",
+          "sessions"
+        ],
+        "experimental": {
+          "sessionMemory": true
+        }
       },
       "sandbox": {}
     },
