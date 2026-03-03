@@ -64,7 +64,7 @@ spec:
               "name": "s3",
               "rootdirectory": "/zot",
               "region": "garage",
-              "regionendpoint": "http://garage.garage.svc.cluster.local:3900",
+              "regionendpoint": "http://garage-global.garage.svc.cluster.local:3900",
               "bucket": "zot",
               "forcepathstyle": true,
               "secure": false,
