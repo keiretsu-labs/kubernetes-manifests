@@ -117,6 +117,8 @@ spec:
         - "40"
         - "--jinja"
         - "--embeddings"
+        - "--pooling"
+        - "mean"
         ports:
         - containerPort: 8000
           name: http
