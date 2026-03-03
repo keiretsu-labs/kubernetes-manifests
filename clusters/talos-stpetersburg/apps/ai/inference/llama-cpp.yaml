@@ -119,6 +119,8 @@ spec:
         - "--embeddings"
         - "--pooling"
         - "mean"
+        - "-ub"
+        - "2048"
         ports:
         - containerPort: 8000
           name: http
