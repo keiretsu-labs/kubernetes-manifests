@@ -233,6 +233,8 @@ spec:
               value: "--advertise-tags=tag:k8s,tag:ottawa --accept-routes"
             - name: TS_HOSTNAME
               value: $(POD_NAME)
+            - name: TS_DEBUG_FIREWALL_MODE
+              value: auto
           resources:
             requests:
               cpu: 50m
