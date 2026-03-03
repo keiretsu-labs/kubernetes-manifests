@@ -15,7 +15,7 @@ spec:
     metadata:
       size: 1Gi
     data:
-      size: 1Ti
+      size: 2Ti
       storageClassName: "${STORAGECLASS_LONGTERM}"
 
   network:
