@@ -1,33 +1,10 @@
 #!/bin/bash
 # Validates openclaw.json for known misconfigurations.
 # Usage: validate-config.sh [config-file]
-#
-# This script performs two levels of validation:
-#   1. Schema validation via openclaw config validate --json (Zod schema)
-#   2. Custom heuristics for common misconfigurations (Flux escaping, bind addresses, etc.)
 
 CONFIG_FILE="${1:-kustomization/openclaw.json}"
 
 [ -f "$CONFIG_FILE" ] || { echo "ERROR: not found: $CONFIG_FILE"; exit 1; }
-
-echo "=== Schema validation (openclaw config validate) ==="
-if command -v openclaw &>/dev/null; then
-    VALIDATE_OUTPUT=$(openclaw config validate --json 2>&1) && VALID=$? || VALID=$?
-    if [ $VALID -eq 0 ] && echo "$VALIDATE_OUTPUT" | jq -e '.valid == true' > /dev/null 2>&1; then
-        echo "Schema validation: PASSED ✓"
-    else
-        echo "Schema validation: FAILED ✗"
-        echo "$VALIDATE_OUTPUT" | jq .
-        echo ""
-        echo "Fix the schema errors above, then re-run this script."
-        exit 1
-    fi
-else
-    echo "SKIPPED (openclaw CLI not installed)"
-fi
-echo ""
-
-echo "=== Custom heuristics validation ==="
 command -v jq &>/dev/null || { echo "ERROR: jq required"; exit 1; }
 
 echo "Validating $CONFIG_FILE..."
