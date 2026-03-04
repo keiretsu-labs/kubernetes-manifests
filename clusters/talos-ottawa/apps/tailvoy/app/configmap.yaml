@@ -9,10 +9,8 @@ data:
     tailscale:
       hostname: "tailvoy-ottawa"
       ephemeral: true
-    listeners:
-      - name: http
-        protocol: tcp
-        listen: ":80"
-        forward: "127.0.0.1:8080"
-        proxy_protocol: v2
-        l7_policy: true
+    discovery:
+      envoyAdmin: "http://127.0.0.1:19000"
+      envoyAddress: "127.0.0.1"
+      pollInterval: "5s"
+      proxyProtocol: v2
