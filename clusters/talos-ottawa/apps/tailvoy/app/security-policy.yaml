@@ -20,7 +20,7 @@ spec:
     contextExtensions:
       - name: listener
         type: Value
-        value: "http"
+        value: "tailvoy/tailvoy/http"
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
