@@ -23,3 +23,10 @@ spec:
       backendRefs:
         - name: nginx-hello
           port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /superuser
+      backendRefs:
+        - name: nginx-hello
+          port: 8080

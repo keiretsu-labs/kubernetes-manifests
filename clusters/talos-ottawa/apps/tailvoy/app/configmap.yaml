@@ -32,4 +32,9 @@ data:
           path: "/kartik/*"
         allow:
           users: ["kbpersonal@github"]
+      - match:
+          listener: default
+          path: "/superuser/*"
+        allow:
+          groups: ["group:superuser"]
     default: deny
