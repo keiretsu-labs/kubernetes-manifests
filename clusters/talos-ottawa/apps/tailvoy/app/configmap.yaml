@@ -10,7 +10,7 @@ data:
       hostname: "tailvoy-ottawa"
       ephemeral: true
     listeners:
-      - name: default
+      - name: http
         protocol: tcp
         listen: ":80"
         forward: "127.0.0.1:8080"
@@ -18,22 +18,22 @@ data:
         l7_policy: true
     l4_rules:
       - match:
-          listener: default
+          listener: http
         allow:
           any_tailscale: true
     l7_rules:
       - match:
-          listener: default
+          listener: http
           path: "/raj/*"
         allow:
           users: ["rajsinghtech@github"]
       - match:
-          listener: default
+          listener: http
           path: "/kartik/*"
         allow:
           users: ["kbpersonal@github"]
       - match:
-          listener: default
+          listener: http
           path: "/superuser/*"
         allow:
           groups: ["group:superuser"]

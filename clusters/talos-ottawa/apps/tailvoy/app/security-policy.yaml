@@ -10,17 +10,17 @@ spec:
       kind: HTTPRoute
       name: nginx-hello
   extAuth:
-    headersToExtAuth:
-      - x-forwarded-for
-      - x-envoy-external-address
-      - x-envoy-original-path
-    http:
+    grpc:
       backendRefs:
         - group: ""
           kind: Service
           name: tailvoy-authz
           namespace: envoy-gateway-system
           port: 9001
+    contextExtensions:
+      - name: listener
+        type: Value
+        value: "http"
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
