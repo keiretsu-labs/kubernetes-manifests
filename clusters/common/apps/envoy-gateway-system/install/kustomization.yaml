@@ -3,6 +3,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: envoy-gateway-system
 resources:
+  - helmrelease-crds.yaml
   - helmrelease.yaml
   - observability.yaml
   - dashboard-global.yaml
