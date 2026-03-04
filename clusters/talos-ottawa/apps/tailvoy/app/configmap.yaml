@@ -10,7 +10,7 @@ data:
       hostname: "tailvoy-ottawa"
       ephemeral: true
     listeners:
-      - name: http
+      - name: default
         protocol: tcp
         listen: ":80"
         forward: "127.0.0.1:8080"
@@ -18,7 +18,7 @@ data:
         l7_policy: true
     l4_rules:
       - match:
-          listener: http
+          listener: default
         allow:
           any_tailscale: true
     l7_rules:
