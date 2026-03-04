@@ -231,11 +231,10 @@
 				"rajsingh.info/cap/tailvoy": [{"routes": ["/superuser/*"]}],
 			},
 		},
-		// Tailvoy kind integration test — full access for test runner
+		// Tailvoy — full access to self-owned nodes (kind integration test)
 		{
-			"src": ["group:kind"],
-			"dst": ["tag:kind"],
-			"ip":  ["*"],
+			"src": ["autogroup:member"],
+			"dst": ["autogroup:self"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [{"routes": ["/*"]}],
 			},
