@@ -214,21 +214,21 @@
 			"src": ["rajsinghtech@github"],
 			"dst": ["tag:ottawa"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"listeners": ["http"], "routes": ["/raj/*"]}],
+				"rajsingh.info/cap/tailvoy": [{"listeners": ["http", "tailvoy/tailvoy/http"], "routes": ["/raj/*"]}],
 			},
 		},
 		{
 			"src": ["kbpersonal@github"],
 			"dst": ["tag:ottawa"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"listeners": ["http"], "routes": ["/kartik/*"]}],
+				"rajsingh.info/cap/tailvoy": [{"listeners": ["http", "tailvoy/tailvoy/http"], "routes": ["/kartik/*"]}],
 			},
 		},
 		{
 			"src": ["group:superuser"],
 			"dst": ["tag:ottawa"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"listeners": ["http"], "routes": ["/superuser/*"]}],
+				"rajsingh.info/cap/tailvoy": [{"listeners": ["http", "tailvoy/tailvoy/http"], "routes": ["/superuser/*"]}],
 			},
 		},
 		// Tailvoy — kind integration test caps (multi-dimensional)
@@ -237,9 +237,9 @@
 			"dst": ["autogroup:self"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [
-					{"listeners": ["http"], "routes": ["/public/*", "/health", "/api/*", "/admin/*"]},
-					{"listeners": ["grpc"], "routes": ["/grpc.health.v1.Health/*"]},
-					{"listeners": ["tcp", "udp", "tls"]},
+					{"listeners": ["http", "default/eg/http"], "routes": ["/public/*", "/health", "/api/*", "/admin/*"]},
+					{"listeners": ["grpc", "default/eg/grpc"], "routes": ["/grpc.health.v1.Health/*"]},
+					{"listeners": ["tcp", "udp", "tls", "default/eg/tcp", "default/eg/udp", "default/eg/tls"]},
 				],
 			},
 		},
