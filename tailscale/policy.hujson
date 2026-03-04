@@ -214,29 +214,33 @@
 			"src": ["rajsinghtech@github"],
 			"dst": ["tag:ottawa"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"routes": ["/raj/*"]}],
+				"rajsingh.info/cap/tailvoy": [{"listeners": ["http"], "routes": ["/raj/*"]}],
 			},
 		},
 		{
 			"src": ["kbpersonal@github"],
 			"dst": ["tag:ottawa"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"routes": ["/kartik/*"]}],
+				"rajsingh.info/cap/tailvoy": [{"listeners": ["http"], "routes": ["/kartik/*"]}],
 			},
 		},
 		{
 			"src": ["group:superuser"],
 			"dst": ["tag:ottawa"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"routes": ["/superuser/*"]}],
+				"rajsingh.info/cap/tailvoy": [{"listeners": ["http"], "routes": ["/superuser/*"]}],
 			},
 		},
-		// Tailvoy — full access to self-owned nodes (kind integration test)
+		// Tailvoy — kind integration test caps (multi-dimensional)
 		{
 			"src": ["autogroup:member"],
 			"dst": ["autogroup:self"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"routes": ["/*"]}],
+				"rajsingh.info/cap/tailvoy": [
+					{"listeners": ["http"], "routes": ["/public/*", "/health", "/api/*", "/admin/*"]},
+					{"listeners": ["grpc"], "routes": ["/grpc.health.v1.Health/*"]},
+					{"listeners": ["tcp", "udp", "tls"]},
+				],
 			},
 		},
 		// TailGrant JIT grants - admin gets full access, debug gets limited
