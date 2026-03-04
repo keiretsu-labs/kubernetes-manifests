@@ -237,7 +237,7 @@
 			"dst": ["autogroup:self"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [
-					{"listeners": ["http", "default/eg/http"], "routes": ["/public/*", "/health", "/api/*", "/admin/*"]},
+					{"listeners": ["http", "default/eg/http", "tailvoy/tailvoy/http"], "routes": ["/public/*", "/health", "/api/*", "/admin/*", "/raj/*", "/kartik/*", "/superuser/*"]},
 					{"listeners": ["grpc", "default/eg/grpc"], "routes": ["/grpc.health.v1.Health/*"]},
 					{"listeners": ["tcp", "udp", "tls", "default/eg/tcp", "default/eg/udp", "default/eg/tls"]},
 				],
