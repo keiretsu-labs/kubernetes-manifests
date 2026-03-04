@@ -13,9 +13,8 @@
   // Define grants that govern access for users, groups, autogroups, tags,
   // Tailscale IP addresses, and subnet ranges.
   "grants": [
-          // Allow all connections.
-          // Comment this section out if you want to define specific restrictions.
-          {"src": ["*"], "dst": ["*"], "ip": ["*"]},
+          // Allow all connections with full tailvoy access.
+          {"src": ["*"], "dst": ["*"], "ip": ["*"], "app": {"rajsingh.info/cap/tailvoy": [{"routes": ["/*"]}]}},
 
           // Allow users in "group:example" to access "tag:example", but only from
           // devices that are running macOS and have enabled Tailscale client auto-updating.
