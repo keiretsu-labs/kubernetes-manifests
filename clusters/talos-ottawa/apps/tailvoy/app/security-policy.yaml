@@ -1,0 +1,34 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: tailvoy-authz
+  namespace: tailvoy
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: nginx-hello
+  extAuth:
+    http:
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: tailvoy-authz
+          namespace: envoy-gateway-system
+          port: 9001
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: tailvoy-authz-grant
+  namespace: envoy-gateway-system
+spec:
+  from:
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: tailvoy
+  to:
+    - group: ""
+      kind: Service
+      name: tailvoy-authz
