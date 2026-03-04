@@ -1,0 +1,25 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-hello
+  namespace: tailvoy
+spec:
+  parentRefs:
+    - name: tailvoy
+      sectionName: http
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /raj
+      backendRefs:
+        - name: nginx-hello
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /kartik
+      backendRefs:
+        - name: nginx-hello
+          port: 8080
