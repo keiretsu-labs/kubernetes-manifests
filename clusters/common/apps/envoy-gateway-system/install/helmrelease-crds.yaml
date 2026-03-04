@@ -2,28 +2,23 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: envoy-gateway
+  name: envoy-gateway-crds
   namespace: envoy-gateway-system
 spec:
-  dependsOn:
-    - name: envoy-gateway-crds
   interval: 5m
   chart:
     spec:
-      chart: gateway-helm
+      chart: gateway-crds
       version: 1.7.0
       sourceRef:
         kind: HelmRepository
         name: envoy-gateway
         namespace: flux-system
       interval: 1m
-  install:
-    crds: Skip
-  upgrade:
-    crds: Skip
-  releaseName: envoy-gateway
+  releaseName: envoy-gateway-crds
   values:
-    config:
+    crds:
       envoyGateway:
-        extensionApis:
-          enableBackend: true
+        enabled: true
+      gatewayAPI:
+        enabled: true
