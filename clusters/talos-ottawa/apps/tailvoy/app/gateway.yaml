@@ -13,12 +13,6 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
-    - name: http-test
-      protocol: HTTP
-      port: 8081
-      allowedRoutes:
-        namespaces:
-          from: Same
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
