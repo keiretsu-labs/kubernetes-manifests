@@ -209,42 +209,28 @@
 			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
 			"ip":  ["*"],
 		},
-		// Tailvoy cap-based authorization for ottawa
+		// Tailvoy cap-based authorization
 		{
 			"src": ["rajsinghtech@github"],
-			"dst": ["tag:ottawa"],
+			"dst": ["tag:k8s"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [{"listeners": ["http", "tailvoy/tailvoy/http"], "routes": ["/raj/*"]}],
 			},
 		},
 		{
 			"src": ["kbpersonal@github"],
-			"dst": ["tag:ottawa"],
+			"dst": ["tag:k8s"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [{"listeners": ["http", "tailvoy/tailvoy/http"], "routes": ["/kartik/*"]}],
 			},
 		},
 		{
 			"src": ["group:superuser"],
-			"dst": ["tag:ottawa"],
+			"dst": ["tag:k8s"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [{"listeners": ["http", "tailvoy/tailvoy/http"], "routes": ["/superuser/*"]}],
 			},
 		},
-		// Tailvoy — kind integration test caps (multi-dimensional)
-		{
-			"src": ["autogroup:member"],
-			"dst": ["autogroup:self"],
-			"app": {
-				"rajsingh.info/cap/tailvoy": [
-					{"listeners": ["http", "default/eg/http"], "routes": ["/public/*", "/health", "/api/*", "/admin/*"]},
-					{"listeners": ["grpc", "default/eg/grpc"], "routes": ["/grpc.health.v1.Health/*"]},
-					{"listeners": ["tcp", "udp", "tls", "default/eg/tcp", "default/eg/udp", "default/eg/tls"]},
-				],
-			},
-		},
-		// TailGrant JIT grants - admin gets full access, debug gets limited
-		// srcPosture requires the requester's device to have the posture attribute set by TailGrant
 		{
 			"src": ["tag:admin-granted"],
 			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
