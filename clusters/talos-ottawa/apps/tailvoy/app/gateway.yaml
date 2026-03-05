@@ -13,6 +13,12 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: http
+      protocol: HTTP
+      port: 19003
+      allowedRoutes:
+        namespaces:
+          from: Same
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
