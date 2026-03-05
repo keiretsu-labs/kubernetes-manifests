@@ -14,7 +14,7 @@ spec:
     type: Kubernetes
     kubernetes:
       envoyDeployment:
-        replicas: 1
+        replicas: 10
         container:
           image: ghcr.io/rajsinghtech/tailvoy:dev
         patch:
