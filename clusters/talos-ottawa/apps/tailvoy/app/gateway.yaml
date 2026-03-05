@@ -13,7 +13,7 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
-    - name: http
+    - name: http-test
       protocol: HTTP
       port: 19003
       allowedRoutes:
