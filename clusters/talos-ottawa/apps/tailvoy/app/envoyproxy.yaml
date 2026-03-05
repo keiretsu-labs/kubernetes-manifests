@@ -16,7 +16,7 @@ spec:
       envoyDeployment:
         replicas: 1
         container:
-          image: ghcr.io/rajsinghtech/tailvoy:0.0.6
+          image: ghcr.io/rajsinghtech/tailvoy:dev
         patch:
           type: StrategicMerge
           value:
@@ -25,30 +25,36 @@ spec:
                 spec:
                   containers:
                     - name: envoy
+                      imagePullPolicy: Always
                       command:
                         - tailvoy
-                        - --policy
-                        - /etc/tailvoy/policy.yaml
+                        - --config
+                        - /etc/tailvoy/config.yaml
                         - --authz-addr
                         - 0.0.0.0:9001
                         - --log-level
                         - debug
                         - --
                       env:
-                        - name: TS_AUTHKEY
+                        - name: TS_CLIENT_ID
                           valueFrom:
                             secretKeyRef:
-                              name: tailvoy-authkey
-                              key: TS_AUTHKEY
+                              name: tailvoy-oauth
+                              key: client_id
+                        - name: TS_CLIENT_SECRET
+                          valueFrom:
+                            secretKeyRef:
+                              name: tailvoy-oauth
+                              key: client_secret
                       ports:
                         - containerPort: 9001
                           name: authz
                           protocol: TCP
                       volumeMounts:
-                        - name: tailvoy-policy
+                        - name: tailvoy-config
                           mountPath: /etc/tailvoy
                           readOnly: true
                   volumes:
-                    - name: tailvoy-policy
+                    - name: tailvoy-config
                       configMap:
-                        name: tailvoy-policy
+                        name: tailvoy-config

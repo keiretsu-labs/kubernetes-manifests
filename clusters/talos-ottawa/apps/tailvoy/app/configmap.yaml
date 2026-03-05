@@ -2,13 +2,18 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: tailvoy-policy
+  name: tailvoy-config
   namespace: envoy-gateway-system
 data:
-  policy.yaml: |
+  config.yaml: |
     tailscale:
-      hostname: "tailvoy-ottawa"
-      ephemeral: true
+      service: "tailvoy"
+      clientId: "${TS_CLIENT_ID}"
+      clientSecret: "${TS_CLIENT_SECRET}"
+      tags:
+        - "tag:k8s"
+      serviceTags:
+        - "tag:k8s"
     discovery:
       envoyAdmin: "http://127.0.0.1:19000"
       envoyAddress: "127.0.0.1"
