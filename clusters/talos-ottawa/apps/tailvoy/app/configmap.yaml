@@ -8,8 +8,6 @@ data:
   config.yaml: |
     tailscale:
       service: "tailvoy"
-      clientId: "$${TS_CLIENT_ID}"
-      clientSecret: "$${TS_CLIENT_SECRET}"
       tags:
         - "tag:k8s"
       serviceTags:
