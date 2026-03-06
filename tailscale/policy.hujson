@@ -107,6 +107,7 @@
 			"svc:tsdnsproxy": ["tag:k8s"],
 			"svc:http": ["tag:k8s"],
 			"svc:http-test": ["tag:k8s"],
+			"svc:tcp": ["tag:k8s"],
 		},
 	},
 	"ssh": [
@@ -246,6 +247,12 @@
 			"app": {
 				"rajsingh.info/cap/tailvoy": [{"routes": ["/test/*"]}],
 			},
+		},
+		// Tailvoy: svc:tcp — superusers get L4 TCP access
+		{
+			"src": ["group:superuser"],
+			"dst": ["svc:tcp", "tag:k8s"],
+			"ip":  ["*"],
 		},
 		{
 			"src": ["tag:admin-granted"],
@@ -592,6 +599,7 @@
 			"accept": [
 				"svc:http:8080",
 				"svc:http-test:8081",
+				"svc:tcp:5432",
 			],
 		},
 	],

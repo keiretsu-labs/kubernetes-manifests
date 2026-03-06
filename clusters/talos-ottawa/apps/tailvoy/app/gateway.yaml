@@ -19,6 +19,12 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: tcp
+      protocol: TCP
+      port: 5432
+      allowedRoutes:
+        namespaces:
+          from: Same
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
@@ -44,4 +50,17 @@ spec:
       kind: Gateway
       name: tailvoy
       sectionName: http-test
+  enableProxyProtocol: true
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: enable-proxy-protocol-tcp
+  namespace: tailvoy
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: tailvoy
+      sectionName: tcp
   enableProxyProtocol: true

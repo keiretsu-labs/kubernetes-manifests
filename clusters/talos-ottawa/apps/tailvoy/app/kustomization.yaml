@@ -9,5 +9,6 @@ resources:
   - gateway.yaml
   - nginx.yaml
   - httproute.yaml
+  - tcproute.yaml
   - security-policy.yaml
   - authz-service.yaml
