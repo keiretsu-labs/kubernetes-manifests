@@ -105,6 +105,8 @@
 			"svc:ottawa-tsflow": ["tag:ottawa"],
 			"svc:robbinsdale-tsflow": ["tag:robbinsdale"],
 			"svc:tsdnsproxy": ["tag:k8s"],
+			"svc:http": ["tag:k8s"],
+			"svc:http-test": ["tag:k8s"],
 		},
 	},
 	"ssh": [
@@ -209,26 +211,38 @@
 			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
 			"ip":  ["*"],
 		},
-		// Tailvoy cap-based authorization
+		// Tailvoy: per-user path access on svc:http
 		{
 			"src": ["rajsinghtech@github"],
-			"dst": ["tag:k8s"],
+			"dst": ["svc:http"],
+			"ip":  ["*"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"listeners": ["http", "tailvoy/tailvoy/http"], "routes": ["/raj/*"]}],
+				"rajsingh.info/cap/tailvoy": [{"routes": ["/raj/*"]}],
 			},
 		},
 		{
 			"src": ["kbpersonal@github"],
-			"dst": ["tag:k8s"],
+			"dst": ["svc:http"],
+			"ip":  ["*"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"listeners": ["http", "tailvoy/tailvoy/http"], "routes": ["/kartik/*"]}],
+				"rajsingh.info/cap/tailvoy": [{"routes": ["/kartik/*"]}],
 			},
 		},
 		{
 			"src": ["group:superuser"],
-			"dst": ["tag:k8s"],
+			"dst": ["svc:http"],
+			"ip":  ["*"],
 			"app": {
-				"rajsingh.info/cap/tailvoy": [{"listeners": ["http", "tailvoy/tailvoy/http"], "routes": ["/superuser/*"]}],
+				"rajsingh.info/cap/tailvoy": [{"routes": ["/superuser/*"]}],
+			},
+		},
+		// Tailvoy: svc:http-test — superusers get /test
+		{
+			"src": ["group:superuser"],
+			"dst": ["svc:http-test"],
+			"ip":  ["*"],
+			"app": {
+				"rajsingh.info/cap/tailvoy": [{"routes": ["/test/*"]}],
 			},
 		},
 		{
@@ -553,6 +567,29 @@
 			],
 			"deny": [
 				"192.168.169.1:443",
+			],
+		},
+		// Tailvoy service VIP tests: raj can reach svc:http but not svc:http-test
+		{
+			"src": "rajsinghtech@github",
+			"accept": [
+				"svc:http:8080",
+			],
+		},
+		// superuser can reach both svc:http and svc:http-test
+		// kbpersonal is in group:superuser so has access to both services
+		{
+			"src": "kbpersonal@github",
+			"accept": [
+				"svc:http:8080",
+				"svc:http-test:8081",
+			],
+		},
+		{
+			"src": "group:superuser",
+			"accept": [
+				"svc:http:8080",
+				"svc:http-test:8081",
 			],
 		},
 	],
