@@ -212,9 +212,12 @@
 			"ip":  ["*"],
 		},
 		// Tailvoy: per-user path access on svc:http
+		// NOTE: dst includes both svc:http (for network-layer VIP routing) and
+		// tag:k8s (for cap delivery via WhoIs on the node). The ext_authz WhoIs
+		// call resolves caps from the node context, not the service VIP context.
 		{
 			"src": ["rajsinghtech@github"],
-			"dst": ["svc:http"],
+			"dst": ["svc:http", "tag:k8s"],
 			"ip":  ["*"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [{"routes": ["/raj/*"]}],
@@ -222,7 +225,7 @@
 		},
 		{
 			"src": ["kbpersonal@github"],
-			"dst": ["svc:http"],
+			"dst": ["svc:http", "tag:k8s"],
 			"ip":  ["*"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [{"routes": ["/kartik/*"]}],
@@ -230,7 +233,7 @@
 		},
 		{
 			"src": ["group:superuser"],
-			"dst": ["svc:http"],
+			"dst": ["svc:http", "tag:k8s"],
 			"ip":  ["*"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [{"routes": ["/superuser/*"]}],
@@ -239,7 +242,7 @@
 		// Tailvoy: svc:http-test — superusers get /test
 		{
 			"src": ["group:superuser"],
-			"dst": ["svc:http-test"],
+			"dst": ["svc:http-test", "tag:k8s"],
 			"ip":  ["*"],
 			"app": {
 				"rajsingh.info/cap/tailvoy": [{"routes": ["/test/*"]}],

@@ -14,7 +14,7 @@ spec:
     type: Kubernetes
     kubernetes:
       envoyDeployment:
-        replicas: 3
+        replicas: 1
         container:
           image: ghcr.io/rajsinghtech/tailvoy:service-mappings
         patch:
