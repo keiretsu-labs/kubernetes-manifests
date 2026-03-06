@@ -7,7 +7,9 @@ metadata:
 data:
   config.yaml: |
     tailscale:
-      service: "tailvoy"
+      serviceMappings:
+        http: ["tailvoy/tailvoy/http"]
+        http-test: ["tailvoy/tailvoy/http-test"]
       tags:
         - "tag:k8s"
       serviceTags:

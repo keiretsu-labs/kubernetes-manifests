@@ -30,3 +30,21 @@ spec:
       backendRefs:
         - name: nginx-hello
           port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-hello-test
+  namespace: tailvoy
+spec:
+  parentRefs:
+    - name: tailvoy
+      sectionName: http-test
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /test
+      backendRefs:
+        - name: nginx-hello
+          port: 8080
