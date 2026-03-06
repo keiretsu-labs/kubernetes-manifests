@@ -10,6 +10,7 @@ data:
       serviceMappings:
         http: ["tailvoy/tailvoy/http"]
         http-test: ["tailvoy/tailvoy/http-test"]
+        tcp: ["tailvoy/tailvoy/tcp"]
       tags:
         - "tag:k8s"
       serviceTags:
