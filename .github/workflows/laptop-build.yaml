@@ -40,7 +40,7 @@ jobs:
           echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Build amd64
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./laptop
           file: laptop/Dockerfile
@@ -51,7 +51,7 @@ jobs:
           provenance: false
 
       - name: Build arm64
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./laptop
           file: laptop/Dockerfile
