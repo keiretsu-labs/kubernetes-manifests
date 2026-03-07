@@ -8,7 +8,7 @@ Curated knowledge from past sessions. Update when you learn something that saves
 
 Mistakes that became permanent knowledge. Never repeat these.
 
-- *(none yet — add entries here when corrections or failures occur)*
+- **Log pruning**: Only prune daily logs older than 7 days. Calculate: 7 days before today = files dated BEFORE (today - 7 days). Example: On March 7, only prune logs from February 28 or earlier. Never prune logs that are 2-3 days old.
 
 ## Config Validation (IMPORTANT)
 
