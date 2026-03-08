@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: jellyswarrm
-          image: ghcr.io/llukas22/jellyswarrm:latest
+          image: ghcr.io/llukas22/jellyswarrm:main
           ports:
             - containerPort: 3000
               name: http
