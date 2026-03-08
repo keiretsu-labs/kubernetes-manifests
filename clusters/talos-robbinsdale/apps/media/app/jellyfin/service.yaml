@@ -15,3 +15,4 @@ spec:
       protocol: TCP
       targetPort: 8096
   type: LoadBalancer
+  loadBalancerClass: tailscale
