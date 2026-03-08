@@ -26,6 +26,8 @@ spec:
               value: admin
             - name: JELLYSWARRM_PASSWORD
               value: ${DEFAULT_PASSWORD}
+            - name: JELLYSWARRM_MEDIA_STREAMING_MODE
+              value: Proxy
           volumeMounts:
             - name: data
               mountPath: /app/data
