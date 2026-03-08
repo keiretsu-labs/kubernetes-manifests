@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyswarrm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: jellyswarrm
+  template:
+    metadata:
+      labels:
+        app: jellyswarrm
+    spec:
+      containers:
+        - name: jellyswarrm
+          image: ghcr.io/llukas22/jellyswarrm:latest
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: JELLYSWARRM_USERNAME
+              value: admin
+            - name: JELLYSWARRM_PASSWORD
+              value: ${DEFAULT_PASSWORD}
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: jellyswarrm-data
