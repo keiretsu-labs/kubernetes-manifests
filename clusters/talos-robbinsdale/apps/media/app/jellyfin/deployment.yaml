@@ -30,8 +30,8 @@ spec:
               mountPath: /media/movies
             - name: music-volume
               mountPath: /media/music
-            - name: audiobooks-volume
-              mountPath: /media/audiobooks                            
+            # - name: audiobooks-volume
+            #   mountPath: /media/audiobooks
             - name: config-volume
               mountPath: /config
           env:
@@ -50,9 +50,9 @@ spec:
         - name: movies-volume
           persistentVolumeClaim:
             claimName: radarr-movies-unas
-        - name: audiobooks-volume
-          persistentVolumeClaim:
-            claimName: readarr-books-unas
+        # - name: audiobooks-volume
+        #   persistentVolumeClaim:
+        #     claimName: readarr-books-unas
         - name: music-volume
           persistentVolumeClaim:
             claimName: lidarr-music-unas
