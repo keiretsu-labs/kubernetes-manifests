@@ -5,15 +5,18 @@ metadata:
   name: jellyfin
   labels:
     app: jellyfin
+  annotations:
+    tailscale.com/hostname: ${LOCATION}-jellyfin
+    tailscale.com/proxy-group: common-ingress
 spec:
   selector:
     app: jellyfin
   ports:
-  - name: http
-    port: 8096
-    protocol: TCP
-    targetPort: 8096
-  type: ClusterIP
+    - name: http
+      port: 8096
+      protocol: TCP
+      targetPort: 8096
+  type: LoadBalancer
 # ---
 # apiVersion: v1
 # kind: Service
