@@ -1,5 +1,6 @@
 ---
-# Evict workloads from unreachable clusters after 60s
+# Add NoExecute taint when cluster becomes unreachable
+# The taint manager will then evict workloads that don't tolerate it
 apiVersion: policy.karmada.io/v1alpha1
 kind: ClusterTaintPolicy
 metadata:
@@ -13,12 +14,18 @@ spec:
   taints:
     - key: cluster.karmada.io/unreachable
       effect: NoExecute
-      operator: Exists
-  eviction:
-    gracePeriodSeconds: 60
-    purgeMode: Graciously
+  addOnConditions:
+    - conditionType: Ready
+      operator: In
+      statusValues:
+        - "Unknown"
+  removeOnConditions:
+    - conditionType: Ready
+      operator: In
+      statusValues:
+        - "True"
 ---
-# Evict workloads from not-ready clusters after 60s
+# Add NoExecute taint when cluster becomes not-ready
 apiVersion: policy.karmada.io/v1alpha1
 kind: ClusterTaintPolicy
 metadata:
@@ -32,7 +39,13 @@ spec:
   taints:
     - key: cluster.karmada.io/not-ready
       effect: NoExecute
-      operator: Exists
-  eviction:
-    gracePeriodSeconds: 60
-    purgeMode: Graciously
+  addOnConditions:
+    - conditionType: Ready
+      operator: In
+      statusValues:
+        - "False"
+  removeOnConditions:
+    - conditionType: Ready
+      operator: In
+      statusValues:
+        - "True"
