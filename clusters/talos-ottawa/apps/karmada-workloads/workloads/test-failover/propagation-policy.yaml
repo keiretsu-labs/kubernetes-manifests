@@ -1,9 +1,7 @@
 # PropagationPolicy for failover-test deployment
 # Configures:
-# - Primary: Robbinsdale
-# - Failover: St Petersburg
-# - Single replica (only one cluster at a time)
-# - Graceful failover with 60s tolerance
+# - Divided scheduling: replicas split dynamically across clusters by available resources
+# - Failover with graceful eviction
 # Note: Ottawa is the Karmada host cluster, not a member — cannot schedule there
 ---
 apiVersion: policy.karmada.io/v1alpha1
@@ -22,8 +20,8 @@ spec:
   placement:
     clusterAffinity:
       clusterNames:
-        - talos-stpetersburg  # Primary
-        - talos-robbinsdale   # Failover
+        - talos-stpetersburg
+        - talos-robbinsdale
 
     clusterTolerations:
       - key: cluster.karmada.io/unreachable
@@ -35,13 +33,11 @@ spec:
         operator: Exists
         tolerationSeconds: 60
 
-    spreadConstraints:
-      - maxGroups: 1
-        minGroups: 1
-        spreadByField: cluster
-
     replicaScheduling:
-      replicaSchedulingType: Duplicated
+      replicaSchedulingType: Divided
+      replicaDivisionPreference: Weighted
+      weightPreference:
+        dynamicWeight: AvailableReplicas
 
   failover:
     application:

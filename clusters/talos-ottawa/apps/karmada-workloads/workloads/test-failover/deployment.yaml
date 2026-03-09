@@ -1,5 +1,4 @@
-# Test deployment for failover
-# This will be scheduled to Ottawa by default, then failover to Robbinsdale/StPetersburg if Ottawa is unhealthy
+# Test deployment for distributed scheduling across clusters
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -9,7 +8,7 @@ metadata:
   labels:
     app: failover-test
 spec:
-  replicas: 1
+  replicas: 10
   selector:
     matchLabels:
       app: failover-test
