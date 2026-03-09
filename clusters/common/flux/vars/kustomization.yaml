@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - ./common-settings.yaml
   - ./common-secrets.sops.yaml
-  - ./karmada-secrets.yaml
