@@ -25,6 +25,16 @@ spec:
         - talos-robbinsdale   # Primary
         - talos-stpetersburg  # Failover
 
+    clusterTolerations:
+      - key: cluster.karmada.io/unreachable
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 60
+      - key: cluster.karmada.io/not-ready
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 60
+
     spreadConstraints:
       - maxGroups: 1
         minGroups: 1
