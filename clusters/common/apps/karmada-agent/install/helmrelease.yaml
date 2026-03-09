@@ -45,8 +45,8 @@ spec:
       clusterName: "${CLUSTER_NAME}"
 
       kubeconfig:
-        # Tailscale egress service proxies to karmada-apiserver.keiretsu.ts.net
-        server: "https://karmada-apiserver.tailscale.svc.cluster.local:5443"
+        # Resolves to Tailscale egress ClusterIP, cert is valid for this hostname
+        server: "https://karmada-apiserver.keiretsu.ts.net:5443"
 
       labels:
         app: karmada-agent
