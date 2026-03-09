@@ -45,9 +45,8 @@ spec:
       clusterName: "${CLUSTER_NAME}"
 
       kubeconfig:
-        # Use Tailscale IP directly since pods can't resolve ts.net DNS
-        # karmada-apiserver.keiretsu.ts.net = 100.108.197.80
-        server: "https://100.108.197.80:5443"
+        # Tailscale egress service proxies to karmada-apiserver.keiretsu.ts.net
+        server: "https://karmada-apiserver.tailscale.svc.cluster.local:5443"
 
       labels:
         app: karmada-agent
