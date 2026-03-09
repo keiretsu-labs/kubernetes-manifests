@@ -1,0 +1,38 @@
+---
+# Evict workloads from unreachable clusters after 60s
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterTaintPolicy
+metadata:
+  name: evict-unreachable
+spec:
+  targetClusters:
+    clusterAffinity:
+      clusterNames:
+        - talos-robbinsdale
+        - talos-stpetersburg
+  taints:
+    - key: cluster.karmada.io/unreachable
+      effect: NoExecute
+      operator: Exists
+  eviction:
+    gracePeriodSeconds: 60
+    purgeMode: Graciously
+---
+# Evict workloads from not-ready clusters after 60s
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterTaintPolicy
+metadata:
+  name: evict-not-ready
+spec:
+  targetClusters:
+    clusterAffinity:
+      clusterNames:
+        - talos-robbinsdale
+        - talos-stpetersburg
+  taints:
+    - key: cluster.karmada.io/not-ready
+      effect: NoExecute
+      operator: Exists
+  eviction:
+    gracePeriodSeconds: 60
+    purgeMode: Graciously
