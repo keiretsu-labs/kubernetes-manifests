@@ -22,8 +22,8 @@ spec:
   placement:
     clusterAffinity:
       clusterNames:
-        - talos-robbinsdale   # Primary
-        - talos-stpetersburg  # Failover
+        - talos-stpetersburg  # Primary
+        - talos-robbinsdale   # Failover
 
     clusterTolerations:
       - key: cluster.karmada.io/unreachable
