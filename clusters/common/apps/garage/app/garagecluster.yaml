@@ -51,6 +51,9 @@ spec:
       name: garage-admin-token
       key: admin-token
 
+  webApi:
+    rootDomain: ".${CLUSTER_DOMAIN}"
+
   resources:
     requests:
       cpu: 100m
