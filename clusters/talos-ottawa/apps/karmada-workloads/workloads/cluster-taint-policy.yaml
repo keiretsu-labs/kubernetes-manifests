@@ -7,10 +7,9 @@ metadata:
   name: evict-unreachable
 spec:
   targetClusters:
-    clusterAffinity:
-      clusterNames:
-        - talos-robbinsdale
-        - talos-stpetersburg
+    clusterNames:
+      - talos-robbinsdale
+      - talos-stpetersburg
   taints:
     - key: cluster.karmada.io/unreachable
       effect: NoExecute
@@ -32,10 +31,9 @@ metadata:
   name: evict-not-ready
 spec:
   targetClusters:
-    clusterAffinity:
-      clusterNames:
-        - talos-robbinsdale
-        - talos-stpetersburg
+    clusterNames:
+      - talos-robbinsdale
+      - talos-stpetersburg
   taints:
     - key: cluster.karmada.io/not-ready
       effect: NoExecute
