@@ -144,6 +144,8 @@ spec:
       featureGates:
         PropagateDeps: true
         Failover: true
+      extraCommandArgs:
+        enable-no-execute-taint-eviction: "true"
       # Pod anti-affinity to spread across nodes
       affinity:
         podAntiAffinity:
