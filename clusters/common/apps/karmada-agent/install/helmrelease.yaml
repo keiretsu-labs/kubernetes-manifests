@@ -1,6 +1,6 @@
 ---
 # Karmada Agent - Pull mode registration
-# Uses Flux variable substitution for credentials from common-secrets
+# Credentials pulled from Ottawa via ExternalSecrets
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -25,34 +25,41 @@ spec:
     remediation:
       retries: 3
     crds: Skip
+  valuesFrom:
+    - kind: Secret
+      name: karmada-agent-creds
+      valuesKey: caCrt
+      targetPath: agent.kubeconfig.caCrt
+    - kind: Secret
+      name: karmada-agent-creds
+      valuesKey: crt
+      targetPath: agent.kubeconfig.crt
+    - kind: Secret
+      name: karmada-agent-creds
+      valuesKey: key
+      targetPath: agent.kubeconfig.key
   values:
-    # Agent mode - registers with Karmada control plane
     installMode: "agent"
-    
-    # Cluster identity - substituted per-cluster
+
     agent:
       clusterName: "${CLUSTER_NAME}"
-      
-      # Karmada API server credentials (from common-secrets via Flux substitution)
+
       kubeconfig:
         # Use Tailscale IP directly since pods can't resolve ts.net DNS
         # karmada-apiserver.keiretsu.ts.net = 100.108.197.80
         server: "https://100.108.197.80:5443"
-        caCrt: "${KARMADA_CA_CRT}"
-        crt: "${KARMADA_CLIENT_CRT}"
-        key: "${KARMADA_CLIENT_KEY}"
-      
+
       labels:
         app: karmada-agent
-      
+
       replicaCount: 1
-      
+
       image:
         registry: docker.io
         repository: karmada/karmada-agent
         tag: "v1.17.0"
         pullPolicy: IfNotPresent
-      
+
       resources:
         requests:
           cpu: 100m
