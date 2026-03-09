@@ -26,6 +26,10 @@ spec:
   quotas:
     maxSize: 1Ti
     maxObjects: 10000000
+  website:
+    enabled: true
+    indexDocument: index.html
+    errorDocument: error.html
   keyPermissions:
     - keyRef: keiretsu-key
       read: true
