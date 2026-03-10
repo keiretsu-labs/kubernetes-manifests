@@ -35,8 +35,9 @@ spec:
     # Cluster domain
     clusterDomain: "cluster.local"
     
-    # Components to install (empty = default set for host mode)
-    components: []
+    # Components to install beyond the default set
+    components:
+      - descheduler
     
     # Pod Disruption Budget for HA components
     podDisruptionBudget:
