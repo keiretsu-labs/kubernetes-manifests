@@ -2,7 +2,8 @@
 # Required for Divided scheduling with dynamicWeight: AvailableReplicas
 # Each estimator connects to a member cluster API and reports capacity to the scheduler via gRPC
 #
-# Auth: Tailscale API proxy with impersonation (token: "unused", identity via Tailscale)
+# Auth: Tailscale API proxy with impersonation (token: "unused", identity via egress proxy)
+# Server uses Tailscale FQDN (not svc.cluster.local) — egress proxy requires SNI match for TLS
 # gRPC TLS: Karmada PKI certs from karmada-system-karmada-cert secret
 ---
 # talos-robbinsdale kubeconfig
@@ -18,7 +19,7 @@ stringData:
     kind: Config
     clusters:
       - cluster:
-          server: https://robbinsdale-k8s-operator.tailscale.svc.cluster.local
+          server: https://robbinsdale-k8s-operator.keiretsu.ts.net
         name: talos-robbinsdale
     contexts:
       - context:
@@ -44,7 +45,7 @@ stringData:
     kind: Config
     clusters:
       - cluster:
-          server: https://stpetersburg-k8s-operator.tailscale.svc.cluster.local
+          server: https://stpetersburg-k8s-operator.keiretsu.ts.net
         name: talos-stpetersburg
     contexts:
       - context:
