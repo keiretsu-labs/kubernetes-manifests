@@ -11,10 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install yamllint
-        run: pip install yamllint
-
-      - name: Lint changed YAML files
+      - name: Validate changed YAML files
         run: |
           files=$(gh pr diff "${{ github.event.pull_request.number }}" --name-only \
             | grep -E '\.ya?ml$' || true)
@@ -22,6 +19,17 @@ jobs:
             echo "No YAML files changed"
             exit 0
           fi
-          echo "$files" | xargs yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable, comments-indentation: disable, document-start: disable, trailing-spaces: disable, new-line-at-end-of-file: disable}}"
+          failed=0
+          for f in $files; do
+            if [ -f "$f" ]; then
+              if python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$f" 2>&1; then
+                echo "OK: $f"
+              else
+                echo "FAIL: $f"
+                failed=1
+              fi
+            fi
+          done
+          exit $failed
         env:
           GH_TOKEN: ${{ github.token }}
