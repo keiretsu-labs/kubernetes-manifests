@@ -12,7 +12,7 @@ jobs:
         if: ${{ !startsWith(github.head_ref, 'renovate/') }}
         run: echo "Not a Renovate PR, skipping validation"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: startsWith(github.head_ref, 'renovate/')
 
       - name: Validate changed YAML files
