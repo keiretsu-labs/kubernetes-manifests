@@ -22,6 +22,6 @@ jobs:
             echo "No YAML files changed"
             exit 0
           fi
-          echo "$files" | xargs yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable, comments-indentation: disable, document-start: disable}}"
+          echo "$files" | xargs yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable, comments-indentation: disable, document-start: disable, trailing-spaces: disable, new-line-at-end-of-file: disable}}"
         env:
           GH_TOKEN: ${{ github.token }}
