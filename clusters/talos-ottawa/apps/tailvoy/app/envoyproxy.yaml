@@ -16,7 +16,7 @@ spec:
       envoyDeployment:
         replicas: 1
         container:
-          image: ghcr.io/rajsinghtech/tailvoy:service-mappings
+          image: ghcr.io/rajsinghtech/tailvoy:0.2.0
         patch:
           type: StrategicMerge
           value:
