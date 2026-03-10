@@ -20,3 +20,5 @@ data:
       envoyAddress: "127.0.0.1"
       pollInterval: "5s"
       proxyProtocol: v2
+      healthPolicy: any
+      unhealthyThreshold: 2
