@@ -1,0 +1,40 @@
+name: Validate YAML
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip non-Renovate PRs
+        if: ${{ !startsWith(github.head_ref, 'renovate/') }}
+        run: echo "Not a Renovate PR, skipping validation"
+
+      - uses: actions/checkout@v4
+        if: startsWith(github.head_ref, 'renovate/')
+
+      - name: Validate changed YAML files
+        if: startsWith(github.head_ref, 'renovate/')
+        run: |
+          files=$(gh pr diff "${{ github.event.pull_request.number }}" --name-only \
+            | grep -E '\.ya?ml$' || true)
+          if [ -z "$files" ]; then
+            echo "No YAML files changed"
+            exit 0
+          fi
+          failed=0
+          for f in $files; do
+            if [ -f "$f" ]; then
+              if python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$f" 2>&1; then
+                echo "OK: $f"
+              else
+                echo "FAIL: $f"
+                failed=1
+              fi
+            fi
+          done
+          exit $failed
+        env:
+          GH_TOKEN: ${{ github.token }}
