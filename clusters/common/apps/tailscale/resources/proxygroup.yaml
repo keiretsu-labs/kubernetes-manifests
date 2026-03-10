@@ -28,7 +28,7 @@ spec:
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyGroup
 metadata:
-  name: kubernetes-${LOCATION}
+  name: ${LOCATION}-k8s
 spec:
   type: kube-apiserver
   replicas: 2
