@@ -9,10 +9,12 @@
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "platformAutomerge": false,
+  "ignoreTests": true,
   "prConcurrentLimit": 0,
   "assignees": [],
   "reviewers": [],
   "ignorePaths": ["**/*.sops.*", "**/clusterplex.yaml"],
+  "ignoreDeps": ["go.temporal.io/api", "code.forgejo.org/forgejo-helm/forgejo"],
   "flux": {
     "managerFilePatterns": ["/clusters/.+\\.ya?ml$/"]
   },
