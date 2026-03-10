@@ -262,6 +262,8 @@ kubectl get events -n openclaw -o json | jq '.items | sort_by(.lastTimestamp) | 
 
 The workspace includes a multi-cluster kubeconfig at `kustomization/kubeconfig.yaml` with contexts for `ottawa`, `robbinsdale`, and `stpetersburg`.
 
+> ⚠️ **Note:** This kubeconfig is workspace-only — it exists in the cloned repo but is NOT included in the running pod's filesystem. Cross-cluster kubectl operations from inside the pod will fail unless the kubeconfig is explicitly mounted via ConfigMap or ImageVolume. Use `--context <cluster>` flags directly where supported (e.g., `kubectl --context=ottawa`, `flux --context robbinsdale`).
+
 ### Cluster Alias Functions
 
 Add these functions to your shell for quick cluster switching:
