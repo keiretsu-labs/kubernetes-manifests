@@ -1,0 +1,30 @@
+name: Validate YAML
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "clusters/**"
+
+jobs:
+  validate:
+    if: startsWith(github.head_ref, 'renovate/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint changed YAML files
+        run: |
+          files=$(gh pr diff "${{ github.event.pull_request.number }}" --name-only \
+            | grep -E '\.ya?ml$' \
+            | grep '^clusters/')
+          if [ -z "$files" ]; then
+            echo "No YAML files changed"
+            exit 0
+          fi
+          echo "$files" | xargs yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable, comments-indentation: disable, document-start: disable}}"
+        env:
+          GH_TOKEN: ${{ github.token }}
