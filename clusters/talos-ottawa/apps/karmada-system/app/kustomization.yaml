@@ -9,3 +9,4 @@ resources:
   - helmrelease.yaml
   - tailscale-service.yaml
   - estimator.yaml
+  - rebalance-cronjob.yaml
