@@ -1,0 +1,17 @@
+# WorkloadRebalancer - apply manually after cluster recovery to trigger fresh rescheduling
+# Usage: kubectl --kubeconfig=/tmp/karmada-kc.yaml apply -f workload-rebalancer.yaml
+# The scheduler will disregard the previous propagation and redistribute replicas
+# based on current available resources across all healthy clusters.
+# Auto-deletes 60s after completion.
+---
+apiVersion: apps.karmada.io/v1alpha1
+kind: WorkloadRebalancer
+metadata:
+  name: failover-test-rebalance
+spec:
+  ttlSecondsAfterFinished: 60
+  workloads:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: failover-test
+      namespace: failover-test
