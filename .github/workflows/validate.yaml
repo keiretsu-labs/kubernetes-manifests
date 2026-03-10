@@ -17,7 +17,7 @@ jobs:
       - name: Lint changed YAML files
         run: |
           files=$(gh pr diff "${{ github.event.pull_request.number }}" --name-only \
-            | grep -E '\.ya?ml$')
+            | grep -E '\.ya?ml$' || true)
           if [ -z "$files" ]; then
             echo "No YAML files changed"
             exit 0
