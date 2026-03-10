@@ -8,7 +8,7 @@
   ],
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
-  "platformAutomerge": false,
+  "platformAutomerge": true,
   "ignoreTests": true,
   "prConcurrentLimit": 0,
   "assignees": [],
@@ -45,7 +45,7 @@
     },
     {
       "description": "Auto merge Docker tags in CI and app Dockerfiles",
-      "matchManagers": ["dockerfile", "docker-compose"],
+      "matchManagers": ["dockerfile", "docker-compose", "regex"],
       "matchPaths": [".github/**", "laptop/**", "swarm/**", "openclaw/**"],
       "automerge": true
     },
@@ -57,7 +57,7 @@
     },
     {
       "description": "Auto merge non-critical, non-media cluster updates",
-      "matchManagers": ["flux", "helm-values", "kubernetes", "regex"],
+      "matchManagers": ["flux", "helm-values", "kubernetes", "kustomize", "regex"],
       "matchPaths": ["clusters/**"],
       "automerge": true
     },
