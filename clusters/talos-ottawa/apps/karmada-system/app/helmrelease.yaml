@@ -167,6 +167,7 @@ spec:
     
     # Karmada Scheduler - HA with 2 replicas (leader election enabled by default)
     scheduler:
+      enableSchedulerEstimator: true
       replicaCount: 2
       image:
         registry: docker.io
