@@ -165,6 +165,39 @@ spec:
           maxUnavailable: 0
           maxSurge: 50%
     
+    # Karmada Descheduler - evicts unschedulable replicas so the scheduler can reassign them
+    descheduler:
+      replicaCount: 2
+      image:
+        registry: docker.io
+        repository: karmada/karmada-descheduler
+        tag: "v1.17.0"
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - karmada-descheduler
+                topologyKey: kubernetes.io/hostname
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+          maxSurge: 50%
+
     # Karmada Scheduler - HA with 2 replicas (leader election enabled by default)
     scheduler:
       enableSchedulerEstimator: true
