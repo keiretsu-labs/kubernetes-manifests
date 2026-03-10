@@ -8,3 +8,4 @@ resources:
   - ../namespace.yaml
   - helmrelease.yaml
   - tailscale-service.yaml
+  - estimator.yaml
