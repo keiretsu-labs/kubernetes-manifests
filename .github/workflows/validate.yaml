@@ -6,12 +6,17 @@ on:
 
 jobs:
   validate:
-    if: startsWith(github.head_ref, 'renovate/')
     runs-on: ubuntu-latest
     steps:
+      - name: Skip non-Renovate PRs
+        if: ${{ !startsWith(github.head_ref, 'renovate/') }}
+        run: echo "Not a Renovate PR, skipping validation"
+
       - uses: actions/checkout@v4
+        if: startsWith(github.head_ref, 'renovate/')
 
       - name: Validate changed YAML files
+        if: startsWith(github.head_ref, 'renovate/')
         run: |
           files=$(gh pr diff "${{ github.event.pull_request.number }}" --name-only \
             | grep -E '\.ya?ml$' || true)
