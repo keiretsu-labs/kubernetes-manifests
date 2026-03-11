@@ -38,7 +38,7 @@ spec:
     kind: HTTPRoute
     name: garage-web-gslb
   strategy:
-    type: weightRoundRobin
+    type: roundRobin
     dnsTtlSeconds: 60
     weight:
       ottawa: 34
