@@ -9,7 +9,6 @@ resources:
   - ddns-killinit-cc.yaml
   - ddup.yaml
   - ddup-config.yaml
-  - externaldns-keiretsu-top.yaml
   - externaldns-rajsingh-info.yaml
   - externaldns-lukehouge-com.yaml
   - externaldns-killinit-cc.yaml
