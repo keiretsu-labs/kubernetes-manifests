@@ -23,6 +23,10 @@ data:
   # Domain
   CLUSTER_DOMAIN: rajsingh.info
 
+  # K8gb
+  K8GB_EXT_GEO_TAGS: "ottawa,robbinsdale"
+  CLUSTER_PUBLIC_IP: "65.35.213.128"
+
   # Storage
   STORAGECLASS_LONGTERM: local-path
   STORAGECLASS_BLOCK: local-path

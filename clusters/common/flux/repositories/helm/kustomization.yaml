@@ -88,3 +88,4 @@ resources:
   - ./zot.yaml
   - ./woodpecker.yaml
   - ./forgejo.yaml
+  - ./k8gb.yaml
