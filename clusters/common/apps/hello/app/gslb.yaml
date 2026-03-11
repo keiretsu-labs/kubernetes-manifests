@@ -5,7 +5,7 @@ metadata:
   name: hello-world
   namespace: hello
   annotations:
-    k8gb.io/exposed-ip-addresses: "${CLUSTER_PUBLIC_IP}"
+    k8gb.io/exposed-hostnames: "${LOCATION}.${COMMON_DOMAIN}"
 spec:
   resourceRef:
     apiVersion: gateway.networking.k8s.io/v1
