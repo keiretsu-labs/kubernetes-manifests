@@ -5,6 +5,5 @@ namespace: hello
 resources:
   - deployment-hello-world.yaml
   - service-hello-world.yaml
-  # - configmap-nginx.yaml
-  # - deployment-curl-hello-world.yaml
-  - ingress.yaml
+  - httproute.yaml
+  - gslb.yaml
