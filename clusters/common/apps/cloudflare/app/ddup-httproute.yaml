@@ -1,0 +1,40 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ddup
+  labels:
+    app: ddup
+spec:
+  selector:
+    app: ddup
+  ports:
+    - name: http
+      port: 7401
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ddup
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+  hostnames:
+    - "ddup.${CLUSTER_DOMAIN}"
+  rules:
+    - backendRefs:
+        - name: ddup
+          port: 7401
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
