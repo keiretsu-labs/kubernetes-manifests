@@ -83,6 +83,7 @@ spec:
       - service
     domainFilters:
       - ${CLUSTER_DOMAIN}
+      - ${COMMON_DOMAIN}
       - killinit.internal
       - stpetersburg.internal
       - robbinsdale.internal
