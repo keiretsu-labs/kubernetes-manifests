@@ -26,6 +26,16 @@ spec:
         - "1.1.1.1"
       nsRecordTTL: 30
       reconcileRequeueSeconds: 30
+      hostAliases:
+        - ip: "${OTTAWA_PUBLIC_IP}"
+          hostnames:
+            - "gslb-ns-ottawa-gslb.keiretsu.top"
+        - ip: "${ROBBINSDALE_PUBLIC_IP}"
+          hostnames:
+            - "gslb-ns-robbinsdale-gslb.keiretsu.top"
+        - ip: "${STPETERSBURG_PUBLIC_IP}"
+          hostnames:
+            - "gslb-ns-stpetersburg-gslb.keiretsu.top"
 
     coredns:
       serviceType: LoadBalancer
