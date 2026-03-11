@@ -17,7 +17,7 @@ spec:
       name: private
       namespace: home
   hostnames:
-    - "keiretsu.${CLUSTER_DOMAIN}"
+    - "www.${COMMON_DOMAIN}"
     - "${COMMON_DOMAIN}"
   rules:
     - backendRefs:
