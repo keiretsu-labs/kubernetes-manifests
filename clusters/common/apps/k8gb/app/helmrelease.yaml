@@ -20,7 +20,7 @@ spec:
       extGslbClustersGeoTags: "${K8GB_EXT_GEO_TAGS}"
       dnsZones:
         - parentZone: "keiretsu.top"
-          loadBalancedZone: "gslb.keiretsu.top"
+          loadBalancedZone: "cdn.keiretsu.top"
           dnsZoneNegTTL: 30
       edgeDNSServers:
         - "1.1.1.1"

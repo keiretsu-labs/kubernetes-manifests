@@ -10,7 +10,7 @@ spec:
   resourceRef:
     apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
-    name: hello-world-gslb
+    name: hello-world-cdn
   strategy:
     type: roundRobin
     dnsTtlSeconds: 30
