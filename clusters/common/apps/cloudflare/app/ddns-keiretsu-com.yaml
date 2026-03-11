@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-ddns-keiretsu-com
+  labels:
+    app: cloudflare-ddns-keiretsu-com
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflare-ddns-keiretsu-com
+  template:
+    metadata:
+      labels:
+        app: cloudflare-ddns-keiretsu-com
+    spec:
+      containers:
+        - name: cloudflare-ddns
+          image: favonia/cloudflare-ddns:latest
+          env:
+            - name: CLOUDFLARE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare
+                  key: RAJSINGH_INFO_CLOUDFLARE_API_TOKEN
+            - name: DOMAINS
+              value: "${LOCATION}.keiretsu.com"
+            - name: PROXIED
+              value: "false"
+            - name: IP6_PROVIDER
+              value: "none"
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000

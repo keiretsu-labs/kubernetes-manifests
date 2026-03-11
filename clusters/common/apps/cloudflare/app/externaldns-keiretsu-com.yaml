@@ -1,0 +1,45 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: external-dns-cloudflare-keiretsu-com
+spec:
+  interval: 5m
+  releaseName: external-dns-cloudflare-keiretsu-com
+  chart:
+    spec:
+      chart: external-dns
+      version: "1.20.0"
+      sourceRef:
+        kind: HelmRepository
+        name: external-dns
+        namespace: flux-system
+      interval: 1h
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    serviceMonitor:
+      enabled: true
+    provider: cloudflare
+    env:
+      - name: CF_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: cloudflare
+            key: RAJSINGH_INFO_CLOUDFLARE_API_TOKEN
+    extraArgs:
+      - --gateway-label-filter=gateway==public
+    policy: sync
+    sources:
+      - gateway-httproute
+      - gateway-tlsroute
+      - gateway-tcproute
+      - gateway-udproute
+    domainFilters:
+      - keiretsu.com
+    txtOwnerId: ${LOCATION}-keiretsu-com
+    txtPrefix: k8s.${LOCATION}.keiretsu.com.

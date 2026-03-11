@@ -2,10 +2,10 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: rajsingh-external-dns
+  name: keiretsu-external-dns
 spec:
   interval: 5m
-  releaseName: rajsingh-external-dns
+  releaseName: keiretsu-external-dns
   chart:
     spec:
       chart: external-dns
@@ -29,10 +29,10 @@ spec:
       - name: CF_API_TOKEN
         valueFrom:
           secretKeyRef:
-            name: cloudflare-rajsingh-info
+            name: cloudflare-keiretsu-com
             key: api-token
     extraArgs:
-      - --gateway-label-filter=external-dns==rajsingh
+      - --gateway-label-filter=external-dns==keiretsu
     policy: sync
     sources:
       - gateway-httproute
@@ -40,6 +40,6 @@ spec:
       - gateway-tcproute
       - gateway-udproute
     domainFilters:
-      - rajsingh.info
-    txtOwnerId: ${LOCATION}-rajsingh-cdn
-    txtPrefix: k8s.${LOCATION}.cdn.rajsingh.info.
+      - keiretsu.com
+    txtOwnerId: ${LOCATION}-keiretsu-cdn
+    txtPrefix: k8s.${LOCATION}.cdn.keiretsu.com.

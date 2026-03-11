@@ -4,14 +4,14 @@ kind: Gateway
 metadata:
   name: cdn
   labels:
-    external-dns: rajsingh
+    external-dns: keiretsu
 spec:
-  gatewayClassName: rajsingh-cdn
+  gatewayClassName: keiretsu-cdn
   listeners:
-    - name: wildcard-cdn-rajsingh-info-https
+    - name: wildcard-cdn-keiretsu-com-https
       protocol: HTTPS
       port: 443
-      hostname: "*.cdn.rajsingh.info"
+      hostname: "*.cdn.keiretsu.com"
       allowedRoutes:
         namespaces:
           from: All
@@ -20,7 +20,7 @@ spec:
         certificateRefs:
           - group: ''
             kind: Secret
-            name: wildcard-cdn-rajsingh-info
+            name: wildcard-cdn-keiretsu-com
     - name: http
       port: 80
       protocol: HTTP
