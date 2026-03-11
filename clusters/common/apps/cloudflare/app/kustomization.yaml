@@ -7,6 +7,8 @@ resources:
   - ddns-rajsingh-info.yaml
   - ddns-lukehouge-com.yaml
   - ddns-killinit-cc.yaml
+  - ddup.yaml
+  - ddup-config.yaml
   - externaldns-keiretsu-top.yaml
   - externaldns-rajsingh-info.yaml
   - externaldns-lukehouge-com.yaml
