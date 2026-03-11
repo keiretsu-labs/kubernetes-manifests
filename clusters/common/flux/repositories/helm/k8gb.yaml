@@ -6,4 +6,4 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1h
-  url: https://www.k8gb.io/k8gb
+  url: https://www.k8gb.io
