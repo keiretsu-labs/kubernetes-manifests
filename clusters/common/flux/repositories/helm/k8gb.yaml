@@ -1,0 +1,9 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: k8gb
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://www.k8gb.io/k8gb
