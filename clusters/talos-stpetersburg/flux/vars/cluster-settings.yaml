@@ -23,8 +23,6 @@ data:
   # Domain
   CLUSTER_DOMAIN: rajsingh.info
 
-  # K8gb
-  CLUSTER_PUBLIC_IP: "65.35.213.128"
 
   # Storage
   STORAGECLASS_LONGTERM: local-path
