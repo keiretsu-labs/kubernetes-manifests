@@ -8,7 +8,7 @@ stringData:
   config.yaml: |
     interval: 30s
     domains:
-      - recordName: "cdn.keiretsu.top"
+      - recordName: "keiretsu.top"
         provider: "cloudflare"
         ttl: 120
         healthChecks:
@@ -27,6 +27,25 @@ stringData:
             url: "https://stpetersburg.keiretsu.top"
             ip: "stpetersburg.keiretsu.top"
             host: "keiretsu.top"
+      - recordName: "www.keiretsu.top"
+        provider: "cloudflare"
+        ttl: 120
+        healthChecks:
+          timeout: "5s"
+          attempts: 3
+        endpoints:
+          - name: "ottawa"
+            url: "https://ottawa.keiretsu.top"
+            ip: "ottawa.keiretsu.top"
+            host: "www.keiretsu.top"
+          - name: "robbinsdale"
+            url: "https://robbinsdale.keiretsu.top"
+            ip: "robbinsdale.keiretsu.top"
+            host: "www.keiretsu.top"
+          - name: "stpetersburg"
+            url: "https://stpetersburg.keiretsu.top"
+            ip: "stpetersburg.keiretsu.top"
+            host: "www.keiretsu.top"
     providers:
       cloudflare:
         cloudflare:

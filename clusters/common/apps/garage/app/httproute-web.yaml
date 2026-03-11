@@ -3,14 +3,11 @@
 # Garage resolves buckets by stripping the root_domain suffix from the Host header.
 # keiretsu.top and www.keiretsu.top need a Host rewrite to keiretsu.keiretsu.top
 # so garage maps them to the "keiretsu" bucket.
-# ExternalDNS CNAMEs keiretsu.top/www → cdn.keiretsu.top (same zone).
-# ddup health-checks clusters and manages cdn.keiretsu.top A records.
+# DNS for keiretsu.top/www managed by ddup (health-checked A records), not ExternalDNS.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: garage-web
-  annotations:
-    external-dns.alpha.kubernetes.io/target: "cdn.${COMMON_DOMAIN}"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io
