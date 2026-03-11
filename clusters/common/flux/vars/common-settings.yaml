@@ -6,3 +6,8 @@ metadata:
   namespace: flux-system
 data:
   COMMON_DOMAIN: keiretsu.top
+
+  # Public IPs for k8gb cross-cluster CoreDNS discovery
+  OTTAWA_PUBLIC_IP: "76.67.37.205"
+  ROBBINSDALE_PUBLIC_IP: "65.128.252.84"
+  STPETERSBURG_PUBLIC_IP: "65.35.213.128"
