@@ -36,5 +36,5 @@ stringData:
       enabled: true
       bind: "0.0.0.0"
       port: 7401
-    logging:
+    logs:
       level: info
