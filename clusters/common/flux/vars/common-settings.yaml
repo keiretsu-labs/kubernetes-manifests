@@ -6,3 +6,4 @@ metadata:
   namespace: flux-system
 data:
   COMMON_DOMAIN: keiretsu.top
+  K8GB_EXT_GEO_TAGS: "ottawa,robbinsdale,stpetersburg"

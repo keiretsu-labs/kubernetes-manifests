@@ -24,7 +24,6 @@ data:
   CLUSTER_DOMAIN: killinit.cc
 
   # K8gb
-  K8GB_EXT_GEO_TAGS: "robbinsdale,stpetersburg"
   CLUSTER_PUBLIC_IP: "76.67.37.205"
 
   # Storage

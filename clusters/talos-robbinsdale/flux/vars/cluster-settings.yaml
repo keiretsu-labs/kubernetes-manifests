@@ -24,7 +24,6 @@ data:
   CLUSTER_DOMAIN: lukehouge.com
 
   # K8gb
-  K8GB_EXT_GEO_TAGS: "ottawa,stpetersburg"
   CLUSTER_PUBLIC_IP: "65.128.252.84"
 
   # Storage
