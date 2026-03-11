@@ -23,8 +23,6 @@ data:
   # Domain
   CLUSTER_DOMAIN: killinit.cc
 
-  # K8gb
-  CLUSTER_PUBLIC_IP: "76.67.37.205"
 
   # Storage
   STORAGECLASS_LONGTERM: smb

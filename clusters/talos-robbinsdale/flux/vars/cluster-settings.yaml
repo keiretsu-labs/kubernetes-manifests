@@ -23,8 +23,6 @@ data:
   # Domain
   CLUSTER_DOMAIN: lukehouge.com
 
-  # K8gb
-  CLUSTER_PUBLIC_IP: "65.128.252.84"
 
   # Storage
   STORAGECLASS_LONGTERM: smb
