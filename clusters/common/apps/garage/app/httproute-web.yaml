@@ -1,7 +1,8 @@
 ---
 # Web (static website hosting) HTTPRoute
-# Garage serves bucket websites on port 3902, matching by Host header
-# e.g. keiretsu.killinit.cc -> bucket "keiretsu"
+# Garage resolves buckets by stripping the root_domain suffix from the Host header.
+# keiretsu.top and www.keiretsu.top need a Host rewrite to keiretsu.keiretsu.top
+# so garage maps them to the "keiretsu" bucket.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -20,7 +21,11 @@ spec:
     - "www.${COMMON_DOMAIN}"
     - "${COMMON_DOMAIN}"
   rules:
-    - backendRefs:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: "keiretsu.${COMMON_DOMAIN}"
+      backendRefs:
         - group: ""
           kind: Service
           name: garage
