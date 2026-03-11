@@ -41,5 +41,5 @@ spec:
       - gateway-udproute
     domainFilters:
       - keiretsu.top
-    txtOwnerId: ${LOCATION}-keiretsu-top
-    txtPrefix: k8s.${LOCATION}.keiretsu.top.
+    txtOwnerId: keiretsu-top
+    txtPrefix: k8s.keiretsu.top.
