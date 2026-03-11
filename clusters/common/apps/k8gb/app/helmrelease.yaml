@@ -27,7 +27,7 @@ spec:
       edgeDNSServers:
         - "1.1.1.1"
       nsRecordTTL: 30
-      reconcileRequeueSeconds: 30
+      reconcileRequeueSeconds: 60
 
       exposeMetrics: true
       serviceMonitor:
