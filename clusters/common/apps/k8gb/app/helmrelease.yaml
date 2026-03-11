@@ -30,6 +30,7 @@ spec:
       reconcileRequeueSeconds: 30
 
     coredns:
+      replicaCount: 3
       serviceType: LoadBalancer
       service:
         loadBalancerIP: "${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.10.53"
