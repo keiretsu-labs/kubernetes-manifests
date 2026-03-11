@@ -16,6 +16,8 @@ spec:
         namespace: flux-system
   values:
     k8gb:
+      imageRepo: ghcr.io/rajsinghtech/k8gb
+      imageTag: exposed-hostnames
       clusterGeoTag: "${LOCATION}"
       extGslbClustersGeoTags: "${K8GB_EXT_GEO_TAGS}"
       dnsZones:
