@@ -2,15 +2,15 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: wildcard-cdn-rajsingh-info
+  name: wildcard-cdn-keiretsu-com
 spec:
   dnsNames:
-    - '*.cdn.rajsingh.info'
+    - '*.cdn.keiretsu.com'
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
-    name: rajsingh-info
-  secretName: wildcard-cdn-rajsingh-info
+    name: keiretsu-com
+  secretName: wildcard-cdn-keiretsu-com
   usages:
     - digital signature
     - key encipherment

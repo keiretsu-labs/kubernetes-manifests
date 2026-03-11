@@ -16,7 +16,7 @@ spec:
         replicas: 2
       envoyService:
         annotations:
-          tailscale.com/hostname: ${LOCATION}-rajsingh-cdn-gateway
-          tailscale.com/tags: tag:raj-workspace
+          tailscale.com/hostname: ${LOCATION}-keiretsu-cdn-gateway
+          tailscale.com/tags: tag:k8s
           tailscale.com/proxy-group: common-ingress
         loadBalancerClass: tailscale
