@@ -4,6 +4,8 @@ kind: DNSEndpoint
 metadata:
   name: keiretsu-top-cnames
   namespace: cloudflare
+  labels:
+    dns-target: cloudflare
 spec:
   endpoints:
     - dnsName: "${COMMON_DOMAIN}"

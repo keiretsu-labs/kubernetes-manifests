@@ -34,6 +34,7 @@ spec:
     extraArgs:
       - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
       - --crd-source-kind=DNSEndpoint
+      - --label-filter=dns-target==cloudflare
     policy: sync
     sources:
       - crd
