@@ -52,7 +52,7 @@ spec:
       key: admin-token
 
   webApi:
-    rootDomain: ".${CLUSTER_DOMAIN}"
+    rootDomain: ".${COMMON_DOMAIN}"
 
   resources:
     requests:
