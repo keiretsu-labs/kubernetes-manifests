@@ -41,6 +41,6 @@ spec:
     type: roundRobin
     dnsTtlSeconds: 60
     weight:
-      ottawa: 34
-      robbinsdale: 33
-      stpetersburg: 33
+      ottawa: 80
+      robbinsdale: 10
+      stpetersburg: 10
