@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./gslb.yaml
   - ./cnames.yaml
+  - ./prometheusrules.yaml

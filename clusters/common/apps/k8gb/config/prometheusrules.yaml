@@ -1,0 +1,73 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: k8gb-alerts
+  namespace: k8gb
+spec:
+  groups:
+    - name: k8gb.rules
+      rules:
+        - alert: K8gbGslbUnhealthy
+          expr: |
+            k8gb_gslb_ingress_hosts_per_status{status="Unhealthy"} > 0
+          for: 5m
+          annotations:
+            summary: >-
+              GSLB {{ $labels.name }} in {{ $labels.namespace }} has {{ $value }}
+              unhealthy host(s).
+          labels:
+            severity: warning
+
+        - alert: K8gbGslbNotFound
+          expr: |
+            k8gb_gslb_ingress_hosts_per_status{status="NotFound"} > 0
+          for: 5m
+          annotations:
+            summary: >-
+              GSLB {{ $labels.name }} in {{ $labels.namespace }} has {{ $value }}
+              host(s) in NotFound status.
+          labels:
+            severity: critical
+
+        - alert: K8gbHighErrorRate
+          expr: |
+            sum(rate(k8gb_gslb_errors_total[5m])) by (namespace, name) > 0.1
+          for: 10m
+          annotations:
+            summary: >-
+              GSLB {{ $labels.name }} in {{ $labels.namespace }} is generating
+              errors at {{ printf "%.2f" $value }}/s.
+          labels:
+            severity: warning
+
+        - alert: K8gbReconciliationStalled
+          expr: |
+            rate(k8gb_gslb_reconciliation_loops_total[15m]) == 0
+          for: 15m
+          annotations:
+            summary: >-
+              k8gb reconciliation has stalled - no successful loops in 15 minutes.
+          labels:
+            severity: critical
+
+        - alert: K8gbNoHealthyRecords
+          expr: |
+            k8gb_gslb_healthy_records == 0
+          for: 5m
+          annotations:
+            summary: >-
+              GSLB {{ $labels.name }} in {{ $labels.namespace }} has zero healthy
+              DNS records.
+          labels:
+            severity: critical
+
+        - alert: K8gbEndpointNoTargets
+          expr: |
+            k8gb_endpoint_status_num == 0
+          for: 5m
+          annotations:
+            summary: >-
+              DNS endpoint {{ $labels.dns_name }} has zero targets.
+          labels:
+            severity: warning

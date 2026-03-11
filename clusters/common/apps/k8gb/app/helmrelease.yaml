@@ -29,6 +29,10 @@ spec:
       nsRecordTTL: 30
       reconcileRequeueSeconds: 30
 
+      exposeMetrics: true
+      serviceMonitor:
+        enabled: true
+
     coredns:
       replicaCount: 3
       serviceType: LoadBalancer
