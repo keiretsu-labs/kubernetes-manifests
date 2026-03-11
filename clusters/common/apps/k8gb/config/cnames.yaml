@@ -1,0 +1,29 @@
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: keiretsu-top-cnames
+  namespace: cloudflare
+spec:
+  endpoints:
+    - dnsName: "${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "keiretsu.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "true"
+    - dnsName: "www.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "keiretsu.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "true"
+    - dnsName: "hello.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "hello.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"

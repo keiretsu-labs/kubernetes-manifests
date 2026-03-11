@@ -32,13 +32,11 @@ spec:
             name: cloudflare
             key: RAJSINGH_INFO_CLOUDFLARE_API_TOKEN
     extraArgs:
-      - --gateway-label-filter=gateway==public
+      - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
+      - --crd-source-kind=DNSEndpoint
     policy: sync
     sources:
-      - gateway-httproute
-      - gateway-tlsroute
-      - gateway-tcproute
-      - gateway-udproute
+      - crd
     domainFilters:
       - keiretsu.top
     txtOwnerId: keiretsu-top
