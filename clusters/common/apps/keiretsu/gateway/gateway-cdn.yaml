@@ -8,10 +8,10 @@ metadata:
 spec:
   gatewayClassName: keiretsu-cdn
   listeners:
-    - name: wildcard-cdn-keiretsu-com-https
+    - name: wildcard-cdn-keiretsu-top-https
       protocol: HTTPS
       port: 443
-      hostname: "*.cdn.keiretsu.com"
+      hostname: "*.cdn.keiretsu.top"
       allowedRoutes:
         namespaces:
           from: All
@@ -20,7 +20,7 @@ spec:
         certificateRefs:
           - group: ''
             kind: Secret
-            name: wildcard-cdn-keiretsu-com
+            name: wildcard-cdn-keiretsu-top
     - name: http
       port: 80
       protocol: HTTP

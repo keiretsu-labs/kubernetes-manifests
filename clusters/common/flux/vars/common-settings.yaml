@@ -5,4 +5,4 @@ metadata:
   name: common-settings
   namespace: flux-system
 data:
-  COMMON_DOMAIN: keiretsu.com
+  COMMON_DOMAIN: keiretsu.top

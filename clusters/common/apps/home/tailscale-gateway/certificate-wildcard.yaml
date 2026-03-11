@@ -26,7 +26,7 @@ spec:
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
-    name: keiretsu-com
+    name: keiretsu-top
   secretName: wildcard-${COMMON_DOMAIN//./-}
   usages:
     - digital signature

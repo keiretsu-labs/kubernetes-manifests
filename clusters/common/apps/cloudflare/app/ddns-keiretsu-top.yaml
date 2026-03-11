@@ -2,18 +2,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloudflare-ddns-keiretsu-com
+  name: cloudflare-ddns-keiretsu-top
   labels:
-    app: cloudflare-ddns-keiretsu-com
+    app: cloudflare-ddns-keiretsu-top
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cloudflare-ddns-keiretsu-com
+      app: cloudflare-ddns-keiretsu-top
   template:
     metadata:
       labels:
-        app: cloudflare-ddns-keiretsu-com
+        app: cloudflare-ddns-keiretsu-top
     spec:
       containers:
         - name: cloudflare-ddns
@@ -25,7 +25,7 @@ spec:
                   name: cloudflare
                   key: RAJSINGH_INFO_CLOUDFLARE_API_TOKEN
             - name: DOMAINS
-              value: "${LOCATION}.keiretsu.com"
+              value: "${LOCATION}.keiretsu.top"
             - name: PROXIED
               value: "false"
             - name: IP6_PROVIDER
