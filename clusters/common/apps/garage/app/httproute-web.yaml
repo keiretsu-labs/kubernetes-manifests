@@ -18,7 +18,7 @@ spec:
       namespace: home
   hostnames:
     - "keiretsu.${CLUSTER_DOMAIN}"
-    - "keiretsu.${COMMON_DOMAIN}"
+    - "${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
