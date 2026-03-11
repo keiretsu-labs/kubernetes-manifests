@@ -29,7 +29,7 @@ spec:
       - name: CF_API_TOKEN
         valueFrom:
           secretKeyRef:
-            name: cloudflare-keiretsu-com
+            name: cloudflare-keiretsu-top
             key: api-token
     extraArgs:
       - --gateway-label-filter=external-dns==keiretsu
@@ -40,6 +40,6 @@ spec:
       - gateway-tcproute
       - gateway-udproute
     domainFilters:
-      - keiretsu.com
+      - keiretsu.top
     txtOwnerId: ${LOCATION}-keiretsu-cdn
-    txtPrefix: k8s.${LOCATION}.cdn.keiretsu.com.
+    txtPrefix: k8s.${LOCATION}.cdn.keiretsu.top.

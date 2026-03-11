@@ -1,5 +1,5 @@
 {
-    "keiretsu.com": [
+    "keiretsu.top": [
       "svc:ottawa-home-envoy-gateway"
     ],
     "rajsingh.info": [
@@ -8,7 +8,7 @@
     "cdn.rajsingh.info": [
       "1.1.1.1"
     ],
-    "cdn.keiretsu.com": [
+    "cdn.keiretsu.top": [
       "1.1.1.1"
     ],
     "stpetersburg.internal": [

@@ -2,15 +2,15 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: wildcard-cdn-keiretsu-com
+  name: wildcard-cdn-keiretsu-top
 spec:
   dnsNames:
-    - '*.cdn.keiretsu.com'
+    - '*.cdn.keiretsu.top'
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
-    name: keiretsu-com
-  secretName: wildcard-cdn-keiretsu-com
+    name: keiretsu-top
+  secretName: wildcard-cdn-keiretsu-top
   usages:
     - digital signature
     - key encipherment

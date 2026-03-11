@@ -2,10 +2,10 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: external-dns-cloudflare-keiretsu-com
+  name: external-dns-cloudflare-keiretsu-top
 spec:
   interval: 5m
-  releaseName: external-dns-cloudflare-keiretsu-com
+  releaseName: external-dns-cloudflare-keiretsu-top
   chart:
     spec:
       chart: external-dns
@@ -40,6 +40,6 @@ spec:
       - gateway-tcproute
       - gateway-udproute
     domainFilters:
-      - keiretsu.com
-    txtOwnerId: ${LOCATION}-keiretsu-com
-    txtPrefix: k8s.${LOCATION}.keiretsu.com.
+      - keiretsu.top
+    txtOwnerId: ${LOCATION}-keiretsu-top
+    txtPrefix: k8s.${LOCATION}.keiretsu.top.
