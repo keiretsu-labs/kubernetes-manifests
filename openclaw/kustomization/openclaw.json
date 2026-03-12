@@ -11,6 +11,7 @@
       "mode": "token",
       "token": "${DEFAULT_PASSWORD}"
     },
+    "channelHealthCheckMinutes": 1,
     "controlUi": {
       "enabled": true,
       "allowInsecureAuth": true,
