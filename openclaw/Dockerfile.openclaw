@@ -2,7 +2,7 @@
 
 # Tool versions — bump these to update (or use Renovate)
 ARG KUBECTL_V=v1.35.2
-ARG FLUX_V=v2.8.1
+ARG FLUX_V=v2.8.2
 ARG HELM_V=v4.1.3
 ARG KUSTOMIZE_V=v5.8.1
 ARG YQ_V=v4.52.4
