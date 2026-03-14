@@ -19,7 +19,8 @@
       "matchStrings": ["FROM ghcr\\.io/openclaw/openclaw:(?<currentValue>[\\d.]+)"],
       "depNameTemplate": "ghcr.io/openclaw/openclaw",
       "datasourceTemplate": "docker",
-      "versioningTemplate": "loose"
+      "versioningTemplate": "loose",
+      "allowedVersions": "/^\\d{4}\\.\\d+\\.\\d+$/"
     },
     {
       "customType": "regex",
