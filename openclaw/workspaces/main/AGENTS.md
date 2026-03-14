@@ -92,11 +92,14 @@ When Raj asks you to update workspace files, do both:
 rm -rf /tmp/self-mod
 git clone https://github.com/keiretsu-labs/kubernetes-manifests.git /tmp/self-mod
 cd /tmp/self-mod
-# Make the change
-git add <files>
+# Make the change to files in openclaw/workspaces/main/
+# Example: openclaw/workspaces/main/MEMORY.md
+git add openclaw/workspaces/main/<file>
 git commit -m "workspace: description of change"
 git push origin main
 ```
+
+**Note:** The workspace is located at `openclaw/workspaces/main/` within the cloned repo, NOT at `workspaces/main/` (that directory is empty/stale).
 
 ### Files Safe to Modify
 
