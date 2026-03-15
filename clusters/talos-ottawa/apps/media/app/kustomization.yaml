@@ -23,7 +23,8 @@ resources:
   - ./plex 
   - ./tautulli
   - ./overseerr
-  - ./jellyseerr 
+  - ./jellyseerr
+  - ./seerr
   - ./jellystat 
   - ./lidarr 
   - ./wizarr
