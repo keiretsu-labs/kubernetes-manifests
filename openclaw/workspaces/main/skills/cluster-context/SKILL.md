@@ -45,6 +45,7 @@ Pod: openclaw
   initContainers:
     sysctler        -> enables IP forwarding for Tailscale
     init-workspace  -> copies workspace content from OCI ImageVolume to data PVC
+    init-extensions -> installs MCP server extensions
   containers:
     openclaw        -> OpenClaw server (oci.killinit.cc/openclaw/openclaw:latest)
     tailscale       -> Tailscale sidecar for mesh networking
