@@ -24,7 +24,6 @@ resources:
   - ./tautulli
   - ./overseerr
   - ./jellyseerr
-  - ./seerr
   - ./jellystat 
   - ./lidarr 
   - ./wizarr
