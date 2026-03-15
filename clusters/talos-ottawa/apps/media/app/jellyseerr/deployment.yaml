@@ -15,9 +15,12 @@ spec:
       labels:
         app: jellyseerr
     spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: jellyseerr
-          image: fallenbagel/jellyseerr:2.7.3
+          image: ghcr.io/seerr-team/seerr:v3.1.0
           ports:
             - name: http
               containerPort: 5055
@@ -28,10 +31,6 @@ spec:
             - name: logs-volume
               mountPath: /app/config/logs
           env:
-            - name: PUID
-              value: "0"
-            - name: GUID
-              value: "0"
             - name: TZ
               value: ${TIMEZONE}
             - name: LOG_LEVEL
