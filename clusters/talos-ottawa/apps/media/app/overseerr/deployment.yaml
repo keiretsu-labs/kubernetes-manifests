@@ -15,9 +15,12 @@ spec:
       labels:
         app: overseerr
     spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: overseerr
-          image: sctx/overseerr:1.35.0
+          image: ghcr.io/seerr-team/seerr:v3.1.0
           ports:
             - name: http
               containerPort: 5055
