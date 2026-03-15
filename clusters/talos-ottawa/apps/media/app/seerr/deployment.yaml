@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seerr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seerr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: seerr
+    spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: seerr
+          image: ghcr.io/seerr-team/seerr:v3.1.0
+          ports:
+            - name: http
+              containerPort: 5055
+              protocol: TCP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+          env:
+            - name: TZ
+              value: ${TIMEZONE}
+            - name: LOG_LEVEL
+              value: debug
+            - name: PORT
+              value: "5055"
+      volumes:
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: seerr-config
