@@ -48,6 +48,7 @@
 		"tag:admin-granted":    ["tag:tailgrant-worker", "group:superuser",],
 		"tag:debug-granted":    ["tag:tailgrant-worker", "group:superuser",],
 		"tag:raj-workspace":    ["tag:k8s-operator", "rajsinghtech@github",],
+		"tag:bubbles":          ["tag:bubbles", "rajsinghtech@github", "kbpersonal@github"],
 	},
 	"ipsets": {
 		"ipset:robbinsdale": [
@@ -130,6 +131,14 @@
 			"action":          "accept",
 			"src":             ["tag:ssh-granted"],
 			"dst":             ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
+			"users":           ["root", "autogroup:nonroot"],
+			"recorder":        ["tag:k8s-recorder"],
+			"enforceRecorder": true,
+		},
+		{
+			"action":          "accept",
+			"src":             ["rajsinghtech@github", "kbpersonal@github"],
+			"dst":             ["tag:bubbles"],
 			"users":           ["root", "autogroup:nonroot"],
 			"recorder":        ["tag:k8s-recorder"],
 			"enforceRecorder": true,
@@ -275,6 +284,22 @@
 			"ip":  ["*"],
 			"via": ["tag:aurora"],
 		},
+    {
+      "src": ["rajsinghtech@github", "kbpersonal@github","tag:bubbles"],
+			"dst": ["tag:bubbles"],
+			"ip":  ["*"],
+			"app": {
+				"tailscale.com/cap/kubernetes": [
+					{
+						"impersonate": {
+							"groups": ["system:masters"],
+						},
+						"recorder":        ["tag:k8s-recorder"],
+						"enforceRecorder": true,
+					},
+				],
+      }
+    },
 		{
 			"src": ["group:superuser",],
 			"dst": ["tag:k8s-operator", "tag:k8s"],
