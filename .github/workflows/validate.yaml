@@ -15,6 +15,10 @@ jobs:
       - uses: actions/checkout@v6
         if: startsWith(github.head_ref, 'renovate/')
 
+      - name: Install PyYAML
+        if: startsWith(github.head_ref, 'renovate/')
+        run: pip3 install pyyaml --quiet
+
       - name: Validate changed YAML files
         if: startsWith(github.head_ref, 'renovate/')
         run: |
@@ -27,7 +31,7 @@ jobs:
           failed=0
           for f in $files; do
             if [ -f "$f" ]; then
-              if python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$f" 2>&1; then
+              if python3 -c "import yaml,sys; sys.setrecursionlimit(100000); list(yaml.safe_load_all(open(sys.argv[1])))" "$f" 2>&1; then
                 echo "OK: $f"
               else
                 echo "FAIL: $f"
