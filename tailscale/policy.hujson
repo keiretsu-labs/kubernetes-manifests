@@ -502,7 +502,7 @@
 		},
 
 		{
-			"target": ["tag:k8s"],
+			"target": ["tag:k8s", "tag:bubbles"],
 			"attr": [
 				"funnel",
 			],
