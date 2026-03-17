@@ -40,6 +40,16 @@ spec:
             link: "https://github.com/keiretsu-labs/kubernetes-manifests"
           # - name: "Portfolio"
           #   link: "https://www.${CLUSTER_DOMAIN}"
+      external-endpoints:
+        - name: Heartbeat
+          group: Alertmanager
+          token: "${GATUS_HEARTBEAT_TOKEN}"
+          heartbeat:
+            interval: 5m
+          alerts:
+            - type: discord
+              send-on-resolved: true
+
       endpoints:
         # === Network ===
         - name: Internet
