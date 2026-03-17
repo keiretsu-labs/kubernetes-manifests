@@ -6,7 +6,7 @@
       "matchDatasources": ["docker"],
       "matchPackagePatterns": ["^ghcr\\.io/siderolabs/installer$"],
       "groupName": "talos",
-      "labels": ["talos", "infrastructure"],
+      "labels": ["talos", "Critical-Infrastructure"],
       "prBodyNotes": [
         "## Talos Upgrade",
         "",
@@ -23,7 +23,7 @@
       "matchDatasources": ["docker"],
       "matchPackagePatterns": ["^ghcr\\.io/siderolabs/kubelet$"],
       "groupName": "kubernetes",
-      "labels": ["kubernetes", "infrastructure"],
+      "labels": ["kubernetes", "Critical-Infrastructure"],
       "prBodyNotes": [
         "## Kubernetes Upgrade",
         "",
@@ -41,7 +41,7 @@
       "matchDatasources": ["helm"],
       "matchPackageNames": ["tuppr"],
       "groupName": "tuppr-chart",
-      "labels": ["tuppr", "infrastructure"]
+      "labels": ["Tuppr", "Critical-Infrastructure"]
     },
     {
       "description": "Group OpenClaw CLI tool versions together",
@@ -53,7 +53,7 @@
       "description": "Group all Flux components together (controllers, manifests, bootstrap ref)",
       "matchPackagePatterns": ["^ghcr\\.io/fluxcd/", "^fluxcd/flux2$"],
       "groupName": "flux",
-      "labels": ["flux", "infrastructure"]
+      "labels": ["Flux", "Critical-Infrastructure"]
     }
   ]
 }

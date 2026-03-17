@@ -120,7 +120,7 @@
       "matchPackageNames": ["rook-ceph"],
       "matchManagers": ["flux"],
       "groupName": "rook-ceph-operator",
-      "labels": ["CRITICAL-STORAGE", "MERGE-1st-BEFORE-CEPH"],
+      "labels": ["Critical-Storage", "Merge-1st-before-Ceph"],
       "automerge": false,
       "prBodyNotes": [
         "## :warning: CRITICAL: STORAGE INFRASTRUCTURE",
@@ -143,7 +143,7 @@
       "description": "Ceph images - UPGRADE AFTER operator",
       "matchPackageNames": ["quay.io/ceph/ceph"],
       "groupName": "ceph-images",
-      "labels": ["CRITICAL-STORAGE", "MERGE-2nd-AFTER-ROOK"],
+      "labels": ["Critical-Storage", "Merge-2nd-after-Rook"],
       "automerge": false,
       "prBodyNotes": [
         "## :warning: CRITICAL: STORAGE INFRASTRUCTURE",
