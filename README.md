@@ -6,7 +6,7 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              Tailscale Mesh                                  │
+│                              Tailscale Mesh                                 │
 │                         (keiretsu.ts.net)                                   │
 └─────────────────────────────────────────────────────────────────────────────┘
          │                         │                         │
@@ -33,8 +33,8 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 
 | Cluster | Location | Platform | Purpose | Domain |
 |---------|----------|----------|---------|--------|
-| `talos-ottawa` | Ontario, CA | Talos Linux | Primary homelab, 3-node Thunderbolt mesh | killinit.cc |
-| `talos-robbinsdale` | Minnesota, US | Talos Linux | Primary homelab, storage | lukehouge.com |
+| `talos-ottawa` | Ontario, CA | Talos Linux | Primary homelab, 3-node MS-01 Thunderbolt mesh | killinit.cc |
+| `talos-robbinsdale` | Minnesota, US | Talos Linux | Primary homelab | lukehouge.com |
 | `talos-stpetersburg` | Florida, US | Talos Linux | GPU/AI workloads (NVIDIA) | rajsingh.info |
 
 ## Directory Structure
@@ -105,27 +105,6 @@ creation_rules:
   - path_regex: .*.yaml
     encrypted_regex: ^(data|stringData)$
     pgp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
-```
-
-### Istio Multi-Cluster Service Mesh
-
-Istio connects all Talos clusters via east-west gateways:
-
-- **Mesh ID**: `primary`
-- **Networks**: Each cluster is a separate network (ottawa, robbinsdale, stpetersburg)
-- **East-West Gateways**: Cross-cluster traffic via Tailscale
-- **mTLS**: Enabled across all services
-
-```yaml
-# clusters/common/apps/istio-system/app/istio-istiod.yaml
-meshConfig:
-  meshNetworks:
-    robbinsdale:
-      gateways:
-        - service: robbinsdale-istio-eastwestgateway.istio-system
-          port: 15443
-    ottawa: ...
-    stpetersburg: ...
 ```
 
 ### Tailscale Integration
