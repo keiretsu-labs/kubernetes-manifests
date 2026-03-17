@@ -60,8 +60,8 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
          └─────────────────────────┴─────────────────────────┘
                                    │
                   ┌────────────────┴────────────────┐
-                  │   Istio Multi-Cluster Mesh      │
-                  │   (East-West Gateways)          │
+                  │   Tailscale Services            │
+                  │ (acting as East-West Gateways)  │
                   └─────────────────────────────────┘
 ```
 
