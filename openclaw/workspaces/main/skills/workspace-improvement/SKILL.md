@@ -60,7 +60,7 @@ kubectl get pod -l app.kubernetes.io/name=openclaw -n openclaw -o json | \
   jq '.items[0].spec.containers[0].volumeMounts[] | {name, mountPath}'
 
 # Compare against documented paths in workspace files
-grep -rn "/home/node\|/opt/workspace\|/opt/config" workspaces/
+grep -rn "/home/node\|/opt/workspace\|/opt/config" openclaw/workspaces/
 ```
 
 ### Model Providers
@@ -74,7 +74,7 @@ kubectl exec deployment/openclaw -c openclaw -n openclaw -- \
 jq '.models.providers | keys' kustomization/openclaw.json
 
 # Compare against what AGENTS.md documents
-grep -A2 "Provider" workspaces/main/AGENTS.md
+grep -A2 "Provider" openclaw/workspaces/main/AGENTS.md
 ```
 
 ### Agent List
@@ -92,10 +92,10 @@ jq '.agents.list[].id' kustomization/openclaw.json
 
 ```bash
 # Skill directories that exist
-ls workspaces/main/skills/
+ls openclaw/workspaces/main/skills/
 
 # Skills referenced in AGENTS.md
-grep -n "skill" workspaces/*/AGENTS.md
+grep -n "skill" openclaw/workspaces/*/AGENTS.md
 ```
 
 ## Staleness Detection
@@ -106,7 +106,7 @@ Check if workspace content references outdated values:
 # Image tags in docs vs deployment
 kubectl get pod -l app.kubernetes.io/name=openclaw -n openclaw -o json | \
   jq -r '.items[0].spec.containers[].image'
-grep -rn "ghcr.io\|oci.killinit.cc" workspaces/
+grep -rn "ghcr.io\|oci.killinit.cc" openclaw/workspaces/
 
 # Tailscale version
 kubectl get pod -l app.kubernetes.io/name=openclaw -n openclaw -o json | \
@@ -135,6 +135,11 @@ git checkout -b workspace/<topic>-$(date +%Y-%m-%d)
 ```
 
 ⚠️ **Always `rm -rf` before cloning.** Previous session clones will have wrong branches and stale state.
+
+⚠️ **Important:** The workspace is at `openclaw/workspaces/main/` within the cloned repo. The root-level `workspaces/main/` directory is empty/stale. Always use paths like:
+- `openclaw/workspaces/main/MEMORY.md`
+- `openclaw/workspaces/main/skills/workspace-improvement/SKILL.md`
+- `openclaw/kustomization/openclaw.json`
 
 ### 3. Make Changes
 
