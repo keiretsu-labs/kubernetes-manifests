@@ -142,6 +142,36 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        - name: etcd (rei)
+          group: Kubernetes
+          url: http://rei.killinit.internal:2381/metrics
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 500"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: etcd (asuka)
+          group: Kubernetes
+          url: http://asuka.killinit.internal:2381/metrics
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 500"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: etcd (kaji)
+          group: Kubernetes
+          url: http://kaji.killinit.internal:2381/metrics
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 500"
+          alerts:
+            - type: discord
+              send-on-resolved: true
         - name: Kubernetes API
           group: Kubernetes
           url: https://k8s.killinit.internal:6443/readyz
