@@ -19,7 +19,8 @@ _Managed with Flux, Tailscale, and GitHub Actions_
 <div align="center">
 
 [![Home Internet](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.killinit.cc%2Fapi%2Fv1%2Fendpoints%2Fnetwork_internet%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=ubiquiti&logoColor=white&label=Home+Internet)](https://status.killinit.cc)&nbsp;&nbsp;
-[![Status Page](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.killinit.cc%2Fapi%2Fv1%2Fendpoints%2Fnetworking_envoy-public%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=statuspage&logoColor=white&label=Status+Page)](https://status.killinit.cc)
+[![Status Page](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.killinit.cc%2Fapi%2Fv1%2Fendpoints%2Fnetworking_envoy-public%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=statuspage&logoColor=white&label=Status+Page)](https://status.killinit.cc)&nbsp;&nbsp;
+[![Alertmanager](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.killinit.cc%2Fapi%2Fv1%2Fendpoints%2Falerting_alertmanager%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=prometheus&logoColor=white&label=Alertmanager)](https://status.killinit.cc)
 
 </div>
 
