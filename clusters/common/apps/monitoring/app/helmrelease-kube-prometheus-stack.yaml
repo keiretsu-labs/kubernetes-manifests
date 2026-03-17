@@ -42,9 +42,9 @@ spec:
         retention: 14d
         retentionSize: 100GB
         additionalAlertRelabelConfigs:
-          - sourceLabels: [alertname]
+          - source_labels: [alertname]
             regex: Watchdog
-            targetLabel: namespace
+            target_label: namespace
             replacement: monitoring
         resources:
           requests:
