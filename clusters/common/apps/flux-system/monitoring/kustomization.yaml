@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: monitoring
 resources:
   - podmonitor.yaml
+  - networkpolicy-gatus.yaml
 configMapGenerator:
   - name: flux-grafana-dashboards
     files:
