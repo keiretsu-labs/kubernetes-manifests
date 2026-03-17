@@ -22,6 +22,6 @@ data:
         title: Kubernetes
 
       - name: tailscale_operator_version
-        query: label_replace(gotk_resource_info{name="tailscale-operator"}, "chart_app_version", "$1", "chart_app_version", "v(.+)")
+        query: label_replace(gotk_resource_info{name="tailscale-operator"}, "chart_app_version", "$1", "chart_app_version", "[vV](.*)")
         label: chart_app_version
         title: Tailscale
