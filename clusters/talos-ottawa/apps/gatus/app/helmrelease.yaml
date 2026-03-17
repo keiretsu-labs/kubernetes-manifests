@@ -480,7 +480,7 @@ spec:
         # === NEW: GitOps ===
         - name: Flux Source Controller
           group: GitOps
-          url: http://source-controller.flux-system:80/metrics
+          url: http://source-controller.flux-system:80
           interval: 60s
           conditions:
             - "[STATUS] == 200"
