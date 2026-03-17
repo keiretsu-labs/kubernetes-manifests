@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kromgo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kromgo
+  template:
+    metadata:
+      labels:
+        app: kromgo
+    spec:
+      containers:
+        - name: kromgo
+          image: ghcr.io/kashalls/kromgo:v0.8.2
+          env:
+            - name: PROMETHEUS_URL
+              value: http://kube-prometheus-stack-prometheus.monitoring:9090
+            - name: SERVER_PORT
+              value: "8080"
+            - name: HEALTH_PORT
+              value: "8888"
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: health
+              containerPort: 8888
+          livenessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 3
+          volumeMounts:
+            - name: config
+              mountPath: /kromgo/config.yaml
+              subPath: config.yaml
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+            limits:
+              memory: 64Mi
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+      volumes:
+        - name: config
+          configMap:
+            name: kromgo-config

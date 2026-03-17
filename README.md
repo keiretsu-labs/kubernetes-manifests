@@ -1,4 +1,22 @@
-# Kubernetes GitOps Infrastructure
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" width="144px" height="144px"/>
+
+### Keiretsu — Multi-Cluster Kubernetes Infrastructure
+
+_Managed with Flux, Tailscale, and GitHub Actions_
+
+</div>
+
+<div align="center">
+
+[![Talos](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Ftalos_version&style=for-the-badge&logo=talos&logoColor=white&color=blue&label=%20)](https://talos.dev)&nbsp;&nbsp;
+[![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fkubernetes_version&style=for-the-badge&logo=kubernetes&logoColor=white&color=blue&label=%20)](https://kubernetes.io)&nbsp;&nbsp;
+[![Tailscale](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Ftailscale_operator_version&style=for-the-badge&logo=tailscale&logoColor=white&color=blue&label=%20)](https://tailscale.com/kb/1236/kubernetes-operator)
+
+</div>
+
+---
 
 Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This repository manages three geographically distributed Talos Linux clusters connected via Tailscale mesh networking.
 
