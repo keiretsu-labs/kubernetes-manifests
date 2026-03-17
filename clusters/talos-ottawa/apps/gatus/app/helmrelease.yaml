@@ -41,6 +41,19 @@ spec:
           # - name: "Portfolio"
           #   link: "https://www.${CLUSTER_DOMAIN}"
       endpoints:
+        # === Network ===
+        - name: Internet
+          group: Network
+          url: https://1.1.1.1
+          interval: 60s
+          client:
+            dns-resolver: "tcp://8.8.8.8:53"
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
         # === Tailscale ===
         - name: (K8s Cluster) Ottawa
           group: Tailscale
