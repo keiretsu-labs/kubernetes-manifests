@@ -18,3 +18,10 @@ spec:
       ports:
         - port: 9090
           protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: tailscale
+      ports:
+        - port: 80
+          protocol: TCP
