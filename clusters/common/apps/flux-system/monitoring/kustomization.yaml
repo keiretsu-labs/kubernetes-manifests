@@ -5,6 +5,7 @@ namespace: monitoring
 resources:
   - podmonitor.yaml
   - networkpolicy-gatus.yaml
+  - networkpolicy-webhooks.yaml
 configMapGenerator:
   - name: flux-grafana-dashboards
     files:
