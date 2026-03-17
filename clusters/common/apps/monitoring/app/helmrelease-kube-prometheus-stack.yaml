@@ -41,6 +41,11 @@ spec:
           - exemplar-storage
         retention: 14d
         retentionSize: 100GB
+        additionalAlertRelabelConfigs:
+          - sourceLabels: [alertname]
+            regex: Watchdog
+            targetLabel: namespace
+            replacement: monitoring
         resources:
           requests:
             cpu: 100m
@@ -60,8 +65,6 @@ spec:
         alertmanagerConfigSelector:
           matchLabels:
             team: monitoring
-        alertmanagerConfigMatcherStrategy:
-          type: None
         externalUrl: https://alertmanager.${CLUSTER_DOMAIN}
         resources:
           requests:
