@@ -10,6 +10,8 @@ spec:
     - Ingress
   ingress:
     - from:
+        - podSelector: {}
+    - from:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: gatus
