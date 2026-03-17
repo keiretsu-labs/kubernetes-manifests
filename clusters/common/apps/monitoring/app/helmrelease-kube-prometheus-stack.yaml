@@ -60,6 +60,8 @@ spec:
         alertmanagerConfigSelector:
           matchLabels:
             team: monitoring
+        alertmanagerConfigMatcherStrategy:
+          type: None
         externalUrl: https://alertmanager.${CLUSTER_DOMAIN}
         resources:
           requests:
