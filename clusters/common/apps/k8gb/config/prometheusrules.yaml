@@ -43,7 +43,7 @@ spec:
 
         - alert: K8gbReconciliationStalled
           expr: |
-            rate(k8gb_gslb_reconciliation_loops_total[15m]) == 0
+            rate(k8gb_gslb_reconciliation_loops_total{name!="init"}[15m]) == 0
           for: 15m
           annotations:
             summary: >-
@@ -53,7 +53,7 @@ spec:
 
         - alert: K8gbNoHealthyRecords
           expr: |
-            k8gb_gslb_healthy_records == 0
+            k8gb_gslb_healthy_records{name!="init"} == 0
           for: 5m
           annotations:
             summary: >-
