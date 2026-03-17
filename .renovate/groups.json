@@ -23,7 +23,7 @@
       "matchDatasources": ["docker"],
       "matchPackagePatterns": ["^ghcr\\.io/siderolabs/kubelet$"],
       "groupName": "kubernetes",
-      "labels": ["kubernetes", "Critical-Infrastructure"],
+      "labels": ["Kubernetes", "Critical-Infrastructure"],
       "prBodyNotes": [
         "## Kubernetes Upgrade",
         "",
