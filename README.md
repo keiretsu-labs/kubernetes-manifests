@@ -1,6 +1,6 @@
 # Kubernetes GitOps Infrastructure
 
-Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This repository manages three geographically distributed Talos Linux clusters connected via Tailscale mesh networking and Istio multi-cluster service mesh.
+Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This repository manages three geographically distributed Talos Linux clusters connected via Tailscale mesh networking.
 
 ## Architecture Overview
 
