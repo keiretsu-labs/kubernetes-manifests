@@ -245,6 +245,45 @@ spec:
               memory: 128Mi
             limits:
               memory: 512Mi
+        - name: overseerr-mcp
+          image: ghcr.io/jhomen368/overseerr-mcp:2.1.0
+          env:
+            - name: SEERR_URL
+              value: "http://jellyseerr.media.svc.cluster.local:5055"
+            - name: SEERR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: SEERR_API_KEY
+            - name: MCP_TRANSPORT
+              value: "http"
+            - name: MCP_HTTP_PORT
+              value: "8085"
+          securityContext:
+            allowPrivilegeEscalation: false
+          ports:
+            - name: seerr-mcp
+              containerPort: 8085
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8085
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8085
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
         - name: scrapling
           image: pyd4vinci/scrapling:latest
           args: ["mcp", "--http", "--host", "0.0.0.0", "--port", "8000"]
