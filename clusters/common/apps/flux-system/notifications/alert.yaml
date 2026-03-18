@@ -25,3 +25,5 @@ spec:
     - kind: Kustomization
       name: '*'
       namespace: flux-system
+      exclude:
+        - name: 360-ai
