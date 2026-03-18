@@ -165,11 +165,6 @@
               "enabled": true,
               "transport": "http",
               "url": "http://localhost:8000/mcp"
-            },
-            "overseerr": {
-              "enabled": true,
-              "transport": "http",
-              "url": "http://localhost:8085/mcp"
             }
           }
         }
@@ -207,6 +202,14 @@
       "configWrites": true,
       "threadBindings": {
         "spawnAcpSessions": true
+      }
+    }
+  },
+  "mcp": {
+    "servers": {
+      "overseerr": {
+        "command": "npx",
+        "args": ["-y", "mcp-remote@latest", "http://localhost:8085/mcp"]
       }
     }
   },

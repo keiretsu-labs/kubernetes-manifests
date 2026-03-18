@@ -78,10 +78,9 @@ spec:
                   > "$PLUGIN_DIR/openclaw.plugin.json"
                 [ ! -f "$PLUGIN_DIR/index.js" ] && \
                   echo 'export { default } from "./src/index.js";' > "$PLUGIN_DIR/index.js"
-
-                echo "[init-workspace] Patching MCP plugin to use SDK built-in StreamableHTTPClientTransport..."
-                sed -i "s|import { StreamableHTTPClientTransport } from './http-transport.js';|import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';|" \
-                  "$PLUGIN_DIR/src/index.js"
+                [ -f "$PLUGIN_DIR/src/http-transport.js" ] && \
+                  grep -q 'options\.sessionId || null' "$PLUGIN_DIR/src/http-transport.js" && \
+                  sed -i 's/options\.sessionId || null/options?.sessionId/' "$PLUGIN_DIR/src/http-transport.js"
               fi
 
               echo "[init-workspace] Updating config..."
@@ -130,6 +129,7 @@ spec:
               else
                 echo "[init-extensions] Dependencies already installed, skipping."
               fi
+
           volumeMounts:
             - name: data
               mountPath: /home/node/.openclaw
