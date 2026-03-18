@@ -100,7 +100,7 @@ spec:
               {{- end }}
             {{- end }}
           sendResolved: true
-          title: '[talos-robbinsdale] [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.alertname }}'
+          title: '[${CLUSTER_NAME}] [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.alertname }}'
       name: discord
   inhibitRules:
     - equal:
