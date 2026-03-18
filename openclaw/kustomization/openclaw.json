@@ -205,18 +205,6 @@
       }
     }
   },
-  "mcp": {
-    "servers": {
-      "overseerr": {
-        "command": "npx",
-        "args": ["-y", "@jhomen368/overseerr-mcp"],
-        "env": {
-          "SEERR_URL": "http://jellyseerr.media.svc.cluster.local:5055",
-          "SEERR_API_KEY": "$${SEERR_API_KEY}"
-        }
-      }
-    }
-  },
   "commands": {
     "useAccessGroups": false,
     "ownerAllowFrom": [
