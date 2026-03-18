@@ -56,10 +56,7 @@ spec:
           - matchType: "="
             name: alertname
             value: Watchdog
-        receiver: gatus-heartbeat
-        groupInterval: 2m
-        groupWait: 0s
-        repeatInterval: 2m30s
+        receiver: blackhole
       # All other alerts with severity go to Discord
       - matchers:
           - matchType: "=~"
@@ -68,15 +65,6 @@ spec:
         receiver: discord
   receivers:
     - name: blackhole
-    - name: gatus-heartbeat
-      webhookConfigs:
-        - httpConfig:
-            bearerTokenSecret:
-              name: alertmanager-secret
-              key: GATUS_HEARTBEAT_TOKEN
-          urlSecret:
-            name: alertmanager-secret
-            key: GATUS_HEARTBEAT_URL
     - discordConfigs:
         - apiURL:
             key: DISCORD_ALERTMANAGER_WEBHOOK_URL
