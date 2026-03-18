@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	github.com/stretchr/testify v1.11.1
 	go.temporal.io/api v1.62.2
-	go.temporal.io/sdk v1.41.0
+	go.temporal.io/sdk v1.41.1
 	google.golang.org/grpc v1.79.2
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.35.2
