@@ -4,6 +4,8 @@ kind: Kustomization
 metadata:
   name: &app 360-ai
   namespace: flux-system
+  labels:
+    notifications.github.com/exclude: "true"
 spec:
   targetNamespace: singh360
   commonMetadata:
