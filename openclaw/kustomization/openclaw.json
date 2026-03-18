@@ -205,14 +205,6 @@
       }
     }
   },
-  "mcp": {
-    "servers": {
-      "overseerr": {
-        "command": "npx",
-        "args": ["-y", "mcp-remote@latest", "http://localhost:8085/mcp"]
-      }
-    }
-  },
   "commands": {
     "useAccessGroups": false,
     "ownerAllowFrom": [
