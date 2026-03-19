@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: REPLACE_APP_NAME-config
+  namespace: REPLACE_NAMESPACE
+data:
+  config.yaml: |
+    # Application configuration here
