@@ -7,6 +7,7 @@ metadata:
 spec:
   clusterRef:
     name: garage
+    namespace: garage
   globalAlias: keiretsu-top
   quotas:
     maxSize: 100Gi
@@ -24,6 +25,7 @@ metadata:
 spec:
   clusterRef:
     name: garage
+    namespace: garage
   name: "Keiretsu-Top Backup Key"
   secretTemplate:
     name: keiretsu-top-s3-creds
