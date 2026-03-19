@@ -28,6 +28,7 @@ spec:
         valueFrom:
           configMapKeyRef:
             name: cluster-settings
+            namespace: flux-system
             key: CLUSTER_DOMAIN
     envFrom:
       - secretRef:
