@@ -23,16 +23,12 @@ spec:
   values:
     image:
       tag: v5.35.0
-    env:
-      - name: CLUSTER_DOMAIN
-        valueFrom:
-          configMapKeyRef:
-            name: cluster-settings
-            namespace: flux-system
-            key: CLUSTER_DOMAIN
     envFrom:
       - secretRef:
           name: gatus
+      - configMapRef:
+          name: cluster-settings
+          namespace: flux-system
       # - secretRef:
       #     name: gatus-postgres-app
     config:
