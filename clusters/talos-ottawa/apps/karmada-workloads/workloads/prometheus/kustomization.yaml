@@ -6,4 +6,5 @@ resources:
   - configmap.yaml
   - statefulset.yaml
   - service.yaml
+  - volsync-backup.yaml
   - propagation-policy.yaml
