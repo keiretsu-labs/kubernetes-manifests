@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - cluster-taint-policy.yaml
   - test-failover
+  - gatus
