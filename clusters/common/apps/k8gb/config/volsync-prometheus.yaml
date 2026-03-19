@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: restic-prometheus-data
+  namespace: keiretsu-top
+type: Opaque
+stringData:
+  RESTIC_REPOSITORY: s3:http://garage.garage.svc.cluster.local:3900/keiretsu-top/${LOCATION}/prometheus
+  RESTIC_PASSWORD: ${COMMON_RESTIC_SECRET}
+  AWS_ACCESS_KEY_ID: GK2aa26be30865c742a6ffa231
+  AWS_SECRET_ACCESS_KEY: 9cbf81612d64d847f68203e84f821d056a473f67eb5fd526b214f704642e3ad3
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: prometheus-data
+  namespace: keiretsu-top
+spec:
+  sourcePVC: data-prometheus-0
+  trigger:
+    schedule: "0 */6 * * *"
+  restic:
+    pruneIntervalDays: 14
+    repository: restic-prometheus-data
+    retain:
+      hourly: 1
+      daily: 3
+      weekly: 4
+      monthly: 2
+      yearly: 1
+    copyMethod: Direct
