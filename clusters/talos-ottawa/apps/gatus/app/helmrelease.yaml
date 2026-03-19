@@ -22,7 +22,7 @@ spec:
       retries: 3
   values:
     image:
-      tag: latest
+      tag: v5.35.0
     config:
       alerting:
         discord:

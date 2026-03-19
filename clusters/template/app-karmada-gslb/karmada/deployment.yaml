@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: REPLACE_APP_NAME
-          image: REPLACE_IMAGE
+          image: REPLACE_IMAGE # e.g. twinproduction/gatus:v5.35.0
           ports:
             - containerPort: REPLACE_PORT
           volumeMounts:
