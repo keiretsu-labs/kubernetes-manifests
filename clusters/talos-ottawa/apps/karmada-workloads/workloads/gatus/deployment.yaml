@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: gatus
-          image: twinproduction/gatus:v5.17.0
+          image: twinproduction/gatus:latest
           ports:
             - containerPort: 8080
           volumeMounts:
