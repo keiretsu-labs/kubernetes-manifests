@@ -26,9 +26,6 @@ spec:
     envFrom:
       - secretRef:
           name: gatus
-      - configMapRef:
-          name: cluster-settings
-          namespace: flux-system
       # - secretRef:
       #     name: gatus-postgres-app
     config:
@@ -175,7 +172,7 @@ spec:
               send-on-resolved: true
         - name: Portfolio - Luke Houge
           group: website
-          url: https://www.$${CLUSTER_DOMAIN}
+          url: https://www.lukehouge.com
           interval: 60s
           conditions:
             - "[STATUS] == 200"
@@ -228,7 +225,7 @@ spec:
               send-on-resolved: true
         - name: Frigate
           group: home
-          url: https://frigate.$${CLUSTER_DOMAIN}
+          url: https://frigate.lukehouge.com
           interval: 60s
           conditions:
             - "[STATUS] == 200"
@@ -239,7 +236,7 @@ spec:
               send-on-resolved: true
         - name: Homeassistant
           group: home
-          url: https://homeassistant.$${CLUSTER_DOMAIN}
+          url: https://homeassistant.lukehouge.com
           interval: 60s
           conditions:
             - "[STATUS] == 200"
