@@ -5,5 +5,7 @@ resources:
   - ./namespace.yaml
   - ./gslb.yaml
   - ./gslb-gatus.yaml
+  - ./gslb-prometheus.yaml
+  - ./garage-keiretsu-top.yaml
   - ./cnames.yaml
   - ./prometheusrules.yaml

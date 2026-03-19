@@ -1,0 +1,36 @@
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
+  name: keiretsu-top
+  namespace: keiretsu-top
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: keiretsu-top
+  quotas:
+    maxSize: 100Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef: keiretsu-top-key
+      read: true
+      write: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
+metadata:
+  name: keiretsu-top-key
+  namespace: keiretsu-top
+spec:
+  clusterRef:
+    name: garage
+  name: "Keiretsu-Top Backup Key"
+  secretTemplate:
+    name: keiretsu-top-s3-creds
+    namespace: keiretsu-top
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef: keiretsu-top
+      read: true
+      write: true

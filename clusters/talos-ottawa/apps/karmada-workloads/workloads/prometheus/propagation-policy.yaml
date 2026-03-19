@@ -1,0 +1,50 @@
+# PropagationPolicy for distributed prometheus
+# Duplicated scheduling: instance on every targeted cluster
+# Each cluster gets its own PVC from the default storage class
+# k8gb handles traffic steering via DNS health checks
+---
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: prometheus
+  namespace: keiretsu-top
+spec:
+  propagateDeps: true
+
+  resourceSelectors:
+    - apiVersion: apps/v1
+      kind: StatefulSet
+      name: prometheus
+    - apiVersion: v1
+      kind: Service
+      name: prometheus
+    - apiVersion: v1
+      kind: ConfigMap
+      name: prometheus-config
+
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg
+
+    clusterTolerations:
+      - key: cluster.karmada.io/unreachable
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 60
+      - key: cluster.karmada.io/not-ready
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 60
+
+    replicaScheduling:
+      replicaSchedulingType: Duplicated
+
+  failover:
+    application:
+      decisionConditions:
+        tolerationSeconds: 60
+      purgeMode: Graciously
+      gracePeriodSeconds: 120
