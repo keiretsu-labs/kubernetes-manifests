@@ -1,7 +1,2 @@
-# ---
-# apiVersion: v1
-# kind: Namespace
-# metadata:
-#   name: karmada-system
-#   labels:
-#     app.kubernetes.io/name: karmada-agent
+# Namespace is managed by the outer kustomization, not here.
+# See: clusters/common/apps/karmada-agent/namespace.yaml
