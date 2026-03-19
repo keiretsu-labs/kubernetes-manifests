@@ -59,10 +59,6 @@ spec:
               send-on-resolved: true
 
       endpoints:
-        - name: Silver
-          group: servers
-          url: tcp://silver.local:6443
-          interval: 60s
           conditions:
             - "[CONNECTED] == true"
             - "[RESPONSE_TIME] < 1000"
