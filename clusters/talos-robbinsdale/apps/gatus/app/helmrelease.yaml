@@ -23,6 +23,12 @@ spec:
   values:
     image:
       tag: v5.35.0
+    env:
+      - name: CLUSTER_DOMAIN
+        valueFrom:
+          configMapKeyRef:
+            name: cluster-settings
+            key: CLUSTER_DOMAIN
     envFrom:
       - secretRef:
           name: gatus
