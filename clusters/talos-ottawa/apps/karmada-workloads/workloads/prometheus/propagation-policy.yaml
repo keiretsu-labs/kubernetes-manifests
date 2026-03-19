@@ -21,9 +21,6 @@ spec:
     - apiVersion: v1
       kind: ConfigMap
       name: prometheus-config
-    - apiVersion: volsync.backube/v1alpha1
-      kind: ReplicationSource
-      name: prometheus-data
 
   placement:
     clusterAffinity:

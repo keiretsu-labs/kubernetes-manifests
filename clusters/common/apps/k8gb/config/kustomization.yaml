@@ -7,5 +7,6 @@ resources:
   - ./gslb-gatus.yaml
   - ./gslb-prometheus.yaml
   - ./garage-keiretsu-top.yaml
+  - ./volsync-prometheus.yaml
   - ./cnames.yaml
   - ./prometheusrules.yaml
