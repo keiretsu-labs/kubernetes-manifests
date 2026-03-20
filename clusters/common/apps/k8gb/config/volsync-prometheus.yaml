@@ -45,9 +45,10 @@ metadata:
   namespace: keiretsu-top
 spec:
   trigger:
-    schedule: "30 */6 * * *"
+    manual: standby
   restic:
     repository: restic-prometheus-data
-    copyMethod: Snapshot
+    copyMethod: Direct
     accessModes: ["ReadWriteOnce"]
     capacity: 10Gi
+    destinationPVC: prometheus-server
