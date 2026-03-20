@@ -10,7 +10,7 @@ spec:
       name: ts
       namespace: home
   hostnames:
-    - "karmada-dashboard.${CLUSTER_DOMAIN}"
+    - "karmada.${CLUSTER_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
