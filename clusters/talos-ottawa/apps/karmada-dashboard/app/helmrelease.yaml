@@ -89,7 +89,7 @@ spec:
                           - name: inject
                             mountPath: /inject
                     containers:
-                      - name: web
+                      - name: karmada-dashboard
                         volumeMounts:
                           - name: inject
                             mountPath: /static/index.html
