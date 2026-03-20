@@ -6,6 +6,103 @@
 # Server uses Tailscale FQDN (not svc.cluster.local) — egress proxy requires SNI match for TLS
 # gRPC TLS: Karmada PKI certs from karmada-system-karmada-cert secret
 ---
+# talos-ottawa kubeconfig
+apiVersion: v1
+kind: Secret
+metadata:
+  name: estimator-kubeconfig-talos-ottawa
+  namespace: karmada-system
+type: Opaque
+stringData:
+  kubeconfig: |
+    apiVersion: v1
+    kind: Config
+    clusters:
+      - cluster:
+          server: https://ottawa-k8s-operator.keiretsu.ts.net
+        name: talos-ottawa
+    contexts:
+      - context:
+          cluster: talos-ottawa
+          user: tailscale
+        name: talos-ottawa
+    current-context: talos-ottawa
+    users:
+      - name: tailscale
+        user:
+          token: "unused"
+---
+# talos-ottawa estimator deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karmada-scheduler-estimator-talos-ottawa
+  namespace: karmada-system
+  labels:
+    app: karmada-scheduler-estimator
+    cluster: talos-ottawa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: karmada-scheduler-estimator
+      cluster: talos-ottawa
+  template:
+    metadata:
+      labels:
+        app: karmada-scheduler-estimator
+        cluster: talos-ottawa
+    spec:
+      containers:
+        - name: estimator
+          image: docker.io/karmada/karmada-scheduler-estimator:v1.17.0
+          command:
+            - /bin/karmada-scheduler-estimator
+            - --kubeconfig=/etc/kubeconfig/kubeconfig
+            - --cluster-name=talos-ottawa
+            - --server-port=10352
+            - --grpc-auth-cert-file=/etc/karmada/pki/karmada.crt
+            - --grpc-auth-key-file=/etc/karmada/pki/karmada.key
+          ports:
+            - containerPort: 10352
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: kubeconfig
+              mountPath: /etc/kubeconfig
+              readOnly: true
+            - name: karmada-cert
+              mountPath: /etc/karmada/pki
+              readOnly: true
+      volumes:
+        - name: kubeconfig
+          secret:
+            secretName: estimator-kubeconfig-talos-ottawa
+        - name: karmada-cert
+          secret:
+            secretName: karmada-system-karmada-cert
+---
+# talos-ottawa estimator service
+apiVersion: v1
+kind: Service
+metadata:
+  name: karmada-scheduler-estimator-talos-ottawa
+  namespace: karmada-system
+spec:
+  selector:
+    app: karmada-scheduler-estimator
+    cluster: talos-ottawa
+  ports:
+    - port: 10352
+      targetPort: 10352
+      protocol: TCP
+---
 # talos-robbinsdale kubeconfig
 apiVersion: v1
 kind: Secret
