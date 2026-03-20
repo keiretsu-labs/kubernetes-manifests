@@ -1,0 +1,61 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: gatus
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: gatus
+      version: "1.5.0"
+      sourceRef:
+        kind: HelmRepository
+        name: twin
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    image:
+      tag: latest
+    envFrom:
+      - secretRef:
+          name: gatus
+    config:
+      alerting:
+        discord:
+          webhook-url: "$${discord-webhook-url}"
+          failure-threshold: 3
+          success-threshold: 2
+      ui:
+        title: "K8s St. Petersburg Status"
+        description: "GitOps-managed Kubernetes cluster monitoring"
+        header: "K8s-StPetersburg Infrastructure Dashboard"
+      external-endpoints:
+        - name: Heartbeat
+          group: Alertmanager
+          token: "${GATUS_HEARTBEAT_TOKEN}"
+          heartbeat:
+            interval: 5m
+          alerts:
+            - type: discord
+              send-on-resolved: true
+      endpoints:
+        - name: Kubernetes API
+          group: kubernetes
+          url: https://k8s.stpetersburg.internal:6443/readyz
+          interval: 60s
+          client:
+            insecure: true
+          conditions:
+            - "[STATUS] == 401"
+            - "[RESPONSE_TIME] < 2000"
+            - "[CERTIFICATE_EXPIRATION] > 168h"
+          alerts:
+            - type: discord
+              send-on-resolved: true
