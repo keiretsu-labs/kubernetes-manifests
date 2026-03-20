@@ -18,13 +18,26 @@ spec:
       yearly: 1
     copyMethod: Direct
 ---
-apiVersion: v1
-kind: Secret
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
 metadata:
-  name: restic-media-prowlarr-config
-type: Opaque
-stringData:
-  RESTIC_REPOSITORY: s3:http://${COMMON_S3_ENDPOINT}/keiretsu/${LOCATION}/media/prowlarr-config
-  RESTIC_PASSWORD: ${COMMON_RESTIC_SECRET}
-  AWS_ACCESS_KEY_ID: ${KEIRETSU_S3_ACCESS_KEY}
-  AWS_SECRET_ACCESS_KEY: ${KEIRETSU_S3_SECRET_KEY}
+  name: volsync-media-prowlarr-config-key
+  namespace: garage
+spec:
+  clusterRef:
+    name: garage
+  name: "Media Prowlarr Config Volsync Key"
+  secretTemplate:
+    name: restic-media-prowlarr-config
+    namespace: media
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    includeEndpoint: false
+    includeRegion: false
+    additionalData:
+      RESTIC_REPOSITORY: "s3:http://${COMMON_S3_ENDPOINT}/keiretsu/${LOCATION}/media/prowlarr-config"
+      RESTIC_PASSWORD: "${COMMON_RESTIC_SECRET}"
+  bucketPermissions:
+    - bucketRef: keiretsu
+      read: true
+      write: true
