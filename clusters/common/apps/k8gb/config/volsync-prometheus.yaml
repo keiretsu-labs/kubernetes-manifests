@@ -11,13 +11,14 @@ stringData:
   AWS_ACCESS_KEY_ID: GK2aa26be30865c742a6ffa231
   AWS_SECRET_ACCESS_KEY: 9cbf81612d64d847f68203e84f821d056a473f67eb5fd526b214f704642e3ad3
 ---
+# Backup: restic snapshot of prometheus PVC every 6 hours
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
 metadata:
   name: prometheus-data
   namespace: keiretsu-top
 spec:
-  sourcePVC: data-prometheus-0
+  sourcePVC: prometheus-server
   trigger:
     schedule: "0 */6 * * *"
   restic:
@@ -30,3 +31,23 @@ spec:
       monthly: 2
       yearly: 1
     copyMethod: Direct
+---
+# Restore target: keeps latest VolumeSnapshot from restic backup
+# On clusters with VolumeSnapshot support (Ottawa, Robbinsdale), this
+# creates a snapshot that can be used as a PVC dataSource for recovery.
+# On StPetersburg (no snapshot support), this will remain idle.
+# To restore: create a PVC with dataSourceRef pointing to this resource,
+# or use copyMethod: Direct with destinationPVC for manual restore.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: prometheus-data-dst
+  namespace: keiretsu-top
+spec:
+  trigger:
+    schedule: "30 */6 * * *"
+  restic:
+    repository: restic-prometheus-data
+    copyMethod: Snapshot
+    accessModes: ["ReadWriteOnce"]
+    capacity: 10Gi
