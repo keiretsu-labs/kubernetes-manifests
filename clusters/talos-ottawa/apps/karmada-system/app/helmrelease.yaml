@@ -39,6 +39,7 @@ spec:
     components:
       - descheduler
       - search
+      - metricsAdapter
     
     # Pod Disruption Budget for HA components
     podDisruptionBudget:
