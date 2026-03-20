@@ -23,7 +23,6 @@ spec:
     remediation:
       retries: 3
   values:
-    # Override broken bitnami/kubectl:1.32.2 image in chart hooks
     global:
       kubectl:
         image: bitnami/kubectl:latest
@@ -55,3 +54,52 @@ spec:
           memory: 128Mi
         limits:
           memory: 256Mi
+  # Auto-login: inject JWT into dashboard static files.
+  # Safe behind Tailscale zero-trust network.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: karmada-dashboard-web
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: karmada-dashboard-web
+              spec:
+                template:
+                  spec:
+                    initContainers:
+                      - name: inject-token
+                        image: docker.io/karmada/karmada-dashboard-web:latest
+                        command:
+                          - sh
+                          - -c
+                          - |
+                            TOKEN=$(cat /token/token)
+                            # auto-login.js: sets token in localStorage on first visit
+                            printf '(function(){if(!localStorage.getItem("token")){localStorage.setItem("token","%s");location.reload();}})();\n' "$TOKEN" > /inject/auto-login.js
+                            # Patch index.html to load the script
+                            sed 's|</head>|<script src="/auto-login.js"></script></head>|' /static/index.html > /inject/index.html
+                        volumeMounts:
+                          - name: token
+                            mountPath: /token
+                            readOnly: true
+                          - name: inject
+                            mountPath: /inject
+                    containers:
+                      - name: web
+                        volumeMounts:
+                          - name: inject
+                            mountPath: /static/index.html
+                            subPath: index.html
+                          - name: inject
+                            mountPath: /static/auto-login.js
+                            subPath: auto-login.js
+                    volumes:
+                      - name: token
+                        secret:
+                          secretName: karmada-dashboard-token
+                      - name: inject
+                        emptyDir: {}

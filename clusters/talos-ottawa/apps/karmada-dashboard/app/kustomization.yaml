@@ -5,3 +5,4 @@ namespace: karmada-system
 resources:
   - helmrelease.yaml
   - httproute.yaml
+  - auto-login.yaml

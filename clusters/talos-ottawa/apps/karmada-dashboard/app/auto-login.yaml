@@ -1,0 +1,20 @@
+---
+# Pull the dashboard JWT token from the Karmada API into the host cluster
+# so it can be mounted into the dashboard web pod for auto-login.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: karmada-dashboard-token
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: kubernetes-ottawa-karmada
+  target:
+    name: karmada-dashboard-token
+    creationPolicy: Owner
+  data:
+    - secretKey: token
+      remoteRef:
+        key: dashboard-admin-token
+        property: token
