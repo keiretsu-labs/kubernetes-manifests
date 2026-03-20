@@ -1,0 +1,222 @@
+---
+apiVersion: config.karmada.io/v1alpha1
+kind: ResourceInterpreterCustomization
+metadata:
+  name: helmrelease
+spec:
+  target:
+    apiVersion: helm.toolkit.fluxcd.io/v2
+    kind: HelmRelease
+  customizations:
+    healthInterpretation:
+      luaScript: |
+        function InterpretHealth(observedObj)
+          if observedObj.status == nil or observedObj.status.conditions == nil then
+            return false
+          end
+          for _, condition in ipairs(observedObj.status.conditions) do
+            if condition.type == "Ready" and condition.status == "True" then
+              return true
+            end
+          end
+          return false
+        end
+    statusAggregation:
+      luaScript: |
+        function AggregateStatus(desiredObj, statusItems)
+          if statusItems == nil then
+            return desiredObj
+          end
+          if desiredObj.status == nil then
+            desiredObj.status = {}
+          end
+          conditions = {}
+          generation = desiredObj.metadata.generation or 0
+          for i = 1, #statusItems do
+            if statusItems[i].status ~= nil and statusItems[i].status.conditions ~= nil then
+              for _, condition in ipairs(statusItems[i].status.conditions) do
+                exists = false
+                for j, existing in ipairs(conditions) do
+                  if existing.type == condition.type then
+                    if condition.status == "False" then
+                      conditions[j] = condition
+                    end
+                    exists = true
+                    break
+                  end
+                end
+                if not exists then
+                  conditions[#conditions + 1] = condition
+                end
+              end
+            end
+          end
+          desiredObj.status.conditions = conditions
+          desiredObj.status.observedGeneration = generation
+          return desiredObj
+        end
+    statusReflection:
+      luaScript: |
+        function ReflectStatus(observedObj)
+          status = {}
+          if observedObj.status == nil then
+            return status
+          end
+          status.conditions = observedObj.status.conditions
+          status.observedGeneration = observedObj.status.observedGeneration
+          status.lastAppliedRevision = observedObj.status.lastAppliedRevision
+          status.lastAttemptedRevision = observedObj.status.lastAttemptedRevision
+          status.helmChart = observedObj.status.helmChart
+          return status
+        end
+---
+apiVersion: config.karmada.io/v1alpha1
+kind: ResourceInterpreterCustomization
+metadata:
+  name: kustomization
+spec:
+  target:
+    apiVersion: kustomize.toolkit.fluxcd.io/v1
+    kind: Kustomization
+  customizations:
+    healthInterpretation:
+      luaScript: |
+        function InterpretHealth(observedObj)
+          if observedObj.status == nil or observedObj.status.conditions == nil then
+            return false
+          end
+          for _, condition in ipairs(observedObj.status.conditions) do
+            if condition.type == "Ready" and condition.status == "True" then
+              return true
+            end
+          end
+          return false
+        end
+    statusAggregation:
+      luaScript: |
+        function AggregateStatus(desiredObj, statusItems)
+          if statusItems == nil then
+            return desiredObj
+          end
+          if desiredObj.status == nil then
+            desiredObj.status = {}
+          end
+          conditions = {}
+          generation = desiredObj.metadata.generation or 0
+          for i = 1, #statusItems do
+            if statusItems[i].status ~= nil and statusItems[i].status.conditions ~= nil then
+              for _, condition in ipairs(statusItems[i].status.conditions) do
+                exists = false
+                for j, existing in ipairs(conditions) do
+                  if existing.type == condition.type then
+                    if condition.status == "False" then
+                      conditions[j] = condition
+                    end
+                    exists = true
+                    break
+                  end
+                end
+                if not exists then
+                  conditions[#conditions + 1] = condition
+                end
+              end
+            end
+          end
+          desiredObj.status.conditions = conditions
+          desiredObj.status.observedGeneration = generation
+          return desiredObj
+        end
+    statusReflection:
+      luaScript: |
+        function ReflectStatus(observedObj)
+          status = {}
+          if observedObj.status == nil then
+            return status
+          end
+          status.conditions = observedObj.status.conditions
+          status.observedGeneration = observedObj.status.observedGeneration
+          status.lastAppliedRevision = observedObj.status.lastAppliedRevision
+          status.lastAttemptedRevision = observedObj.status.lastAttemptedRevision
+          status.inventory = observedObj.status.inventory
+          return status
+        end
+---
+apiVersion: config.karmada.io/v1alpha1
+kind: ResourceInterpreterCustomization
+metadata:
+  name: cnpg-cluster
+spec:
+  target:
+    apiVersion: postgresql.cnpg.io/v1
+    kind: Cluster
+  customizations:
+    healthInterpretation:
+      luaScript: |
+        function InterpretHealth(observedObj)
+          if observedObj.status == nil then
+            return false
+          end
+          if observedObj.status.phase == "Cluster in healthy state" then
+            return true
+          end
+          if observedObj.status.readyInstances ~= nil and observedObj.status.readyInstances > 0 then
+            return true
+          end
+          return false
+        end
+    statusReflection:
+      luaScript: |
+        function ReflectStatus(observedObj)
+          status = {}
+          if observedObj.status == nil then
+            return status
+          end
+          status.phase = observedObj.status.phase
+          status.readyInstances = observedObj.status.readyInstances
+          status.instances = observedObj.status.instances
+          status.currentPrimary = observedObj.status.currentPrimary
+          status.targetPrimary = observedObj.status.targetPrimary
+          return status
+        end
+---
+apiVersion: config.karmada.io/v1alpha1
+kind: ResourceInterpreterCustomization
+metadata:
+  name: tailscale-connector
+spec:
+  target:
+    apiVersion: tailscale.com/v1alpha1
+    kind: Connector
+  customizations:
+    healthInterpretation:
+      luaScript: |
+        function InterpretHealth(observedObj)
+          if observedObj.status == nil or observedObj.status.conditions == nil then
+            return false
+          end
+          for _, condition in ipairs(observedObj.status.conditions) do
+            if condition.type == "ConnectorReady" and condition.status == "True" then
+              return true
+            end
+          end
+          -- fall back to generic Ready condition
+          for _, condition in ipairs(observedObj.status.conditions) do
+            if condition.type == "Ready" and condition.status == "True" then
+              return true
+            end
+          end
+          return false
+        end
+    statusReflection:
+      luaScript: |
+        function ReflectStatus(observedObj)
+          status = {}
+          if observedObj.status == nil then
+            return status
+          end
+          status.conditions = observedObj.status.conditions
+          status.isExitNode = observedObj.status.isExitNode
+          status.subnetRoutes = observedObj.status.subnetRoutes
+          status.hostname = observedObj.status.hostname
+          return status
+        end

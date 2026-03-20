@@ -1,0 +1,28 @@
+---
+apiVersion: search.karmada.io/v1alpha1
+kind: ResourceRegistry
+metadata:
+  name: global-resource-registry
+spec:
+  targetCluster:
+    clusterNames:
+      - talos-ottawa
+      - talos-robbinsdale
+      - talos-stpetersburg
+  resourceSelectors:
+    - apiVersion: v1
+      kind: Pod
+    - apiVersion: v1
+      kind: Service
+    - apiVersion: v1
+      kind: Node
+    - apiVersion: apps/v1
+      kind: Deployment
+    - apiVersion: apps/v1
+      kind: StatefulSet
+    - apiVersion: apps/v1
+      kind: DaemonSet
+    - apiVersion: v1
+      kind: Namespace
+    - apiVersion: v1
+      kind: Event
