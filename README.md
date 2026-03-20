@@ -238,7 +238,6 @@ Modern ingress via Gateway API:
 - `argocd` - ArgoCD (backup GitOps)
 - `coder` - Cloud development environments
 - `home` - Homer dashboard, code-server
-- `harbor` - Container registry
 - `headlamp` - Kubernetes dashboard
 - `fluent-bit` - Log shipping
 
