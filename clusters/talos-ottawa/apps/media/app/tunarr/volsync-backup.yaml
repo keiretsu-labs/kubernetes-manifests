@@ -38,6 +38,6 @@ spec:
       RESTIC_REPOSITORY: "s3:http://${COMMON_S3_ENDPOINT}/keiretsu/${LOCATION}/media/tunarr-config"
       RESTIC_PASSWORD: "${COMMON_RESTIC_SECRET}"
   bucketPermissions:
-    - bucketRef: keiretsu
+    - globalAlias: keiretsu
       read: true
       write: true
