@@ -22,10 +22,10 @@ apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageKey
 metadata:
   name: volsync-media-radarr-anime-config-key
-  namespace: garage
 spec:
   clusterRef:
     name: garage
+    namespace: garage
   name: "Media Radarr Anime Config Volsync Key"
   secretTemplate:
     name: restic-media-radarr-anime-config

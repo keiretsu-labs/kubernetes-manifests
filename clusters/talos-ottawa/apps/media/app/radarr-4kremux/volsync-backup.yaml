@@ -22,10 +22,10 @@ apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageKey
 metadata:
   name: volsync-media-radarr-4kremux-config-key
-  namespace: garage
 spec:
   clusterRef:
     name: garage
+    namespace: garage
   name: "Media Radarr 4Kremux Config Volsync Key"
   secretTemplate:
     name: restic-media-radarr-4kremux-config
