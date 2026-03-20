@@ -1,20 +1,9 @@
----
-# Pull the dashboard JWT token from the Karmada API into the host cluster
-# so it can be mounted into the dashboard web pod for auto-login.
-apiVersion: external-secrets.io/v1
-kind: ExternalSecret
-metadata:
-  name: karmada-dashboard-token
-spec:
-  refreshInterval: 1h
-  secretStoreRef:
-    kind: ClusterSecretStore
-    name: kubernetes-ottawa-karmada
-  target:
-    name: karmada-dashboard-token
-    creationPolicy: Owner
-  data:
-    - secretKey: token
-      remoteRef:
-        key: dashboard-admin-token
-        property: token
+# The karmada-dashboard-token secret is created out-of-band from the
+# Karmada API's dashboard-admin-token SA secret. It contains a single
+# key "token" with the JWT used for dashboard auto-login.
+#
+# To rotate, re-create the secret:
+#   kubectl --context <karmada-api> get secret -n karmada-system dashboard-admin-token \
+#     -o jsonpath='{.data.token}' | base64 -d > /tmp/token
+#   kubectl --context <host-cluster> -n karmada-system create secret generic \
+#     karmada-dashboard-token --from-file=token=/tmp/token --dry-run=client -o yaml | kubectl apply -f -
