@@ -14,13 +14,19 @@ spec:
         namespace: flux-system
       reconcileStrategy: Revision
   install:
+    disableHooks: true
     remediation:
       retries: 3
   upgrade:
+    disableHooks: true
     cleanupOnFail: true
     remediation:
       retries: 3
   values:
+    # Override broken bitnami/kubectl:1.32.2 image in chart hooks
+    global:
+      kubectl:
+        image: bitnami/kubectl:latest
     api:
       replicaCount: 1
       kubeconfigName: karmada-system-karmada-kubeconfig
