@@ -4,7 +4,7 @@
 #
 # Auth: Tailscale API proxy with impersonation (token: "unused", identity via egress proxy)
 # Server uses Tailscale FQDN (not svc.cluster.local) — egress proxy requires SNI match for TLS
-# gRPC TLS: Karmada PKI certs from karmada-system-karmada-cert secret
+# gRPC TLS: Karmada PKI certs from karmada-cert secret
 ---
 # talos-ottawa kubeconfig
 apiVersion: v1
@@ -86,7 +86,7 @@ spec:
             secretName: estimator-kubeconfig-talos-ottawa
         - name: karmada-cert
           secret:
-            secretName: karmada-system-karmada-cert
+            secretName: karmada-cert
 ---
 # talos-ottawa estimator service
 apiVersion: v1
@@ -209,7 +209,7 @@ spec:
             secretName: estimator-kubeconfig-talos-robbinsdale
         - name: karmada-cert
           secret:
-            secretName: karmada-system-karmada-cert
+            secretName: karmada-cert
 ---
 # talos-robbinsdale estimator service
 apiVersion: v1
@@ -280,7 +280,7 @@ spec:
             secretName: estimator-kubeconfig-talos-stpetersburg
         - name: karmada-cert
           secret:
-            secretName: karmada-system-karmada-cert
+            secretName: karmada-cert
 ---
 # talos-stpetersburg estimator service
 apiVersion: v1

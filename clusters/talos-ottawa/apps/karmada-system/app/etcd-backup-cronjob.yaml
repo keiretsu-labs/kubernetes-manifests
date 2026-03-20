@@ -127,7 +127,7 @@ spec:
           volumes:
             - name: etcd-certs
               secret:
-                secretName: karmada-system-karmada-cert
+                secretName: karmada-cert
                 items:
                   - key: etcd-client.crt
                     path: etcd-client.crt

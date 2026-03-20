@@ -56,4 +56,4 @@ spec:
           volumes:
             - name: kubeconfig
               secret:
-                secretName: karmada-system-karmada-kubeconfig
+                secretName: karmada-kubeconfig
