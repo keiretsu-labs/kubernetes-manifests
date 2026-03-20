@@ -1,0 +1,51 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: karmada-dashboard
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: charts/karmada-dashboard
+      sourceRef:
+        kind: GitRepository
+        name: karmada-dashboard
+        namespace: flux-system
+      reconcileStrategy: Revision
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    api:
+      replicaCount: 1
+      kubeconfigName: karmada-system-karmada-kubeconfig
+      kubeconfigContext: karmada-apiserver
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          memory: 256Mi
+    web:
+      replicaCount: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          memory: 256Mi
+    kubernetes_dashboard_api:
+      replicaCount: 1
+      kubeconfigName: karmada-system-karmada-kubeconfig
+      kubeconfigContext: karmada-apiserver
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          memory: 256Mi
