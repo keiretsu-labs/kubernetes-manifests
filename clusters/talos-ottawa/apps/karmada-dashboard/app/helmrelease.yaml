@@ -77,9 +77,9 @@ spec:
                           - sh
                           - -c
                           - |
-                            TOKEN=$(cat /token/token)
+                            TOKEN=$$(cat /token/token)
                             # Inject inline auto-login script into index.html
-                            sed "s|</head>|<script>(function(){if(!localStorage.getItem('token')){localStorage.setItem('token','${TOKEN}');location.reload();}})();</script></head>|" /static/index.html > /inject/index.html
+                            sed "s|</head>|<script>(function(){if(!localStorage.getItem('token')){localStorage.setItem('token','$${TOKEN}');location.reload();}})();</script></head>|" /static/index.html > /inject/index.html
                         volumeMounts:
                           - name: token
                             mountPath: /token
