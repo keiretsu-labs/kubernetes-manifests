@@ -4,7 +4,6 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - configmap.yaml
-  - deployment.yaml
-  - service.yaml
+  - helmrepository.yaml
+  - helmrelease.yaml
   - propagation-policy.yaml

@@ -1,7 +1,6 @@
 # PropagationPolicy for distributed prometheus
-# Duplicated scheduling: instance on every targeted cluster
-# Each cluster gets its own PVC from the default storage class
-# k8gb handles traffic steering via DNS health checks
+# Propagates HelmRelease + HelmRepository to all member clusters
+# Flux controllers on each cluster reconcile the HelmRelease
 ---
 apiVersion: policy.karmada.io/v1alpha1
 kind: PropagationPolicy
@@ -12,15 +11,9 @@ spec:
   propagateDeps: true
 
   resourceSelectors:
-    - apiVersion: apps/v1
-      kind: StatefulSet
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
       name: prometheus
-    - apiVersion: v1
-      kind: Service
-      name: prometheus
-    - apiVersion: v1
-      kind: ConfigMap
-      name: prometheus-config
 
   placement:
     clusterAffinity:
@@ -48,3 +41,22 @@ spec:
         tolerationSeconds: 60
       purgeMode: Graciously
       gracePeriodSeconds: 120
+
+# Propagate HelmRepository to flux-system namespace on all clusters
+---
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: prometheus-helm-repo
+spec:
+  resourceSelectors:
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: HelmRepository
+      name: prometheus-community
+      namespace: flux-system
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg

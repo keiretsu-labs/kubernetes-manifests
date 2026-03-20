@@ -1,6 +1,6 @@
 # PropagationPolicy for distributed gatus
-# Duplicated scheduling: pod on every targeted cluster
-# k8gb handles traffic steering via DNS health checks
+# Propagates HelmRelease + HelmRepository to all member clusters
+# Flux controllers on each cluster reconcile the HelmRelease
 ---
 apiVersion: policy.karmada.io/v1alpha1
 kind: PropagationPolicy
@@ -11,15 +11,9 @@ spec:
   propagateDeps: true
 
   resourceSelectors:
-    - apiVersion: apps/v1
-      kind: Deployment
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
       name: gatus
-    - apiVersion: v1
-      kind: Service
-      name: gatus
-    - apiVersion: v1
-      kind: ConfigMap
-      name: gatus-config
 
   placement:
     clusterAffinity:
@@ -28,27 +22,29 @@ spec:
         - talos-robbinsdale
         - talos-stpetersburg
 
-    clusterTolerations:
-      - key: cluster.karmada.io/unreachable
-        effect: NoExecute
-        operator: Exists
-        tolerationSeconds: 60
-      - key: cluster.karmada.io/not-ready
-        effect: NoExecute
-        operator: Exists
-        tolerationSeconds: 60
-
     replicaScheduling:
       replicaSchedulingType: Duplicated
 
-  failover:
-    application:
-      decisionConditions:
-        tolerationSeconds: 60
-      purgeMode: Graciously
-      gracePeriodSeconds: 120
+# Propagate HelmRepository to flux-system namespace on all clusters
+---
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: gatus-helm-repo
+spec:
+  resourceSelectors:
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: HelmRepository
+      name: twin
+      namespace: flux-system
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg
 
-# ClusterPropagationPolicy to propagate the namespace
+# Propagate namespace
 ---
 apiVersion: policy.karmada.io/v1alpha1
 kind: ClusterPropagationPolicy
