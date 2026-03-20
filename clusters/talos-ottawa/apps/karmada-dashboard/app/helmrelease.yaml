@@ -24,7 +24,7 @@ spec:
     api:
       replicaCount: 1
       kubeconfigName: karmada-system-karmada-kubeconfig
-      kubeconfigContext: karmada-apiserver
+      kubeconfigContext: karmada-system-karmada-apiserver
       resources:
         requests:
           cpu: 100m
@@ -42,7 +42,7 @@ spec:
     kubernetes_dashboard_api:
       replicaCount: 1
       kubeconfigName: karmada-system-karmada-kubeconfig
-      kubeconfigContext: karmada-apiserver
+      kubeconfigContext: karmada-system-karmada-apiserver
       resources:
         requests:
           cpu: 100m
