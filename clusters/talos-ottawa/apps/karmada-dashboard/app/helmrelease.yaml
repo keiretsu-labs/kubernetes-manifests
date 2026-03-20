@@ -78,10 +78,8 @@ spec:
                           - -c
                           - |
                             TOKEN=$(cat /token/token)
-                            # auto-login.js: sets token in localStorage on first visit
-                            printf '(function(){if(!localStorage.getItem("token")){localStorage.setItem("token","%s");location.reload();}})();\n' "$TOKEN" > /inject/auto-login.js
-                            # Patch index.html to load the script
-                            sed 's|</head>|<script src="/auto-login.js"></script></head>|' /static/index.html > /inject/index.html
+                            # Inject inline auto-login script into index.html
+                            sed "s|</head>|<script>(function(){if(!localStorage.getItem('token')){localStorage.setItem('token','${TOKEN}');location.reload();}})();</script></head>|" /static/index.html > /inject/index.html
                         volumeMounts:
                           - name: token
                             mountPath: /token
@@ -94,9 +92,6 @@ spec:
                           - name: inject
                             mountPath: /static/index.html
                             subPath: index.html
-                          - name: inject
-                            mountPath: /static/auto-login.js
-                            subPath: auto-login.js
                     volumes:
                       - name: token
                         secret:
