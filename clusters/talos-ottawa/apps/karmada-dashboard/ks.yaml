@@ -11,6 +11,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: karmada
+    - name: external-secrets-config
   path: ./clusters/${CLUSTER_NAME}/apps/karmada-dashboard/app
   prune: true
   sourceRef:
