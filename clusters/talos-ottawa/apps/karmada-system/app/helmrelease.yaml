@@ -368,3 +368,16 @@ spec:
         rollingUpdate:
           maxUnavailable: 0
           maxSurge: 50%
+  # Rename controller-manager container so the Karmada Dashboard can exec into it.
+  # Dashboard hardcodes container name "karmada-controller-manager" but the helm
+  # chart names it "<release>-controller-manager".
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: karmada-system-karmada-controller-manager
+            patch: |-
+              - op: replace
+                path: /spec/template/spec/containers/0/name
+                value: karmada-controller-manager
