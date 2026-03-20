@@ -35,7 +35,7 @@ spec:
         limits:
           memory: 512Mi
       extraFlags:
-        - "--web.enable-lifecycle"
+        - "web.enable-lifecycle"
 
     alertmanager:
       enabled: false
@@ -46,8 +46,13 @@ spec:
     prometheus-pushgateway:
       enabled: false
 
-    extraScrapeConfigs: |
-      - job_name: gatus
-        metrics_path: /metrics
-        static_configs:
-          - targets: ["gatus.keiretsu-top:80"]
+    serverFiles:
+      prometheus.yml:
+        scrape_configs:
+          - job_name: prometheus
+            static_configs:
+              - targets: ["localhost:9090"]
+          - job_name: gatus
+            metrics_path: /metrics
+            static_configs:
+              - targets: ["gatus.keiretsu-top:80"]
