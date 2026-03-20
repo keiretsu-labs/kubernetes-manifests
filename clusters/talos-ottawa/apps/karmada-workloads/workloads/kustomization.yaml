@@ -4,7 +4,10 @@ kind: Kustomization
 
 resources:
   - cluster-taint-policy.yaml
+  - resource-interpreters.yaml
+  - resource-registry.yaml
   - override-policies.yaml
+  - dashboard-auth.yaml
   - test-failover
   - gatus
   - prometheus
