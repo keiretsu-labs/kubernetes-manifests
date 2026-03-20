@@ -6,10 +6,10 @@ metadata:
   namespace: keiretsu-top
 type: Opaque
 stringData:
-  RESTIC_REPOSITORY: s3:http://garage.garage.svc.cluster.local:3900/keiretsu-top/${LOCATION}/prometheus
+  RESTIC_REPOSITORY: s3:http://${COMMON_S3_ENDPOINT}/keiretsu/${LOCATION}/keiretsu-top/prometheus
   RESTIC_PASSWORD: ${COMMON_RESTIC_SECRET}
-  AWS_ACCESS_KEY_ID: GK8432cfa4e109b3445ffa289c
-  AWS_SECRET_ACCESS_KEY: 349c07ad4d11c793246023b6091e8e4469227901f616e8367595b99c8f8c8b4d
+  AWS_ACCESS_KEY_ID: ${KEIRETSU_S3_ACCESS_KEY}
+  AWS_SECRET_ACCESS_KEY: ${KEIRETSU_S3_SECRET_KEY}
 ---
 # Backup: restic snapshot of prometheus PVC every 6 hours
 apiVersion: volsync.backube/v1alpha1
