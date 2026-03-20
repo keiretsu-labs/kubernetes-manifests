@@ -27,7 +27,6 @@ resources:
   - ./nvidia-device-plugin.yaml
   - ./fluent.yaml
   - ./grafana.yaml
-  - ./harbor.yaml
   - ./kiali.yaml
   - ./immich.yaml
   - ./ingress-nginx.yaml
