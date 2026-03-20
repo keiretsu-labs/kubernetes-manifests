@@ -14,7 +14,7 @@ spec:
     - "prometheus.cdn.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
-        - name: prometheus
+        - name: prometheus-server
           port: 80
       matches:
         - path:
