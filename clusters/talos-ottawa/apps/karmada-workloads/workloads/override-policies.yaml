@@ -17,7 +17,7 @@ spec:
           - talos-robbinsdale
           - talos-ottawa
       overriders:
-        plaintextOverrider:
+        plaintext:
           - path: /spec/volumeClaimTemplates/0/spec/storageClassName
             operator: replace
             value: ceph-block
@@ -25,7 +25,7 @@ spec:
         clusterNames:
           - talos-stpetersburg
       overriders:
-        plaintextOverrider:
+        plaintext:
           - path: /spec/volumeClaimTemplates/0/spec/storageClassName
             operator: replace
             value: local-path
@@ -45,7 +45,7 @@ spec:
         clusterNames:
           - talos-stpetersburg
       overriders:
-        plaintextOverrider:
+        plaintext:
           - path: /spec/template/spec/tolerations
             operator: append
             value:
