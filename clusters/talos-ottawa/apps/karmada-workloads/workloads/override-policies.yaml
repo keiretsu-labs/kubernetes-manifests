@@ -1,7 +1,7 @@
 ---
 # Storage class override per cluster
 # Robbinsdale and Ottawa run Rook-Ceph (ceph-block), StPetersburg only has local-path
-# Uses plaintextOverrider to patch the storageClassName in PVC volume claim templates
+# Uses plaintext overrider to patch the storageClassName in PVC volume claim templates
 # so workloads distributed across clusters use the right storage backend
 apiVersion: policy.karmada.io/v1alpha1
 kind: ClusterOverridePolicy
@@ -29,51 +29,3 @@ spec:
           - path: /spec/volumeClaimTemplates/0/spec/storageClassName
             operator: replace
             value: local-path
----
-# GPU tolerations and node selector for StPetersburg AI/ML workloads
-# Ensures deployments scheduled to the GPU cluster can land on NVIDIA GPU nodes
-apiVersion: policy.karmada.io/v1alpha1
-kind: ClusterOverridePolicy
-metadata:
-  name: gpu-cluster-scheduling
-spec:
-  resourceSelectors:
-    - apiVersion: apps/v1
-      kind: Deployment
-  overrideRules:
-    - targetCluster:
-        clusterNames:
-          - talos-stpetersburg
-      overriders:
-        plaintext:
-          - path: /spec/template/spec/tolerations
-            operator: append
-            value:
-              - key: nvidia.com/gpu
-                operator: Exists
-                effect: NoSchedule
-          - path: /spec/template/spec/nodeSelector
-            operator: addIfAbsent
-            value:
-              feature.node.kubernetes.io/pci-10de.present: "true"
----
-# Redirect container images through Harbor registry on Robbinsdale
-# Pulls are proxied through the local Harbor instance to reduce external
-# bandwidth and provide a cache layer for frequently used images
-apiVersion: policy.karmada.io/v1alpha1
-kind: ClusterOverridePolicy
-metadata:
-  name: harbor-image-registry
-spec:
-  resourceSelectors:
-    - apiVersion: apps/v1
-      kind: Deployment
-  overrideRules:
-    - targetCluster:
-        clusterNames:
-          - talos-robbinsdale
-      overriders:
-        imageOverrider:
-          - component: Registry
-            operator: addIfAbsent
-            value: harbor.robbinsdale.local
