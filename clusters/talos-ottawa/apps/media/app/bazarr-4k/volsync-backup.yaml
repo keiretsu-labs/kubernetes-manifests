@@ -22,10 +22,10 @@ apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageKey
 metadata:
   name: volsync-media-bazarr-4k-config-key
-  namespace: garage
 spec:
   clusterRef:
     name: garage
+    namespace: garage
   name: "Media Bazarr 4K Config Volsync Key"
   secretTemplate:
     name: restic-media-bazarr-4k-config

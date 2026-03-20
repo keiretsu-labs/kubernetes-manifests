@@ -22,10 +22,10 @@ apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageKey
 metadata:
   name: volsync-media-prowlarr-config-ceph-key
-  namespace: garage
 spec:
   clusterRef:
     name: garage
+    namespace: garage
   name: "Media Prowlarr Config Ceph Volsync Key"
   secretTemplate:
     name: restic-media-prowlarr-config-ceph

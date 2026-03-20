@@ -23,10 +23,10 @@ apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageKey
 metadata:
   name: volsync-home-frigate-config-ceph-key
-  namespace: garage
 spec:
   clusterRef:
     name: garage
+    namespace: garage
   name: "Home Frigate Config Ceph Volsync Key"
   secretTemplate:
     name: restic-home-frigate-config-ceph

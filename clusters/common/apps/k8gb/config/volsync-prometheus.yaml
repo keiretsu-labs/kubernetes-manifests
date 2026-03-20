@@ -3,10 +3,10 @@ apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageKey
 metadata:
   name: volsync-prometheus-key
-  namespace: garage
 spec:
   clusterRef:
     name: garage
+    namespace: garage
   name: "Volsync Prometheus Key"
   secretTemplate:
     name: restic-prometheus-data
