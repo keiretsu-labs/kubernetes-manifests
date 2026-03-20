@@ -22,6 +22,8 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  uninstall:
+    disableHooks: true
   values:
     global:
       kubectl:
