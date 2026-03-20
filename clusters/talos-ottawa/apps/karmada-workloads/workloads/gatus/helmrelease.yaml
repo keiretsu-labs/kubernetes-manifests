@@ -1,0 +1,71 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: gatus
+  namespace: keiretsu-top
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: gatus
+      version: 1.5.0
+      sourceRef:
+        kind: HelmRepository
+        name: twin
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    image:
+      tag: v5.35.0
+    config:
+      ui:
+        title: "Keiretsu Global Status"
+        description: "Distributed status page - served via k8gb GSLB"
+        header: "Keiretsu Infrastructure"
+        logo: "https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png"
+        link: "https://github.com/keiretsu-labs/kubernetes-manifests"
+
+      endpoints:
+        - name: Internet
+          group: Network
+          url: https://1.1.1.1
+          interval: 60s
+          client:
+            dns-resolver: "tcp://8.8.8.8:53"
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+
+        - name: K8s Operator (Ottawa)
+          group: Tailscale
+          url: https://ottawa-k8s-operator.keiretsu.ts.net:443/readyz
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+            - "[CERTIFICATE_EXPIRATION] > 168h"
+
+        - name: K8s Operator (Robbinsdale)
+          group: Tailscale
+          url: https://robbinsdale-k8s-operator.keiretsu.ts.net:443/readyz
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+            - "[CERTIFICATE_EXPIRATION] > 168h"
+
+        - name: K8s Operator (StPetersburg)
+          group: Tailscale
+          url: https://stpetersburg-k8s-operator.keiretsu.ts.net:443/readyz
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+            - "[CERTIFICATE_EXPIRATION] > 168h"
