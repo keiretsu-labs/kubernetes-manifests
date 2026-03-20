@@ -38,6 +38,7 @@ spec:
     # Components to install beyond the default set
     components:
       - descheduler
+      - search
     
     # Pod Disruption Budget for HA components
     podDisruptionBudget:
@@ -145,6 +146,7 @@ spec:
       featureGates:
         PropagateDeps: true
         Failover: true
+        WorkloadAffinity: true
       extraCommandArgs:
         enable-no-execute-taint-eviction: "true"
       # Pod anti-affinity to spread across nodes
@@ -301,7 +303,37 @@ spec:
         rollingUpdate:
           maxUnavailable: 0
           maxSurge: 50%
-    
+
+    # Karmada Metrics Adapter - enables FederatedHPA with metrics from member clusters
+    metricsAdapter:
+      replicaCount: 1
+      image:
+        registry: docker.io
+        repository: karmada/karmada-metrics-adapter
+        tag: "v1.17.0"
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          memory: 256Mi
+
+    # Karmada Search - global resource querying across member clusters
+    search:
+      replicaCount: 1
+      image:
+        registry: docker.io
+        repository: karmada/karmada-search
+        tag: "v1.17.0"
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          memory: 256Mi
+
     # Kube Controller Manager (for Karmada) - HA with 2 replicas
     kubeControllerManager:
       replicaCount: 2

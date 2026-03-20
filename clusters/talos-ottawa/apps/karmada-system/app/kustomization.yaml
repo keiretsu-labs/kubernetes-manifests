@@ -10,3 +10,5 @@ resources:
   - tailscale-service.yaml
   - estimator.yaml
   - rebalance-cronjob.yaml
+  - etcd-backup-cronjob.yaml
+  - servicemonitors.yaml
