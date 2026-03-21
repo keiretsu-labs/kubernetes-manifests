@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: tailvoy-bridge
-          image: ghcr.io/rajsinghtech/tailvoy:bridge-067fdea
+          image: ghcr.io/rajsinghtech/tailvoy:bridge-223bba6
           imagePullPolicy: Always
           command:
             - tailvoy
