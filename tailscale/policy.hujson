@@ -429,9 +429,9 @@
 				],
 			},
 		},
-		// Bridge mode: allow members to reach bridge services
+		// Bridge mode: allow all to reach bridge services
 		{
-			"src": ["autogroup:member"],
+			"src": ["autogroup:member", "autogroup:tagged"],
 			"dst": ["tag:bridge-svc"],
 			"ip":  ["*"],
 		},
