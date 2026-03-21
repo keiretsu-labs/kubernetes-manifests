@@ -34,6 +34,19 @@ spec:
         - group: ''
           kind: Secret
           name: wildcard-${COMMON_DOMAIN//./-}
+    - name: wildcard-ts-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.ts.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-ts-keiretsu-top
     - name: ${COMMON_DOMAIN//./-}-https
       protocol: HTTPS
       port: 443
