@@ -25,35 +25,6 @@ spec:
             type: PathPrefix
             value: /
 ---
-# Handles Cloudflare-proxied requests for apex and www which arrive
-# with the original hostname, not the cdn subdomain.
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: garage-web-apex
-  namespace: garage
-spec:
-  parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: public
-      namespace: home
-  hostnames:
-    - "${COMMON_DOMAIN}"
-    - "www.${COMMON_DOMAIN}"
-  rules:
-    - filters:
-        - type: URLRewrite
-          urlRewrite:
-            hostname: "keiretsu.${COMMON_DOMAIN}"
-      backendRefs:
-        - name: garage
-          port: 3902
-      matches:
-        - path:
-            type: PathPrefix
-            value: /
----
 apiVersion: k8gb.absa.oss/v1beta1
 kind: Gslb
 metadata:
