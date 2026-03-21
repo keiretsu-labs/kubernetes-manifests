@@ -1,6 +1,7 @@
-# PropagationPolicy for distributed prometheus
-# Propagates HelmRelease + HelmRepository to all member clusters
-# Flux controllers on each cluster reconcile the HelmRelease
+# Floating prometheus: runs on exactly ONE cluster with automatic failover.
+# Karmada schedules to the highest-priority healthy cluster. If that cluster
+# becomes unreachable, the HelmRelease migrates to the next in the list.
+# Data is preserved via Volsync warm-cache PVCs on standby clusters.
 ---
 apiVersion: policy.karmada.io/v1alpha1
 kind: PropagationPolicy
@@ -16,31 +17,28 @@ spec:
       name: prometheus
 
   placement:
-    clusterAffinity:
-      clusterNames:
-        - talos-ottawa
-        - talos-robbinsdale
-        - talos-stpetersburg
+    clusterAffinities:
+      - affinityName: primary
+        clusterNames:
+          - talos-ottawa
+      - affinityName: secondary
+        clusterNames:
+          - talos-robbinsdale
+      - affinityName: tertiary
+        clusterNames:
+          - talos-stpetersburg
 
-    clusterTolerations:
-      - key: cluster.karmada.io/unreachable
-        effect: NoExecute
-        operator: Exists
-        tolerationSeconds: 60
-      - key: cluster.karmada.io/not-ready
-        effect: NoExecute
-        operator: Exists
-        tolerationSeconds: 60
-
-    replicaScheduling:
-      replicaSchedulingType: Duplicated
+    spreadConstraints:
+      - maxGroups: 1
+        minGroups: 1
+        spreadByField: cluster
 
   failover:
     application:
       decisionConditions:
-        tolerationSeconds: 60
-      purgeMode: Graciously
-      gracePeriodSeconds: 120
+        tolerationSeconds: 120
+      purgeMode: Gracefully
+      gracePeriodSeconds: 600
 
 # Propagate HelmRepository to flux-system namespace on all clusters
 ---
