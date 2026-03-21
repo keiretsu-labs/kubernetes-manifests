@@ -72,15 +72,14 @@ spec:
                 - name: ETCDCTL_API
                   value: "3"
               command:
-                - sh
-                - -c
-                - |
-                  etcdctl snapshot save /backup/snapshot.db \
-                    --endpoints=https://etcd-0.etcd.karmada-system.svc:2379 \
-                    --cacert=/etc/etcd/certs/server-ca.crt \
-                    --cert=/etc/etcd/certs/karmada.crt \
-                    --key=/etc/etcd/certs/karmada.key
-                  etcdctl snapshot status /backup/snapshot.db --write-out=table
+                - etcdctl
+                - snapshot
+                - save
+                - /backup/snapshot.db
+                - --endpoints=https://etcd-0.etcd.karmada-system.svc:2379
+                - --cacert=/etc/etcd/certs/server-ca.crt
+                - --cert=/etc/etcd/certs/karmada.crt
+                - --key=/etc/etcd/certs/karmada.key
               volumeMounts:
                 - name: etcd-certs
                   mountPath: /etc/etcd/certs
