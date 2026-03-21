@@ -1,0 +1,35 @@
+---
+# S3 credentials for CNPG backup/restore
+# Uses the existing keiretsu bucket via Flux variable substitution
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cnpg-test-s3-creds
+  namespace: keiretsu-top
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: ${KEIRETSU_S3_ACCESS_KEY}
+  AWS_SECRET_ACCESS_KEY: ${KEIRETSU_S3_SECRET_KEY}
+---
+# Barman Object Store for WAL archiving and base backups
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: cnpg-test-s3-store
+  namespace: keiretsu-top
+spec:
+  configuration:
+    destinationPath: s3://keiretsu/keiretsu-top/cnpg-test/
+    endpointURL: http://garage.garage.svc.cluster.local:3900
+    s3Credentials:
+      accessKeyId:
+        key: AWS_ACCESS_KEY_ID
+        name: cnpg-test-s3-creds
+      secretAccessKey:
+        key: AWS_SECRET_ACCESS_KEY
+        name: cnpg-test-s3-creds
+  instanceSidecarConfiguration:
+    env:
+      - name: AWS_DEFAULT_REGION
+        value: garage
+  retentionPolicy: 7d

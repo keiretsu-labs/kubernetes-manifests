@@ -1,0 +1,35 @@
+---
+# Primary CNPG cluster -> Ottawa only
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: cnpg-test-primary
+  namespace: keiretsu-top
+spec:
+  resourceSelectors:
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
+      name: cnpg-test
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: ScheduledBackup
+      name: cnpg-test-backup
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+---
+# Replica CNPG cluster -> Robbinsdale only
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: cnpg-test-replica
+  namespace: keiretsu-top
+spec:
+  resourceSelectors:
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
+      name: cnpg-test-replica
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-robbinsdale

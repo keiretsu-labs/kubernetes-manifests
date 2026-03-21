@@ -12,3 +12,4 @@ resources:
   - test-failover
   - gatus
   - prometheus
+  - cnpg-test
