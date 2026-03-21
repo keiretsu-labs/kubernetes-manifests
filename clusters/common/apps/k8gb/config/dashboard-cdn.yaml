@@ -115,6 +115,7 @@ spec:
       cluster-name-suffix: " (Ottawa)"
     domainFilters:
       - "killinit.cc"
+      - "keiretsu.top"
     gatewaySelector:
       matchLabels:
         external-dns: ts
@@ -132,6 +133,7 @@ spec:
       cluster-name-suffix: " (Robbinsdale)"
     domainFilters:
       - "lukehouge.com"
+      - "keiretsu.top"
     gatewaySelector:
       matchLabels:
         external-dns: ts
@@ -149,6 +151,7 @@ spec:
       cluster-name-suffix: " (St. Petersburg)"
     domainFilters:
       - "rajsingh.info"
+      - "keiretsu.top"
     gatewaySelector:
       matchLabels:
         external-dns: ts
