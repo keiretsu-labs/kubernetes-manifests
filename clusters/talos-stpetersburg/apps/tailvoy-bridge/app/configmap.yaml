@@ -18,14 +18,14 @@ data:
           tags: ["tag:bridge"]
 
       directions:
-        "keiretsu>tsjustworks":
+        "tsjustworks>keiretsu":
           serviceTags: ["tag:bridge-svc"]
 
       rules:
-        - from: keiretsu
-          to: tsjustworks
+        - from: tsjustworks
+          to: keiretsu
           discover:
-            tags: ["tag:singh360"]
+            tags: ["tag:aperture"]
             ports: [22, 80, 443]
 
       pollInterval: 30s
