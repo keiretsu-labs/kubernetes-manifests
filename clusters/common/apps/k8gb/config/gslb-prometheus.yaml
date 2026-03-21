@@ -36,4 +36,4 @@ spec:
   strategy:
     type: failover
     dnsTtlSeconds: 30
-    primaryGeoTag: ottawa
+    primaryGeoTag: robbinsdale

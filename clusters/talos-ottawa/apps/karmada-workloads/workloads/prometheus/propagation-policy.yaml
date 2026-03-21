@@ -20,10 +20,10 @@ spec:
     clusterAffinities:
       - affinityName: primary
         clusterNames:
-          - talos-ottawa
+          - talos-robbinsdale
       - affinityName: secondary
         clusterNames:
-          - talos-robbinsdale
+          - talos-ottawa
       - affinityName: tertiary
         clusterNames:
           - talos-stpetersburg
