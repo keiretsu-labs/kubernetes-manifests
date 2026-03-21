@@ -62,6 +62,20 @@ spec:
           subtitle: "Private Mesh Network"
           tagstyle: "is-info"
           url: "https://login.tailscale.com/admin/machines"
+      - parameters:
+          name: "GSLB TS Gateway"
+          logo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/globe.svg"
+          subtitle: "Tailscale CGNAT round-robin"
+          tag: "k8gb"
+          tagstyle: "is-success"
+          url: "https://keiretsu.ts.${COMMON_DOMAIN}/"
+      - parameters:
+          name: "GSLB Public Gateway"
+          logo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/globe.svg"
+          subtitle: "Public CDN round-robin"
+          tag: "k8gb"
+          tagstyle: "is-warning"
+          url: "https://keiretsu.cdn.${COMMON_DOMAIN}/"
     - parameters:
         name: "Talos Machine Logs"
         icon: "fas fa-scroll"

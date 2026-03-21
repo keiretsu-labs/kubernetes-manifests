@@ -58,6 +58,24 @@ spec:
       target: "_blank"
     services:
     - parameters:
+        name: "Infrastructure"
+        icon: "fas fa-server"
+      items:
+      - parameters:
+          name: "GSLB Public Gateway"
+          logo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/globe.svg"
+          subtitle: "Public CDN round-robin"
+          tag: "k8gb"
+          tagstyle: "is-success"
+          url: "https://keiretsu.cdn.${COMMON_DOMAIN}/"
+      - parameters:
+          name: "GSLB TS Gateway"
+          logo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/globe.svg"
+          subtitle: "Tailscale CGNAT round-robin"
+          tag: "k8gb"
+          tagstyle: "is-info"
+          url: "https://keiretsu.ts.${COMMON_DOMAIN}/"
+    - parameters:
         name: "Media"
         icon: "fas fa-tv"
       items:
