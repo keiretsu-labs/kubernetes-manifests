@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: tsflow
-        image: ghcr.io/rajsinghtech/tsflow:v1.3.2
+        image: ghcr.io/rajsinghtech/tsflow:v1.4.0
         imagePullPolicy: Always
         ports:
         - name: http
