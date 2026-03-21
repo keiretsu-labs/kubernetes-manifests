@@ -49,6 +49,8 @@
 		"tag:debug-granted":    ["tag:tailgrant-worker", "group:superuser",],
 		"tag:raj-workspace":    ["tag:k8s-operator", "rajsinghtech@github",],
 		"tag:bubbles":          ["tag:bubbles", "rajsinghtech@github", "kbpersonal@github"],
+		"tag:bridge":           ["autogroup:admin"],
+		"tag:bridge-svc":       ["tag:bridge"],
 	},
 	"ipsets": {
 		"ipset:robbinsdale": [
@@ -108,6 +110,7 @@
 			"svc:http": ["tag:k8s"],
 			"svc:http-test": ["tag:k8s"],
 			"svc:tcp": ["tag:k8s"],
+			"tag:bridge-svc": ["tag:bridge"],
 		},
 	},
 	"ssh": [
@@ -425,6 +428,18 @@
 					},
 				],
 			},
+		},
+		// Bridge mode: allow members to reach bridge services
+		{
+			"src": ["autogroup:member"],
+			"dst": ["tag:bridge-svc"],
+			"ip":  ["*"],
+		},
+		// Bridge mode: allow bridge nodes to reach tagged devices
+		{
+			"src": ["tag:bridge"],
+			"dst": ["tag:k8s", "tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:aurora"],
+			"ip":  ["*"],
 		},
 	],
 	"nodeAttrs": [
