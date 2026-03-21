@@ -20,6 +20,9 @@ data:
       directions:
         "tsjustworks>keiretsu":
           serviceTags: ["tag:bridge-svc"]
+          dns:
+            enabled: true
+            splitDns: true
 
       rules:
         - from: tsjustworks
