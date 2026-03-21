@@ -77,9 +77,9 @@ spec:
                 - |
                   etcdctl snapshot save /backup/snapshot.db \
                     --endpoints=https://etcd-0.etcd.karmada-system.svc:2379 \
-                    --cacert=/etc/etcd/certs/etcd-ca.crt \
-                    --cert=/etc/etcd/certs/etcd-client.crt \
-                    --key=/etc/etcd/certs/etcd-client.key
+                    --cacert=/etc/etcd/certs/server-ca.crt \
+                    --cert=/etc/etcd/certs/karmada.crt \
+                    --key=/etc/etcd/certs/karmada.key
                   etcdctl snapshot status /backup/snapshot.db --write-out=table
               volumeMounts:
                 - name: etcd-certs
@@ -129,12 +129,12 @@ spec:
               secret:
                 secretName: karmada-cert
                 items:
-                  - key: etcd-client.crt
-                    path: etcd-client.crt
-                  - key: etcd-client.key
-                    path: etcd-client.key
-                  - key: etcd-ca.crt
-                    path: etcd-ca.crt
+                  - key: karmada.crt
+                    path: karmada.crt
+                  - key: karmada.key
+                    path: karmada.key
+                  - key: server-ca.crt
+                    path: server-ca.crt
             - name: backup
               emptyDir: {}
             - name: tmp
