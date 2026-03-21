@@ -114,10 +114,10 @@ spec:
       location: "ottawa"
       cluster-name-suffix: " (Ottawa)"
     domainFilters:
-      - "keiretsu.top"
+      - "cdn.keiretsu.top"
     gatewaySelector:
       matchLabels:
-        external-dns: ts
+        gateway: public
     ingressSelector:
       matchLabels:
         noexist: "true"
@@ -131,10 +131,10 @@ spec:
       location: "robbinsdale"
       cluster-name-suffix: " (Robbinsdale)"
     domainFilters:
-      - "keiretsu.top"
+      - "cdn.keiretsu.top"
     gatewaySelector:
       matchLabels:
-        external-dns: ts
+        gateway: public
     ingressSelector:
       matchLabels:
         noexist: "true"
@@ -148,10 +148,10 @@ spec:
       location: "stpetersburg"
       cluster-name-suffix: " (St. Petersburg)"
     domainFilters:
-      - "keiretsu.top"
+      - "cdn.keiretsu.top"
     gatewaySelector:
       matchLabels:
-        external-dns: ts
+        gateway: public
     ingressSelector:
       matchLabels:
         noexist: "true"
