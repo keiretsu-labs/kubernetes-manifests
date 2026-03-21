@@ -8,5 +8,6 @@ resources:
   - ./gslb-prometheus.yaml
   - ./garage-keiretsu-top.yaml
   - ./volsync-prometheus.yaml
+  - ./cnpg-test.yaml
   - ./cnames.yaml
   - ./prometheusrules.yaml
