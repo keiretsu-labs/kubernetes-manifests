@@ -26,12 +26,7 @@ spec:
     envFrom:
       - secretRef:
           name: gatus
-      # - secretRef:
-      #     name: gatus-postgres-app
     config:
-      #storage:
-        #type: postgres
-        #path: "$${uri}"
       alerting:
         discord:
           webhook-url: "$${discord-webhook-url}"
@@ -59,12 +54,6 @@ spec:
               send-on-resolved: true
 
       endpoints:
-          conditions:
-            - "[CONNECTED] == true"
-            - "[RESPONSE_TIME] < 1000"
-          alerts:
-            - type: discord
-              send-on-resolved: true
         - name: Kubernetes API
           group: kubernetes
           url: https://k8s.robbinsdale.local:6443/readyz
@@ -240,4 +229,4 @@ spec:
             - "[CERTIFICATE_EXPIRATION] > 168h"
           alerts:
             - type: discord
-              send-on-resolved: true 
+              send-on-resolved: true
