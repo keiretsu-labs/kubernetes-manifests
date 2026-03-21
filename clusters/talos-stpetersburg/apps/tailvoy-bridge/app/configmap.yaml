@@ -26,7 +26,7 @@ data:
           to: keiretsu
           discover:
             tags: ["tag:aperture"]
-            ports: [22, 80, 443]
+            ports: [80, 443]
 
       pollInterval: 30s
       dialTimeout: 10s
