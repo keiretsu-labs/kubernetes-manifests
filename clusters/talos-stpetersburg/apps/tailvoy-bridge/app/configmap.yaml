@@ -9,12 +9,12 @@ data:
     bridge:
       tailnets:
         keiretsu:
-          clientId: ${KEIRETSU_TS_CLIENT_ID}
-          clientSecret: ${KEIRETSU_TS_CLIENT_SECRET}
+          clientId: $${KEIRETSU_TS_CLIENT_ID}
+          clientSecret: $${KEIRETSU_TS_CLIENT_SECRET}
           tags: ["tag:bridge"]
         tsjustworks:
-          clientId: ${TSJUSTWORKS_TS_CLIENT_ID}
-          clientSecret: ${TSJUSTWORKS_TS_CLIENT_SECRET}
+          clientId: $${TSJUSTWORKS_TS_CLIENT_ID}
+          clientSecret: $${TSJUSTWORKS_TS_CLIENT_SECRET}
           tags: ["tag:bridge"]
 
       directions:
