@@ -1,6 +1,8 @@
 {
-    "keiretsu.top": [
-      "svc:ottawa-home-envoy-gateway"
+    "ts.keiretsu.top": [
+      "svc:ottawa-k8gb-coredns",
+      "svc:robbinsdale-k8gb-coredns",
+      "svc:stpetersburg-k8gb-coredns"
     ],
     "rajsingh.info": [
       "svc:stpetersburg-home-envoy-gateway"

@@ -24,6 +24,9 @@ spec:
         - parentZone: "keiretsu.top"
           loadBalancedZone: "cdn.keiretsu.top"
           dnsZoneNegTTL: 30
+        - parentZone: "keiretsu.top"
+          loadBalancedZone: "ts.keiretsu.top"
+          dnsZoneNegTTL: 30
       edgeDNSServers:
         - "1.1.1.1"
       nsRecordTTL: 30

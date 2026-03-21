@@ -6,6 +6,7 @@ resources:
   - ./gslb.yaml
   - ./gslb-gatus.yaml
   - ./gslb-prometheus.yaml
+  - ./gslb-ts-gateway.yaml
   - ./garage-keiretsu-top.yaml
   - ./volsync-prometheus.yaml
   - ./cnpg-test.yaml
