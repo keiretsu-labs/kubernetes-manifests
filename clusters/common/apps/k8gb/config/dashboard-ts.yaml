@@ -75,7 +75,6 @@ spec:
       location: "ottawa"
       cluster-name-suffix: " (Ottawa)"
     domainFilters:
-      - "killinit.cc"
       - "keiretsu.top"
     gatewaySelector:
       matchLabels:
@@ -93,7 +92,6 @@ spec:
       location: "robbinsdale"
       cluster-name-suffix: " (Robbinsdale)"
     domainFilters:
-      - "lukehouge.com"
       - "keiretsu.top"
     gatewaySelector:
       matchLabels:
@@ -111,7 +109,6 @@ spec:
       location: "stpetersburg"
       cluster-name-suffix: " (St. Petersburg)"
     domainFilters:
-      - "rajsingh.info"
       - "keiretsu.top"
     gatewaySelector:
       matchLabels:
