@@ -17,6 +17,10 @@ spec:
     enabled: true
     source: cnpg-test-s3
 
+  bootstrap:
+    recovery:
+      source: cnpg-test-s3
+
   storage:
     size: 5Gi
   monitoring:
