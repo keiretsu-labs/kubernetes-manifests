@@ -24,6 +24,20 @@ spec:
       read: true
       write: true
 ---
+# PVC for prometheus data - pre-created on all clusters so volsync
+# warm cache can restore into it on standby clusters before Karmada
+# propagates the HelmRelease during failover.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-server
+  namespace: keiretsu-top
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 10Gi
+---
 # Backup: restic snapshot of prometheus PVC every 6 hours
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource

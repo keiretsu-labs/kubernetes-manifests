@@ -27,7 +27,7 @@ spec:
       retentionSize: 8GB
       persistentVolume:
         enabled: true
-        size: 10Gi
+        existingClaim: prometheus-server
       resources:
         requests:
           cpu: 50m
