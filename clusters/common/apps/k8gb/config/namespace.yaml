@@ -5,5 +5,6 @@ metadata:
   name: keiretsu-top
   labels:
     kustomize.toolkit.fluxcd.io/prune: disabled
-    volsync.backube/privileged-movers: "true"
     pod-security.kubernetes.io/enforce: privileged
+  annotations:
+    volsync.backube/privileged-movers: "true"
