@@ -40,7 +40,7 @@ spec:
       backendRefs:
         - group: ""
           kind: Service
-          name: garage-gateway
+          name: garage
           port: 3902
           weight: 1
       matches:
