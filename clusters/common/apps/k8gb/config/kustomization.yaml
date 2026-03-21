@@ -10,5 +10,6 @@ resources:
   - ./garage-keiretsu-top.yaml
   - ./volsync-prometheus.yaml
   - ./cnpg-test.yaml
+  - ./dashboard-cdn.yaml
   - ./cnames.yaml
   - ./prometheusrules.yaml

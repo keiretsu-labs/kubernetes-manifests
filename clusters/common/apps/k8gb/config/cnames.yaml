@@ -29,3 +29,10 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    - dnsName: "home.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "home.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
