@@ -429,10 +429,10 @@
 				],
 			},
 		},
-		// Bridge mode: allow all to reach bridge services
+		// Bridge mode: allow all to reach bridge services and bridge nodes
 		{
 			"src": ["autogroup:member", "autogroup:tagged"],
-			"dst": ["tag:bridge-svc"],
+			"dst": ["tag:bridge-svc", "tag:bridge"],
 			"ip":  ["*"],
 		},
 		// Bridge mode: allow bridge nodes to reach tagged devices
