@@ -48,12 +48,10 @@ spec:
 
     # Override default scrape configs to only scrape what we need
     # The chart defaults discover every pod/service in the cluster
+    # Disable all default scrape configs to keep this lightweight
     serverFiles:
       prometheus.yml:
         scrape_configs:
-          - job_name: prometheus
-            static_configs:
-              - targets: ["localhost:9090"]
           - job_name: gatus
             metrics_path: /metrics
             static_configs:
