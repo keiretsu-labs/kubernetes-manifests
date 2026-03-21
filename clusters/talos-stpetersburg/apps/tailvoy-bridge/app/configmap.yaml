@@ -20,27 +20,13 @@ data:
       directions:
         "keiretsu>tsjustworks":
           serviceTags: ["tag:bridge-svc"]
-          dns:
-            enabled: true
-            splitDns: true
-        "tsjustworks>keiretsu":
-          serviceTags: ["tag:bridge-svc"]
-          dns:
-            enabled: true
-            splitDns: true
 
       rules:
         - from: keiretsu
           to: tsjustworks
           discover:
-            tags: ["tag:k8s", "tag:stpetersburg"]
-            ports: [22, 80, 443, 8080]
-
-        - from: tsjustworks
-          to: keiretsu
-          discover:
-            tags: ["tag:bridge"]
-            ports: [22, 80, 443, 8080]
+            tags: ["tag:singh360"]
+            ports: [22, 80, 443]
 
       pollInterval: 30s
       dialTimeout: 10s
