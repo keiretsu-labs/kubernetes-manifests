@@ -1,20 +1,41 @@
 ---
 # GSLB for the Tailscale home gateway via ts.keiretsu.top zone.
-# References the ts gateway's envoy Service directly so k8gb reads
-# Tailscale CGNAT IPs from service.status.loadBalancer.ingress.
-# No exposed-hostnames annotation = IPs come from service status.
+# No exposed-hostnames annotation so k8gb reads the Tailscale CGNAT IP
+# directly from gateway.status.addresses instead of resolving via DNS.
+# tsddns configures Tailscale split DNS to route ts.keiretsu.top queries
+# to k8gb CoreDNS (Tailscale LB), returning health-checked CGNAT IPs.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ts-gateway-cdn
+  namespace: home
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+  hostnames:
+    - "keiretsu.ts.${COMMON_DOMAIN}"
+  rules:
+    - backendRefs:
+        - name: dashboard-ts-homer
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
 apiVersion: k8gb.absa.oss/v1beta1
 kind: Gslb
 metadata:
   name: ts-gateway
-  namespace: envoy-gateway-system
-  annotations:
-    k8gb.io/hostname: "keiretsu.ts.${COMMON_DOMAIN}"
+  namespace: home
 spec:
   resourceRef:
-    apiVersion: v1
-    kind: Service
-    name: envoy-home-ts-bf7a3964
+    apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    name: ts-gateway-cdn
   strategy:
     type: roundRobin
     dnsTtlSeconds: 30
