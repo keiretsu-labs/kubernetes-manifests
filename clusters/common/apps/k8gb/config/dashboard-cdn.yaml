@@ -109,10 +109,6 @@ spec:
     secretRef:
       name: external-clusters-kubeconfig
       key: kubeconfig
-    clusterLabels:
-      cluster: "ottawa"
-      location: "ottawa"
-      cluster-name-suffix: " (Ottawa)"
     domainFilters:
       - "cdn.keiretsu.top"
     gatewaySelector:
@@ -126,10 +122,6 @@ spec:
     secretRef:
       name: external-clusters-kubeconfig
       key: kubeconfig
-    clusterLabels:
-      cluster: "robbinsdale"
-      location: "robbinsdale"
-      cluster-name-suffix: " (Robbinsdale)"
     domainFilters:
       - "cdn.keiretsu.top"
     gatewaySelector:
@@ -143,10 +135,6 @@ spec:
     secretRef:
       name: external-clusters-kubeconfig
       key: kubeconfig
-    clusterLabels:
-      cluster: "stpetersburg"
-      location: "stpetersburg"
-      cluster-name-suffix: " (St. Petersburg)"
     domainFilters:
       - "cdn.keiretsu.top"
     gatewaySelector:
