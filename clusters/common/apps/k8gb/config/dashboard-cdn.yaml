@@ -173,10 +173,6 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: ts
-      namespace: home
-    - group: gateway.networking.k8s.io
-      kind: Gateway
       name: public
       namespace: home
   hostnames:
