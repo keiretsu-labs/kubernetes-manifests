@@ -11,5 +11,6 @@ resources:
   - ./volsync-prometheus.yaml
   - ./cnpg-test.yaml
   - ./dashboard-cdn.yaml
+  - ./dashboard-ts.yaml
   - ./cnames.yaml
   - ./prometheusrules.yaml
