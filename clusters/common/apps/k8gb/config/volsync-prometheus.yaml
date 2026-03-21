@@ -17,7 +17,7 @@ spec:
     includeEndpoint: false
     includeRegion: false
     additionalData:
-      RESTIC_REPOSITORY: "s3:http://${COMMON_S3_ENDPOINT}/keiretsu/${LOCATION}/keiretsu-top/prometheus"
+      RESTIC_REPOSITORY: "s3:http://${COMMON_S3_ENDPOINT}/keiretsu/shared/keiretsu-top/prometheus"
       RESTIC_PASSWORD: "${COMMON_RESTIC_SECRET}"
   bucketPermissions:
     - globalAlias: keiretsu
@@ -45,12 +45,10 @@ spec:
       yearly: 1
     copyMethod: Direct
 ---
-# Restore target: keeps latest VolumeSnapshot from restic backup
-# On clusters with VolumeSnapshot support (Ottawa, Robbinsdale), this
-# creates a snapshot that can be used as a PVC dataSource for recovery.
-# On StPetersburg (no snapshot support), this will remain idle.
-# To restore: create a PVC with dataSourceRef pointing to this resource,
-# or use copyMethod: Direct with destinationPVC for manual restore.
+# Warm cache: restores latest restic snapshot into the prometheus PVC
+# every 6 hours (offset 3h from backup). On standby clusters this keeps
+# the PVC fresh so prometheus can start immediately on failover.
+# On the active cluster the restore is a no-op (same data).
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationDestination
 metadata:
@@ -58,7 +56,7 @@ metadata:
   namespace: keiretsu-top
 spec:
   trigger:
-    manual: standby
+    schedule: "0 3,9,15,21 * * *"
   restic:
     repository: restic-prometheus-data
     copyMethod: Direct
