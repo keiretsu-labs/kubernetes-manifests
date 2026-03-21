@@ -12,6 +12,8 @@ spec:
       namespace: home
   hostnames:
     - "keiretsu.cdn.${COMMON_DOMAIN}"
+    - "${COMMON_DOMAIN}"
+    - "www.${COMMON_DOMAIN}"
   rules:
     - filters:
         - type: URLRewrite
