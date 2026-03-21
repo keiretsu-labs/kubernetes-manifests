@@ -31,9 +31,9 @@ spec:
       resources:
         requests:
           cpu: 50m
-          memory: 512Mi
+          memory: 256Mi
         limits:
-          memory: 1Gi
+          memory: 512Mi
       extraFlags:
         - "web.enable-lifecycle"
 
@@ -46,8 +46,15 @@ spec:
     prometheus-pushgateway:
       enabled: false
 
-    extraScrapeConfigs: |
-      - job_name: gatus
-        metrics_path: /metrics
-        static_configs:
-          - targets: ["gatus.keiretsu-top:80"]
+    # Override default scrape configs to only scrape what we need
+    # The chart defaults discover every pod/service in the cluster
+    serverFiles:
+      prometheus.yml:
+        scrape_configs:
+          - job_name: prometheus
+            static_configs:
+              - targets: ["localhost:9090"]
+          - job_name: gatus
+            metrics_path: /metrics
+            static_configs:
+              - targets: ["gatus.keiretsu-top:80"]
