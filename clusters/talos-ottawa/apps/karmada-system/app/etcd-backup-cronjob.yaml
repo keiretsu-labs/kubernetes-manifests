@@ -62,7 +62,7 @@ spec:
               type: RuntimeDefault
           initContainers:
             - name: snapshot
-              image: bitnami/etcd:3.5
+              image: registry.k8s.io/etcd:3.6.8-0
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
