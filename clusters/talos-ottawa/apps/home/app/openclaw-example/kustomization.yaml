@@ -6,3 +6,4 @@ resources:
   - secret.yaml
   - openclawinstance.yaml
   - httproute.yaml
+  - networkpolicy.yaml
