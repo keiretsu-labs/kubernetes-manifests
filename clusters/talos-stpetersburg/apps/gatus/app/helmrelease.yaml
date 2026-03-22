@@ -59,3 +59,34 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        # === Storage: Garage Cross-Cluster ===
+        - name: Garage Local (StPetersburg)
+          group: storage
+          url: tcp://garage.garage:3900
+          interval: 60s
+          conditions:
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Garage Ottawa
+          group: storage
+          url: tcp://ottawa-garage.garage:3900
+          interval: 60s
+          conditions:
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Garage Robbinsdale
+          group: storage
+          url: tcp://robbinsdale-garage.garage:3900
+          interval: 60s
+          conditions:
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true

@@ -27,11 +27,7 @@ spec:
             name: alertname
             value: ProbeFailed
         receiver: blackhole
-      - matchers:
-          - matchType: "="
-            name: alertname
-            value: ProbeSlowResponse
-        receiver: blackhole
+      # Note: ProbeSlowResponse is intentionally NOT silenced - slow cross-cluster responses matter
       - matchers:
           - matchType: "="
             name: alertname
