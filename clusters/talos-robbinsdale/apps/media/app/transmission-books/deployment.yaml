@@ -18,6 +18,9 @@ spec:
       containers:
       - name: transmission-books
         image: haugene/transmission-openvpn
+        env:
+        - name: OPENVPN_ENABLED
+          value: "false"
         ports:
         - name: http
           containerPort: 9091
