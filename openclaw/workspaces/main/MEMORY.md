@@ -116,6 +116,7 @@ Available contexts: `ottawa`, `robbinsdale`, `stpetersburg`
 | PrometheusTargetDown | Check endpoints/serviceMonitor config | Stale static IPs |
 | SmartDeviceHighTemperature | Check smartctl-exporter, node hardware | Real temp or sensor |
 | PodCrashLoopBackOff | `kubectl describe pod`, check logs | App error, OOM, liveness probe |
+| UnexpectedAdmissionError | Check replica count and node resources | Pod schedule failure; service may still be available |
 | FluxReconcileFailure | `flux get kustomization`, check events | Git issue, SOPS decrypt fail |
 
 ## Review and Session Patterns
