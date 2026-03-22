@@ -435,6 +435,26 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        - name: Garage Robbinsdale (Cross-Cluster)
+          group: Storage
+          url: tcp://robbinsdale-garage.garage:3900
+          interval: 60s
+          conditions:
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Garage StPetersburg (Cross-Cluster)
+          group: Storage
+          url: tcp://stpetersburg-garage.garage:3900
+          interval: 60s
+          conditions:
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
         # === NEW: Monitoring Stack ===
         - name: Prometheus
           group: Monitoring
