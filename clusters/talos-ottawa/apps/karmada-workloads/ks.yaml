@@ -65,6 +65,11 @@ spec:
   kubeConfig:
     secretRef:
       name: karmada-kubeconfig
+  postBuild:
+    substituteFrom:
+      - kind: Secret
+        name: cluster-secrets
+        namespace: flux-system
   path: ./clusters/talos-ottawa/apps/karmada-workloads/workloads
   prune: true
   sourceRef:
