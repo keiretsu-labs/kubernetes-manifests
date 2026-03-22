@@ -27,8 +27,8 @@ spec:
     config:
       alerting:
         discord:
-          # Raj's Discord channel: 1321884440179245137
-          webhook-url: "https://discord.com/api/webhooks/1321884440179245137/placeholder"
+          # Robbinsdale Discord webhook
+          webhook-url: "https://discord.com/api/webhooks/1321884480234852453/Jg5pzoAS6igqV1aqHnP14rho6Uvb7VhTY0-wY8Mr7lkkvcxoB_NjOYVXUi4ZKMPAtN8f"
           failure-threshold: 3
           success-threshold: 2
       ui:
@@ -98,17 +98,6 @@ spec:
             - type: discord
               send-on-resolved: true
 
-        - name: Garage S3 (Local)
-          group: Storage
-          url: "tcp://garage.garage:3900"
-          interval: 60s
-          conditions:
-            - "[CONNECTED] == true"
-            - "[RESPONSE_TIME] < 1000"
-          alerts:
-            - type: discord
-              send-on-resolved: true
-
         - name: Garage S3 (Ottawa)
           group: Storage
           url: "tcp://ottawa-garage.garage:3900"
@@ -144,7 +133,7 @@ spec:
 
         - name: Zot Registry (CDN)
           group: Registry
-          url: https://zot.cdn.keiretsu.top
+          url: https://oci.keiretsu.ts.net
           interval: 60s
           client:
             dns-resolver: "tcp://8.8.8.8:53"
