@@ -18,13 +18,18 @@ spec:
       containers:
       - name: transmission-books
         image: linuxserver/transmission
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
         ports:
         - name: http
           containerPort: 9091
           protocol: TCP
         volumeMounts:
         - name: data-volume
-          mountPath: /data
+          mountPath: /downloads
         - name: config-volume
           mountPath: /config
       volumes:
