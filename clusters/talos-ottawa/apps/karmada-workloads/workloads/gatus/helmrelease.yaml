@@ -133,8 +133,8 @@ spec:
 
         - name: Zot Registry
           group: Registry
-          # Use internal service - Zot returns 401 when auth is bypassed but working
-          url: http://zot-public.zot:5000
+          # Use internal service - Zot returns 401 when auth is required
+          url: http://zot-public.zot:5000/v2/_catalog
           interval: 60s
           conditions:
             - "[STATUS] == 401"
