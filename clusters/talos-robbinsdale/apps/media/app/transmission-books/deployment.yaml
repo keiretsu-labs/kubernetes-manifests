@@ -19,8 +19,16 @@ spec:
       - name: transmission-books
         image: haugene/transmission-openvpn
         env:
-        - name: OPENVPN_ENABLED
-          value: "false"
+        - name: OPENVPN_PROVIDER
+          value: "MULLVAD"
+        - name: OPENVPN_CONFIG
+          value: "any"
+        - name: OPENVPN_USERNAME
+          value: "none"
+        - name: OPENVPN_PASSWORD
+          value: "none"
+        - name: LOCAL_NETWORK
+          value: "10.0.0.0/8"
         ports:
         - name: http
           containerPort: 9091
