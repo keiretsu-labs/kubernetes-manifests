@@ -62,8 +62,6 @@ spec:
       - matchers:
           - matchType: "="
             name: alertname
-            value: TargetDown
-        receiver: blackhole
       - matchers:
           - matchType: "="
             name: alertname
