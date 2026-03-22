@@ -56,6 +56,7 @@ Skills provide structured knowledge and diagnostic sequences. Use them when the 
 | `architecture-design` | System design, component evaluation, refactor planning |
 | `debug-troubleshooting` | Root cause analysis for complex multi-step failures |
 | `manifest-lint` | Validate JSON/YAML/kustomize output, check resource references |
+| `media-requests` | Search, request, and manage media via Jellyseerr API |
 | `memory-management` | Session and context management — compaction, memory files, artifact handoff |
 | `config-audit` | Audit openclaw.json, deployment.yaml, kustomization files |
 | `ci-diagnosis` | GitHub Actions failures, workflow errors, build/push issues |
