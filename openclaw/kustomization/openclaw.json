@@ -49,8 +49,8 @@
         "api": "anthropic-messages",
         "models": [
           {
-            "id": "MiniMax-M2.5",
-            "name": "MiniMax M2.5",
+            "id": "MiniMax-M2.7",
+            "name": "MiniMax M2.7",
             "input": [
               "text"
             ],
@@ -65,13 +65,13 @@
   "agents": {
     "defaults": {
       "workspace": "/home/node/.openclaw/workspaces/main",
-      "model": "aperture/MiniMax-M2.5",
+      "model": "aperture/MiniMax-M2.7",
       "userTimezone": "America/New_York",
       "timeoutSeconds": 600,
       "maxConcurrent": 3,
       "subagents": {
         "maxConcurrent": 16,
-        "model": "aperture/MiniMax-M2.5"
+        "model": "aperture/MiniMax-M2.7"
       },
       "compaction": {
         "memoryFlush": {
@@ -105,10 +105,10 @@
           "name": "OpenClaw",
           "emoji": "🦞"
         },
-        "model": "aperture/MiniMax-M2.5",
+        "model": "aperture/MiniMax-M2.7",
         "heartbeat": {
           "every": "30m",
-          "model": "aperture/MiniMax-M2.5",
+          "model": "aperture/MiniMax-M2.7",
           "target": "discord",
           "activeHours": {
             "start": "06:00",
