@@ -112,7 +112,7 @@ spec:
               {{- end }}
             {{- end }}
           sendResolved: true
-          title: '[${CLUSTER_NAME}] [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.alertname }}'
+          title: '[Alerts] [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.alertname }}'
       name: discord
   inhibitRules:
     - equal:
