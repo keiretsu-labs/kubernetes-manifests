@@ -114,3 +114,25 @@ spec:
           auth:
             authType: htpasswd
             authValue: "${ZOT_AUTH}"
+
+        - name: Garage S3 (CDN)
+          group: Storage
+          url: https://keiretsu.cdn.keiretsu.top
+          interval: 60s
+          client:
+            dns-resolver: "tcp://8.8.8.8:53"
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+            - "[CERTIFICATE_EXPIRATION] > 168h"
+
+        - name: Homer Dashboard (CDN)
+          group: CDN
+          url: https://home.cdn.keiretsu.top
+          interval: 60s
+          client:
+            dns-resolver: "tcp://8.8.8.8:53"
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+            - "[CERTIFICATE_EXPIRATION] > 168h"
