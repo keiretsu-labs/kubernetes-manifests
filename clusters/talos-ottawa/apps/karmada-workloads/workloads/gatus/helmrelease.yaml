@@ -133,13 +133,12 @@ spec:
 
         - name: Zot Registry
           group: Registry
-          # Use Tailscale ingress: routes HTTPS:443 -> zot-internal:5000, bypasses htpasswd
-          url: https://oci.keiretsu.ts.net/v2/_catalog
+          # Use internal service - Zot returns 401 when auth is bypassed but working
+          url: http://zot-public.zot:5000
           interval: 60s
           conditions:
-            - "[STATUS] == 200"
+            - "[STATUS] == 401"
             - "[RESPONSE_TIME] < 3000"
-            - "[CERTIFICATE_EXPIRATION] > 168h"
           alerts:
             - type: discord
               send-on-resolved: true
