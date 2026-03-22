@@ -13,7 +13,7 @@ Current beliefs about infrastructure and operations. Dwight reads this to shape 
 
 - Cluster stability across all three sites
 - Tailscale operator integration maturity (tsdb, peer-relay, CSI provider)
-- OpenClaw self-improvement loop (workspace, skills, memory)
+- OpenClaw self-improvement loop (workspace, skills, memory) — media-requests routing complete (PR #963)
 - AI/ML workload expansion on St. Petersburg
 
 ## What Matters
