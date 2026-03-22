@@ -46,6 +46,25 @@ stringData:
             url: "https://stpetersburg.keiretsu.top"
             ip: "stpetersburg.keiretsu.top"
             host: "www.keiretsu.top"
+      - recordName: "status.keiretsu.top"
+        provider: "cloudflare"
+        ttl: 120
+        healthChecks:
+          timeout: "5s"
+          attempts: 3
+        endpoints:
+          - name: "ottawa"
+            url: "https://ottawa.keiretsu.top/status"
+            ip: "ottawa.keiretsu.top"
+            host: "status.keiretsu.top"
+          - name: "robbinsdale"
+            url: "https://robbinsdale.keiretsu.top/status"
+            ip: "robbinsdale.keiretsu.top"
+            host: "status.keiretsu.top"
+          - name: "stpetersburg"
+            url: "https://stpetersburg.keiretsu.top/status"
+            ip: "stpetersburg.keiretsu.top"
+            host: "status.keiretsu.top"
     providers:
       cloudflare:
         cloudflare:
