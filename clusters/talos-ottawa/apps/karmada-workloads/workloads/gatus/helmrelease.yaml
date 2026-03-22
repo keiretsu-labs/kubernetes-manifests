@@ -28,12 +28,27 @@ spec:
       - secretRef:
           name: gatus-zot-auth
     config:
+      alerting:
+        discord:
+          webhook-url: "$${discord-webhook-url}"
+          failure-threshold: 3
+          success-threshold: 2
       ui:
         title: "Keiretsu Global Status"
         description: "Distributed status page - served via k8gb GSLB"
         header: "Keiretsu Infrastructure"
         logo: "https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png"
         link: "https://github.com/keiretsu-labs/kubernetes-manifests"
+
+      external-endpoints:
+        - name: Heartbeat
+          group: Alertmanager
+          token: "${GATUS_HEARTBEAT_TOKEN}"
+          heartbeat:
+            interval: 5m
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
       endpoints:
         - name: Internet
@@ -45,6 +60,9 @@ spec:
           conditions:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: K8s Operator (Ottawa)
           group: Tailscale
@@ -54,6 +72,9 @@ spec:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 2000"
             - "[CERTIFICATE_EXPIRATION] > 168h"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: K8s Operator (Robbinsdale)
           group: Tailscale
@@ -63,6 +84,9 @@ spec:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 2000"
             - "[CERTIFICATE_EXPIRATION] > 168h"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: K8s Operator (StPetersburg)
           group: Tailscale
@@ -72,6 +96,9 @@ spec:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 2000"
             - "[CERTIFICATE_EXPIRATION] > 168h"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: Garage S3 (Local)
           group: Storage
@@ -79,6 +106,9 @@ spec:
           interval: 60s
           conditions:
             - "[CONNECTION] == true"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: Garage S3 (Ottawa)
           group: Storage
@@ -86,6 +116,9 @@ spec:
           interval: 60s
           conditions:
             - "[CONNECTION] == true"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: Garage S3 (Robbinsdale)
           group: Storage
@@ -93,6 +126,9 @@ spec:
           interval: 60s
           conditions:
             - "[CONNECTION] == true"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: Garage S3 (StPetersburg)
           group: Storage
@@ -100,6 +136,9 @@ spec:
           interval: 60s
           conditions:
             - "[CONNECTION] == true"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: Zot Registry (CDN)
           group: Registry
@@ -114,6 +153,9 @@ spec:
           auth:
             authType: htpasswd
             authValue: "${ZOT_AUTH}"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: Garage S3 (CDN)
           group: Storage
@@ -125,6 +167,9 @@ spec:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 3000"
             - "[CERTIFICATE_EXPIRATION] > 168h"
+          alerts:
+            - type: discord
+              send-on-resolved: true
 
         - name: Homer Dashboard (CDN)
           group: CDN
@@ -136,3 +181,6 @@ spec:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 3000"
             - "[CERTIFICATE_EXPIRATION] > 168h"
+          alerts:
+            - type: discord
+              send-on-resolved: true
