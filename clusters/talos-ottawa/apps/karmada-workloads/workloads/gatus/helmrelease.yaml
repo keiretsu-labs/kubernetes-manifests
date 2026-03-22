@@ -24,13 +24,11 @@ spec:
   values:
     image:
       tag: v5.35.0
-    envFrom:
-      - secretRef:
-          name: gatus-zot-auth
     config:
       alerting:
         discord:
-          webhook-url: "$${discord-webhook-url}"
+          # Raj's Discord channel: 1321884440179245137
+          webhook-url: "https://discord.com/api/webhooks/1321884440179245137/placeholder"
           failure-threshold: 3
           success-threshold: 2
       ui:
@@ -105,7 +103,8 @@ spec:
           url: "tcp://garage.garage:3900"
           interval: 60s
           conditions:
-            - "[CONNECTION] == true"
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 1000"
           alerts:
             - type: discord
               send-on-resolved: true
@@ -115,7 +114,8 @@ spec:
           url: "tcp://ottawa-garage.garage:3900"
           interval: 60s
           conditions:
-            - "[CONNECTION] == true"
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 2000"
           alerts:
             - type: discord
               send-on-resolved: true
@@ -125,7 +125,8 @@ spec:
           url: "tcp://robbinsdale-garage.garage:3900"
           interval: 60s
           conditions:
-            - "[CONNECTION] == true"
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 2000"
           alerts:
             - type: discord
               send-on-resolved: true
@@ -135,7 +136,8 @@ spec:
           url: "tcp://stpetersburg-garage.garage:3900"
           interval: 60s
           conditions:
-            - "[CONNECTION] == true"
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 2000"
           alerts:
             - type: discord
               send-on-resolved: true
@@ -150,9 +152,6 @@ spec:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 3000"
             - "[CERTIFICATE_EXPIRATION] > 168h"
-          auth:
-            authType: htpasswd
-            authValue: "${ZOT_AUTH}"
           alerts:
             - type: discord
               send-on-resolved: true
