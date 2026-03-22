@@ -1,0 +1,73 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: setec
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: setec
+  template:
+    metadata:
+      labels:
+        app: setec
+    spec:
+      initContainers:
+        - name: restore-backup
+          image: amazon/aws-cli:latest
+          command:
+            - sh
+            - -c
+            - |
+              export AWS_ENDPOINT_URL_S3="http://${S3_ENDPOINT}"
+              LATEST=$(aws s3 ls s3://setec/ --recursive 2>/dev/null | sort | tail -1 | awk '{print $4}')
+              if [ -n "$LATEST" ]; then
+                echo "Restoring backup: $LATEST"
+                aws s3 cp "s3://setec/$LATEST" /app/state/database
+                echo "Restore complete"
+              else
+                echo "No backup found, starting fresh"
+              fi
+          env:
+            - name: S3_ENDPOINT
+              value: "${COMMON_S3_ENDPOINT}"
+          envFrom:
+            - secretRef:
+                name: setec-s3-auth
+          volumeMounts:
+            - name: state
+              mountPath: /app/state
+      containers:
+        - name: setec
+          image: ghcr.io/tailscale/setec:latest
+          args:
+            - server
+            - --dev
+            - --hostname
+            - ${LOCATION}-secrets
+            - --state-dir
+            - /app/state
+            - --backup-bucket
+            - setec
+            - --backup-bucket-region
+            - garage
+          env:
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: setec-tailscale
+                  key: TS_AUTHKEY
+            - name: AWS_ENDPOINT_URL_S3
+              value: "http://${COMMON_S3_ENDPOINT}"
+          envFrom:
+            - secretRef:
+                name: setec-s3-auth
+          volumeMounts:
+            - name: state
+              mountPath: /app/state
+      volumes:
+        - name: state
+          emptyDir: {}
