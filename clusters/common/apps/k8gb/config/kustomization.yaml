@@ -14,3 +14,4 @@ resources:
   - ./dashboard-ts.yaml
   - ./cnames.yaml
   - ./prometheusrules.yaml
+  - ./gslb-zot-public.yaml
