@@ -43,7 +43,8 @@ spec:
       containers:
         - name: setec
           image: ghcr.io/rajsinghtech/setec:latest
-          args:
+          command:
+            - ./setec
             - server
             - --dev
             - --hostname
