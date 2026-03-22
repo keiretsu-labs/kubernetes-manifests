@@ -51,6 +51,22 @@ spec:
       - matchers:
           - matchType: "="
             name: alertname
+            value: K8gbNoHealthyRecords
+        receiver: blackhole
+      - matchers:
+          - matchType: "="
+            name: alertname
+            value: K8gbEndpointNoTargets
+        receiver: blackhole
+      # Known Talos issues - kube-controller-manager/scheduler metrics not exposed
+      - matchers:
+          - matchType: "="
+            name: alertname
+            value: TargetDown
+        receiver: blackhole
+      - matchers:
+          - matchType: "="
+            name: alertname
             value: Watchdog
         receiver: gatus-heartbeat
         groupInterval: 2m
