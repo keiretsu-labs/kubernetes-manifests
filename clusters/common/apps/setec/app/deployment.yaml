@@ -42,7 +42,7 @@ spec:
               mountPath: /app/state
       containers:
         - name: setec
-          image: ghcr.io/tailscale/setec:latest
+          image: ghcr.io/rajsinghtech/setec:latest
           args:
             - server
             - --dev
