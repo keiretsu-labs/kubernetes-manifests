@@ -29,8 +29,6 @@ spec:
         enabled: true
     prometheus:
       prometheusSpec:
-        externalLabels:
-          cluster: ${CLUSTER_NAME}
         serviceMonitorSelector: {}
         externalUrl: https://prometheus.${CLUSTER_DOMAIN}
         serviceMonitorSelectorNilUsesHelmValues: false
