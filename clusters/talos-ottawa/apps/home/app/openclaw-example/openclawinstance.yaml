@@ -70,10 +70,7 @@ spec:
   chromium:
     enabled: true
   tailscale:
-    enabled: true
-    authKeySecretRef:
-      name: ts-oauth
-    authKeySecretKey: TS_AUTHKEY
+    enabled: false
   storage:
     persistence:
       size: 10Gi
