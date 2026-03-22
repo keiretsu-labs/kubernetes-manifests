@@ -131,9 +131,21 @@ spec:
             - type: discord
               send-on-resolved: true
 
-        - name: Zot Registry
+        - name: Zot Registry (Public CDN)
           group: Registry
-          # Use internal service - Zot returns 401 when auth is required
+          url: https://oci.cdn.keiretsu.top/v2/_catalog
+          interval: 60s
+          client:
+            dns-resolver: "tcp://8.8.8.8:53"
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+
+        - name: Zot Registry (Internal)
+          group: Registry
           url: http://zot-public.zot:5000/v2/_catalog
           interval: 60s
           conditions:
