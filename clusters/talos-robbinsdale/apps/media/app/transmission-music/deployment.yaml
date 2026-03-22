@@ -17,25 +17,11 @@ spec:
     spec:
       containers:
       - name: transmission-music
-        image: haugene/transmission-openvpn
-        env:
-        - name: OPENVPN_PROVIDER
-          value: "MULLVAD"
-        - name: OPENVPN_CONFIG
-          value: "any"
-        - name: OPENVPN_USERNAME
-          value: "none"
-        - name: OPENVPN_PASSWORD
-          value: "none"
-        - name: LOCAL_NETWORK
-          value: "10.0.0.0/8"
+        image: linuxserver/transmission
         ports:
         - name: http
           containerPort: 9091
           protocol: TCP
-        resources:
-          limits:
-            squat.ai/tun: "1"
         volumeMounts:
         - name: data-volume
           mountPath: /data
