@@ -1,0 +1,27 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openclaw-example
+  annotations:
+    item.homer.rajsingh.info/name: "OpenClaw Example"
+    item.homer.rajsingh.info/subtitle: "K8s Operator Managed Agent"
+    service.homer.rajsingh.info/name: "Utilities"
+    service.homer.rajsingh.info/icon: "fas fa-robot"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+  hostnames:
+    - "openclaw-example.${CLUSTER_DOMAIN}"
+  rules:
+    - backendRefs:
+        - kind: Service
+          name: openclaw-example
+          port: 18789
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
