@@ -24,14 +24,11 @@ spec:
   values:
     image:
       tag: v5.35.0
-    envFrom:
-      - secretRef:
-          name: gatus-discord
     config:
       alerting:
         discord:
           # Robbinsdale Discord webhook
-          webhook-url: "$${discord-webhook-url}"
+          webhook-url: "https://discord.com/api/webhooks/1321884480234852453/Jg5pzoAS6igqV1aqHnP14rho6Uvb7VhTY0-wY8Mr7lkkvcxoB_NjOYVXUi4ZKMPAtN8f"
           failure-threshold: 3
           success-threshold: 2
       ui:

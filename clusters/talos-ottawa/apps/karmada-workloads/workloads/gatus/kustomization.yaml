@@ -6,6 +6,5 @@ resources:
   - namespace.yaml
   - helmrepository.yaml
   - helmrelease.yaml
-  - discord-secret.yaml
   - propagation-policy.yaml
   - multi-cluster-service.yaml
