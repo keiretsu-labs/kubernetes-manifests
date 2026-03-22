@@ -1,0 +1,21 @@
+---
+apiVersion: k8gb.absa.oss/v1beta1
+kind: Gslb
+metadata:
+  name: zot-public
+  namespace: keiretsu-top
+  annotations:
+    k8gb.io/exposed-hostnames: "zot.${COMMON_DOMAIN}"
+spec:
+  resourceRef:
+    apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    name: zot-public
+    namespace: zot
+  strategy:
+    type: roundRobin
+    dnsTtlSeconds: 60
+    weight:
+      ottawa: 33
+      robbinsdale: 33
+      stpetersburg: 34

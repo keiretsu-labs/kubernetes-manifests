@@ -8,3 +8,4 @@ resources:
   - helmrelease.yaml
   - propagation-policy.yaml
   - multi-cluster-service.yaml
+  - zot-auth-secret.yaml

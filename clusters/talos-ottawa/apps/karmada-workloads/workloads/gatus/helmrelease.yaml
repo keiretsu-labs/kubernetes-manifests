@@ -24,6 +24,9 @@ spec:
   values:
     image:
       tag: v5.35.0
+    envFrom:
+      - secretRef:
+          name: gatus-zot-auth
     config:
       ui:
         title: "Keiretsu Global Status"
@@ -69,3 +72,45 @@ spec:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 2000"
             - "[CERTIFICATE_EXPIRATION] > 168h"
+
+        - name: Garage S3 (Local)
+          group: Storage
+          url: "tcp://garage.garage:3900"
+          interval: 60s
+          conditions:
+            - "[CONNECTION] == true"
+
+        - name: Garage S3 (Ottawa)
+          group: Storage
+          url: "tcp://ottawa-garage.garage:3900"
+          interval: 60s
+          conditions:
+            - "[CONNECTION] == true"
+
+        - name: Garage S3 (Robbinsdale)
+          group: Storage
+          url: "tcp://robbinsdale-garage.garage:3900"
+          interval: 60s
+          conditions:
+            - "[CONNECTION] == true"
+
+        - name: Garage S3 (StPetersburg)
+          group: Storage
+          url: "tcp://stpetersburg-garage.garage:3900"
+          interval: 60s
+          conditions:
+            - "[CONNECTION] == true"
+
+        - name: Zot Registry (CDN)
+          group: Registry
+          url: https://zot.cdn.keiretsu.top
+          interval: 60s
+          client:
+            dns-resolver: "tcp://8.8.8.8:53"
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+            - "[CERTIFICATE_EXPIRATION] > 168h"
+          auth:
+            authType: htpasswd
+            authValue: "${ZOT_AUTH}"
