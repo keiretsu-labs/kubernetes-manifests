@@ -59,11 +59,11 @@ spec:
             - sh
             - -c
             - |
-              S3="--endpoint-url http://$$S3_ENDPOINT"
-              LATEST=$$(aws s3 ls s3://setec/ --recursive $$S3 2>/dev/null | sort | tail -1 | awk '{print $$4}')
-              if [ -n "$$LATEST" ]; then
+              EP="--endpoint-url http://$$S3_ENDPOINT"
+              LATEST=$$(aws s3api list-objects-v2 --bucket setec $$EP --query 'sort_by(Contents,&Key)[-1].Key' --output text 2>/dev/null)
+              if [ -n "$$LATEST" ] && [ "$$LATEST" != "None" ]; then
                 echo "Restoring backup: $$LATEST"
-                aws s3 cp "s3://setec/$$LATEST" /app/state/database $$S3
+                aws s3api get-object --bucket setec --key "$$LATEST" /app/state/database $$EP
                 echo "Restore complete"
               else
                 echo "No backup found, starting fresh"
@@ -71,8 +71,6 @@ spec:
           env:
             - name: S3_ENDPOINT
               value: "${COMMON_S3_ENDPOINT}"
-            - name: AWS_S3_ADDRESSING_STYLE
-              value: path
           envFrom:
             - secretRef:
                 name: setec-s3-auth
