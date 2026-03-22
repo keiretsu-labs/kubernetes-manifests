@@ -16,6 +16,43 @@ spec:
         app: setec
     spec:
       initContainers:
+        - name: generate-authkey
+          image: curlimages/curl:latest
+          command:
+            - sh
+            - -c
+            - |
+              TOKEN=$$(curl -sf -d "client_id=$$CLIENT_ID" -d "client_secret=$$CLIENT_SECRET" \
+                "https://api.tailscale.com/api/v2/oauth/token" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+              if [ -z "$$TOKEN" ]; then
+                echo "Failed to get OAuth access token"
+                exit 1
+              fi
+              AUTHKEY=$$(curl -sf -X POST \
+                -H "Authorization: Bearer $$TOKEN" \
+                -H "Content-Type: application/json" \
+                -d '{"capabilities":{"devices":{"create":{"reusable":false,"ephemeral":true,"preauthorized":true,"tags":["tag:k8s"]}}}}' \
+                "https://api.tailscale.com/api/v2/tailnet/-/keys" | sed -n 's/.*"key":"\([^"]*\)".*/\1/p')
+              if [ -z "$$AUTHKEY" ]; then
+                echo "Failed to generate auth key"
+                exit 1
+              fi
+              echo "$$AUTHKEY" > /auth/ts-authkey
+              echo "Auth key generated successfully"
+          env:
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: setec-tailscale
+                  key: client_id
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: setec-tailscale
+                  key: client_secret
+          volumeMounts:
+            - name: auth
+              mountPath: /auth
         - name: restore-backup
           image: amazon/aws-cli:latest
           command:
@@ -44,23 +81,16 @@ spec:
         - name: setec
           image: ghcr.io/rajsinghtech/setec:latest
           command:
-            - ./setec
-            - server
-            - --dev
-            - --hostname
-            - ${LOCATION}-secrets
-            - --state-dir
-            - /app/state
-            - --backup-bucket
-            - setec
-            - --backup-bucket-region
-            - garage
+            - sh
+            - -c
+            - |
+              export TS_AUTHKEY=$$(cat /auth/ts-authkey)
+              exec ./setec server --dev \
+                --hostname ${LOCATION}-secrets \
+                --state-dir /app/state \
+                --backup-bucket setec \
+                --backup-bucket-region garage
           env:
-            - name: TS_AUTHKEY
-              valueFrom:
-                secretKeyRef:
-                  name: setec-tailscale
-                  key: TS_AUTHKEY
             - name: AWS_ENDPOINT_URL_S3
               value: "http://${COMMON_S3_ENDPOINT}"
           envFrom:
@@ -69,6 +99,12 @@ spec:
           volumeMounts:
             - name: state
               mountPath: /app/state
+            - name: auth
+              mountPath: /auth
+              readOnly: true
       volumes:
         - name: state
           emptyDir: {}
+        - name: auth
+          emptyDir:
+            medium: Memory
