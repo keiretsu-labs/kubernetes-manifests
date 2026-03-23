@@ -19,6 +19,7 @@ spec:
     !/laptop
     !/openclaw
     !/clusters/talos-ottawa
+    !/clusters/karmada
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

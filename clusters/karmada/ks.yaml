@@ -13,7 +13,7 @@ spec:
   dependsOn:
     - name: external-secrets-config
     - name: karmada
-  path: ./clusters/talos-ottawa/apps/karmada-workloads/secrets
+  path: ./clusters/karmada/secrets
   prune: true
   sourceRef:
     kind: GitRepository
@@ -39,7 +39,7 @@ spec:
   kubeConfig:
     secretRef:
       name: karmada-kubeconfig
-  path: ./clusters/talos-ottawa/apps/karmada-workloads/crds
+  path: ./clusters/karmada/crds
   prune: false
   sourceRef:
     kind: GitRepository
@@ -75,7 +75,7 @@ spec:
         name: cluster-settings
       - kind: Secret
         name: cluster-secrets
-  path: ./clusters/talos-ottawa/apps/karmada-workloads/workloads
+  path: ./clusters/karmada/workloads
   prune: true
   sourceRef:
     kind: GitRepository
