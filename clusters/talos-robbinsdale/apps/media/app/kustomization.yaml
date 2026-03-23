@@ -19,4 +19,9 @@ resources:
   - ./readarr 
   - ./transmission-books 
   - ./audioarr 
+  # VPN-enabled versions (uncomment when ProtonVPN values provided)
+  # - ./transmission-movies-pvt
+  # - ./transmission-tv-pvt
+  # - ./transmission-books-pvt
+  # - ./transmission-music-pvt
   # - ./unmanic
