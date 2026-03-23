@@ -9,10 +9,10 @@ spec:
   resourceSelectors:
     - apiVersion: v1
       kind: PersistentVolume
-      name: qbittorrent-downloads
+      name: karmada-qbittorrent-downloads
     - apiVersion: v1
       kind: PersistentVolume
-      name: qbittorrent-config
+      name: karmada-qbittorrent-config
   placement:
     clusterAffinity:
       clusterNames:
