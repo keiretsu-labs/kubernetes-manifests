@@ -3,6 +3,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: setec
+  namespace: setec
+  labels:
+    app: setec
 spec:
   replicas: 1
   strategy:
@@ -50,6 +53,12 @@ spec:
                 secretKeyRef:
                   name: setec-tailscale
                   key: client_secret
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
           volumeMounts:
             - name: auth
               mountPath: /auth
@@ -74,6 +83,12 @@ spec:
           envFrom:
             - secretRef:
                 name: setec-s3-auth
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
           volumeMounts:
             - name: state
               mountPath: /app/state
@@ -86,7 +101,7 @@ spec:
             - |
               export TS_AUTHKEY=$$(cat /auth/ts-authkey)
               exec ./setec server --dev \
-                --hostname ${LOCATION}-secrets \
+                --hostname secrets \
                 --state-dir /app/state \
                 --backup-bucket setec \
                 --backup-bucket-region garage
@@ -96,6 +111,12 @@ spec:
           envFrom:
             - secretRef:
                 name: setec-s3-auth
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
           volumeMounts:
             - name: state
               mountPath: /app/state

@@ -13,3 +13,4 @@ resources:
   - gatus
   - prometheus
   - cnpg-test
+  - setec

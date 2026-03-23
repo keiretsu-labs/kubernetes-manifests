@@ -4,4 +4,4 @@ kind: Namespace
 metadata:
   name: setec
   labels:
-    kustomize.toolkit.fluxcd.io/prune: disabled
+    app.kubernetes.io/name: setec
