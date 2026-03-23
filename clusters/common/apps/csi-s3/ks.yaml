@@ -9,6 +9,8 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: csi-s3
+  dependsOn:
+    - name: garage-bucket
   path: ./clusters/common/apps/csi-s3/app
   prune: true
   sourceRef:
