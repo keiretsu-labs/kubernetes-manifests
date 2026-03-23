@@ -40,4 +40,7 @@ spec:
       secretKey: "${GARAGE_S3_SECRET_ACCESS_KEY}"
 
     tolerations:
-      - operator: Exists
+      node:
+        - operator: Exists
+      controller:
+        - operator: Exists
