@@ -72,6 +72,7 @@ OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to ref
 - `kustomize build` fails silently on missing files — always cross-check `resources[]` against actual files
 - `configMapGenerator` files list must include `cron-jobs.json` alongside `openclaw.json`
 - YAML anchors in deployment.yaml don't survive kustomize — use explicit values
+- **HTTPRoute/Gateway API in workload overlays breaks karmada propagation**: A HTTPRoute in a workload kustomization (e.g. qBittorrent) causes karmada-workloads to fail dry-run on clusters without Gateway API (`no matches for kind "HTTPRoute"`). Never add Gateway API resources to workload overlays — keep them only in dedicated karmada-workloads patches that target only clusters that support them
 
 ## Config Escaping
 
