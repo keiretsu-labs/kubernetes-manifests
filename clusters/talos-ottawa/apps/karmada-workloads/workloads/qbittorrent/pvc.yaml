@@ -11,3 +11,16 @@ spec:
   resources:
     requests:
       storage: 1Ti
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qbittorrent-config
+  namespace: keiretsu-top
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: csi-s3
+  resources:
+    requests:
+      storage: 5Gi

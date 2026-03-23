@@ -62,37 +62,6 @@ spec:
           volumeMounts:
             - name: auth
               mountPath: /auth
-        - name: restore-config
-          image: amazon/aws-cli:latest
-          command:
-            - sh
-            - -c
-            - |
-              EP="--endpoint-url http://$$S3_ENDPOINT"
-              LATEST=$$(aws s3api list-objects-v2 --bucket keiretsu --prefix "qbittorrent/config/" $$EP \
-                --query 'sort_by(Contents,&Key)[-1].Key' --output text 2>/dev/null)
-              if [ -n "$$LATEST" ] && [ "$$LATEST" != "None" ]; then
-                echo "Restoring config backup: $$LATEST"
-                aws s3 cp "s3://keiretsu/$$LATEST" /config/qBittorrent/qBittorrent.conf $$EP 2>/dev/null || true
-                echo "Restore complete"
-              else
-                echo "No config backup found, starting fresh"
-              fi
-          env:
-            - name: S3_ENDPOINT
-              value: "${COMMON_S3_ENDPOINT}"
-          envFrom:
-            - secretRef:
-                name: qbittorrent-s3
-          resources:
-            requests:
-              cpu: 10m
-              memory: 64Mi
-            limits:
-              memory: 256Mi
-          volumeMounts:
-            - name: config
-              mountPath: /config
       containers:
         - name: gluetun
           image: ghcr.io/qdm12/gluetun:v3.41.1
@@ -226,7 +195,8 @@ spec:
               mountPath: /downloads
       volumes:
         - name: config
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: qbittorrent-config
         - name: downloads
           persistentVolumeClaim:
             claimName: qbittorrent-downloads
