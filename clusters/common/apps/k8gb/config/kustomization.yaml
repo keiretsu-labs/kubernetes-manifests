@@ -15,3 +15,4 @@ resources:
   - ./cnames.yaml
   - ./prometheusrules.yaml
   - ./gslb-zot-public.yaml
+  - ./gslb-qbittorrent.yaml
