@@ -8,6 +8,7 @@ metadata:
 spec:
   targetClusters:
     clusterNames:
+      - talos-ottawa
       - talos-robbinsdale
       - talos-stpetersburg
   taints:
@@ -32,6 +33,7 @@ metadata:
 spec:
   targetClusters:
     clusterNames:
+      - talos-ottawa
       - talos-robbinsdale
       - talos-stpetersburg
   taints:
