@@ -14,3 +14,4 @@ resources:
   - prometheus
   - cnpg-test
   - setec
+  - qbittorrent
