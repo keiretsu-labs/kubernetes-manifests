@@ -47,3 +47,32 @@ spec:
 
     gatewayapi:
       enabled: true
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: ConfigMap
+              name: k8gb-coredns
+            patch: |
+              - op: replace
+                path: /data/Corefile
+                value: |
+                  (k8gbplugins) {
+                      errors
+                      health
+                      reload 30s 15s
+                      ready
+                      prometheus 0.0.0.0:9153
+                      forward . /etc/resolv.conf
+                      k8s_crd {
+                          filter k8gb.absa.oss/dnstype=local
+                          negttl 30
+                          loadbalance weight
+                      }
+                  }
+                  cdn.keiretsu.top:5353 {
+                      import k8gbplugins
+                  }
+                  ts.keiretsu.top:5353 {
+                      import k8gbplugins
+                  }
