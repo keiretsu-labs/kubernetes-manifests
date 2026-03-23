@@ -23,6 +23,7 @@ spec:
       #   issuerURL: "https://pocket-id.${CLUSTER_DOMAIN}"
       #   scopes: "openid profile email"
       inCluster: false
+      sessionTTL: 0
 
     volumeMounts:
       - name: kubeconfig
