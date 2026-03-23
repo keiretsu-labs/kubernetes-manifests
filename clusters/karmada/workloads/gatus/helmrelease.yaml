@@ -133,7 +133,7 @@ spec:
 
         - name: Zot Registry (Public CDN)
           group: Registry
-          url: https://oci.cdn.keiretsu.top/v2/_catalog
+          url: https://oci.lukehouge.com/v2/_catalog
           interval: 60s
           conditions:
             - "[STATUS] == 200"

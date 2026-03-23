@@ -46,6 +46,7 @@ spec:
       external-endpoints:
         - name: Heartbeat
           group: Alertmanager
+          url: "${GATUS_HEARTBEAT_URL}"
           token: "${GATUS_HEARTBEAT_TOKEN}"
           heartbeat:
             interval: 5m
