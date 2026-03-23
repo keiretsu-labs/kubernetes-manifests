@@ -135,8 +135,6 @@ spec:
           group: Registry
           url: https://oci.cdn.keiretsu.top/v2/_catalog
           interval: 60s
-          client:
-            dns-resolver: "tcp://8.8.8.8:53"
           conditions:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 3000"
@@ -159,8 +157,6 @@ spec:
           group: Storage
           url: https://keiretsu.cdn.keiretsu.top
           interval: 60s
-          client:
-            dns-resolver: "tcp://8.8.8.8:53"
           conditions:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 3000"
@@ -173,8 +169,6 @@ spec:
           group: CDN
           url: https://home.cdn.keiretsu.top
           interval: 60s
-          client:
-            dns-resolver: "tcp://8.8.8.8:53"
           conditions:
             - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 3000"
