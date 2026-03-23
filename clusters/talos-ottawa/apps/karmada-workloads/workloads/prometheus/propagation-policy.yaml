@@ -1,6 +1,6 @@
 # Floating prometheus: runs on exactly ONE cluster with automatic failover.
-# Karmada schedules to the highest-priority healthy cluster. If that cluster
-# becomes unreachable, the HelmRelease migrates to the next in the list.
+# Karmada schedules to the cluster with the most available resources.
+# On cluster failure, reschedules to the next most resourced cluster.
 # Data is preserved via Volsync warm-cache PVCs on standby clusters.
 ---
 apiVersion: policy.karmada.io/v1alpha1
@@ -17,21 +17,27 @@ spec:
       name: prometheus
 
   placement:
-    clusterAffinities:
-      - affinityName: primary
-        clusterNames:
-          - talos-ottawa
-      - affinityName: secondary
-        clusterNames:
-          - talos-robbinsdale
-      - affinityName: tertiary
-        clusterNames:
-          - talos-stpetersburg
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg
 
-    spreadConstraints:
-      - maxGroups: 1
-        minGroups: 1
-        spreadByField: cluster
+    clusterTolerations:
+      - key: cluster.karmada.io/unreachable
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 120
+      - key: cluster.karmada.io/not-ready
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 120
+
+    replicaScheduling:
+      replicaSchedulingType: Divided
+      replicaDivisionPreference: Weighted
+      weightPreference:
+        dynamicWeight: AvailableReplicas
 
   failover:
     application:
