@@ -18,6 +18,7 @@ spec:
     !/swarm
     !/laptop
     !/clusters/talos-robbinsdale
+    !/clusters/karmada
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
