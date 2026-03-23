@@ -41,6 +41,7 @@ spec:
       external-endpoints:
         - name: Heartbeat
           group: Alertmanager
+          url: "http://gatus.keiretsu-top/api/v1/endpoints/alertmanager_heartbeat/external?success=true"
           token: "${GATUS_HEARTBEAT_TOKEN}"
           heartbeat:
             interval: 5m
