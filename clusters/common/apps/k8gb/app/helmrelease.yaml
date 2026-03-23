@@ -17,8 +17,7 @@ spec:
   values:
     k8gb:
       imageRepo: ghcr.io/rajsinghtech/k8gb
-      imageTag: exposed-hostnames
-      imagePullPolicy: Always
+      imageTag: 1fae0311
       clusterGeoTag: "${LOCATION}"
       extGslbClustersGeoTags: "${K8GB_EXT_GEO_TAGS}"
       dnsZones:
