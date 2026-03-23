@@ -9,15 +9,15 @@ resources:
   - ./radarr 
   - ./bazarr 
   - ./sonarr 
-  - ./transmission-movies 
-  - ./transmission-tv 
+#  - ./.transmission-movies 
+#  - ./.transmission-tv 
   - ./plex 
   - ./jellyseerr 
   - ./jellystat 
   - ./lidarr 
-  - ./transmission-music 
+#  - ./.transmission-music 
   - ./readarr 
-  - ./transmission-books 
+#  - ./.transmission-books 
   - ./audioarr 
   # VPN-enabled versions (uncomment when ProtonVPN values provided)
   # - ./transmission-movies-pvt
