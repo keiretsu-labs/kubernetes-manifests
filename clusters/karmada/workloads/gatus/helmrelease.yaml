@@ -131,16 +131,6 @@ spec:
             - type: discord
               send-on-resolved: true
 
-        - name: Zot Registry (Public CDN)
-          group: Registry
-          url: https://oci.lukehouge.com/v2/_catalog
-          interval: 60s
-          conditions:
-            - "[STATUS] == 200"
-            - "[RESPONSE_TIME] < 3000"
-          alerts:
-            - type: discord
-              send-on-resolved: true
 
         - name: Zot Registry (Internal)
           group: Registry
