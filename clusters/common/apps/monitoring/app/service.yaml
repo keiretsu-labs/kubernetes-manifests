@@ -20,7 +20,7 @@ spec:
     targetPort: reloader-web
   selector:
     app.kubernetes.io/name: prometheus
-    operator.prometheus.io/name: kube-prometheus-stack-prometheus
+    operator.prometheus.io/name: kube-prometheus-stack
   sessionAffinity: None
   type: LoadBalancer
   loadBalancerClass: tailscale
