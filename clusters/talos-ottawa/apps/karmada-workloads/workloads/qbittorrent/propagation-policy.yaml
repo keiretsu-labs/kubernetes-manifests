@@ -31,6 +31,9 @@ spec:
     - apiVersion: v1
       kind: PersistentVolumeClaim
       name: qbittorrent-downloads
+    - apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      name: qbittorrent
 
   placement:
     clusterAffinity:
