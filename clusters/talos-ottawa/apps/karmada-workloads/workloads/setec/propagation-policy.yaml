@@ -37,6 +37,11 @@ spec:
         operator: Exists
         tolerationSeconds: 120
 
+    spreadConstraints:
+      - maxGroups: 1
+        minGroups: 1
+        spreadByField: cluster
+
     replicaScheduling:
       replicaSchedulingType: Divided
       replicaDivisionPreference: Weighted
