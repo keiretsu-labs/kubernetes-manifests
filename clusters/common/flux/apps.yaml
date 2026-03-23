@@ -35,9 +35,6 @@ spec:
         name: garage-keiretsu-bucket
         optional: true
       - kind: Secret
-        name: garage-csi-s3-bucket
-        optional: true
-      - kind: Secret
         name: karmada-secrets
         optional: true
   patches:
