@@ -67,3 +67,19 @@ spec:
     - keyRef: setec-key
       read: true
       write: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
+  name: csi-s3
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: csi-s3
+  quotas:
+    maxSize: 5Ti
+    maxObjects: 10000000
+  keyPermissions:
+    - keyRef: csi-s3-key
+      read: true
+      write: true

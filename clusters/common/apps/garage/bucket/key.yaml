@@ -71,3 +71,21 @@ spec:
     - bucketRef: setec
       read: true
       write: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
+metadata:
+  name: csi-s3-key
+spec:
+  clusterRef:
+    name: garage
+  name: "CSI-S3 Storage Key"
+  secretTemplate:
+    name: garage-csi-s3-bucket
+    namespace: flux-system
+    accessKeyIdKey: CSI_S3_ACCESS_KEY_ID
+    secretAccessKeyKey: CSI_S3_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef: csi-s3
+      read: true
+      write: true
