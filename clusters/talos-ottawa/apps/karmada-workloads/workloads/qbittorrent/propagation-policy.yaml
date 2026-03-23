@@ -1,0 +1,63 @@
+# PropagationPolicy for qBittorrent with Gluetun VPN
+# - Resource-based scheduling across all clusters
+# - Downloads stored in Garage S3 via CSI-S3 (accessible from any cluster)
+# - Config restored from S3 on every start
+# - Tailscale ingress for web UI access
+---
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: qbittorrent
+  namespace: keiretsu-top
+spec:
+  propagateDeps: true
+
+  resourceSelectors:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: qbittorrent
+    - apiVersion: v1
+      kind: Service
+      name: qbittorrent
+    - apiVersion: v1
+      kind: Secret
+      name: qbittorrent-vpn
+    - apiVersion: v1
+      kind: Secret
+      name: qbittorrent-ts
+    - apiVersion: v1
+      kind: Secret
+      name: qbittorrent-s3
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      name: qbittorrent-downloads
+
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg
+
+    clusterTolerations:
+      - key: cluster.karmada.io/unreachable
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 120
+      - key: cluster.karmada.io/not-ready
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 120
+
+    replicaScheduling:
+      replicaSchedulingType: Divided
+      replicaDivisionPreference: Weighted
+      weightPreference:
+        dynamicWeight: AvailableReplicas
+
+  failover:
+    application:
+      decisionConditions:
+        tolerationSeconds: 120
+      purgeMode: Gracefully
+      gracePeriodSeconds: 300

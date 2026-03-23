@@ -68,7 +68,7 @@ resources:
   - ./wger.yaml
   - ./istio.yaml
   - ./homer-operator.yaml
-  - ./aws-mountpoint-s3-csi.yaml
+  - ./csi-s3.yaml
   - ./keda.yaml
   - ./kubeshark.yaml
   - ./vector.yaml
