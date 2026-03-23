@@ -23,6 +23,7 @@ spec:
   placement:
     clusterAffinity:
       clusterNames:
+        - talos-ottawa
         - talos-robbinsdale
         - talos-stpetersburg
 
@@ -63,5 +64,6 @@ spec:
   placement:
     clusterAffinity:
       clusterNames:
+        - talos-ottawa
         - talos-robbinsdale
         - talos-stpetersburg
