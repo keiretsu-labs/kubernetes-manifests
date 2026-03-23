@@ -1,8 +1,29 @@
+# ClusterPropagationPolicy for static PVs (must exist on ALL clusters)
+# PVs are cluster-scoped and need to be present before the PVC can bind
+---
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: qbittorrent-pvs
+spec:
+  resourceSelectors:
+    - apiVersion: v1
+      kind: PersistentVolume
+      name: qbittorrent-downloads
+    - apiVersion: v1
+      kind: PersistentVolume
+      name: qbittorrent-config
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg
+
 # PropagationPolicy for qBittorrent with Gluetun VPN
 # - Resource-based scheduling across all clusters
-# - Downloads stored in Garage S3 via CSI-S3 (accessible from any cluster)
-# - Config restored from S3 on every start
-# - Tailscale ingress for web UI access
+# - Downloads and config stored in Garage S3 via static CSI-S3 PVs
+# - Same S3 path on every cluster (no UUID-based paths)
 ---
 apiVersion: policy.karmada.io/v1alpha1
 kind: PropagationPolicy
