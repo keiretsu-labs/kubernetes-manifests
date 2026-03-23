@@ -33,11 +33,7 @@ spec:
       reclaimPolicy: Retain
 
     secret:
-      create: true
-      accessKey: "${CSI_S3_ACCESS_KEY_ID}"
-      secretKey: "${CSI_S3_SECRET_ACCESS_KEY}"
-      endpoint: http://${COMMON_S3_ENDPOINT}
-      region: garage
+      create: false
 
     tolerations:
       node:
