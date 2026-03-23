@@ -14,7 +14,7 @@ spec:
   namespace: kube-system
   version: "1.18.0"
   options:
-    wait: true
+    wait: false
     waitForJobs: true
     timeout: 10m
     install:

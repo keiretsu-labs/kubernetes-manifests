@@ -16,7 +16,7 @@
 #     name: kubernetes-manifests
 #   dependsOn:
 #     - name: envoy-gateway-system-install
-#   wait: true
+#   wait: false
 #   interval: 1m
 #   retryInterval: 1m
 #   timeout: 1m 

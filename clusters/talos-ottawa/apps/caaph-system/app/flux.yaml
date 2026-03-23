@@ -11,7 +11,7 @@ spec:
   chartName: flux
   options:
     waitForJobs: true
-    wait: true
+    wait: false
     timeout: 10m
     install:
       createNamespace: true
