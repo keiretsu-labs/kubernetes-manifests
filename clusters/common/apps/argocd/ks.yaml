@@ -14,7 +14,7 @@
 #   sourceRef:
 #     kind: GitRepository
 #     name: kubernetes-manifests
-#   wait: true
+#   wait: false
 #   interval: 30m
 #   retryInterval: 1m
 #   timeout: 5m
@@ -36,7 +36,7 @@
 #     name: kubernetes-manifests
 #   dependsOn:
 #     - name: argocd
-#   wait: true
+#   wait: false
 #   interval: 30m
 #   retryInterval: 1m
 #   timeout: 5m
