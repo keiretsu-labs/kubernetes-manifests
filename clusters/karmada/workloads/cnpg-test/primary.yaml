@@ -7,7 +7,7 @@ metadata:
   name: cnpg-test
   namespace: keiretsu-top
   labels:
-    karmada.io/scheduling: pinned-ottawa
+    karmada.io/app: cnpg-test-primary
   annotations:
     cnpg.io/skipEmptyWalArchiveCheck: "enabled"
 spec:
@@ -46,7 +46,7 @@ metadata:
   name: cnpg-test-backup
   namespace: keiretsu-top
   labels:
-    karmada.io/scheduling: pinned-ottawa
+    karmada.io/app: cnpg-test-primary
 spec:
   schedule: "0 0 * * *"
   immediate: true

@@ -6,7 +6,7 @@ metadata:
   namespace: setec
   labels:
     app: setec
-    karmada.io/scheduling: floating
+    karmada.io/app: setec
 spec:
   replicas: 1
   strategy:

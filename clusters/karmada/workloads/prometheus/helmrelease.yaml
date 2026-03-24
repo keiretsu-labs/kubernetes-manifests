@@ -5,7 +5,7 @@ metadata:
   name: prometheus
   namespace: keiretsu-top
   labels:
-    karmada.io/scheduling: floating
+    karmada.io/app: prometheus
 spec:
   interval: 30m
   chart:

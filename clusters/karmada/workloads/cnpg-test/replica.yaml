@@ -8,7 +8,7 @@ metadata:
   name: cnpg-test-replica
   namespace: keiretsu-top
   labels:
-    karmada.io/scheduling: pinned-robbinsdale
+    karmada.io/app: cnpg-test-replica
 spec:
   instances: 1
   inheritedMetadata:
