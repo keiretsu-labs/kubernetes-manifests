@@ -7,6 +7,8 @@ kind: Cluster
 metadata:
   name: cnpg-test-replica
   namespace: keiretsu-top
+  labels:
+    karmada.io/scheduling: pinned-robbinsdale
 spec:
   instances: 1
   inheritedMetadata:

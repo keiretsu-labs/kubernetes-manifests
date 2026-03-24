@@ -23,6 +23,11 @@ spec:
       labelSelector:
         matchLabels:
           karmada.io/scheduling: floating
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      labelSelector:
+        matchLabels:
+          karmada.io/scheduling: floating
     - apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
       labelSelector:

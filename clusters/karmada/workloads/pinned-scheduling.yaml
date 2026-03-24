@@ -1,34 +1,40 @@
+# ClusterPropagationPolicy for workloads pinned to Ottawa
 ---
-# Primary CNPG cluster -> Ottawa only
 apiVersion: policy.karmada.io/v1alpha1
-kind: PropagationPolicy
+kind: ClusterPropagationPolicy
 metadata:
-  name: cnpg-test-primary
-  namespace: keiretsu-top
+  name: pinned-ottawa
 spec:
   resourceSelectors:
     - apiVersion: postgresql.cnpg.io/v1
       kind: Cluster
-      name: cnpg-test
+      labelSelector:
+        matchLabels:
+          karmada.io/scheduling: pinned-ottawa
     - apiVersion: postgresql.cnpg.io/v1
       kind: ScheduledBackup
-      name: cnpg-test-backup
+      labelSelector:
+        matchLabels:
+          karmada.io/scheduling: pinned-ottawa
+
   placement:
     clusterAffinity:
       clusterNames:
         - talos-ottawa
 ---
-# Replica CNPG cluster -> Robbinsdale only
+# ClusterPropagationPolicy for workloads pinned to Robbinsdale
 apiVersion: policy.karmada.io/v1alpha1
-kind: PropagationPolicy
+kind: ClusterPropagationPolicy
 metadata:
-  name: cnpg-test-replica
-  namespace: keiretsu-top
+  name: pinned-robbinsdale
 spec:
   resourceSelectors:
     - apiVersion: postgresql.cnpg.io/v1
       kind: Cluster
-      name: cnpg-test-replica
+      labelSelector:
+        matchLabels:
+          karmada.io/scheduling: pinned-robbinsdale
+
   placement:
     clusterAffinity:
       clusterNames:

@@ -1,0 +1,25 @@
+# Shared ClusterPropagationPolicy for workloads that run on ALL clusters
+---
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: duplicated
+spec:
+  propagateDeps: true
+
+  resourceSelectors:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      labelSelector:
+        matchLabels:
+          karmada.io/scheduling: duplicated
+
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg
+
+    replicaScheduling:
+      replicaSchedulingType: Duplicated
