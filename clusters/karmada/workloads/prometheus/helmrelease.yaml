@@ -4,6 +4,8 @@ kind: HelmRelease
 metadata:
   name: prometheus
   namespace: keiretsu-top
+  labels:
+    karmada.io/scheduling: floating
 spec:
   interval: 30m
   chart:

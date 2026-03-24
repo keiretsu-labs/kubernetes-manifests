@@ -4,6 +4,8 @@ kind: HelmRelease
 metadata:
   name: gatus
   namespace: keiretsu-top
+  labels:
+    karmada.io/scheduling: duplicated
 spec:
   interval: 30m
   chart:
