@@ -38,16 +38,6 @@ spec:
         logo: "https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png"
         link: "https://github.com/keiretsu-labs/kubernetes-manifests"
 
-      external-endpoints:
-        - name: Heartbeat
-          group: Alertmanager
-          token: "${GATUS_HEARTBEAT_TOKEN}"
-          heartbeat:
-            interval: 5m
-          alerts:
-            - type: discord
-              send-on-resolved: true
-
       endpoints:
         - name: Internet
           group: Network
