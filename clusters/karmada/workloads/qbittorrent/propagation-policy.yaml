@@ -18,3 +18,70 @@ spec:
         - talos-ottawa
         - talos-robbinsdale
         - talos-stpetersburg
+---
+# All qbittorrent resources float together as a unit
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: qbittorrent
+spec:
+  propagateDeps: true
+
+  resourceSelectors:
+    - apiVersion: apps/v1
+      kind: Deployment
+      labelSelector:
+        matchLabels:
+          karmada.io/app: qbittorrent
+    - apiVersion: v1
+      kind: Service
+      labelSelector:
+        matchLabels:
+          karmada.io/app: qbittorrent
+    - apiVersion: v1
+      kind: Secret
+      labelSelector:
+        matchLabels:
+          karmada.io/app: qbittorrent
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      labelSelector:
+        matchLabels:
+          karmada.io/app: qbittorrent
+    - apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      labelSelector:
+        matchLabels:
+          karmada.io/app: qbittorrent
+
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg
+    clusterTolerations:
+      - key: cluster.karmada.io/unreachable
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 120
+      - key: cluster.karmada.io/not-ready
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 120
+    spreadConstraints:
+      - maxGroups: 1
+        minGroups: 1
+        spreadByField: cluster
+    replicaScheduling:
+      replicaSchedulingType: Divided
+      replicaDivisionPreference: Weighted
+      weightPreference:
+        dynamicWeight: AvailableReplicas
+
+  failover:
+    application:
+      decisionConditions:
+        tolerationSeconds: 120
+      purgeMode: Gracefully
+      gracePeriodSeconds: 300

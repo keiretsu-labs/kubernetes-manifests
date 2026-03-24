@@ -34,6 +34,7 @@ metadata:
   namespace: keiretsu-top
   labels:
     app: qbittorrent
+    karmada.io/app: qbittorrent
 spec:
   accessModes:
     - ReadWriteMany
@@ -77,6 +78,7 @@ metadata:
   namespace: keiretsu-top
   labels:
     app: qbittorrent
+    karmada.io/app: qbittorrent
 spec:
   accessModes:
     - ReadWriteMany

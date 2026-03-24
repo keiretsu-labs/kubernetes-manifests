@@ -5,7 +5,7 @@ metadata:
   name: gatus
   namespace: keiretsu-top
   labels:
-    karmada.io/scheduling: duplicated
+    karmada.io/app: gatus
 spec:
   interval: 30m
   chart:

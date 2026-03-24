@@ -6,7 +6,7 @@ metadata:
   namespace: keiretsu-top
   labels:
     app: qbittorrent
-    karmada.io/scheduling: floating
+    karmada.io/app: qbittorrent
 spec:
   selector:
     app: qbittorrent

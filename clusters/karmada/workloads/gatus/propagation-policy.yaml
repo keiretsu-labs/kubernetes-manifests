@@ -1,5 +1,29 @@
-# Propagate HelmRepository to flux-system namespace on all clusters
+# Gatus runs on ALL clusters (duplicated)
 ---
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: gatus
+spec:
+  propagateDeps: true
+
+  resourceSelectors:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      labelSelector:
+        matchLabels:
+          karmada.io/app: gatus
+
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg
+    replicaScheduling:
+      replicaSchedulingType: Duplicated
+---
+# Propagate HelmRepository
 apiVersion: policy.karmada.io/v1alpha1
 kind: ClusterPropagationPolicy
 metadata:
@@ -16,9 +40,8 @@ spec:
         - talos-ottawa
         - talos-robbinsdale
         - talos-stpetersburg
-
-# Propagate namespace
 ---
+# Propagate namespace
 apiVersion: policy.karmada.io/v1alpha1
 kind: ClusterPropagationPolicy
 metadata:

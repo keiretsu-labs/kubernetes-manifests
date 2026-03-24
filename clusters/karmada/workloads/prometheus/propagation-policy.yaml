@@ -1,5 +1,52 @@
-# Propagate HelmRepository to flux-system namespace on all clusters
+# Prometheus floats as a single instance with failover
 ---
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: prometheus
+spec:
+  propagateDeps: true
+
+  resourceSelectors:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      labelSelector:
+        matchLabels:
+          karmada.io/app: prometheus
+
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - talos-ottawa
+        - talos-robbinsdale
+        - talos-stpetersburg
+    clusterTolerations:
+      - key: cluster.karmada.io/unreachable
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 120
+      - key: cluster.karmada.io/not-ready
+        effect: NoExecute
+        operator: Exists
+        tolerationSeconds: 120
+    spreadConstraints:
+      - maxGroups: 1
+        minGroups: 1
+        spreadByField: cluster
+    replicaScheduling:
+      replicaSchedulingType: Divided
+      replicaDivisionPreference: Weighted
+      weightPreference:
+        dynamicWeight: AvailableReplicas
+
+  failover:
+    application:
+      decisionConditions:
+        tolerationSeconds: 120
+      purgeMode: Gracefully
+      gracePeriodSeconds: 600
+---
+# Propagate HelmRepository
 apiVersion: policy.karmada.io/v1alpha1
 kind: ClusterPropagationPolicy
 metadata:

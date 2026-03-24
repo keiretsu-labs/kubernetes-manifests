@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - primary.yaml
   - replica.yaml
+  - propagation-policy.yaml
