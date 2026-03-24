@@ -4,6 +4,9 @@ kind: Service
 metadata:
   name: qbittorrent
   namespace: keiretsu-top
+  labels:
+    app: qbittorrent
+    karmada.io/scheduling: floating
 spec:
   selector:
     app: qbittorrent

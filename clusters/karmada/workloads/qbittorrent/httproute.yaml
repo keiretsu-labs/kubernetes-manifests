@@ -4,6 +4,9 @@ kind: HTTPRoute
 metadata:
   name: qbittorrent
   namespace: keiretsu-top
+  labels:
+    app: qbittorrent
+    karmada.io/scheduling: floating
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io

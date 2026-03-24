@@ -32,6 +32,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: qbittorrent-downloads
   namespace: keiretsu-top
+  labels:
+    app: qbittorrent
+    karmada.io/scheduling: floating
 spec:
   accessModes:
     - ReadWriteMany
@@ -73,6 +76,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: qbittorrent-config
   namespace: keiretsu-top
+  labels:
+    app: qbittorrent
+    karmada.io/scheduling: floating
 spec:
   accessModes:
     - ReadWriteMany

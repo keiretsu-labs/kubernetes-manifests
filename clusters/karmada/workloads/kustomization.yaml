@@ -4,6 +4,7 @@ kind: Kustomization
 
 resources:
   - cluster-taint-policy.yaml
+  - floating-scheduling.yaml
   - resource-interpreters.yaml
   # resource-registry.yaml requires search.karmada.io CRD (from karmada-search component)
   # - resource-registry.yaml
