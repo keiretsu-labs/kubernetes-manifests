@@ -34,7 +34,6 @@ metadata:
   namespace: keiretsu-top
   labels:
     app: qbittorrent
-    karmada.io/scheduling: floating
 spec:
   accessModes:
     - ReadWriteMany
@@ -78,7 +77,6 @@ metadata:
   namespace: keiretsu-top
   labels:
     app: qbittorrent
-    karmada.io/scheduling: floating
 spec:
   accessModes:
     - ReadWriteMany
