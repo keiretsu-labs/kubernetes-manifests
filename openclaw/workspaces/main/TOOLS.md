@@ -98,6 +98,12 @@ git commit -m "description"
 git push
 ```
 
+**⚠️ Always use `-m` flag with `git commit`.** Without it, git opens $EDITOR which is unset in the container, causing: `error: Terminal is dumb, but EDITOR unset`. Never run bare `git commit`.
+
+**⚠️ Cross-cluster context syntax:** `flux --context=<cluster>` and `flux --context <cluster>` both work. But for kubectl, use `kubectl --context <cluster>` (space, not `=`). Plugin-style subcommands like `suspend` belong to `flux`, not kubectl — use `flux --context=<cluster> suspend kustomization ...`, NOT `kubectl --context=<cluster> suspend ...`.
+
+**⚠️ kustomize build pre-flight:** Before running `kustomize build <path>`, verify the path contains `kustomization.yaml` (or `kustomization.yml`/`Kustomization`). If the directory is a leaf with no kustomization file, the build will fail with `unable to find one of 'kustomization.yaml'...`.
+
 ## kubectl
 
 Kubernetes cluster management. In-cluster config is automatic.

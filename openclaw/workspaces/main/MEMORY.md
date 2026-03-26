@@ -45,6 +45,7 @@ OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to ref
 - **NEVER commit secrets, credentials, or API keys in plain text to git** — use SOPS for secrets or reference existing cluster secrets instead
 - Cluster contexts are `ottawa`, `robbinsdale`, `stpetersburg` — NOT `talos-ottawa`, `talos-robbinsdale`, `talos-stpetersburg` (the `talos-` prefix is wrong)
 - **Repo workspace path**: When cloning kubernetes-manifests, workspace files are at `openclaw/workspaces/main/`, NOT root-level `workspaces/main/` (which is empty/stale)
+- **Flux suspend/comment does NOT remove cluster resources**: Suspending a Kustomization or commenting out its `ks.yaml` in Git does not delete existing cluster resources — the resources keep running. To remove resources, you must `flux delete kustomization <name> -n flux-system` (not suspend) or manually `kubectl delete` the resources.
 
 ## Cluster Quick Facts
 
