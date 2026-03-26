@@ -46,7 +46,7 @@ spec:
         - name: SERVER_COUNTRIES
           value: "Denmark"
         - name: SERVER_NAMES
-          value: "DK#60"
+          value: "DK#153"
         - name: DOT
           value: "off"
         # - name: DNS_KEEP_NAMESERVER
