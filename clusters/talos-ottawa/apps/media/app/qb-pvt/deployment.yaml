@@ -88,7 +88,7 @@ spec:
         - name: CRON_ENABLED
           value: "true"
         - name: CRON_SCHEDULE
-          value: "*/5 * * * *"
+          value: "* * * * *"
         - name: LOG_TIMESTAMP
           value: "false"
         - name: CRON_INIT
@@ -97,7 +97,7 @@ spec:
         - name: qb-port-sync-config
           mountPath: /config
         command: ["/bin/sh"]
-        args: ["-c", "echo '*/5 * * * * /app/gluetun-qb-port-sync' > /config/crontab && exec /entrypoint.sh"]
+        args: ["-c", "echo '* * * * * /app/gluetun-qb-port-sync' > /config/crontab && exec /entrypoint.sh"]
       - name: qbittorrent
         image: lscr.io/linuxserver/qbittorrent:5.1.4
         ports:
