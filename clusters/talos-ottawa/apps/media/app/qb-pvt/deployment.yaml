@@ -46,7 +46,9 @@ spec:
         - name: PORT_FORWARD_ONLY
           value: "on"
         - name: SERVER_COUNTRIES
-          value: "Netherlands"
+          value: "Denmark"
+        - name: SERVER_NAMES
+          value: "DK#116"
         - name: DOT
           value: "off"
         # - name: DNS_KEEP_NAMESERVER
