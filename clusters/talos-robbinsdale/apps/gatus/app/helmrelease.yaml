@@ -57,14 +57,13 @@ spec:
       endpoints:
         - name: Kubernetes API
           group: kubernetes
-          url: https://k8s.robbinsdale.local:6443/readyz
+          url: https://10.0.0.1/healthz
           interval: 60s
           client:
             insecure: true
           conditions:
-            - "[STATUS] == 401"
+            - "[STATUS] == 200"
             - "[RESPONSE_TIME] < 2000"
-            - "[CERTIFICATE_EXPIRATION] > 168h"
           alerts:
             - type: discord
               send-on-resolved: true
