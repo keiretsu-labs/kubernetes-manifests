@@ -45,6 +45,8 @@ OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to ref
 - **NEVER commit secrets, credentials, or API keys in plain text to git** — use SOPS for secrets or reference existing cluster secrets instead
 - Cluster contexts are `ottawa`, `robbinsdale`, `stpetersburg` — NOT `talos-ottawa`, `talos-robbinsdale`, `talos-stpetersburg` (the `talos-` prefix is wrong)
 - **Repo workspace path**: When cloning kubernetes-manifests, workspace files are at `openclaw/workspaces/main/`, NOT root-level `workspaces/main/` (which is empty/stale)
+- **Tailscale operator deployment name is NOT "operator"** — discover with `kubectl get deployments -n tailscale-system`. In ottawa it's `aperture`; robbinsdale/stpetersburg have no separate operator deployment.
+- **`egressservices` CRD does not exist** — `kubectl get egressservices -A` returns "resource type not found". This is not a permissions issue — the CRD is not installed.
 
 ## Cluster Quick Facts
 
