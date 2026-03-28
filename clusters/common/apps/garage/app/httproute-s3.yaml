@@ -28,7 +28,7 @@ spec:
     - backendRefs:
         - group: ""
           kind: Service
-          name: garage-gateway
+          name: garage
           port: 3900
           weight: 1
       matches:
@@ -54,7 +54,7 @@ spec:
     - backendRefs:
         - group: ""
           kind: Service
-          name: garage-gateway
+          name: garage
           port: 3900
           weight: 1
       matches:
