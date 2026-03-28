@@ -45,8 +45,8 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: cdn
-      namespace: keiretsu
+      name: public
+      namespace: home
   hostnames:
     - "s3.cdn.${COMMON_DOMAIN}"
   rules:
