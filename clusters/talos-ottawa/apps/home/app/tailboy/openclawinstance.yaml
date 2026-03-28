@@ -23,7 +23,7 @@ spec:
           vllm:
             baseUrl: http://stpetersburg-vllm/v1
             apiKey: unused
-            api: openai-chat
+            api: openai-completions
             models:
               - id: Qwen3.5-27B
                 name: Qwen3.5-27B
