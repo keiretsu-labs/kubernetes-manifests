@@ -49,6 +49,7 @@ spec:
       namespace: home
   hostnames:
     - "s3.cdn.${COMMON_DOMAIN}"
+    - "*.s3.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""

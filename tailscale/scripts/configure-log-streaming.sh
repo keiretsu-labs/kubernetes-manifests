@@ -9,7 +9,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TAILNET="keiretsu.ts.net"
-S3_URL="https://s3.cdn.keiretsu.top"
+S3_URL="https://s3.keiretsu.top"
 S3_BUCKET="tailscale-logs"
 S3_REGION="garage"
 COMPRESSION="zstd"
