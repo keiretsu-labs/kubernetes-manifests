@@ -71,6 +71,22 @@ spec:
 apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageBucket
 metadata:
+  name: tailscale-logs
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: tailscale-logs
+  quotas:
+    maxSize: 500Gi
+    maxObjects: 10000000
+  keyPermissions:
+    - keyRef: tailscale-logs-key
+      read: true
+      write: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
   name: csi-s3
 spec:
   clusterRef:

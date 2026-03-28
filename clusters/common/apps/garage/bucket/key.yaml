@@ -75,6 +75,24 @@ spec:
 apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageKey
 metadata:
+  name: tailscale-logs-key
+spec:
+  clusterRef:
+    name: garage
+  name: "Tailscale Logs Key"
+  secretTemplate:
+    name: tailscale-logs-s3-auth
+    namespace: flux-system
+    accessKeyIdKey: TAILSCALE_LOGS_S3_ACCESS_KEY
+    secretAccessKeyKey: TAILSCALE_LOGS_S3_SECRET_KEY
+  bucketPermissions:
+    - bucketRef: tailscale-logs
+      read: true
+      write: true
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
+metadata:
   name: csi-s3-key
 spec:
   clusterRef:
