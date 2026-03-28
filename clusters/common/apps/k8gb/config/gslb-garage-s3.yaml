@@ -10,7 +10,7 @@ spec:
   resourceRef:
     apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
-    name: garage-s3
+    name: garage-s3-cdn
   strategy:
     type: roundRobin
     dnsTtlSeconds: 30
