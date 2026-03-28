@@ -12,3 +12,4 @@ resources:
   - external-dns-unifi.yaml
   - secret.yaml
   - clienttrafficpolicy.yaml
+  - certificate-s3.yaml
