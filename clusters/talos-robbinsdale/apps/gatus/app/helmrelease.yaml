@@ -128,7 +128,7 @@ spec:
           interval: 60s
           conditions:
             - "[STATUS] == 200"
-            - "[RESPONSE_TIME] < 10000"
+            - "[RESPONSE_TIME] < 15000"
           alerts:
             - type: discord
               send-on-resolved: true
