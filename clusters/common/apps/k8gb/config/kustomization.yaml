@@ -16,3 +16,4 @@ resources:
   - ./prometheusrules.yaml
   - ./gslb-zot-public.yaml
   - ./gslb-qbittorrent.yaml
+  - ./gslb-garage-s3.yaml
