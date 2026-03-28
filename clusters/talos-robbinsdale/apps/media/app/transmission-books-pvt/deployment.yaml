@@ -46,7 +46,7 @@
 #         - name: PORT_FORWARD_ONLY
 #           value: "on"
 #         - name: SERVER_COUNTRIES
-#           value: "Netherlands,Poland"
+#           value: "Netherlands"
 #         - name: DOT
 #           value: "off"
 #         - name: HEALTH_TARGET_ADDRESS
@@ -67,6 +67,8 @@
 #             secretKeyRef:
 #               name: transmission-books-pvt-secret
 #               key: UPDATER_PROTONVPN_PASSWORD
+#         - name: VPN_PORT_FORWARDING_UP_COMMAND
+#           value: /bin/sh -c 'if [ ! -e /usr/bin/transmission-remote ]; then apk update && apk add transmission-remote; fi && transmission-remote localhost -p {{PORTS}} && transmission-remote localhost -t all --reannounce'
 #         - name: LOG_LEVEL
 #           value: info
 #         volumeMounts:
