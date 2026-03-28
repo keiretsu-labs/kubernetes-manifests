@@ -9,6 +9,9 @@ metadata:
 spec:
   replicas: 2
   zone: "${LOCATION}"
+  s3Api:
+    rootDomain: ".s3.${COMMON_DOMAIN}"
+
   gateway: true
 
   # Must match storage cluster's replication settings

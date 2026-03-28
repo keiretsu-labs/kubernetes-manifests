@@ -11,6 +11,9 @@ spec:
     factor: 3
     zoneRedundancy: "AtLeast(2)"
 
+  s3Api:
+    rootDomain: ".s3.${COMMON_DOMAIN}"
+
   storage:
     metadata:
       size: 1Gi
