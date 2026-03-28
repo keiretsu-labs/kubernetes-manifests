@@ -26,6 +26,7 @@ spec:
         containers:
           main:
             image:
+              repository: ghcr.io/immich-app/immich-server
               tag: v2.6.3
             env:
               DB_DATABASE_NAME: immich
