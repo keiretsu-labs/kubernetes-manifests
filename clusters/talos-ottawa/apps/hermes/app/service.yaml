@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hermes-agent
+  namespace: hermes
+spec:
+  selector:
+    app.kubernetes.io/name: hermes-agent
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP
