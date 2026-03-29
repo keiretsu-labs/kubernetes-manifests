@@ -81,7 +81,7 @@ spec:
       size: 10Gi
       storageClass: ceph-block-replicated
   sidecars:
-    - name: tailscale
+    - name: ts-sidecar
       image: ghcr.io/tailscale/tailscale:latest
       env:
         - name: TS_USERSPACE
@@ -102,7 +102,7 @@ spec:
         - name: TS_SERVE_CONFIG
           value: /etc/tailscale/serve.json
       volumeMounts:
-        - name: tailscale-serve-config
+        - name: ts-sidecar-serve-config
           mountPath: /etc/tailscale
     - name: syncthing
       image: syncthing/syncthing:latest
@@ -133,7 +133,7 @@ spec:
           cpu: "500m"
           memory: "512Mi"
   sidecarVolumes:
-    - name: tailscale-serve-config
+    - name: ts-sidecar-serve-config
       configMap:
         name: tailboy-ts-serve
   webTerminal:
