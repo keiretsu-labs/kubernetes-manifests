@@ -99,6 +99,8 @@ spec:
           value: "--advertise-tags=tag:k8s,tag:ottawa --accept-routes"
         - name: TS_KUBE_SECRET
           value: ""
+        - name: KUBERNETES_SERVICE_HOST
+          value: ""
         - name: TS_SERVE_CONFIG
           value: /etc/tailscale/serve.json
       volumeMounts:
