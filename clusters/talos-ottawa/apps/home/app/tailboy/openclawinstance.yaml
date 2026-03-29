@@ -97,6 +97,8 @@ spec:
           value: tailboy
         - name: TS_EXTRA_ARGS
           value: "--advertise-tags=tag:k8s,tag:ottawa --accept-routes"
+        - name: TS_KUBE_SECRET
+          value: ""
         - name: TS_SERVE_CONFIG
           value: /etc/tailscale/serve.json
       volumeMounts:
