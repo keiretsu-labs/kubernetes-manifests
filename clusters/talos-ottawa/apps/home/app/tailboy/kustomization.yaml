@@ -4,5 +4,6 @@ kind: Kustomization
 namespace: home
 resources:
   - openclawinstance.yaml
+  - configmap.yaml
   - httproute.yaml
   - networkpolicy.yaml
