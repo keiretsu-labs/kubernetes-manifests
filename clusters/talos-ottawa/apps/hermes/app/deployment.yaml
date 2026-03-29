@@ -1,0 +1,134 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hermes-agent
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hermes-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hermes-agent
+        app.kubernetes.io/component: agent
+        app.kubernetes.io/part-of: hermes
+    spec:
+      serviceAccountName: default
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      imagePullSecrets:
+        - name: zot-pull-secret
+      initContainers:
+        - name: init-data
+          image: alpine:3.21
+          command: [sh, -c]
+          args:
+            - |
+              set -e
+              mkdir -p /opt/data
+              chown -R 1000:1000 /opt/data
+              echo "[init-data] Done"
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+      containers:
+        - name: hermes-agent
+          image: nousresearch/hermes-agent:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          args: ["gateway", "run"]
+          lifecycle:
+            preStop:
+              exec:
+                command: [sh, -c, "sleep 5"]
+          env:
+            - name: HERMES_DATA_DIR
+              value: /opt/data
+          envFrom:
+            - secretRef:
+                name: hermes-agent-secrets
+          startupProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 30
+            timeoutSeconds: 3
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+            periodSeconds: 15
+            failureThreshold: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            tcpSocket:
+              port: 3000
+            periodSeconds: 30
+            failureThreshold: 5
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:v1.94.1
+          securityContext:
+            privileged: true
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: TS_KUBE_SECRET
+              value: ""
+            - name: TS_USERSPACE
+              value: "false"
+            - name: TS_STATE_DIR
+              value: /dev/shm
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: hermes-ts-oauth
+                  key: TS_AUTHKEY
+            - name: TS_ACCEPT_DNS
+              value: "true"
+            - name: TS_EXTRA_ARGS
+              value: "--advertise-tags=tag:k8s,tag:ottawa --accept-routes"
+            - name: TS_HOSTNAME
+              value: $(POD_NAME)-hermes
+            - name: TS_DEBUG_FIREWALL_MODE
+              value: auto
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: hermes-agent-data
