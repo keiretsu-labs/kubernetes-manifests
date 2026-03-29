@@ -83,8 +83,6 @@ spec:
   sidecars:
     - name: tailscale
       image: ghcr.io/tailscale/tailscale:latest
-      securityContext:
-        runAsUser: 0
       env:
         - name: TS_USERSPACE
           value: "true"
