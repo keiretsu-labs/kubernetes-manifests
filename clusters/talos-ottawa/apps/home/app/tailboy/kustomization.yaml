@@ -6,4 +6,3 @@ resources:
   - openclawinstance.yaml
   - configmap.yaml
   - httproute.yaml
-  - networkpolicy.yaml
