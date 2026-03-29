@@ -47,6 +47,7 @@ OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to ref
 - **Repo workspace path**: When cloning kubernetes-manifests, workspace files are at `openclaw/workspaces/main/`, NOT root-level `workspaces/main/` (which is empty/stale)
 - **Tailscale operator deployment name is NOT "operator"** — discover with `kubectl get deployments -n tailscale-system`. In ottawa it's `aperture`; robbinsdale/stpetersburg have no separate operator deployment.
 - **`egressservices` CRD does not exist** — `kubectl get egressservices -A` returns "resource type not found". This is not a permissions issue — the CRD is not installed.
+- **Robbinsdale pods cannot pull images from Docker Hub** — network isolation prevents external image pulls. Debug pods also fail. Any new deployment on Robbinsdale that needs external images (Docker Hub, ghcr.io, etc.) will fail to start. Use internal registry (oci.killinit.cc) or pre-pull images.
 
 ## Cluster Quick Facts
 
