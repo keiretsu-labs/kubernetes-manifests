@@ -145,17 +145,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-        - name: Envoy
-          group: network
-          url: https://status.rajsingh.info
-          interval: 60s
-          conditions:
-            - "[STATUS] == 200"
-            - "[RESPONSE_TIME] < 2000"
-            - "[CERTIFICATE_EXPIRATION] > 168h"
-          alerts:
-            - type: discord
-              send-on-resolved: true
         - name: Portfolio - Luke Houge
           group: website
           url: https://www.lukehouge.com
