@@ -89,3 +89,4 @@ resources:
   - ./woodpecker.yaml
   - ./forgejo.yaml
   - ./k8gb.yaml
+  - ./kro.yaml
