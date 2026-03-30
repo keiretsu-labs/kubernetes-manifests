@@ -94,7 +94,7 @@ spec:
             - name: data
               mountPath: /opt/data
         - name: tailscale
-          image: ghcr.io/tailscale/tailscale:v1.94.1
+          image: ghcr.io/tailscale/tailscale:v1.94.2
           securityContext:
             privileged: true
           env:
