@@ -21,7 +21,7 @@ spec:
   vpnServer: "DK#116"
   podCidr: "${CLUSTER_POD_CIDR}"
   serviceCidr: "${CLUSTER_SERVICE_CIDR}"
-  downloadsClaimName: qbittorrent-pvt-downloads
+  downloadsClaimName: qbittorrent-downloads
   configStorageClass: ceph-block-replicated
   volsyncCopyMethod: Snapshot
   volsyncSnapshotClass: csi-rbdplugin-snapclass
