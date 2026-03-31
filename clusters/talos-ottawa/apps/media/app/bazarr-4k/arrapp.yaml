@@ -7,6 +7,7 @@ metadata:
 spec:
   name: bazarr-4k
   image: lscr.io/linuxserver/bazarr
+  # renovate: datasource=docker depName=lscr.io/linuxserver/bazarr
   tag: "1.5.6"
   port: 6767
   hostname: bazarr-4k
