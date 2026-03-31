@@ -7,6 +7,7 @@ metadata:
 spec:
   name: sonarr-4k
   image: lscr.io/linuxserver/sonarr
+  # renovate: datasource=docker depName=lscr.io/linuxserver/sonarr
   tag: "4.0.17"
   port: 8989
   hostname: sonarr-4k
