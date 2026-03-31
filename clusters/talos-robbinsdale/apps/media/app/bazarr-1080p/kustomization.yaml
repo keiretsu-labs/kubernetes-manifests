@@ -4,4 +4,3 @@ kind: Kustomization
 namespace: media
 resources:
   - ./arrapp.yaml
-  - ./unas.yaml

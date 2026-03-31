@@ -7,9 +7,6 @@ resources:
   - pvc-media.yaml
   - ./jellyfin
   - ./prowlarr
-  - ./radarr
-  - ./bazarr
-  - ./sonarr
   - ./sonarr-1080p
   - ./sonarr-4k
   - ./sonarr-anime
@@ -17,6 +14,10 @@ resources:
   - ./radarr-4k
   - ./radarr-4kremux
   - ./radarr-anime
+  - ./bazarr-1080p
+  - ./bazarr-4k
+  - ./bazarr-4kremux
+  - ./bazarr-anime
 #  - ./.transmission-movies 
 #  - ./.transmission-tv 
   - ./plex 
