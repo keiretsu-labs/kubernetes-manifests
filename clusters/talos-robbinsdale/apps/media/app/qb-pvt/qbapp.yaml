@@ -26,7 +26,7 @@ spec:
   configStorageClass: ceph-block-replicated-nvme
   volsyncCopyMethod: Direct
   volsyncManualTrigger: "first"
-  volsyncPaused: true
+  volsyncPaused: false
   s3Endpoint: "${COMMON_S3_ENDPOINT}"
   s3Location: "${LOCATION}"
   resticPassword: "${COMMON_RESTIC_SECRET}"
