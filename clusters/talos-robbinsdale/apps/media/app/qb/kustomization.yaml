@@ -5,4 +5,3 @@ namespace: media
 resources:
   - ./qbapp.yaml
   - ./secret.yaml
-  - ./pvc-downloads.yaml
