@@ -18,19 +18,19 @@ resources:
   - ./bazarr-4k
   - ./bazarr-4kremux
   - ./bazarr-anime
-#  - ./.transmission-movies 
-#  - ./.transmission-tv 
-  - ./plex 
-  - ./jellyseerr 
-  - ./jellystat 
-  - ./lidarr 
-#  - ./.transmission-music 
-  - ./readarr 
-#  - ./.transmission-books 
-  - ./audioarr 
-  # VPN-enabled versions (uncomment when ProtonVPN values provided)
-  # - ./transmission-movies-pvt
-  # - ./transmission-tv-pvt
-  # - ./transmission-books-pvt
-  # - ./transmission-music-pvt
-  # - ./unmanic
+  - ./autobrr
+  - ./tautulli
+  - ./jellyseerr
+  - ./overseerr
+  - ./wizarr
+  - ./tunarr
+#  - ./.transmission-movies
+#  - ./.transmission-tv
+  - ./plex
+  - ./jellystat
+  - ./lidarr
+  - ./prowlarr
+#  - ./.transmission-music
+  - ./readarr
+#  - ./.transmission-books
+  - ./audioarr
