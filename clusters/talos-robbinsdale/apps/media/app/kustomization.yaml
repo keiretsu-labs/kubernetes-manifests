@@ -31,7 +31,6 @@ resources:
   - ./plex
   - ./jellystat
   - ./lidarr
-  - ./prowlarr
 #  - ./.transmission-music
   - ./readarr
 #  - ./.transmission-books
