@@ -90,7 +90,7 @@ spec:
                   mountPath: /tmp
           containers:
             - name: upload
-              image: amazon/aws-cli:2.34.20
+              image: amazon/aws-cli:2.34.21
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
