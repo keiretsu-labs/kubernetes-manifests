@@ -11,7 +11,7 @@ resources:
   - dashboard-auth.yaml
   - test-failover
   - gatus
-  - prometheus
+
   - cnpg-test
   - setec
   - qbittorrent
