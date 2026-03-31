@@ -18,6 +18,8 @@ resources:
   - ./bazarr-4k
   - ./bazarr-4kremux
   - ./bazarr-anime
+  - ./qb
+  - ./qb-pvt
   - ./autobrr
   - ./tautulli
   - ./jellyseerr
