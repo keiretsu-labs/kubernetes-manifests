@@ -11,6 +11,8 @@ resources:
   - ./bazarr
   - ./sonarr
   - ./sonarr-1080p
+  - ./sonarr-4k
+  - ./sonarr-anime
 #  - ./.transmission-movies 
 #  - ./.transmission-tv 
   - ./plex 
