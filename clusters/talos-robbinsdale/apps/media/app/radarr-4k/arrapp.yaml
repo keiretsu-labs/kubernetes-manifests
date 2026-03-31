@@ -1,0 +1,26 @@
+---
+apiVersion: media.keiretsu.ts.net/v1alpha1
+kind: ArrApp
+metadata:
+  name: radarr-4k
+  namespace: media
+spec:
+  name: radarr-4k
+  image: lscr.io/linuxserver/radarr
+  tag: "6.0.4"
+  port: 7878
+  hostname: radarr-4k
+  homerName: "Radarr 4K"
+  homerSubtitle: "Movie Collection Manager"
+  homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/radarr.svg"
+  configStorageSize: 5Gi
+  configStorageClass: ceph-block-replicated-nvme
+  mediaClaimName: media-share
+  mediaMountPath: /media-share
+  volsyncCopyMethod: Direct
+  volsyncManualTrigger: "first"
+  volsyncPaused: true
+  s3Endpoint: "${COMMON_S3_ENDPOINT}"
+  s3Location: "${LOCATION}"
+  resticPassword: "${COMMON_RESTIC_SECRET}"
+  clusterDomain: "${CLUSTER_DOMAIN}"

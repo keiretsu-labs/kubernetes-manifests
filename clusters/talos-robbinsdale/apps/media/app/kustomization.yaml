@@ -13,6 +13,10 @@ resources:
   - ./sonarr-1080p
   - ./sonarr-4k
   - ./sonarr-anime
+  - ./radarr-1080p
+  - ./radarr-4k
+  - ./radarr-4kremux
+  - ./radarr-anime
 #  - ./.transmission-movies 
 #  - ./.transmission-tv 
   - ./plex 
