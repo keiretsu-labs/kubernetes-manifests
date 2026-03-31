@@ -1,0 +1,27 @@
+---
+apiVersion: media.keiretsu.ts.net/v1alpha1
+kind: ArrApp
+metadata:
+  name: overseerr
+  namespace: media
+spec:
+  name: overseerr
+  image: ghcr.io/seerr-team/seerr
+  # renovate: datasource=docker depName=ghcr.io/seerr-team/seerr
+  tag: "v3.1.0"
+  port: 5055
+  hostname: overseerr
+  homerName: "Overseerr"
+  homerSubtitle: "Media Request Manager"
+  homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/overseerr.svg"
+  configStorageSize: 5Gi
+  configStorageClass: ceph-block-replicated-nvme
+  mediaClaimName: media-share
+  mediaMountPath: /media-share
+  volsyncCopyMethod: Direct
+  volsyncManualTrigger: "first"
+  volsyncPaused: true
+  s3Endpoint: "${COMMON_S3_ENDPOINT}"
+  s3Location: "${LOCATION}"
+  resticPassword: "${COMMON_RESTIC_SECRET}"
+  clusterDomain: "${CLUSTER_DOMAIN}"

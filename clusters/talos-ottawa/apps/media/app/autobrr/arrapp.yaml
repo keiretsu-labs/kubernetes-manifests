@@ -1,0 +1,27 @@
+---
+apiVersion: media.keiretsu.ts.net/v1alpha1
+kind: ArrApp
+metadata:
+  name: autobrr
+  namespace: media
+spec:
+  name: autobrr
+  image: ghcr.io/autobrr/autobrr
+  # renovate: datasource=docker depName=ghcr.io/autobrr/autobrr
+  tag: "v1.75.1"
+  port: 7474
+  hostname: autobrr
+  homerName: "Autobrr"
+  homerSubtitle: "Indexer Management"
+  homerLogo: "https://raw.githubusercontent.com/homarr-labs/dashboard-icons/refs/heads/main/svg/autobrr.svg"
+  configStorageClass: ceph-block-replicated
+  mediaClaimName: media-share
+  mediaMountPath: /media-share
+  volsyncCopyMethod: Snapshot
+  volsyncSnapshotClass: csi-rbdplugin-snapclass
+  volsyncManualTrigger: "first"
+  volsyncPaused: false
+  s3Endpoint: "${COMMON_S3_ENDPOINT}"
+  s3Location: "${LOCATION}"
+  resticPassword: "${COMMON_RESTIC_SECRET}"
+  clusterDomain: "${CLUSTER_DOMAIN}"
