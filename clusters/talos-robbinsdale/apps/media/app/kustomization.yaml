@@ -4,11 +4,13 @@ kind: Kustomization
 namespace: media
 resources:
   - secret.yaml
-  - ./jellyfin 
-  - ./prowlarr 
-  - ./radarr 
-  - ./bazarr 
-  - ./sonarr 
+  - pvc-media.yaml
+  - ./jellyfin
+  - ./prowlarr
+  - ./radarr
+  - ./bazarr
+  - ./sonarr
+  - ./sonarr-1080p
 #  - ./.transmission-movies 
 #  - ./.transmission-tv 
   - ./plex 
