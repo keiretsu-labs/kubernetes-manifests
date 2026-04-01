@@ -26,12 +26,11 @@ resources:
   - ./overseerr
   - ./wizarr
   - ./tunarr
-#  - ./.transmission-movies
-#  - ./.transmission-tv
-  - ./plex
-  - ./jellystat
   - ./lidarr
-#  - ./.transmission-music
+  - ./sabnzbd
+  - ./plex
+  - ./prowlarr
+  - ./jellyfin
+  - ./jellystat
   - ./readarr
-#  - ./.transmission-books
   - ./audioarr
