@@ -10,3 +10,4 @@ resources:
   - ./notifications-overview.yaml
   - ./application-overview.yaml
   - ./cluster-secrets.yaml
+  - ./ocm-rbac.yaml
