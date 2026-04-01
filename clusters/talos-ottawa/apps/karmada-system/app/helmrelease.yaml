@@ -210,7 +210,7 @@ spec:
       image:
         registry: docker.io
         repository: karmada/karmada-scheduler
-        tag: "v1.17.0"
+        tag: "v1.17.1"
         pullPolicy: IfNotPresent
       resources:
         requests:
