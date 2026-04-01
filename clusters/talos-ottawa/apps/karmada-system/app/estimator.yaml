@@ -55,7 +55,7 @@ spec:
     spec:
       containers:
         - name: estimator
-          image: docker.io/karmada/karmada-scheduler-estimator:v1.17.0
+          image: docker.io/karmada/karmada-scheduler-estimator:v1.17.1
           command:
             - /bin/karmada-scheduler-estimator
             - --kubeconfig=/etc/kubeconfig/kubeconfig
@@ -178,7 +178,7 @@ spec:
     spec:
       containers:
         - name: estimator
-          image: docker.io/karmada/karmada-scheduler-estimator:v1.17.0
+          image: docker.io/karmada/karmada-scheduler-estimator:v1.17.1
           command:
             - /bin/karmada-scheduler-estimator
             - --kubeconfig=/etc/kubeconfig/kubeconfig
@@ -249,7 +249,7 @@ spec:
     spec:
       containers:
         - name: estimator
-          image: docker.io/karmada/karmada-scheduler-estimator:v1.17.0
+          image: docker.io/karmada/karmada-scheduler-estimator:v1.17.1
           command:
             - /bin/karmada-scheduler-estimator
             - --kubeconfig=/etc/kubeconfig/kubeconfig
