@@ -1,0 +1,60 @@
+---
+# ConfigMap that teaches ArgoCD how to read OCM PlacementDecisions
+# Required for the clusterDecisionResource generator in ApplicationSets
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ocm-placement-generator
+  namespace: argocd
+data:
+  apiVersion: cluster.open-cluster-management.io/v1beta1
+  kind: placementdecisions
+  statusListKey: status.decisions
+  matchKey: clusterName
+---
+# ManagedClusterSetBinding — allows the argocd namespace to use the default ManagedClusterSet
+apiVersion: cluster.open-cluster-management.io/v1beta2
+kind: ManagedClusterSetBinding
+metadata:
+  name: default
+  namespace: argocd
+spec:
+  clusterSet: default
+---
+# Placement: pick 1 cluster from the set, with failover
+# When a cluster becomes unreachable, tolerate for 5 minutes then migrate
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: floating-apps
+  namespace: argocd
+spec:
+  clusterSets:
+    - default
+  numberOfClusters: 1
+  prioritizerPolicy:
+    mode: Exact
+    configurations:
+      - scoreCoordinate:
+          builtIn: ResourceAllocatableMemory
+        weight: 1
+      - scoreCoordinate:
+          builtIn: Steady
+        weight: 3
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    - key: cluster.open-cluster-management.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+---
+# Placement: all clusters (for mesh egress services)
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: all-clusters
+  namespace: argocd
+spec:
+  clusterSets:
+    - default

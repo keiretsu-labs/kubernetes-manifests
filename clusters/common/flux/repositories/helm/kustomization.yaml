@@ -90,3 +90,4 @@ resources:
   - ./forgejo.yaml
   - ./k8gb.yaml
   - ./kro.yaml
+  - ./ocm.yaml
