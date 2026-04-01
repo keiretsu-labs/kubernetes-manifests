@@ -48,13 +48,3 @@ spec:
     - key: cluster.open-cluster-management.io/not-ready
       operator: Exists
       tolerationSeconds: 300
----
-# Placement: all clusters (for mesh egress services)
-apiVersion: cluster.open-cluster-management.io/v1beta1
-kind: Placement
-metadata:
-  name: all-clusters
-  namespace: argocd
-spec:
-  clusterSets:
-    - default

@@ -1,6 +1,7 @@
 ---
 # ApplicationSet for mesh egress — deploys ExternalName services to ALL clusters
-# so every floating app is reachable from every cluster via tailnet FQDN
+# Uses ArgoCD clusters generator (not OCM Placement) so egress persists
+# even when a cluster is tainted/down — egress must be unconditional
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -9,15 +10,13 @@ metadata:
 spec:
   goTemplate: true
   generators:
-    - clusterDecisionResource:
-        configMapRef: ocm-placement-generator
-        labelSelector:
+    - clusters:
+        selector:
           matchLabels:
-            cluster.open-cluster-management.io/placement: all-clusters
-        requeueAfterSeconds: 60
+            argocd.argoproj.io/secret-type: cluster
   template:
     metadata:
-      name: "mesh-egress-{{.clusterName}}"
+      name: "mesh-egress-{{.name}}"
     spec:
       project: default
       source:
@@ -25,7 +24,7 @@ spec:
         targetRevision: HEAD
         path: clusters/floating-apps/egress
       destination:
-        name: "{{.clusterName}}"
+        name: "{{.name}}"
         namespace: keiretsu-top
       syncPolicy:
         automated:
