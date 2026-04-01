@@ -1,8 +1,6 @@
 ---
 # OCM Klusterlet (Singleton mode) — registers this cluster with the OCM hub on Ottawa
-# Bootstrap token must be generated on the hub first:
-#   clusteradm get token --use-bootstrap-token
-# Then create the bootstrap kubeconfig secret
+# Bootstrap kubeconfig pulled via ExternalSecret (same pattern as karmada-agent)
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -27,7 +25,7 @@ spec:
       retries: 3
   valuesFrom:
     - kind: Secret
-      name: ocm-bootstrap-hub-kubeconfig
+      name: ocm-bootstrap-kubeconfig
       valuesKey: bootstrapHubKubeConfig
       targetPath: bootstrapHubKubeConfig
   values:
