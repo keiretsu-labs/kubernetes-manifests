@@ -29,8 +29,6 @@ resources:
   - ./lidarr
   - ./sabnzbd
   - ./plex
-  - ./prowlarr
-  - ./jellyfin
   - ./jellystat
   - ./readarr
   - ./audioarr
