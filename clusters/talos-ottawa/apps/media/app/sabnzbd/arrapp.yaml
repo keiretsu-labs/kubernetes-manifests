@@ -1,0 +1,27 @@
+---
+apiVersion: media.keiretsu.ts.net/v1alpha1
+kind: ArrApp
+metadata:
+  name: sabnzbd
+  namespace: media
+spec:
+  name: sabnzbd
+  image: ghcr.io/home-operations/sabnzbd
+  # renovate: datasource=docker depName=ghcr.io/home-operations/sabnzbd
+  tag: "4.5.5"
+  port: 80
+  hostname: sabnzbd
+  homerName: "SABnzbd"
+  homerSubtitle: "NZB Download Client"
+  homerLogo: "https://raw.githubusercontent.com/sabnzbd/sabnzbd/refs/heads/develop/icons/logo-arrow.svg"
+  configStorageClass: ceph-block-replicated
+  mediaClaimName: media-share
+  mediaMountPath: /media-share
+  volsyncCopyMethod: Snapshot
+  volsyncSnapshotClass: csi-rbdplugin-snapclass
+  volsyncManualTrigger: "first"
+  volsyncPaused: false
+  s3Endpoint: "${COMMON_S3_ENDPOINT}"
+  s3Location: "${LOCATION}"
+  resticPassword: "${COMMON_RESTIC_SECRET}"
+  clusterDomain: "${CLUSTER_DOMAIN}"
