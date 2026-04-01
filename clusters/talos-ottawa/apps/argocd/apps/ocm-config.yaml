@@ -9,7 +9,7 @@ metadata:
 data:
   apiVersion: cluster.open-cluster-management.io/v1beta1
   kind: placementdecisions
-  statusListKey: status.decisions
+  statusListKey: decisions
   matchKey: clusterName
 ---
 # ManagedClusterSetBinding — allows the argocd namespace to use the default ManagedClusterSet
