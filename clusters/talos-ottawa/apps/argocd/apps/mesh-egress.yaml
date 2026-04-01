@@ -1,0 +1,35 @@
+---
+# ApplicationSet for mesh egress — deploys ExternalName services to ALL clusters
+# so every floating app is reachable from every cluster via tailnet FQDN
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: mesh-egress
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - clusterDecisionResource:
+        configMapRef: ocm-placement-generator
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: all-clusters
+        requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: "mesh-egress-{{.clusterName}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+        targetRevision: HEAD
+        path: clusters/floating-apps/egress
+      destination:
+        server: "{{.clusterURL}}"
+        namespace: keiretsu-top
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
