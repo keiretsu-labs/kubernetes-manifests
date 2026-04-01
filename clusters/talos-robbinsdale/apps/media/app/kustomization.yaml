@@ -27,6 +27,7 @@ resources:
   - ./wizarr
   - ./tunarr
   - ./lidarr
+  - ./sabnzbd
   - ./plex
   - ./jellystat
   - ./readarr
