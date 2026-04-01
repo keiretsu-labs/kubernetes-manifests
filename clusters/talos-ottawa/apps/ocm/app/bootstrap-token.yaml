@@ -1,0 +1,12 @@
+---
+# Long-lived token for the OCM bootstrap ServiceAccount
+# Klusterlets on remote clusters use this to register with the hub
+# Pulled by ExternalSecret on each cluster (same pattern as karmada-agent)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ocm-bootstrap-token
+  namespace: open-cluster-management
+  annotations:
+    kubernetes.io/service-account.name: agent-registration-bootstrap
+type: kubernetes.io/service-account-token
