@@ -9,7 +9,7 @@ spec:
   image: lscr.io/linuxserver/sabnzbd
   # renovate: datasource=docker depName=lscr.io/linuxserver/sabnzbd
   tag: "4.5.1"
-  port: 8080
+  port: 80
   hostname: sabnzbd
   homerName: "SABnzbd"
   homerSubtitle: "NZB Download Client"
