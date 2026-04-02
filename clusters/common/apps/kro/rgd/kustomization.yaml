@@ -7,3 +7,4 @@ resources:
   - ./floatingapp.yaml
   - ./meshegress.yaml
   - ./volsyncbackup.yaml
+  - ./backupverify.yaml
