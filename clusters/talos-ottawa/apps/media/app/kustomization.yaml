@@ -34,5 +34,3 @@ resources:
   - ./feedcord
   - ./flaresolverr
   - ./maintainerr
-  # - ./tsdb
-  # - ./tunarr
