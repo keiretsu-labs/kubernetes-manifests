@@ -12,6 +12,7 @@ Mistakes that became permanent knowledge. Never repeat these.
 - **`.DISABLED` suffix directories break kustomize builds**: When Flux HelmReleases are disabled by renaming a directory to `foo.DISABLED`, kustomize still picks it up as a resource directory and fails with "is a directory". The Flux `hcld` annotation doesn't prevent this. Fix: remove the directory from git entirely, not just rename.
 - **Robbinsdale pods cannot reach github.com**: The Robbinsdale cluster has network-level isolation that blocks pod egress to GitHub. Flux source-controller syncs are delayed/unreliable on Robbinsdale. This is not a Flux bug — it's a network policy constraint. Any deployment that pulls from git on Robbinsdale will be affected.
 - **kubectl patches are not persistent under Flux GitOps**: Flux continuously reconciles from git. Any `kubectl patch` to a Flux-managed resource is temporary — the next reconciliation overwrites it. To fix something permanently, edit the git source. Conversely, when a resource disappears from git and Flux syncs, GC deletes it from the cluster even if you previously patched it to survive.
+- **Always verify IP-to-cluster mapping against CLUSTERS.md**: When an alert shows a node IP (e.g. 192.168.73.206), CHECK CLUSTERS.md before naming the cluster. Do not guess. Cluster LAN ranges: Robbinsdale=192.168.50.0/24, StPetersburg=192.168.73.0/24, Ottawa=192.168.169.0/24.
 
 ## Config Validation (IMPORTANT)
 
