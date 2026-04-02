@@ -16,6 +16,7 @@ spec:
   homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/jellyseerr.svg"
   configStorageSize: 5Gi
   configStorageClass: ceph-block-replicated-nvme
+  configMountPath: /app/config
   mediaClaimName: media-share
   mediaMountPath: /media-share
   volsyncCopyMethod: Direct
