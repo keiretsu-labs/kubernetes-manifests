@@ -40,7 +40,7 @@ spec:
       clusterDomain: "string"
       timezone: "string | default=UTC"
       # Homer dashboard customization
-      homerKeywords: "string | default=tv, series, automation"
+      homerKeywords: "string | default=media"
       homerServiceName: "string | default=Media"
       homerServiceIcon: "string | default=fas fa-tv"
     status:

@@ -3,6 +3,8 @@ apiVersion: kro.run/v1alpha1
 kind: ResourceGraphDefinition
 metadata:
   name: floatingapp
+  annotations:
+    kro.run/allow-breaking-changes: "true"
 spec:
   schema:
     group: apps.keiretsu.ts.net
