@@ -56,7 +56,7 @@ spec:
           echo ""
           echo "--- Checking repository integrity ($READ_SUBSET% of packs) ---"
           if restic check --read-data-subset="$READ_SUBSET%/1" 2>&1; then
-            MSG="OK: $APP_NAME on $APP_LOCATION - backup verified (integrity: ${READ_SUBSET}% checked)"
+            MSG="OK: $APP_NAME on $APP_LOCATION - backup verified (integrity: $READ_SUBSET% checked)"
             echo ""
             echo "$MSG"
             [ -n "$DISCORD_WEBHOOK" ] && curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🟢 $MSG\"}" "$DISCORD_WEBHOOK" || true
