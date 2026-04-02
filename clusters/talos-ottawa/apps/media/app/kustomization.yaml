@@ -34,3 +34,4 @@ resources:
   - ./feedcord
   - ./flaresolverr
   - ./maintainerr
+  - ./backup-verify

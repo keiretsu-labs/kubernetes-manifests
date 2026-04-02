@@ -33,6 +33,7 @@ spec:
       volsyncSnapshotClass: "string | default=csi-rbdplugin-snapclass"
       volsyncManualTrigger: "string | default=first"
       volsyncPaused: "boolean | default=false"
+      volsyncUnlock: "string | default="
       # S3/Restic - populated via Flux variable substitution in instance
       s3Endpoint: "string"
       s3Location: "string"
@@ -224,6 +225,8 @@ spec:
           write: true
 
   - id: replicationSource
+    includeWhen:
+    - ${schema.spec.volsyncUnlock == ""}
     template:
       apiVersion: volsync.backube/v1alpha1
       kind: ReplicationSource
@@ -236,6 +239,30 @@ spec:
         restic:
           pruneIntervalDays: 14
           repository: ${"restic-media-" + schema.spec.name + "-config"}
+          retain:
+            hourly: 1
+            daily: 3
+            weekly: 4
+            monthly: 2
+            yearly: 1
+          copyMethod: Direct
+
+  - id: replicationSourceWithUnlock
+    includeWhen:
+    - ${schema.spec.volsyncUnlock != ""}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationSource
+      metadata:
+        name: ${"media-" + schema.spec.name + "-config"}
+      spec:
+        sourcePVC: ${schema.spec.name + "-config"}
+        trigger:
+          schedule: "0 4 * * *"
+        restic:
+          pruneIntervalDays: 14
+          repository: ${"restic-media-" + schema.spec.name + "-config"}
+          unlock: ${schema.spec.volsyncUnlock}
           retain:
             hourly: 1
             daily: 3
