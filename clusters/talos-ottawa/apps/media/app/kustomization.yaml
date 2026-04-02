@@ -22,8 +22,8 @@ resources:
   - ./sonarr-1080p
   - ./plex 
   - ./tautulli
-  - ./overseerr
-  - ./jellyseerr
+  # - ./overseerr
+  # - ./jellyseerr
   - ./jellystat 
   - ./lidarr 
   - ./wizarr
