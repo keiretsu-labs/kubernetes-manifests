@@ -25,7 +25,8 @@ spec:
       snapshotClass: "string | default=csi-rbdplugin-snapclass"
       manualTrigger: "string | default=first"
       paused: "boolean | default=false"
-      schedule: "string | default=0 4 * * *"
+      freshInstall: "boolean | default=false"
+      schedule: "string"
       # Retention
       retainHourly: "integer | default=1"
       retainDaily: "integer | default=3"
@@ -92,10 +93,27 @@ spec:
             yearly: ${schema.spec.retainYearly}
           copyMethod: Direct
 
+  # --- Fresh install: plain PVC, no restore ---
+  - id: pvcFresh
+    includeWhen:
+    - ${schema.spec.freshInstall}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        accessModes:
+        - ${schema.spec.accessMode}
+        resources:
+          requests:
+            storage: ${schema.spec.storageSize}
+        storageClassName: ${schema.spec.storageClass}
+
   # --- Snapshot restore (Ottawa pattern) ---
   - id: replicationDestinationSnapshot
     includeWhen:
-    - ${schema.spec.copyMethod == "Snapshot"}
+    - ${!schema.spec.freshInstall && schema.spec.copyMethod == "Snapshot"}
     template:
       apiVersion: volsync.backube/v1alpha1
       kind: ReplicationDestination
@@ -116,7 +134,7 @@ spec:
 
   - id: pvcSnapshot
     includeWhen:
-    - ${schema.spec.copyMethod == "Snapshot"}
+    - ${!schema.spec.freshInstall && schema.spec.copyMethod == "Snapshot"}
     template:
       apiVersion: v1
       kind: PersistentVolumeClaim
@@ -136,7 +154,7 @@ spec:
   # --- Direct restore (Robbinsdale pattern) ---
   - id: pvcDirect
     includeWhen:
-    - ${schema.spec.copyMethod == "Direct"}
+    - ${!schema.spec.freshInstall && schema.spec.copyMethod == "Direct"}
     template:
       apiVersion: v1
       kind: PersistentVolumeClaim
@@ -152,7 +170,7 @@ spec:
 
   - id: replicationDestinationDirect
     includeWhen:
-    - ${schema.spec.copyMethod == "Direct"}
+    - ${!schema.spec.freshInstall && schema.spec.copyMethod == "Direct"}
     template:
       apiVersion: volsync.backube/v1alpha1
       kind: ReplicationDestination
