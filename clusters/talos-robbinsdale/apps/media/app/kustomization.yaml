@@ -24,8 +24,9 @@ resources:
   - ./tautulli
   - ./jellyseerr
   - ./overseerr
-  - ./tunarr
+  # - ./tunarr
   - ./wizarr
+  - ./flaresolverr
   - ./lidarr
   - ./sabnzbd
   - ./plex

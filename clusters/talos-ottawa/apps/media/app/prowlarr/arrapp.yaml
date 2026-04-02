@@ -1,0 +1,28 @@
+---
+apiVersion: media.keiretsu.ts.net/v1alpha1
+kind: ArrApp
+metadata:
+  name: prowlarr
+  namespace: media
+spec:
+  name: prowlarr
+  image: lscr.io/linuxserver/prowlarr
+  # renovate: datasource=docker depName=lscr.io/linuxserver/prowlarr
+  tag: "2.3.0"
+  port: 9696
+  hostname: prowlarr
+  homerName: "Prowlarr"
+  homerSubtitle: "Indexer Manager"
+  homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/prowlarr.svg"
+  configStorageSize: 5Gi
+  configStorageClass: ceph-block-replicated
+  mediaClaimName: media-share
+  mediaMountPath: /media-share
+  volsyncCopyMethod: Snapshot
+  volsyncSnapshotClass: csi-rbdplugin-snapclass
+  volsyncManualTrigger: "first"
+  volsyncPaused: false
+  s3Endpoint: "${COMMON_S3_ENDPOINT}"
+  s3Location: "${LOCATION}"
+  resticPassword: "${COMMON_RESTIC_SECRET}"
+  clusterDomain: "${CLUSTER_DOMAIN}"
