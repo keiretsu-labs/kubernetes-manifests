@@ -15,6 +15,7 @@ spec:
   homerSubtitle: "Media Request Manager"
   homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/jellyseerr.svg"
   configStorageClass: ceph-block-replicated
+  configMountPath: /app/config
   mediaClaimName: media-share
   mediaMountPath: /media-share
   volsyncCopyMethod: Snapshot
