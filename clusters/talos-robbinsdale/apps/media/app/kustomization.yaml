@@ -27,6 +27,7 @@ resources:
   # - ./tunarr
   - ./wizarr
   - ./flaresolverr
+  - ./maintainerr
   - ./lidarr
   - ./sabnzbd
   - ./plex

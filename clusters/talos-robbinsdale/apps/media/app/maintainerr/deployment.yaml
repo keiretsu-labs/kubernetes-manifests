@@ -1,0 +1,34 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maintainerr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: maintainerr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: maintainerr
+    spec:
+      containers:
+        - name: maintainerr
+          image: ghcr.io/maintainerr/maintainerr:3.3.0
+          ports:
+            - name: http
+              containerPort: 6246
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+          env:
+            - name: TZ
+              value: ${TIMEZONE}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: maintainerr-data
