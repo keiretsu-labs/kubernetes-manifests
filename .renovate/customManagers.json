@@ -19,7 +19,7 @@
         "/\\.ya?ml$/"
       ],
       "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*\\w*[Tt]ag:\\s*(?<currentValue>\\S+)"
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*\\w*[Tt]ag:\\s*\"?(?<currentValue>[^\"\\s]+)\"?"
       ],
       "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}docker{{/if}}"
     },
