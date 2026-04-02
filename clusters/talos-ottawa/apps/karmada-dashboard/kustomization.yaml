@@ -1,6 +1,4 @@
 ---
-# Karmada dashboard disabled — replaced by OCM + ArgoCD
-# apiVersion: kustomize.config.k8s.io/v1beta1
-# kind: Kustomization
-# resources:
-#   - ./ks.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: []
