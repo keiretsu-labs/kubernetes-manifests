@@ -8,7 +8,7 @@ spec:
   name: radarr-anime
   image: lscr.io/linuxserver/radarr
   # renovate: datasource=docker depName=lscr.io/linuxserver/radarr
-  tag: "6.0.4"
+  tag: "6.1.1"
   port: 7878
   hostname: radarr-anime
   homerName: "Radarr Anime"
