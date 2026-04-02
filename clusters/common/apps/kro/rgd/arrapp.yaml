@@ -20,6 +20,9 @@ spec:
       homerLogo: "string"
       configStorageSize: "string | default=5Gi"
       configStorageClass: "string | default=ceph-block-replicated"
+      configMountPath: "string | default=/config"
+      puid: "string | default=0"
+      pgid: "string | default=0"
       mediaClaimName: "string"
       mediaMountPath: "string | default=/media-share"
       # Optional downloads volume (e.g. Robbinsdale transmission share)
@@ -70,12 +73,12 @@ spec:
               - name: media-volume
                 mountPath: ${schema.spec.mediaMountPath}
               - name: config-volume
-                mountPath: /config
+                mountPath: ${schema.spec.configMountPath}
               env:
               - name: PUID
-                value: "0"
+                value: ${schema.spec.puid}
               - name: GUID
-                value: "0"
+                value: ${schema.spec.pgid}
               - name: TZ
                 value: UTC
             volumes:
@@ -120,12 +123,12 @@ spec:
               - name: downloads-volume
                 mountPath: ${schema.spec.downloadsMountPath}
               - name: config-volume
-                mountPath: /config
+                mountPath: ${schema.spec.configMountPath}
               env:
               - name: PUID
-                value: "0"
+                value: ${schema.spec.puid}
               - name: GUID
-                value: "0"
+                value: ${schema.spec.pgid}
               - name: TZ
                 value: UTC
             volumes:
