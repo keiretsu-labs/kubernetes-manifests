@@ -20,6 +20,10 @@ resources:
   - ./bazarr-anime
   - ./qb
   - ./qb-pvt
+  - ./transmission-movies
+  - ./transmission-tv
+  - ./transmission-books
+  - ./transmission-music
   - ./autobrr
   - ./tautulli
   - ./jellyseerr

@@ -19,6 +19,11 @@ spec:
       - name: transmission-books
         image: linuxserver/transmission
         env:
+        - name: WEBUI_USERNAME
+          value: "admin"
+        - name: WEBUI_PWD
+          value: "placeholder"
+        env:
         - name: PUID
           value: "1000"
         - name: PGID
