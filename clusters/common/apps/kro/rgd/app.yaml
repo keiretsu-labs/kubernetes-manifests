@@ -1,0 +1,486 @@
+---
+# App RGD — general-purpose application deployment with optional backup + routing
+# Works for any namespace — media, home, etc.
+# Covers: Deployment + Service + HTTPRoute + GarageKey + VolSync backup/restore + PVC
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: app
+spec:
+  schema:
+    group: apps.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: App
+    scope: Namespaced
+    spec:
+      # Core
+      image: "string | required=true"
+      tag: "string | default=latest"
+      port: "integer | required=true"
+      configMountPath: "string | default=/config"
+      puid: "string | default=0"
+      pgid: "string | default=0"
+      timezone: "string | default=UTC"
+      # Routing
+      hostname: "string | required=true"
+      clusterDomain: "string | required=true"
+      publicGateway: "boolean | default=false"
+      # Homer
+      homerName: "string | required=true"
+      homerSubtitle: "string | required=true"
+      homerLogo: "string | required=true"
+      # Media volume (optional — existing PVC)
+      mediaClaimName: "string | default="
+      mediaMountPath: "string | default=/media-share"
+      # Downloads volume (optional — existing PVC)
+      downloadsClaimName: "string | default="
+      downloadsMountPath: "string | default=/downloads"
+      # Config PVC + backup
+      configStorageSize: "string | default=5Gi"
+      configStorageClass: "string | default=ceph-block-replicated"
+      # Volsync
+      backupEnabled: "boolean | default=true"
+      backupSchedule: "string | default=daily"
+      volsyncCopyMethod: "string | default=Snapshot"
+      volsyncSnapshotClass: "string | default=csi-rbdplugin-snapclass"
+      volsyncManualTrigger: "string | default=first"
+      volsyncPaused: "boolean | default=false"
+      volsyncUnlock: "string | default="
+      freshInstall: "boolean | default=false"
+      # S3/Restic
+      s3Endpoint: "string | default="
+      s3Location: "string | default="
+      s3Bucket: "string | default=keiretsu"
+      resticPassword: "string | default="
+    status:
+      ready: ${deployment.status.availableReplicas > 0}
+      serviceIP: ${service.spec.clusterIP}
+  resources:
+
+  # ===== DEPLOYMENT VARIANTS =====
+
+  # No extra volumes (just config)
+  - id: deployment
+    includeWhen:
+    - ${schema.spec.mediaClaimName == "" && schema.spec.downloadsClaimName == ""}
+    template:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ${schema.metadata.name}
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: ${schema.metadata.name}
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels:
+              app: ${schema.metadata.name}
+          spec:
+            containers:
+            - name: app
+              image: ${schema.spec.image + ":" + schema.spec.tag}
+              ports:
+              - name: http
+                containerPort: ${schema.spec.port}
+                protocol: TCP
+              volumeMounts:
+              - name: config
+                mountPath: ${schema.spec.configMountPath}
+              env:
+              - name: PUID
+                value: ${schema.spec.puid}
+              - name: PGID
+                value: ${schema.spec.pgid}
+              - name: TZ
+                value: ${schema.spec.timezone}
+            volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: ${schema.metadata.name + "-config"}
+
+  # With media volume
+  - id: deploymentMedia
+    includeWhen:
+    - ${schema.spec.mediaClaimName != "" && schema.spec.downloadsClaimName == ""}
+    template:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ${schema.metadata.name}
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: ${schema.metadata.name}
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels:
+              app: ${schema.metadata.name}
+          spec:
+            containers:
+            - name: app
+              image: ${schema.spec.image + ":" + schema.spec.tag}
+              ports:
+              - name: http
+                containerPort: ${schema.spec.port}
+                protocol: TCP
+              volumeMounts:
+              - name: config
+                mountPath: ${schema.spec.configMountPath}
+              - name: media
+                mountPath: ${schema.spec.mediaMountPath}
+              env:
+              - name: PUID
+                value: ${schema.spec.puid}
+              - name: PGID
+                value: ${schema.spec.pgid}
+              - name: TZ
+                value: ${schema.spec.timezone}
+            volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: ${schema.metadata.name + "-config"}
+            - name: media
+              persistentVolumeClaim:
+                claimName: ${schema.spec.mediaClaimName}
+
+  # With media + downloads volumes
+  - id: deploymentMediaDownloads
+    includeWhen:
+    - ${schema.spec.downloadsClaimName != ""}
+    template:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ${schema.metadata.name}
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: ${schema.metadata.name}
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels:
+              app: ${schema.metadata.name}
+          spec:
+            containers:
+            - name: app
+              image: ${schema.spec.image + ":" + schema.spec.tag}
+              ports:
+              - name: http
+                containerPort: ${schema.spec.port}
+                protocol: TCP
+              volumeMounts:
+              - name: config
+                mountPath: ${schema.spec.configMountPath}
+              - name: media
+                mountPath: ${schema.spec.mediaMountPath}
+              - name: downloads
+                mountPath: ${schema.spec.downloadsMountPath}
+              env:
+              - name: PUID
+                value: ${schema.spec.puid}
+              - name: PGID
+                value: ${schema.spec.pgid}
+              - name: TZ
+                value: ${schema.spec.timezone}
+            volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: ${schema.metadata.name + "-config"}
+            - name: media
+              persistentVolumeClaim:
+                claimName: ${schema.spec.mediaClaimName}
+            - name: downloads
+              persistentVolumeClaim:
+                claimName: ${schema.spec.downloadsClaimName}
+
+  # ===== SERVICE =====
+
+  - id: service
+    template:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ${schema.metadata.name}
+      spec:
+        selector:
+          app: ${schema.metadata.name}
+        ports:
+        - name: http
+          port: ${schema.spec.port}
+          protocol: TCP
+          targetPort: ${schema.spec.port}
+        type: ClusterIP
+
+  # ===== HTTPROUTE (private + ts) =====
+
+  - id: httproute
+    includeWhen:
+    - ${!schema.spec.publicGateway}
+    template:
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: ${schema.metadata.name}
+        annotations:
+          item.homer.rajsingh.info/name: ${schema.spec.homerName}
+          item.homer.rajsingh.info/subtitle: ${schema.spec.homerSubtitle}
+          item.homer.rajsingh.info/logo: ${schema.spec.homerLogo}
+          item.homer.rajsingh.info/keywords: "app"
+          service.homer.rajsingh.info/name: "Apps"
+          service.homer.rajsingh.info/icon: "fas fa-server"
+      spec:
+        parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: private
+          namespace: home
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: ts
+          namespace: home
+        hostnames:
+        - ${schema.spec.hostname + "." + schema.spec.clusterDomain}
+        rules:
+        - backendRefs:
+          - name: ${schema.metadata.name}
+            port: ${schema.spec.port}
+          matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+  # ===== HTTPROUTE (private + ts + public) =====
+
+  - id: httproutePublic
+    includeWhen:
+    - ${schema.spec.publicGateway}
+    template:
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: ${schema.metadata.name}
+        annotations:
+          item.homer.rajsingh.info/name: ${schema.spec.homerName}
+          item.homer.rajsingh.info/subtitle: ${schema.spec.homerSubtitle}
+          item.homer.rajsingh.info/logo: ${schema.spec.homerLogo}
+          item.homer.rajsingh.info/keywords: "app"
+          service.homer.rajsingh.info/name: "Apps"
+          service.homer.rajsingh.info/icon: "fas fa-server"
+      spec:
+        parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: private
+          namespace: home
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: ts
+          namespace: home
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: public
+          namespace: home
+        hostnames:
+        - ${schema.spec.hostname + "." + schema.spec.clusterDomain}
+        rules:
+        - backendRefs:
+          - name: ${schema.metadata.name}
+            port: ${schema.spec.port}
+          matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+  # ===== BACKUP (conditional on backupEnabled) =====
+
+  - id: garageKey
+    includeWhen:
+    - ${schema.spec.backupEnabled}
+    template:
+      apiVersion: garage.rajsingh.info/v1alpha1
+      kind: GarageKey
+      metadata:
+        name: ${"volsync-" + schema.metadata.name + "-config-key"}
+      spec:
+        clusterRef:
+          name: garage
+          namespace: garage
+        name: ${"Volsync " + schema.spec.homerName + " Config Key"}
+        secretTemplate:
+          name: ${"restic-" + schema.metadata.name + "-config"}
+          namespace: ${schema.metadata.namespace}
+          accessKeyIdKey: AWS_ACCESS_KEY_ID
+          secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+          includeEndpoint: false
+          includeRegion: false
+          additionalData:
+            RESTIC_REPOSITORY: ${"s3:http://" + schema.spec.s3Endpoint + "/" + schema.spec.s3Bucket + "/" + schema.spec.s3Location + "/" + schema.metadata.namespace + "/" + schema.metadata.name + "-config"}
+            RESTIC_PASSWORD: ${schema.spec.resticPassword}
+        bucketPermissions:
+        - globalAlias: ${schema.spec.s3Bucket}
+          read: true
+          write: true
+
+  - id: replicationSource
+    includeWhen:
+    - ${schema.spec.backupEnabled && schema.spec.volsyncUnlock == ""}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationSource
+      metadata:
+        name: ${schema.metadata.name + "-config"}
+      spec:
+        sourcePVC: ${schema.metadata.name + "-config"}
+        trigger:
+          schedule: "0 4 * * *"
+        restic:
+          pruneIntervalDays: 14
+          repository: ${"restic-" + schema.metadata.name + "-config"}
+          retain:
+            hourly: 1
+            daily: 3
+            weekly: 4
+            monthly: 2
+            yearly: 1
+          copyMethod: Direct
+
+  - id: replicationSourceUnlock
+    includeWhen:
+    - ${schema.spec.backupEnabled && schema.spec.volsyncUnlock != ""}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationSource
+      metadata:
+        name: ${schema.metadata.name + "-config"}
+      spec:
+        sourcePVC: ${schema.metadata.name + "-config"}
+        trigger:
+          schedule: "0 4 * * *"
+        restic:
+          pruneIntervalDays: 14
+          repository: ${"restic-" + schema.metadata.name + "-config"}
+          unlock: ${schema.spec.volsyncUnlock}
+          retain:
+            hourly: 1
+            daily: 3
+            weekly: 4
+            monthly: 2
+            yearly: 1
+          copyMethod: Direct
+
+  # ===== PVC + RESTORE =====
+
+  # Fresh install: plain PVC, no restore
+  - id: configPvcFresh
+    includeWhen:
+    - ${schema.spec.freshInstall}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.metadata.name + "-config"}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: ${schema.spec.configStorageSize}
+        storageClassName: ${schema.spec.configStorageClass}
+
+  # Snapshot restore (Ottawa)
+  - id: replicationDestinationSnapshot
+    includeWhen:
+    - ${!schema.spec.freshInstall && schema.spec.volsyncCopyMethod == "Snapshot"}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationDestination
+      metadata:
+        name: ${schema.metadata.name + "-config"}
+      spec:
+        trigger:
+          manual: ${schema.spec.volsyncManualTrigger}
+        paused: ${schema.spec.volsyncPaused}
+        restic:
+          repository: ${"restic-" + schema.metadata.name + "-config"}
+          accessModes: [ReadWriteOnce]
+          copyMethod: Snapshot
+          capacity: ${schema.spec.configStorageSize}
+          storageClassName: ${schema.spec.configStorageClass}
+          volumeSnapshotClassName: ${schema.spec.volsyncSnapshotClass}
+
+  - id: configPvcSnapshot
+    includeWhen:
+    - ${!schema.spec.freshInstall && schema.spec.volsyncCopyMethod == "Snapshot"}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.metadata.name + "-config"}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: ${schema.spec.configStorageSize}
+        dataSourceRef:
+          kind: ReplicationDestination
+          apiGroup: volsync.backube
+          name: ${replicationDestinationSnapshot.metadata.name}
+
+  # Direct restore (Robbinsdale)
+  - id: configPvcDirect
+    includeWhen:
+    - ${!schema.spec.freshInstall && schema.spec.volsyncCopyMethod == "Direct"}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.metadata.name + "-config"}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: ${schema.spec.configStorageSize}
+        storageClassName: ${schema.spec.configStorageClass}
+
+  - id: replicationDestinationDirect
+    includeWhen:
+    - ${!schema.spec.freshInstall && schema.spec.volsyncCopyMethod == "Direct"}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationDestination
+      metadata:
+        name: ${schema.metadata.name + "-config"}
+      spec:
+        trigger:
+          manual: ${schema.spec.volsyncManualTrigger}
+        paused: ${schema.spec.volsyncPaused}
+        restic:
+          repository: ${"restic-" + schema.metadata.name + "-config"}
+          destinationPVC: ${configPvcDirect.metadata.name}
+          copyMethod: Direct
+
+  # ===== NO BACKUP PVC =====
+
+  - id: configPvcNoBackup
+    includeWhen:
+    - ${!schema.spec.backupEnabled}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.metadata.name + "-config"}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: ${schema.spec.configStorageSize}
+        storageClassName: ${schema.spec.configStorageClass}
