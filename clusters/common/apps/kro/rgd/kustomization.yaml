@@ -5,3 +5,4 @@ resources:
   - ./arrapp.yaml
   - ./qbapp.yaml
   - ./floatingapp.yaml
+  - ./meshegress.yaml

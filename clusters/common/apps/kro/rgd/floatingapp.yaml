@@ -9,28 +9,27 @@ spec:
     apiVersion: v1alpha1
     kind: FloatingApp
     scope: Namespaced
+    types:
+      VolumeSpec:
+        name: "string | required=true"
+        size: "string | default=5Gi"
+        mountPath: "string | required=true"
     spec:
-      name: "string"
-      image: "string"
-      port: "integer"
+      name: "string | required=true"
+      image: "string | required=true"
+      port: "integer | required=true"
       replicas: "integer | default=1"
-      tailscaleHostname: "string"
+      tailscaleHostname: "string | required=true"
       tailscaleTags: "string | default=tag:k8s"
-      # CSI-S3 volumes (up to 2)
-      volumeName: "string | default="
-      volumeSize: "string | default=5Gi"
-      volumeMountPath: "string | default=/data"
-      volume2Name: "string | default="
-      volume2Size: "string | default=5Gi"
-      volume2MountPath: "string | default=/data2"
+      volumes: "[]VolumeSpec"
     status:
       ready: ${deployment.status.availableReplicas > 0}
+      serviceIP: ${service.spec.clusterIP}
+      tailscaleService: ${tsIngress.metadata.name}
   resources:
 
-  # --- Deployment (no volumes) ---
+  # --- Deployment ---
   - id: deployment
-    includeWhen:
-    - ${schema.spec.volumeName == ""}
     template:
       apiVersion: apps/v1
       kind: Deployment
@@ -57,87 +56,6 @@ spec:
               - name: http
                 containerPort: ${schema.spec.port}
                 protocol: TCP
-
-  # --- Deployment (1 volume) ---
-  - id: deploymentVol1
-    includeWhen:
-    - ${schema.spec.volumeName != "" && schema.spec.volume2Name == ""}
-    template:
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: ${schema.spec.name}
-        labels:
-          app.keiretsu.ts.net/floating: "true"
-      spec:
-        replicas: ${schema.spec.replicas}
-        selector:
-          matchLabels:
-            app: ${schema.spec.name}
-        strategy:
-          type: Recreate
-        template:
-          metadata:
-            labels:
-              app: ${schema.spec.name}
-          spec:
-            containers:
-            - name: ${schema.spec.name}
-              image: ${schema.spec.image}
-              ports:
-              - name: http
-                containerPort: ${schema.spec.port}
-                protocol: TCP
-              volumeMounts:
-              - name: ${schema.spec.volumeName}
-                mountPath: ${schema.spec.volumeMountPath}
-            volumes:
-            - name: ${schema.spec.volumeName}
-              persistentVolumeClaim:
-                claimName: ${schema.spec.name + "-" + schema.spec.volumeName}
-
-  # --- Deployment (2 volumes) ---
-  - id: deploymentVol2
-    includeWhen:
-    - ${schema.spec.volume2Name != ""}
-    template:
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: ${schema.spec.name}
-        labels:
-          app.keiretsu.ts.net/floating: "true"
-      spec:
-        replicas: ${schema.spec.replicas}
-        selector:
-          matchLabels:
-            app: ${schema.spec.name}
-        strategy:
-          type: Recreate
-        template:
-          metadata:
-            labels:
-              app: ${schema.spec.name}
-          spec:
-            containers:
-            - name: ${schema.spec.name}
-              image: ${schema.spec.image}
-              ports:
-              - name: http
-                containerPort: ${schema.spec.port}
-                protocol: TCP
-              volumeMounts:
-              - name: ${schema.spec.volumeName}
-                mountPath: ${schema.spec.volumeMountPath}
-              - name: ${schema.spec.volume2Name}
-                mountPath: ${schema.spec.volume2MountPath}
-            volumes:
-            - name: ${schema.spec.volumeName}
-              persistentVolumeClaim:
-                claimName: ${schema.spec.name + "-" + schema.spec.volumeName}
-            - name: ${schema.spec.volume2Name}
-              persistentVolumeClaim:
-                claimName: ${schema.spec.name + "-" + schema.spec.volume2Name}
 
   # --- ClusterIP Service ---
   - id: service
@@ -178,27 +96,27 @@ spec:
         type: LoadBalancer
         loadBalancerClass: tailscale
 
-  # --- CSI-S3 PV + PVC (volume 1) ---
-  - id: pv1
-    includeWhen:
-    - ${schema.spec.volumeName != ""}
+  # --- CSI-S3 PVs (one per volume, forEach) ---
+  - id: pvs
+    forEach:
+      - vol: ${schema.spec.volumes}
     template:
       apiVersion: v1
       kind: PersistentVolume
       metadata:
-        name: ${schema.spec.name + "-" + schema.spec.volumeName}
+        name: ${schema.spec.name + "-" + vol.name}
       spec:
         capacity:
-          storage: ${schema.spec.volumeSize}
+          storage: ${vol.size}
         accessModes:
         - ReadWriteMany
         persistentVolumeReclaimPolicy: Retain
         claimRef:
           namespace: ${schema.metadata.namespace}
-          name: ${schema.spec.name + "-" + schema.spec.volumeName}
+          name: ${schema.spec.name + "-" + vol.name}
         csi:
           driver: ru.yandex.s3.csi
-          volumeHandle: ${"csi-s3/" + schema.spec.name + "-" + schema.spec.volumeName}
+          volumeHandle: ${"csi-s3/" + schema.spec.name + "-" + vol.name}
           volumeAttributes:
             mounter: geesefs
             options: "--memory-limit 1000 --dir-mode 0777 --file-mode 0666"
@@ -206,64 +124,20 @@ spec:
             name: csi-s3-secret
             namespace: csi-s3
 
-  - id: pvc1
-    includeWhen:
-    - ${schema.spec.volumeName != ""}
+  # --- CSI-S3 PVCs (one per volume, forEach) ---
+  - id: pvcs
+    forEach:
+      - vol: ${schema.spec.volumes}
     template:
       apiVersion: v1
       kind: PersistentVolumeClaim
       metadata:
-        name: ${schema.spec.name + "-" + schema.spec.volumeName}
+        name: ${schema.spec.name + "-" + vol.name}
       spec:
         accessModes:
         - ReadWriteMany
         resources:
           requests:
-            storage: ${schema.spec.volumeSize}
-        volumeName: ${schema.spec.name + "-" + schema.spec.volumeName}
-        storageClassName: ""
-
-  # --- CSI-S3 PV + PVC (volume 2) ---
-  - id: pv2
-    includeWhen:
-    - ${schema.spec.volume2Name != ""}
-    template:
-      apiVersion: v1
-      kind: PersistentVolume
-      metadata:
-        name: ${schema.spec.name + "-" + schema.spec.volume2Name}
-      spec:
-        capacity:
-          storage: ${schema.spec.volume2Size}
-        accessModes:
-        - ReadWriteMany
-        persistentVolumeReclaimPolicy: Retain
-        claimRef:
-          namespace: ${schema.metadata.namespace}
-          name: ${schema.spec.name + "-" + schema.spec.volume2Name}
-        csi:
-          driver: ru.yandex.s3.csi
-          volumeHandle: ${"csi-s3/" + schema.spec.name + "-" + schema.spec.volume2Name}
-          volumeAttributes:
-            mounter: geesefs
-            options: "--memory-limit 1000 --dir-mode 0777 --file-mode 0666"
-          nodePublishSecretRef:
-            name: csi-s3-secret
-            namespace: csi-s3
-
-  - id: pvc2
-    includeWhen:
-    - ${schema.spec.volume2Name != ""}
-    template:
-      apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: ${schema.spec.name + "-" + schema.spec.volume2Name}
-      spec:
-        accessModes:
-        - ReadWriteMany
-        resources:
-          requests:
-            storage: ${schema.spec.volume2Size}
-        volumeName: ${schema.spec.name + "-" + schema.spec.volume2Name}
+            storage: ${vol.size}
+        volumeName: ${schema.spec.name + "-" + vol.name}
         storageClassName: ""
