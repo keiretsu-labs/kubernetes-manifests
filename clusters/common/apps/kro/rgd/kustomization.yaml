@@ -8,3 +8,4 @@ resources:
   - ./meshegress.yaml
   - ./volsyncbackup.yaml
   - ./backupverify.yaml
+  - ./app.yaml
