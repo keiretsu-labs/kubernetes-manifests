@@ -33,5 +33,6 @@ resources:
   - ./qb-pvt
   - ./feedcord
   - ./flaresolverr
+  - ./maintainerr
   # - ./tsdb
   # - ./tunarr
