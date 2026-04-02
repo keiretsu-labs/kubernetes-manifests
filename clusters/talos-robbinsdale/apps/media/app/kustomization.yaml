@@ -29,6 +29,7 @@ resources:
   - ./jellyseerr
   - ./overseerr
   - ./tunarr
+  - ./wizarr
   - ./lidarr
   - ./sabnzbd
   - ./plex
