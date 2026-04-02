@@ -94,8 +94,17 @@
         "clusters/**/apps/media/app/lidarr/**",
         "clusters/**/apps/media/app/overseerr/**",
         "clusters/**/apps/media/app/prowlarr/**",
+        "clusters/**/apps/media/app/qb/**",
+        "clusters/**/apps/media/app/qb-pvt/**",
+        "clusters/**/apps/media/app/radarr-1080p/**",
+        "clusters/**/apps/media/app/radarr-4k/**",
+        "clusters/**/apps/media/app/radarr-4kremux/**",
+        "clusters/**/apps/media/app/radarr-anime/**",
+        "clusters/**/apps/media/app/sabnzbd/**",
+        "clusters/**/apps/media/app/sonarr-1080p/**",
+        "clusters/**/apps/media/app/sonarr-4k/**",
+        "clusters/**/apps/media/app/sonarr-anime/**",
         "clusters/**/apps/media/app/tautulli/**",
-        "clusters/**/apps/media/app/tunarr/**",
         "clusters/**/apps/media/app/wizarr/**"
       ],
       "automerge": true
