@@ -6,6 +6,8 @@ apiVersion: kro.run/v1alpha1
 kind: ResourceGraphDefinition
 metadata:
   name: backupverify
+  annotations:
+    kro.run/allow-breaking-changes: "true"
 spec:
   schema:
     group: storage.keiretsu.ts.net
@@ -14,21 +16,56 @@ spec:
     scope: Namespaced
     spec:
       name: "string | required=true"
-      # Reference to the restic secret (same one VolSync uses)
       resticSecretName: "string | required=true"
-      # Schedule (cron format, no spaces in default so use required)
       schedule: "string | required=true"
-      # Max age of latest snapshot in hours before alerting
       maxSnapshotAgeHours: "integer | default=48"
-      # Percentage of pack data to verify per run (full coverage over N runs)
       readDataSubsetPercent: "integer | default=10"
-      # Discord webhook for notifications
-      discordWebhook: "string"
-      # Cluster location for notification context
+      discordWebhook: "string | default="
       location: "string | default=unknown"
     status:
       schedule: ${cronJob.spec.schedule}
   resources:
+
+  - id: verifyScript
+    template:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: ${"backup-verify-" + schema.spec.name + "-script"}
+      data:
+        verify.sh: |
+          #!/bin/sh
+          set -e
+          echo "=== Backup Verification: $APP_NAME ==="
+          echo "Location: $APP_LOCATION"
+          echo "Repository: $RESTIC_REPOSITORY"
+          echo ""
+
+          echo "--- Checking latest snapshot ---"
+          SNAPSHOT_JSON=$(restic snapshots --latest 1 --json 2>/dev/null)
+          if [ "$SNAPSHOT_JSON" = "[]" ] || [ -z "$SNAPSHOT_JSON" ]; then
+            MSG="FAIL: No snapshots found for $APP_NAME on $APP_LOCATION"
+            echo "$MSG"
+            [ -n "$DISCORD_WEBHOOK" ] && curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🔴 $MSG\"}" "$DISCORD_WEBHOOK" || true
+            exit 1
+          fi
+
+          SNAP_COUNT=$(echo "$SNAPSHOT_JSON" | grep -c '"short_id"' || echo 0)
+          echo "Snapshots found: $SNAP_COUNT"
+
+          echo ""
+          echo "--- Checking repository integrity ($READ_SUBSET% of packs) ---"
+          if restic check --read-data-subset="$READ_SUBSET%/1" 2>&1; then
+            MSG="OK: $APP_NAME on $APP_LOCATION - backup verified (integrity: ${READ_SUBSET}% checked)"
+            echo ""
+            echo "$MSG"
+            [ -n "$DISCORD_WEBHOOK" ] && curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🟢 $MSG\"}" "$DISCORD_WEBHOOK" || true
+          else
+            MSG="FAIL: $APP_NAME on $APP_LOCATION - restic check failed"
+            echo "$MSG"
+            [ -n "$DISCORD_WEBHOOK" ] && curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🔴 $MSG\"}" "$DISCORD_WEBHOOK" || true
+            exit 1
+          fi
 
   - id: cronJob
     template:
@@ -50,70 +87,24 @@ spec:
                 containers:
                 - name: verify
                   image: restic/restic:latest
-                  command:
-                  - sh
-                  - -c
-                  - |
-                    set -e
-                    echo "=== Backup Verification: ${schema.spec.name} ==="
-                    echo "Location: ${schema.spec.location}"
-                    echo "Repository: $$RESTIC_REPOSITORY"
-                    echo ""
-
-                    # Step 1: Check latest snapshot age
-                    echo "--- Checking latest snapshot ---"
-                    SNAPSHOT_JSON=$$(restic snapshots --latest 1 --json 2>/dev/null)
-                    if [ "$$SNAPSHOT_JSON" = "[]" ] || [ -z "$$SNAPSHOT_JSON" ]; then
-                      MSG="FAIL: No snapshots found for ${schema.spec.name} on ${schema.spec.location}"
-                      echo "$$MSG"
-                      if [ -n "$$DISCORD_WEBHOOK" ]; then
-                        curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🔴 $$MSG\"}" "$$DISCORD_WEBHOOK" || true
-                      fi
-                      exit 1
-                    fi
-
-                    SNAPSHOT_TIME=$$(echo "$$SNAPSHOT_JSON" | grep -o '"time":"[^"]*"' | head -1 | cut -d'"' -f4)
-                    echo "Latest snapshot: $$SNAPSHOT_TIME"
-
-                    # Check age (compare epoch seconds)
-                    SNAP_EPOCH=$$(date -d "$$SNAPSHOT_TIME" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%S" "$$(echo $$SNAPSHOT_TIME | cut -c1-19)" +%s 2>/dev/null || echo 0)
-                    NOW_EPOCH=$$(date +%s)
-                    AGE_HOURS=$(( (NOW_EPOCH - SNAP_EPOCH) / 3600 ))
-                    echo "Snapshot age: $${AGE_HOURS}h (max: ${schema.spec.maxSnapshotAgeHours}h)"
-
-                    if [ "$$AGE_HOURS" -gt "${schema.spec.maxSnapshotAgeHours}" ]; then
-                      MSG="WARN: ${schema.spec.name} on ${schema.spec.location} - latest snapshot is $${AGE_HOURS}h old (threshold: ${schema.spec.maxSnapshotAgeHours}h)"
-                      echo "$$MSG"
-                      if [ -n "$$DISCORD_WEBHOOK" ]; then
-                        curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🟡 $$MSG\"}" "$$DISCORD_WEBHOOK" || true
-                      fi
-                    fi
-
-                    # Step 2: Verify repository integrity
-                    echo ""
-                    echo "--- Checking repository integrity (${schema.spec.readDataSubsetPercent}% of packs) ---"
-                    restic check --read-data-subset="${schema.spec.readDataSubsetPercent}%/1" 2>&1
-                    CHECK_RC=$$?
-
-                    if [ "$$CHECK_RC" -ne 0 ]; then
-                      MSG="FAIL: ${schema.spec.name} on ${schema.spec.location} - restic check failed (rc=$$CHECK_RC)"
-                      echo "$$MSG"
-                      if [ -n "$$DISCORD_WEBHOOK" ]; then
-                        curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🔴 $$MSG\"}" "$$DISCORD_WEBHOOK" || true
-                      fi
-                      exit 1
-                    fi
-
-                    # Success
-                    MSG="OK: ${schema.spec.name} on ${schema.spec.location} - backup verified (age: $${AGE_HOURS}h, integrity: ${schema.spec.readDataSubsetPercent}% checked)"
-                    echo ""
-                    echo "$$MSG"
-                    if [ -n "$$DISCORD_WEBHOOK" ]; then
-                      curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🟢 $$MSG\"}" "$$DISCORD_WEBHOOK" || true
-                    fi
+                  command: ["sh", "/scripts/verify.sh"]
                   envFrom:
                   - secretRef:
                       name: ${schema.spec.resticSecretName}
                   env:
+                  - name: APP_NAME
+                    value: ${schema.spec.name}
+                  - name: APP_LOCATION
+                    value: ${schema.spec.location}
+                  - name: READ_SUBSET
+                    value: ${string(schema.spec.readDataSubsetPercent)}
                   - name: DISCORD_WEBHOOK
                     value: ${schema.spec.discordWebhook}
+                  volumeMounts:
+                  - name: scripts
+                    mountPath: /scripts
+                volumes:
+                - name: scripts
+                  configMap:
+                    name: ${verifyScript.metadata.name}
+                    defaultMode: 0755
