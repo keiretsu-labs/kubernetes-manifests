@@ -40,7 +40,6 @@ spec:
       s3Path: "string | required=true"
       resticPassword: "string | required=true"
     status:
-      pvcName: ${pvcDirect.metadata.name}
       backupSchedule: ${replicationSource.spec.trigger.schedule}
   resources:
 
