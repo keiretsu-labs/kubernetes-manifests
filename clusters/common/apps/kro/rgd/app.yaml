@@ -21,6 +21,9 @@ spec:
       puid: "string | default=0"
       pgid: "string | default=0"
       timezone: "string | default=UTC"
+      # Security context (0 = root, set to 1000 for non-root apps)
+      runAsUser: "integer | default=0"
+      fsGroup: "integer | default=0"
       # Routing
       hostname: "string | required=true"
       clusterDomain: "string | required=true"
@@ -80,6 +83,9 @@ spec:
             labels:
               app: ${schema.metadata.name}
           spec:
+            securityContext:
+              runAsUser: ${schema.spec.runAsUser}
+              fsGroup: ${schema.spec.fsGroup}
             containers:
             - name: app
               image: ${schema.spec.image + ":" + schema.spec.tag}
@@ -123,6 +129,9 @@ spec:
             labels:
               app: ${schema.metadata.name}
           spec:
+            securityContext:
+              runAsUser: ${schema.spec.runAsUser}
+              fsGroup: ${schema.spec.fsGroup}
             containers:
             - name: app
               image: ${schema.spec.image + ":" + schema.spec.tag}
@@ -171,6 +180,9 @@ spec:
             labels:
               app: ${schema.metadata.name}
           spec:
+            securityContext:
+              runAsUser: ${schema.spec.runAsUser}
+              fsGroup: ${schema.spec.fsGroup}
             containers:
             - name: app
               image: ${schema.spec.image + ":" + schema.spec.tag}
