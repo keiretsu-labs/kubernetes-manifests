@@ -38,8 +38,15 @@ spec:
       s3Location: "string"
       resticPassword: "string"
       clusterDomain: "string"
+      timezone: "string | default=UTC"
+      # Homer dashboard customization
+      homerKeywords: "string | default=tv, series, automation"
+      homerServiceName: "string | default=Media"
+      homerServiceIcon: "string | default=fas fa-tv"
     status:
       ready: ${deployment.status.availableReplicas > 0}
+      serviceIP: ${service.spec.clusterIP}
+      endpoint: ${"http://" + schema.spec.hostname + "." + schema.spec.clusterDomain}
   resources:
   # Deployment without downloads volume (Ottawa pattern)
   - id: deployment
@@ -80,7 +87,7 @@ spec:
               - name: GUID
                 value: ${schema.spec.pgid}
               - name: TZ
-                value: UTC
+                value: ${schema.spec.timezone}
             volumes:
             - name: media-volume
               persistentVolumeClaim:
@@ -130,7 +137,7 @@ spec:
               - name: GUID
                 value: ${schema.spec.pgid}
               - name: TZ
-                value: UTC
+                value: ${schema.spec.timezone}
             volumes:
             - name: media-volume
               persistentVolumeClaim:
@@ -168,9 +175,9 @@ spec:
           item.homer.rajsingh.info/name: ${schema.spec.homerName}
           item.homer.rajsingh.info/subtitle: ${schema.spec.homerSubtitle}
           item.homer.rajsingh.info/logo: ${schema.spec.homerLogo}
-          item.homer.rajsingh.info/keywords: "tv, series, automation"
-          service.homer.rajsingh.info/name: "Media"
-          service.homer.rajsingh.info/icon: "fas fa-tv"
+          item.homer.rajsingh.info/keywords: ${schema.spec.homerKeywords}
+          service.homer.rajsingh.info/name: ${schema.spec.homerServiceName}
+          service.homer.rajsingh.info/icon: ${schema.spec.homerServiceIcon}
       spec:
         parentRefs:
         - group: gateway.networking.k8s.io
