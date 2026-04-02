@@ -11,6 +11,7 @@ spec:
   tag: "v3.1.0"
   port: 5055
   hostname: jellyseerr
+  publicGateway: true
   homerName: "Jellyseerr"
   homerSubtitle: "Media Request Manager"
   homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/jellyseerr.svg"

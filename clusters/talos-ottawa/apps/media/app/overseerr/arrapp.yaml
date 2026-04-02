@@ -11,6 +11,7 @@ spec:
   tag: "v3.1.0"
   port: 5055
   hostname: overseerr
+  publicGateway: true
   homerName: "Overseerr"
   homerSubtitle: "Media Request Manager"
   homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/overseerr.svg"

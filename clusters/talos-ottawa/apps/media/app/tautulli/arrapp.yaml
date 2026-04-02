@@ -11,6 +11,7 @@ spec:
   tag: "v2.17.0"
   port: 8181
   hostname: tautulli
+  publicGateway: true
   homerName: "Tautulli"
   homerSubtitle: "Plex Monitoring & Statistics"
   homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/tautulli.svg"
