@@ -1,5 +1,0 @@
-node_modules/
-analysis-results.json
-package-lock.json
-*.log
-.DS_Store
