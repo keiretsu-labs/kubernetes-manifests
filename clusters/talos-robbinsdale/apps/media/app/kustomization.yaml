@@ -28,7 +28,6 @@ resources:
   - ./tautulli
   - ./jellyseerr
   - ./overseerr
-  - ./wizarr
   - ./tunarr
   - ./lidarr
   - ./sabnzbd
