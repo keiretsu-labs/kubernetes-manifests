@@ -39,10 +39,6 @@ spec:
       resticPassword: "string"
       clusterDomain: "string"
       timezone: "string | default=UTC"
-      # Homer dashboard customization
-      homerKeywords: "string | default=media"
-      homerServiceName: "string | default=Media"
-      homerServiceIcon: "string | default=fas fa-tv"
     status:
       ready: ${deployment.status.availableReplicas > 0}
       serviceIP: ${service.spec.clusterIP}
@@ -175,9 +171,9 @@ spec:
           item.homer.rajsingh.info/name: ${schema.spec.homerName}
           item.homer.rajsingh.info/subtitle: ${schema.spec.homerSubtitle}
           item.homer.rajsingh.info/logo: ${schema.spec.homerLogo}
-          item.homer.rajsingh.info/keywords: ${schema.spec.homerKeywords}
-          service.homer.rajsingh.info/name: ${schema.spec.homerServiceName}
-          service.homer.rajsingh.info/icon: ${schema.spec.homerServiceIcon}
+          item.homer.rajsingh.info/keywords: "tv, series, automation"
+          service.homer.rajsingh.info/name: "Media"
+          service.homer.rajsingh.info/icon: "fas fa-tv"
       spec:
         parentRefs:
         - group: gateway.networking.k8s.io
