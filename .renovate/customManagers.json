@@ -14,6 +14,17 @@
     },
     {
       "customType": "regex",
+      "description": "Process Kro CR image tag fields (ArrApp tag:, QbApp qbTag:/gluetunTag:/portSyncTag:)",
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*\\w*[Tt]ag:\\s*(?<currentValue>\\S+)"
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}docker{{/if}}"
+    },
+    {
+      "customType": "regex",
       "description": "OpenClaw base image version",
       "fileMatch": ["^openclaw/Dockerfile\\.openclaw$"],
       "matchStrings": ["FROM ghcr\\.io/openclaw/openclaw:(?<currentValue>[\\d.]+)"],
