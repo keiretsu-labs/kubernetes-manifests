@@ -27,3 +27,4 @@ spec:
   s3Location: "${LOCATION}"
   resticPassword: "${COMMON_RESTIC_SECRET}"
   clusterDomain: "${CLUSTER_DOMAIN}"
+  fsGroup: 1000
