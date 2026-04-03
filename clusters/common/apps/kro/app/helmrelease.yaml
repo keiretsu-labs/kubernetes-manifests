@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: kro
-      version: 0.9.0
+      version: 0.9.1
       interval: 5m
       sourceRef:
         kind: HelmRepository
