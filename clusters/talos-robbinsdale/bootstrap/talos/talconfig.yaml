@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
+---
+# renovate: datasource=docker depName=ghcr.io/siderolabs/installer
+talosVersion: v1.12.6
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+kubernetesVersion: v1.35.3
+clusterName: "k8s.robbinsdale.local"
+endpoint: https://k8s.robbinsdale.local:6443
+allowSchedulingOnMasters: true
+allowSchedulingOnControlPlanes: true
+clusterPodNets:
+  - "10.1.0.0/16"
+clusterSvcNets:
+  - "10.0.0.0/16"
+
+additionalApiServerCertSans:
+  - "192.168.50.25"
+  - "192.168.51.25"
+  - "default-kubernetes-robbinsdale-ingress.keiretsu.ts.net"
+  - "kubernetes-robbinsdale.keiretsu.ts.net"
+  - "k8s.robbinsdale.rajsingh.info"
+  - "k8s.robbinsdale.lukehouge.com"
+  - "kubernetes-robbinsdale.default.svc.cluster.local"
+  - 127.0.0.1 # KubePrism
+
+additionalMachineCertSans:
+  - "192.168.50.25"
+  - "192.168.51.25"
+  - "k8s.robbinsdale.local"
+  - "default-kubernetes-robbinsdale-ingress.keiretsu.ts.net"
+  - "kubernetes-robbinsdale.keiretsu.ts.net"
+  - "k8s.robbinsdale.rajsingh.info"
+  - "k8s.robbinsdale.lukehouge.com"
+  - "kubernetes-robbinsdale.default.svc.cluster.local"
+  - 127.0.0.1 # KubePrism
+
+# Disable built-in Flannel to use Cilium
+cniConfig:
+  name: none
+
+# Per-node specific configuration
+nodes:
+  ###################################################################
+  - hostname: "tank"
+    ipAddress: "192.168.50.51"
+    installDiskSelector:
+      serial: "242849CDEFAC" # Crucial CT1000P3PSSD8 1TB
+    controlPlane: true
+    networkInterfaces:
+      - interface: enp1s0f0
+        dhcp: true
+        vip:
+          ip: "192.168.50.25"
+  ###################################################################
+  - hostname: "stone"
+    ipAddress: "192.168.50.82"
+    installDiskSelector:
+      serial: "S5P2NG0R940019Z" # Samsung SSD 980 PRO 1TB
+    controlPlane: true
+    networkInterfaces:
+      - interface: enp1s0f1
+        dhcp: true
+        vip:
+          ip: "192.168.50.25"
+  ###################################################################
+  - hostname: "titan"
+    ipAddress: "192.168.50.112"
+    installDiskSelector:
+      serial: "202729482BD6" # Crucial CT1000P1SSD8 1TB
+    controlPlane: true
+    networkInterfaces:
+      - interface: enp1s0f1
+        dhcp: true
+        vip:
+          ip: "192.168.50.25"
+
+# Global patches
+patches:
+  - "@./patches/global/cluster-discovery.yaml"
+  - "@./patches/global/containerd.yaml"
+  - "@./patches/global/disable-search-domain.yaml"
+  - "@./patches/global/hostdns.yaml"
+  - "@./patches/global/kubelet.yaml"
+  - "@./patches/global/local-path-provisioner.yaml"
+  - "@./patches/global/metrics-server.yaml"
+  - "@./patches/global/sysctls.yaml"
+  - "@./patches/global/node-labels.yaml"
+
+# Control plane nodes config
+controlPlane:
+  schematic:
+    customization:
+      systemExtensions:
+        officialExtensions:
+          - siderolabs/amd-ucode
+          - siderolabs/amdgpu
+          - siderolabs/i915
+          - siderolabs/intel-ucode
+          - siderolabs/realtek-firmware
+          - siderolabs/thunderbolt
+          - siderolabs/util-linux-tools
+          - siderolabs/zfs
+      extraKernelArgs:
+        - talos.platform=metal
+  patches:
+    - "@./patches/controller/api-access.yaml"
+    - "@./patches/controller/disable-proxy.yaml"
+    - "@./patches/controller/kubelet-certs.yaml"
+    - "@./patches/controller/etcd-metrics-patch.yaml"
