@@ -23,9 +23,9 @@ spec:
   values:
     replicaCount: 1
     startupProbe:
-      initialDelaySeconds: 10
+      initialDelaySeconds: 30
       periodSeconds: 10
-      failureThreshold: 12
+      failureThreshold: 30
     service:
       type: ClusterIP
       port: 5000
