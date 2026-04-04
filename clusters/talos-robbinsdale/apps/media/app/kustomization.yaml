@@ -5,6 +5,7 @@ namespace: media
 resources:
   - secret.yaml
   - pvc-media.yaml
+  - unas.yaml
   - ./jellyfin
   - ./prowlarr
   - ./sonarr-1080p
