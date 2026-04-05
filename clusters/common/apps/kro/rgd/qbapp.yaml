@@ -67,7 +67,7 @@ spec:
             - name: gluetun-update
               image: ${schema.spec.gluetunImage + ":" + schema.spec.gluetunTag}
               command:
-              - gluetun
+              - /gluetun-entrypoint
               - update
               - -enduser
               - -providers
