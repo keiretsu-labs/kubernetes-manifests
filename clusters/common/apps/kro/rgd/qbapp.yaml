@@ -63,33 +63,6 @@ spec:
             labels:
               app: ${schema.spec.name}
           spec:
-            initContainers:
-            - name: gluetun-update
-              image: ${schema.spec.gluetunImage + ":" + schema.spec.gluetunTag}
-              command:
-              - /gluetun-entrypoint
-              - update
-              - -enduser
-              - -providers
-              - protonvpn
-              - -proton-email
-              - $(UPDATER_PROTONVPN_EMAIL)
-              - -proton-password
-              - $(UPDATER_PROTONVPN_PASSWORD)
-              env:
-              - name: UPDATER_PROTONVPN_EMAIL
-                valueFrom:
-                  secretKeyRef:
-                    name: ${schema.spec.vpnSecretName}
-                    key: UPDATER_PROTONVPN_EMAIL
-              - name: UPDATER_PROTONVPN_PASSWORD
-                valueFrom:
-                  secretKeyRef:
-                    name: ${schema.spec.vpnSecretName}
-                    key: UPDATER_PROTONVPN_PASSWORD
-              volumeMounts:
-              - name: gluetun-config
-                mountPath: /gluetun
             containers:
             - name: gluetun
               image: ${schema.spec.gluetunImage + ":" + schema.spec.gluetunTag}
