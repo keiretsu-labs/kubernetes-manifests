@@ -282,6 +282,9 @@ spec:
     # nodes below will be used as storage resources.
     nodes:
       - name: "stone"
+        devices:
+          - name: "nvme1n1"
+          - name: "sd[a-z]"
       - name: "titan"
       - name: "tank"
         devices:
