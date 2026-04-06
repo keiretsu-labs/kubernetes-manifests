@@ -101,8 +101,6 @@ spec:
                 value: 5s
               - name: VPN_PORT_FORWARDING
                 value: "on"
-              - name: PORT_FORWARD_ONLY
-                value: "on"
               - name: SERVER_COUNTRIES
                 value: ${schema.spec.vpnCountry}
               - name: DOT
