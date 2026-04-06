@@ -8,7 +8,7 @@ spec:
   name: autobrr
   image: ghcr.io/autobrr/autobrr
   # renovate: datasource=docker depName=ghcr.io/autobrr/autobrr
-  tag: "v1.75.1"
+  tag: "v1.76.0"
   port: 7474
   hostname: autobrr
   homerName: "Autobrr"
