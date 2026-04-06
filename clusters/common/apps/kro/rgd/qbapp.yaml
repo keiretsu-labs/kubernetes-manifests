@@ -114,7 +114,7 @@ spec:
               - name: FIREWALL_OUTBOUND_SUBNETS
                 value: ${schema.spec.podCidr}
               - name: UPDATER_PERIOD
-                value: "24h"
+                value: "5m"
               - name: UPDATER_PROTONVPN_EMAIL
                 valueFrom:
                   secretKeyRef:
