@@ -19,5 +19,6 @@ metadata:
 spec:
   failureDomain: osd
   replicated:
-    size: 3
+    size: 2
+    requireSafeReplicaSize: false
   deviceClass: nvme
