@@ -284,14 +284,10 @@ spec:
       - name: "stone"
         devices:
           - name: "nvme1n1"
-          - name: "sdb"
       - name: "titan"
         devices:
           - name: "nvme0n1"
           - name: "nvme1n1"
-          - name: "sda"
-          - name: "sdc"
-          - name: "sdd"
       - name: "tank"
         devices:
           - name: "sd[b-z]"
