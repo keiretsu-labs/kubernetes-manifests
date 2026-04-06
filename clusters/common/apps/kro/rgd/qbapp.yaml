@@ -105,6 +105,8 @@ spec:
                 value: "on"
               - name: SERVER_COUNTRIES
                 value: ${schema.spec.vpnCountry}
+              - name: SERVER_NAMES
+                value: ${schema.spec.vpnServer}
               - name: DOT
                 value: "off"
               - name: HEALTH_TARGET_ADDRESS
