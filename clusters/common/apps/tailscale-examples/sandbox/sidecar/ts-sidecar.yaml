@@ -39,7 +39,7 @@ spec:
           privileged: true
         env:
         - name: TS_KUBE_SECRET
-          value: ""
+          value: "${LOCATION}-sidecar"
         - name: TS_USERSPACE
           value: "false"
         - name: TS_DEBUG_FIREWALL_MODE
