@@ -9,6 +9,7 @@
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "platformAutomerge": true,
+  "rebaseWhen": "conflicted",
   "ignoreTests": true,
   "prConcurrentLimit": 0,
   "assignees": [],
