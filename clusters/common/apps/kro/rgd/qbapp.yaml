@@ -24,7 +24,6 @@ spec:
       # VPN config
       vpnSecretName: "string"
       vpnCountry: "string | default=Denmark"
-      vpnServer: "string | default=DK#116"
       # Network CIDRs (Flux-substituted)
       podCidr: "string"
       serviceCidr: "string"
@@ -95,12 +94,10 @@ spec:
                 value: 14s
               - name: WIREGUARD_MTU
                 value: "1410"
-              - name: HEALTH_VPN_DURATION_INITIAL
-                value: "10s"
-              - name: HEALTH_VPN_DURATION_ADDITION
-                value: 5s
               - name: VPN_PORT_FORWARDING
                 value: "on"
+              - name: VPN_PORT_FORWARDING_DOWN_COMMAND
+                value: "wget -qO- http://localhost:8000/openvpn/actions/restart"
               - name: PORT_FORWARD_ONLY
                 value: "on"
               - name: SERVER_COUNTRIES
