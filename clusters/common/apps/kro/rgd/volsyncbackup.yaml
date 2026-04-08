@@ -1,0 +1,187 @@
+---
+# VolsyncBackup RGD — generates the full backup/restore stack for any PVC
+# Creates: GarageKey (S3 credentials) + ReplicationSource (backup) +
+#          ReplicationDestination (restore) + PVC (with volsync data source)
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: volsyncbackup
+  annotations:
+    kro.run/allow-breaking-changes: "true"
+spec:
+  schema:
+    group: storage.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: VolsyncBackup
+    scope: Namespaced
+    spec:
+      # Identity
+      name: "string | required=true"
+      namespace: "string | required=true"
+      # PVC config
+      storageSize: "string | default=5Gi"
+      storageClass: "string | default=ceph-block-replicated"
+      accessMode: "string | default=ReadWriteOnce"
+      # Volsync config
+      copyMethod: "string | default=Snapshot"
+      snapshotClass: "string | default=csi-rbdplugin-snapclass"
+      manualTrigger: "string | default=first"
+      paused: "boolean | default=false"
+      freshInstall: "boolean | default=false"
+      schedule: "string"
+      # Retention
+      retainHourly: "integer | default=1"
+      retainDaily: "integer | default=3"
+      retainWeekly: "integer | default=4"
+      retainMonthly: "integer | default=2"
+      retainYearly: "integer | default=1"
+      # S3/Restic (Flux-substituted)
+      s3Endpoint: "string | required=true"
+      s3Location: "string | required=true"
+      s3Bucket: "string | default=keiretsu"
+      s3Path: "string | required=true"
+      resticPassword: "string | required=true"
+    status:
+      backupSchedule: ${replicationSource.spec.trigger.schedule}
+  resources:
+
+  # --- GarageKey (S3 credentials + restic secret) ---
+  - id: garageKey
+    template:
+      apiVersion: garage.rajsingh.info/v1alpha1
+      kind: GarageKey
+      metadata:
+        name: ${"volsync-" + schema.spec.name + "-key"}
+      spec:
+        clusterRef:
+          name: garage
+          namespace: garage
+        name: ${"Volsync " + schema.spec.name + " Key"}
+        secretTemplate:
+          name: ${"restic-" + schema.spec.name}
+          namespace: ${schema.spec.namespace}
+          accessKeyIdKey: AWS_ACCESS_KEY_ID
+          secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+          includeEndpoint: false
+          includeRegion: false
+          additionalData:
+            RESTIC_REPOSITORY: ${"s3:http://" + schema.spec.s3Endpoint + "/" + schema.spec.s3Bucket + "/" + schema.spec.s3Location + "/" + schema.spec.s3Path}
+            RESTIC_PASSWORD: ${schema.spec.resticPassword}
+        bucketPermissions:
+        - globalAlias: ${schema.spec.s3Bucket}
+          read: true
+          write: true
+
+  # --- ReplicationSource (backup) ---
+  - id: replicationSource
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationSource
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        sourcePVC: ${schema.spec.name}
+        trigger:
+          schedule: ${schema.spec.schedule}
+        restic:
+          pruneIntervalDays: 14
+          repository: ${"restic-" + schema.spec.name}
+          retain:
+            hourly: ${schema.spec.retainHourly}
+            daily: ${schema.spec.retainDaily}
+            weekly: ${schema.spec.retainWeekly}
+            monthly: ${schema.spec.retainMonthly}
+            yearly: ${schema.spec.retainYearly}
+          copyMethod: Direct
+
+  # --- Fresh install: plain PVC, no restore ---
+  - id: pvcFresh
+    includeWhen:
+    - ${schema.spec.freshInstall}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        accessModes:
+        - ${schema.spec.accessMode}
+        resources:
+          requests:
+            storage: ${schema.spec.storageSize}
+        storageClassName: ${schema.spec.storageClass}
+
+  # --- Snapshot restore (Ottawa pattern) ---
+  - id: replicationDestinationSnapshot
+    includeWhen:
+    - ${!schema.spec.freshInstall && schema.spec.copyMethod == "Snapshot"}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationDestination
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        trigger:
+          manual: ${schema.spec.manualTrigger}
+        paused: ${schema.spec.paused}
+        restic:
+          repository: ${"restic-" + schema.spec.name}
+          accessModes:
+          - ${schema.spec.accessMode}
+          copyMethod: Snapshot
+          capacity: ${schema.spec.storageSize}
+          storageClassName: ${schema.spec.storageClass}
+          volumeSnapshotClassName: ${schema.spec.snapshotClass}
+
+  - id: pvcSnapshot
+    includeWhen:
+    - ${!schema.spec.freshInstall && schema.spec.copyMethod == "Snapshot"}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        accessModes:
+        - ${schema.spec.accessMode}
+        resources:
+          requests:
+            storage: ${schema.spec.storageSize}
+        dataSourceRef:
+          kind: ReplicationDestination
+          apiGroup: volsync.backube
+          name: ${replicationDestinationSnapshot.metadata.name}
+
+  # --- Direct restore (Robbinsdale pattern) ---
+  - id: pvcDirect
+    includeWhen:
+    - ${!schema.spec.freshInstall && schema.spec.copyMethod == "Direct"}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        accessModes:
+        - ${schema.spec.accessMode}
+        resources:
+          requests:
+            storage: ${schema.spec.storageSize}
+        storageClassName: ${schema.spec.storageClass}
+
+  - id: replicationDestinationDirect
+    includeWhen:
+    - ${!schema.spec.freshInstall && schema.spec.copyMethod == "Direct"}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationDestination
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        trigger:
+          manual: ${schema.spec.manualTrigger}
+        paused: ${schema.spec.paused}
+        restic:
+          repository: ${"restic-" + schema.spec.name}
+          destinationPVC: ${pvcDirect.metadata.name}
+          copyMethod: Direct

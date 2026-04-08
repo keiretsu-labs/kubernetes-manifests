@@ -11,6 +11,7 @@ resources:
   - httproute-s3.yaml
   - httproute-web.yaml
   - probes.yaml
+  - grafana-dashboard.yaml
 configMapGenerator:
   - name: garage-grafana-dashboard
     files:

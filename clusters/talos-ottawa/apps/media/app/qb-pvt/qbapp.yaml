@@ -1,0 +1,33 @@
+---
+apiVersion: media.keiretsu.ts.net/v1alpha1
+kind: QbApp
+metadata:
+  name: qbittorrent-pvt
+  namespace: media
+spec:
+  name: qbittorrent-pvt
+  # renovate: datasource=docker depName=lscr.io/linuxserver/qbittorrent
+  qbTag: "5.1.4"
+  # renovate: datasource=docker depName=ghcr.io/qdm12/gluetun
+  gluetunTag: "v3.41.1"
+  # renovate: datasource=docker depName=ghcr.io/bjw-s-labs/gluetun-qb-port-sync
+  portSyncTag: "0.0.4"
+  hostname: qbittorrent-pvt
+  homerName: "qBittorrent PVT"
+  homerSubtitle: "Torrent Client"
+  homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/qbittorrent.svg"
+  vpnSecretName: qbittorrent-pvt-secret
+  vpnCountry: "Denmark"
+  podCidr: "${CLUSTER_POD_CIDR}"
+  serviceCidr: "${CLUSTER_SERVICE_CIDR}"
+  downloadsClaimName: qbittorrent-downloads
+  configStorageClass: ceph-block-replicated
+  volsyncCopyMethod: Snapshot
+  volsyncSnapshotClass: csi-rbdplugin-snapclass
+  volsyncManualTrigger: "first"
+  volsyncPaused: false
+  s3Endpoint: "${COMMON_S3_ENDPOINT}"
+  s3Location: "${LOCATION}"
+  resticPassword: "${COMMON_RESTIC_SECRET}"
+  clusterDomain: "${CLUSTER_DOMAIN}"
+  timezone: "${TIMEZONE}"

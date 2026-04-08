@@ -482,27 +482,6 @@ Reusable Kustomize templates for new application deployment:
 
 ---
 
-### Scripts (`/.github/scripts/claude-agent/`)
-
-**analyze.js** - Full Claude Agent
-- Uses Claude Agent SDK for structured queries
-- Custom system prompt (security/K8s expertise)
-- Tools: Glob, Grep, Read, Bash (kubectl)
-- Structured JSON output
-- Exit code based on severity
-
-**simple-analyze.js** - Lightweight Version
-- Direct Claude API calls (no SDK)
-- Basic queries (files + K8s status)
-- Simpler, faster analysis
-
-**package.json**
-- Dependencies: @anthropic-ai/claude-agent-sdk, axios, zod
-- Node: >=18.0.0
-- Type: ESM
-
----
-
 ## Other Configuration
 
 ### `.devcontainer/`

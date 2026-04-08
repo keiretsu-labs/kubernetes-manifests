@@ -1,0 +1,37 @@
+---
+# ApplicationSet for floating apps — deploys to 1 cluster selected by OCM Placement
+# When OCM detects a cluster is down, PlacementDecision changes,
+# ArgoCD moves the Application to the new cluster
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: floating-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - clusterDecisionResource:
+        configMapRef: ocm-placement-generator
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: floating-apps
+        requeueAfterSeconds: 30
+  template:
+    metadata:
+      name: "floating-{{.clusterName}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+        targetRevision: HEAD
+        path: clusters/floating-apps
+      destination:
+        name: "{{.clusterName}}"
+        namespace: keiretsu-top
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

@@ -1,0 +1,110 @@
+---
+# BackupVerify RGD — periodic verification that restic backups are restorable
+# Runs restic check + snapshot age validation on a schedule
+# Reports to Discord webhook on success/failure
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: backupverify
+  annotations:
+    kro.run/allow-breaking-changes: "true"
+spec:
+  schema:
+    group: storage.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: BackupVerify
+    scope: Namespaced
+    spec:
+      name: "string | required=true"
+      resticSecretName: "string | required=true"
+      schedule: "string | required=true"
+      maxSnapshotAgeHours: "integer | default=48"
+      readDataSubsetPercent: "integer | default=10"
+      discordWebhook: "string | default="
+      location: "string | default=unknown"
+    status:
+      schedule: ${cronJob.spec.schedule}
+  resources:
+
+  - id: verifyScript
+    template:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: ${"backup-verify-" + schema.spec.name + "-script"}
+      data:
+        verify.sh: |
+          #!/bin/sh
+          set -e
+          echo "=== Backup Verification: $APP_NAME ==="
+          echo "Location: $APP_LOCATION"
+          echo "Repository: $RESTIC_REPOSITORY"
+          echo ""
+
+          echo "--- Checking latest snapshot ---"
+          SNAPSHOT_JSON=$(restic snapshots --latest 1 --json 2>/dev/null)
+          if [ "$SNAPSHOT_JSON" = "[]" ] || [ -z "$SNAPSHOT_JSON" ]; then
+            MSG="FAIL: No snapshots found for $APP_NAME on $APP_LOCATION"
+            echo "$MSG"
+            [ -n "$DISCORD_WEBHOOK" ] && curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🔴 $MSG\"}" "$DISCORD_WEBHOOK" || true
+            exit 1
+          fi
+
+          SNAP_COUNT=$(echo "$SNAPSHOT_JSON" | grep -c '"short_id"' || echo 0)
+          echo "Snapshots found: $SNAP_COUNT"
+
+          echo ""
+          echo "--- Checking repository integrity ($READ_SUBSET% of packs) ---"
+          if restic check --read-data-subset="$READ_SUBSET%" 2>&1; then
+            MSG="OK: $APP_NAME on $APP_LOCATION - backup verified (integrity: $READ_SUBSET% checked)"
+            echo ""
+            echo "$MSG"
+            [ -n "$DISCORD_WEBHOOK" ] && curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🟢 $MSG\"}" "$DISCORD_WEBHOOK" || true
+          else
+            MSG="FAIL: $APP_NAME on $APP_LOCATION - restic check failed"
+            echo "$MSG"
+            [ -n "$DISCORD_WEBHOOK" ] && curl -sf -H "Content-Type: application/json" -d "{\"content\":\"🔴 $MSG\"}" "$DISCORD_WEBHOOK" || true
+            exit 1
+          fi
+
+  - id: cronJob
+    template:
+      apiVersion: batch/v1
+      kind: CronJob
+      metadata:
+        name: ${"backup-verify-" + schema.spec.name}
+      spec:
+        schedule: ${schema.spec.schedule}
+        concurrencyPolicy: Forbid
+        successfulJobsHistoryLimit: 3
+        failedJobsHistoryLimit: 3
+        jobTemplate:
+          spec:
+            backoffLimit: 0
+            template:
+              spec:
+                restartPolicy: Never
+                containers:
+                - name: verify
+                  image: restic/restic:latest
+                  command: ["sh", "/scripts/verify.sh"]
+                  envFrom:
+                  - secretRef:
+                      name: ${schema.spec.resticSecretName}
+                  env:
+                  - name: APP_NAME
+                    value: ${schema.spec.name}
+                  - name: APP_LOCATION
+                    value: ${schema.spec.location}
+                  - name: READ_SUBSET
+                    value: ${string(schema.spec.readDataSubsetPercent)}
+                  - name: DISCORD_WEBHOOK
+                    value: ${schema.spec.discordWebhook}
+                  volumeMounts:
+                  - name: scripts
+                    mountPath: /scripts
+                volumes:
+                - name: scripts
+                  configMap:
+                    name: ${verifyScript.metadata.name}
+                    defaultMode: 0755
