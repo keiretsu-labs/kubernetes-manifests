@@ -58,3 +58,18 @@ spec:
   - name: https
     port: 5443
     protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-smb
+  annotations:
+    tailscale.com/tailnet-ip: "192.168.50.115"
+    tailscale.com/proxy-group: common-egress
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+  - name: smb
+    port: 445
+    protocol: TCP
