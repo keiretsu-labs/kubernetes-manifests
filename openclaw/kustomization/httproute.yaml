@@ -6,7 +6,7 @@ metadata:
   annotations:
     item.homer.rajsingh.info/name: "OpenClaw"
     item.homer.rajsingh.info/subtitle: "AI Agent"
-    item.homer.rajsingh.info/logo: "https://pb.dashboardicons.com/api/files/community_gallery/syov2lst1k14n5m/favicon_kv7wixurym.svg"
+    item.homer.rajsingh.info/logo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/openclaw-dark.svg"
     item.homer.rajsingh.info/keywords: "ai, agent, assistant, discord"
     service.homer.rajsingh.info/name: "Infrastructure"
     service.homer.rajsingh.info/icon: "fas fa-robot"
