@@ -75,18 +75,37 @@ spec:
   chromium:
     enabled: true
   tailscale:
-    enabled: true
-    mode: serve
-    hostname: tailboy
-    authSSO: true
-    authKeySecretRef:
-      name: ts-oauth
-    authKeySecretKey: TS_AUTHKEY
+    enabled: false
   storage:
     persistence:
       size: 10Gi
       storageClass: ceph-block-replicated
   sidecars:
+    - name: ts-sidecar
+      image: ghcr.io/tailscale/tailscale:latest
+      env:
+        - name: TS_USERSPACE
+          value: "true"
+        - name: TS_STATE_DIR
+          value: /dev/shm
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: ts-oauth
+              key: TS_AUTHKEY
+        - name: TS_HOSTNAME
+          value: tailboy
+        - name: TS_EXTRA_ARGS
+          value: "--advertise-tags=tag:k8s,tag:ottawa --accept-routes"
+        - name: TS_KUBE_SECRET
+          value: ""
+        - name: KUBERNETES_SERVICE_HOST
+          value: ""
+        - name: TS_SERVE_CONFIG
+          value: /etc/tailscale/serve.json
+      volumeMounts:
+        - name: ts-sidecar-serve-config
+          mountPath: /etc/tailscale
     - name: syncthing
       image: syncthing/syncthing:latest
       ports:
@@ -115,5 +134,9 @@ spec:
         limits:
           cpu: "500m"
           memory: "512Mi"
+  sidecarVolumes:
+    - name: ts-sidecar-serve-config
+      configMap:
+        name: tailboy-ts-serve
   webTerminal:
     enabled: true

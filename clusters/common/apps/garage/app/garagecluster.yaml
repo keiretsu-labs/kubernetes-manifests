@@ -54,6 +54,10 @@ spec:
       name: garage-admin-token
       key: admin-token
 
+  monitoring:
+    enabled: true
+    interval: 30s
+
   webApi:
     rootDomain: ".${COMMON_DOMAIN}"
 

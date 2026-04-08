@@ -18,20 +18,12 @@ spec:
       hostname: jellyfin-robbinsdale
       containers:
         - name: jellyfin
-          image: jellyfin/jellyfin:10.11.6
+          image: jellyfin/jellyfin:10.11.8
           ports:
             - name: http
               containerPort: 8096
               protocol: TCP
           volumeMounts:
-            - name: tv-volume
-              mountPath: /media/tvshows
-            - name: movies-volume
-              mountPath: /media/movies
-            - name: music-volume
-              mountPath: /media/music
-            # - name: audiobooks-volume
-            #   mountPath: /media/audiobooks
             - name: config-volume
               mountPath: /config
           env:
@@ -44,18 +36,6 @@ spec:
             - name: JELLYFIN_PublishedServerUrl
               value: jellyfin.rajsingh.info
       volumes:
-        - name: tv-volume
-          persistentVolumeClaim:
-            claimName: sonarr-tv-unas
-        - name: movies-volume
-          persistentVolumeClaim:
-            claimName: radarr-movies-unas
-        # - name: audiobooks-volume
-        #   persistentVolumeClaim:
-        #     claimName: readarr-books-unas
-        - name: music-volume
-          persistentVolumeClaim:
-            claimName: lidarr-music-unas
         - name: config-volume
           persistentVolumeClaim:
             claimName: jellyfin-config-ceph 

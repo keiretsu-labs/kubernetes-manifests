@@ -11,10 +11,11 @@ Current beliefs about infrastructure and operations. Dwight reads this to shape 
 
 ## Current Priorities
 
-- Cluster stability across all three sites
+- Cluster stability across all three sites — Robbinsdale multi-node instability (stone/tank kubelet API lease loss) requires physical networking investigation
 - Tailscale operator integration maturity (tsdb, peer-relay, CSI provider)
 - OpenClaw self-improvement loop (workspace, skills, memory) — media-requests routing complete (PR #963)
 - AI/ML workload expansion on St. Petersburg
+- Post-outage alert cascades: expect deferred gatus alerts for immich, jellystat, jellyseerr after cluster instability — all resolve on their own, no action needed
 
 ## What Matters
 
@@ -27,4 +28,4 @@ Current beliefs about infrastructure and operations. Dwight reads this to shape 
 
 - Perfect formatting in PRs — substance over style
 - 100% test coverage — pragmatic testing where it counts
-- Keeping every service running 24/7 — some things can wait for manual restart
+- Keeping every service running 24/7 — single-node or transient failures can wait; multi-node failures affecting primary production (Robbinsdale) need prompt attention

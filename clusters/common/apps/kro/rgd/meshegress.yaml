@@ -1,0 +1,36 @@
+---
+# MeshEgress RGD — generates a Tailscale ExternalName egress service
+# Deploy one per floating app on every cluster for mesh connectivity
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: meshegress
+spec:
+  schema:
+    group: apps.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: MeshEgress
+    scope: Namespaced
+    spec:
+      name: "string | required=true"
+      tailscaleHostname: "string | required=true"
+      port: "integer | required=true"
+    status:
+      serviceName: ${egressService.metadata.name}
+  resources:
+  - id: egressService
+    template:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ${schema.spec.name + "-ts-egress"}
+        annotations:
+          tailscale.com/tailnet-fqdn: ${schema.spec.tailscaleHostname + ".keiretsu.ts.net"}
+          tailscale.com/proxy-group: common-egress
+      spec:
+        externalName: placeholder
+        type: ExternalName
+        ports:
+        - name: http
+          port: ${schema.spec.port}
+          protocol: TCP

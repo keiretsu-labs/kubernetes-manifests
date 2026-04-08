@@ -31,7 +31,8 @@ spec:
       webhook:
         image:
           repository: ghcr.io/kashalls/external-dns-unifi-webhook
-          tag: main
+          # renovate: datasource=docker depName=ghcr.io/kashalls/external-dns-unifi-webhook
+          tag: v0.8.2
         env:
           - name: UNIFI_HOST
             value: https://${LAN_GATEWAY_IP}
