@@ -16,7 +16,7 @@ spec:
   clusterDomain: "${CLUSTER_DOMAIN}"
   homerName: "Maintainerr"
   homerSubtitle: "Media Library Cleanup"
-  homerLogo: "https://raw.githubusercontent.com/Maintainerr/Maintainerr/main/ui/public/logo_black.svg"
+  homerLogo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/maintainerr.svg"
   configStorageSize: 5Gi
   configStorageClass: ceph-block-replicated-nvme
   backupEnabled: true

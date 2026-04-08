@@ -248,7 +248,7 @@ spec:
           item.homer.rajsingh.info/subtitle: ${schema.spec.homerSubtitle}
           item.homer.rajsingh.info/logo: ${schema.spec.homerLogo}
           item.homer.rajsingh.info/keywords: "app"
-          service.homer.rajsingh.info/name: "Apps"
+          service.homer.rajsingh.info/name: "Media"
           service.homer.rajsingh.info/icon: "fas fa-server"
       spec:
         parentRefs:
@@ -286,7 +286,7 @@ spec:
           item.homer.rajsingh.info/subtitle: ${schema.spec.homerSubtitle}
           item.homer.rajsingh.info/logo: ${schema.spec.homerLogo}
           item.homer.rajsingh.info/keywords: "app"
-          service.homer.rajsingh.info/name: "Apps"
+          service.homer.rajsingh.info/name: "Media"
           service.homer.rajsingh.info/icon: "fas fa-server"
       spec:
         parentRefs:
