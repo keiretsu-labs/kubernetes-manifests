@@ -1,0 +1,145 @@
+---
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: floatingapp
+  annotations:
+    kro.run/allow-breaking-changes: "true"
+spec:
+  schema:
+    group: apps.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: FloatingApp
+    scope: Namespaced
+    types:
+      VolumeSpec:
+        name: "string | required=true"
+        size: "string | default=5Gi"
+        mountPath: "string | required=true"
+    spec:
+      name: "string | required=true"
+      image: "string | required=true"
+      port: "integer | required=true"
+      replicas: "integer | default=1"
+      tailscaleHostname: "string | required=true"
+      tailscaleTags: "string | default=tag:k8s"
+      volumes: "[]VolumeSpec"
+    status:
+      ready: ${deployment.status.availableReplicas > 0}
+      serviceIP: ${service.spec.clusterIP}
+      tailscaleService: ${tsIngress.metadata.name}
+  resources:
+
+  # --- Deployment ---
+  - id: deployment
+    template:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ${schema.spec.name}
+        labels:
+          app.keiretsu.ts.net/floating: "true"
+      spec:
+        replicas: ${schema.spec.replicas}
+        selector:
+          matchLabels:
+            app: ${schema.spec.name}
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels:
+              app: ${schema.spec.name}
+          spec:
+            containers:
+            - name: ${schema.spec.name}
+              image: ${schema.spec.image}
+              ports:
+              - name: http
+                containerPort: ${schema.spec.port}
+                protocol: TCP
+
+  # --- ClusterIP Service ---
+  - id: service
+    template:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        selector:
+          app: ${schema.spec.name}
+        ports:
+        - name: http
+          port: ${schema.spec.port}
+          protocol: TCP
+          targetPort: ${schema.spec.port}
+        type: ClusterIP
+
+  # --- Tailscale LB Ingress (exposes app onto tailnet) ---
+  - id: tsIngress
+    template:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ${schema.spec.name + "-ts"}
+        annotations:
+          tailscale.com/hostname: ${schema.spec.tailscaleHostname}
+          tailscale.com/proxy-group: common-ingress
+          tailscale.com/tags: ${schema.spec.tailscaleTags}
+      spec:
+        selector:
+          app: ${schema.spec.name}
+        ports:
+        - name: http
+          port: ${schema.spec.port}
+          protocol: TCP
+          targetPort: ${schema.spec.port}
+        type: LoadBalancer
+        loadBalancerClass: tailscale
+
+  # --- CSI-S3 PVs (one per volume, forEach) ---
+  - id: pvs
+    forEach:
+      - vol: ${schema.spec.volumes}
+    template:
+      apiVersion: v1
+      kind: PersistentVolume
+      metadata:
+        name: ${schema.spec.name + "-" + vol.name}
+      spec:
+        capacity:
+          storage: ${vol.size}
+        accessModes:
+        - ReadWriteMany
+        persistentVolumeReclaimPolicy: Retain
+        claimRef:
+          namespace: ${schema.metadata.namespace}
+          name: ${schema.spec.name + "-" + vol.name}
+        csi:
+          driver: ru.yandex.s3.csi
+          volumeHandle: ${"csi-s3/" + schema.spec.name + "-" + vol.name}
+          volumeAttributes:
+            mounter: geesefs
+            options: "--memory-limit 1000 --dir-mode 0777 --file-mode 0666"
+          nodePublishSecretRef:
+            name: csi-s3-secret
+            namespace: csi-s3
+
+  # --- CSI-S3 PVCs (one per volume, forEach) ---
+  - id: pvcs
+    forEach:
+      - vol: ${schema.spec.volumes}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name + "-" + vol.name}
+      spec:
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: ${vol.size}
+        volumeName: ${schema.spec.name + "-" + vol.name}
+        storageClassName: ""

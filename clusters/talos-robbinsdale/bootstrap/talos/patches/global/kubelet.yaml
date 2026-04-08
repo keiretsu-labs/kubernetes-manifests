@@ -1,0 +1,17 @@
+machine:
+  kubelet:
+    nodeIP:
+      validSubnets:
+        - 192.168.50.0/24
+    extraArgs:
+      rotate-server-certificates: "true"
+    extraConfig:
+      shutdownGracePeriod: "0s"
+      shutdownGracePeriodCriticalPods: "0s"
+      shutdownGracePeriodByPodPriority:
+        - priority: 0
+          shutdownGracePeriodSeconds: 80
+        - priority: 2000000000
+          shutdownGracePeriodSeconds: 20
+        - priority: 2000001000
+          shutdownGracePeriodSeconds: 30

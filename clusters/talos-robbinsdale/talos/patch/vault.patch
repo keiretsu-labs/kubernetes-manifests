@@ -1,9 +1,0 @@
-machine:
-  network:
-    hostname: vault.local
-
-  install:
-    disk: /dev/nvme0n1
-    bootloader: true
-    extraKernelArgs:
-    - talos.platform=metal

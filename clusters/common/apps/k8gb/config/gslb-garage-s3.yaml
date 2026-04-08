@@ -1,0 +1,20 @@
+---
+apiVersion: k8gb.absa.oss/v1beta1
+kind: Gslb
+metadata:
+  name: garage-s3-cdn
+  namespace: garage
+  annotations:
+    k8gb.io/exposed-hostnames: "${LOCATION}.${COMMON_DOMAIN}"
+spec:
+  resourceRef:
+    apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    name: garage-s3-cdn
+  strategy:
+    type: roundRobin
+    dnsTtlSeconds: 30
+    weight:
+      ottawa: 33
+      robbinsdale: 33
+      stpetersburg: 34

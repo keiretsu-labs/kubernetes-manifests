@@ -5,10 +5,10 @@ resources:
   - ./namespace.yaml
   - ./gslb.yaml
   - ./gslb-gatus.yaml
-  - ./gslb-prometheus.yaml
+
   - ./gslb-ts-gateway.yaml
   - ./garage-keiretsu-top.yaml
-  - ./volsync-prometheus.yaml
+
   - ./cnpg-test.yaml
   - ./dashboard-cdn.yaml
   - ./dashboard-ts.yaml
@@ -16,3 +16,4 @@ resources:
   - ./prometheusrules.yaml
   - ./gslb-zot-public.yaml
   - ./gslb-qbittorrent.yaml
+  - ./gslb-garage-s3.yaml

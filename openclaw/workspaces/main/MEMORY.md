@@ -9,6 +9,10 @@ Curated knowledge from past sessions. Update when you learn something that saves
 Mistakes that became permanent knowledge. Never repeat these.
 
 - **Log pruning**: Only prune daily logs older than 7 days. Calculate: 7 days before today = files dated BEFORE (today - 7 days). Example: On March 7, only prune logs from February 28 or earlier. Never prune logs that are 2-3 days old.
+- **`.DISABLED` suffix directories break kustomize builds**: When Flux HelmReleases are disabled by renaming a directory to `foo.DISABLED`, kustomize still picks it up as a resource directory and fails with "is a directory". The Flux `hcld` annotation doesn't prevent this. Fix: remove the directory from git entirely, not just rename.
+- **Robbinsdale pods cannot reach github.com**: The Robbinsdale cluster has network-level isolation that blocks pod egress to GitHub. Flux source-controller syncs are delayed/unreliable on Robbinsdale. This is not a Flux bug — it's a network policy constraint. Any deployment that pulls from git on Robbinsdale will be affected.
+- **kubectl patches are not persistent under Flux GitOps**: Flux continuously reconciles from git. Any `kubectl patch` to a Flux-managed resource is temporary — the next reconciliation overwrites it. To fix something permanently, edit the git source. Conversely, when a resource disappears from git and Flux syncs, GC deletes it from the cluster even if you previously patched it to survive.
+- **Always verify IP-to-cluster mapping against CLUSTERS.md**: When an alert shows a node IP (e.g. 192.168.73.206), CHECK CLUSTERS.md before naming the cluster. Do not guess. Cluster LAN ranges: Robbinsdale=192.168.50.0/24, StPetersburg=192.168.73.0/24, Ottawa=192.168.169.0/24.
 
 ## Config Validation (IMPORTANT)
 
@@ -45,7 +49,13 @@ OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to ref
 - **NEVER commit secrets, credentials, or API keys in plain text to git** — use SOPS for secrets or reference existing cluster secrets instead
 - Cluster contexts are `ottawa`, `robbinsdale`, `stpetersburg` — NOT `talos-ottawa`, `talos-robbinsdale`, `talos-stpetersburg` (the `talos-` prefix is wrong)
 - **Repo workspace path**: When cloning kubernetes-manifests, workspace files are at `openclaw/workspaces/main/`, NOT root-level `workspaces/main/` (which is empty/stale)
-- **Flux suspend/comment does NOT remove cluster resources**: Suspending a Kustomization or commenting out its `ks.yaml` in Git does not delete existing cluster resources — the resources keep running. To remove resources, you must `flux delete kustomization <name> -n flux-system` (not suspend) or manually `kubectl delete` the resources.
+- **Tailscale operator deployment name is NOT "operator"** — discover with `kubectl get deployments -n tailscale-system`. In ottawa it's `aperture`; robbinsdale/stpetersburg have no separate operator deployment.
+- **`egressservices` CRD does not exist** — `kubectl get egressservices -A` returns "resource type not found". This is not a permissions issue — the CRD is not installed.
+- **Robbinsdale pods cannot pull images from Docker Hub or reach github.com** — network isolation prevents external image pulls and git sync. Debug pods also fail. Any new deployment on Robbinsdale that needs external images (Docker Hub, ghcr.io, etc.) will fail to start. Flux source-controller syncs are unreliable. This is a network-level block, not DNS or permissions.
+- **`.DISABLED` suffix in kustomization directories breaks Flux kustomization**: When a HelmRelease or kustomization dir is renamed `foo.DISABLED`, kustomize treats it as a resource directory and fails with "accumulating resources: ... is a directory". Flux cannot work around this — the source file must be removed from git entirely.
+- **Robbinsdale multi-node instability — kubelet API lease loss**: Stone and tank nodes oscillate NotReady/cordoned repeatedly. kubelet loses API server heartbeat → `node.kubernetes.io/unschedulable` taint re-applied every few minutes. Titan is stable. Affected nodes need physical networking investigation. Cluster can survive on remaining nodes during instability. After cluster recovers, expect transient alert cascade (immich, jellystat, jellyseerr) — all resolve on their own, no action needed.
+- **Post-outage alert cascade is normal**: After Robbinsdale cluster instability, gatus fires delayed alerts for immich-server, jellystat, jellyseerr. These are deferred notifications from downtime, not new issues — all resolve after cluster stabilizes. Heartbeat endpoint also fails because gatus pod itself was affected.
+- **Jellyfin deployment references deleted SMB PVCs**: When SMB shares (unas, unas-2) are renamed or deleted, the Jellyfin deployment still references them. Fix: remove the stale volume and volumeMount entries from the deployment.yaml in git.
 
 ## Cluster Quick Facts
 
@@ -157,7 +167,3 @@ If you receive a heartbeat poll (a user message matching the heartbeat prompt ab
 HEARTBEAT_OK
 OpenClaw treats a leading/trailing "HEARTBEAT_OK" as a heartbeat ack (and may discard it).
 If something needs attention, do NOT include "HEARTBEAT_OK"; reply with the alert text instead.
-
-## Runtime
-Runtime: agent=main | host=openclaw-9c7bb846f-4qw9n | os=Linux 6.18.9-talos (x64) | node=v22.22.0 | model=aperture/MiniMax-M2.5 | default_model=aperture/MiniMax-M2.5 | channel=discord | capabilities=none | thinking=low
-Reasoning: off (hidden unless on/stream). Toggle /reasoning; /status shows Reasoning when enabled.

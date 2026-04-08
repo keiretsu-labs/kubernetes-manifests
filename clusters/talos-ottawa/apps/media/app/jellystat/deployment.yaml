@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: jellystat
-          image: cyfershepard/jellystat:1.1.8
+          image: cyfershepard/jellystat:1.1.9
           ports:
             - containerPort: 3000
           env:

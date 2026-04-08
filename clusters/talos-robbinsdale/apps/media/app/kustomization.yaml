@@ -4,24 +4,34 @@ kind: Kustomization
 namespace: media
 resources:
   - secret.yaml
-  - ./jellyfin 
-  - ./prowlarr 
-  - ./radarr 
-  - ./bazarr 
-  - ./sonarr 
-#  - ./.transmission-movies 
-#  - ./.transmission-tv 
-  - ./plex 
-  - ./jellyseerr 
-  - ./jellystat 
-  - ./lidarr 
-#  - ./.transmission-music 
-  - ./readarr 
-#  - ./.transmission-books 
-  - ./audioarr 
-  # VPN-enabled versions (uncomment when ProtonVPN values provided)
-  # - ./transmission-movies-pvt
-  # - ./transmission-tv-pvt
-  # - ./transmission-books-pvt
-  # - ./transmission-music-pvt
-  # - ./unmanic
+  - pvc-media.yaml
+  - unas.yaml
+  - ./jellyfin
+  - ./prowlarr
+  - ./sonarr-1080p
+  - ./sonarr-4k
+  - ./sonarr-anime
+  - ./radarr-1080p
+  - ./radarr-4k
+  - ./radarr-4kremux
+  - ./radarr-anime
+  - ./bazarr-1080p
+  - ./bazarr-4k
+  - ./bazarr-4kremux
+  - ./bazarr-anime
+  - ./qb
+  - ./qb-pvt
+  - ./autobrr
+  - ./tautulli
+  - ./jellyseerr
+  - ./overseerr
+  - ./wizarr
+  - ./flaresolverr
+  - ./maintainerr
+  - ./lidarr
+  - ./sabnzbd
+  - ./plex
+  - ./plex-killinit-cc
+  - ./jellystat
+  - ./readarr
+  - ./audioarr
