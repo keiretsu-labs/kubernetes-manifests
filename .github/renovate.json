@@ -56,15 +56,10 @@
       "automerge": true
     },
     {
-      "description": "Auto merge non-critical, non-media cluster updates",
+      "description": "Auto merge non-critical-infrastructure cluster updates",
       "matchManagers": ["flux", "helm-values", "kubernetes", "kustomize", "regex"],
       "matchPaths": ["clusters/**"],
       "automerge": true
-    },
-    {
-      "description": "Disable automerge for media apps",
-      "matchPaths": ["clusters/**/apps/media/**", "clusters/**/apps/immich/**"],
-      "automerge": false
     },
     {
       "description": "Disable automerge for cluster-critical components",
@@ -77,37 +72,6 @@
         "clusters/**/apps/cert-manager/**"
       ],
       "automerge": false
-    },
-    {
-      "description": "Allow select media apps to automerge",
-      "matchPaths": [
-        "clusters/**/apps/media/app/autobrr/**",
-        "clusters/**/apps/media/app/bazarr-1080p/**",
-        "clusters/**/apps/media/app/bazarr-4k/**",
-        "clusters/**/apps/media/app/bazarr-4kremux/**",
-        "clusters/**/apps/media/app/bazarr-anime/**",
-        "clusters/**/apps/media/app/configarr/**",
-        "clusters/**/apps/media/app/feedcord/**",
-        "clusters/**/apps/media/app/jellyfin/**",
-        "clusters/**/apps/media/app/jellyseerr/**",
-        "clusters/**/apps/media/app/jellystat/**",
-        "clusters/**/apps/media/app/lidarr/**",
-        "clusters/**/apps/media/app/overseerr/**",
-        "clusters/**/apps/media/app/prowlarr/**",
-        "clusters/**/apps/media/app/qb/**",
-        "clusters/**/apps/media/app/qb-pvt/**",
-        "clusters/**/apps/media/app/radarr-1080p/**",
-        "clusters/**/apps/media/app/radarr-4k/**",
-        "clusters/**/apps/media/app/radarr-4kremux/**",
-        "clusters/**/apps/media/app/radarr-anime/**",
-        "clusters/**/apps/media/app/sabnzbd/**",
-        "clusters/**/apps/media/app/sonarr-1080p/**",
-        "clusters/**/apps/media/app/sonarr-4k/**",
-        "clusters/**/apps/media/app/sonarr-anime/**",
-        "clusters/**/apps/media/app/tautulli/**",
-        "clusters/**/apps/media/app/wizarr/**"
-      ],
-      "automerge": true
     },
     {
       "description": "Group ARC controller and runner scale set together",
