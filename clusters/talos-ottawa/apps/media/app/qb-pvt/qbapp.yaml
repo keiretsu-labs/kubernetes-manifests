@@ -18,7 +18,6 @@ spec:
   homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/qbittorrent.svg"
   vpnSecretName: qbittorrent-pvt-secret
   vpnCountry: "Denmark"
-  vpnServer: "DK#116"
   podCidr: "${CLUSTER_POD_CIDR}"
   serviceCidr: "${CLUSTER_SERVICE_CIDR}"
   downloadsClaimName: qbittorrent-downloads
