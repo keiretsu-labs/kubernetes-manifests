@@ -24,6 +24,7 @@ spec:
       # VPN config
       vpnSecretName: "string"
       vpnCountry: "string | default=Denmark"
+      vpnServer: "string | default="
       # Network CIDRs (Flux-substituted)
       podCidr: "string"
       serviceCidr: "string"
