@@ -147,6 +147,19 @@ kubectl exec -it deployment/openclaw -c openclaw -n openclaw -- /bin/sh
 kubectl exec deployment/openclaw -c openclaw -n openclaw -- nslookup stpetersburg-llama-cpp
 ```
 
+## Session Tools
+
+Use the OpenClaw built-in tool calls to inspect sessions. These are NOT bash commands.
+
+```bash
+# List recent sessions (activeMinutes=1440 for last 24h, messageLimit=5 for last 5 msgs)
+# sessions_list and sessions_history are OpenClaw built-ins — not shell commands
+
+# Note: sessions_history enforces tree-level visibility — sessions outside the current
+# tree return "forbidden". Daily review relies on daily log files rather than live session
+# history for cross-session analysis.
+```
+
 ## flux
 
 Flux CD GitOps toolkit. Used to inspect and manage the GitOps reconciliation.

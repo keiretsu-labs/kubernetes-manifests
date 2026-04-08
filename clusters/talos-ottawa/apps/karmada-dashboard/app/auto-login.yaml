@@ -1,9 +1,0 @@
-# The karmada-dashboard-token secret is created out-of-band from the
-# Karmada API's dashboard-admin-token SA secret. It contains a single
-# key "token" with the JWT used for dashboard auto-login.
-#
-# To rotate, re-create the secret:
-#   kubectl --context <karmada-api> get secret -n karmada-system dashboard-admin-token \
-#     -o jsonpath='{.data.token}' | base64 -d > /tmp/token
-#   kubectl --context <host-cluster> -n karmada-system create secret generic \
-#     karmada-dashboard-token --from-file=token=/tmp/token --dry-run=client -o yaml | kubectl apply -f -

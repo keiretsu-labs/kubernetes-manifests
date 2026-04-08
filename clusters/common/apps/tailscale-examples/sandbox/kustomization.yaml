@@ -9,7 +9,7 @@ resources:
   # - ./tsddns
   - ./tsflow
   # - ./tsdnsproxy
-  # - ./sidecar
+  - ./sidecar
   - ./secret.yaml
   # - ./golink
   # - ./egress

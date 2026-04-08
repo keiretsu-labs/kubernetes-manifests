@@ -1,0 +1,142 @@
+---
+apiVersion: openclaw.rocks/v1alpha1
+kind: OpenClawInstance
+metadata:
+  name: tailboy
+spec:
+  image:
+    repository: ghcr.io/openclaw/openclaw
+    tag: latest
+    pullPolicy: Always
+  config:
+    raw:
+      gateway:
+        port: 18789
+        mode: local
+        bind: lan
+        auth:
+          mode: token
+          token: "${DEFAULT_PASSWORD}"
+      models:
+        mode: merge
+        providers:
+          vllm:
+            baseUrl: http://stpetersburg-vllm/v1
+            apiKey: unused
+            api: openai-completions
+            models:
+              - id: Qwen3.5-27B
+                name: Qwen3.5-27B
+                input:
+                  - text
+                contextWindow: 131072
+                maxTokens: 16384
+                reasoning: true
+          aperture:
+            baseUrl: http://aperture
+            apiKey: unused
+            api: anthropic-messages
+            models:
+              - id: MiniMax-M2.7
+                name: MiniMax M2.7
+                input:
+                  - text
+                contextWindow: 204800
+                maxTokens: 16384
+                reasoning: true
+      agents:
+        defaults:
+          model: aperture/MiniMax-M2.7
+          userTimezone: America/New_York
+          timeoutSeconds: 600
+          maxConcurrent: 3
+          sandbox: {}
+        list:
+          - id: main
+            default: true
+            identity:
+              name: Tailboy
+      session:
+        scope: per-sender
+        idleMinutes: 60
+      tools:
+        profile: full
+        web:
+          search:
+            enabled: true
+          fetch:
+            enabled: true
+      logging:
+        level: info
+        consoleStyle: compact
+  envFrom:
+    - secretRef:
+        name: openclaw-secrets
+  chromium:
+    enabled: true
+  tailscale:
+    enabled: false
+  storage:
+    persistence:
+      size: 10Gi
+      storageClass: ceph-block-replicated
+  sidecars:
+    - name: ts-sidecar
+      image: ghcr.io/tailscale/tailscale:latest
+      env:
+        - name: TS_USERSPACE
+          value: "true"
+        - name: TS_STATE_DIR
+          value: /dev/shm
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: ts-oauth
+              key: TS_AUTHKEY
+        - name: TS_HOSTNAME
+          value: tailboy
+        - name: TS_EXTRA_ARGS
+          value: "--advertise-tags=tag:k8s,tag:ottawa --accept-routes"
+        - name: TS_KUBE_SECRET
+          value: ""
+        - name: KUBERNETES_SERVICE_HOST
+          value: ""
+        - name: TS_SERVE_CONFIG
+          value: /etc/tailscale/serve.json
+      volumeMounts:
+        - name: ts-sidecar-serve-config
+          mountPath: /etc/tailscale
+    - name: syncthing
+      image: syncthing/syncthing:latest
+      ports:
+        - containerPort: 8384
+          name: web-ui
+        - containerPort: 22000
+          name: sync
+          protocol: TCP
+        - containerPort: 22000
+          name: sync-udp
+          protocol: UDP
+      env:
+        - name: STGUIADDRESS
+          value: "0.0.0.0:8384"
+      volumeMounts:
+        - name: data
+          mountPath: /var/syncthing
+          subPath: syncthing
+        - name: data
+          mountPath: /var/syncthing/Sync
+          subPath: openclaw-data
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+  sidecarVolumes:
+    - name: ts-sidecar-serve-config
+      configMap:
+        name: tailboy-ts-serve
+  webTerminal:
+    enabled: true

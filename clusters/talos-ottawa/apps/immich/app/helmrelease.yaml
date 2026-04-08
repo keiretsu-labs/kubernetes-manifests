@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: immich
-      version: 0.10.3
+      version: 0.11.1
       sourceRef:
         kind: HelmRepository
         name: immich
@@ -26,7 +26,8 @@ spec:
         containers:
           main:
             image:
-              tag: v2.5.5
+              repository: ghcr.io/immich-app/immich-server
+              tag: v2.7.2
             env:
               DB_DATABASE_NAME: immich
               DB_USERNAME:
@@ -57,6 +58,7 @@ spec:
     server:
       controllers:
         main:
+          strategy: Recreate
           containers:
             main:
               env:

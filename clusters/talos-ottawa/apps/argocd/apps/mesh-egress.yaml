@@ -1,0 +1,34 @@
+---
+# ApplicationSet for mesh egress — deploys ExternalName services to ALL clusters
+# Uses ArgoCD clusters generator (not OCM Placement) so egress persists
+# even when a cluster is tainted/down — egress must be unconditional
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: mesh-egress
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            argocd.argoproj.io/secret-type: cluster
+  template:
+    metadata:
+      name: "mesh-egress-{{.name}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+        targetRevision: HEAD
+        path: clusters/floating-apps/egress
+      destination:
+        name: "{{.name}}"
+        namespace: keiretsu-top
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

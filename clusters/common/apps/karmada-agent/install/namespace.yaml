@@ -1,2 +1,0 @@
-# Namespace is managed by the outer kustomization, not here.
-# See: clusters/common/apps/karmada-agent/namespace.yaml

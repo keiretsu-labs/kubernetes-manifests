@@ -1,0 +1,35 @@
+---
+# OCM Klusterlet (Singleton mode) — registers this cluster with the OCM hub on Ottawa
+# Bootstrap kubeconfig pulled via ExternalSecret (same pattern as karmada-agent)
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ocm-klusterlet
+  namespace: open-cluster-management-agent
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: klusterlet
+      version: "1.2.0"
+      sourceRef:
+        kind: HelmRepository
+        name: ocm
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: ocm-bootstrap-kubeconfig
+      valuesKey: bootstrapHubKubeConfig
+      targetPath: bootstrapHubKubeConfig
+  values:
+    klusterlet:
+      create: true
+      mode: Singleton
+      clusterName: "${CLUSTER_NAME}"

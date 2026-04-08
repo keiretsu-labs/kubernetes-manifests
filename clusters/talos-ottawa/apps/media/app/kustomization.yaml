@@ -32,5 +32,6 @@ resources:
   - ./qb
   - ./qb-pvt
   - ./feedcord
-  # - ./tsdb
-  # - ./tunarr
+  - ./flaresolverr
+  - ./maintainerr
+  - ./backup-verify
