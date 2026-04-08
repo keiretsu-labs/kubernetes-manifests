@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tnjustworks-oauth
+  namespace: tailscale
+type: Opaque
+stringData:
+  client_id: ${TSJUSTWORKS_TS_OAUTH_CLIENT_ID}
+  client_secret: ${TSJUSTWORKS_TS_OAUTH_CLIENT_SECRET}
+---
+apiVersion: tailscale.com/v1alpha1
+kind: Tailnet
+metadata:
+  name: tnjustworks
+spec:
+  credentials:
+    secretName: tnjustworks-oauth
