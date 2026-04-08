@@ -9,5 +9,7 @@ resources:
   - ./proxygroup.yaml
   - ./recorder.yaml
   - ./egress.yaml
+  - ./tailnet.yaml
+  - ./tnjustworks-proxygroup.yaml
   # Dashboards
   - ./network-metrics.yaml
