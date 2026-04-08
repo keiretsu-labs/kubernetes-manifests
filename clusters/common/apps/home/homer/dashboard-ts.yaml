@@ -64,14 +64,14 @@ spec:
           url: "https://login.tailscale.com/admin/machines"
       - parameters:
           name: "GSLB TS Gateway"
-          logo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/globe.svg"
+          logo: "https://raw.githubusercontent.com/k8gb-io/k8gb/refs/heads/master/docs/images/k8gb-icon-color.svg"
           subtitle: "Tailscale CGNAT round-robin"
           tag: "k8gb"
           tagstyle: "is-success"
           url: "https://keiretsu.ts.${COMMON_DOMAIN}/"
       - parameters:
           name: "GSLB Public Gateway"
-          logo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/globe.svg"
+          logo: "https://raw.githubusercontent.com/k8gb-io/k8gb/refs/heads/master/docs/images/k8gb-icon-color.svg"
           subtitle: "Public CDN round-robin"
           tag: "k8gb"
           tagstyle: "is-warning"
