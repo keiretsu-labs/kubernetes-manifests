@@ -8,7 +8,7 @@ spec:
     matchLabels:
       kubernetes.io/os: linux
   bgpInstances:
-    - name: opnsense
+    - name: unifi
       localASN: 64514
       peers:
         - name: "udm-1"
