@@ -19,8 +19,10 @@ spec:
   mediaClaimName: media-share
   mediaMountPath: /media-share
   volsyncCopyMethod: Direct
-  volsyncManualTrigger: "restore-initial"
+  volsyncManualTrigger: "restore-oldest"
   volsyncPaused: false
+  restoring: true
+  restorePrevious: 4
   s3Endpoint: "${COMMON_S3_ENDPOINT}"
   s3Location: "${LOCATION}"
   resticPassword: "${COMMON_RESTIC_SECRET}"

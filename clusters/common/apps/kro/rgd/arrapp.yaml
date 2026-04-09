@@ -34,6 +34,11 @@ spec:
       volsyncManualTrigger: "string | default=first"
       volsyncPaused: "boolean | default=false"
       volsyncUnlock: "string | default="
+      # Restore mode - scales deployment to 0 and unpauses volsync destination
+      # Set restoring: true + change volsyncManualTrigger to kick off restore
+      # restorePrevious: Nth snapshot from latest (0=latest, 1=one before, etc.)
+      restoring: "boolean | default=false"
+      restorePrevious: "integer | default=0"
       # S3/Restic - populated via Flux variable substitution in instance
       s3Endpoint: "string"
       s3Location: "string"
@@ -56,7 +61,7 @@ spec:
       metadata:
         name: ${schema.spec.name}
       spec:
-        replicas: 1
+        replicas: ${schema.spec.restoring ? 0 : 1}
         selector:
           matchLabels:
             app: ${schema.spec.name}
@@ -106,7 +111,7 @@ spec:
       metadata:
         name: ${schema.spec.name}
       spec:
-        replicas: 1
+        replicas: ${schema.spec.restoring ? 0 : 1}
         selector:
           matchLabels:
             app: ${schema.spec.name}
@@ -336,9 +341,10 @@ spec:
       spec:
         trigger:
           manual: ${schema.spec.volsyncManualTrigger}
-        paused: ${schema.spec.volsyncPaused}
+        paused: ${schema.spec.restoring ? false : schema.spec.volsyncPaused}
         restic:
           repository: ${"restic-media-" + schema.spec.name + "-config"}
+          previous: ${schema.spec.restorePrevious}
           accessModes: [ReadWriteOnce]
           copyMethod: Snapshot
           capacity: ${schema.spec.configStorageSize}
@@ -391,8 +397,9 @@ spec:
       spec:
         trigger:
           manual: ${schema.spec.volsyncManualTrigger}
-        paused: ${schema.spec.volsyncPaused}
+        paused: ${schema.spec.restoring ? false : schema.spec.volsyncPaused}
         restic:
           repository: ${"restic-media-" + schema.spec.name + "-config"}
+          previous: ${schema.spec.restorePrevious}
           destinationPVC: ${configPvcDirect.metadata.name}
           copyMethod: Direct
