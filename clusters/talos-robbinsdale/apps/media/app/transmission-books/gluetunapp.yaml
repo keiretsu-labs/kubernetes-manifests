@@ -8,7 +8,7 @@ spec:
   name: transmission-books
   clientImage: lscr.io/linuxserver/transmission
   # renovate: datasource=docker depName=lscr.io/linuxserver/transmission
-  clientTag: "4.0.6"
+  clientTag: "4.1.1"
   clientPort: 9091
   clientPeerPort: 51413
   # renovate: datasource=docker depName=ghcr.io/qdm12/gluetun
