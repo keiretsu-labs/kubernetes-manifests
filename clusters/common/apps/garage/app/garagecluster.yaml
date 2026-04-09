@@ -22,6 +22,7 @@ spec:
       storageClassName: "${STORAGECLASS_LONGTERM}"
 
   network:
+    rpcPublicAddr: "${LOCATION}-garage.keiretsu.ts.net:3901"
     rpcSecretRef:
       name: garage-rpc-secret
       key: rpc-secret
