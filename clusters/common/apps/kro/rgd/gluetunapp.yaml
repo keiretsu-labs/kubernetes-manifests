@@ -102,16 +102,6 @@ spec:
                   secretKeyRef:
                     name: ${schema.spec.vpnSecretName}
                     key: WIREGUARD_PRIVATE_KEY
-              - name: WIREGUARD_PUBLIC_KEY
-                valueFrom:
-                  secretKeyRef:
-                    name: ${schema.spec.vpnSecretName}
-                    key: WIREGUARD_PUBLIC_KEY
-              - name: WIREGUARD_ENDPOINT_IP
-                valueFrom:
-                  secretKeyRef:
-                    name: ${schema.spec.vpnSecretName}
-                    key: WIREGUARD_ENDPOINT_IP
               - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
                 value: 14s
               - name: WIREGUARD_MTU
@@ -218,16 +208,6 @@ spec:
                   secretKeyRef:
                     name: ${schema.spec.vpnSecretName}
                     key: WIREGUARD_PRIVATE_KEY
-              - name: WIREGUARD_PUBLIC_KEY
-                valueFrom:
-                  secretKeyRef:
-                    name: ${schema.spec.vpnSecretName}
-                    key: WIREGUARD_PUBLIC_KEY
-              - name: WIREGUARD_ENDPOINT_IP
-                valueFrom:
-                  secretKeyRef:
-                    name: ${schema.spec.vpnSecretName}
-                    key: WIREGUARD_ENDPOINT_IP
               - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
                 value: 14s
               - name: WIREGUARD_MTU
