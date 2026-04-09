@@ -25,7 +25,7 @@ spec:
       # VPN config
       vpnProvider: "string | default=protonvpn"
       vpnType: "string | default=wireguard"
-      vpnSecretName: "string"
+      vpnSecretName: "string | default="
       vpnCountry: "string | default=Netherlands"
       vpnPortForwarding: "boolean | default=false"
       # qBittorrent port-sync sidecar (optional - only for qBittorrent)
@@ -33,15 +33,15 @@ spec:
       portSyncImage: "string | default=ghcr.io/bjw-s-labs/gluetun-qb-port-sync"
       portSyncTag: "string | default=0.0.4"
       # Network CIDRs (Flux-substituted)
-      podCidr: "string"
-      serviceCidr: "string"
+      podCidr: "string | default=10.0.0.0/16"
+      serviceCidr: "string | default=10.0.0.0/16"
       # Homer dashboard
-      hostname: "string"
-      homerName: "string"
-      homerSubtitle: "string"
-      homerLogo: "string"
+      hostname: "string | default="
+      homerName: "string | default="
+      homerSubtitle: "string | default="
+      homerLogo: "string | default="
       # Storage
-      downloadsClaimName: "string"
+      downloadsClaimName: "string | default=media-share"
       downloadsMountPath: "string | default=/downloads"
       configStorageSize: "string | default=5Gi"
       configStorageClass: "string | default=ceph-block-replicated"
@@ -55,10 +55,10 @@ spec:
       restoring: "boolean | default=false"
       restorePrevious: "integer | default=0"
       # S3/Restic
-      s3Endpoint: "string"
-      s3Location: "string"
-      resticPassword: "string"
-      clusterDomain: "string"
+      s3Endpoint: "string | default="
+      s3Location: "string | default="
+      resticPassword: "string | default="
+      clusterDomain: "string | default="
       timezone: "string | default=UTC"
     status:
       ready: ${deployment.status.availableReplicas > 0 || deploymentWithPortSync.status.availableReplicas > 0}
