@@ -41,7 +41,7 @@ spec:
 #        - name: MODE
 #          value: "sequential-write-latency"
         - name: MODE
-          value: "full" # run all tests
+          value: "full"
         - name: FILE_NAME
           value: "/volume/test"
         - name: SIZE

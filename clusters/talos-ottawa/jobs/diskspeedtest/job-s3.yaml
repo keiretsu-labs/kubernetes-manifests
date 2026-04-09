@@ -1,0 +1,33 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kbench-s3
+spec:
+  template:
+    metadata:
+      labels:
+        kbench: fio
+    spec:
+      containers:
+      - name: kbench
+        image: yasker/kbench:latest
+        imagePullPolicy: Always
+        env:
+        - name: MODE
+          value: "sequential-write-bandwidth"
+        - name: FILE_NAME
+          value: "/volume/test"
+        - name: SIZE
+          value: "9G"
+        - name: CPU_IDLE_PROF
+          value: "disabled"
+        volumeMounts:
+        - name: vol
+          mountPath: /volume/
+      restartPolicy: Never
+      volumes:
+      - name: vol
+        persistentVolumeClaim:
+          claimName: kbench-pvc-s3
+  backoffLimit: 0

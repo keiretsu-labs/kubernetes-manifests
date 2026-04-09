@@ -6,3 +6,7 @@ resources:
   - ns.yaml
   - job.yaml
   - pvc.yaml
+  - job-smb.yaml
+  - pvc-smb.yaml
+  - job-s3.yaml
+  - pvc-s3.yaml

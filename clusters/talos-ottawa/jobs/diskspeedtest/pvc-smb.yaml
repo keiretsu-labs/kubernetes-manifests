@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kbench-pvc-smb
+spec:
+  volumeMode: Filesystem
+  storageClassName: nagato-smb
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
