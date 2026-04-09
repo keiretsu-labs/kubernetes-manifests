@@ -2,22 +2,6 @@
 apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageBucket
 metadata:
-  name: tailscale-recorder
-spec:
-  clusterRef:
-    name: garage
-  globalAlias: tailscale-recorder
-  quotas:
-    maxSize: 100Gi
-    maxObjects: 1000000
-  keyPermissions:
-    - keyRef: tailscale-recorder-key
-      read: true
-      write: true
----
-apiVersion: garage.rajsingh.info/v1alpha1
-kind: GarageBucket
-metadata:
   name: keiretsu
 spec:
   clusterRef:
