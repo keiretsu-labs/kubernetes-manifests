@@ -1,0 +1,535 @@
+---
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: gluetunapp
+spec:
+  schema:
+    group: media.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: GluetunApp
+    scope: Namespaced
+    spec:
+      name: "string"
+      # Client container
+      clientImage: "string | default=lscr.io/linuxserver/transmission"
+      clientTag: "string | default=4.0.6"
+      clientPort: "integer | default=9091"
+      clientPeerPort: "integer | default=51413"
+      configMountPath: "string | default=/config"
+      puid: "string | default=568"
+      pgid: "string | default=568"
+      # Gluetun VPN sidecar
+      gluetunImage: "string | default=ghcr.io/qdm12/gluetun"
+      gluetunTag: "string | default=v3.41.1"
+      # VPN config
+      vpnProvider: "string | default=protonvpn"
+      vpnType: "string | default=wireguard"
+      vpnSecretName: "string"
+      vpnCountry: "string | default=Netherlands"
+      vpnPortForwarding: "boolean | default=false"
+      # qBittorrent port-sync sidecar (optional - only for qBittorrent)
+      enablePortSync: "boolean | default=false"
+      portSyncImage: "string | default=ghcr.io/bjw-s-labs/gluetun-qb-port-sync"
+      portSyncTag: "string | default=0.0.4"
+      # Network CIDRs (Flux-substituted)
+      podCidr: "string"
+      serviceCidr: "string"
+      # Homer dashboard
+      hostname: "string"
+      homerName: "string"
+      homerSubtitle: "string"
+      homerLogo: "string"
+      # Storage
+      downloadsClaimName: "string"
+      downloadsMountPath: "string | default=/downloads"
+      configStorageSize: "string | default=5Gi"
+      configStorageClass: "string | default=ceph-block-replicated"
+      # VolumeSync config
+      volsyncCopyMethod: "string | default=Snapshot"
+      volsyncSnapshotClass: "string | default=csi-rbdplugin-snapclass"
+      volsyncManualTrigger: "string | default=first"
+      volsyncPaused: "boolean | default=false"
+      volsyncUnlock: "string | default="
+      # S3/Restic
+      s3Endpoint: "string"
+      s3Location: "string"
+      resticPassword: "string"
+      clusterDomain: "string"
+      timezone: "string | default=UTC"
+    status:
+      ready: ${deployment.status.availableReplicas > 0 || deploymentWithPortSync.status.availableReplicas > 0}
+  resources:
+  # ─── Deployment: standard (no port-sync, no port forwarding) ───
+  - id: deployment
+    includeWhen:
+    - ${!schema.spec.enablePortSync}
+    template:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: ${schema.spec.name}
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels:
+              app: ${schema.spec.name}
+          spec:
+            containers:
+            - name: gluetun
+              image: ${schema.spec.gluetunImage + ":" + schema.spec.gluetunTag}
+              securityContext:
+                capabilities:
+                  add:
+                  - NET_ADMIN
+                allowPrivilegeEscalation: false
+              env:
+              - name: VPN_SERVICE_PROVIDER
+                value: ${schema.spec.vpnProvider}
+              - name: VPN_TYPE
+                value: ${schema.spec.vpnType}
+              - name: WIREGUARD_PRIVATE_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: WIREGUARD_PRIVATE_KEY
+              - name: WIREGUARD_PUBLIC_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: WIREGUARD_PUBLIC_KEY
+              - name: WIREGUARD_ENDPOINT_IP
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: WIREGUARD_ENDPOINT_IP
+              - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
+                value: 14s
+              - name: WIREGUARD_MTU
+                value: "1410"
+              - name: VPN_PORT_FORWARDING
+                value: "off"
+              - name: SERVER_COUNTRIES
+                value: ${schema.spec.vpnCountry}
+              - name: DOT
+                value: "off"
+              - name: HEALTH_TARGET_ADDRESS
+                value: "1.1.1.1:443"
+              - name: FIREWALL_INPUT_PORTS
+                value: ${string(schema.spec.clientPort)}
+              - name: FIREWALL_OUTBOUND_SUBNETS
+                value: ${schema.spec.podCidr}
+              - name: UPDATER_PERIOD
+                value: "5m"
+              - name: UPDATER_PROTONVPN_EMAIL
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: UPDATER_PROTONVPN_EMAIL
+              - name: UPDATER_PROTONVPN_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: UPDATER_PROTONVPN_PASSWORD
+              - name: LOG_LEVEL
+                value: info
+              volumeMounts:
+              - name: gluetun-config
+                mountPath: /gluetun
+            - name: client
+              image: ${schema.spec.clientImage + ":" + schema.spec.clientTag}
+              ports:
+              - name: webui
+                containerPort: ${schema.spec.clientPort}
+                protocol: TCP
+              - name: peer-tcp
+                containerPort: ${schema.spec.clientPeerPort}
+                protocol: TCP
+              - name: peer-udp
+                containerPort: ${schema.spec.clientPeerPort}
+                protocol: UDP
+              volumeMounts:
+              - name: config-volume
+                mountPath: ${schema.spec.configMountPath}
+              - name: downloads-volume
+                mountPath: ${schema.spec.downloadsMountPath}
+              env:
+              - name: PUID
+                value: ${schema.spec.puid}
+              - name: PGID
+                value: ${schema.spec.pgid}
+              - name: TZ
+                value: ${schema.spec.timezone}
+            volumes:
+            - name: config-volume
+              persistentVolumeClaim:
+                claimName: ${schema.spec.name + "-config"}
+            - name: downloads-volume
+              persistentVolumeClaim:
+                claimName: ${schema.spec.downloadsClaimName}
+            - name: gluetun-config
+              emptyDir: {}
+
+  # ─── Deployment: with port-sync (qBittorrent + port forwarding) ───
+  - id: deploymentWithPortSync
+    includeWhen:
+    - ${schema.spec.enablePortSync}
+    template:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: ${schema.spec.name}
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            labels:
+              app: ${schema.spec.name}
+          spec:
+            containers:
+            - name: gluetun
+              image: ${schema.spec.gluetunImage + ":" + schema.spec.gluetunTag}
+              securityContext:
+                capabilities:
+                  add:
+                  - NET_ADMIN
+                allowPrivilegeEscalation: false
+              env:
+              - name: VPN_SERVICE_PROVIDER
+                value: ${schema.spec.vpnProvider}
+              - name: VPN_TYPE
+                value: ${schema.spec.vpnType}
+              - name: WIREGUARD_PRIVATE_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: WIREGUARD_PRIVATE_KEY
+              - name: WIREGUARD_PUBLIC_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: WIREGUARD_PUBLIC_KEY
+              - name: WIREGUARD_ENDPOINT_IP
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: WIREGUARD_ENDPOINT_IP
+              - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
+                value: 14s
+              - name: WIREGUARD_MTU
+                value: "1410"
+              - name: VPN_PORT_FORWARDING
+                value: "on"
+              - name: VPN_PORT_FORWARDING_DOWN_COMMAND
+                value: "wget -qO- http://localhost:8000/openvpn/actions/restart"
+              - name: PORT_FORWARD_ONLY
+                value: "on"
+              - name: SERVER_COUNTRIES
+                value: ${schema.spec.vpnCountry}
+              - name: DOT
+                value: "off"
+              - name: HEALTH_TARGET_ADDRESS
+                value: "1.1.1.1:443"
+              - name: FIREWALL_INPUT_PORTS
+                value: ${string(schema.spec.clientPort) + "," + string(schema.spec.clientPeerPort) + ",8000"}
+              - name: FIREWALL_OUTBOUND_SUBNETS
+                value: ${schema.spec.podCidr}
+              - name: UPDATER_PERIOD
+                value: "5m"
+              - name: UPDATER_PROTONVPN_EMAIL
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: UPDATER_PROTONVPN_EMAIL
+              - name: UPDATER_PROTONVPN_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: ${schema.spec.vpnSecretName}
+                    key: UPDATER_PROTONVPN_PASSWORD
+              - name: LOG_LEVEL
+                value: info
+              volumeMounts:
+              - name: gluetun-config
+                mountPath: /gluetun
+            - name: gluetun-qb-port-sync
+              image: ${schema.spec.portSyncImage + ":" + schema.spec.portSyncTag}
+              env:
+              - name: GLUETUN_CONTROL_SERVER_HOST
+                value: localhost
+              - name: GLUETUN_CONTROL_SERVER_PORT
+                value: "8000"
+              - name: QBITTORRENT_HOST
+                value: localhost
+              - name: QBITTORRENT_WEBUI_PORT
+                value: ${string(schema.spec.clientPort)}
+              - name: CRON_ENABLED
+                value: "true"
+              - name: CRON_SCHEDULE
+                value: "* * * * *"
+              - name: LOG_TIMESTAMP
+                value: "false"
+              - name: CRON_INIT
+                value: "true"
+              volumeMounts:
+              - name: qb-port-sync-config
+                mountPath: /config
+              command: ["/bin/sh"]
+              args: ["-c", "echo '* * * * * /app/gluetun-qb-port-sync' > /config/crontab && exec /entrypoint.sh"]
+            - name: client
+              image: ${schema.spec.clientImage + ":" + schema.spec.clientTag}
+              ports:
+              - name: webui
+                containerPort: ${schema.spec.clientPort}
+                protocol: TCP
+              - name: peer-tcp
+                containerPort: ${schema.spec.clientPeerPort}
+                protocol: TCP
+              - name: peer-udp
+                containerPort: ${schema.spec.clientPeerPort}
+                protocol: UDP
+              volumeMounts:
+              - name: config-volume
+                mountPath: ${schema.spec.configMountPath}
+              - name: downloads-volume
+                mountPath: ${schema.spec.downloadsMountPath}
+              env:
+              - name: PUID
+                value: ${schema.spec.puid}
+              - name: PGID
+                value: ${schema.spec.pgid}
+              - name: TZ
+                value: ${schema.spec.timezone}
+              - name: WEBUI_PORT
+                value: ${string(schema.spec.clientPort)}
+              - name: TORRENTING_PORT
+                value: ${string(schema.spec.clientPeerPort)}
+              - name: QBITTORRENT__Auth_SubnetWhitelist
+                value: ${schema.spec.podCidr + "," + schema.spec.serviceCidr}
+              - name: QBITTORRENT__Auth_AuthSubnetWhitelistEnabled
+                value: "true"
+              - name: QBITTORRENT__Auth_LocalHostAuth
+                value: "false"
+            volumes:
+            - name: config-volume
+              persistentVolumeClaim:
+                claimName: ${schema.spec.name + "-config"}
+            - name: downloads-volume
+              persistentVolumeClaim:
+                claimName: ${schema.spec.downloadsClaimName}
+            - name: gluetun-config
+              emptyDir: {}
+            - name: qb-port-sync-config
+              emptyDir: {}
+
+  # ─── Service ───
+  - id: service
+    template:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        selector:
+          app: ${schema.spec.name}
+        ports:
+        - name: http
+          port: ${schema.spec.clientPort}
+          protocol: TCP
+          targetPort: ${schema.spec.clientPort}
+        type: ClusterIP
+
+  # ─── HTTPRoute ───
+  - id: httproute
+    template:
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: ${schema.spec.name}
+        annotations:
+          item.homer.rajsingh.info/name: ${schema.spec.homerName}
+          item.homer.rajsingh.info/subtitle: ${schema.spec.homerSubtitle}
+          item.homer.rajsingh.info/logo: ${schema.spec.homerLogo}
+          item.homer.rajsingh.info/keywords: "torrents, downloads"
+          service.homer.rajsingh.info/name: "Media"
+          service.homer.rajsingh.info/icon: "fas fa-tv"
+      spec:
+        parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: private
+          namespace: home
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: ts
+          namespace: home
+        hostnames:
+        - ${schema.spec.hostname + "." + schema.spec.clusterDomain}
+        rules:
+        - backendRefs:
+          - group: ""
+            kind: Service
+            name: ${schema.spec.name}
+            port: ${schema.spec.clientPort}
+            weight: 1
+          matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+  # ─── Garage S3 Key ───
+  - id: garageKey
+    template:
+      apiVersion: garage.rajsingh.info/v1alpha1
+      kind: GarageKey
+      metadata:
+        name: ${"volsync-media-" + schema.spec.name + "-config-key"}
+      spec:
+        clusterRef:
+          name: garage
+          namespace: garage
+        name: ${"Media " + schema.spec.homerName + " Config Volsync Key"}
+        secretTemplate:
+          name: ${"restic-media-" + schema.spec.name + "-config"}
+          namespace: media
+          accessKeyIdKey: AWS_ACCESS_KEY_ID
+          secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+          includeEndpoint: false
+          includeRegion: false
+          additionalData:
+            RESTIC_REPOSITORY: ${"s3:http://" + schema.spec.s3Endpoint + "/keiretsu/" + schema.spec.s3Location + "/media/" + schema.spec.name + "-config"}
+            RESTIC_PASSWORD: ${schema.spec.resticPassword}
+        bucketPermissions:
+        - globalAlias: keiretsu
+          read: true
+          write: true
+
+  # ─── Volsync Backup ───
+  - id: replicationSource
+    includeWhen:
+    - ${schema.spec.volsyncUnlock == ""}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationSource
+      metadata:
+        name: ${"media-" + schema.spec.name + "-config"}
+      spec:
+        sourcePVC: ${schema.spec.name + "-config"}
+        trigger:
+          schedule: "0 4 * * *"
+        restic:
+          pruneIntervalDays: 14
+          repository: ${"restic-media-" + schema.spec.name + "-config"}
+          retain:
+            hourly: 1
+            daily: 3
+            weekly: 4
+            monthly: 2
+            yearly: 1
+          copyMethod: Direct
+
+  - id: replicationSourceWithUnlock
+    includeWhen:
+    - ${schema.spec.volsyncUnlock != ""}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationSource
+      metadata:
+        name: ${"media-" + schema.spec.name + "-config"}
+      spec:
+        sourcePVC: ${schema.spec.name + "-config"}
+        trigger:
+          schedule: "0 4 * * *"
+        restic:
+          pruneIntervalDays: 14
+          repository: ${"restic-media-" + schema.spec.name + "-config"}
+          unlock: ${schema.spec.volsyncUnlock}
+          retain:
+            hourly: 1
+            daily: 3
+            weekly: 4
+            monthly: 2
+            yearly: 1
+          copyMethod: Direct
+
+  # ─── Volsync Restore: Snapshot ───
+  - id: replicationDestinationSnapshot
+    includeWhen:
+    - ${schema.spec.volsyncCopyMethod == "Snapshot"}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationDestination
+      metadata:
+        name: ${schema.spec.name + "-config"}
+      spec:
+        trigger:
+          manual: ${schema.spec.volsyncManualTrigger}
+        paused: ${schema.spec.volsyncPaused}
+        restic:
+          repository: ${"restic-media-" + schema.spec.name + "-config"}
+          accessModes: [ReadWriteOnce]
+          copyMethod: Snapshot
+          capacity: ${schema.spec.configStorageSize}
+          storageClassName: ${schema.spec.configStorageClass}
+          volumeSnapshotClassName: ${schema.spec.volsyncSnapshotClass}
+
+  - id: configPvcSnapshot
+    includeWhen:
+    - ${schema.spec.volsyncCopyMethod == "Snapshot"}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name + "-config"}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: ${schema.spec.configStorageSize}
+        dataSourceRef:
+          kind: ReplicationDestination
+          apiGroup: volsync.backube
+          name: ${replicationDestinationSnapshot.metadata.name}
+
+  # ─── Volsync Restore: Direct (Robbinsdale Ceph) ───
+  - id: configPvcDirect
+    includeWhen:
+    - ${schema.spec.volsyncCopyMethod == "Direct"}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name + "-config"}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: ${schema.spec.configStorageSize}
+        storageClassName: ${schema.spec.configStorageClass}
+
+  - id: replicationDestinationDirect
+    includeWhen:
+    - ${schema.spec.volsyncCopyMethod == "Direct"}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationDestination
+      metadata:
+        name: ${schema.spec.name + "-config"}
+      spec:
+        trigger:
+          manual: ${schema.spec.volsyncManualTrigger}
+        paused: ${schema.spec.volsyncPaused}
+        restic:
+          repository: ${"restic-media-" + schema.spec.name + "-config"}
+          destinationPVC: ${configPvcDirect.metadata.name}
+          copyMethod: Direct
