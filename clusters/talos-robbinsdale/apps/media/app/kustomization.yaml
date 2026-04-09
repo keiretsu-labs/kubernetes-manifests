@@ -8,19 +8,13 @@ resources:
   - unas.yaml
   - ./jellyfin
   - ./prowlarr
-  - ./sonarr-1080p
-  - ./sonarr-4k
-  - ./sonarr-anime
-  - ./radarr-1080p
-  - ./radarr-4k
-  - ./radarr-4kremux
-  - ./radarr-anime
-  - ./bazarr-1080p
-  - ./bazarr-4k
-  - ./bazarr-4kremux
-  - ./bazarr-anime
-  - ./qb
-  - ./qb-pvt
+  - ./sonarr
+  - ./radarr
+  - ./bazarr
+  - ./transmission-books
+  - ./transmission-movies
+  - ./transmission-music
+  - ./transmission-tv
   - ./autobrr
   - ./tautulli
   - ./jellyseerr

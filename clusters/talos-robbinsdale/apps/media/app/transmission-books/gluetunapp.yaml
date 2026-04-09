@@ -1,0 +1,35 @@
+---
+apiVersion: media.keiretsu.ts.net/v1alpha1
+kind: GluetunApp
+metadata:
+  name: transmission-books
+  namespace: media
+spec:
+  name: transmission-books
+  clientImage: lscr.io/linuxserver/transmission
+  # renovate: datasource=docker depName=lscr.io/linuxserver/transmission
+  clientTag: "4.0.6"
+  clientPort: 9091
+  clientPeerPort: 51413
+  # renovate: datasource=docker depName=ghcr.io/qdm12/gluetun
+  gluetunTag: "v3.41.1"
+  vpnSecretName: transmission-books-secret
+  vpnCountry: "Netherlands"
+  podCidr: "${CLUSTER_POD_CIDR}"
+  serviceCidr: "${CLUSTER_SERVICE_CIDR}"
+  hostname: transmission-books
+  homerName: "Transmission Books"
+  homerSubtitle: "Book Torrent Client"
+  homerLogo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/transmission.svg"
+  downloadsClaimName: media-share
+  downloadsMountPath: /downloads
+  configStorageSize: 5Gi
+  configStorageClass: ceph-block-replicated-nvme
+  volsyncCopyMethod: Direct
+  volsyncManualTrigger: "restore-initial"
+  volsyncPaused: false
+  s3Endpoint: "${COMMON_S3_ENDPOINT}"
+  s3Location: "${LOCATION}"
+  resticPassword: "${COMMON_RESTIC_SECRET}"
+  clusterDomain: "${CLUSTER_DOMAIN}"
+  timezone: "${TIMEZONE}"
