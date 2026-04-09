@@ -5,10 +5,9 @@ namespace: immich
 resources:
   - helmrelease.yaml
   - probes.yaml
-  - unas.yaml
+  - pvc-library.yaml
   - httproute.yaml
-  - secret.yaml
+  - secret.sops.yaml
   - pg.yaml
   - redis.yaml
   - s3-backup.yaml
-  - pg-restore.yaml
