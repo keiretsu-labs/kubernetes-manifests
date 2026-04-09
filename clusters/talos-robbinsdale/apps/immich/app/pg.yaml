@@ -2,10 +2,10 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: immich-postgresql-ceph
+  name: immich-postgres
   namespace: immich
 spec:
-  instances: 1
+  instances: 3
   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:15-0.3.0
   postgresql:
     shared_preload_libraries:
@@ -14,38 +14,35 @@ spec:
     initdb:
       database: immich
       owner: immich
-      secret:
-        name: immich-postgres-user
       dataChecksums: true
       postInitApplicationSQL:
         - ALTER USER immich WITH SUPERUSER;
         - CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
         - CREATE EXTENSION IF NOT EXISTS "cube";
         - CREATE EXTENSION IF NOT EXISTS "earthdistance";
-  # resources:
-  #   limits:
-  #     cpu: 2
-  #     memory: 1024Mi
-  #   requests:
-  #     cpu: 50m
-  #     memory: 512Mi
   monitoring:
     enablePodMonitor: true
   storage:
     size: 16Gi
-    storageClass: ceph-block-replicated-nvme
-
   # Enable Barman Cloud plugin for S3 backups
   plugins:
     - name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true
       parameters:
         barmanObjectName: immich-s3-store
+        serverName: immich-postgres
 
   backup:
     retentionPolicy: "30d"
-# S3 backup schedule using Barman Cloud
+  externalClusters:
+    - name: keiretsu
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: immich-s3-store
+          serverName: immich-postgres
 ---
+# S3 backup schedule using Barman Cloud
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
@@ -58,4 +55,4 @@ spec:
   pluginConfiguration:
     name: barman-cloud.cloudnative-pg.io
   cluster:
-    name: immich-postgres-ceph
+    name: immich-postgres
