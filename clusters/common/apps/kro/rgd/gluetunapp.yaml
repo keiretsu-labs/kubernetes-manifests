@@ -73,7 +73,7 @@ spec:
       metadata:
         name: ${schema.spec.name}
       spec:
-        replicas: ${schema.spec.restoring ? 0 : 1}
+        replicas: "${schema.spec.restoring ? 0 : 1}"
         selector:
           matchLabels:
             app: ${schema.spec.name}
@@ -189,7 +189,7 @@ spec:
       metadata:
         name: ${schema.spec.name}
       spec:
-        replicas: ${schema.spec.restoring ? 0 : 1}
+        replicas: "${schema.spec.restoring ? 0 : 1}"
         selector:
           matchLabels:
             app: ${schema.spec.name}
@@ -477,7 +477,7 @@ spec:
       spec:
         trigger:
           manual: ${schema.spec.volsyncManualTrigger}
-        paused: ${schema.spec.restoring ? false : schema.spec.volsyncPaused}
+        paused: "${schema.spec.restoring ? false : schema.spec.volsyncPaused}"
         restic:
           repository: ${"restic-media-" + schema.spec.name + "-config"}
           previous: ${schema.spec.restorePrevious}
@@ -532,7 +532,7 @@ spec:
       spec:
         trigger:
           manual: ${schema.spec.volsyncManualTrigger}
-        paused: ${schema.spec.restoring ? false : schema.spec.volsyncPaused}
+        paused: "${schema.spec.restoring ? false : schema.spec.volsyncPaused}"
         restic:
           repository: ${"restic-media-" + schema.spec.name + "-config"}
           previous: ${schema.spec.restorePrevious}
