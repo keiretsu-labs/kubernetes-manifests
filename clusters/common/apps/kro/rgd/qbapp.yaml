@@ -37,6 +37,9 @@ spec:
       volsyncSnapshotClass: "string | default=csi-rbdplugin-snapclass"
       volsyncManualTrigger: "string | default=first"
       volsyncPaused: "boolean | default=false"
+      # Restore mode - scales deployment to 0 and unpauses volsync destination
+      restoring: "boolean | default=false"
+      restorePrevious: "integer | default=0"
       s3Endpoint: "string"
       s3Location: "string"
       resticPassword: "string"
@@ -52,7 +55,7 @@ spec:
       metadata:
         name: ${schema.spec.name}
       spec:
-        replicas: 1
+        replicas: "${schema.spec.restoring ? 0 : 1}"
         selector:
           matchLabels:
             app: ${schema.spec.name}
@@ -309,9 +312,10 @@ spec:
       spec:
         trigger:
           manual: ${schema.spec.volsyncManualTrigger}
-        paused: ${schema.spec.volsyncPaused}
+        paused: "${schema.spec.restoring ? false : schema.spec.volsyncPaused}"
         restic:
           repository: ${"restic-media-" + schema.spec.name + "-config"}
+          previous: ${schema.spec.restorePrevious}
           accessModes: [ReadWriteOnce]
           copyMethod: Snapshot
           capacity: ${schema.spec.configStorageSize}
@@ -362,8 +366,9 @@ spec:
       spec:
         trigger:
           manual: ${schema.spec.volsyncManualTrigger}
-        paused: ${schema.spec.volsyncPaused}
+        paused: "${schema.spec.restoring ? false : schema.spec.volsyncPaused}"
         restic:
           repository: ${"restic-media-" + schema.spec.name + "-config"}
+          previous: ${schema.spec.restorePrevious}
           destinationPVC: ${configPvcDirect.metadata.name}
           copyMethod: Direct
