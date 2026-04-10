@@ -38,29 +38,26 @@ cniConfig:
 nodes:
   ###################################################################
   - hostname: "rei"
-    ipAddress: "rei"
+    ipAddress: "192.168.169.120"
     installDiskSelector:
-      serial: "50026B7686F78587" # Kingston 1TB 
+      serial: "50026B7686F78587" # Kingston SNV3S 1TB
     controlPlane: true
     networkInterfaces:
-      - interface: eth1
-        dhcp: true
       - interface: bond0
         bond:
           deviceSelectors:
-            - hardwareAddr: "58:47:ca:7c:02:ce"  # eth2
-            - hardwareAddr: "58:47:ca:7c:02:cf"  # eth3
+            - hardwareAddr: "38:05:25:36:56:39"  # enp5s0f0np0 - X710 SFP+ port 0
+            - hardwareAddr: "38:05:25:36:56:3a"  # enp5s0f1np1 - X710 SFP+ port 1
           mode: 802.3ad
-          xmitHashPolicy: layer2
+          xmitHashPolicy: layer3+4
           lacpRate: fast
-          miimon: 1000
-          adSelect: bandwidth
-          minLinks: 2
+          miimon: 100
+          upDelay: 200
+          downDelay: 200
+        mtu: 9000
         dhcp: true
         vip:
           ip: "192.168.169.25"
-    patches:
-      - "@./patches/node/rei-thunderbolt.yaml"
   ###################################################################
   - hostname: "asuka"
     ipAddress: "asuka"
@@ -148,18 +145,18 @@ controlPlane:
     customization:
       systemExtensions:
         officialExtensions:
-          - siderolabs/i915
-          - siderolabs/intel-ucode
+          - siderolabs/amd-ucode
+          - siderolabs/amdgpu
           - siderolabs/nut-client
-          - siderolabs/thunderbolt
           - siderolabs/util-linux-tools
       extraKernelArgs:
         - apparmor=0
         - init_on_alloc=0
         - init_on_free=0
-        - intel_idle.max_cstate=0
-        - intel_iommu=on
+        - amd_iommu=on
+        - amd_pstate=active
         - iommu=pt
+        - pcie_aspm=off
         - mitigations=off
         - security=none
         - talos.auditd.disabled=1
