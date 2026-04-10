@@ -36,3 +36,59 @@ spec:
       storage: 4Ti
   volumeName: immich-library
   storageClassName: smb
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: immich-library
+spec:
+  sourcePVC: immich-library
+  trigger:
+    schedule: "0 3 * * *"
+  restic:
+    pruneIntervalDays: 14
+    repository: restic-immich-library
+    retain:
+      hourly: 1
+      daily: 3
+      weekly: 4
+      monthly: 2
+      yearly: 1
+    copyMethod: Direct
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: immich-library
+spec:
+  trigger:
+    manual: first
+  paused: true
+  restic:
+    repository: restic-immich-library
+    destinationPVC: immich-library
+    copyMethod: Direct
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
+metadata:
+  name: volsync-immich-library-key
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Immich Library Volsync Key"
+  secretTemplate:
+    name: restic-immich-library
+    namespace: immich
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    includeEndpoint: false
+    includeRegion: false
+    additionalData:
+      RESTIC_REPOSITORY: "s3:http://${COMMON_S3_ENDPOINT}/keiretsu/${LOCATION}/immich/library"
+      RESTIC_PASSWORD: "${COMMON_RESTIC_SECRET}"
+  bucketPermissions:
+    - globalAlias: keiretsu
+      read: true
+      write: true
