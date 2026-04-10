@@ -69,8 +69,8 @@ spec:
     # For highest availability, an odd number of mons should be specified.
     count: 3
     # The mons should be on unique nodes. For production, at least 3 nodes are recommended for this reason.
-    # Mons should only be allowed on the same node for test environments where data loss is acceptable.
-    # allowMultiplePerNode: true
+    # TODO: set back to false once all 3 MS-A2 nodes are online
+    allowMultiplePerNode: true
   mgr:
     # When higher availability of the mgr is needed, increase the count to 2.
     # In that case, one mgr will be active and one in standby. When Ceph updates which
