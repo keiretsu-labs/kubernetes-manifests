@@ -1,0 +1,12 @@
+machine:
+  sysfs:
+    # AMD P-State preferred core and energy performance preference
+    devices.system.cpu.amd_pstate.status: active
+    # Additional cores on MS-A2 vs MS-01
+    devices.system.cpu.cpu20.cpufreq.scaling_governor: performance
+    devices.system.cpu.cpu21.cpufreq.scaling_governor: performance
+    devices.system.cpu.cpu22.cpufreq.scaling_governor: performance
+    devices.system.cpu.cpu23.cpufreq.scaling_governor: performance
+  kernel:
+    modules:
+      - name: amdgpu

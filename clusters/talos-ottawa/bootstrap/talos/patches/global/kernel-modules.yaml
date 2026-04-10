@@ -3,4 +3,3 @@ machine:
   kernel:
     modules:
       - name: tcp_bbr  # BBR congestion control algorithm
-      - name: amdgpu   # AMD GPU driver
