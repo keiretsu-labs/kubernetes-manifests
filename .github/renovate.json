@@ -145,11 +145,6 @@
       "description": "Track code-server with build suffix (format: 4.109.2-39)",
       "matchPackageNames": ["ghcr.io/coder/code-server"],
       "versioning": "loose"
-    },
-    {
-      "description": "Track official Plex image (format: 1.43.0.10467-hash)",
-      "matchPackageNames": ["docker.io/plexinc/pms-docker", "plexinc/pms-docker"],
-      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)-(?<revision>[0-9a-fA-F]+)$"
     }
   ]
 }
