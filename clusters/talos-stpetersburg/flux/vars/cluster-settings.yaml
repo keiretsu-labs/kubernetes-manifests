@@ -26,5 +26,4 @@ data:
 
   # Storage
   STORAGECLASS_LONGTERM: local-path
-  STORAGECLASS_BLOCK: local-path
   STORAGECLASS_DEFAULT: local-path
