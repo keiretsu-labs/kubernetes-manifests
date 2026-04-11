@@ -32,9 +32,18 @@ spec:
       destination:
         name: "{{.name}}"
         namespace: '{{index .path.segments 2}}'
+      ignoreDifferences:
+        - group: network.keiretsu.ts.net
+          kind: ServiceEgress
+          managedFieldsManagers:
+            - kro
+            - kro.run/labeller
+            - kro.run/applyset
+            - kro.run/applyset-parent
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          - ServerSideApply=true
