@@ -1,0 +1,70 @@
+---
+# ServiceEgress RGD — generates ExternalName services for cross-cluster connectivity via Tailscale
+# Creates one ExternalName service per endpoint (forEach) plus an optional global endpoint
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: serviceegress
+  annotations:
+    kro.run/allow-breaking-changes: "true"
+spec:
+  schema:
+    group: network.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: ServiceEgress
+    scope: Namespaced
+    types:
+      PortSpec:
+        name: "string | required=true"
+        port: "integer | required=true"
+        protocol: "string | default=TCP"
+      EndpointSpec:
+        name: "string | required=true"
+        fqdn: "string | required=true"
+        ports: "[]PortSpec | required=true"
+      GlobalSpec:
+        enabled: "boolean | default=false"
+        name: "string | default=''"
+        fqdn: "string | default=''"
+        ports: "[]PortSpec"
+    spec:
+      endpoints: "[]EndpointSpec"
+      global: "GlobalSpec"
+      proxyGroup: "string | default=common-egress"
+    status:
+      ready: "true"
+  resources:
+
+  # --- Per-cluster ExternalName services (one per endpoint) ---
+  - id: egressServices
+    forEach:
+      - ep: ${schema.spec.endpoints}
+    template:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ${ep.name}
+        annotations:
+          tailscale.com/tailnet-fqdn: ${ep.fqdn}
+          tailscale.com/proxy-group: ${schema.spec.proxyGroup}
+      spec:
+        type: ExternalName
+        externalName: placeholder
+        ports: ${ep.ports}
+
+  # --- Global ExternalName service (optional) ---
+  - id: globalEgressService
+    includeWhen:
+      - ${schema.spec.global.enabled}
+    template:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ${schema.spec.global.name}
+        annotations:
+          tailscale.com/tailnet-fqdn: ${schema.spec.global.fqdn}
+          tailscale.com/proxy-group: ${schema.spec.proxyGroup}
+      spec:
+        type: ExternalName
+        externalName: placeholder
+        ports: ${schema.spec.global.ports}
