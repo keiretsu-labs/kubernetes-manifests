@@ -1,0 +1,40 @@
+---
+# ApplicationSet for Keiretsu egress — deploys ServiceEgress to ALL clusters
+# Uses matrix generator: all clusters × git directory discovery
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: keiretsu-egress
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  argocd.argoproj.io/secret-type: cluster
+          - git:
+              repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+              revision: HEAD
+              directories:
+                - path: clusters/apps/*/egress
+  template:
+    metadata:
+      name: "egress-{{.path.basename}}-{{.name}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+        targetRevision: HEAD
+        path: "{{.path.path}}"
+      destination:
+        name: "{{.name}}"
+        namespace: "{{.path.basename}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
