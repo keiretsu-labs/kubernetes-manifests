@@ -4,7 +4,33 @@ kube-state-metrics:
   # custom collectors, commenting out the collectors and extraArgs below will
   # retain any existing kube-state-metrics configuration.
   collectors:
+    - certificatesigningrequests
+    - configmaps
+    - cronjobs
+    - daemonsets
+    - deployments
+    - endpoints
+    - horizontalpodautoscalers
+    - ingresses
+    - jobs
+    - leases
+    - limitranges
+    - namespaces
+    - networkpolicies
     - nodes
+    - persistentvolumeclaims
+    - persistentvolumes
+    - poddisruptionbudgets
+    - pods
+    - replicasets
+    - replicationcontrollers
+    - resourcequotas
+    - secrets
+    - serviceaccounts
+    - services
+    - statefulsets
+    - storageclasses
+    - volumeattachments
   extraArgs: []
   rbac:
     extraRules:
