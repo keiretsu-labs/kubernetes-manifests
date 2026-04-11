@@ -22,23 +22,23 @@ spec:
         robbinsdale: "integer | default=33"
         stpetersburg: "integer | default=34"
     status:
-      ready: ${gslb.metadata.name != ""}
+      ready: $${gslb.metadata.name != ""}
   resources:
   - id: gslb
     template:
       apiVersion: k8gb.absa.oss/v1beta1
       kind: Gslb
       metadata:
-        name: ${schema.metadata.name}
+        name: $${schema.metadata.name}
       spec:
         resourceRef:
           kind: HTTPRoute
-          name: ${schema.spec.httpRouteRef.name}
-          namespace: ${schema.spec.httpRouteRef.namespace}
+          name: $${schema.spec.httpRouteRef.name}
+          namespace: $${schema.spec.httpRouteRef.namespace}
         strategy:
-          type: ${schema.spec.strategy}
-          dnsTtlSeconds: ${schema.spec.dnsTtlSeconds}
+          type: $${schema.spec.strategy}
+          dnsTtlSeconds: $${schema.spec.dnsTtlSeconds}
           weight:
-            ottawa: ${schema.spec.weights.ottawa}
-            robbinsdale: ${schema.spec.weights.robbinsdale}
-            stpetersburg: ${schema.spec.weights.stpetersburg}
+            ottawa: $${schema.spec.weights.ottawa}
+            robbinsdale: $${schema.spec.weights.robbinsdale}
+            stpetersburg: $${schema.spec.weights.stpetersburg}

@@ -32,39 +32,39 @@ spec:
       global: "GlobalSpec"
       proxyGroup: "string | default=common-egress"
     status:
-      ready: '${egressServices[0].metadata.name != ""}'
+      ready: '$${egressServices[0].metadata.name != ""}'
   resources:
 
   # --- Per-cluster ExternalName services (one per endpoint) ---
   - id: egressServices
     forEach:
-      - ep: ${schema.spec.endpoints}
+      - ep: $${schema.spec.endpoints}
     template:
       apiVersion: v1
       kind: Service
       metadata:
-        name: ${ep.name}
+        name: $${ep.name}
         annotations:
-          tailscale.com/tailnet-fqdn: ${ep.fqdn}
-          tailscale.com/proxy-group: ${schema.spec.proxyGroup}
+          tailscale.com/tailnet-fqdn: $${ep.fqdn}
+          tailscale.com/proxy-group: $${schema.spec.proxyGroup}
       spec:
         type: ExternalName
         externalName: placeholder
-        ports: ${ep.ports}
+        ports: $${ep.ports}
 
   # --- Global ExternalName service (optional) ---
   - id: globalEgressService
     includeWhen:
-      - ${schema.spec.global.enabled}
+      - $${schema.spec.global.enabled}
     template:
       apiVersion: v1
       kind: Service
       metadata:
-        name: ${schema.spec.global.name}
+        name: $${schema.spec.global.name}
         annotations:
-          tailscale.com/tailnet-fqdn: ${schema.spec.global.fqdn}
-          tailscale.com/proxy-group: ${schema.spec.proxyGroup}
+          tailscale.com/tailnet-fqdn: $${schema.spec.global.fqdn}
+          tailscale.com/proxy-group: $${schema.spec.proxyGroup}
       spec:
         type: ExternalName
         externalName: placeholder
-        ports: ${schema.spec.global.ports}
+        ports: $${schema.spec.global.ports}
