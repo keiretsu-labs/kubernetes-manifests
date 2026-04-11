@@ -79,7 +79,7 @@ spec:
           includeEndpoint: false
           includeRegion: false
           additionalData:
-            RESTIC_REPOSITORY: ${"s3:http://" + schema.spec.s3Endpoint + "/" + schema.spec.bucketAlias + "/" + schema.spec.s3Location + "/" + schema.spec.s3Path}
+            RESTIC_REPOSITORY: '${"s3:http://" + schema.spec.s3Endpoint + "/" + schema.spec.bucketAlias + "/" + schema.spec.s3Location + "/" + schema.spec.s3Path}'
             RESTIC_PASSWORD: ${schema.spec.resticPassword}
         bucketPermissions:
         - globalAlias: ${schema.spec.bucketAlias}

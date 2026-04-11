@@ -43,8 +43,8 @@ spec:
       storageResticPassword: "string"
       storageRestoreMode: "string | default=backup-only"
     status:
-      ready: ${deployment.status.?readyReplicas > 0}
-      serviceIP: ${service.spec.clusterIP}
+      ready: '${deployment.status.?readyReplicas > 0}'
+      serviceIP: '${service.spec.clusterIP}'
 
   resources:
 

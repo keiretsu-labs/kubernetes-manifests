@@ -30,7 +30,7 @@ spec:
       homerService: "string | default=''"
       homerServiceIcon: "string | default=''"
     status:
-      ready: ${httproute.metadata.name != "" || tcproute.metadata.name != "" || udproute.metadata.name != "" || tlsroute.metadata.name != ""}
+      ready: '${httproute.metadata.name != "" || tcproute.metadata.name != "" || udproute.metadata.name != "" || tlsroute.metadata.name != ""}'
   resources:
 
   # ===== HTTPRoute =====
@@ -51,7 +51,7 @@ spec:
           service.homer.rajsingh.info/name: ${schema.spec.homerService}
           service.homer.rajsingh.info/icon: ${schema.spec.homerServiceIcon}
       spec:
-        parentRefs: ${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}
+        parentRefs: '${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}'
         hostnames: ${schema.spec.hostnames}
         rules:
           - backendRefs:
@@ -76,7 +76,7 @@ spec:
       metadata:
         name: ${schema.metadata.name}
       spec:
-        parentRefs: ${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}
+        parentRefs: '${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}'
         rules:
           - backendRefs:
               - group: ""
@@ -96,7 +96,7 @@ spec:
       metadata:
         name: ${schema.metadata.name}
       spec:
-        parentRefs: ${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}
+        parentRefs: '${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}'
         rules:
           - backendRefs:
               - group: ""
@@ -116,7 +116,7 @@ spec:
       metadata:
         name: ${schema.metadata.name}
       spec:
-        parentRefs: ${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}
+        parentRefs: '${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}'
         hostnames: ${schema.spec.hostnames}
         rules:
           - backendRefs:
