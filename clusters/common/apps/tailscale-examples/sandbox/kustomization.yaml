@@ -14,3 +14,4 @@ resources:
   # - ./golink
   # - ./egress
   # - ./vector
+  - ./tsk9s
