@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tsk9s
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tsk9s
+  template:
+    metadata:
+      labels:
+        app: tsk9s
+    spec:
+      containers:
+      - name: tsk9s
+        image: ghcr.io/rajsinghtech/tsk9s:v0.1.2
+        args:
+          - --state-dir=/data/tsk9s-state
+          - --endpoints=ottawa-k8s.keiretsu.ts.net,robbinsdale-k8s.keiretsu.ts.net,stpetersburg-k8s.keiretsu.ts.net
+          - --local-addr=0.0.0.0:8080
+        env:
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: ts-oauth
+              key: TS_AUTHKEY
+              optional: true
+        ports:
+        - containerPort: 8080
+          name: http
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        emptyDir: {}
