@@ -5,3 +5,6 @@ resources:
   - ocm-config.yaml
   - floating-apps.yaml
   - mesh-egress.yaml
+  - keiretsu-apps.yaml
+  - keiretsu-egress.yaml
+  - keiretsu-gslb.yaml

@@ -1,0 +1,41 @@
+---
+# ApplicationSet for Keiretsu app resources — deploys to clusters labeled tier=app-host
+# Uses matrix generator: cluster labels × git directory discovery
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: keiretsu-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  tier: app-host
+          - git:
+              repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+              revision: HEAD
+              directories:
+                - path: clusters/apps/*/app
+  template:
+    metadata:
+      name: "keiretsu-{{.path.basename}}-{{.name}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+        targetRevision: HEAD
+        path: "{{.path.path}}"
+      destination:
+        name: "{{.name}}"
+        namespace: "{{.path.basename}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

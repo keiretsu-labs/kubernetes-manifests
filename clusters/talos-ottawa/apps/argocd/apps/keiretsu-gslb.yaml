@@ -1,0 +1,39 @@
+---
+# ApplicationSet for Keiretsu GSLB — deploys GSLBEndpoint to clusters running k8gb
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: keiretsu-gslb
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  has-gslb: "true"
+          - git:
+              repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+              revision: HEAD
+              directories:
+                - path: clusters/apps/*/gslb
+  template:
+    metadata:
+      name: "gslb-{{.path.basename}}-{{.name}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+        targetRevision: HEAD
+        path: "{{.path.path}}"
+      destination:
+        name: "{{.name}}"
+        namespace: "{{.path.basename}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
