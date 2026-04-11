@@ -1,0 +1,259 @@
+---
+# StorageStack RGD — full volsync backup/restore lifecycle for a PVC
+# Creates: GarageKey (S3 creds + restic secret) + optional GarageBucket +
+#          PVC (fresh/snapshot/direct) + ReplicationDestination (restore) +
+#          ReplicationSource (backup)
+#
+# restoreMode values:
+#   backup-only (default) — fresh empty PVC + backup. For new apps with no history.
+#   restore               — ReplicationDestination + dataSourceRef PVC + backup.
+#   auto                  — runs a probe Job to detect existing backups, but KRO
+#                           evaluates includeWhen at schema-spec time (not Job runtime),
+#                           so auto falls back to backup-only behavior. The Job is
+#                           created for observability only; manual inspection required.
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: storagestack
+  annotations:
+    kro.run/allow-breaking-changes: "true"
+spec:
+  schema:
+    group: storage.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: StorageStack
+    scope: Namespaced
+    spec:
+      # Identity
+      name: "string | required=true"
+      # PVC config
+      size: "string | default=5Gi"
+      storageClass: "string | default=ceph-block-replicated-nvme"
+      accessMode: "string | default=ReadWriteOnce"
+      # Garage bucket
+      bucketCreate: "boolean | default=false"
+      bucketAlias: "string | default=keiretsu"
+      bucketQuota: "string | default=100Gi"
+      # S3/Restic
+      s3Endpoint: "string | required=true"
+      s3Location: "string | required=true"
+      s3Path: "string | required=true"
+      resticPassword: "string | required=true"
+      # Backup schedule
+      schedule: "string | required=true"
+      pruneIntervalDays: "integer | default=14"
+      # Retention
+      retainHourly: "integer | default=1"
+      retainDaily: "integer | default=3"
+      retainWeekly: "integer | default=4"
+      retainMonthly: "integer | default=2"
+      retainYearly: "integer | default=1"
+      # Restore config (copyMethod applies to restore, not backup)
+      copyMethod: "string | default=Snapshot"
+      snapshotClass: "string | default=csi-rbdplugin-snapclass"
+      restoreMode: "string | default=backup-only"
+      restorePaused: "boolean | default=true"
+    status:
+      pvcName: ${schema.spec.name}
+      secretName: ${"restic-" + schema.spec.name}
+      ready: ${garageKey.metadata.name != ""}
+
+  resources:
+
+  # --- GarageKey (always created) ---
+  - id: garageKey
+    template:
+      apiVersion: garage.rajsingh.info/v1alpha1
+      kind: GarageKey
+      metadata:
+        name: ${"volsync-" + schema.spec.name + "-key"}
+      spec:
+        clusterRef:
+          name: garage
+          namespace: garage
+        name: ${"Volsync " + schema.spec.name + " Key"}
+        secretTemplate:
+          name: ${"restic-" + schema.spec.name}
+          accessKeyIdKey: AWS_ACCESS_KEY_ID
+          secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+          includeEndpoint: false
+          includeRegion: false
+          additionalData:
+            RESTIC_REPOSITORY: ${"s3:http://" + schema.spec.s3Endpoint + "/" + schema.spec.bucketAlias + "/" + schema.spec.s3Location + "/" + schema.spec.s3Path}
+            RESTIC_PASSWORD: ${schema.spec.resticPassword}
+        bucketPermissions:
+        - globalAlias: ${schema.spec.bucketAlias}
+          read: true
+          write: true
+
+  # --- GarageBucket (optional dedicated bucket) ---
+  - id: garageBucket
+    includeWhen:
+    - ${schema.spec.bucketCreate}
+    template:
+      apiVersion: garage.rajsingh.info/v1alpha1
+      kind: GarageBucket
+      metadata:
+        name: ${"volsync-" + schema.spec.name + "-bucket"}
+      spec:
+        clusterRef:
+          name: garage
+          namespace: garage
+        name: ${schema.spec.name}
+        quotas:
+          maxSize: ${schema.spec.bucketQuota}
+          maxObjects: 1000000
+
+  # --- Probe Job (auto mode only) ---
+  # NOTE: KRO includeWhen is evaluated against schema spec values, not Job output.
+  # This Job runs for observability but cannot dynamically switch restore behavior.
+  # auto mode effectively behaves like backup-only — check Job logs manually to
+  # decide if a restore is needed, then switch restoreMode to "restore" explicitly.
+  - id: probeJob
+    includeWhen:
+    - ${schema.spec.restoreMode == "auto"}
+    template:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: ${"volsync-probe-" + schema.spec.name}
+      spec:
+        ttlSecondsAfterFinished: 300
+        template:
+          spec:
+            restartPolicy: Never
+            containers:
+            - name: probe
+              image: restic/restic:latest
+              command:
+              - sh
+              - -c
+              - |
+                if restic snapshots --json --latest 1 2>/dev/null | grep -q '"id"'; then
+                  echo "BACKUP_EXISTS=true" > /dev/termination-log
+                  echo "Existing backup found — set restoreMode: restore to recover"
+                else
+                  echo "BACKUP_EXISTS=false" > /dev/termination-log
+                  echo "No existing backup — backup-only mode is correct"
+                fi
+              envFrom:
+              - secretRef:
+                  name: ${"restic-" + schema.spec.name}
+
+  # --- ReplicationDestination: Snapshot restore ---
+  - id: replicationDestinationSnapshot
+    includeWhen:
+    - ${schema.spec.restoreMode == "restore" && schema.spec.copyMethod == "Snapshot"}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationDestination
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        trigger:
+          manual: restore-once
+        paused: ${schema.spec.restorePaused}
+        restic:
+          repository: ${"restic-" + schema.spec.name}
+          accessModes:
+          - ${schema.spec.accessMode}
+          copyMethod: Snapshot
+          capacity: ${schema.spec.size}
+          storageClassName: ${schema.spec.storageClass}
+          volumeSnapshotClassName: ${schema.spec.snapshotClass}
+
+  # --- PVC: Snapshot restore (dataSourceRef points at ReplicationDestination) ---
+  - id: pvcSnapshot
+    includeWhen:
+    - ${schema.spec.restoreMode == "restore" && schema.spec.copyMethod == "Snapshot"}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        accessModes:
+        - ${schema.spec.accessMode}
+        resources:
+          requests:
+            storage: ${schema.spec.size}
+        dataSourceRef:
+          kind: ReplicationDestination
+          apiGroup: volsync.backube
+          name: ${replicationDestinationSnapshot.metadata.name}
+
+  # --- ReplicationDestination: Direct restore ---
+  - id: replicationDestinationDirect
+    includeWhen:
+    - ${schema.spec.restoreMode == "restore" && schema.spec.copyMethod == "Direct"}
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationDestination
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        trigger:
+          manual: restore-once
+        paused: ${schema.spec.restorePaused}
+        restic:
+          repository: ${"restic-" + schema.spec.name}
+          destinationPVC: ${pvcDirect.metadata.name}
+          copyMethod: Direct
+
+  # --- PVC: Direct restore (plain PVC, volsync writes into it) ---
+  - id: pvcDirect
+    includeWhen:
+    - ${schema.spec.restoreMode == "restore" && schema.spec.copyMethod == "Direct"}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        accessModes:
+        - ${schema.spec.accessMode}
+        resources:
+          requests:
+            storage: ${schema.spec.size}
+        storageClassName: ${schema.spec.storageClass}
+
+  # --- PVC: Fresh (backup-only and auto modes) ---
+  - id: pvcFresh
+    includeWhen:
+    - ${schema.spec.restoreMode == "backup-only" || schema.spec.restoreMode == "auto"}
+    template:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        accessModes:
+        - ${schema.spec.accessMode}
+        resources:
+          requests:
+            storage: ${schema.spec.size}
+        storageClassName: ${schema.spec.storageClass}
+
+  # --- ReplicationSource (backup, always created) ---
+  # copyMethod here is always Direct regardless of schema.spec.copyMethod
+  # (spec copyMethod controls restore path, not backup)
+  - id: replicationSource
+    template:
+      apiVersion: volsync.backube/v1alpha1
+      kind: ReplicationSource
+      metadata:
+        name: ${schema.spec.name}
+      spec:
+        sourcePVC: ${schema.spec.name}
+        trigger:
+          schedule: ${schema.spec.schedule}
+        restic:
+          pruneIntervalDays: ${schema.spec.pruneIntervalDays}
+          repository: ${"restic-" + schema.spec.name}
+          retain:
+            hourly: ${schema.spec.retainHourly}
+            daily: ${schema.spec.retainDaily}
+            weekly: ${schema.spec.retainWeekly}
+            monthly: ${schema.spec.retainMonthly}
+            yearly: ${schema.spec.retainYearly}
+          copyMethod: Direct
