@@ -39,10 +39,10 @@ spec:
             targetPort: "integer"
         proxyGroup: "string | default=common-ingress"
     status:
-      fqdn: ${schema.spec.hostname + ".keiretsu.ts.net"}
-      globalFQDN: ${schema.spec.global.enabled ? schema.spec.global.hostname + ".keiretsu.ts.net" : ""}
-      tailscaleIP: ${perNodeService.status.?loadBalancer.?ingress[0].?ip.orValue("")}
-      ready: ${perNodeService.status.?loadBalancer.?ingress.size() > 0}
+      fqdn: '${schema.spec.hostname + ".keiretsu.ts.net"}'
+      globalFQDN: '${schema.spec.global.enabled ? schema.spec.global.hostname + ".keiretsu.ts.net" : ""}'
+      tailscaleIP: '${perNodeService.status.?loadBalancer.?ingress[0].?ip.orValue("")}'
+      ready: '${perNodeService.status.?loadBalancer.?ingress.size() > 0}'
   resources:
   - id: perNodeService
     template:

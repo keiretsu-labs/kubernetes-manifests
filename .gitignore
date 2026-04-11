@@ -50,3 +50,4 @@ venv/
 
 # Tailscale daemon PID (created by CI runners)
 tailscaled.pid
+.claude/worktrees/
