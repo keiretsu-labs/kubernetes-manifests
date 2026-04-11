@@ -22,7 +22,7 @@ spec:
                 - path: clusters/apps/*/app
   template:
     metadata:
-      name: "keiretsu-{{.path.basename}}-{{.name}}"
+      name: 'keiretsu-{{index .path.segments 2}}-{{.name}}'
     spec:
       project: default
       source:
@@ -31,7 +31,7 @@ spec:
         path: "{{.path.path}}"
       destination:
         name: "{{.name}}"
-        namespace: "{{.path.basename}}"
+        namespace: '{{index .path.segments 2}}'
       syncPolicy:
         automated:
           prune: true
