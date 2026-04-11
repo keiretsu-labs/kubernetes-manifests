@@ -8,9 +8,6 @@ spec:
   name: keiretsu-test-config
   size: 1Gi
   storageClass: ceph-block-replicated
-  s3Endpoint: "${COMMON_S3_ENDPOINT}"
-  s3Location: "${LOCATION}"
   s3Path: "test/keiretsu-test-config"
   schedule: "0 3 * * *"
-  resticPassword: "${COMMON_RESTIC_SECRET}"
   restoreMode: backup-only

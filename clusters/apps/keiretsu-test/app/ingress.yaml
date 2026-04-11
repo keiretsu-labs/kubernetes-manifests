@@ -10,8 +10,7 @@ spec:
   ports:
   - name: http
     port: 80
-  hostname: "${LOCATION}-keiretsu-test"
-  tags: "tag:k8s,tag:${LOCATION}"
+  hostname: keiretsu-test
   proxyGroup: common-ingress
   global:
     enabled: true
