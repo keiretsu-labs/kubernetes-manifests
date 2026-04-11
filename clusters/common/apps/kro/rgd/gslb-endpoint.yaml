@@ -1,0 +1,44 @@
+---
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: gslbendpoint
+  annotations:
+    kro.run/allow-breaking-changes: "true"
+spec:
+  schema:
+    group: network.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: GSLBEndpoint
+    scope: Namespaced
+    spec:
+      httpRouteRef:
+        name: "string | required=true"
+        namespace: "string | required=true"
+      strategy: "string | default=roundRobin"
+      dnsTtlSeconds: "integer | default=60"
+      weights:
+        ottawa: "integer | default=33"
+        robbinsdale: "integer | default=33"
+        stpetersburg: "integer | default=34"
+    status:
+      ready: ${gslb.metadata.name != ""}
+  resources:
+  - id: gslb
+    template:
+      apiVersion: k8gb.absa.oss/v1beta1
+      kind: Gslb
+      metadata:
+        name: ${schema.metadata.name}
+      spec:
+        resourceRef:
+          kind: HTTPRoute
+          name: ${schema.spec.httpRouteRef.name}
+          namespace: ${schema.spec.httpRouteRef.namespace}
+        strategy:
+          type: ${schema.spec.strategy}
+          dnsTtlSeconds: ${schema.spec.dnsTtlSeconds}
+          weight:
+            ottawa: ${schema.spec.weights.ottawa}
+            robbinsdale: ${schema.spec.weights.robbinsdale}
+            stpetersburg: ${schema.spec.weights.stpetersburg}
