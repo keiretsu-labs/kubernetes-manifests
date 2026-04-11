@@ -28,9 +28,23 @@ ipam:
     clusterPoolIPv4PodCIDRList:
       - "10.5.0.0/16"
     clusterPoolIPv4MaskSize: 24
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    metricRelabelings:
+      - targetLabel: cluster
+        replacement: ${CLUSTER_NAME}
 operator:
   rollOutPods: true
   replicas: 1
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      metricRelabelings:
+        - targetLabel: cluster
+          replacement: ${CLUSTER_NAME}
 rollOutCiliumPods: true
 localRedirectPolicy: true
 bgpControlPlane:
