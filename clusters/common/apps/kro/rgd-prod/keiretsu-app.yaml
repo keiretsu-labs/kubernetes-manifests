@@ -22,7 +22,6 @@ spec:
       # Ingress (optional)
       ingressEnabled: "boolean | default=false"
       ingressHostname: "string"
-      ingressTags: "string | default=tag:k8s"
       ingressProxyGroup: "string | default=common-ingress"
       ingressGlobalEnabled: "boolean | default=false"
       ingressGlobalHostname: "string"
@@ -30,12 +29,8 @@ spec:
       # Storage (optional)
       storageEnabled: "boolean | default=false"
       storageSize: "string | default=5Gi"
-      storageClass: "string | default=ceph-block-replicated-nvme"
-      storageS3Endpoint: "string"
-      storageS3Location: "string"
       storageS3Path: "string"
       storageSchedule: "string"
-      storageResticPassword: "string"
       storageRestoreMode: "string | default=backup-only"
     status:
       ready: $${deployment.metadata.name != ""}
@@ -137,7 +132,6 @@ spec:
         - name: http
           port: $${schema.spec.port}
         hostname: $${schema.spec.ingressHostname}
-        tags: $${schema.spec.ingressTags}
         proxyGroup: $${schema.spec.ingressProxyGroup}
         global:
           enabled: $${schema.spec.ingressGlobalEnabled}
@@ -159,10 +153,6 @@ spec:
       spec:
         name: $${schema.spec.name + "-config"}
         size: $${schema.spec.storageSize}
-        storageClass: $${schema.spec.storageClass}
-        s3Endpoint: $${schema.spec.storageS3Endpoint}
-        s3Location: $${schema.spec.storageS3Location}
         s3Path: $${schema.spec.storageS3Path}
         schedule: $${schema.spec.storageSchedule}
-        resticPassword: $${schema.spec.storageResticPassword}
         restoreMode: $${schema.spec.storageRestoreMode}
