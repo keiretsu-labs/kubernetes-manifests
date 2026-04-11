@@ -13,21 +13,12 @@ spec:
     apiVersion: v1alpha1
     kind: KeiretsuApp
     scope: Namespaced
-    types:
-      EnvVar:
-        name: "string | required=true"
-        value: "string | required=true"
     spec:
       # Deployment
       name: "string | required=true"
       image: "string | required=true"
       port: "integer | required=true"
       replicas: "integer | default=1"
-      env:
-        type: "[]EnvVar"
-        items:
-          name: "string | required=true"
-          value: "string | required=true"
       # Ingress (optional)
       ingressEnabled: "boolean | default=false"
       ingressHostname: "string"
@@ -78,7 +69,6 @@ spec:
               image: ${schema.spec.image}
               ports:
               - containerPort: ${schema.spec.port}
-              env: ${schema.spec.env}
 
   # --- Deployment (with PVC volume from StorageStack) ---
   - id: deploymentWithStorage
@@ -106,7 +96,6 @@ spec:
               image: ${schema.spec.image}
               ports:
               - containerPort: ${schema.spec.port}
-              env: ${schema.spec.env}
               volumeMounts:
               - name: config
                 mountPath: /config
