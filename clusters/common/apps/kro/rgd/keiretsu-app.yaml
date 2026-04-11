@@ -13,6 +13,10 @@ spec:
     apiVersion: v1alpha1
     kind: KeiretsuApp
     scope: Namespaced
+    types:
+      EnvVar:
+        name: "string | required=true"
+        value: "string | required=true"
     spec:
       # Deployment
       name: "string | required=true"
@@ -43,8 +47,8 @@ spec:
       storageResticPassword: "string"
       storageRestoreMode: "string | default=backup-only"
     status:
-      ready: '${deployment.status.?readyReplicas > 0}'
-      serviceIP: '${service.spec.clusterIP}'
+      ready: ${deployment.metadata.name != ""}
+      serviceIP: ${service.metadata.name}
 
   resources:
 
