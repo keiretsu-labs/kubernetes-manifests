@@ -8,6 +8,7 @@ metadata:
   name: robbinsdale-istio-eastwestgateway
   namespace: istio-system
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-istio-eastwestgateway.keiretsu.ts.net
     tailscale.com/proxygroup: common-egress
 spec:
@@ -33,6 +34,7 @@ metadata:
   name: ottawa-istio-eastwestgateway
   namespace: istio-system
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-istio-eastwestgateway.keiretsu.ts.net
     tailscale.com/proxygroup: common-egress
 spec:
@@ -58,6 +60,7 @@ metadata:
   name: stpetersburg-istio-eastwestgateway
   namespace: istio-system
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-istio-eastwestgateway.keiretsu.ts.net
     tailscale.com/proxygroup: common-egress
 spec:
