@@ -4,6 +4,7 @@ kind: Service
 metadata:
   name: goldpinger-ottawa
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: goldpinger-ottawa.keiretsu.ts.net
     # tailscale.com/proxy-group: common-egress
 spec:
@@ -19,6 +20,7 @@ kind: Service
 metadata:
   name: goldpinger-robbinsdale
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: goldpinger-robbinsdale.keiretsu.ts.net
     # tailscale.com/proxy-group: common-egress
 spec:

@@ -4,6 +4,7 @@ kind: Service
 metadata:
   name: robbinsdale-jellyfin
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-jellyfin.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
@@ -19,6 +20,7 @@ kind: Service
 metadata:
   name: ottawa-jellyfin
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-jellyfin.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:

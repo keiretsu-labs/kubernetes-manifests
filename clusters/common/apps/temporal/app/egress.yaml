@@ -3,6 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-temporal.keiretsu.ts.net
   name: ottawa-temporal
 spec:
@@ -20,6 +21,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-temporal.keiretsu.ts.net
   name: robbinsdale-temporal
 spec:
@@ -37,6 +39,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-temporal.keiretsu.ts.net
   name: stpetersburg-temporal
 spec:

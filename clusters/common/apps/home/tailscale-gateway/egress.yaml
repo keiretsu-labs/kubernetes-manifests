@@ -4,6 +4,7 @@ kind: Service
 metadata:
   name: robbinsdale-envoy-gateway 
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-home-envoy-gateway.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
@@ -25,6 +26,7 @@ kind: Service
 metadata:
   name: ottawa-envoy-gateway
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-home-envoy-gateway.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
