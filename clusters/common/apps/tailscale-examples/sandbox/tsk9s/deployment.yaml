@@ -17,9 +17,10 @@ spec:
     spec:
       containers:
       - name: tsk9s
-        image: ghcr.io/rajsinghtech/tsk9s:v0.1.4
+        image: ghcr.io/rajsinghtech/tsk9s:v0.1.5
         args:
           - --state-dir=/data/tsk9s-state
+          - --hostname=${LOCATION}-tsk9s
           - --endpoints=ottawa-k8s.keiretsu.ts.net,robbinsdale-k8s.keiretsu.ts.net,stpetersburg-k8s.keiretsu.ts.net
           - --local-addr=0.0.0.0:8080
           - --tags=tag:k8s,tag:${LOCATION}
@@ -28,7 +29,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: ts-oauth
-              key: TS_AUTHKEY
+              key: TS_AUTHKEY_EPHEMERAL
               optional: true
         ports:
         - containerPort: 8080
