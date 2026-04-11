@@ -32,7 +32,7 @@ spec:
       global: "GlobalSpec"
       proxyGroup: "string | default=common-egress"
     status:
-      ready: '${egressServices.metadata.name != ""}'
+      ready: '${egressServices[0].metadata.name != ""}'
   resources:
 
   # --- Per-cluster ExternalName services (one per endpoint) ---
