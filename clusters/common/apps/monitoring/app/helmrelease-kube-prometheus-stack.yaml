@@ -95,6 +95,12 @@ spec:
         metricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
+        cAdvisorMetricRelabelings:
+          - targetLabel: cluster
+            replacement: ${CLUSTER_NAME}
+        probesMetricRelabelings:
+          - targetLabel: cluster
+            replacement: ${CLUSTER_NAME}
 
     kubeControllerManager:
       enabled: true
@@ -121,13 +127,9 @@ spec:
             - targetLabel: cluster
               replacement: ${CLUSTER_NAME}
 
-    nodeExporter:
-      operatingSystems:
-        aix:
-          enabled: false
-        darwin:
-          enabled: false
-      serviceMonitor:
-        metricRelabelings:
-          - targetLabel: cluster
-            replacement: ${CLUSTER_NAME}
+    prometheus-node-exporter:
+      prometheus:
+        monitor:
+          metricRelabelings:
+            - targetLabel: cluster
+              replacement: ${CLUSTER_NAME}
