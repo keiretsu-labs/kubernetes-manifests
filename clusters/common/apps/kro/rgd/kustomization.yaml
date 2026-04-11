@@ -10,3 +10,4 @@ resources:
   - ./volsyncbackup.yaml
   - ./backupverify.yaml
   - ./app.yaml
+  - ./gslb-endpoint.yaml
