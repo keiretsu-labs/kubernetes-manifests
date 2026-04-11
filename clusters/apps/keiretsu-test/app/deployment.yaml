@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keiretsu-test
+  namespace: keiretsu-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: keiretsu-test
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: keiretsu-test
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config
+          mountPath: /data
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: keiretsu-test-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keiretsu-test
+  namespace: keiretsu-test
+spec:
+  selector:
+    app.kubernetes.io/name: keiretsu-test
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
