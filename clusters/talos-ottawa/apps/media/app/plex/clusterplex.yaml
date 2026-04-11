@@ -154,11 +154,11 @@ spec:
           mountPath: /config
         - name: transcode
           mountPath: /transcode
-        resources:
-          requests:
-            gpu.intel.com/i915: "10"
-          limits:
-            gpu.intel.com/i915: "10"
+        # resources:
+          # requests:
+          #   gpu.intel.com/i915: "10"
+          # limits:
+          #   gpu.intel.com/i915: "10"
         # resources:          # adapt requests and limits to your needs
         #   requests:
         #     cpu: 300m
@@ -343,11 +343,11 @@ spec:
           mountPath: /config
         - name: transcode
           mountPath: /transcode
-        resources:
-          requests:
-            gpu.intel.com/i915: "10"
-          limits:
-            gpu.intel.com/i915: "10"
+        # resources:
+        #   requests:
+        #     gpu.intel.com/i915: "10"
+        #   limits:
+        #     gpu.intel.com/i915: "10"
         # resources:              # adapt requests and limits to your needs
         #   requests:
         #     cpu: 500m

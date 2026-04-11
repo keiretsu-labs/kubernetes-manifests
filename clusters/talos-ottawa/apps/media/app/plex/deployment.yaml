@@ -21,11 +21,11 @@ spec:
       containers:
         - name: plex
           image: docker.io/plexinc/pms-docker:1.43.1.10611-1e34174b1
-          resources:
-            requests:
-              gpu.intel.com/i915: "25"
-            limits:
-              gpu.intel.com/i915: "25"
+          # resources:
+          #   requests:
+          #     gpu.intel.com/i915: "25"
+          #   limits:
+          #     gpu.intel.com/i915: "25"
           imagePullPolicy: Always
           ports:
             - containerPort: 32400
