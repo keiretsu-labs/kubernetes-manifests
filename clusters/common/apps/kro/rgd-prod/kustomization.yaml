@@ -7,4 +7,3 @@ resources:
   - ./app-route.yaml
   - ./gslb-endpoint.yaml
   - ./storage-stack.yaml
-  - ./keiretsu-app.yaml
