@@ -18,7 +18,7 @@ spec:
       name: ts
       namespace: home
   hostnames:
-    - "tsk9s.${CLUSTER_DOMAIN}"
+    - "k9s.${CLUSTER_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
