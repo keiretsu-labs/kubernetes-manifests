@@ -83,29 +83,49 @@ nodes:
       - "@./patches/node/rei-amd.yaml"
   ###################################################################
   - hostname: "asuka"
-    ipAddress: "asuka"
+    ipAddress: "192.168.169.64"
     installDiskSelector:
       serial: "50026B7686F79D0F"
     controlPlane: true
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/amd-ucode
+            - siderolabs/amdgpu
+            - siderolabs/nut-client
+            - siderolabs/util-linux-tools
+        extraKernelArgs:
+          - apparmor=0
+          - init_on_alloc=0
+          - init_on_free=0
+          - amd_iommu=on
+          - amd_pstate=active
+          - iommu=pt
+          - pcie_aspm=off
+          - mitigations=off
+          - security=none
+          - talos.auditd.disabled=1
+          - net.ifnames=0
+          - cpufreq.default_governor=performance
+          - talos.logging.kernel=tcp://10.169.69.51:5170/
     networkInterfaces:
-      - interface: eth1
-        dhcp: true
       - interface: bond0
         bond:
           deviceSelectors:
-            - hardwareAddr: "58:47:ca:7c:84:c9"  # eth2
-            - hardwareAddr: "58:47:ca:7c:84:ca"  # eth3
+            - hardwareAddr: "38:05:25:36:56:05"  # enp5s0f0np0 - X710 SFP+ port 0
+            - hardwareAddr: "38:05:25:36:56:06"  # enp5s0f1np1 - X710 SFP+ port 1
           mode: 802.3ad
-          xmitHashPolicy: layer2
+          xmitHashPolicy: layer3+4
           lacpRate: fast
-          miimon: 1000
-          adSelect: bandwidth
-          minLinks: 2
+          miimon: 100
+          upDelay: 200
+          downDelay: 200
         dhcp: true
         vip:
           ip: "192.168.169.25"
     patches:
-      - "@./patches/node/asuka-thunderbolt.yaml"
+      - "@./patches/node/asuka-amd.yaml"
   ###################################################################
   - hostname: "kaji"
     ipAddress: "kaji"
