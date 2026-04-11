@@ -11,3 +11,4 @@ resources:
   - ./backupverify.yaml
   - ./app.yaml
   - ./gslb-endpoint.yaml
+  - ./storage-stack.yaml
