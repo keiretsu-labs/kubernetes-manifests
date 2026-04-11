@@ -1,0 +1,32 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tsk9s
+  annotations:
+    item.homer.rajsingh.info/name: "tsk9s"
+    item.homer.rajsingh.info/subtitle: "Multi-cluster K8s terminal"
+    item.homer.rajsingh.info/logo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/kubernetes.svg"
+    item.homer.rajsingh.info/keywords: "k8s, terminal, tailscale"
+
+    service.homer.rajsingh.info/name: "Utilities"
+    service.homer.rajsingh.info/icon: "fas fa-tools"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+  hostnames:
+    - "tsk9s.${CLUSTER_DOMAIN}"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: tsk9s
+          port: 8080
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
