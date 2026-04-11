@@ -34,9 +34,7 @@ spec:
       publishNotReadyAddresses: "boolean | default=false"
       global: "GlobalSpec"
     status:
-      fqdn: '${schema.spec.hostname + ".keiretsu.ts.net"}'
-      globalFQDN: '${schema.spec.global.enabled ? schema.spec.global.hostname + ".keiretsu.ts.net" : ""}'
-      tailscaleIP: '${perNodeService.status.?loadBalancer.?ingress[0].?ip.orValue("")}'
+      serviceName: ${perNodeService.metadata.name}
       ready: '${perNodeService.status.?loadBalancer.?ingress.size() > 0}'
   resources:
   - id: perNodeService

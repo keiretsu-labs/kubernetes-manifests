@@ -54,8 +54,7 @@ spec:
       restoreMode: "string | default=backup-only"
       restorePaused: "boolean | default=true"
     status:
-      pvcName: ${schema.spec.name}
-      secretName: ${"restic-" + schema.spec.name}
+      secretName: ${garageKey.spec.secretTemplate.name}
       ready: ${garageKey.metadata.name != ""}
 
   resources:
