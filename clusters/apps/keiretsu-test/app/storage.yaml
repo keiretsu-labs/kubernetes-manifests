@@ -7,7 +7,6 @@ metadata:
 spec:
   name: keiretsu-test-config
   size: 1Gi
-  storageClass: ceph-block-replicated
   s3Path: "test/keiretsu-test-config"
   schedule: "0 3 * * *"
   restoreMode: backup-only

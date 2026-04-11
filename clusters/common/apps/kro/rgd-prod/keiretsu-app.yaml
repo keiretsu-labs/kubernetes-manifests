@@ -38,71 +38,71 @@ spec:
       storageResticPassword: "string"
       storageRestoreMode: "string | default=backup-only"
     status:
-      ready: ${deployment.metadata.name != ""}
-      serviceIP: ${service.metadata.name}
+      ready: $${deployment.metadata.name != ""}
+      serviceIP: $${service.metadata.name}
 
   resources:
 
   # --- Deployment (no storage) ---
   - id: deployment
     includeWhen:
-    - ${!schema.spec.storageEnabled}
+    - $${!schema.spec.storageEnabled}
     template:
       apiVersion: apps/v1
       kind: Deployment
       metadata:
-        name: ${schema.spec.name}
+        name: $${schema.spec.name}
         labels:
-          app.kubernetes.io/name: ${schema.spec.name}
+          app.kubernetes.io/name: $${schema.spec.name}
       spec:
-        replicas: ${schema.spec.replicas}
+        replicas: $${schema.spec.replicas}
         selector:
           matchLabels:
-            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/name: $${schema.spec.name}
         template:
           metadata:
             labels:
-              app.kubernetes.io/name: ${schema.spec.name}
+              app.kubernetes.io/name: $${schema.spec.name}
           spec:
             containers:
-            - name: ${schema.spec.name}
-              image: ${schema.spec.image}
+            - name: $${schema.spec.name}
+              image: $${schema.spec.image}
               ports:
-              - containerPort: ${schema.spec.port}
+              - containerPort: $${schema.spec.port}
 
   # --- Deployment (with PVC volume from StorageStack) ---
   - id: deploymentWithStorage
     includeWhen:
-    - ${schema.spec.storageEnabled}
+    - $${schema.spec.storageEnabled}
     template:
       apiVersion: apps/v1
       kind: Deployment
       metadata:
-        name: ${schema.spec.name}
+        name: $${schema.spec.name}
         labels:
-          app.kubernetes.io/name: ${schema.spec.name}
+          app.kubernetes.io/name: $${schema.spec.name}
       spec:
-        replicas: ${schema.spec.replicas}
+        replicas: $${schema.spec.replicas}
         selector:
           matchLabels:
-            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/name: $${schema.spec.name}
         template:
           metadata:
             labels:
-              app.kubernetes.io/name: ${schema.spec.name}
+              app.kubernetes.io/name: $${schema.spec.name}
           spec:
             containers:
-            - name: ${schema.spec.name}
-              image: ${schema.spec.image}
+            - name: $${schema.spec.name}
+              image: $${schema.spec.image}
               ports:
-              - containerPort: ${schema.spec.port}
+              - containerPort: $${schema.spec.port}
               volumeMounts:
               - name: config
                 mountPath: /config
             volumes:
             - name: config
               persistentVolumeClaim:
-                claimName: ${storageStack.spec.name}
+                claimName: $${storageStack.spec.name}
 
   # --- Service (always) ---
   - id: service
@@ -110,59 +110,59 @@ spec:
       apiVersion: v1
       kind: Service
       metadata:
-        name: ${schema.spec.name}
+        name: $${schema.spec.name}
         labels:
-          app.kubernetes.io/name: ${schema.spec.name}
+          app.kubernetes.io/name: $${schema.spec.name}
       spec:
         selector:
-          app.kubernetes.io/name: ${schema.spec.name}
+          app.kubernetes.io/name: $${schema.spec.name}
         ports:
         - name: http
-          port: ${schema.spec.port}
-          targetPort: ${schema.spec.port}
+          port: $${schema.spec.port}
+          targetPort: $${schema.spec.port}
 
   # --- ServiceIngress (optional, RGD chaining) ---
   - id: serviceIngress
     includeWhen:
-    - ${schema.spec.ingressEnabled}
+    - $${schema.spec.ingressEnabled}
     template:
       apiVersion: network.keiretsu.ts.net/v1alpha1
       kind: ServiceIngress
       metadata:
-        name: ${schema.spec.name}
+        name: $${schema.spec.name}
       spec:
         selector:
-          app.kubernetes.io/name: ${schema.spec.name}
+          app.kubernetes.io/name: $${schema.spec.name}
         ports:
         - name: http
-          port: ${schema.spec.port}
-        hostname: ${schema.spec.ingressHostname}
-        tags: ${schema.spec.ingressTags}
-        proxyGroup: ${schema.spec.ingressProxyGroup}
+          port: $${schema.spec.port}
+        hostname: $${schema.spec.ingressHostname}
+        tags: $${schema.spec.ingressTags}
+        proxyGroup: $${schema.spec.ingressProxyGroup}
         global:
-          enabled: ${schema.spec.ingressGlobalEnabled}
-          hostname: ${schema.spec.ingressGlobalHostname}
-          tags: ${schema.spec.ingressGlobalTags}
+          enabled: $${schema.spec.ingressGlobalEnabled}
+          hostname: $${schema.spec.ingressGlobalHostname}
+          tags: $${schema.spec.ingressGlobalTags}
           ports:
           - name: http
-            port: ${schema.spec.port}
+            port: $${schema.spec.port}
 
   # --- StorageStack (optional, RGD chaining) ---
   - id: storageStack
     includeWhen:
-    - ${schema.spec.storageEnabled}
+    - $${schema.spec.storageEnabled}
     template:
       apiVersion: storage.keiretsu.ts.net/v1alpha1
       kind: StorageStack
       metadata:
-        name: ${schema.spec.name + "-config"}
+        name: $${schema.spec.name + "-config"}
       spec:
-        name: ${schema.spec.name + "-config"}
-        size: ${schema.spec.storageSize}
-        storageClass: ${schema.spec.storageClass}
-        s3Endpoint: ${schema.spec.storageS3Endpoint}
-        s3Location: ${schema.spec.storageS3Location}
-        s3Path: ${schema.spec.storageS3Path}
-        schedule: ${schema.spec.storageSchedule}
-        resticPassword: ${schema.spec.storageResticPassword}
-        restoreMode: ${schema.spec.storageRestoreMode}
+        name: $${schema.spec.name + "-config"}
+        size: $${schema.spec.storageSize}
+        storageClass: $${schema.spec.storageClass}
+        s3Endpoint: $${schema.spec.storageS3Endpoint}
+        s3Location: $${schema.spec.storageS3Location}
+        s3Path: $${schema.spec.storageS3Path}
+        schedule: $${schema.spec.storageSchedule}
+        resticPassword: $${schema.spec.storageResticPassword}
+        restoreMode: $${schema.spec.storageRestoreMode}

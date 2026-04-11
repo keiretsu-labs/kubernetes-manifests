@@ -33,40 +33,40 @@ spec:
       publishNotReadyAddresses: "boolean | default=false"
       global: "GlobalSpec"
     status:
-      serviceName: ${perNodeService.metadata.name}
-      ready: ${perNodeService.metadata.name != ""}
+      serviceName: $${perNodeService.metadata.name}
+      ready: $${perNodeService.metadata.name != ""}
   resources:
   - id: perNodeService
     template:
       apiVersion: v1
       kind: Service
       metadata:
-        name: ${schema.metadata.name + "-ts"}
+        name: $${schema.metadata.name + "-ts"}
         annotations:
-          tailscale.com/hostname: '${schema.metadata.labels["keiretsu.ts.net/location"] + "-" + schema.spec.hostname}'
-          tailscale.com/tags: '${"tag:k8s,tag:" + schema.metadata.labels["keiretsu.ts.net/location"]}'
-          tailscale.com/proxy-group: ${schema.spec.proxyGroup}
+          tailscale.com/hostname: '$${schema.metadata.labels["keiretsu.ts.net/location"] + "-" + schema.spec.hostname}'
+          tailscale.com/tags: '$${"tag:k8s,tag:" + schema.metadata.labels["keiretsu.ts.net/location"]}'
+          tailscale.com/proxy-group: $${schema.spec.proxyGroup}
       spec:
-        publishNotReadyAddresses: ${schema.spec.publishNotReadyAddresses}
-        selector: ${schema.spec.selector}
+        publishNotReadyAddresses: $${schema.spec.publishNotReadyAddresses}
+        selector: $${schema.spec.selector}
         type: LoadBalancer
         loadBalancerClass: tailscale
-        ports: ${schema.spec.ports}
+        ports: $${schema.spec.ports}
   - id: globalService
     includeWhen:
-    - ${schema.spec.global.enabled}
+    - $${schema.spec.global.enabled}
     template:
       apiVersion: v1
       kind: Service
       metadata:
-        name: ${schema.metadata.name + "-global-ts"}
+        name: $${schema.metadata.name + "-global-ts"}
         annotations:
-          tailscale.com/hostname: ${schema.spec.global.hostname}
-          tailscale.com/tags: ${schema.spec.global.tags}
-          tailscale.com/proxy-group: ${schema.spec.global.proxyGroup}
+          tailscale.com/hostname: $${schema.spec.global.hostname}
+          tailscale.com/tags: $${schema.spec.global.tags}
+          tailscale.com/proxy-group: $${schema.spec.global.proxyGroup}
       spec:
-        publishNotReadyAddresses: ${schema.spec.publishNotReadyAddresses}
-        selector: ${schema.spec.selector}
+        publishNotReadyAddresses: $${schema.spec.publishNotReadyAddresses}
+        selector: $${schema.spec.selector}
         type: LoadBalancer
         loadBalancerClass: tailscale
-        ports: ${schema.spec.global.ports}
+        ports: $${schema.spec.global.ports}
