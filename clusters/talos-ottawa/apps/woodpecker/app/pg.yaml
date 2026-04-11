@@ -9,14 +9,14 @@ spec:
       app: woodpecker-postgres
   instances: 1
   storage:
-    size: 20Gi
+    size: 10Gi
     storageClass: ceph-block-replicated
   monitoring:
     enablePodMonitor: true
   backup:
     retentionPolicy: "30d"
     barmanObjectStore:
-      destinationPath: s3://woodpecker/
+      destinationPath: s3://woodpecker-postgres/
       endpointURL: http://garage.garage.svc.cluster.local:3900
       serverName: woodpecker-postgres
       s3Credentials:
