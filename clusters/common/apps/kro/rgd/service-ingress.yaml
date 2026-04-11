@@ -35,7 +35,6 @@ spec:
     status:
       serviceName: ${perNodeService.metadata.name}
       ready: ${perNodeService.metadata.name != ""}
-      fqdn: '${schema.metadata.labels["keiretsu.ts.net/location"] + "-" + schema.spec.hostname + ".keiretsu.ts.net"}'
   resources:
   - id: perNodeService
     template:
