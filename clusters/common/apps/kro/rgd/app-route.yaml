@@ -1,0 +1,127 @@
+---
+# AppRoute RGD — generates Gateway API route resources with simplified inputs
+# Supports HTTPRoute, TCPRoute, UDPRoute, TLSRoute via spec.kind
+# Short gateway names (ts, private, public) expanded to full parentRef objects
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: approute
+  annotations:
+    kro.run/allow-breaking-changes: "true"
+spec:
+  schema:
+    group: network.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: AppRoute
+    scope: Namespaced
+    spec:
+      kind: "string | default=HTTPRoute"
+      backendRef:
+        name: "string | required=true"
+        port: "integer | required=true"
+      parentGateways: "[]string"
+      hostnames: "[]string"
+      pathPrefix: "string | default=/"
+      # Homer dashboard annotations (optional)
+      homerName: "string | default=''"
+      homerSubtitle: "string | default=''"
+      homerLogo: "string | default=''"
+      homerKeywords: "string | default=''"
+      homerService: "string | default=''"
+      homerServiceIcon: "string | default=''"
+    status:
+      ready: ${httproute.metadata.name != "" || tcproute.metadata.name != "" || udproute.metadata.name != "" || tlsroute.metadata.name != ""}
+  resources:
+
+  # ===== HTTPRoute =====
+
+  - id: httproute
+    includeWhen:
+      - ${schema.spec.kind == "HTTPRoute"}
+    template:
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: ${schema.metadata.name}
+        annotations:
+          item.homer.rajsingh.info/name: ${schema.spec.homerName}
+          item.homer.rajsingh.info/subtitle: ${schema.spec.homerSubtitle}
+          item.homer.rajsingh.info/logo: ${schema.spec.homerLogo}
+          item.homer.rajsingh.info/keywords: ${schema.spec.homerKeywords}
+          service.homer.rajsingh.info/name: ${schema.spec.homerService}
+          service.homer.rajsingh.info/icon: ${schema.spec.homerServiceIcon}
+      spec:
+        parentRefs: ${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}
+        hostnames: ${schema.spec.hostnames}
+        rules:
+          - backendRefs:
+              - group: ""
+                kind: Service
+                name: ${schema.spec.backendRef.name}
+                port: ${schema.spec.backendRef.port}
+                weight: 1
+            matches:
+              - path:
+                  type: PathPrefix
+                  value: ${schema.spec.pathPrefix}
+
+  # ===== TCPRoute =====
+
+  - id: tcproute
+    includeWhen:
+      - ${schema.spec.kind == "TCPRoute"}
+    template:
+      apiVersion: gateway.networking.k8s.io/v1alpha2
+      kind: TCPRoute
+      metadata:
+        name: ${schema.metadata.name}
+      spec:
+        parentRefs: ${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}
+        rules:
+          - backendRefs:
+              - group: ""
+                kind: Service
+                name: ${schema.spec.backendRef.name}
+                port: ${schema.spec.backendRef.port}
+                weight: 1
+
+  # ===== UDPRoute =====
+
+  - id: udproute
+    includeWhen:
+      - ${schema.spec.kind == "UDPRoute"}
+    template:
+      apiVersion: gateway.networking.k8s.io/v1alpha2
+      kind: UDPRoute
+      metadata:
+        name: ${schema.metadata.name}
+      spec:
+        parentRefs: ${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}
+        rules:
+          - backendRefs:
+              - group: ""
+                kind: Service
+                name: ${schema.spec.backendRef.name}
+                port: ${schema.spec.backendRef.port}
+                weight: 1
+
+  # ===== TLSRoute =====
+
+  - id: tlsroute
+    includeWhen:
+      - ${schema.spec.kind == "TLSRoute"}
+    template:
+      apiVersion: gateway.networking.k8s.io/v1alpha2
+      kind: TLSRoute
+      metadata:
+        name: ${schema.metadata.name}
+      spec:
+        parentRefs: ${schema.spec.parentGateways.map(gw, {"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": gw, "namespace": "home"})}
+        hostnames: ${schema.spec.hostnames}
+        rules:
+          - backendRefs:
+              - group: ""
+                kind: Service
+                name: ${schema.spec.backendRef.name}
+                port: ${schema.spec.backendRef.port}
+                weight: 1

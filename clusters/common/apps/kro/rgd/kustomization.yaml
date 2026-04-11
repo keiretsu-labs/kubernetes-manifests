@@ -12,5 +12,6 @@ resources:
   - ./app.yaml
   - ./service-ingress.yaml
   - ./service-egress.yaml
+  - ./app-route.yaml
   - ./gslb-endpoint.yaml
   - ./storage-stack.yaml
