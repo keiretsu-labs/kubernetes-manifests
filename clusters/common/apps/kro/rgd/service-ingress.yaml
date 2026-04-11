@@ -29,13 +29,13 @@ spec:
       selector: "object"
       ports: "[]PortSpec"
       hostname: "string | required=true"
-      tags: "string | default=tag:k8s"
       proxyGroup: "string | default=common-ingress"
       publishNotReadyAddresses: "boolean | default=false"
       global: "GlobalSpec"
     status:
       serviceName: ${perNodeService.metadata.name}
       ready: ${perNodeService.metadata.name != ""}
+      fqdn: '${schema.metadata.labels["keiretsu.ts.net/location"] + "-" + schema.spec.hostname + ".keiretsu.ts.net"}'
   resources:
   - id: perNodeService
     template:
@@ -44,8 +44,8 @@ spec:
       metadata:
         name: ${schema.metadata.name + "-ts"}
         annotations:
-          tailscale.com/hostname: ${schema.spec.hostname}
-          tailscale.com/tags: ${schema.spec.tags}
+          tailscale.com/hostname: '${schema.metadata.labels["keiretsu.ts.net/location"] + "-" + schema.spec.hostname}'
+          tailscale.com/tags: '${"tag:k8s,tag:" + schema.metadata.labels["keiretsu.ts.net/location"]}'
           tailscale.com/proxy-group: ${schema.spec.proxyGroup}
       spec:
         publishNotReadyAddresses: ${schema.spec.publishNotReadyAddresses}

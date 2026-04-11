@@ -1,6 +1,7 @@
 ---
 # ApplicationSet for Keiretsu app resources — deploys to clusters labeled tier=app-host
 # Uses matrix generator: cluster labels × git directory discovery
+# Injects cluster-specific values (LOCATION, S3 endpoint, etc.) via Kustomize patches
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -15,6 +16,8 @@ spec:
               selector:
                 matchLabels:
                   tier: app-host
+              values:
+                location: '{{metadata.labels.location}}'
           - git:
               repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
               revision: HEAD
@@ -29,6 +32,9 @@ spec:
         repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
         targetRevision: HEAD
         path: "{{.path.path}}"
+        kustomize:
+          commonLabels:
+            keiretsu.ts.net/location: '{{values.location}}'
       destination:
         name: "{{.name}}"
         namespace: '{{index .path.segments 2}}'
