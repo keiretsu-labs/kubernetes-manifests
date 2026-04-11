@@ -28,9 +28,6 @@ spec:
             image:
               repository: ghcr.io/immich-app/immich-server
               tag: v2.7.4
-            volumeMounts:
-              - name: immich-pics
-                mountPath: /pics
             env:
               DB_DATABASE_NAME: immich
               DB_USERNAME:
@@ -50,10 +47,6 @@ spec:
                   secretKeyRef:
                     name: immich-dragonfly-secret
                     key: password
-    volumes:
-      - name: immich-pics
-        persistentVolumeClaim:
-          claimName: immich-pics
     immich:
       metrics:
         enabled: true
@@ -63,6 +56,13 @@ spec:
     valkey:
       enabled: false
     server:
+      persistence:
+        pics:
+          enabled: true
+          existingClaim: immich-pics
+          globalMounts:
+            - path: /pics
+              readOnly: true
       controllers:
         main:
           strategy: Recreate
