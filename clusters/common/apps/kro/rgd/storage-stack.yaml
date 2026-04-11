@@ -99,7 +99,7 @@ spec:
         clusterRef:
           name: garage
           namespace: garage
-        name: ${schema.spec.name}
+        globalAlias: ${schema.spec.bucketAlias}
         quotas:
           maxSize: ${schema.spec.bucketQuota}
           maxObjects: 1000000
