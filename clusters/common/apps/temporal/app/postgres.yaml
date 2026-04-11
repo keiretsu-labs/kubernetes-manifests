@@ -22,7 +22,7 @@ spec:
     enablePodMonitor: true
   storage:
     size: 10Gi
-    storageClass: ${STORAGECLASS_BLOCK}
+    storageClass: ${STORAGECLASS_DEFAULT}
   plugins:
     - name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true

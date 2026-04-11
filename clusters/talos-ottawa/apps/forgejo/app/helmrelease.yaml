@@ -30,7 +30,7 @@ spec:
         port: 22
     persistence:
       enabled: true
-      storageClass: ${STORAGECLASS_BLOCK}
+      storageClass: ${STORAGECLASS_DEFAULT}
       size: 10Gi
     gitea:
       admin:
