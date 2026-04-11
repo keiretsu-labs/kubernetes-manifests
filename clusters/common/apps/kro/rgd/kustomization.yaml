@@ -10,5 +10,6 @@ resources:
   - ./volsyncbackup.yaml
   - ./backupverify.yaml
   - ./app.yaml
+  - ./service-ingress.yaml
   - ./gslb-endpoint.yaml
   - ./storage-stack.yaml

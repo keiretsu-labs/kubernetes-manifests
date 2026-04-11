@@ -1,0 +1,80 @@
+---
+# ServiceIngress RGD — generates Tailscale LoadBalancer services for cross-cluster connectivity
+# Creates a per-node VIP (always) and optional global VIP (same hostname across all clusters)
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: serviceingress
+  annotations:
+    kro.run/allow-breaking-changes: "true"
+spec:
+  schema:
+    group: network.keiretsu.ts.net
+    apiVersion: v1alpha1
+    kind: ServiceIngress
+    scope: Namespaced
+    spec:
+      selector: "object"
+      ports:
+        type: "[]Port"
+        items:
+          name: "string | required=true"
+          port: "integer | required=true"
+          protocol: "string | default=TCP"
+          targetPort: "integer"
+      hostname: "string | required=true"
+      tags: "string | default=tag:k8s"
+      proxyGroup: "string | default=common-ingress"
+      publishNotReadyAddresses: "boolean | default=false"
+      global:
+        enabled: "boolean | default=false"
+        hostname: "string"
+        tags: "string | default=tag:k8s"
+        ports:
+          type: "[]Port"
+          items:
+            name: "string | required=true"
+            port: "integer | required=true"
+            protocol: "string | default=TCP"
+            targetPort: "integer"
+        proxyGroup: "string | default=common-ingress"
+    status:
+      fqdn: ${schema.spec.hostname + ".keiretsu.ts.net"}
+      globalFQDN: ${schema.spec.global.enabled ? schema.spec.global.hostname + ".keiretsu.ts.net" : ""}
+      tailscaleIP: ${perNodeService.status.?loadBalancer.?ingress[0].?ip.orValue("")}
+      ready: ${perNodeService.status.?loadBalancer.?ingress.size() > 0}
+  resources:
+  - id: perNodeService
+    template:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ${schema.metadata.name + "-ts"}
+        annotations:
+          tailscale.com/hostname: ${schema.spec.hostname}
+          tailscale.com/tags: ${schema.spec.tags}
+          tailscale.com/proxy-group: ${schema.spec.proxyGroup}
+      spec:
+        publishNotReadyAddresses: ${schema.spec.publishNotReadyAddresses}
+        selector: ${schema.spec.selector}
+        type: LoadBalancer
+        loadBalancerClass: tailscale
+        ports: ${schema.spec.ports}
+  - id: globalService
+    includeWhen:
+    - ${schema.spec.global.enabled}
+    template:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: ${schema.metadata.name + "-global-ts"}
+        annotations:
+          tailscale.com/hostname: ${schema.spec.global.hostname}
+          tailscale.com/tags: ${schema.spec.global.tags}
+          tailscale.com/proxy-group: ${schema.spec.global.proxyGroup}
+      spec:
+        publishNotReadyAddresses: ${schema.spec.publishNotReadyAddresses}
+        selector: ${schema.spec.selector}
+        type: LoadBalancer
+        loadBalancerClass: tailscale
+        ports: ${schema.spec.global.ports}
