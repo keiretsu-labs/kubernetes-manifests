@@ -18,16 +18,26 @@ spec:
       labels:
         app: plex
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       resourceClaims:
         - name: gpu
           resourceClaimTemplateName: plex-gpu
       containers:
         - name: plex
-          image: docker.io/plexinc/pms-docker:1.43.1.10611-1e34174b1
+          image: ghcr.io/home-operations/plex-next:1.43.1.10611
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
           resources:
             claims:
               - name: gpu
-          imagePullPolicy: Always
           ports:
             - containerPort: 32400
               name: http
@@ -35,21 +45,30 @@ spec:
           env:
             - name: TZ
               value: ${TIMEZONE}
-            - name: VERSION
-              value: docker
-            - name: ADVERTISE_IP
+            - name: PLEX_ADVERTISE_URL
               value: "https://plex.killinit.cc:443"
-            - name: ALLOWED_NETWORKS
+            - name: PLEX_NO_AUTH_NETWORKS
               value: "10.0.0.0/8,192.168.0.0/16"
           volumeMounts:
             - name: config
               mountPath: /config
             - name: media-volume
               mountPath: /media-share
+            - name: tmpfs
+              mountPath: /config/Library/Application Support/Plex Media Server/Logs
+              subPath: logs
+            - name: tmpfs
+              mountPath: /transcode
+              subPath: transcode
+            - name: tmpfs
+              mountPath: /tmp
+              subPath: tmp
       volumes:
         - name: config
           persistentVolumeClaim:
-            claimName: plex-config  
+            claimName: plex-config
         - name: media-volume
           persistentVolumeClaim:
             claimName: media-share
+        - name: tmpfs
+          emptyDir: {}
