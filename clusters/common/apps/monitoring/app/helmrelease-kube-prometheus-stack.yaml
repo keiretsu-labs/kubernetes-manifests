@@ -84,6 +84,12 @@ spec:
     kubeProxy:
       enabled: false
 
+    coreDns:
+      serviceMonitor:
+        metricRelabelings:
+          - targetLabel: cluster
+            replacement: ${CLUSTER_NAME}
+
     kubeApiServer:
       serviceMonitor:
         metricRelabelings:
