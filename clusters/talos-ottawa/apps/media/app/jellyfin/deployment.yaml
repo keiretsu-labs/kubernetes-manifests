@@ -16,14 +16,15 @@ spec:
         app: jellyfin
     spec:
       hostname: jellyfin
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: jellyfin-gpu
       containers:
         - name: jellyfin
           image: jellyfin/jellyfin:10.11.8
-          # resources:
-          #   requests:
-          #     gpu.intel.com/i915: "25"
-          #   limits:
-          #     gpu.intel.com/i915: "25"
+          resources:
+            claims:
+              - name: gpu
           ports:
             - name: http
               containerPort: 8096

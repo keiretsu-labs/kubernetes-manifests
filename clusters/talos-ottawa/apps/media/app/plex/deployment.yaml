@@ -18,14 +18,15 @@ spec:
       labels:
         app: plex
     spec:
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: plex-gpu
       containers:
         - name: plex
           image: docker.io/plexinc/pms-docker:1.43.1.10611-1e34174b1
-          # resources:
-          #   requests:
-          #     gpu.intel.com/i915: "25"
-          #   limits:
-          #     gpu.intel.com/i915: "25"
+          resources:
+            claims:
+              - name: gpu
           imagePullPolicy: Always
           ports:
             - containerPort: 32400
