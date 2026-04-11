@@ -84,15 +84,50 @@ spec:
     kubeProxy:
       enabled: false
 
+    kubeApiServer:
+      serviceMonitor:
+        metricRelabelings:
+          - targetLabel: cluster
+            replacement: ${CLUSTER_NAME}
+
+    kubelet:
+      serviceMonitor:
+        metricRelabelings:
+          - targetLabel: cluster
+            replacement: ${CLUSTER_NAME}
+
     kubeControllerManager:
       enabled: true
+      serviceMonitor:
+        metricRelabelings:
+          - targetLabel: cluster
+            replacement: ${CLUSTER_NAME}
 
     kubeScheduler:
       enabled: true
+      serviceMonitor:
+        metricRelabelings:
+          - targetLabel: cluster
+            replacement: ${CLUSTER_NAME}
 
     kubeEtcd:
       enabled: false
 
-
     kube-state-metrics:
       enabled: true
+      prometheus:
+        monitor:
+          metricRelabelings:
+            - targetLabel: cluster
+              replacement: ${CLUSTER_NAME}
+
+    nodeExporter:
+      operatingSystems:
+        aix:
+          enabled: false
+        darwin:
+          enabled: false
+      serviceMonitor:
+        metricRelabelings:
+          - targetLabel: cluster
+            replacement: ${CLUSTER_NAME}
