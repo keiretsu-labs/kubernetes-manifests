@@ -35,7 +35,7 @@ spec:
       global: "GlobalSpec"
     status:
       serviceName: ${perNodeService.metadata.name}
-      ready: '${perNodeService.status.?loadBalancer.?ingress.size() > 0}'
+      ready: ${perNodeService.metadata.name != ""}
   resources:
   - id: perNodeService
     template:
