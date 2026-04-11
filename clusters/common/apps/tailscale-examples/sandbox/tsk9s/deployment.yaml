@@ -17,11 +17,12 @@ spec:
     spec:
       containers:
       - name: tsk9s
-        image: ghcr.io/rajsinghtech/tsk9s:v0.1.2
+        image: ghcr.io/rajsinghtech/tsk9s:v0.1.3
         args:
           - --state-dir=/data/tsk9s-state
           - --endpoints=ottawa-k8s.keiretsu.ts.net,robbinsdale-k8s.keiretsu.ts.net,stpetersburg-k8s.keiretsu.ts.net
           - --local-addr=0.0.0.0:8080
+          - --tags=tag:k8s,tag:${LOCATION}
         env:
         - name: TS_AUTHKEY
           valueFrom:
