@@ -1,5 +1,0 @@
-# Load kernel modules for networking and performance
-machine:
-  kernel:
-    modules:
-      - name: tcp_bbr  # BBR congestion control algorithm
