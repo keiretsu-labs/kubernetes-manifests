@@ -11,3 +11,4 @@ resources:
   - ./application-overview.yaml
   - ./cluster-secrets.yaml
   - ./ocm-rbac.yaml
+  - ./webhook-ingress.yaml
