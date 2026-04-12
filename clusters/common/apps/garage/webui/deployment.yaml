@@ -17,20 +17,13 @@ spec:
     spec:
       containers:
         - name: garage-webui
-          image: khairul169/garage-webui:latest
+          image: oci.${CLUSTER_DOMAIN}/garage-webadmin:latest
           ports:
-            - containerPort: 3909
+            - containerPort: 80
               name: http
           env:
-            - name: API_BASE_URL
+            - name: API_HOST
               value: "http://garage:3903"
-            - name: S3_ENDPOINT_URL
-              value: "http://garage:3900"
-            - name: API_ADMIN_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: garage-admin-token
-                  key: admin-token
           resources:
             requests:
               cpu: 10m
