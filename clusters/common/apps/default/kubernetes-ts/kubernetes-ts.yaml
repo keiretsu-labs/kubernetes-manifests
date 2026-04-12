@@ -1,0 +1,39 @@
+---
+# Expose the built-in kubernetes API server on the tailnet as raw L4 TCP
+# Uses the existing default/kubernetes Endpoints (auto-managed by k8s)
+# Hostname: kubernetes-${LOCATION}.keiretsu.ts.net (already in certSANs)
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubernetes-ts
+  namespace: default
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    tailscale.com/hostname: "kubernetes-${LOCATION}"
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
+  labels:
+    app.kubernetes.io/name: default-kubernetes
+    component: apiserver
+    provider: kubernetes
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 6443
+---
+# Endpoints pointing at the control plane VIP
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: kubernetes-ts
+  namespace: default
+subsets:
+  - addresses:
+      - ip: "${KUBERNETES_API_VIP}"
+    ports:
+      - name: https
+        port: 6443
+        protocol: TCP
