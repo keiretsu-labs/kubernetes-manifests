@@ -1,7 +1,7 @@
 ---
 # ApplicationSet for floating apps — deploys to 1 cluster selected by OCM Placement
 # When OCM detects a cluster is down, PlacementDecision changes,
-# ArgoCD moves the Application to the new cluster
+# ArgoCD moves the Application to the new cluster automatically
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -10,24 +10,42 @@ metadata:
 spec:
   goTemplate: true
   generators:
-    - clusterDecisionResource:
-        configMapRef: ocm-placement-generator
-        labelSelector:
-          matchLabels:
-            cluster.open-cluster-management.io/placement: floating-apps
-        requeueAfterSeconds: 30
+    - matrix:
+        generators:
+          - clusterDecisionResource:
+              configMapRef: ocm-placement-generator
+              labelSelector:
+                matchLabels:
+                  cluster.open-cluster-management.io/placement: floating-apps
+              requeueAfterSeconds: 30
+          - git:
+              repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+              revision: HEAD
+              directories:
+                - path: clusters/apps/*/floating
   template:
     metadata:
-      name: "floating-{{.clusterName}}"
+      name: 'floating-{{index .path.segments 2}}-{{.clusterName}}'
     spec:
       project: default
       source:
         repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
         targetRevision: HEAD
-        path: clusters/floating-apps
+        path: "{{.path.path}}"
+        kustomize:
+          commonLabels:
+            keiretsu.ts.net/location: '{{ trimPrefix "talos-" .clusterName }}'
       destination:
         name: "{{.clusterName}}"
-        namespace: keiretsu-top
+        namespace: '{{index .path.segments 2}}'
+      ignoreDifferences:
+        - group: network.keiretsu.ts.net
+          kind: AppRoute
+          managedFieldsManagers:
+            - kro
+            - kro.run/labeller
+            - kro.run/applyset
+            - kro.run/applyset-parent
       syncPolicy:
         automated:
           prune: true
@@ -35,3 +53,4 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+          - RespectIgnoreDifferences=true
