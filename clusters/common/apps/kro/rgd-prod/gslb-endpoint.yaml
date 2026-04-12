@@ -35,9 +35,9 @@ spec:
           k8gb.io/exposed-hostnames: '$${schema.metadata.labels["keiretsu.ts.net/location"] + "." + schema.spec.exposedDomain}'
       spec:
         resourceRef:
+          apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
           name: $${schema.spec.httpRouteRef.name}
-          namespace: $${schema.spec.httpRouteRef.namespace}
         strategy:
           type: $${schema.spec.strategy}
           dnsTtlSeconds: $${schema.spec.dnsTtlSeconds}
