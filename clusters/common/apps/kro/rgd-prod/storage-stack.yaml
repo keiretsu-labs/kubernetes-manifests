@@ -51,7 +51,6 @@ spec:
       copyMethod: "string | default=Snapshot"
       snapshotClass: "string | default=csi-rbdplugin-snapclass"
       restoreMode: "string | default=backup-only"
-      restorePaused: "boolean | default=true"
     status:
       secretName: $${garageKey.spec.secretTemplate.name}
       ready: $${garageKey.metadata.name != ""}
@@ -60,6 +59,8 @@ spec:
 
   # --- GarageKey (always created) ---
   - id: garageKey
+    readyWhen:
+    - $${garageKey.status.phase == "Ready"}
     template:
       apiVersion: garage.rajsingh.info/v1alpha1
       kind: GarageKey
@@ -150,9 +151,8 @@ spec:
       spec:
         trigger:
           manual: restore-once
-        paused: $${schema.spec.restorePaused}
         restic:
-          repository: $${"restic-" + schema.spec.name}
+          repository: $${garageKey.status.secretRef.name}
           accessModes:
           - $${schema.spec.accessMode}
           copyMethod: Snapshot
@@ -192,9 +192,8 @@ spec:
       spec:
         trigger:
           manual: restore-once
-        paused: $${schema.spec.restorePaused}
         restic:
-          repository: $${"restic-" + schema.spec.name}
+          repository: $${garageKey.status.secretRef.name}
           destinationPVC: $${pvcDirect.metadata.name}
           copyMethod: Direct
 
