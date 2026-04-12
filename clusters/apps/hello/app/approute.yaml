@@ -1,0 +1,15 @@
+---
+apiVersion: network.keiretsu.ts.net/v1alpha1
+kind: AppRoute
+metadata:
+  name: hello-world-cdn
+spec:
+  kind: HTTPRoute
+  backendRef:
+    name: hello-world
+    port: 80
+  parentRefs:
+    - name: public
+      namespace: home
+  hostnames:
+    - "hello.cdn.rajsingh.info"
