@@ -125,7 +125,30 @@ def generate_httproute_yaml(spec: dict) -> str:
 
 def generate_storagestack_yaml(spec: dict, location: str) -> str:
     """Generate StorageStack YAML from an ArrApp spec dict + cluster location."""
-    raise NotImplementedError
+    name = spec['name']
+    storage_class = spec.get('configStorageClass', 'ceph-block-replicated')
+    size = spec.get('configStorageSize', '5Gi')
+    copy_method = spec.get('volsyncCopyMethod', 'Snapshot')
+
+    ss = {
+        'apiVersion': 'storage.keiretsu.ts.net/v1alpha1',
+        'kind': 'StorageStack',
+        'metadata': {
+            'name': f'{name}-config',
+            'labels': {'keiretsu.ts.net/location': location},
+        },
+        'spec': {
+            'name': f'{name}-config',
+            'size': size,
+            'storageClass': storage_class,
+            's3Path': f'media/{name}-config',
+            'schedule': '0 4 * * *',
+            'restoreMode': 'backup-only',
+            'copyMethod': copy_method,
+        },
+    }
+
+    return '---\n' + yaml.dump(ss, default_flow_style=False, sort_keys=False)
 
 
 def generate_kustomization_yaml(existing_resources: list[str], namespace: Optional[str]) -> str:
