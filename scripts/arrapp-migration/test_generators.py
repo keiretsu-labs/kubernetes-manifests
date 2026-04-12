@@ -116,3 +116,83 @@ def test_app_yaml_basic_deployment():
     assert deployment['metadata']['name'] == 'sonarr-1080p'
     assert deployment['spec']['replicas'] == 1
     assert deployment['spec']['strategy']['type'] == 'Recreate'
+
+
+def test_app_yaml_image_and_port():
+    docs = list(yaml.safe_load_all(generate_app_yaml(SONARR_SPEC)))
+    deployment = next(d for d in docs if d['kind'] == 'Deployment')
+    container = deployment['spec']['template']['spec']['containers'][0]
+    assert container['image'] == 'lscr.io/linuxserver/sonarr:4.0.17'
+    assert container['ports'][0]['containerPort'] == 8989
+
+
+def test_app_yaml_env_vars():
+    docs = list(yaml.safe_load_all(generate_app_yaml(SONARR_SPEC)))
+    deployment = next(d for d in docs if d['kind'] == 'Deployment')
+    env = {e['name']: e['value'] for e in deployment['spec']['template']['spec']['containers'][0]['env']}
+    assert env['PUID'] == '0'
+    assert env['GUID'] == '0'   # ArrApp uses GUID not PGID
+    assert 'PGID' not in env
+    assert env['TZ'] == 'UTC'
+
+
+def test_app_yaml_config_pvc_name():
+    docs = list(yaml.safe_load_all(generate_app_yaml(SONARR_SPEC)))
+    deployment = next(d for d in docs if d['kind'] == 'Deployment')
+    volumes = deployment['spec']['template']['spec']['volumes']
+    config_vol = next(v for v in volumes if v['name'] == 'config')
+    assert config_vol['persistentVolumeClaim']['claimName'] == 'sonarr-1080p-config'
+
+
+def test_app_yaml_no_downloads_volume_by_default():
+    docs = list(yaml.safe_load_all(generate_app_yaml(SONARR_SPEC)))
+    deployment = next(d for d in docs if d['kind'] == 'Deployment')
+    volume_names = [v['name'] for v in deployment['spec']['template']['spec']['volumes']]
+    assert 'downloads' not in volume_names
+
+
+def test_app_yaml_downloads_volume_when_set():
+    docs = list(yaml.safe_load_all(generate_app_yaml(READARR_SPEC)))
+    deployment = next(d for d in docs if d['kind'] == 'Deployment')
+    volumes = deployment['spec']['template']['spec']['volumes']
+    mounts = deployment['spec']['template']['spec']['containers'][0]['volumeMounts']
+    assert any(v['persistentVolumeClaim']['claimName'] == 'transmission-books-data-unas'
+               for v in volumes if v['name'] == 'downloads')
+    assert any(m['mountPath'] == '/downloads' for m in mounts if m['name'] == 'downloads')
+
+
+def test_app_yaml_fsgroup_set_when_nonzero():
+    docs = list(yaml.safe_load_all(generate_app_yaml(JELLYSEERR_SPEC)))
+    deployment = next(d for d in docs if d['kind'] == 'Deployment')
+    assert deployment['spec']['template']['spec']['securityContext']['fsGroup'] == 1000
+
+
+def test_app_yaml_no_security_context_when_fsgroup_zero():
+    docs = list(yaml.safe_load_all(generate_app_yaml(SONARR_SPEC)))
+    deployment = next(d for d in docs if d['kind'] == 'Deployment')
+    assert 'securityContext' not in deployment['spec']['template']['spec']
+
+
+def test_app_yaml_custom_config_mount():
+    docs = list(yaml.safe_load_all(generate_app_yaml(JELLYSEERR_SPEC)))
+    deployment = next(d for d in docs if d['kind'] == 'Deployment')
+    mounts = deployment['spec']['template']['spec']['containers'][0]['volumeMounts']
+    config_mount = next(m for m in mounts if m['name'] == 'config')
+    assert config_mount['mountPath'] == '/app/config'
+
+
+def test_app_yaml_custom_puid_pgid():
+    docs = list(yaml.safe_load_all(generate_app_yaml(WIZARR_SPEC)))
+    deployment = next(d for d in docs if d['kind'] == 'Deployment')
+    env = {e['name']: e['value'] for e in deployment['spec']['template']['spec']['containers'][0]['env']}
+    assert env['PUID'] == '1000'
+    assert env['GUID'] == '1000'
+
+
+def test_app_yaml_service():
+    docs = list(yaml.safe_load_all(generate_app_yaml(SONARR_SPEC)))
+    service = next(d for d in docs if d['kind'] == 'Service')
+    assert service['metadata']['name'] == 'sonarr-1080p'
+    assert service['spec']['selector'] == {'app': 'sonarr-1080p'}
+    assert service['spec']['ports'][0]['port'] == 8989
+    assert service['spec']['ports'][0]['targetPort'] == 8989
