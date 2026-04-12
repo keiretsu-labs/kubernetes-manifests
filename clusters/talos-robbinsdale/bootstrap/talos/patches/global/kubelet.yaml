@@ -6,6 +6,7 @@ machine:
     extraArgs:
       rotate-server-certificates: "true"
     extraConfig:
+      maxPods: 250
       shutdownGracePeriod: "0s"
       shutdownGracePeriodCriticalPods: "0s"
       shutdownGracePeriodByPodPriority:
