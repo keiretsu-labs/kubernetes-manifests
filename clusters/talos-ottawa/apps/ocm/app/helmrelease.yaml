@@ -29,6 +29,8 @@ spec:
         featureGates:
           - feature: DefaultClusterSet
             mode: Enable
+          - feature: ManagedClusterAutoApproval
+            mode: Enable
         registrationDrivers:
           - authType: csr
           - authType: grpc
