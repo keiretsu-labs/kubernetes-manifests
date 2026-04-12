@@ -4,6 +4,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: homeassistant-config-ceph
   namespace: home
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
   labels:
     app: homeassistant
 spec:
