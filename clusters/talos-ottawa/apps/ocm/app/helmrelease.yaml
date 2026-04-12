@@ -23,4 +23,22 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
-  values: {}
+  values:
+    clusterManager:
+      registrationConfiguration:
+        featureGates:
+          - feature: DefaultClusterSet
+            mode: Enable
+        registrationDrivers:
+          - authType: csr
+          - authType: grpc
+            grpc:
+              autoApprovedIdentities:
+                - system:serviceaccount:open-cluster-management:agent-registration-bootstrap
+      serverConfiguration:
+        endpointsExposure:
+          - protocol: grpc
+            grpc:
+              type: hostname
+              hostname:
+                host: ocm-grpc-hub.keiretsu.ts.net

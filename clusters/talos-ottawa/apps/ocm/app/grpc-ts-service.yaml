@@ -1,0 +1,21 @@
+---
+# Expose OCM gRPC registration server on the tailnet
+# Klusterlets connect here instead of raw k8s API — OCM manages TLS, no Talos CA needed
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocm-grpc-ts
+  namespace: open-cluster-management-hub
+  annotations:
+    tailscale.com/expose: "true"
+    tailscale.com/hostname: "ocm-grpc-hub"
+    tailscale.com/proxy-class: "common"
+spec:
+  type: ClusterIP
+  selector:
+    app: cluster-manager-grpc-server
+  ports:
+    - name: grpc
+      port: 443
+      targetPort: 8090
+      protocol: TCP
