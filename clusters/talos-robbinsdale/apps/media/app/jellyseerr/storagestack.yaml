@@ -1,0 +1,15 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: jellyseerr-config
+  labels:
+    keiretsu.ts.net/location: robbinsdale
+spec:
+  name: jellyseerr-config
+  size: 5Gi
+  storageClass: ceph-block-replicated-nvme
+  s3Path: media/jellyseerr-config
+  schedule: 0 4 * * *
+  restoreMode: backup-only
+  copyMethod: Direct

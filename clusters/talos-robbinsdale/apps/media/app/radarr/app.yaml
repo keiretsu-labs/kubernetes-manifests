@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: radarr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: radarr
+    spec:
+      containers:
+      - name: radarr
+        image: lscr.io/linuxserver/radarr:6.1.1
+        ports:
+        - name: http
+          containerPort: 7878
+          protocol: TCP
+        env:
+        - name: PUID
+          value: '0'
+        - name: GUID
+          value: '0'
+        - name: TZ
+          value: UTC
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: media
+          mountPath: /media-share
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: radarr-config
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-share
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: radarr
+spec:
+  selector:
+    app: radarr
+  ports:
+  - name: http
+    port: 7878
+    protocol: TCP
+    targetPort: 7878

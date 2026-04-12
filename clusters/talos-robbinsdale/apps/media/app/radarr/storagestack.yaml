@@ -1,0 +1,15 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: radarr-config
+  labels:
+    keiretsu.ts.net/location: robbinsdale
+spec:
+  name: radarr-config
+  size: 5Gi
+  storageClass: ceph-block-replicated-nvme
+  s3Path: media/radarr-config
+  schedule: 0 4 * * *
+  restoreMode: backup-only
+  copyMethod: Direct
