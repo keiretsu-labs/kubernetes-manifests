@@ -5,7 +5,76 @@ from typing import Optional
 
 def generate_app_yaml(spec: dict) -> str:
     """Generate Deployment + Service YAML from an ArrApp spec dict."""
-    raise NotImplementedError
+    name = spec['name']
+    image = spec['image']
+    tag = spec['tag']
+    port = int(spec['port'])
+    puid = str(spec.get('puid', '0'))
+    pgid = str(spec.get('pgid', '0'))
+    timezone = spec.get('timezone', 'UTC')
+    fs_group = int(spec.get('fsGroup', 0))
+    config_mount = spec.get('configMountPath', '/config')
+    media_claim = spec['mediaClaimName']
+    media_mount = spec.get('mediaMountPath', '/media-share')
+    downloads_claim = spec.get('downloadsClaimName', '')
+    downloads_mount = spec.get('downloadsMountPath', '/downloads')
+
+    volume_mounts = [
+        {'name': 'config', 'mountPath': config_mount},
+        {'name': 'media', 'mountPath': media_mount},
+    ]
+    volumes = [
+        {'name': 'config', 'persistentVolumeClaim': {'claimName': f'{name}-config'}},
+        {'name': 'media', 'persistentVolumeClaim': {'claimName': media_claim}},
+    ]
+    if downloads_claim:
+        volume_mounts.append({'name': 'downloads', 'mountPath': downloads_mount})
+        volumes.append({'name': 'downloads', 'persistentVolumeClaim': {'claimName': downloads_claim}})
+
+    pod_spec = {
+        'containers': [{
+            'name': name,
+            'image': f'{image}:{tag}',
+            'ports': [{'name': 'http', 'containerPort': port, 'protocol': 'TCP'}],
+            'env': [
+                {'name': 'PUID', 'value': puid},
+                {'name': 'GUID', 'value': pgid},
+                {'name': 'TZ', 'value': timezone},
+            ],
+            'volumeMounts': volume_mounts,
+        }],
+        'volumes': volumes,
+    }
+    if fs_group:
+        pod_spec['securityContext'] = {'fsGroup': fs_group}
+
+    deployment = {
+        'apiVersion': 'apps/v1',
+        'kind': 'Deployment',
+        'metadata': {'name': name},
+        'spec': {
+            'replicas': 1,
+            'selector': {'matchLabels': {'app': name}},
+            'strategy': {'type': 'Recreate'},
+            'template': {
+                'metadata': {'labels': {'app': name}},
+                'spec': pod_spec,
+            },
+        },
+    }
+
+    service = {
+        'apiVersion': 'v1',
+        'kind': 'Service',
+        'metadata': {'name': name},
+        'spec': {
+            'selector': {'app': name},
+            'ports': [{'name': 'http', 'port': port, 'protocol': 'TCP', 'targetPort': port}],
+        },
+    }
+
+    return '---\n' + yaml.dump(deployment, default_flow_style=False, sort_keys=False) + \
+           '---\n' + yaml.dump(service, default_flow_style=False, sort_keys=False)
 
 
 def generate_httproute_yaml(spec: dict) -> str:
