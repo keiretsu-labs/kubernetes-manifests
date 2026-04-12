@@ -196,3 +196,54 @@ def test_app_yaml_service():
     assert service['spec']['selector'] == {'app': 'sonarr-1080p'}
     assert service['spec']['ports'][0]['port'] == 8989
     assert service['spec']['ports'][0]['targetPort'] == 8989
+
+
+# ── httproute.yaml tests ──────────────────────────────────────────────────────
+
+def test_httproute_basic():
+    docs = list(yaml.safe_load_all(generate_httproute_yaml(SONARR_SPEC)))
+    route = docs[0]
+    assert route['kind'] == 'HTTPRoute'
+    assert route['metadata']['name'] == 'sonarr-1080p'
+
+
+def test_httproute_hostname_uses_flux_var():
+    docs = list(yaml.safe_load_all(generate_httproute_yaml(SONARR_SPEC)))
+    route = docs[0]
+    assert route['spec']['hostnames'] == ['sonarr-1080p.${CLUSTER_DOMAIN}']
+
+
+def test_httproute_parent_refs_private_and_ts():
+    docs = list(yaml.safe_load_all(generate_httproute_yaml(SONARR_SPEC)))
+    route = docs[0]
+    parent_names = [p['name'] for p in route['spec']['parentRefs']]
+    assert 'private' in parent_names
+    assert 'ts' in parent_names
+    assert 'public' not in parent_names
+
+
+def test_httproute_public_gateway_adds_public():
+    docs = list(yaml.safe_load_all(generate_httproute_yaml(JELLYSEERR_SPEC)))
+    route = docs[0]
+    parent_names = [p['name'] for p in route['spec']['parentRefs']]
+    assert 'public' in parent_names
+
+
+def test_httproute_backend_ref():
+    docs = list(yaml.safe_load_all(generate_httproute_yaml(SONARR_SPEC)))
+    route = docs[0]
+    backend = route['spec']['rules'][0]['backendRefs'][0]
+    assert backend['name'] == 'sonarr-1080p'
+    assert backend['port'] == 8989
+
+
+def test_httproute_homer_annotations():
+    docs = list(yaml.safe_load_all(generate_httproute_yaml(SONARR_SPEC)))
+    route = docs[0]
+    ann = route['metadata']['annotations']
+    assert ann['item.homer.rajsingh.info/name'] == 'Sonarr 1080p'
+    assert ann['item.homer.rajsingh.info/subtitle'] == 'TV Series Collection Manager'
+    assert ann['item.homer.rajsingh.info/logo'].startswith('https://')
+    assert ann['item.homer.rajsingh.info/keywords'] == 'tv, series, automation'
+    assert ann['service.homer.rajsingh.info/name'] == 'Media'
+    assert ann['service.homer.rajsingh.info/icon'] == 'fas fa-tv'

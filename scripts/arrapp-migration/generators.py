@@ -79,7 +79,48 @@ def generate_app_yaml(spec: dict) -> str:
 
 def generate_httproute_yaml(spec: dict) -> str:
     """Generate HTTPRoute YAML from an ArrApp spec dict."""
-    raise NotImplementedError
+    name = spec['name']
+    hostname = spec['hostname']
+    port = int(spec['port'])
+    public_gateway = spec.get('publicGateway', False)
+    homer_name = spec.get('homerName', name)
+    homer_subtitle = spec.get('homerSubtitle', '')
+    homer_logo = spec.get('homerLogo', '')
+
+    parent_refs = [
+        {'group': 'gateway.networking.k8s.io', 'kind': 'Gateway', 'name': 'private', 'namespace': 'home'},
+        {'group': 'gateway.networking.k8s.io', 'kind': 'Gateway', 'name': 'ts', 'namespace': 'home'},
+    ]
+    if public_gateway:
+        parent_refs.append(
+            {'group': 'gateway.networking.k8s.io', 'kind': 'Gateway', 'name': 'public', 'namespace': 'home'}
+        )
+
+    route = {
+        'apiVersion': 'gateway.networking.k8s.io/v1',
+        'kind': 'HTTPRoute',
+        'metadata': {
+            'name': name,
+            'annotations': {
+                'item.homer.rajsingh.info/name': homer_name,
+                'item.homer.rajsingh.info/subtitle': homer_subtitle,
+                'item.homer.rajsingh.info/logo': homer_logo,
+                'item.homer.rajsingh.info/keywords': 'tv, series, automation',
+                'service.homer.rajsingh.info/name': 'Media',
+                'service.homer.rajsingh.info/icon': 'fas fa-tv',
+            },
+        },
+        'spec': {
+            'parentRefs': parent_refs,
+            'hostnames': [f'{hostname}.${{CLUSTER_DOMAIN}}'],
+            'rules': [{
+                'backendRefs': [{'group': '', 'kind': 'Service', 'name': name, 'port': port, 'weight': 1}],
+                'matches': [{'path': {'type': 'PathPrefix', 'value': '/'}}],
+            }],
+        },
+    }
+
+    return '---\n' + yaml.dump(route, default_flow_style=False, sort_keys=False)
 
 
 def generate_storagestack_yaml(spec: dict, location: str) -> str:
