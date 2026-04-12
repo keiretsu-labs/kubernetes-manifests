@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wizarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wizarr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wizarr
+    spec:
+      containers:
+      - name: wizarr
+        image: ghcr.io/wizarrrr/wizarr:v2026.4.0
+        ports:
+        - name: http
+          containerPort: 5690
+          protocol: TCP
+        env:
+        - name: PUID
+          value: '1000'
+        - name: GUID
+          value: '1000'
+        - name: TZ
+          value: UTC
+        volumeMounts:
+        - name: config
+          mountPath: /data
+        - name: media
+          mountPath: /media-share
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: wizarr-config
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-share
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wizarr
+spec:
+  selector:
+    app: wizarr
+  ports:
+  - name: http
+    port: 5690
+    protocol: TCP
+    targetPort: 5690
