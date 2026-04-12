@@ -19,7 +19,6 @@ additionalApiServerCertSans:
   - "kubernetes-ottawa.keiretsu.ts.net"
   - "kubernetes.ottawa.rajsingh.info"
   - "kubernetes-ottawa.default.svc.cluster.local"
-  - "ocm-hub.keiretsu.ts.net"
   - 127.0.0.1 # KubePrism
 
 additionalMachineCertSans:

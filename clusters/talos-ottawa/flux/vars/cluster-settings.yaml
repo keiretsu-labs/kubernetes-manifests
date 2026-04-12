@@ -19,6 +19,7 @@ data:
   # Networking
   LAN_CIDR: 192.168.169.0/24 
   LAN_GATEWAY_IP: "192.168.169.1"
+  KUBERNETES_API_VIP: "192.168.169.25"
 
   # Domain
   CLUSTER_DOMAIN: killinit.cc
