@@ -13,7 +13,7 @@ spec:
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
   bucketPermissions:
-    - bucketRef: tailscale-recorder
+    - bucketRef: tailscale-logs
       read: true
       write: true
 ---
