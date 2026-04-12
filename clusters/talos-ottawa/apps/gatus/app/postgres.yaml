@@ -12,7 +12,7 @@ spec:
     reusePVC: false
   storage:
     size: 10Gi
-    storageClass: ceph-block-replicated-nvme
+    storageClass: ceph-block-replicated
   monitoring:
     enablePodMonitor: true
   backup:
