@@ -50,6 +50,22 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: kubernetes-ottawa
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
+    tailscale.com/tailnet-fqdn: kubernetes-ottawa.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+  - name: https
+    port: 443
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: robbinsdale-smb
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: merge
