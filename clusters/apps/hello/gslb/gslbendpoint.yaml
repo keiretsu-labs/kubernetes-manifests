@@ -7,6 +7,7 @@ spec:
   httpRouteRef:
     name: hello-world-cdn
     namespace: hello
+  exposedDomain: rajsingh.info
   strategy: roundRobin
   dnsTtlSeconds: 30
   weights:

@@ -15,6 +15,7 @@ spec:
       httpRouteRef:
         name: "string | required=true"
         namespace: "string | required=true"
+      exposedDomain: "string | default=''"
       strategy: "string | default=roundRobin"
       dnsTtlSeconds: "integer | default=60"
       weights:
@@ -30,6 +31,8 @@ spec:
       kind: Gslb
       metadata:
         name: $${schema.metadata.name}
+        annotations:
+          k8gb.io/exposed-hostnames: '$${schema.metadata.labels["keiretsu.ts.net/location"] + "." + schema.spec.exposedDomain}'
       spec:
         resourceRef:
           kind: HTTPRoute
