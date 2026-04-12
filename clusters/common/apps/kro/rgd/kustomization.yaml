@@ -4,8 +4,4 @@ kind: Kustomization
 resources:
   - ./qbapp.yaml
   - ./gluetunapp.yaml
-  - ./floatingapp.yaml
-  - ./meshegress.yaml
-  - ./volsyncbackup.yaml
-  - ./backupverify.yaml
   - ./app.yaml
