@@ -39,22 +39,6 @@ spec:
 apiVersion: garage.rajsingh.info/v1alpha1
 kind: GarageBucket
 metadata:
-  name: setec
-spec:
-  clusterRef:
-    name: garage
-  globalAlias: setec
-  quotas:
-    maxSize: 10Gi
-    maxObjects: 100000
-  keyPermissions:
-    - keyRef: setec-key
-      read: true
-      write: true
----
-apiVersion: garage.rajsingh.info/v1alpha1
-kind: GarageBucket
-metadata:
   name: tailscale-logs
 spec:
   clusterRef:
