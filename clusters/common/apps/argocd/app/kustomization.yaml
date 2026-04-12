@@ -5,6 +5,7 @@ resources:
   - ./helmrelease.yaml
   - ./httproute.yaml
   - ./secret.yaml
+  - ./webhook-ingress.yaml
   # Dashboards
   - ./operational-overview.yaml
   - ./notifications-overview.yaml
