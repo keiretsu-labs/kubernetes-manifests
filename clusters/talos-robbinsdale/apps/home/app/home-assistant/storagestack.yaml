@@ -1,0 +1,15 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: homeassistant-config-ceph
+  namespace: home
+  labels:
+    keiretsu.ts.net/location: robbinsdale
+spec:
+  name: homeassistant-config-ceph
+  size: 50Gi
+  storageClass: ceph-block-replicated-nvme
+  s3Path: home/homeassistant-config
+  schedule: "0 12 * * *"
+  restoreMode: backup-only
