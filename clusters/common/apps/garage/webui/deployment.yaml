@@ -24,6 +24,11 @@ spec:
           env:
             - name: API_HOST
               value: "http://garage:3903"
+            - name: GARAGE_ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: garage-admin-token
+                  key: admin-token
           resources:
             requests:
               cpu: 10m
