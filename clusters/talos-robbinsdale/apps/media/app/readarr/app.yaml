@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: readarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: readarr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: readarr
+    spec:
+      containers:
+      - name: readarr
+        image: lscr.io/linuxserver/readarr:1.0.1126
+        ports:
+        - name: http
+          containerPort: 8787
+          protocol: TCP
+        env:
+        - name: PUID
+          value: '0'
+        - name: GUID
+          value: '0'
+        - name: TZ
+          value: UTC
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: media
+          mountPath: /books
+        - name: downloads
+          mountPath: /downloads
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: readarr-config
+      - name: media
+        persistentVolumeClaim:
+          claimName: readarr-books-unas
+      - name: downloads
+        persistentVolumeClaim:
+          claimName: transmission-books-data-unas
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: readarr
+spec:
+  selector:
+    app: readarr
+  ports:
+  - name: http
+    port: 8787
+    protocol: TCP
+    targetPort: 8787
