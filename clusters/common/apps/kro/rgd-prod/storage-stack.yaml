@@ -51,6 +51,7 @@ spec:
       copyMethod: "string | default=Snapshot"
       snapshotClass: "string | default=csi-rbdplugin-snapclass"
       restoreMode: "string | default=backup-only"
+      restorePaused: "boolean | default=true"
     status:
       secretName: $${garageKey.spec.secretTemplate.name}
       ready: $${garageKey.metadata.name != ""}
@@ -151,6 +152,7 @@ spec:
       spec:
         trigger:
           manual: restore-once
+        paused: $${schema.spec.restorePaused}
         restic:
           repository: $${garageKey.status.secretRef.name}
           accessModes:
@@ -192,6 +194,7 @@ spec:
       spec:
         trigger:
           manual: restore-once
+        paused: $${schema.spec.restorePaused}
         restic:
           repository: $${garageKey.status.secretRef.name}
           destinationPVC: $${pvcDirect.metadata.name}
