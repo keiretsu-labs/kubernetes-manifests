@@ -1,0 +1,32 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: transmission-books
+  annotations:
+    item.homer.rajsingh.info/name: "Transmission Books"
+    item.homer.rajsingh.info/subtitle: "Book Torrent Client"
+    item.homer.rajsingh.info/logo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/transmission.svg"
+    item.homer.rajsingh.info/keywords: "torrents, downloads"
+    service.homer.rajsingh.info/name: "Media"
+    service.homer.rajsingh.info/icon: "fas fa-tv"
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: private
+    namespace: home
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: ts
+    namespace: home
+  hostnames:
+  - transmission-books.${CLUSTER_DOMAIN}
+  rules:
+  - backendRefs:
+    - name: transmission-books
+      port: 9091
+    matches:
+    - path:
+        type: PathPrefix
+        value: /

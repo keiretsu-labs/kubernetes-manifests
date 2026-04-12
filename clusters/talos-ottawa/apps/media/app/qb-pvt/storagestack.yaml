@@ -1,0 +1,17 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: qbittorrent-pvt-config
+  namespace: media
+  labels:
+    keiretsu.ts.net/location: ottawa
+spec:
+  name: qbittorrent-pvt-config
+  size: 5Gi
+  storageClass: ceph-block-replicated
+  s3Path: media/qbittorrent-pvt-config
+  schedule: "0 4 * * *"
+  restoreMode: restore
+  restorePaused: true
+  copyMethod: Snapshot

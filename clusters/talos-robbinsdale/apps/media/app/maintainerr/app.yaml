@@ -1,27 +1,56 @@
 ---
-apiVersion: apps.keiretsu.ts.net/v1alpha1
-kind: App
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: maintainerr
-  namespace: media
 spec:
-  image: ghcr.io/maintainerr/maintainerr
-  # renovate: datasource=docker depName=ghcr.io/maintainerr/maintainerr
-  tag: "3.5.0"
-  port: 6246
-  configMountPath: /opt/data
-  runAsUser: 1000
-  fsGroup: 1000
-  hostname: maintainerr
-  clusterDomain: "${CLUSTER_DOMAIN}"
-  homerName: "Maintainerr"
-  homerSubtitle: "Media Library Cleanup"
-  homerLogo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/maintainerr.svg"
-  configStorageSize: 5Gi
-  configStorageClass: ceph-block-replicated-nvme
-  backupEnabled: true
-  freshInstall: true
-  volsyncCopyMethod: Direct
-  s3Endpoint: "${COMMON_S3_ENDPOINT}"
-  s3Location: "${LOCATION}"
-  resticPassword: "${COMMON_RESTIC_SECRET}"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: maintainerr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: maintainerr
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: app
+        # renovate: datasource=docker depName=ghcr.io/maintainerr/maintainerr
+        image: ghcr.io/maintainerr/maintainerr:3.5.0
+        ports:
+        - name: http
+          containerPort: 6246
+          protocol: TCP
+        volumeMounts:
+        - name: config
+          mountPath: /opt/data
+        env:
+        - name: PUID
+          value: "0"
+        - name: PGID
+          value: "0"
+        - name: TZ
+          value: "${TIMEZONE}"
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: maintainerr-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: maintainerr
+spec:
+  selector:
+    app: maintainerr
+  ports:
+  - name: http
+    port: 6246
+    protocol: TCP
+    targetPort: 6246
+  type: ClusterIP

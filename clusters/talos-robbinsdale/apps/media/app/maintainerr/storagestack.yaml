@@ -1,0 +1,16 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: maintainerr-config
+  namespace: media
+  labels:
+    keiretsu.ts.net/location: robbinsdale
+spec:
+  name: maintainerr-config
+  size: 5Gi
+  storageClass: ceph-block-replicated-nvme
+  s3Path: media/maintainerr-config
+  schedule: "0 4 * * *"
+  restoreMode: backup-only
+  copyMethod: Direct

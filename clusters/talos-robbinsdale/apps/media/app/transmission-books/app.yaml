@@ -1,0 +1,117 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transmission-books
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transmission-books
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: transmission-books
+    spec:
+      containers:
+      - name: gluetun
+        # renovate: datasource=docker depName=ghcr.io/qdm12/gluetun
+        image: ghcr.io/qdm12/gluetun:v3.41.1
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+          allowPrivilegeEscalation: false
+        env:
+        - name: VPN_SERVICE_PROVIDER
+          value: protonvpn
+        - name: VPN_TYPE
+          value: wireguard
+        - name: WIREGUARD_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: transmission-books-secret
+              key: WIREGUARD_PRIVATE_KEY
+        - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
+          value: 14s
+        - name: WIREGUARD_MTU
+          value: "1410"
+        - name: VPN_PORT_FORWARDING
+          value: "off"
+        - name: SERVER_COUNTRIES
+          value: Netherlands
+        - name: DOT
+          value: "off"
+        - name: HEALTH_TARGET_ADDRESS
+          value: "1.1.1.1:443"
+        - name: FIREWALL_INPUT_PORTS
+          value: "9091"
+        - name: FIREWALL_OUTBOUND_SUBNETS
+          value: "${CLUSTER_POD_CIDR}"
+        - name: UPDATER_PERIOD
+          value: "5m"
+        - name: UPDATER_PROTONVPN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: transmission-books-secret
+              key: UPDATER_PROTONVPN_EMAIL
+        - name: UPDATER_PROTONVPN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: transmission-books-secret
+              key: UPDATER_PROTONVPN_PASSWORD
+        - name: LOG_LEVEL
+          value: info
+        volumeMounts:
+        - name: gluetun-config
+          mountPath: /gluetun
+      - name: client
+        # renovate: datasource=docker depName=lscr.io/linuxserver/transmission
+        image: lscr.io/linuxserver/transmission:4.1.1
+        ports:
+        - name: webui
+          containerPort: 9091
+          protocol: TCP
+        - name: peer-tcp
+          containerPort: 51413
+          protocol: TCP
+        - name: peer-udp
+          containerPort: 51413
+          protocol: UDP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        - name: downloads-volume
+          mountPath: /downloads
+        env:
+        - name: PUID
+          value: "568"
+        - name: PGID
+          value: "568"
+        - name: TZ
+          value: "${TIMEZONE}"
+      volumes:
+      - name: config-volume
+        persistentVolumeClaim:
+          claimName: transmission-books-config
+      - name: downloads-volume
+        persistentVolumeClaim:
+          claimName: media-share
+      - name: gluetun-config
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transmission-books
+spec:
+  selector:
+    app: transmission-books
+  ports:
+  - name: http
+    port: 9091
+    protocol: TCP
+    targetPort: 9091
+  type: ClusterIP
