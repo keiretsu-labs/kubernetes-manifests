@@ -14,3 +14,4 @@ spec:
   schedule: "0 12 * * *"
   restoreMode: restore
   restorePaused: false
+  restorePrevious: 2

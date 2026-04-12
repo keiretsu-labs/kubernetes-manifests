@@ -52,6 +52,7 @@ spec:
       snapshotClass: "string | default=csi-rbdplugin-snapclass"
       restoreMode: "string | default=backup-only"
       restorePaused: "boolean | default=true"
+      restorePrevious: "integer | default=0"
     status:
       secretName: $${garageKey.spec.secretTemplate.name}
       ready: $${garageKey.metadata.name != ""}
@@ -161,6 +162,7 @@ spec:
           capacity: $${schema.spec.size}
           storageClassName: $${schema.spec.storageClass}
           volumeSnapshotClassName: $${schema.spec.snapshotClass}
+          previous: $${schema.spec.restorePrevious}
 
   # --- PVC: Snapshot restore (dataSourceRef points at ReplicationDestination) ---
   - id: pvcSnapshot
@@ -199,6 +201,7 @@ spec:
           repository: $${garageKey.status.secretRef.name}
           destinationPVC: $${pvcDirect.metadata.name}
           copyMethod: Direct
+          previous: $${schema.spec.restorePrevious}
 
   # --- PVC: Direct restore (plain PVC, volsync writes into it) ---
   - id: pvcDirect
