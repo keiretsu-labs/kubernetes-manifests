@@ -1,0 +1,15 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: jellyfin-config
+  namespace: media
+  labels:
+    keiretsu.ts.net/location: ottawa
+spec:
+  name: jellyfin-config
+  size: 20Gi
+  storageClass: ceph-block-replicated
+  s3Path: media/jellyfin-config
+  schedule: "0 6 * * *"
+  restoreMode: backup-only

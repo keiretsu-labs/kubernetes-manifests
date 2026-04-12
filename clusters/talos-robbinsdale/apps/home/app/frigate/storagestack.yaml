@@ -1,0 +1,15 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: frigate-config-ceph
+  namespace: home
+  labels:
+    keiretsu.ts.net/location: robbinsdale
+spec:
+  name: frigate-config-ceph
+  size: 100Gi
+  storageClass: ceph-block-replicated-nvme
+  s3Path: home/frigate-config
+  schedule: "0 5 * * *"
+  restoreMode: backup-only
