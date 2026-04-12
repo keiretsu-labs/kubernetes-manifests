@@ -26,6 +26,10 @@ spec:
   valuesFrom:
     - kind: Secret
       name: ocm-bootstrap-kubeconfig
+      valuesKey: bootstrapHubKubeConfig
+      targetPath: bootstrapHubKubeConfig
+    - kind: Secret
+      name: ocm-bootstrap-kubeconfig
       valuesKey: grpcConfig
       targetPath: grpcConfig
   values:
@@ -33,3 +37,6 @@ spec:
       create: true
       mode: Singleton
       clusterName: "${CLUSTER_NAME}"
+      registrationConfiguration:
+        registrationDriver:
+          authType: grpc
