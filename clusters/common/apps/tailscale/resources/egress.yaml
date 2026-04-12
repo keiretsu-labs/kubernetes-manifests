@@ -63,6 +63,24 @@ spec:
     port: 443
     protocol: TCP
 ---
+# OCM gRPC registration server on Ottawa hub
+# Used by klusterlets on all clusters to reach the OCM gRPC server via Tailscale
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocm-grpc-hub
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
+    tailscale.com/tailnet-fqdn: ocm-grpc-hub.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+  - name: grpc
+    port: 443
+    protocol: TCP
+---
 apiVersion: v1
 kind: Service
 metadata:
