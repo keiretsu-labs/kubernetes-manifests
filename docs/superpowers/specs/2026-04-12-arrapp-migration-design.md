@@ -52,13 +52,13 @@ clusters/talos-{cluster}/apps/media/app/{name}/
 | `name` | Deployment/Service name, container name, label selector |
 | `image` + `tag` | Container image (`image:tag`) |
 | `port` | containerPort, Service port |
-| `puid`, `pgid` | `PUID`, `GUID` env vars |
+| `puid`, `pgid` | `PUID`, `GUID` env vars (note: ArrApp uses `GUID` not `PGID`) |
 | `timezone` | `TZ` env var |
 | `fsGroup` | `spec.securityContext.fsGroup` |
 | `configMountPath` | Volume mount path for config PVC |
 | `mediaMountPath` | Volume mount path for media PVC |
 | `mediaClaimName` | PVC claim name for media volume |
-| `downloadsClaimName` | PVC claim name for downloads (omitted if empty) |
+| `downloadsClaimName`, `downloadsMountPath` | Downloads volume (omitted if empty — only `readarr` and `audioarr` on Robbinsdale use this) |
 | `downloadsMountPath` | Mount path for downloads (omitted if empty) |
 
 Config PVC claim name is always `${name}-config` (matches ArrApp convention).
@@ -91,6 +91,18 @@ Parent gateways: `private` + `ts` (always), `public` (if `publicGateway: true`).
 | — | `metadata.labels[keiretsu.ts.net/location]` | Inferred from path (`talos-ottawa`→`ottawa`, `talos-robbinsdale`→`robbinsdale`) |
 
 **Dropped fields:** `s3Endpoint`, `s3Location`, `resticPassword` (StorageStack defaults handle these), `volsyncSnapshotClass` (ArrApp default `csi-rbdplugin-snapclass` matches StorageStack default — no instance overrides it), `volsyncManualTrigger`, `volsyncPaused`, `volsyncUnlock`, `restoring`, `restorePrevious` (restore is manual going forward via StorageStack `restorePaused`).
+
+### Known Non-Default Values Across Instances
+
+These are real overrides the script must handle correctly (not just defaults):
+
+| App | Cluster(s) | Override |
+|---|---|---|
+| `wizarr` | both | `configMountPath: /data`, `puid: "1000"`, `pgid: "1000"` |
+| `overseerr` | ottawa | `fsGroup: 1000` |
+| `jellyseerr` | both | `fsGroup: 1000`, `configMountPath: /app/config`, `publicGateway: true` |
+| `readarr` | robbinsdale | `downloadsClaimName: transmission-books-data-unas` |
+| `audioarr` | robbinsdale | `downloadsClaimName: transmission-books-data-unas`, `mediaMountPath: /books` |
 
 ---
 
@@ -130,7 +142,7 @@ for ctx in robbinsdale-k8s-operator.keiretsu.ts.net ottawa-k8s-operator.keiretsu
   echo "=== $ctx ==="
   kubectl get pvc -n media --context $ctx \
     -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.ownerReferences}{"\n"}{end}' \
-    | grep -config
+    | grep -- "-config"
 done
 ```
 
