@@ -26,8 +26,8 @@ spec:
   valuesFrom:
     - kind: Secret
       name: ocm-bootstrap-kubeconfig
-      valuesKey: bootstrapHubKubeConfig
-      targetPath: bootstrapHubKubeConfig
+      valuesKey: grpcConfig
+      targetPath: grpcConfig
   values:
     klusterlet:
       create: true

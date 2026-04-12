@@ -1,0 +1,18 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ocm-grpc-lb
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: ocm-grpc-lb
+  path: ./clusters/talos-ottawa/apps/ocm/grpc-lb
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
