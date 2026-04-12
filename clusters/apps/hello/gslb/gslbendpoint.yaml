@@ -1,0 +1,15 @@
+---
+apiVersion: network.keiretsu.ts.net/v1alpha1
+kind: GSLBEndpoint
+metadata:
+  name: hello-world
+spec:
+  httpRouteRef:
+    name: hello-world-cdn
+    namespace: hello
+  strategy: roundRobin
+  dnsTtlSeconds: 30
+  weights:
+    ottawa: 34
+    robbinsdale: 33
+    stpetersburg: 33

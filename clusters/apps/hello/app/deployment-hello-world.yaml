@@ -12,9 +12,6 @@ spec:
     metadata:
       labels:
         app: hello-world
-      # annotations:
-      #   tailcar.rajsingh.info/inject: "true"
-      #   tailcar.rajsingh.info/tailnet: keiretsu-labs-github
     spec:
       containers:
       - name: echo-server
@@ -23,4 +20,4 @@ spec:
         - name: PORT
           value: "80"
         ports:
-        - containerPort: 80 
+        - containerPort: 80
