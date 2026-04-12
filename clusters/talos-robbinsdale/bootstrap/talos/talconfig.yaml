@@ -24,7 +24,6 @@ additionalApiServerCertSans:
 
 additionalMachineCertSans:
   - "192.168.50.25"
-  - "192.168.51.25"
   - "k8s.robbinsdale.local"
   - "default-kubernetes-robbinsdale-ingress.keiretsu.ts.net"
   - "kubernetes-robbinsdale.keiretsu.ts.net"
