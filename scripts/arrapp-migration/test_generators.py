@@ -247,3 +247,62 @@ def test_httproute_homer_annotations():
     assert ann['item.homer.rajsingh.info/keywords'] == 'tv, series, automation'
     assert ann['service.homer.rajsingh.info/name'] == 'Media'
     assert ann['service.homer.rajsingh.info/icon'] == 'fas fa-tv'
+
+
+# ── storagestack.yaml tests ───────────────────────────────────────────────────
+
+def test_storagestack_basic():
+    docs = list(yaml.safe_load_all(generate_storagestack_yaml(SONARR_SPEC, 'ottawa')))
+    ss = docs[0]
+    assert ss['kind'] == 'StorageStack'
+    assert ss['apiVersion'] == 'storage.keiretsu.ts.net/v1alpha1'
+
+
+def test_storagestack_name_appends_config():
+    docs = list(yaml.safe_load_all(generate_storagestack_yaml(SONARR_SPEC, 'ottawa')))
+    ss = docs[0]
+    assert ss['metadata']['name'] == 'sonarr-1080p-config'
+    assert ss['spec']['name'] == 'sonarr-1080p-config'
+
+
+def test_storagestack_location_label():
+    docs = list(yaml.safe_load_all(generate_storagestack_yaml(SONARR_SPEC, 'ottawa')))
+    ss = docs[0]
+    assert ss['metadata']['labels']['keiretsu.ts.net/location'] == 'ottawa'
+
+
+def test_storagestack_s3_path():
+    docs = list(yaml.safe_load_all(generate_storagestack_yaml(SONARR_SPEC, 'ottawa')))
+    ss = docs[0]
+    assert ss['spec']['s3Path'] == 'media/sonarr-1080p-config'
+
+
+def test_storagestack_schedule():
+    docs = list(yaml.safe_load_all(generate_storagestack_yaml(SONARR_SPEC, 'ottawa')))
+    ss = docs[0]
+    assert ss['spec']['schedule'] == '0 4 * * *'
+
+
+def test_storagestack_restore_mode_backup_only():
+    docs = list(yaml.safe_load_all(generate_storagestack_yaml(SONARR_SPEC, 'ottawa')))
+    ss = docs[0]
+    assert ss['spec']['restoreMode'] == 'backup-only'
+
+
+def test_storagestack_copy_method_snapshot_ottawa():
+    docs = list(yaml.safe_load_all(generate_storagestack_yaml(SONARR_SPEC, 'ottawa')))
+    ss = docs[0]
+    assert ss['spec']['copyMethod'] == 'Snapshot'
+
+
+def test_storagestack_copy_method_direct_robbinsdale():
+    docs = list(yaml.safe_load_all(generate_storagestack_yaml(READARR_SPEC, 'robbinsdale')))
+    ss = docs[0]
+    assert ss['spec']['copyMethod'] == 'Direct'
+
+
+def test_storagestack_storage_class_and_size():
+    docs = list(yaml.safe_load_all(generate_storagestack_yaml(SONARR_SPEC, 'ottawa')))
+    ss = docs[0]
+    assert ss['spec']['storageClass'] == 'ceph-block-replicated'
+    assert ss['spec']['size'] == '5Gi'
