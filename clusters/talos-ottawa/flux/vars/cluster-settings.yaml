@@ -26,4 +26,4 @@ data:
 
   # Storage
   STORAGECLASS_LONGTERM: smb
-  STORAGECLASS_DEFAULT: ceph-block-replicated-nvme
+  STORAGECLASS_DEFAULT: ceph-block-replicated
