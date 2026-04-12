@@ -1,0 +1,16 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: transmission-movies-config
+  namespace: media
+  labels:
+    keiretsu.ts.net/location: robbinsdale
+spec:
+  name: transmission-movies-config
+  size: 5Gi
+  storageClass: ceph-block-replicated-nvme
+  s3Path: media/transmission-movies-config
+  schedule: "0 4 * * *"
+  restoreMode: backup-only
+  copyMethod: Direct

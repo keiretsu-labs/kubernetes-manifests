@@ -1,0 +1,168 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent-pvt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qbittorrent-pvt
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: qbittorrent-pvt
+    spec:
+      containers:
+      - name: gluetun
+        # renovate: datasource=docker depName=ghcr.io/qdm12/gluetun
+        image: ghcr.io/qdm12/gluetun:v3.41.1
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+          allowPrivilegeEscalation: false
+        env:
+        - name: VPN_SERVICE_PROVIDER
+          value: protonvpn
+        - name: VPN_TYPE
+          value: wireguard
+        - name: WIREGUARD_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: qbittorrent-pvt-secret
+              key: WIREGUARD_PRIVATE_KEY
+        - name: WIREGUARD_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: qbittorrent-pvt-secret
+              key: WIREGUARD_PUBLIC_KEY
+        - name: WIREGUARD_ENDPOINT_IP
+          valueFrom:
+            secretKeyRef:
+              name: qbittorrent-pvt-secret
+              key: WIREGUARD_ENDPOINT_IP
+        - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
+          value: 14s
+        - name: WIREGUARD_MTU
+          value: "1410"
+        - name: VPN_PORT_FORWARDING
+          value: "on"
+        - name: VPN_PORT_FORWARDING_DOWN_COMMAND
+          value: "wget -qO- http://localhost:8000/openvpn/actions/restart"
+        - name: PORT_FORWARD_ONLY
+          value: "on"
+        - name: SERVER_COUNTRIES
+          value: Denmark
+        - name: DOT
+          value: "off"
+        - name: HEALTH_TARGET_ADDRESS
+          value: "1.1.1.1:443"
+        - name: FIREWALL_INPUT_PORTS
+          value: "8080,6881,8000"
+        - name: FIREWALL_OUTBOUND_SUBNETS
+          value: "${CLUSTER_POD_CIDR}"
+        - name: UPDATER_PERIOD
+          value: "5m"
+        - name: UPDATER_PROTONVPN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: qbittorrent-pvt-secret
+              key: UPDATER_PROTONVPN_EMAIL
+        - name: UPDATER_PROTONVPN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: qbittorrent-pvt-secret
+              key: UPDATER_PROTONVPN_PASSWORD
+        - name: LOG_LEVEL
+          value: info
+        volumeMounts:
+        - name: gluetun-config
+          mountPath: /gluetun
+      - name: gluetun-qb-port-sync
+        # renovate: datasource=docker depName=ghcr.io/bjw-s-labs/gluetun-qb-port-sync
+        image: ghcr.io/bjw-s-labs/gluetun-qb-port-sync:0.0.4
+        env:
+        - name: GLUETUN_CONTROL_SERVER_HOST
+          value: localhost
+        - name: GLUETUN_CONTROL_SERVER_PORT
+          value: "8000"
+        - name: QBITTORRENT_HOST
+          value: localhost
+        - name: QBITTORRENT_WEBUI_PORT
+          value: "8080"
+        - name: CRON_ENABLED
+          value: "true"
+        - name: CRON_SCHEDULE
+          value: "* * * * *"
+        - name: LOG_TIMESTAMP
+          value: "false"
+        - name: CRON_INIT
+          value: "true"
+        volumeMounts:
+        - name: qb-port-sync-config
+          mountPath: /config
+        command: ["/bin/sh"]
+        args: ["-c", "echo '* * * * * /app/gluetun-qb-port-sync' > /config/crontab && exec /entrypoint.sh"]
+      - name: qbittorrent
+        # renovate: datasource=docker depName=lscr.io/linuxserver/qbittorrent
+        image: lscr.io/linuxserver/qbittorrent:5.1.4
+        ports:
+        - name: webui
+          containerPort: 8080
+          protocol: TCP
+        - name: torrenting
+          containerPort: 6881
+          protocol: TCP
+        - name: torrenting-udp
+          containerPort: 6881
+          protocol: UDP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        - name: downloads-volume
+          mountPath: /downloads
+        env:
+        - name: PUID
+          value: "568"
+        - name: PGID
+          value: "568"
+        - name: TZ
+          value: "${TIMEZONE}"
+        - name: WEBUI_PORT
+          value: "8080"
+        - name: TORRENTING_PORT
+          value: "6881"
+        - name: QBITTORRENT__AUTH_SubnetWhitelist
+          value: "${CLUSTER_POD_CIDR},${CLUSTER_SERVICE_CIDR}"
+        - name: QBITTORRENT__AUTH_AuthSubnetWhitelistEnabled
+          value: "true"
+        - name: QBITTORRENT__Auth_LocalHostAuth
+          value: "false"
+      volumes:
+      - name: config-volume
+        persistentVolumeClaim:
+          claimName: qbittorrent-pvt-config
+      - name: downloads-volume
+        persistentVolumeClaim:
+          claimName: qbittorrent-downloads
+      - name: gluetun-config
+        emptyDir: {}
+      - name: qb-port-sync-config
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent-pvt
+spec:
+  selector:
+    app: qbittorrent-pvt
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  type: ClusterIP

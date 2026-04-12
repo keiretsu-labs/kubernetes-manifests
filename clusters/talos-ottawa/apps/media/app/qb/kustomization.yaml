@@ -3,6 +3,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: media
 resources:
-  - ./qbapp.yaml
-  - ./secret.yaml
-  - ./pvc-downloads.yaml
+  - app.yaml
+  - httproute.yaml
+  - storagestack.yaml
+  - secret.yaml
+  - pvc-downloads.yaml
