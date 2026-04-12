@@ -306,3 +306,51 @@ def test_storagestack_storage_class_and_size():
     ss = docs[0]
     assert ss['spec']['storageClass'] == 'ceph-block-replicated'
     assert ss['spec']['size'] == '5Gi'
+
+
+# ── kustomization.yaml tests ──────────────────────────────────────────────────
+
+def test_kustomization_replaces_arrapp():
+    result = generate_kustomization_yaml(['./arrapp.yaml'], 'media')
+    doc = yaml.safe_load(result)
+    resources = doc['resources']
+    assert 'arrapp.yaml' not in resources
+    assert './arrapp.yaml' not in resources
+    assert 'app.yaml' in resources
+    assert 'httproute.yaml' in resources
+    assert 'storagestack.yaml' in resources
+
+
+def test_kustomization_preserves_extra_resources():
+    result = generate_kustomization_yaml(['arrapp.yaml', 'unas.yaml'], None)
+    doc = yaml.safe_load(result)
+    resources = doc['resources']
+    assert 'unas.yaml' in resources
+    assert 'app.yaml' in resources
+    assert 'arrapp.yaml' not in resources
+
+
+def test_kustomization_preserves_namespace():
+    result = generate_kustomization_yaml(['./arrapp.yaml'], 'media')
+    doc = yaml.safe_load(result)
+    assert doc['namespace'] == 'media'
+
+
+def test_kustomization_omits_namespace_when_absent():
+    result = generate_kustomization_yaml(['arrapp.yaml', 'unas.yaml'], None)
+    doc = yaml.safe_load(result)
+    assert 'namespace' not in doc
+
+
+def test_kustomization_idempotent_on_rerun():
+    # Second run: input already has the 3 new files instead of arrapp.yaml
+    result = generate_kustomization_yaml(
+        ['app.yaml', 'httproute.yaml', 'storagestack.yaml', 'unas.yaml'], None
+    )
+    doc = yaml.safe_load(result)
+    resources = doc['resources']
+    # Should not duplicate the 3 files
+    assert resources.count('app.yaml') == 1
+    assert resources.count('httproute.yaml') == 1
+    assert resources.count('storagestack.yaml') == 1
+    assert 'unas.yaml' in resources

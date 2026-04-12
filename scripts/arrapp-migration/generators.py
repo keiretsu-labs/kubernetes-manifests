@@ -158,4 +158,25 @@ def generate_kustomization_yaml(existing_resources: list[str], namespace: Option
     existing_resources: list of resource paths from original kustomization.
     namespace: value of existing namespace field, or None if absent.
     """
-    raise NotImplementedError
+    MANAGED = {'arrapp.yaml', 'app.yaml', 'httproute.yaml', 'storagestack.yaml'}
+    other_resources = [
+        r for r in existing_resources
+        if r.lstrip('./') not in MANAGED
+    ]
+    resources = ['app.yaml', 'httproute.yaml', 'storagestack.yaml'] + other_resources
+
+    doc = {
+        'apiVersion': 'kustomize.config.k8s.io/v1beta1',
+        'kind': 'Kustomization',
+        'resources': resources,
+    }
+    if namespace:
+        # Insert namespace after kind
+        doc = {
+            'apiVersion': 'kustomize.config.k8s.io/v1beta1',
+            'kind': 'Kustomization',
+            'namespace': namespace,
+            'resources': resources,
+        }
+
+    return '---\n' + yaml.dump(doc, default_flow_style=False, sort_keys=False)
