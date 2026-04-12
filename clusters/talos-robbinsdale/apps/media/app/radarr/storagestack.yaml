@@ -11,5 +11,5 @@ spec:
   storageClass: ceph-block-replicated-nvme
   s3Path: media/radarr-config
   schedule: 0 4 * * *
-  restoreMode: backup-only
+  restoreMode: restore
   copyMethod: Direct
