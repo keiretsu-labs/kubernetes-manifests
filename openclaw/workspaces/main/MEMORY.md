@@ -114,6 +114,8 @@ OpenClaw uses strict Zod schema validation — unknown keys cause Gateway to ref
 
 ## Alert Handling
 
+- Health monitor restarts every 2-3h are expected operational behavior, not failures — Discord WebSocket disconnects are normal and auto-recover within seconds. No action needed.
+
 AlertManager messages include cluster in `cluster` label — use it as kubectl context directly:
 
 ```bash
@@ -130,6 +132,7 @@ Available contexts: `ottawa`, `robbinsdale`, `stpetersburg`
 | PodCrashLoopBackOff | `kubectl describe pod`, check logs | App error, OOM, liveness probe |
 | UnexpectedAdmissionError | Check replica count and node resources | Pod schedule failure; service may still be available |
 | FluxReconcileFailure | `flux get kustomization`, check events | Git issue, SOPS decrypt fail |
+| HealthMonitorRestart | No action needed | Expected Discord WS disconnect every 2-3h, auto-recovers |
 
 ## Review and Session Patterns
 

@@ -11,9 +11,9 @@ Current beliefs about infrastructure and operations. Dwight reads this to shape 
 
 ## Current Priorities
 
-- Cluster stability across all three sites — Robbinsdale multi-node instability (stone/tank kubelet API lease loss) requires physical networking investigation
+- Cluster stability — Robbinsdale stone/tank node instability has not recurred since 2026-04-05 (cluster stable), but physical networking investigation remains pending
 - Tailscale operator integration maturity (tsdb, peer-relay, CSI provider)
-- OpenClaw self-improvement loop (workspace, skills, memory) — media-requests routing complete (PR #963)
+- OpenClaw self-improvement loop (workspace, skills, memory) — media-requests routing complete
 - AI/ML workload expansion on St. Petersburg
 - Post-outage alert cascades: expect deferred gatus alerts for immich, jellystat, jellyseerr after cluster instability — all resolve on their own, no action needed
 
