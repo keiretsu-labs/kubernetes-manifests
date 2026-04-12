@@ -3,6 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+COPY overlay/src/auto-login.ts src/auto-login.ts
+RUN sed -i '/import "\.\/polyfills\.js"/a import ".\/auto-login.ts"' src/main.ts
 RUN npm run build
 
 FROM nginx:alpine

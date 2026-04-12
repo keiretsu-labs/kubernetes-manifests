@@ -3,6 +3,9 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    sub_filter '</head>' '<script>window.__GARAGE_TOKEN="${GARAGE_ADMIN_TOKEN}"</script></head>';
+    sub_filter_once on;
+
     location /api/ {
         proxy_pass ${API_HOST}/;
         proxy_set_header Host $host;
