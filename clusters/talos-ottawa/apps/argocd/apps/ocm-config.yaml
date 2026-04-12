@@ -44,7 +44,7 @@ spec:
   tolerations:
     - key: cluster.open-cluster-management.io/unreachable
       operator: Exists
-      tolerationSeconds: 300
+      tolerationSeconds: 60
     - key: cluster.open-cluster-management.io/not-ready
       operator: Exists
-      tolerationSeconds: 300
+      tolerationSeconds: 60
