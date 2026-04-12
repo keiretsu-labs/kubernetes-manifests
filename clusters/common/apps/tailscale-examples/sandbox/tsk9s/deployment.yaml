@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: tsk9s
-        image: ghcr.io/rajsinghtech/tsk9s:v0.1.5
+        image: ghcr.io/rajsinghtech/tsk9s:v0.1.6
         args:
           - --state-dir=/data/tsk9s-state
           - --hostname=${LOCATION}-tsk9s
