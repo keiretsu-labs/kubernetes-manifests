@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineBasicLoader } from "vue-router/experimental"
-import { client } from "../store.ts"
-import { HttpError, successOrThrow } from "../utils/api.ts"
+import { client } from "../../store.ts"
+import { HttpError, successOrThrow } from "../../utils/api.ts"
 
 export const useListBuckets = defineBasicLoader(async () => successOrThrow(await client.GET("/v2/ListBuckets")), {
 	errors: [HttpError, Error],
@@ -9,11 +9,11 @@ export const useListBuckets = defineBasicLoader(async () => successOrThrow(await
 </script>
 
 <script lang="ts" setup>
-import LayoutDefault from "../components/layouts/Default.vue"
-import EmptyState from "../components/EmptyState.vue"
-import BannerError from "../components/BannerError.vue"
-import { shortId } from "../utils/labels.ts"
-import { PhArrowsCounterClockwise } from "@phosphor-icons/vue"
+import LayoutDefault from "../../components/layouts/Default.vue"
+import EmptyState from "../../components/EmptyState.vue"
+import BannerError from "../../components/BannerError.vue"
+import { shortId } from "../../utils/labels.ts"
+import { PhArrowsCounterClockwise, PhArrowRight } from "@phosphor-icons/vue"
 
 const { data: buckets, isLoading, error, reload } = useListBuckets()
 </script>
@@ -39,23 +39,24 @@ const { data: buckets, isLoading, error, reload } = useListBuckets()
 			</div>
 
 			<template v-for="bucket in buckets" :key="bucket.id">
-				<div class="card flex flex-wrap justify-between items-center gap">
-					<div class="flex flex-column gap">
+				<router-link :to="`/buckets/${bucket.id}`" class="cardLink gap--8">
+					<div class="flex flex-column gap flex-grow">
 						<div class="flex flex-wrap items-center gap gap--8">
 							<span class="tag tag--small color-gray text-uppercase text-monospace tabular-nums" :title="bucket.id">
 								{{ shortId(bucket.id, "tiny") }}
 							</span>
-							<span class="text-semibold" v-if="bucket.globalAliases.length > 0">{{ bucket.globalAliases.join(", ") }}</span>
+							<span class="cardLink-title" v-if="bucket.globalAliases.length > 0">{{ bucket.globalAliases.join(", ") }}</span>
 							<span class="color-gray" v-else>(no global alias)</span>
 						</div>
 						<div class="text-small color-gray" v-if="bucket.created">
 							Created {{ new Date(bucket.created).toLocaleDateString() }}
 						</div>
 					</div>
-					<div class="text-small color-gray" v-if="bucket.localAliases.length > 0">
+					<div class="flex flex-wrap gap gap--8 items-center text-small color-gray" v-if="bucket.localAliases.length > 0">
 						{{ bucket.localAliases.length }} local {{ bucket.localAliases.length === 1 ? "alias" : "aliases" }}
 					</div>
-				</div>
+					<div class="cardLink-ico"><PhArrowRight :size="20" weight="bold" /></div>
+				</router-link>
 			</template>
 
 			<div v-if="buckets?.length === 0" class="cardLink cardLink--disabled flex justify-center">
