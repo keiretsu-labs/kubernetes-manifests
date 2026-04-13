@@ -161,7 +161,7 @@ function permLabel(perms: { read?: boolean; write?: boolean; owner?: boolean }) 
 							</dd>
 						</div>
 					</dl>
-					<Banner v-if="cleanupResult !== null" type="success" icon>
+					<Banner v-if="cleanupResult !== null" type="info" icon>
 						Deleted {{ cleanupResult }} incomplete upload{{ cleanupResult === 1 ? "" : "s" }}.
 					</Banner>
 					<BannerError v-if="cleanupError" :error="cleanupError" id="cleanup_error" />

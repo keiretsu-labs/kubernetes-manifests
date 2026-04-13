@@ -57,7 +57,7 @@ async function runPreview() {
 	previewResult.value = null
 	previewError.value = null
 	try {
-		const res = await client.POST("/v2/PreviewClusterLayoutChanges", { body: {} })
+		const res = await client.POST("/v2/PreviewClusterLayoutChanges")
 		if (res.error) throw new Error(String(res.error))
 		const data = res.data as any
 		if (data.error) {
@@ -99,7 +99,7 @@ async function runRevert() {
 	revertLoading.value = true
 	revertError.value = null
 	try {
-		const res = await client.POST("/v2/RevertClusterLayout", { body: {} })
+		const res = await client.POST("/v2/RevertClusterLayout")
 		if (res.error) throw new Error(String(res.error))
 		reloadAll()
 	} catch (e) {
@@ -151,7 +151,7 @@ async function runRevert() {
 			</dl>
 
 			<!-- Staged changes banner -->
-			<Banner v-if="hasStagedChanges" type="warning" icon>
+			<Banner v-if="hasStagedChanges" type="warn" icon>
 				{{ stagedChanges.length }} staged {{ stagedChanges.length === 1 ? "change" : "changes" }} pending —
 				preview and apply or revert below.
 			</Banner>
@@ -234,7 +234,7 @@ async function runRevert() {
 				</div>
 
 				<Modal id="apply_layout_modal" title="Apply layout" closedby="any">
-					<Banner type="warning" icon>
+					<Banner type="warn" icon>
 						This will apply the staged changes and advance the layout to version {{ layout.version + 1 }}.
 						All nodes will redistribute data according to the new layout.
 					</Banner>
