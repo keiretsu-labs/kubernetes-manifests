@@ -4,6 +4,8 @@
 #          PVC (fresh/snapshot/direct) + ReplicationDestination (restore) +
 #          ReplicationSource (backup)
 #
+# backupPaused: pause the ReplicationSource (default false). Set true to stop scheduled backups.
+#
 # restoreMode values:
 #   backup-only (default) — fresh empty PVC + backup. For new apps with no history.
 #   restore               — ReplicationDestination + dataSourceRef PVC + backup.
@@ -63,6 +65,7 @@ spec:
       restoreMode: "string | default=backup-only"
       restorePaused: "boolean | default=true"
       restorePrevious: "integer | default=0"
+      backupPaused: "boolean | default=false"
     status:
       secretName: $${garageKey.spec.secretTemplate.name}
       ready: $${garageKey.metadata.name != ""}
@@ -261,6 +264,7 @@ spec:
         name: $${schema.spec.name}
       spec:
         sourcePVC: $${schema.spec.name}
+        paused: $${schema.spec.backupPaused}
         trigger:
           schedule: $${schema.spec.schedule}
         restic:
