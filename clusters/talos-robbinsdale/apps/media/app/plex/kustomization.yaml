@@ -6,8 +6,5 @@ resources:
   - deployment.yaml
   - service.yaml
   - unas.yaml
-  - ceph.yaml
   - httproute.yaml
-  - replicationdestination.yaml
-  # - volsync-restore.yaml
-  # - volsync-backup.yaml
+  - storagestack.yaml

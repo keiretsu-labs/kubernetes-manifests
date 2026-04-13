@@ -1,0 +1,16 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: plex-config-ceph
+  namespace: media
+  labels:
+    keiretsu.ts.net/location: robbinsdale
+spec:
+  name: plex-config-ceph
+  size: 50Gi
+  storageClass: ceph-block-replicated-nvme
+  s3Path: media/plex-config
+  schedule: "0 15 * * *"
+  restoreMode: restore
+  restorePaused: true
