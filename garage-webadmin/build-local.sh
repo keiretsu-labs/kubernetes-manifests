@@ -17,6 +17,12 @@ cp "$SCRIPT_DIR/Dockerfile" "$BUILD_DIR/Dockerfile"
 cp "$SCRIPT_DIR/nginx.conf.template" "$BUILD_DIR/nginx.conf.template"
 cp -r "$SCRIPT_DIR/overlay" "$BUILD_DIR/overlay"
 
+echo "==> Installing deps and type-checking..."
+(builtin cd "$BUILD_DIR" && npm ci --silent)
+cp "$BUILD_DIR/overlay/src/auto-login.ts" "$BUILD_DIR/src/auto-login.ts"
+cp -r "$BUILD_DIR/overlay/src/pages/." "$BUILD_DIR/src/pages/"
+(builtin cd "$BUILD_DIR" && npm run type-check)
+
 echo "==> Setting up buildx builder..."
 docker buildx inspect "$BUILDER_NAME" &>/dev/null || docker buildx create --name "$BUILDER_NAME" --driver docker-container
 
