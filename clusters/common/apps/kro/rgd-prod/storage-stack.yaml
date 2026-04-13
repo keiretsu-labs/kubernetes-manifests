@@ -23,6 +23,16 @@ spec:
     apiVersion: v1alpha1
     kind: StorageStack
     scope: Namespaced
+    additionalPrinterColumns:
+    - name: Last Backup
+      type: date
+      jsonPath: .status.lastBackupTime
+    - name: Last Restore
+      type: date
+      jsonPath: .status.lastRestoreTime
+    - name: Restored Snapshot
+      type: string
+      jsonPath: .status.restoredSnapshotName
     spec:
       # Identity
       name: "string | required=true"
