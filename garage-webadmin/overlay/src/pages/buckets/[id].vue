@@ -1,23 +1,39 @@
-<script lang="ts">
-import { defineBasicLoader } from "vue-router/experimental"
-import { client } from "../../store.ts"
-import { HttpError, successOrThrow } from "../../utils/api.ts"
-
-export const useGetBucketInfo = defineBasicLoader(
-	async (to) => successOrThrow(await client.GET("/v2/GetBucketInfo", { params: { query: { id: to.params.id as string } } })),
-	{ errors: [HttpError, Error] },
-)
-</script>
-
 <script lang="ts" setup>
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
+import { useRoute } from "vue-router"
 import LayoutDefault from "../../components/layouts/Default.vue"
 import BannerError from "../../components/BannerError.vue"
 import Banner from "../../components/Banner.vue"
 import { formatBytes, shortId } from "../../utils/labels.ts"
-import { PhArrowsCounterClockwise, PhArrowLeft, PhCheck, PhX } from "@phosphor-icons/vue"
+import { client } from "../../store.ts"
+import { successOrThrow } from "../../utils/api.ts"
+import { PhArrowsCounterClockwise, PhArrowLeft } from "@phosphor-icons/vue"
 
-const { data: bucket, isLoading, error, reload } = useGetBucketInfo()
+const route = useRoute()
+
+async function fetchBucketData() {
+	return await successOrThrow(
+		await client.GET("/v2/GetBucketInfo", { params: { query: { id: route.params.id as string } } }),
+	)
+}
+
+const bucket = ref<Awaited<ReturnType<typeof fetchBucketData>> | null>(null)
+const isLoading = ref(false)
+const error = ref<Error | null>(null)
+
+async function fetchBucket() {
+	isLoading.value = true
+	error.value = null
+	try {
+		bucket.value = await fetchBucketData()
+	} catch (e) {
+		error.value = e as Error
+	} finally {
+		isLoading.value = false
+	}
+}
+
+onMounted(fetchBucket)
 
 const cleanupHours = ref(24)
 const cleanupLoading = ref(false)
@@ -35,20 +51,12 @@ async function runCleanup() {
 		})
 		if (res.error) throw new Error(String(res.error))
 		cleanupResult.value = res.data?.uploadsDeleted ?? 0
-		reload()
+		fetchBucket()
 	} catch (e) {
 		cleanupError.value = e as Error
 	} finally {
 		cleanupLoading.value = false
 	}
-}
-
-function permLabel(perms: { read?: boolean; write?: boolean; owner?: boolean }) {
-	const bits = []
-	if (perms.read) bits.push("read")
-	if (perms.write) bits.push("write")
-	if (perms.owner) bits.push("owner")
-	return bits.length > 0 ? bits.join(", ") : "none"
 }
 </script>
 
@@ -64,7 +72,7 @@ function permLabel(perms: { read?: boolean; write?: boolean; owner?: boolean }) 
 				</h1>
 			</div>
 			<div class="sectionHeader-side">
-				<button class="btn" :class="{ 'btn--loading': isLoading }" @click="reload">
+				<button class="btn" :class="{ 'btn--loading': isLoading }" @click="fetchBucket">
 					<PhArrowsCounterClockwise :size="20" weight="bold" />Refresh
 				</button>
 			</div>
