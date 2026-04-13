@@ -32,6 +32,7 @@ docker buildx build \
   --platform linux/amd64 \
   --output "type=docker,dest=$TAR_FILE" \
   --provenance=false \
+  --no-cache \
   "$BUILD_DIR"
 
 echo "==> Pushing to $REGISTRY (OCI format)..."
