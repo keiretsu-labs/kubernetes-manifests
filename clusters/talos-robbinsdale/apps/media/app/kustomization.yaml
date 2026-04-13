@@ -25,7 +25,6 @@ resources:
   - ./lidarr
   - ./sabnzbd
   - ./plex
-  - ./plex-killinit-cc
   - ./jellystat
   - ./readarr
   - ./audioarr
