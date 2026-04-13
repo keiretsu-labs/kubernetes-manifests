@@ -13,4 +13,4 @@ spec:
   s3Path: media/plex-config
   schedule: "0 15 * * *"
   restoreMode: restore
-  restorePaused: true
+  restorePaused: false
