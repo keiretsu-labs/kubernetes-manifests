@@ -6,6 +6,13 @@ server {
     sub_filter '</head>' '<script>window.__GARAGE_TOKEN="${GARAGE_ADMIN_TOKEN}"</script></head>';
     sub_filter_once on;
 
+    location /objects/ {
+        proxy_pass http://localhost:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
     location /api/ {
         proxy_pass ${API_HOST}/;
         proxy_set_header Host $host;

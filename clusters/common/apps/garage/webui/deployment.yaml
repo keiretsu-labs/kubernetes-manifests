@@ -35,3 +35,17 @@ spec:
               memory: 64Mi
             limits:
               memory: 256Mi
+        - name: garage-webadmin-sidecar
+          image: oci.${CLUSTER_DOMAIN}/garage-webadmin-sidecar:latest
+          ports:
+            - containerPort: 8080
+              name: sidecar
+          envFrom:
+            - secretRef:
+                name: garage-webui-sidecar
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi

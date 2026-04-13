@@ -40,6 +40,22 @@ skopeo copy \
   "docker-archive:$TAR_FILE" \
   "docker://$REGISTRY/$IMAGE:latest"
 
+echo "==> Building sidecar..."
+SIDECAR_DIR="$SCRIPT_DIR/sidecar"
+SIDECAR_TAR="/tmp/garage-webadmin-sidecar-amd64.tar"
+docker buildx build \
+  --builder "$BUILDER_NAME" \
+  --platform linux/amd64 \
+  --output "type=docker,dest=$SIDECAR_TAR" \
+  --provenance=false \
+  "$SIDECAR_DIR"
+
+echo "==> Pushing sidecar to $REGISTRY (OCI format)..."
+skopeo copy \
+  --format oci \
+  "docker-archive:$SIDECAR_TAR" \
+  "docker://$REGISTRY/garage-webadmin-sidecar:latest"
+
 echo "==> Restarting deployment..."
 kubectl --context admin@k8s.killinit.internal rollout restart deployment/garage-webui -n garage
 kubectl --context admin@k8s.killinit.internal rollout status deployment/garage-webui -n garage
