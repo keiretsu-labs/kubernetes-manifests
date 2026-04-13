@@ -58,6 +58,7 @@ spec:
       ready: $${garageKey.metadata.name != ""}
       lastRestoreTime: $${replicationDestinationSnapshot.status.lastSyncTime}
       restoredSnapshotName: $${replicationDestinationSnapshot.status.latestImage.name}
+      lastBackupTime: $${replicationSource.status.lastSyncTime}
 
   resources:
 
