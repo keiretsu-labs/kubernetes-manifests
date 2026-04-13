@@ -4,6 +4,7 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 COPY overlay/src/auto-login.ts src/auto-login.ts
+COPY overlay/src/pages/ src/pages/
 RUN sed -i '/import "\.\/polyfills\.js"/a import ".\/auto-login.ts"' src/main.ts
 RUN npm run build
 
