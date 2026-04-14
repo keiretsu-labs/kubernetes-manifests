@@ -12,5 +12,5 @@ spec:
   s3Path: media/sonarr-config
   schedule: 0 4 * * *
   restoreMode: restore
-  restorePaused: true
+  restorePaused: false
   copyMethod: Direct
