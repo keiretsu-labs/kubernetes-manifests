@@ -12,5 +12,7 @@ spec:
   storageClass: ceph-block-replicated-nvme
   s3Path: media/transmission-books-config
   schedule: "0 4 * * *"
-  restoreMode: backup-only
+  restoreMode: restore
+  restorePaused: false
+  restorePrevious: 4
   copyMethod: Direct

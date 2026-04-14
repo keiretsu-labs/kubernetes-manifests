@@ -12,5 +12,6 @@ spec:
   storageClass: ceph-block-replicated-nvme
   s3Path: media/maintainerr-config
   schedule: "0 4 * * *"
-  restoreMode: backup-only
+    restoreMode: restore
+  restorePaused: false
   copyMethod: Direct
