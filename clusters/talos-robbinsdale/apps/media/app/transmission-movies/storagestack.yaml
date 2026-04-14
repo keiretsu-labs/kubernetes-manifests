@@ -15,4 +15,4 @@ spec:
   restoreMode: restore
   restorePaused: false
   restorePrevious: 4
-  copyMethod: Direct
+  copyMethod: Snapshot

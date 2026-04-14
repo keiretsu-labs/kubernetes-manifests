@@ -269,7 +269,7 @@ spec:
           schedule: $${schema.spec.schedule}
         restic:
           pruneIntervalDays: $${schema.spec.pruneIntervalDays}
-          repository: $${"restic-" + schema.spec.name}
+          repository: $${garageKey.status.secretRef.name}
           retain:
             hourly: $${schema.spec.retainHourly}
             daily: $${schema.spec.retainDaily}
