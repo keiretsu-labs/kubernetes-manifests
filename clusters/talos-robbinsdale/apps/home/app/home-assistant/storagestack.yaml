@@ -13,5 +13,5 @@ spec:
   s3Path: home/homeassistant-config
   schedule: "0 12 * * *"
   restoreMode: restore
-  restorePaused: false
+  restorePaused: true
   restorePrevious: 1

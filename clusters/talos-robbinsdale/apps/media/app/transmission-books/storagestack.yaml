@@ -13,6 +13,6 @@ spec:
   s3Path: media/transmission-books-config
   schedule: "0 4 * * *"
   restoreMode: restore
-  restorePaused: false
+  restorePaused: true
   restorePrevious: 4
   copyMethod: Snapshot

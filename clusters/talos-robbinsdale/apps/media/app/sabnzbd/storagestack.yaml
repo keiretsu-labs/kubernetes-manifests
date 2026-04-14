@@ -12,5 +12,5 @@ spec:
   s3Path: media/sabnzbd-config
   schedule: 0 4 * * *
   restoreMode: restore
-  restorePaused: false
+  restorePaused: true
   copyMethod: Snapshot
