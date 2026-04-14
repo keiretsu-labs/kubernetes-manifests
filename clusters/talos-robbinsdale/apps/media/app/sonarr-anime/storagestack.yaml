@@ -12,4 +12,5 @@ spec:
   s3Path: media/sonarr-anime-config
   schedule: 0 4 * * *
   restoreMode: restore
+  restorePaused: false
   copyMethod: Direct
