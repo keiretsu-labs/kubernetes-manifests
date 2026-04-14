@@ -15,10 +15,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-var s3Client *s3.Client
+var (
+	s3Client *s3.Client
+	uploader *manager.Uploader
+)
 
 func main() {
 	cfg, err := config.LoadDefaultConfig(context.Background(),
@@ -40,9 +45,14 @@ func main() {
 		o.UsePathStyle = true
 	})
 
+	uploader = manager.NewUploader(s3Client)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/list", handleList)
 	mux.HandleFunc("/download", handleDownload)
+	mux.HandleFunc("/delete", handleDelete)
+	mux.HandleFunc("/upload", handleUpload)
+	mux.HandleFunc("/mkdir", handleMkdir)
 
 	log.Println("listening on :8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
@@ -160,4 +170,161 @@ func handleDownload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename=%q`, filename))
 
 	io.Copy(w, out.Body)
+}
+
+func handleDelete(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	q := r.URL.Query()
+	bucket := q.Get("bucket")
+	if bucket == "" {
+		http.Error(w, "bucket required", http.StatusBadRequest)
+		return
+	}
+
+	_, hasKey := q["key"]
+	_, hasPrefix := q["prefix"]
+
+	switch {
+	case hasKey:
+		key := q.Get("key")
+		if _, err := s3Client.DeleteObject(r.Context(), &s3.DeleteObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+		}); err != nil {
+			http.Error(w, fmt.Sprintf("delete error: %v", err), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]int{"deleted": 1})
+
+	case hasPrefix:
+		prefix := q.Get("prefix")
+		deleted, err := deleteByPrefix(r.Context(), bucket, prefix)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("delete error: %v", err), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]int{"deleted": deleted})
+
+	default:
+		http.Error(w, "key or prefix parameter required", http.StatusBadRequest)
+	}
+}
+
+func deleteByPrefix(ctx context.Context, bucket, prefix string) (int, error) {
+	var deleted int
+	var token *string
+	for {
+		input := &s3.ListObjectsV2Input{
+			Bucket:            aws.String(bucket),
+			MaxKeys:           aws.Int32(1000),
+			ContinuationToken: token,
+		}
+		if prefix != "" {
+			input.Prefix = aws.String(prefix)
+		}
+		out, err := s3Client.ListObjectsV2(ctx, input)
+		if err != nil {
+			return deleted, err
+		}
+		if len(out.Contents) == 0 {
+			break
+		}
+		objs := make([]types.ObjectIdentifier, len(out.Contents))
+		for i, obj := range out.Contents {
+			objs[i] = types.ObjectIdentifier{Key: obj.Key}
+		}
+		if _, err := s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+			Bucket: aws.String(bucket),
+			Delete: &types.Delete{Objects: objs, Quiet: aws.Bool(true)},
+		}); err != nil {
+			return deleted, err
+		}
+		deleted += len(objs)
+		if !aws.ToBool(out.IsTruncated) {
+			break
+		}
+		token = out.NextContinuationToken
+	}
+	return deleted, nil
+}
+
+func handleUpload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	q := r.URL.Query()
+	bucket := q.Get("bucket")
+	key := q.Get("key")
+	if bucket == "" || key == "" {
+		http.Error(w, "bucket and key required", http.StatusBadRequest)
+		return
+	}
+
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		http.Error(w, fmt.Sprintf("parse error: %v", err), http.StatusBadRequest)
+		return
+	}
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("file error: %v", err), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	ct := header.Header.Get("Content-Type")
+	if ct == "" {
+		ct = "application/octet-stream"
+	}
+
+	if _, err := uploader.Upload(r.Context(), &s3.PutObjectInput{
+		Bucket:      aws.String(bucket),
+		Key:         aws.String(key),
+		Body:        file,
+		ContentType: aws.String(ct),
+	}); err != nil {
+		http.Error(w, fmt.Sprintf("upload error: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"key": key})
+}
+
+func handleMkdir(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	q := r.URL.Query()
+	bucket := q.Get("bucket")
+	key := q.Get("key")
+	if bucket == "" || key == "" {
+		http.Error(w, "bucket and key required", http.StatusBadRequest)
+		return
+	}
+	if !strings.HasSuffix(key, "/") {
+		key += "/"
+	}
+
+	if _, err := s3Client.PutObject(r.Context(), &s3.PutObjectInput{
+		Bucket:        aws.String(bucket),
+		Key:           aws.String(key),
+		Body:          strings.NewReader(""),
+		ContentLength: aws.Int64(0),
+	}); err != nil {
+		http.Error(w, fmt.Sprintf("mkdir error: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"key": key})
 }

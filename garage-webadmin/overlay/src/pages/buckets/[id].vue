@@ -1,15 +1,16 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter } from "vue-router"
 import LayoutDefault from "../../components/layouts/Default.vue"
 import BannerError from "../../components/BannerError.vue"
 import Banner from "../../components/Banner.vue"
 import { formatBytes, shortId } from "../../utils/labels.ts"
-import { client } from "../../store.ts"
+import { client, authenticated } from "../../store.ts"
 import { successOrThrow } from "../../utils/api.ts"
-import { PhArrowsCounterClockwise, PhArrowLeft } from "@phosphor-icons/vue"
+import { PhArrowsCounterClockwise, PhArrowLeft, PhTrash, PhUpload, PhFolderPlus } from "@phosphor-icons/vue"
 
 const route = useRoute()
+const router = useRouter()
 
 async function fetchBucketData() {
 	return await successOrThrow(
@@ -138,10 +139,186 @@ function prevPage() {
 function downloadUrl(key: string): string {
 	return `/objects/download?bucket=${encodeURIComponent(bucketAlias.value)}&key=${encodeURIComponent(key)}`
 }
+
+// Typed confirmation modal
+interface DeleteTarget {
+	label: string
+	confirmText: string
+	action: () => Promise<void>
+}
+
+const deleteTarget = ref<DeleteTarget | null>(null)
+const deleteConfirmInput = ref("")
+const deleteLoading = ref(false)
+const deleteError = ref<Error | null>(null)
+
+function confirmDelete(target: DeleteTarget) {
+	deleteTarget.value = target
+	deleteConfirmInput.value = ""
+	deleteError.value = null
+}
+
+async function executeDelete() {
+	if (!deleteTarget.value || deleteConfirmInput.value !== deleteTarget.value.confirmText) return
+	deleteLoading.value = true
+	deleteError.value = null
+	try {
+		await deleteTarget.value.action()
+		deleteTarget.value = null
+	} catch (e) {
+		deleteError.value = e as Error
+	} finally {
+		deleteLoading.value = false
+	}
+}
+
+function cancelDelete() {
+	deleteTarget.value = null
+	deleteError.value = null
+}
+
+async function doSidecarDelete(params: URLSearchParams) {
+	const res = await fetch(`/objects/delete?${params}`, { method: "DELETE" })
+	if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`)
+}
+
+function deleteObject(key: string) {
+	const name = key.slice(objectPrefix.value.length)
+	confirmDelete({
+		label: `Permanently delete "${name}"?`,
+		confirmText: name,
+		action: async () => {
+			await doSidecarDelete(new URLSearchParams({ bucket: bucketAlias.value, key }))
+			fetchObjects(currentToken.value)
+		},
+	})
+}
+
+function deletePrefix(prefix: string) {
+	const name = prefix.slice(objectPrefix.value.length).replace(/\/$/, "")
+	confirmDelete({
+		label: `Recursively delete folder "${name}" and ALL its contents?`,
+		confirmText: name,
+		action: async () => {
+			await doSidecarDelete(new URLSearchParams({ bucket: bucketAlias.value, prefix }))
+			fetchObjects(currentToken.value)
+		},
+	})
+}
+
+function deleteBucketFull() {
+	if (!bucket.value) return
+	const alias = bucket.value.globalAliases[0] ?? ""
+	const bucketId = bucket.value.id
+	confirmDelete({
+		label: `Delete bucket "${alias || shortId(bucketId, "small")}" and ALL its contents? This cannot be undone.`,
+		confirmText: alias || bucketId,
+		action: async () => {
+			if (alias) {
+				await doSidecarDelete(new URLSearchParams({ bucket: alias, prefix: "" }))
+			}
+			const res = await fetch(`/api/v2/DeleteBucket?id=${encodeURIComponent(bucketId)}`, {
+				method: "POST",
+				headers: authenticated.value ? { Authorization: `Bearer ${authenticated.value.token}` } : {},
+			})
+			if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`)
+			router.push("/buckets/")
+		},
+	})
+}
+
+// Upload
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const uploadLoading = ref(false)
+const uploadError = ref<Error | null>(null)
+
+function triggerUpload() {
+	fileInputRef.value?.click()
+}
+
+async function handleFileSelect(e: Event) {
+	const input = e.target as HTMLInputElement
+	if (!input.files?.length) return
+	const file = input.files[0]!
+	const key = objectPrefix.value + file.name
+
+	uploadLoading.value = true
+	uploadError.value = null
+	try {
+		const formData = new FormData()
+		formData.append("file", file)
+		const params = new URLSearchParams({ bucket: bucketAlias.value, key })
+		const res = await fetch(`/objects/upload?${params}`, { method: "POST", body: formData })
+		if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`)
+		fetchObjects(currentToken.value)
+	} catch (e) {
+		uploadError.value = e as Error
+	} finally {
+		uploadLoading.value = false
+		input.value = ""
+	}
+}
+
+// Mkdir
+const mkdirVisible = ref(false)
+const mkdirName = ref("")
+const mkdirLoading = ref(false)
+const mkdirError = ref<Error | null>(null)
+
+async function createFolder() {
+	if (!mkdirName.value.trim()) return
+	const key = objectPrefix.value + mkdirName.value.trim().replace(/\/+$/, "") + "/"
+	mkdirLoading.value = true
+	mkdirError.value = null
+	try {
+		const params = new URLSearchParams({ bucket: bucketAlias.value, key })
+		const res = await fetch(`/objects/mkdir?${params}`, { method: "POST" })
+		if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`)
+		mkdirName.value = ""
+		mkdirVisible.value = false
+		fetchObjects(currentToken.value)
+	} catch (e) {
+		mkdirError.value = e as Error
+	} finally {
+		mkdirLoading.value = false
+	}
+}
 </script>
 
 <template>
 	<LayoutDefault>
+		<!-- Typed confirmation modal -->
+		<Teleport to="body">
+			<div v-if="deleteTarget" class="modal-backdrop" @click.self="cancelDelete">
+				<div class="modal-dialog">
+					<p class="modal-label">{{ deleteTarget.label }}</p>
+					<p class="text-small color-gray">
+						Type <strong class="text-monospace">{{ deleteTarget.confirmText }}</strong> to confirm:
+					</p>
+					<input
+						class="modal-input"
+						type="text"
+						v-model="deleteConfirmInput"
+						:placeholder="deleteTarget.confirmText"
+						@keyup.enter="executeDelete"
+						autofocus
+					/>
+					<BannerError v-if="deleteError" :error="deleteError" id="delete_modal_error" />
+					<div class="flex gap gap--8">
+						<button class="btn" @click="cancelDelete">Cancel</button>
+						<button
+							class="btn btn--danger"
+							:disabled="deleteConfirmInput !== deleteTarget.confirmText || deleteLoading"
+							:class="{ 'btn--loading': deleteLoading }"
+							@click="executeDelete"
+						>
+							<PhTrash :size="16" weight="bold" />Delete
+						</button>
+					</div>
+				</div>
+			</div>
+		</Teleport>
+
 		<div class="sectionHeader">
 			<div class="sectionHeader-content">
 				<router-link to="/buckets/" class="btn btn--text">
@@ -152,6 +329,9 @@ function downloadUrl(key: string): string {
 				</h1>
 			</div>
 			<div class="sectionHeader-side">
+				<button v-if="bucket" class="btn btn--danger" @click="deleteBucketFull">
+					<PhTrash :size="20" weight="bold" />Delete Bucket
+				</button>
 				<button class="btn" :class="{ 'btn--loading': isLoading }" @click="fetchBucket">
 					<PhArrowsCounterClockwise :size="20" weight="bold" />Refresh
 				</button>
@@ -279,9 +459,18 @@ function downloadUrl(key: string): string {
 			<div class="flex flex-column gap gap--12">
 				<div class="flex flex-wrap justify-between items-center">
 					<h2 class="title title-2">Objects</h2>
-					<button v-if="hasAlias" class="btn" :class="{ 'btn--loading': objectsLoading }" @click="fetchObjects(currentToken)">
-						<PhArrowsCounterClockwise :size="20" weight="bold" />Refresh
-					</button>
+					<div v-if="hasAlias" class="flex flex-wrap gap gap--8">
+						<button class="btn btn--small" :class="{ 'btn--loading': objectsLoading }" @click="fetchObjects(currentToken)">
+							<PhArrowsCounterClockwise :size="16" weight="bold" />Refresh
+						</button>
+						<button class="btn btn--small" @click="mkdirVisible = !mkdirVisible">
+							<PhFolderPlus :size="16" weight="bold" />New Folder
+						</button>
+						<button class="btn btn--small btn--primary" :class="{ 'btn--loading': uploadLoading }" @click="triggerUpload">
+							<PhUpload :size="16" weight="bold" />Upload
+						</button>
+						<input ref="fileInputRef" type="file" style="display: none" @change="handleFileSelect" />
+					</div>
 				</div>
 
 				<div v-if="!hasAlias" class="card color-gray text-small">
@@ -289,6 +478,30 @@ function downloadUrl(key: string): string {
 				</div>
 
 				<template v-else>
+					<!-- New folder input -->
+					<div v-if="mkdirVisible" class="card flex flex-column gap">
+						<BannerError v-if="mkdirError" :error="mkdirError" id="mkdir_error" />
+						<div class="flex flex-wrap items-center gap gap--8">
+							<input
+								class="text-small"
+								type="text"
+								v-model="mkdirName"
+								placeholder="folder-name"
+								@keyup.enter="createFolder"
+								style="flex: 1; min-width: 10rem"
+							/>
+							<button class="btn btn--small btn--primary" :class="{ 'btn--loading': mkdirLoading }" @click="createFolder">
+								Create
+							</button>
+							<button class="btn btn--small" @click="mkdirVisible = false; mkdirName = ''">
+								Cancel
+							</button>
+						</div>
+					</div>
+
+					<!-- Upload error -->
+					<BannerError v-if="uploadError" :error="uploadError" id="upload_error" />
+
 					<!-- Breadcrumb -->
 					<div v-if="objectPrefix" class="flex flex-wrap items-center gap gap--4 text-small">
 						<button class="btn btn--text text-small" @click="navigateToPrefix('')">root</button>
@@ -302,15 +515,22 @@ function downloadUrl(key: string): string {
 
 					<div class="card flex flex-column gap" v-if="objectPage">
 						<!-- Folders -->
-						<button
+						<div
 							v-for="p in objectPage.prefixes"
 							:key="p"
-							class="btn btn--text"
-							style="justify-content: flex-start; text-align: left"
-							@click="navigateToPrefix(p)"
+							class="flex flex-wrap justify-between items-center gap"
 						>
-							<span class="text-monospace text-small">{{ p.slice(objectPrefix.length) }}</span>
-						</button>
+							<button
+								class="btn btn--text"
+								style="justify-content: flex-start; text-align: left; flex: 1"
+								@click="navigateToPrefix(p)"
+							>
+								<span class="text-monospace text-small">{{ p.slice(objectPrefix.length) }}</span>
+							</button>
+							<button class="btn btn--small btn--danger" @click.stop="deletePrefix(p)" title="Delete folder and all contents">
+								<PhTrash :size="14" weight="bold" />
+							</button>
+						</div>
 
 						<!-- Objects -->
 						<div
@@ -318,11 +538,14 @@ function downloadUrl(key: string): string {
 							:key="obj.key"
 							class="flex flex-wrap justify-between items-center gap"
 						>
-							<span class="text-small text-monospace">{{ obj.key.slice(objectPrefix.length) }}</span>
+							<span class="text-small text-monospace" style="flex: 1">{{ obj.key.slice(objectPrefix.length) }}</span>
 							<div class="flex flex-wrap gap gap--8 items-center text-small color-gray">
 								<span>{{ formatBytes(obj.size).value }}&ThinSpace;<span class="color-gray">{{ formatBytes(obj.size).unit }}</span></span>
 								<span>{{ new Date(obj.lastModified).toLocaleDateString() }}</span>
-								<a :href="downloadUrl(obj.key)" class="btn" download>Download</a>
+								<a :href="downloadUrl(obj.key)" class="btn btn--small" download>Download</a>
+								<button class="btn btn--small btn--danger" @click="deleteObject(obj.key)" title="Delete object">
+									<PhTrash :size="14" weight="bold" />
+								</button>
 							</div>
 						</div>
 
@@ -346,3 +569,53 @@ function downloadUrl(key: string): string {
 		</div>
 	</LayoutDefault>
 </template>
+
+<style scoped>
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.modal-dialog {
+	background: var(--color-surface, #fff);
+	border: 1px solid var(--color-border, #e0e0e0);
+	border-radius: 8px;
+	padding: 1.5rem;
+	max-width: 480px;
+	width: 90%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.modal-label {
+	font-weight: 600;
+	margin: 0;
+}
+
+.modal-input {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.btn--danger {
+	color: #fff;
+	background-color: #c62828;
+	border-color: #c62828;
+}
+
+.btn--danger:hover:not(:disabled) {
+	background-color: #b71c1c;
+	border-color: #b71c1c;
+}
+
+.btn--danger:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+</style>
