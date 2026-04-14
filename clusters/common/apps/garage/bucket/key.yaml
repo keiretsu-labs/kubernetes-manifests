@@ -82,6 +82,7 @@ spec:
   name: "WebUI Sidecar Key"
   allBuckets:
     read: true
+    write: true
   secretTemplate:
     name: garage-webui-sidecar
     namespace: garage
