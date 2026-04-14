@@ -85,6 +85,7 @@ const tokenStack = ref<(string | undefined)[]>([])
 const objectPage = ref<ObjectsPage | null>(null)
 const objectsLoading = ref(false)
 const objectsError = ref<Error | null>(null)
+const prefixSizes = ref<Record<string, number | null>>({})
 
 const bucketAlias = computed(() => bucket.value?.globalAliases[0] ?? "")
 const hasAlias = computed(() => (bucket.value?.globalAliases.length ?? 0) > 0)
@@ -98,17 +99,33 @@ async function fetchObjects(token?: string) {
 	if (!bucketAlias.value) return
 	objectsLoading.value = true
 	objectsError.value = null
+	prefixSizes.value = {}
 	try {
 		const params = new URLSearchParams({ bucket: bucketAlias.value, prefix: objectPrefix.value })
 		if (token) params.set("token", token)
 		const res = await fetch(`/objects/list?${params}`)
 		if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`)
 		objectPage.value = await res.json()
+		for (const p of objectPage.value?.prefixes ?? []) {
+			fetchPrefixSize(p)
+		}
 	} catch (e) {
 		objectsError.value = e as Error
 	} finally {
 		objectsLoading.value = false
 	}
+}
+
+async function fetchPrefixSize(prefix: string) {
+	if (!bucketAlias.value) return
+	prefixSizes.value[prefix] = null
+	try {
+		const params = new URLSearchParams({ bucket: bucketAlias.value, prefix })
+		const res = await fetch(`/objects/size?${params}`)
+		if (!res.ok) return
+		const data = await res.json()
+		prefixSizes.value[prefix] = data.size as number
+	} catch { /* ignore */ }
 }
 
 function navigateToPrefix(prefix: string) {
@@ -151,17 +168,20 @@ const deleteTarget = ref<DeleteTarget | null>(null)
 const deleteConfirmInput = ref("")
 const deleteLoading = ref(false)
 const deleteError = ref<Error | null>(null)
+const deleteProgress = ref<number | null>(null)
 
 function confirmDelete(target: DeleteTarget) {
 	deleteTarget.value = target
 	deleteConfirmInput.value = ""
 	deleteError.value = null
+	deleteProgress.value = null
 }
 
 async function executeDelete() {
 	if (!deleteTarget.value || deleteConfirmInput.value !== deleteTarget.value.confirmText) return
 	deleteLoading.value = true
 	deleteError.value = null
+	deleteProgress.value = null
 	try {
 		await deleteTarget.value.action()
 		deleteTarget.value = null
@@ -175,11 +195,31 @@ async function executeDelete() {
 function cancelDelete() {
 	deleteTarget.value = null
 	deleteError.value = null
+	deleteProgress.value = null
 }
 
-async function doSidecarDelete(params: URLSearchParams) {
+async function doSidecarDelete(params: URLSearchParams, onProgress?: (n: number) => void) {
 	const res = await fetch(`/objects/delete?${params}`, { method: "DELETE" })
 	if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`)
+	const ct = res.headers.get("Content-Type") ?? ""
+	if (ct.includes("ndjson") && res.body) {
+		const reader = res.body.getReader()
+		const decoder = new TextDecoder()
+		let buf = ""
+		while (true) {
+			const { done, value } = await reader.read()
+			if (done) break
+			buf += decoder.decode(value, { stream: true })
+			const lines = buf.split("\n")
+			buf = lines.pop() ?? ""
+			for (const line of lines) {
+				if (!line.trim()) continue
+				const msg = JSON.parse(line)
+				if (msg.error) throw new Error(msg.error)
+				if (onProgress) onProgress(msg.deleted as number)
+			}
+		}
+	}
 }
 
 function deleteObject(key: string) {
@@ -200,7 +240,9 @@ function deletePrefix(prefix: string) {
 		label: `Recursively delete folder "${name}" and ALL its contents?`,
 		confirmText: name,
 		action: async () => {
-			await doSidecarDelete(new URLSearchParams({ bucket: bucketAlias.value, prefix }))
+			await doSidecarDelete(new URLSearchParams({ bucket: bucketAlias.value, prefix }), (n) => {
+				deleteProgress.value = n
+			})
 			fetchObjects(currentToken.value)
 		},
 	})
@@ -215,7 +257,9 @@ function deleteBucketFull() {
 		confirmText: alias || bucketId,
 		action: async () => {
 			if (alias) {
-				await doSidecarDelete(new URLSearchParams({ bucket: alias, prefix: "" }))
+				await doSidecarDelete(new URLSearchParams({ bucket: alias, prefix: "" }), (n) => {
+					deleteProgress.value = n
+				})
 			}
 			const res = await fetch(`/api/v2/DeleteBucket?id=${encodeURIComponent(bucketId)}`, {
 				method: "POST",
@@ -303,6 +347,9 @@ async function createFolder() {
 						@keyup.enter="executeDelete"
 						autofocus
 					/>
+					<div v-if="deleteLoading && deleteProgress !== null" class="text-small color-gray">
+						Deleting... {{ deleteProgress.toLocaleString() }} objects removed
+					</div>
 					<BannerError v-if="deleteError" :error="deleteError" id="delete_modal_error" />
 					<div class="flex gap gap--8">
 						<button class="btn" @click="cancelDelete">Cancel</button>
@@ -527,9 +574,17 @@ async function createFolder() {
 							>
 								<span class="text-monospace text-small">{{ p.slice(objectPrefix.length) }}</span>
 							</button>
-							<button class="btn btn--small btn--danger" @click.stop="deletePrefix(p)" title="Delete folder and all contents">
-								<PhTrash :size="14" weight="bold" />
-							</button>
+							<div class="flex flex-wrap gap gap--8 items-center text-small color-gray">
+								<span v-if="p in prefixSizes">
+									<template v-if="prefixSizes[p] !== null">
+										{{ formatBytes(prefixSizes[p] as number).value }}&ThinSpace;<span class="color-gray">{{ formatBytes(prefixSizes[p] as number).unit }}</span>
+									</template>
+									<template v-else>…</template>
+								</span>
+								<button class="btn btn--small btn--danger" @click.stop="deletePrefix(p)" title="Delete folder and all contents">
+									<PhTrash :size="14" weight="bold" />
+								</button>
+							</div>
 						</div>
 
 						<!-- Objects -->

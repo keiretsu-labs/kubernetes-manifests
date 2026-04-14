@@ -53,6 +53,7 @@ func main() {
 	mux.HandleFunc("/delete", handleDelete)
 	mux.HandleFunc("/upload", handleUpload)
 	mux.HandleFunc("/mkdir", handleMkdir)
+	mux.HandleFunc("/size", handleSize)
 
 	log.Println("listening on :8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
@@ -203,20 +204,31 @@ func handleDelete(w http.ResponseWriter, r *http.Request) {
 
 	case hasPrefix:
 		prefix := q.Get("prefix")
-		deleted, err := deleteByPrefix(r.Context(), bucket, prefix)
+		w.Header().Set("Content-Type", "application/x-ndjson")
+		w.Header().Set("X-Accel-Buffering", "no")
+		w.Header().Set("Cache-Control", "no-cache")
+		flusher, _ := w.(http.Flusher)
+		deleted, err := deleteByPrefix(r.Context(), bucket, prefix, func(n int) {
+			json.NewEncoder(w).Encode(map[string]any{"deleted": n, "done": false})
+			if flusher != nil {
+				flusher.Flush()
+			}
+		})
 		if err != nil {
-			http.Error(w, fmt.Sprintf("delete error: %v", err), http.StatusInternalServerError)
-			return
+			json.NewEncoder(w).Encode(map[string]any{"error": err.Error(), "deleted": deleted, "done": true})
+		} else {
+			json.NewEncoder(w).Encode(map[string]any{"deleted": deleted, "done": true})
 		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]int{"deleted": deleted})
+		if flusher != nil {
+			flusher.Flush()
+		}
 
 	default:
 		http.Error(w, "key or prefix parameter required", http.StatusBadRequest)
 	}
 }
 
-func deleteByPrefix(ctx context.Context, bucket, prefix string) (int, error) {
+func deleteByPrefix(ctx context.Context, bucket, prefix string, progress func(int)) (int, error) {
 	var deleted int
 	var token *string
 	for {
@@ -246,12 +258,58 @@ func deleteByPrefix(ctx context.Context, bucket, prefix string) (int, error) {
 			return deleted, err
 		}
 		deleted += len(objs)
+		if progress != nil {
+			progress(deleted)
+		}
 		if !aws.ToBool(out.IsTruncated) {
 			break
 		}
 		token = out.NextContinuationToken
 	}
 	return deleted, nil
+}
+
+func handleSize(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	q := r.URL.Query()
+	bucket := q.Get("bucket")
+	if bucket == "" {
+		http.Error(w, "bucket required", http.StatusBadRequest)
+		return
+	}
+	prefix := q.Get("prefix")
+
+	var totalSize int64
+	var count int64
+	var token *string
+	for {
+		input := &s3.ListObjectsV2Input{
+			Bucket:            aws.String(bucket),
+			MaxKeys:           aws.Int32(1000),
+			ContinuationToken: token,
+		}
+		if prefix != "" {
+			input.Prefix = aws.String(prefix)
+		}
+		out, err := s3Client.ListObjectsV2(r.Context(), input)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("size error: %v", err), http.StatusInternalServerError)
+			return
+		}
+		for _, obj := range out.Contents {
+			totalSize += aws.ToInt64(obj.Size)
+			count++
+		}
+		if !aws.ToBool(out.IsTruncated) {
+			break
+		}
+		token = out.NextContinuationToken
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int64{"size": totalSize, "count": count})
 }
 
 func handleUpload(w http.ResponseWriter, r *http.Request) {
