@@ -13,4 +13,4 @@ spec:
   schedule: 0 4 * * *
   restoreMode: restore
   restorePaused: false
-  copyMethod: Direct
+  copyMethod: Snapshot

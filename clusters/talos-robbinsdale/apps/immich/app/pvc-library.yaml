@@ -92,7 +92,7 @@ spec:
 #       weekly: 4
 #       monthly: 2
 #       yearly: 1
-#     copyMethod: Direct
+#     copyMethod: Snapshot
 #     cacheAccessModes: [ReadWriteOnce]
 # ---
 # apiVersion: volsync.backube/v1alpha1
@@ -106,7 +106,7 @@ spec:
 #   restic:
 #     repository: restic-immich-library
 #     destinationPVC: immich-library
-#     copyMethod: Direct
+#     copyMethod: Snapshot
 # ---
 # apiVersion: garage.rajsingh.info/v1alpha1
 # kind: GarageKey
