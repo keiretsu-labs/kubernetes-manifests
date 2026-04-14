@@ -184,10 +184,13 @@ async function executeDelete() {
 	deleteProgress.value = null
 	try {
 		await deleteTarget.value.action()
+		deleteLoading.value = false
+		if (deleteProgress.value !== null) {
+			await new Promise<void>((r) => setTimeout(r, 1500))
+		}
 		deleteTarget.value = null
 	} catch (e) {
 		deleteError.value = e as Error
-	} finally {
 		deleteLoading.value = false
 	}
 }
