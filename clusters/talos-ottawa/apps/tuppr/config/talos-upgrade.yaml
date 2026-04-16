@@ -26,6 +26,6 @@ spec:
       kind: CephCluster
       name: rook
       namespace: rook-ceph
-      expr: status.ceph.health == "HEALTH_OK" || status.ceph.health == "HEALTH_WARN"
-      description: Ceph cluster must be healthy before upgrading next node
-      timeout: 15m
+      expr: status.ceph.health != "HEALTH_ERR" && !("PG_AVAILABILITY" in status.ceph.details)
+      description: Ceph must have no inactive PGs before upgrading next node
+      timeout: 30m
