@@ -13,3 +13,24 @@ spec:
       expr: status.conditions.exists(c, c.type == "Ready" && c.status == "True")
       description: All nodes must be Ready
       timeout: 10m
+    - apiVersion: ceph.rook.io/v1
+      kind: CephCluster
+      name: rook-ceph
+      namespace: rook-ceph
+      expr: status.ceph.health != "HEALTH_ERR" && !("PG_AVAILABILITY" in status.ceph.details)
+      description: Ceph must have no inactive PGs before upgrading next node
+      timeout: 30m
+    - apiVersion: garage.rajsingh.info/v1alpha1
+      kind: GarageCluster
+      name: garage
+      namespace: garage
+      expr: status.phase == 'Running' && status.readyReplicas == object.spec.replicas
+      description: Garage cluster must be running with all replicas ready
+      timeout: 10m
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
+      expr: |
+        status.phase == 'Cluster in healthy state' &&
+          status.readyInstances == object.spec.instances
+      description: All CNPG clusters must be healthy with all instances ready
+      timeout: 15m

@@ -28,6 +28,8 @@ spec:
       osd_class_update_on_start: "false"
     mds:
       mds_wipe_ino_prealloc: "true"
+    mon:
+      mon_osd_down_out_interval: "300"
       # NVMe optimized allocation size (4KB for NVMe)
       # bluestore_min_alloc_size: "4096"
       # Force more aggressive space reclamation
@@ -355,7 +357,7 @@ spec:
     managePodBudgets: true
     # A duration in minutes that determines how long an entire failureDomain like `region/zone/host` will be held in `noout` (in addition to the
     # default DOWN/OUT interval) when it is draining. This is only relevant when  `managePodBudgets` is `true`. The default value is `30` minutes.
-    osdMaintenanceTimeout: 45
+    osdMaintenanceTimeout: 1
     # A duration in minutes that the operator will wait for the placement groups to become healthy (active+clean) after a drain was completed and OSDs came back up.
     # Operator will continue with the next drain if the timeout exceeds. It only works if `managePodBudgets` is `true`.
     # Set to 15 minutes to prevent indefinite hangs during Talos node upgrades while still allowing time for PG recovery.
