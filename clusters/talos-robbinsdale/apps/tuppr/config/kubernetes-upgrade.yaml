@@ -17,7 +17,7 @@ spec:
       kind: CephCluster
       name: rook-ceph
       namespace: rook-ceph
-      expr: status.ceph.health != "HEALTH_ERR" && !("PG_AVAILABILITY" in status.ceph.details)
+      expr: status.ceph.health != "HEALTH_ERR" && !(has(status.ceph.details) && "PG_AVAILABILITY" in status.ceph.details)
       description: Ceph must have no inactive PGs before upgrading next node
       timeout: 30m
     - apiVersion: garage.rajsingh.info/v1alpha1
