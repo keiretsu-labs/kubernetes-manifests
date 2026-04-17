@@ -9,8 +9,7 @@ spec:
   resources:
     requests:
       storage: 1Ti
-  volumeName: immich-library
-  storageClassName: smb
+  storageClassName: ceph-block-replicated
 ---
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
