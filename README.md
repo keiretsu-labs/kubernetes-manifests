@@ -46,7 +46,7 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              Tailscale Mesh                                 │
-│                         (keiretsu.ts.net)                                   │
+│                             (keiretsu.ts.net)                               │
 └─────────────────────────────────────────────────────────────────────────────┘
          │                         │                         │
          ▼                         ▼                         ▼
@@ -54,10 +54,10 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 │  talos-ottawa   │       │talos-robbinsdale│       │talos-stpetersburg│
 │    (Ontario)    │       │   (Minnesota)   │       │    (Florida)     │
 │                 │       │                 │       │                  │
-│ • 3 nodes       │       │ • Multi-node    │       │ • GPU nodes      │
-│ • Thunderbolt   │       │ • Rook-Ceph     │       │ • AI/ML workloads│
-│ • Rook-Ceph     │       │ • Primary site  │       │ • KubeRay        │
+│ • 3 nodes       │       │ • Multi-node    │       │ • Single node    │
+│ • Rook-Ceph     │       │ • Rook-Ceph     │       │ • AI/ML workloads│
 │ • Home apps     │       │ • Home apps     │       │                  │
+│                 │       │                 │       │                  │
 └─────────────────┘       └─────────────────┘       └──────────────────┘
          │                         │                         │
          └─────────────────────────┴─────────────────────────┘
@@ -72,8 +72,8 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 
 | Cluster | Location | Platform | Purpose | Domain |
 |---------|----------|----------|---------|--------|
-| `talos-ottawa` | Ontario, CA | Talos Linux | Primary homelab, 3-node MS-01 Thunderbolt mesh | killinit.cc |
-| `talos-robbinsdale` | Minnesota, US | Talos Linux | Primary homelab | lukehouge.com |
+| `talos-ottawa` | Ontario, CA | Talos Linux | Primary site, 3-node MS-A2 | killinit.cc |
+| `talos-robbinsdale` | Minnesota, US | Talos Linux | Primary site | lukehouge.com |
 | `talos-stpetersburg` | Florida, US | Talos Linux | GPU/AI workloads (NVIDIA) | rajsingh.info |
 
 ## Directory Structure
@@ -153,8 +153,10 @@ Full Tailscale integration via the official k8s-operator:
 - **Operator**: Deployed per-cluster with unique hostnames
 - **ProxyClass**: Custom proxy configurations (userspace, accept-routes)
 - **Egress Proxies**: Cross-cluster access via ExternalName services
-- **Connectors**: Subnet routers for LAN access
-- **DNS Config**: In-cluster DNS resolution
+- **Ingress Proxies**: Cross-cluster ingress access via L4 LoadBalancer
+- **Tailscale Services**: HA Ingress Proxies via Service VIP + Static Service-level identity
+- **Connectors**: Subnet routers for site LAN access
+- **DNS Config**: In-cluster DNS resolution for MagicDNS FQDNs
 
 ```yaml
 # ProxyClass examples
@@ -176,7 +178,7 @@ Prometheus-based monitoring with Grafana visualization:
 
 All Talos clusters use Cilium as the CNI:
 
-- **eBPF-based** networking
+- **eBPF-based** Direct routing networking with BGP peering
 - **Hubble UI** for network observability
 - **Network Policies** enforcement
 - **Service mesh** capabilities (optional)
@@ -191,7 +193,7 @@ All Talos clusters use Cilium as the CNI:
 
 ### Gateway API / Envoy Gateway
 
-Modern ingress via Gateway API:
+Cluster ingress via Gateway API:
 
 - **Envoy Gateway**: Gateway controller
 - **HTTPRoute**: L7 routing with path/header matching
@@ -257,7 +259,7 @@ Modern ingress via Gateway API:
 - [tuppr](https://github.com/home-operations/tuppr) - Kubernetes controller to upgrade Talos and Kubernetes
 
 ### talos-robbinsdale
-- `cilium` - CNI with custom config
+- `cilium` - CNI
 - `rook-ceph` - Distributed storage cluster
 - `1password` - Secret management
 - `immich` - Photo management
