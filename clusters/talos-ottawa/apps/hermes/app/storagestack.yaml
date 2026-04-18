@@ -1,0 +1,16 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: hermes-data
+  labels:
+    keiretsu.ts.net/location: ottawa
+spec:
+  name: hermes-data
+  size: 10Gi
+  storageClass: ceph-block-replicated
+  s3Path: hermes/hermes-data
+  schedule: 0 4 * * *
+  restoreMode: restore
+  restorePaused: true
+  copyMethod: Snapshot

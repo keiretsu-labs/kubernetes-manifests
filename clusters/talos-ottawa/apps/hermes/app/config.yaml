@@ -1,0 +1,12 @@
+model:
+  base_url: "http://stpetersburg-vllm/v1"
+  model: "Qwen3.6-35B-A3B"
+  api_key: "unused"
+
+discord:
+  require_mention: false
+  auto_thread: true
+  reactions: true
+
+browser:
+  enabled: true
