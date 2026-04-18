@@ -5,12 +5,18 @@ metadata:
   name: searxng-config
 data:
   settings.yml: |
+    use_default_settings: true
     server:
       secret_key: "changeme"
       limiter: false
       image_proxy: true
       bind_address: "0.0.0.0"
       port: 8080
+      method: "POST"
+    outgoing:
+      retry_on_timeout: true
+      timeout: 10
+      max_request_size: 5242880
 ---
 apiVersion: apps/v1
 kind: Deployment
