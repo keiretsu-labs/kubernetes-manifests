@@ -15,27 +15,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: hermes
-      annotations:
-        checksum/config: "197ba3bd"
     spec:
-      initContainers:
-        - name: init-config
-          image: busybox:latest
-          command: [sh, -c]
-          args:
-            - cp /opt/config/config.yaml /opt/data/config.yaml
-          volumeMounts:
-            - name: data
-              mountPath: /opt/data
-            - name: config
-              mountPath: /opt/config
-              readOnly: true
-          resources:
-            requests:
-              cpu: 50m
-              memory: 32Mi
-            limits:
-              memory: 64Mi
       containers:
         - name: hermes
           image: nousresearch/hermes-agent:latest
@@ -53,6 +33,12 @@ spec:
               value: "0.0.0.0"
             - name: API_SERVER_PORT
               value: "8642"
+            - name: DISCORD_REQUIRE_MENTION
+              value: "false"
+            - name: DISCORD_AUTO_THREAD
+              value: "true"
+            - name: DISCORD_REACTIONS
+              value: "true"
           envFrom:
             - secretRef:
                 name: hermes-secrets
@@ -94,9 +80,6 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: hermes-data
-        - name: config
-          configMap:
-            name: hermes-config
         - name: shm
           emptyDir:
             medium: Memory
