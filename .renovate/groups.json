@@ -44,12 +44,6 @@
       "labels": ["Tuppr", "Critical-Infrastructure"]
     },
     {
-      "description": "Group OpenClaw CLI tool versions together",
-      "matchFileNames": ["openclaw/Dockerfile.openclaw"],
-      "matchManagers": ["custom.regex"],
-      "groupName": "openclaw-cli-tools"
-    },
-    {
       "description": "Group all Flux components together (controllers, manifests, bootstrap ref)",
       "matchPackagePatterns": ["^ghcr\\.io/fluxcd/", "^fluxcd/flux2$"],
       "groupName": "flux",
