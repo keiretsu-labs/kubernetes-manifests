@@ -19,7 +19,13 @@ spec:
       containers:
         - name: hermes
           image: nousresearch/hermes-agent:latest
-          args: ["gateway", "run"]
+          args:
+            - sh
+            - -c
+            - |
+              hermes config set model.base_url "http://stpetersburg-vllm/v1"
+              hermes config set model.api_key "unused"
+              exec hermes gateway run
           env:
             - name: OPENAI_API_KEY
               value: "unused"
