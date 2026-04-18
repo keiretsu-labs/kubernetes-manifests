@@ -5,31 +5,12 @@ metadata:
   name: searxng-config
 data:
   settings.yml: |
-    use_default_settings: false
     server:
       secret_key: "changeme"
       limiter: false
       image_proxy: true
-      host: "0.0.0.0"
+      bind_address: "0.0.0.0"
       port: 8080
-    ui:
-      static_use_hash: true
-    search:
-      safe_search: 0
-      autocomplete: ""
-      default_lang: ""
-      formats:
-        - html
-        - json
-    enabled_plugins:
-      - 'Hash plugin'
-      - 'Self Information'
-      - 'Tracker URL remover'
-    botdetection:
-      ip_limit:
-        enabled: false
-      link_token:
-        enabled: false
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -62,11 +43,6 @@ spec:
           subPath: settings.yml
         - name: cache
           mountPath: /var/cache/searxng
-        env:
-        - name: SEARXNG_HOST
-          value: "0.0.0.0"
-        - name: SEARXNG_PORT
-          value: "8080"
         resources:
           requests:
             memory: "256Mi"
