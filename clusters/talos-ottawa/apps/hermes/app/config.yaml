@@ -10,3 +10,14 @@ discord:
 
 browser:
   enabled: true
+
+auxiliary:
+  compression:
+    provider: "main"
+    model: "Qwen3.6-35B-A3B"
+  web_extract:
+    provider: "main"
+    model: "Qwen3.6-35B-A3B"
+  approval:
+    provider: "main"
+    model: "Qwen3.6-35B-A3B"
