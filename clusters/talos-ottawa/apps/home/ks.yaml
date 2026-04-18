@@ -10,7 +10,6 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: openclaw-operator-system
     - name: envoy-gateway-system-install
   path: ./clusters/talos-ottawa/apps/home/app
   prune: true
