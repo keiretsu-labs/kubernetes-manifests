@@ -395,7 +395,7 @@ spec:
         # === Download Clients ===
         - name: QBittorrent
           group: Media
-          url: http://qbittorrent.media:80/login
+          url: http://qbittorrent.media
           interval: 60s
           conditions:
             - "[STATUS] == 200"
@@ -405,7 +405,7 @@ spec:
               send-on-resolved: true
         - name: QBittorrent PVT
           group: Media
-          url: http://qbittorrent-pvt.media:80/login
+          url: http://qbittorrent-pvt.media
           interval: 60s
           conditions:
             - "[STATUS] == 200"
