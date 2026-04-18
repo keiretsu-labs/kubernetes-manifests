@@ -14,6 +14,9 @@ data:
       bind_address: "0.0.0.0"
       port: 8080
       method: "POST"
+    real_ip:
+      x_for: 1
+      real_ip_header: X-Forwarded-For
     outgoing:
       retry_on_timeout: true
       timeout: 10
@@ -37,6 +40,15 @@ spec:
         app: searxng
     spec:
       enableServiceLinks: false
+      initContainers:
+      - name: copy-settings
+        image: busybox:latest
+        command: ["sh", "-c", "cp /config/settings.yml /etc/searxng/settings.yml"]
+        volumeMounts:
+        - name: settings-config
+          mountPath: /config
+        - name: settings-writable
+          mountPath: /etc/searxng
       containers:
       - name: searxng
         image: docker.io/searxng/searxng:latest
@@ -48,9 +60,8 @@ spec:
         - name: PORT
           value: "8080"
         volumeMounts:
-        - name: settings
-          mountPath: /etc/searxng/settings.yml
-          subPath: settings.yml
+        - name: settings-writable
+          mountPath: /etc/searxng
         - name: cache
           mountPath: /var/cache/searxng
         resources:
@@ -73,9 +84,11 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
       volumes:
-      - name: settings
+      - name: settings-config
         configMap:
           name: searxng-config
+      - name: settings-writable
+        emptyDir: {}
       - name: cache
         emptyDir: {}
 ---
