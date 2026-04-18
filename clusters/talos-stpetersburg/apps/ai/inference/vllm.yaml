@@ -1,5 +1,5 @@
 # vLLM Deployment for DGX Spark (GB10/ARM/Blackwell)
-# Model: Qwen/Qwen3.5-27B-FP8 (dense 27B, FP8 weights + FP8 KV cache)
+# Model: Qwen/Qwen3.5-35B-A3B-FP8 (MoE 35B total / 3B active, FP8 weights + KV cache)
 # Continuous batching + PagedAttention for concurrent serving
 # Reference: https://github.com/eugr/spark-vllm-docker
 ---
@@ -41,9 +41,9 @@ spec:
         args:
         - "vllm"
         - "serve"
-        - "Qwen/Qwen3.5-27B-FP8"
+        - "Qwen/Qwen3.5-35B-A3B-FP8"
         - "--served-model-name"
-        - "Qwen3.5-27B"
+        - "Qwen3.5-35B-A3B"
         - "--host"
         - "0.0.0.0"
         - "--port"
@@ -51,7 +51,7 @@ spec:
         - "--gpu-memory-utilization"
         - "0.7"
         - "--max-model-len"
-        - "131072"
+        - "262144"
         - "--max-num-batched-tokens"
         - "16384"
         - "--kv-cache-dtype"
@@ -65,7 +65,6 @@ spec:
         - "--attention-backend"
         - "flashinfer"
         - "--enable-prefix-caching"
-        - "--enable-chunked-prefill"
         - "--load-format"
         - "fastsafetensors"
         ports:
