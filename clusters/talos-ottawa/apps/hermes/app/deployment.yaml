@@ -43,9 +43,19 @@ spec:
               value: "unused"
             - name: GATEWAY_ALLOW_ALL_USERS
               value: "true"
+            - name: API_SERVER_ENABLED
+              value: "true"
+            - name: API_SERVER_HOST
+              value: "0.0.0.0"
+            - name: API_SERVER_PORT
+              value: "8642"
           envFrom:
             - secretRef:
                 name: hermes-secrets
+          ports:
+            - name: gateway
+              containerPort: 8642
+              protocol: TCP
           resources:
             requests:
               cpu: 500m
@@ -57,6 +67,25 @@ spec:
               mountPath: /opt/data
             - name: shm
               mountPath: /dev/shm
+        - name: dashboard
+          image: nousresearch/hermes-agent:latest
+          args: ["dashboard", "--host", "0.0.0.0", "--no-open", "--insecure"]
+          env:
+            - name: GATEWAY_HEALTH_URL
+              value: "http://localhost:8642"
+          ports:
+            - name: dashboard
+              containerPort: 9119
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
       volumes:
         - name: data
           persistentVolumeClaim:
