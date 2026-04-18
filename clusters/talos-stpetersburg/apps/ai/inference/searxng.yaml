@@ -29,6 +29,8 @@ data:
       infinite_scroll: false
       search_on_category_select: true
       hotkeys: default
+    valkey:
+      url: valkey://valkey.valkey.svc.cluster.local:6379/0
     search:
       safe_search: 0
       autocomplete: ""
