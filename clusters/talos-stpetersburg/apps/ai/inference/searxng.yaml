@@ -7,21 +7,43 @@ metadata:
 data:
   settings.yml: |
     use_default_settings: true
+    general:
+      instance_name: "SearXNG"
+      donation_url: false
+      contact_url: false
     server:
       secret_key: "changeme"
       limiter: false
       image_proxy: true
       bind_address: "0.0.0.0"
       port: 8080
-      method: "POST"
+      method: "GET"
+      default_http_headers:
+        X-Content-Type-Options: nosniff
+        X-Robots-Tag: noindex, nofollow
+    ui:
+      static_use_hash: true
+      default_locale: en
+      default_theme: simple
+      center_alignment: true
+      infinite_scroll: false
+      search_on_category_select: true
+      hotkeys: default
     search:
+      safe_search: 0
+      autocomplete: ""
+      default_lang: "auto"
+      ban_time_on_fail: 5
+      max_ban_time_on_fail: 120
       formats:
         - html
         - json
     outgoing:
-      retry_on_timeout: true
-      timeout: 10
-      max_request_size: 5242880
+      request_timeout: 3.0
+      max_request_timeout: 15.0
+      pool_connections: 100
+      pool_maxsize: 20
+      retry_on_http_error: true
   limiter.toml: |
     [real_ip]
     x_for = 0
