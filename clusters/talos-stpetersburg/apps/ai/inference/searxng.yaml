@@ -14,6 +14,10 @@ data:
       bind_address: "0.0.0.0"
       port: 8080
       method: "POST"
+    search:
+      formats:
+        - html
+        - json
     outgoing:
       retry_on_timeout: true
       timeout: 10
