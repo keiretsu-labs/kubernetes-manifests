@@ -1,0 +1,31 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: valkey
+  namespace: valkey
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: valkey
+      version: "0.9.4"
+      sourceRef:
+        kind: HelmRepository
+        name: valkey
+        namespace: flux-system
+      interval: 30m
+  releaseName: valkey
+  values:
+    replicaCount: 1
+    auth:
+      enabled: false
+    dataStorage:
+      enabled: true
+      size: 1Gi
+    resources:
+      requests:
+        memory: 64Mi
+        cpu: 50m
+      limits:
+        memory: 256Mi

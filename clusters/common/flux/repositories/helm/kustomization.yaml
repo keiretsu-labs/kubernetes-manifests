@@ -91,3 +91,4 @@ resources:
   - ./k8gb.yaml
   - ./kro.yaml
   - ./ocm.yaml
+  - ./valkey.yaml
