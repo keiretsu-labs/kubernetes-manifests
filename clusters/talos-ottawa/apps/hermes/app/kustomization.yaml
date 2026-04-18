@@ -9,9 +9,3 @@ resources:
   - httproute.yaml
   - egress.yaml
   - secret.sops.yaml
-configMapGenerator:
-  - name: hermes-config
-    files:
-      - config.yaml
-generatorOptions:
-  disableNameSuffixHash: true
