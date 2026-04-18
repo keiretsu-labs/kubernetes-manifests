@@ -5,11 +5,13 @@ metadata:
   name: searxng-config
 data:
   settings.yml: |
-    use_default_settings: true
+    use_default_settings: false
     server:
       secret_key: "changeme"
       limiter: false
       image_proxy: true
+      host: "0.0.0.0"
+      port: 8080
     ui:
       static_use_hash: true
     search:
@@ -60,6 +62,11 @@ spec:
           subPath: settings.yml
         - name: cache
           mountPath: /var/cache/searxng
+        env:
+        - name: SEARXNG_HOST
+          value: "0.0.0.0"
+        - name: SEARXNG_PORT
+          value: "8080"
         resources:
           requests:
             memory: "256Mi"
