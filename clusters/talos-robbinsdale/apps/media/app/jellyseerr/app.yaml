@@ -15,6 +15,8 @@ spec:
       labels:
         app: jellyseerr
     spec:
+      securityContext:
+        runAsUser: 0
       containers:
       - name: jellyseerr
         image: ghcr.io/seerr-team/seerr:v3.2.0
