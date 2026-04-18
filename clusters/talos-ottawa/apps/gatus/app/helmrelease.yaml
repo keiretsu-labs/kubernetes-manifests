@@ -392,6 +392,110 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        # === Download Clients ===
+        - name: QBittorrent
+          group: Media
+          url: http://qbittorrent.media:80
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: QBittorrent PVT
+          group: Media
+          url: http://qbittorrent-pvt.media:80
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Sabnzbd
+          group: Media
+          url: http://sabnzbd.media:80
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Autobrr
+          group: Media
+          url: http://autobrr.media:7474
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Flaresolverr
+          group: Media
+          url: http://flaresolverr.media:8191
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === Music Management ===
+        - name: Lidarr
+          group: Media
+          url: http://lidarr.media:8686
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === Plex Utilities ===
+        - name: Tautulli
+          group: Media
+          url: http://tautulli.media:8181
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Maintainerr
+          group: Media
+          url: http://maintainerr.media:6246
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        # === Request/Share Management ===
+        - name: Overseerr
+          group: Media
+          url: http://overseerr.media:5055
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Wizarr
+          group: Media
+          url: http://wizarr.media:5690
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 3000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
         # === NEW: Kubernetes Control Plane ===
         - name: CoreDNS
           group: Kubernetes
