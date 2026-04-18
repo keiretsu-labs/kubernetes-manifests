@@ -47,8 +47,8 @@ data:
       pool_maxsize: 20
       retry_on_http_error: true
   limiter.toml: |
-    [real_ip]
-    x_for = 0
+    [botdetection.trusted_proxies]
+    proxies = []
     [botdetection.ip_limit]
     filter_link_local = false
     link_token = false
