@@ -25,9 +25,6 @@
   "kubernetes": {
     "managerFilePatterns": ["/clusters/.+\\.ya?ml$/"]
   },
-  "dockerfile": {
-    "managerFilePatterns": ["!/^openclaw/Dockerfile\\.openclaw$/"]
-  },
   "packageRules": [
     {
       "description": "Auto merge GitHub Actions updates",
@@ -47,7 +44,7 @@
     {
       "description": "Auto merge Docker tags in CI and app Dockerfiles",
       "matchManagers": ["dockerfile", "docker-compose", "regex"],
-      "matchPaths": [".github/**", "laptop/**", "swarm/**", "openclaw/**"],
+      "matchPaths": [".github/**"],
       "automerge": true
     },
     {
