@@ -21,12 +21,10 @@ spec:
           image: nousresearch/hermes-agent:latest
           args: ["gateway", "run"]
           env:
-            - name: HERMES_INFERENCE_PROVIDER
-              value: "stpetersburg"
             - name: OPENAI_API_KEY
               value: "unused"
-            - name: OPENAI_BASE_URL
-              value: "http://stpetersburg-vllm/v1"
+            - name: ANTHROPIC_API_KEY
+              value: "unused"
             - name: GATEWAY_ALLOW_ALL_USERS
               value: "true"
             - name: API_SERVER_ENABLED
