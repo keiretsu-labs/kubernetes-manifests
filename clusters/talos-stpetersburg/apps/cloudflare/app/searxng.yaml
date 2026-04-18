@@ -35,9 +35,10 @@ spec:
         - containerPort: 8080
           name: http
           protocol: TCP
+        env:
+        - name: PORT
+          value: "8080"
         volumeMounts:
-        - name: config
-          mountPath: /etc/searxng
         - name: settings
           mountPath: /etc/searxng/settings.yml
           subPath: settings.yml
@@ -63,8 +64,6 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
       volumes:
-      - name: config
-        emptyDir: {}
       - name: settings
         configMap:
           name: searxng-config
