@@ -41,6 +41,8 @@ spec:
           env:
             - name: OPENAI_API_KEY
               value: "unused"
+            - name: OPENAI_BASE_URL
+              value: "http://stpetersburg-vllm/v1"
             - name: GATEWAY_ALLOW_ALL_USERS
               value: "true"
             - name: API_SERVER_ENABLED
