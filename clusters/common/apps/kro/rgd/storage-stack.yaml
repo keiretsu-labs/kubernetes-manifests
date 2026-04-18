@@ -78,7 +78,7 @@ spec:
   # --- GarageKey (always created) ---
   - id: garageKey
     readyWhen:
-    - garageKey.status.phase == "Ready"
+    - $${garageKey.status.phase == "Ready"}
     template:
       apiVersion: garage.rajsingh.info/v1alpha1
       kind: GarageKey

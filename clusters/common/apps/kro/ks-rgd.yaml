@@ -4,8 +4,6 @@ kind: Kustomization
 metadata:
   name: kro-rgds
   namespace: flux-system
-  labels:
-    substitution.flux.home.arpa/disabled: "true"
 spec:
   path: ./clusters/common/apps/kro/rgd
   prune: true
