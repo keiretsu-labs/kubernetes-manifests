@@ -56,8 +56,6 @@ spec:
         - "32"
         - "--max-num-batched-tokens"
         - "32768"
-        - "--kv-cache-dtype"
-        - "fp8"
         - "--download-dir"
         - "/models"
         - "--enable-auto-tool-choice"
