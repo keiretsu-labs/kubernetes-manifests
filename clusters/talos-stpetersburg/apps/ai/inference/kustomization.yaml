@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: ai
 
 resources:
-  # - llama-cpp.yaml
   - vllm.yaml
   - valkey.yaml
   - searxng.yaml
