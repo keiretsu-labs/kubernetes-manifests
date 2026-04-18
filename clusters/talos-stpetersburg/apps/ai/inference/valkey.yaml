@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valkey
+  namespace: ai
+  labels:
+    app: valkey
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: valkey
+  template:
+    metadata:
+      labels:
+        app: valkey
+    spec:
+      enableServiceLinks: false
+      containers:
+      - name: valkey
+        image: valkey/valkey:8-alpine
+        ports:
+        - containerPort: 6379
+          name: valkey
+        args:
+        - "--save"
+        - "900 1"
+        - "--loglevel"
+        - "warning"
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 50m
+          limits:
+            memory: 256Mi
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        livenessProbe:
+          exec:
+            command: ["valkey-cli", "ping"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command: ["valkey-cli", "ping"]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: valkey
+  namespace: ai
+  labels:
+    app: valkey
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: valkey
+    name: valkey
+  selector:
+    app: valkey
