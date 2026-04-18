@@ -72,6 +72,8 @@ spec:
     metadata:
       labels:
         app: searxng
+      annotations:
+        config/version: "20260418-3"
     spec:
       enableServiceLinks: false
       initContainers:
