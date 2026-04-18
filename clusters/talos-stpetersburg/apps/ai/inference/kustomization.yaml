@@ -6,4 +6,5 @@ namespace: ai
 resources:
   # - llama-cpp.yaml
   - vllm.yaml
+  - scrapeconfig.yaml
   - secret.yaml
