@@ -7,5 +7,6 @@ resources:
   # - llama-cpp.yaml
   - vllm.yaml
   - searxng.yaml
+  - dashboards.yaml
   - scrapeconfig.yaml
   - secret.yaml
