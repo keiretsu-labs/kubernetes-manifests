@@ -47,8 +47,8 @@ data:
       pool_maxsize: 20
       retry_on_http_error: true
   limiter.toml: |
-    [botdetection.trusted_proxies]
-    proxies = []
+    [botdetection]
+    trusted_proxies = []
     [botdetection.ip_limit]
     filter_link_local = false
     link_token = false
@@ -73,7 +73,7 @@ spec:
       labels:
         app: searxng
       annotations:
-        config/version: "20260418-3"
+        config/version: "20260418-4"
     spec:
       enableServiceLinks: false
       initContainers:
