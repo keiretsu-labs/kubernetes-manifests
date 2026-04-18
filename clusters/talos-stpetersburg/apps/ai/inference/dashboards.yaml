@@ -1,0 +1,32 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: vllm-performance
+  namespace: ai
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: AI
+  url: https://raw.githubusercontent.com/vllm-project/vllm/main/examples/observability/dashboards/grafana/performance_statistics.json
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: vllm-queries
+  namespace: ai
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: AI
+  url: https://raw.githubusercontent.com/vllm-project/vllm/main/examples/observability/dashboards/grafana/query_statistics.json
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus
