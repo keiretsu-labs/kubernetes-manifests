@@ -5,4 +5,3 @@ namespace: cloudflare
 resources:
   - cloudflared-rajsingh-info.yaml
   - openwebui.yaml
-  - searxng.yaml
