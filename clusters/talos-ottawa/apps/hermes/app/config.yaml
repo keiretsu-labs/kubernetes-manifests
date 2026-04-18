@@ -1,4 +1,5 @@
 model:
+  provider: "custom"
   base_url: "http://stpetersburg-vllm/v1"
   model: "Qwen3.6-35B-A3B"
   api_key: "unused"
@@ -23,6 +24,11 @@ auxiliary:
     api_key: "unused"
     model: "Qwen3.6-35B-A3B"
   approval:
+    provider: "main"
+    base_url: "http://stpetersburg-vllm/v1"
+    api_key: "unused"
+    model: "Qwen3.6-35B-A3B"
+  session_search:
     provider: "main"
     base_url: "http://stpetersburg-vllm/v1"
     api_key: "unused"
