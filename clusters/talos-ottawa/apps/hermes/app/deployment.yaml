@@ -22,7 +22,7 @@ spec:
           args: ["gateway", "run"]
           env:
             - name: HERMES_INFERENCE_PROVIDER
-              value: "vllm"
+              value: "stpetersburg"
             - name: OPENAI_API_KEY
               value: "unused"
             - name: OPENAI_BASE_URL
