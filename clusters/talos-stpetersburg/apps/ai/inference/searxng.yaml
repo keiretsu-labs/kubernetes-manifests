@@ -20,8 +20,7 @@ data:
       max_request_size: 5242880
   limiter.toml: |
     [real_ip]
-    x_for = 1
-    real_ip_header = "X-Real-IP"
+    x_for = 0
     [botdetection.ip_limit]
     filter_link_local = false
     link_token = false
