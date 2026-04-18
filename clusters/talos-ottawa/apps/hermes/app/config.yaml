@@ -14,10 +14,16 @@ browser:
 auxiliary:
   compression:
     provider: "main"
+    base_url: "http://stpetersburg-vllm/v1"
+    api_key: "unused"
     model: "Qwen3.6-35B-A3B"
   web_extract:
     provider: "main"
+    base_url: "http://stpetersburg-vllm/v1"
+    api_key: "unused"
     model: "Qwen3.6-35B-A3B"
   approval:
     provider: "main"
+    base_url: "http://stpetersburg-vllm/v1"
+    api_key: "unused"
     model: "Qwen3.6-35B-A3B"
