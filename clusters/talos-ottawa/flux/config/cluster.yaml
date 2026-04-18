@@ -15,11 +15,7 @@ spec:
     # include kubernetes directory
     !/clusters/template
     !/clusters/common
-    !/swarm
-    !/laptop
-    !/openclaw
     !/clusters/talos-ottawa
-    !/clusters/karmada
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
