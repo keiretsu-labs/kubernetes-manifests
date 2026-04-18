@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: searxng-config
+  namespace: ai
 data:
   settings.yml: |
     use_default_settings: true
@@ -22,6 +23,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: searxng
+  namespace: ai
   labels:
     app: searxng
 spec:
@@ -81,6 +83,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: searxng
+  namespace: ai
   labels:
     app: searxng
 spec:
@@ -90,5 +93,25 @@ spec:
     targetPort: http
     protocol: TCP
     name: http
+  selector:
+    app: searxng
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: searxng-ts
+  namespace: ai
+  annotations:
+    tailscale.com/hostname: "${LOCATION}-searxng"
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
   selector:
     app: searxng
