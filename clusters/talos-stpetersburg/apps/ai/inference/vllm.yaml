@@ -51,7 +51,9 @@ spec:
         - "--gpu-memory-utilization"
         - "0.7"
         - "--max-model-len"
-        - "262144"
+        - "131072"
+        - "--max-num-seqs"
+        - "32"
         - "--max-num-batched-tokens"
         - "16384"
         - "--kv-cache-dtype"
@@ -76,6 +78,8 @@ spec:
           value: "1"
         - name: VLLM_MARLIN_USE_ATOMIC_ADD
           value: "1"
+        - name: VLLM_FLASHINFER_MOE_BACKEND
+          value: "latency"
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
             secretKeyRef:
