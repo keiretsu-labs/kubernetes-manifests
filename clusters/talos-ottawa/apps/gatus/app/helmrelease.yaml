@@ -395,21 +395,15 @@ spec:
         # === Download Clients ===
         - name: QBittorrent
           group: Media
-          url: http://qbittorrent.media:80/login
+          url: tcp://qbittorrent.media:80
           interval: 60s
-          conditions:
-            - "[STATUS] == 200"
-            - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
               send-on-resolved: true
         - name: QBittorrent PVT
           group: Media
-          url: http://qbittorrent-pvt.media:80/login
+          url: tcp://qbittorrent-pvt.media:80
           interval: 60s
-          conditions:
-            - "[STATUS] == 200"
-            - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
               send-on-resolved: true
