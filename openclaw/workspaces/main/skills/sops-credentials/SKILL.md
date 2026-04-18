@@ -87,7 +87,6 @@ Contains: `DEFAULT_PASSWORD`, `CODER_OIDC_*`, `CLOUDFLARE_*`, `TAILSCALE_*`, `GA
 clusters/talos-ottawa/flux/vars/cluster-secrets.sops.yaml
 clusters/talos-robbinsdale/flux/vars/cluster-secrets.sops.yaml
 clusters/talos-stpetersburg/flux/vars/cluster-secrets.sops.yaml
-clusters/gke-uscentral1/flux/vars/cluster-secrets.sops.yaml
 ```
 Contains: `QB_WIREGUARD_*`, `SMB_*`, `PLEX_TOKEN`, `*_API_KEY` (per-cluster app keys),
 `DISCORD_WEBHOOK_URL`, `TS_IDP_*`, `ARGOCD_OIDC_*`, etc.
