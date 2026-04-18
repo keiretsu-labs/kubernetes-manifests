@@ -38,7 +38,6 @@ metadata:
 spec:
   trigger:
     manual: first
-  paused: true
   restic:
     repository: restic-immich-library
     destinationPVC: immich-library
