@@ -4,7 +4,7 @@ kind: Dragonfly
 metadata:
   name: dragonfly-tracearr
 spec:
-  replicas: 1
+  replicas: 2
   args:
     - --maxmemory=512M
     - --proactor_threads=2
