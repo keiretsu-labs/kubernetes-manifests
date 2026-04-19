@@ -42,7 +42,7 @@ spec:
         enableFeatures:
           - exemplar-storage
         remoteWrite:
-          - url: http://mimir.monitoring.svc.cluster.local:8080/api/v1/push
+          - url: http://mimir-gateway.mimir.svc.cluster.local:8080/api/v1/push
             remoteTimeout: 30s
             queueConfig:
               capacity: 10000

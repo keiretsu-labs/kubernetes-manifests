@@ -48,13 +48,6 @@ spec:
           enabled: false
         frontend:
           parallelize_shardable_queries: false
-        ingester:
-          push_grpc_method_enabled: true
-          ring:
-            replication_factor: 1
-        store_gateway:
-          sharding_ring:
-            replication_factor: 1
         common:
           storage:
             backend: s3
@@ -64,6 +57,12 @@ spec:
               access_key_id: ${AWS_ACCESS_KEY_ID}
               secret_access_key: ${AWS_SECRET_ACCESS_KEY}
               insecure: true
+        memberlist:
+          join_members:
+            - dns+mimir-gossip-ring.mimir.svc.cluster.local.:7946
+            - ottawa-mimir.mimir.svc.cluster.local:7946
+            - robbinsdale-mimir.mimir.svc.cluster.local:7946
+            - stpetersburg-mimir.mimir.svc.cluster.local:7946
         limits:
           compactor_blocks_retention_period: 1y
           ingestion_rate: 100000
@@ -78,7 +77,10 @@ spec:
       persistentVolume:
         enabled: false
       extraArgs:
-        "-ingester.ring.replication-factor": "1"
+        "-ingester.ring.replication-factor": "3"
+        "-ingester.ring.zone-awareness-enabled": "true"
+        "-ingester.ring.instance-zone": "${LOCATION}"
+        "-ingester.push-grpc-method-enabled": "true"
 
     store_gateway:
       replicas: 1
@@ -87,12 +89,17 @@ spec:
       persistentVolume:
         enabled: false
       extraArgs:
-        "-store-gateway.sharding-ring.replication-factor": "1"
+        "-store-gateway.sharding-ring.replication-factor": "3"
+        "-store-gateway.sharding-ring.zone-awareness-enabled": "true"
+        "-store-gateway.sharding-ring.instance-zone": "${LOCATION}"
 
     compactor:
       replicas: 1
       persistentVolume:
         enabled: false
+      extraArgs:
+        "-compactor.ring.zone-awareness-enabled": "true"
+        "-compactor.ring.instance-zone": "${LOCATION}"
 
     distributor:
       replicas: 1
@@ -109,4 +116,4 @@ spec:
     metaMonitoring:
       serviceMonitor:
         enabled: true
-        clusterLabel: talos-ottawa
+        clusterLabel: ${CLUSTER_NAME}
