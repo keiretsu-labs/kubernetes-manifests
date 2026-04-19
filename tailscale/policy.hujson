@@ -195,41 +195,6 @@
 			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
 			"ip":  ["*"],
 		},
-		// Tailvoy: per-user path access on svc:http
-		// NOTE: tag:k8s is a workaround until corp#38152 is fixed
-		// (service VIP cap grants not included in filter rules for host nodes)
-		{
-			"src": ["rajsinghtech@github"],
-			"dst": ["svc:http", "tag:k8s"],
-			"ip":  ["*"],
-			"app": {
-				"rajsingh.info/cap/tailvoy": [{"routes": ["/raj/*"]}],
-			},
-		},
-		{
-			"src": ["kbpersonal@github"],
-			"dst": ["svc:http", "tag:k8s"],
-			"ip":  ["*"],
-			"app": {
-				"rajsingh.info/cap/tailvoy": [{"routes": ["/kartik/*"]}],
-			},
-		},
-		{
-			"src": ["group:superuser"],
-			"dst": ["svc:http", "tag:k8s"],
-			"ip":  ["*"],
-			"app": {
-				"rajsingh.info/cap/tailvoy": [{"routes": ["/superuser/*"]}],
-			},
-		},
-		{
-			"src": ["group:superuser"],
-			"dst": ["svc:http-test", "tag:k8s"],
-			"ip":  ["*"],
-			"app": {
-				"rajsingh.info/cap/tailvoy": [{"routes": ["/test/*"]}],
-			},
-		},
 		{
 			"src": ["group:superuser"],
 			"dst": ["svc:tcp", "tag:k8s"],
