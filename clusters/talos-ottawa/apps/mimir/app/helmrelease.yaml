@@ -93,10 +93,10 @@ spec:
         enabled: false
 
     distributor:
-      replicas: 1
+      replicas: 2
 
     querier:
-      replicas: 1
+      replicas: 2
 
     query_frontend:
       replicas: 1
