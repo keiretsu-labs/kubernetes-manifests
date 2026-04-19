@@ -40,6 +40,10 @@ spec:
             - kro.run/labeller
             - kro.run/applyset
             - kro.run/applyset-parent
+        - group: ""
+          kind: Service
+          jsonPointers:
+            - /spec/externalName
       syncPolicy:
         automated:
           prune: true
