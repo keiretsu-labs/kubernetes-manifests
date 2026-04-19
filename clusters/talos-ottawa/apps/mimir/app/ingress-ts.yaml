@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-ts
+  annotations:
+    tailscale.com/hostname: mimir
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+spec:
+  selector:
+    app.kubernetes.io/name: mimir
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: gateway
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
