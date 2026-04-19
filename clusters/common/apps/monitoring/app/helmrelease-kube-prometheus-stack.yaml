@@ -41,6 +41,13 @@ spec:
         enableRemoteWriteReceiver: true
         enableFeatures:
           - exemplar-storage
+        remoteWrite:
+          - url: http://mimir.mimir.svc.cluster.local:8080/api/v1/push
+            remoteTimeout: 30s
+            queueConfig:
+              capacity: 10000
+              maxSamplesPerSend: 5000
+              batchSendDeadline: 5s
         retention: 14d
         retentionSize: 100GB
         additionalAlertRelabelConfigs:
