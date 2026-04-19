@@ -105,3 +105,8 @@ spec:
 
     query_scheduler:
       replicas: 1
+
+    metaMonitoring:
+      serviceMonitor:
+        enabled: true
+        clusterLabel: talos-ottawa
