@@ -79,6 +79,7 @@ spec:
       extraArgs:
         "-ingester.ring.replication-factor": "3"
         "-ingester.push-grpc-method-enabled": "true"
+        "-memberlist.join": "dns+mimir-gossip-ring.mimir.svc.cluster.local.:7946,ottawa-mimir.mimir.svc.cluster.local:7946,robbinsdale-mimir.mimir.svc.cluster.local:7946,stpetersburg-mimir.mimir.svc.cluster.local:7946"
 
     store_gateway:
       replicas: 1
@@ -88,6 +89,7 @@ spec:
         enabled: false
       extraArgs:
         "-store-gateway.sharding-ring.replication-factor": "3"
+        "-memberlist.join": "dns+mimir-gossip-ring.mimir.svc.cluster.local.:7946,ottawa-mimir.mimir.svc.cluster.local:7946,robbinsdale-mimir.mimir.svc.cluster.local:7946,stpetersburg-mimir.mimir.svc.cluster.local:7946"
 
     compactor:
       replicas: 1
@@ -96,6 +98,8 @@ spec:
 
     distributor:
       replicas: 1
+      extraArgs:
+        "-memberlist.join": "dns+mimir-gossip-ring.mimir.svc.cluster.local.:7946,ottawa-mimir.mimir.svc.cluster.local:7946,robbinsdale-mimir.mimir.svc.cluster.local:7946,stpetersburg-mimir.mimir.svc.cluster.local:7946"
 
     querier:
       replicas: 1
