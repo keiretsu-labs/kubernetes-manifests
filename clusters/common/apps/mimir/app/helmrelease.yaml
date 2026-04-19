@@ -1,181 +1,111 @@
----
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
-  name: mimir
-spec:
-  interval: 30m
-  chart:
-    spec:
-      chart: mimir-distributed
-      version: "6.0.6"
-      sourceRef:
-        kind: HelmRepository
-        name: grafana
-        namespace: flux-system
-  install:
-    remediation:
-      retries: 3
-  upgrade:
-    cleanupOnFail: true
-    remediation:
-      retries: 3
-  values:
-    rollout_operator:
-      enabled: false
+# ---
+# apiVersion: helm.toolkit.fluxcd.io/v2
+# kind: HelmRelease
+# metadata:
+#   name: mimir
+# spec:
+#   interval: 30m
+#   chart:
+#     spec:
+#       chart: mimir-distributed
+#       version: "6.0.6"
+#       sourceRef:
+#         kind: HelmRepository
+#         name: grafana
+#         namespace: flux-system
+#   install:
+#     remediation:
+#       retries: 3
+#   upgrade:
+#     cleanupOnFail: true
+#     remediation:
+#       retries: 3
+#   values:
+#     rollout_operator:
+#       enabled: false
 
-    minio:
-      enabled: false
+#     minio:
+#       enabled: false
 
-    kafka:
-      enabled: false
+#     kafka:
+#       enabled: false
 
-    alertmanager:
-      enabled: false
+#     alertmanager:
+#       enabled: false
 
-    ruler:
-      enabled: false
+#     ruler:
+#       enabled: false
 
-    global:
-      extraEnvFrom:
-        - secretRef:
-            name: mimir-s3
+#     global:
+#       extraEnvFrom:
+#         - secretRef:
+#             name: mimir-s3
 
-    mimir:
-      structuredConfig:
-        multitenancy_enabled: false
-        ingest_storage:
-          enabled: false
-        frontend:
-          parallelize_shardable_queries: false
-        common:
-          storage:
-            backend: s3
-            s3:
-              endpoint: garage.garage.svc.cluster.local:3900
-              bucket_name: mimir
-              access_key_id: ${AWS_ACCESS_KEY_ID}
-              secret_access_key: ${AWS_SECRET_ACCESS_KEY}
-              insecure: true
-        memberlist:
-          join_members:
-            - dns+mimir-gossip-ring.mimir.svc.cluster.local.:7946
-            - ottawa-mimir.mimir.svc.cluster.local:7946
-            - robbinsdale-mimir.mimir.svc.cluster.local:7946
-            - stpetersburg-mimir.mimir.svc.cluster.local:7946
-        limits:
-          compactor_blocks_retention_period: 1y
-          ingestion_rate: 100000
-          ingestion_burst_size: 200000
-          max_global_series_per_user: 2000000
-          query_sharding_total_shards: 1
+#     mimir:
+#       structuredConfig:
+#         multitenancy_enabled: false
+#         ingest_storage:
+#           enabled: false
+#         frontend:
+#           parallelize_shardable_queries: false
+#         common:
+#           storage:
+#             backend: s3
+#             s3:
+#               endpoint: garage.garage.svc.cluster.local:3900
+#               bucket_name: mimir
+#               access_key_id: ${AWS_ACCESS_KEY_ID}
+#               secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+#               insecure: true
+#         memberlist:
+#           join_members:
+#             - ottawa-mimir.mimir.svc.cluster.local:7946
+#             - robbinsdale-mimir.mimir.svc.cluster.local:7946
+#             - stpetersburg-mimir.mimir.svc.cluster.local:7946
+#         limits:
+#           compactor_blocks_retention_period: 1y
+#           ingestion_rate: 100000
+#           ingestion_burst_size: 200000
+#           max_global_series_per_user: 2000000
+#           query_sharding_total_shards: 1
 
-    ingester:
-      replicas: 1
-      zoneAwareReplication:
-        enabled: false
-      persistentVolume:
-        enabled: false
-      extraArgs:
-        "-ingester.ring.replication-factor": "3"
-        "-ingester.push-grpc-method-enabled": "true"
+#     ingester:
+#       replicas: 1
+#       zoneAwareReplication:
+#         enabled: false
+#       persistentVolume:
+#         enabled: false
+#       extraArgs:
+#         "-ingester.ring.replication-factor": "3"
+#         "-ingester.push-grpc-method-enabled": "true"
 
-    store_gateway:
-      replicas: 1
-      zoneAwareReplication:
-        enabled: false
-      persistentVolume:
-        enabled: false
-      extraArgs:
-        "-store-gateway.sharding-ring.replication-factor": "3"
+#     store_gateway:
+#       replicas: 1
+#       zoneAwareReplication:
+#         enabled: false
+#       persistentVolume:
+#         enabled: false
+#       extraArgs:
+#         "-store-gateway.sharding-ring.replication-factor": "3"
 
-    compactor:
-      replicas: 1
-      persistentVolume:
-        enabled: false
+#     compactor:
+#       replicas: 1
+#       persistentVolume:
+#         enabled: false
 
-    distributor:
-      replicas: 1
+#     distributor:
+#       replicas: 1
 
-    querier:
-      replicas: 1
+#     querier:
+#       replicas: 1
 
-    query_frontend:
-      replicas: 1
+#     query_frontend:
+#       replicas: 1
 
-    query_scheduler:
-      replicas: 1
+#     query_scheduler:
+#       replicas: 1
 
-    metaMonitoring:
-      serviceMonitor:
-        enabled: true
-        clusterLabel: ${CLUSTER_NAME}
-
-  postRenderers:
-    - kustomize:
-        patches:
-          - target:
-              kind: StatefulSet
-              name: mimir-ingester
-            patch: |
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
-          - target:
-              kind: StatefulSet
-              name: mimir-store-gateway
-            patch: |
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
-          - target:
-              kind: StatefulSet
-              name: mimir-compactor
-            patch: |
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
-          - target:
-              kind: Deployment
-              name: mimir-distributor
-            patch: |
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
-          - target:
-              kind: Deployment
-              name: mimir-querier
-            patch: |
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
-              - op: add
-                path: /spec/template/spec/containers/0/args/-
-                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
+#     metaMonitoring:
+#       serviceMonitor:
+#         enabled: true
+#         clusterLabel: ${CLUSTER_NAME}
