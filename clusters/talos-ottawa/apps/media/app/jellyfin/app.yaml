@@ -29,13 +29,6 @@ spec:
             - name: http
               containerPort: 8096
               protocol: TCP
-          volumeMounts:
-            - name: media
-              mountPath: /media-share
-            - name: config
-              mountPath: /config
-            - name: transcode
-              mountPath: /config/transcodes
           env:
             - name: PUID
               value: "0"
@@ -49,6 +42,13 @@ spec:
               value: "50000000"
             - name: JELLYFIN_FFmpeg__analyzeduration
               value: "50000000"
+          volumeMounts:
+            - name: media
+              mountPath: /media-share
+            - name: config
+              mountPath: /config
+            - name: transcode
+              mountPath: /config/transcodes
       volumes:
         - name: media
           persistentVolumeClaim:
@@ -60,3 +60,23 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 4Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin
+  labels:
+    app: jellyfin
+  annotations:
+    tailscale.com/hostname: ${LOCATION}-jellyfin
+    tailscale.com/proxy-group: common-ingress
+spec:
+  selector:
+    app: jellyfin
+  ports:
+    - name: http
+      port: 8096
+      protocol: TCP
+      targetPort: 8096
+  type: LoadBalancer
+  loadBalancerClass: tailscale
