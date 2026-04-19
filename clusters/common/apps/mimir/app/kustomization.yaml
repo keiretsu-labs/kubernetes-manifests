@@ -4,4 +4,5 @@ kind: Kustomization
 namespace: mimir
 resources:
   - helmrelease.yaml
-  - ingress-ts.yaml
+  - gossip-ts.yaml
+  - egress.yaml
