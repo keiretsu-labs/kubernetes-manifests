@@ -1,0 +1,96 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frigate
+  labels:
+    app: frigate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frigate
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: frigate
+    spec:
+      containers:
+        - name: frigate
+          image: ghcr.io/blakeblackshear/frigate:0.15.0-beta5
+          ports:
+            - name: web
+              containerPort: 8971
+            - name: rtsp
+              containerPort: 8554
+            - name: stream-8555-tcp
+              containerPort: 8555
+              protocol: TCP
+            - name: stream-8555-udp
+              containerPort: 8555
+              protocol: UDP
+            - name: internal
+              containerPort: 5000
+          resources:
+            limits:
+              memory: "16Gi"
+              cpu: "8"
+            requests:
+              memory: "8Gi"
+              cpu: "4"
+          volumeMounts:
+            - name: storage
+              mountPath: /media/frigate
+            - name: config
+              mountPath: /config
+            - name: dshm
+              mountPath: /dev/shm
+            - name: cache
+              mountPath: /tmp/cache/
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 120
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: frigate-data-unas
+        - name: config
+          persistentVolumeClaim:
+            claimName: frigate-config-ceph
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: cache
+          emptyDir:
+            sizeLimit: 50Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frigate
+  labels:
+    app: frigate
+spec:
+  selector:
+    app: frigate
+  ports:
+    - name: web
+      port: 443
+      targetPort: 8971
+    - name: rtsp
+      port: 8554
+      targetPort: 8554
+    - name: stream-8555-tcp
+      port: 8555
+      targetPort: 8555
+      protocol: TCP
+    - name: stream-8555-udp
+      port: 8555
+      targetPort: 8555
+      protocol: UDP
+    - name: internal
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP

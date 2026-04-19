@@ -14,4 +14,5 @@ spec:
   schedule: "0 6 * * *"
   restoreMode: restore
   restorePaused: false
+  copyMethod: Snapshot
   restorePrevious: 3
