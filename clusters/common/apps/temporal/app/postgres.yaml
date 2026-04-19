@@ -5,7 +5,7 @@ metadata:
   name: temporal-postgres
   namespace: temporal
 spec:
-  instances: 3
+  instances: 2
   nodeMaintenanceWindow:
     reusePVC: false
   postgresql:

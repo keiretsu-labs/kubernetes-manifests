@@ -7,7 +7,7 @@ spec:
   inheritedMetadata:
     labels:
       app: gatus-postgres
-  instances: 3
+  instances: 2
   nodeMaintenanceWindow:
     reusePVC: false
   storage:
