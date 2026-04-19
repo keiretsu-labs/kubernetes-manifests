@@ -65,7 +65,7 @@ spec:
               secret_access_key: ${AWS_SECRET_ACCESS_KEY}
               insecure: true
         limits:
-          compactor_blocks_retention_period: 1y
+          compactor_blocks_retention_period: 7d
           ingestion_rate: 100000
           ingestion_burst_size: 200000
           max_global_series_per_user: 2000000
