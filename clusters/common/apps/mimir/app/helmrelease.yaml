@@ -56,6 +56,7 @@ spec:
               bucket_name: mimir
               insecure: true
         memberlist:
+          abort_if_cluster_join_fails: false
           join_members:
             - ottawa-mimir.mimir.svc.cluster.local:7946
             - robbinsdale-mimir.mimir.svc.cluster.local:7946
