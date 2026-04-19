@@ -6,6 +6,14 @@ resources:
   - namespace.yaml
   - serviceingress.yaml
   - garagekey.yaml
+patches:
+  - target:
+      kind: GarageKey
+      name: mimir-key
+    patch: |
+      - op: replace
+        path: /metadata/namespace
+        value: garage
 helmCharts:
   - name: mimir-distributed
     repo: https://grafana.github.io/helm-charts
