@@ -13,6 +13,7 @@ spec:
   selector:
     app.kubernetes.io/name: mimir
     app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: ingester
   type: LoadBalancer
   loadBalancerClass: tailscale
   ports:
