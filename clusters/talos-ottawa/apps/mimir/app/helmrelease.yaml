@@ -47,9 +47,14 @@ spec:
         ingest_storage:
           enabled: false
         frontend:
-          query_sharding_total_shards: 0
+          parallelize_shardable_queries: false
         ingester:
           push_grpc_method_enabled: true
+          ring:
+            replication_factor: 1
+        store_gateway:
+          sharding_ring:
+            replication_factor: 1
         common:
           storage:
             backend: s3
