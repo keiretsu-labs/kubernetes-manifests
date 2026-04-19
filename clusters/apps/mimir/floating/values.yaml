@@ -18,6 +18,8 @@ global:
 mimir:
   structuredConfig:
     multitenancy_enabled: false
+    ingest_storage:
+      enabled: false
     common:
       storage:
         backend: s3
