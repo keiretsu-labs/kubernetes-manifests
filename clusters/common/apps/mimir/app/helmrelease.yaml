@@ -57,6 +57,10 @@ spec:
               insecure: true
         memberlist:
           abort_if_cluster_join_fails: false
+          join_members:
+            - ottawa-mimir.mimir.svc.cluster.local:7946
+            - robbinsdale-mimir.mimir.svc.cluster.local:7946
+            - stpetersburg-mimir.mimir.svc.cluster.local:7946
         limits:
           compactor_blocks_retention_period: 1y
           ingestion_rate: 100000
