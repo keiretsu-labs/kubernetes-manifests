@@ -46,6 +46,8 @@ spec:
         multitenancy_enabled: false
         ingest_storage:
           enabled: false
+        frontend:
+          query_sharding_total_shards: 0
         ingester:
           push_grpc_method_enabled: true
         common:
