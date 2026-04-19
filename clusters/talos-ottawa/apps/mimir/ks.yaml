@@ -9,12 +9,11 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./clusters/common/apps/mimir/app
+  path: ./clusters/talos-ottawa/apps/mimir/app
   prune: true
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
-  wait: false
   interval: 30m
   retryInterval: 1m
   timeout: 15m
