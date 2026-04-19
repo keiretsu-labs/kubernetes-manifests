@@ -1,0 +1,17 @@
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
+  name: mimir
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: mimir
+  quotas:
+    maxSize: 500Gi
+    maxObjects: 50000000
+  keyPermissions:
+    - keyRef: mimir-key
+      read: true
+      write: true
