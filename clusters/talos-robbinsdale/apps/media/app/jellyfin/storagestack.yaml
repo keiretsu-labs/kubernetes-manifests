@@ -12,7 +12,6 @@ spec:
   storageClass: ceph-block-replicated-nvme
   s3Path: media/jellyfin-config
   schedule: "0 6 * * *"
-  restoreMode: restore
   restorePaused: false
   copyMethod: Snapshot
   restorePrevious: 3

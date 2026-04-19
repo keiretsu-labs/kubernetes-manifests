@@ -11,6 +11,5 @@ spec:
   storageClass: ceph-block-replicated-nvme
   s3Path: media/wizarr-config
   schedule: 0 4 * * *
-  restoreMode: restore
   restorePaused: true
   copyMethod: Snapshot

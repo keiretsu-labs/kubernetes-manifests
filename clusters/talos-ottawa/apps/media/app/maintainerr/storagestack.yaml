@@ -12,4 +12,3 @@ spec:
   storageClass: ceph-block-replicated
   s3Path: media/maintainerr-config
   schedule: "0 4 * * *"
-  restoreMode: restore
