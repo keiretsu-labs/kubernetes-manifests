@@ -68,6 +68,8 @@ spec:
       # Restore config
       restorePaused: "boolean | default=true"
       restorePrevious: "integer | default=0"
+      # Increment to trigger a new restore run (e.g. "restore-2026-04-19")
+      restoreTrigger: "string | default=restore-once"
     status:
       secretName: $${garageKey.spec.secretTemplate.name}
       ready: $${garageKey.metadata.name != ""}
@@ -152,7 +154,7 @@ spec:
         name: $${schema.spec.name}
       spec:
         trigger:
-          manual: restore-once
+          manual: $${schema.spec.restoreTrigger}
         paused: $${schema.spec.restorePaused}
         restic:
           repository: $${garageKey.status.secretRef.name}
