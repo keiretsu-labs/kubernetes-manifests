@@ -12,7 +12,7 @@ spec:
   inheritedMetadata:
     labels:
       app: tracearr-postgres
-  instances: 3
+  instances: 2
   bootstrap:
     initdb:
       database: tracearr
