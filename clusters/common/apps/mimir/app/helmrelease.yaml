@@ -79,7 +79,6 @@ spec:
       extraArgs:
         "-ingester.ring.replication-factor": "3"
         "-ingester.push-grpc-method-enabled": "true"
-        "-memberlist.join": "dns+mimir-gossip-ring.mimir.svc.cluster.local.:7946,ottawa-mimir.mimir.svc.cluster.local:7946,robbinsdale-mimir.mimir.svc.cluster.local:7946,stpetersburg-mimir.mimir.svc.cluster.local:7946"
 
     store_gateway:
       replicas: 1
@@ -89,7 +88,6 @@ spec:
         enabled: false
       extraArgs:
         "-store-gateway.sharding-ring.replication-factor": "3"
-        "-memberlist.join": "dns+mimir-gossip-ring.mimir.svc.cluster.local.:7946,ottawa-mimir.mimir.svc.cluster.local:7946,robbinsdale-mimir.mimir.svc.cluster.local:7946,stpetersburg-mimir.mimir.svc.cluster.local:7946"
 
     compactor:
       replicas: 1
@@ -98,8 +96,6 @@ spec:
 
     distributor:
       replicas: 1
-      extraArgs:
-        "-memberlist.join": "dns+mimir-gossip-ring.mimir.svc.cluster.local.:7946,ottawa-mimir.mimir.svc.cluster.local:7946,robbinsdale-mimir.mimir.svc.cluster.local:7946,stpetersburg-mimir.mimir.svc.cluster.local:7946"
 
     querier:
       replicas: 1
@@ -114,3 +110,72 @@ spec:
       serviceMonitor:
         enabled: true
         clusterLabel: ${CLUSTER_NAME}
+
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: StatefulSet
+              name: mimir-ingester
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
+          - target:
+              kind: StatefulSet
+              name: mimir-store-gateway
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
+          - target:
+              kind: StatefulSet
+              name: mimir-compactor
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
+          - target:
+              kind: Deployment
+              name: mimir-distributor
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
+          - target:
+              kind: Deployment
+              name: mimir-querier
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=ottawa-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=robbinsdale-mimir.mimir.svc.cluster.local:7946
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --memberlist.join=stpetersburg-mimir.mimir.svc.cluster.local:7946
