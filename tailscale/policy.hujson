@@ -537,27 +537,12 @@
 				"192.168.169.1:443",
 			],
 		},
-		{
-			"src": "rajsinghtech@github",
-			"accept": [
-				"svc:http:8080",
-			],
-		},
-		{
-			"src": "kbpersonal@github",
-			"accept": [
-				"svc:http:8080",
-				"svc:http-test:8081",
-			],
-		},
-		{
-			"src": "group:superuser",
-			"accept": [
-				"svc:http:8080",
-				"svc:http-test:8081",
-				"svc:tcp:5432",
-			],
-		},
+	{
+		"src": "group:superuser",
+		"accept": [
+			"svc:tcp:5432",
+		],
+	},
 	],
   "attrConfig": {
     "custom:potato":      {"type": "string", "allowSetByNode": true, "broadcastToPeers": ["*"]},
