@@ -104,6 +104,30 @@ spec:
     query_scheduler:
       replicas: 1
 
+    gateway:
+      nginxConfig:
+        serverSnippet: |
+          location /nginx_status {
+            stub_status on;
+            access_log off;
+          }
+          location /metrics {
+            proxy_pass http://localhost:9113/metrics;
+            access_log off;
+          }
+      extraContainers:
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:1.4
+          args:
+            - --nginx.scrape-uri=http://localhost:8080/nginx_status
+          ports:
+            - name: metrics
+              containerPort: 9113
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+
     metaMonitoring:
       serviceMonitor:
         enabled: true
