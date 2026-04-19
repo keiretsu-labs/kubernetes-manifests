@@ -5,4 +5,3 @@ namespace: mimir
 resources:
   - helmrelease.yaml
   - ingress-ts.yaml
-  - garagebucket.yaml
