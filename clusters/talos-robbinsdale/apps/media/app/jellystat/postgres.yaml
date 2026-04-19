@@ -7,7 +7,7 @@ spec:
   inheritedMetadata:
     labels:
       app: jellystat-postgres
-  instances: 3
+  instances: 2
   nodeMaintenanceWindow:
     reusePVC: false
   storage:

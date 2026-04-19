@@ -7,7 +7,7 @@ spec:
   inheritedMetadata:
     labels:
       app: forgejo-postgres
-  instances: 3
+  instances: 2
   bootstrap:
     initdb:
       database: forgejo
