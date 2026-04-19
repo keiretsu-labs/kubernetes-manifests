@@ -62,6 +62,7 @@ spec:
           ingestion_rate: 100000
           ingestion_burst_size: 200000
           max_global_series_per_user: 2000000
+          query_sharding_total_shards: 1
 
     ingester:
       replicas: 1
