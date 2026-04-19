@@ -13,3 +13,5 @@ spec:
   s3Path: home/frigate-config
   schedule: "0 5 * * *"
   restoreMode: restore
+  restorePaused: true
+  copyMethod: Snapshot
