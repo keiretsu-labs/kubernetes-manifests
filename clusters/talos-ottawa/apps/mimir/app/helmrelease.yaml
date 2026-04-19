@@ -118,7 +118,7 @@ spec:
           }
       extraContainers:
         - name: nginx-exporter
-          image: nginx/nginx-prometheus-exporter:1.4
+          image: nginx/nginx-prometheus-exporter:1.5
           args:
             - --nginx.scrape-uri=http://localhost:8080/nginx_status
           ports:
