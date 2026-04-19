@@ -97,9 +97,6 @@ spec:
       replicas: 1
       persistentVolume:
         enabled: false
-      extraArgs:
-        "-compactor.ring.zone-awareness-enabled": "true"
-        "-compactor.ring.instance-zone": "${LOCATION}"
 
     distributor:
       replicas: 1
