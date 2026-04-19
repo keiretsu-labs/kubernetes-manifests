@@ -7,7 +7,6 @@ metadata:
   name: ottawa-mimir
   annotations:
     tailscale.com/tailnet-fqdn: ottawa-mimir.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
 spec:
   type: ExternalName
   externalName: placeholder
@@ -22,7 +21,6 @@ metadata:
   name: robbinsdale-mimir
   annotations:
     tailscale.com/tailnet-fqdn: robbinsdale-mimir.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
 spec:
   type: ExternalName
   externalName: placeholder
@@ -37,7 +35,6 @@ metadata:
   name: stpetersburg-mimir
   annotations:
     tailscale.com/tailnet-fqdn: stpetersburg-mimir.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
 spec:
   type: ExternalName
   externalName: placeholder
