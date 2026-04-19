@@ -10,6 +10,7 @@ spec:
   name: "Mimir Metrics Key"
   secretTemplate:
     name: mimir-s3
+    namespace: mimir
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
     additionalData:
