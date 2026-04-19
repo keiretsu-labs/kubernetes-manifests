@@ -66,7 +66,7 @@ spec:
           compactor_blocks_retention_period: 1y
           ingestion_rate: 500000
           ingestion_burst_size: 1000000
-          max_global_series_per_user: 2000000
+          max_global_series_per_user: 10000000
           query_sharding_total_shards: 1
 
     ingester:
