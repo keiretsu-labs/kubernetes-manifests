@@ -12,6 +12,5 @@ spec:
   storageClass: ceph-block-replicated
   s3Path: media/jellyfin-config
   schedule: "0 6 * * *"
-  restoreMode: restore
   restorePaused: true
   copyMethod: Snapshot

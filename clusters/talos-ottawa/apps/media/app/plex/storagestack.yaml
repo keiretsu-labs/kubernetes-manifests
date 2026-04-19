@@ -11,5 +11,4 @@ spec:
   storageClass: ceph-block-replicated
   s3Path: media/plex-config
   schedule: "0 13 * * *"
-  restoreMode: backup-only
   copyMethod: Snapshot

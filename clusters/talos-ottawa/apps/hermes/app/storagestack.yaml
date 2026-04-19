@@ -11,5 +11,4 @@ spec:
   storageClass: ceph-block-replicated
   s3Path: hermes/hermes-data
   schedule: 0 4 * * *
-  restoreMode: backup-only
   copyMethod: Snapshot
