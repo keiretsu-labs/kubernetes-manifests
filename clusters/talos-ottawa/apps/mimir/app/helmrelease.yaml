@@ -40,6 +40,8 @@ spec:
       extraEnvFrom:
         - secretRef:
             name: mimir-s3
+      podLabels:
+        keiretsu.ts.net/location: ${LOCATION}
 
     mimir:
       structuredConfig:
