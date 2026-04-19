@@ -1,0 +1,16 @@
+---
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: dragonfly-tracearr
+spec:
+  replicas: 1
+  args:
+    - --maxmemory=512M
+    - --proactor_threads=2
+  resources:
+    requests:
+      cpu: 25m
+      memory: 512Mi
+    limits:
+      memory: 768Mi

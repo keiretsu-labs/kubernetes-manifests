@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracearr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tracearr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: tracearr
+    spec:
+      containers:
+      - name: tracearr
+        image: ghcr.io/connorgallopo/tracearr:v1.4.27
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: PORT
+          value: "3000"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: TZ
+          value: "${TIMEZONE}"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: tracearr-postgres-app
+              key: uri
+        - name: REDIS_URL
+          value: redis://dragonfly-tracearr:6379
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: tracearr-secret
+              key: JWT_SECRET
+        - name: COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: tracearr-secret
+              key: COOKIE_SECRET
+        - name: CORS_ORIGIN
+          value: "https://tracearr.${CLUSTER_DOMAIN}"
+        - name: LOG_LEVEL
+          value: info
+        volumeMounts:
+        - name: backup
+          mountPath: /data/backup
+      volumes:
+      - name: backup
+        persistentVolumeClaim:
+          claimName: tracearr-backup
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracearr
+spec:
+  selector:
+    app: tracearr
+  ports:
+  - name: http
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
