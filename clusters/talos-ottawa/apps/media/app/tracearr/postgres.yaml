@@ -1,0 +1,56 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: tracearr-postgres
+  annotations:
+    cnpg.io/skipEmptyWalArchiveCheck: "enabled"
+spec:
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: tracearr-postgres-superuser-creds
+  inheritedMetadata:
+    labels:
+      app: tracearr-postgres
+  instances: 3
+  bootstrap:
+    initdb:
+      database: tracearr
+      owner: tracearr
+  nodeMaintenanceWindow:
+    reusePVC: false
+  storage:
+    size: 20Gi
+  monitoring:
+    enablePodMonitor: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: tracearr-s3-store
+        serverName: tracearr-postgres
+  backup:
+    retentionPolicy: "30d"
+  externalClusters:
+  - name: keiretsu
+    plugin:
+      name: barman-cloud.cloudnative-pg.io
+      parameters:
+        barmanObjectName: tracearr-s3-store
+        serverName: tracearr-postgres
+  # bootstrap:
+  #   recovery:
+  #     source: keiretsu
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: tracearr-postgres-s3
+spec:
+  schedule: "0 0 23 * * *"
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: tracearr-postgres
