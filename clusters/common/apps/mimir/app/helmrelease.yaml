@@ -54,8 +54,6 @@ spec:
             s3:
               endpoint: garage.garage.svc.cluster.local:3900
               bucket_name: mimir
-              access_key_id: ${AWS_ACCESS_KEY_ID}
-              secret_access_key: ${AWS_SECRET_ACCESS_KEY}
               insecure: true
         memberlist:
           join_members:

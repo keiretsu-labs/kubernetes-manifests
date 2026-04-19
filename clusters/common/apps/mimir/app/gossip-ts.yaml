@@ -21,24 +21,3 @@ spec:
       port: 7946
       targetPort: 7946
       protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mimir-gossip-global-ts
-  annotations:
-    tailscale.com/hostname: mimir
-    tailscale.com/tags: "tag:k8s"
-    tailscale.com/proxy-group: common-ingress
-spec:
-  selector:
-    app.kubernetes.io/name: mimir
-    app.kubernetes.io/instance: mimir
-    app.kubernetes.io/component: ingester
-  type: LoadBalancer
-  loadBalancerClass: tailscale
-  ports:
-    - name: gossip
-      port: 7946
-      targetPort: 7946
-      protocol: TCP
