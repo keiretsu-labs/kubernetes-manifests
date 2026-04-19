@@ -1,0 +1,18 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mimir-ts
+  annotations:
+    tailscale.com/proxy-group: "common-ingress"
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+spec:
+  defaultBackend:
+    service:
+      name: mimir-gateway
+      port:
+        number: 8080
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - mimir
