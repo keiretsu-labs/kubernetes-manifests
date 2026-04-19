@@ -2,7 +2,7 @@
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyGroup
 metadata:
-  name: tnjustworks-egress
+  name: tsjustworks-egress
 spec:
   hostnamePrefix: ${LOCATION}-egress
   tags:
@@ -10,13 +10,13 @@ spec:
     - tag:${LOCATION}
   proxyClass: common-accept-routes
   type: egress
-  tailnet: tnjustworks
+  tailnet: tsjustworks
   replicas: 2
 ---
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyGroup
 metadata:
-  name: tnjustworks-ingress
+  name: tsjustworks-ingress
 spec:
   hostnamePrefix: ${LOCATION}-ingress
   tags:
@@ -24,5 +24,5 @@ spec:
     - tag:${LOCATION}
   proxyClass: common
   type: ingress
-  tailnet: tnjustworks
+  tailnet: tsjustworks
   replicas: 2

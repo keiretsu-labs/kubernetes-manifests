@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: tnjustworks-oauth
+  name: tsjustworks-oauth
   namespace: tailscale
 type: Opaque
 stringData:
@@ -12,7 +12,7 @@ stringData:
 apiVersion: tailscale.com/v1alpha1
 kind: Tailnet
 metadata:
-  name: tnjustworks
+  name: tsjustworks
 spec:
   credentials:
-    secretName: tnjustworks-oauth
+    secretName: tsjustworks-oauth
