@@ -6,3 +6,4 @@ resources:
   - helmrelease.yaml
   - gossip-ts.yaml
   - egress.yaml
+  - bucket.yaml
