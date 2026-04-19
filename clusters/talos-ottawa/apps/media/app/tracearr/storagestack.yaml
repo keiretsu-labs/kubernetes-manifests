@@ -1,16 +1,12 @@
 ---
-apiVersion: storage.keiretsu.ts.net/v1alpha1
-kind: StorageStack
+apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: tracearr-backup
-  labels:
-    keiretsu.ts.net/location: ottawa
 spec:
-  name: tracearr-backup
-  size: 5Gi
-  storageClass: ceph-block-replicated
-  s3Path: media/tracearr-backup
-  schedule: 0 4 * * *
-  restoreMode: restore
-  restorePaused: true
-  copyMethod: Snapshot
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ceph-block-replicated
+  resources:
+    requests:
+      storage: 5Gi
