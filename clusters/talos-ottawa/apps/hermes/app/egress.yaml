@@ -28,3 +28,18 @@ spec:
     - name: http
       port: 80
       protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: searxng
+  annotations:
+    tailscale.com/tailnet-fqdn: stpetersburg-searxng.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
