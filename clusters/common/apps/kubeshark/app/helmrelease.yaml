@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: kubeshark
-      version: 53.2.2
+      version: 53.2.3
       sourceRef:
         kind: HelmRepository
         name: kubeshark
