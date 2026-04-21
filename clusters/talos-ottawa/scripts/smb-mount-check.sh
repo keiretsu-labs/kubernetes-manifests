@@ -1,155 +1,183 @@
 #!/usr/bin/env zsh
 
-# SMB Mount Staleness Checker
-# Checks all CIFS globalmounts on Ottawa nodes for staleness and reports
-# which pods are affected. Does NOT auto-fix — outputs what needs to be done.
+# SMB Mount Staleness Checker — Ottawa + Robbinsdale
+#
+# Checks all CIFS globalmounts on all nodes for staleness, then verifies
+# every pod with an SMB PVC can actually read its mount path.
 #
 # Based on incident: nagato double-reboot (Apr 2025) caused CIFS reconnect
-# to fire during Samba init, permanently staling all mounts on rei/asuka/kaji.
+# to fire during Samba init, permanently staling all mounts.
 #
-# Usage:
-#   ./smb-mount-check.sh
-#   SMB_KUBE_CONTEXT=my-context ./smb-mount-check.sh
+# Usage: ./smb-mount-check.sh
 
-CONTEXT="${SMB_KUBE_CONTEXT:-ottawa-k8s-operator.keiretsu.ts.net}"
-NAMESPACE="media"
-NAS_IP="192.168.169.111"
 KUBECTL=$(command -v kubectl)
+PYTHON=$(command -v python3)
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+$PYTHON - "$KUBECTL" <<'PYEOF'
+import sys, subprocess, json
 
-print_header() { print "\n${BLUE}=== $1 ===${NC}" }
-print_ok()     { print "${GREEN}OK${NC}    $1" }
-print_warn()   { print "${YELLOW}WARN${NC}  $1" }
-print_bad()    { print "${RED}STALE${NC} $1" }
+kubectl = sys.argv[1]
 
-any_stale=0
+CLUSTERS = [
+    ("ottawa",      "ottawa-k8s-operator.keiretsu.ts.net"),
+    ("robbinsdale", "robbinsdale-k8s-operator.keiretsu.ts.net"),
+]
 
-# ── CSI Node Pods ──────────────────────────────────────────────────────────────
-print_header "CSI SMB Node Pods"
-$KUBECTL --context $CONTEXT -n kube-system get pods -o wide | grep csi-smb-node
+RED    = '\033[0;31m'
+GREEN  = '\033[0;32m'
+YELLOW = '\033[1;33m'
+BLUE   = '\033[0;34m'
+BOLD   = '\033[1m'
+NC     = '\033[0m'
 
-# ── Globalmount Staleness ──────────────────────────────────────────────────────
-print_header "Globalmount Staleness Check"
+def ok(s):   print(f"{GREEN}OK{NC}    {s}")
+def warn(s): print(f"{YELLOW}WARN{NC}  {s}")
+def bad(s):  print(f"{RED}STALE{NC} {s}")
+def header(s): print(f"\n{BLUE}=== {s} ==={NC}")
+def run(*args, timeout=30):
+    try:
+        return subprocess.run(list(args), capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        r = subprocess.CompletedProcess(args, 1)
+        r.stdout = ""
+        r.stderr = "timed out"
+        return r
 
-for node in rei asuka kaji; do
-    csi_pod=$($KUBECTL --context $CONTEXT -n kube-system get pods -o wide 2>/dev/null \
-        | awk "/csi-smb-node.*$node/ {print \$1}")
+overall_stale = False
 
-    if [[ -z "$csi_pod" ]]; then
-        print_warn "$node: no csi-smb-node pod found"
-        any_stale=1
+for cluster_name, context in CLUSTERS:
+    print(f"\n{BOLD}{BLUE}━━━ CLUSTER: {cluster_name} ({context}) ━━━{NC}")
+
+    r = run(kubectl, "--context", context, "cluster-info")
+    if r.returncode != 0:
+        warn(f"Cannot reach cluster — skipping (Tailscale running?)")
         continue
-    fi
 
-    # maxdepth 2 avoids descending INTO stale globalmount dirs
-    mounts=$($KUBECTL --context $CONTEXT -n kube-system exec $csi_pod -c smb -- \
-        sh -c "find /var/lib/kubelet/plugins/kubernetes.io/csi/smb.csi.k8s.io \
-               -maxdepth 2 -name globalmount -type d 2>/dev/null" 2>/dev/null)
+    cluster_stale = False
 
-    if [[ -z "$mounts" ]]; then
-        print_warn "$node ($csi_pod): no globalmounts found (volumes not staged)"
-        any_stale=1
+    # ── CSI SMB Node Pods ────────────────────────────────────────────────────
+    header("CSI SMB Node Pods")
+    r = run(kubectl, "--context", context, "-n", "kube-system",
+            "get", "pods", "-o", "wide")
+    csi_lines = [l for l in r.stdout.splitlines() if "csi-smb-node" in l]
+    if not csi_lines:
+        warn("No csi-smb-node pods found")
         continue
-    fi
+    for l in csi_lines:
+        print(l)
 
-    while IFS= read -r gpath; do
-        source=$($KUBECTL --context $CONTEXT -n kube-system exec $csi_pod -c smb -- \
-            sh -c "awk '\$2==\"$gpath\" {print \$1}' /proc/mounts" 2>/dev/null | tr -d '[:space:]')
+    # ── Globalmount Staleness ────────────────────────────────────────────────
+    header("Globalmount Staleness Check")
 
-        if [[ -z "$source" ]]; then
-            print_warn "$node: $gpath exists but not mounted"
-            any_stale=1
+    for line in csi_lines:
+        parts   = line.split()
+        csi_pod = parts[0]
+        node    = parts[-3]  # NODE column: NAME READY STATUS RESTARTS AGE IP NODE NOMINATED READINESS
+
+        r = run(kubectl, "--context", context, "-n", "kube-system",
+                "exec", csi_pod, "-c", "smb", "--",
+                "find", "/var/lib/kubelet/plugins/kubernetes.io/csi/smb.csi.k8s.io",
+                "-maxdepth", "2", "-name", "globalmount", "-type", "d")
+        gmounts = [l for l in r.stdout.splitlines() if l.strip()]
+
+        if not gmounts:
+            warn(f"{node} ({csi_pod}): no globalmounts staged")
             continue
-        fi
 
-        # timeout guards against blocking on reconnecting mounts
-        result=$($KUBECTL --context $CONTEXT -n kube-system exec $csi_pod -c smb -- \
-            sh -c "timeout 5 ls '$gpath' >/dev/null 2>&1 && echo OK || echo FAIL" 2>/dev/null | tr -d '[:space:]')
+        r = run(kubectl, "--context", context, "-n", "kube-system",
+                "exec", csi_pod, "-c", "smb", "--", "cat", "/proc/mounts")
+        proc_mounts = r.stdout.splitlines()
 
-        if [[ "$result" = "OK" ]]; then
-            print_ok "$node: $source"
-        else
-            print_bad "$node: $source"
-            any_stale=1
-        fi
-    done <<< "$mounts"
-done
+        for gpath in gmounts:
+            source = next(
+                (m.split()[0] for m in proc_mounts if len(m.split()) >= 2 and m.split()[1] == gpath),
+                None
+            )
+            if not source:
+                # Directory exists but no mount — leftover from prior NodeUnstageVolume, normal
+                continue
 
-# ── Pod Mount Verification ─────────────────────────────────────────────────────
-print_header "Pod Mount Verification"
+            r = run(kubectl, "--context", context, "-n", "kube-system",
+                    "exec", csi_pod, "-c", "smb", "--",
+                    "sh", "-c", f"timeout 5 ls '{gpath}' >/dev/null 2>&1 && echo OK || echo FAIL",
+                    timeout=15)
+            result = r.stdout.strip()
+            if result == "OK":
+                ok(f"{node}: {source}")
+            else:
+                bad(f"{node}: {source}")
+                cluster_stale = True
 
-pod_results=$(python3 -c "
-import json, sys, subprocess
+    # ── Pod Mount Verification ───────────────────────────────────────────────
+    header("Pod Mount Verification (all namespaces)")
 
-kubectl = '$KUBECTL'
-context = '$CONTEXT'
-namespace = '$NAMESPACE'
-smb_pvcs = {'media-share', 'qbittorrent-downloads', 'media-share-robbinsdale'}
+    r = run(kubectl, "--context", context, "get", "pv", "-o", "json")
+    pvs = json.loads(r.stdout)
+    smb_pvcs = set()
+    for pv in pvs["items"]:
+        if pv.get("spec", {}).get("csi", {}).get("driver") == "smb.csi.k8s.io":
+            ref = pv["spec"].get("claimRef", {})
+            if ref.get("name"):
+                smb_pvcs.add(ref["name"])
 
-r = subprocess.run([kubectl, '--context', context, '-n', namespace, 'get', 'pods', '-o', 'json'],
-                   capture_output=True, text=True, timeout=30)
-pods = json.loads(r.stdout)
+    r = run(kubectl, "--context", context, "get", "pods",
+            "--all-namespaces", "-o", "json")
+    pods = json.loads(r.stdout)
 
-for p in pods['items']:
-    if p['status'].get('phase') != 'Running':
-        continue
-    name = p['metadata']['name']
-    vols = {v['name']: v.get('persistentVolumeClaim', {}).get('claimName', '')
-            for v in p['spec'].get('volumes', [])}
-    smb_vol_names = {k for k, v in vols.items() if v in smb_pvcs}
-    if not smb_vol_names:
-        continue
-    for c in p['spec']['containers']:
-        for m in c.get('volumeMounts', []):
-            if m['name'] in smb_vol_names:
-                path = m['mountPath']
-                r = subprocess.run(
-                    [kubectl, '--context', context, '-n', namespace,
-                     'exec', name, '-c', c['name'], '--', 'ls', path],
-                    capture_output=True, text=True, timeout=15
-                )
-                out = (r.stdout + r.stderr).strip().replace('\n', ' ')
+    for p in pods["items"]:
+        if p["status"].get("phase") != "Running":
+            continue
+        name      = p["metadata"]["name"]
+        namespace = p["metadata"]["namespace"]
+        vols = {v["name"]: v.get("persistentVolumeClaim", {}).get("claimName", "")
+                for v in p["spec"].get("volumes", [])}
+        smb_vol_names = {k for k, v in vols.items() if v in smb_pvcs}
+        if not smb_vol_names:
+            continue
+
+        for c in p["spec"]["containers"]:
+            for m in c.get("volumeMounts", []):
+                if m["name"] not in smb_vol_names:
+                    continue
+                path = m["mountPath"]
+                r = run(kubectl, "--context", context, "-n", namespace,
+                        "exec", name, "-c", c["name"], "--", "ls", path,
+                        timeout=15)
+                out = (r.stdout + r.stderr).strip().replace("\n", " ")
+                label = f"[{namespace}] {name} ({c['name']}) → {path}"
                 if r.returncode == 0 and r.stdout.strip():
-                    print(f'OK|{name}|{c[\"name\"]}|{path}')
+                    ok(label)
                 elif r.returncode == 0:
-                    print(f'EMPTY|{name}|{c[\"name\"]}|{path}')
-                else:
-                    print(f'BAD|{name}|{c[\"name\"]}|{path}|{out[:80]}')
+                    warn(f"{label} is empty")
+                    cluster_stale = True
+                elif any(x in out for x in ["Stale file handle", "cannot access", "No such file"]):
+                    bad(f"{label}: {out[:80]}")
+                    cluster_stale = True
+                # else: exec error (pod not ready etc.) — skip silently
                 break
-")
 
-while IFS='|' read -r mstatus pod container path extra; do
-    case $mstatus in
-        OK)    print_ok "$pod ($container) → $path" ;;
-        EMPTY) print_warn "$pod ($container) → $path is empty"; any_stale=1 ;;
-        BAD)   print_bad "$pod ($container) → $path: $extra"; any_stale=1 ;;
-    esac
-done <<< "$pod_results"
+    # ── Cluster Summary ──────────────────────────────────────────────────────
+    header(f"{cluster_name} Summary")
+    if not cluster_stale:
+        print(f"{GREEN}All SMB mounts healthy.{NC}")
+    else:
+        print(f"{RED}Stale or broken mounts detected.{NC}")
+        print("""
+To recover — for each affected node:
+  1. Get the CSI pod:
+     kubectl -n kube-system get pods -o wide | grep csi-smb-node | grep <node>
+  2. Force-unmount stale mounts (pod bind mounts first, then globals):
+     kubectl -n kube-system exec <csi-pod> -c smb -- sh -c \\
+       "for p in $(cat /proc/mounts | python3 -c \\"import sys; [print(l.split()[1]) for l in sys.stdin if 'pods' in l.split()[1] and l.split()[2]=='cifs']\\" 2>/dev/null); do umount -f $p; done"
+     kubectl -n kube-system exec <csi-pod> -c smb -- sh -c \\
+       "for p in $(cat /proc/mounts | python3 -c \\"import sys; [print(l.split()[1]) for l in sys.stdin if 'globalmount' in l.split()[1] and l.split()[2]=='cifs']\\" 2>/dev/null); do umount -f $p; done"
+  3. Delete affected pods — or just reboot the node:
+     talosctl -n <node-ip> reboot""")
+        overall_stale = True
 
-# ── Summary ────────────────────────────────────────────────────────────────────
-print_header "Summary"
-
-if [[ $any_stale -eq 0 ]]; then
-    print "${GREEN}All SMB mounts healthy.${NC}"
-else
-    print "${RED}Stale or broken mounts detected.${NC}"
-    print ""
-    print "Recovery options (least to most disruptive):"
-    print ""
-    print "  1. Force-unmount and delete affected pods (per node):"
-    print "     CSI_POD=\$($KUBECTL --context $CONTEXT -n kube-system get pods -o wide | awk '/csi-smb-node.*<node>/ {print \$1}')"
-    print "     $KUBECTL --context $CONTEXT -n kube-system exec \$CSI_POD -c smb -- sh -c \\"
-    print "       \"for p in \\\$(awk '\\\$1~/$NAS_IP/ && \\\$2~/pods/ {print \\\$2}' /proc/mounts); do umount -f \\\$p; done\""
-    print "     $KUBECTL --context $CONTEXT -n kube-system exec \$CSI_POD -c smb -- sh -c \\"
-    print "       \"for p in \\\$(awk '\\\$1~/$NAS_IP/ && \\\$2~/globalmount/ {print \\\$2}' /proc/mounts); do umount -f \\\$p; done\""
-    print "     # Then delete affected pods to trigger fresh NodeStageVolume"
-    print ""
-    print "  2. Reboot the node (cleanest fix):"
-    print "     talosctl -n <node-ip> reboot"
-    print "     Node IPs: rei=192.168.169.118  asuka=192.168.169.117  kaji=192.168.169.119"
-fi
+print()
+if not overall_stale:
+    print(f"{GREEN}{BOLD}All clusters healthy.{NC}")
+else:
+    print(f"{RED}{BOLD}Issues detected — see above.{NC}")
+PYEOF
