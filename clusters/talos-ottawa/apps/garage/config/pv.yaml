@@ -15,6 +15,7 @@ spec:
   mountOptions:
     - dir_mode=0777
     - file_mode=0777
+    - retrans=3
   csi:
     driver: smb.csi.k8s.io
     volumeHandle: smb-server.default.svc.cluster.local/media-share/garage
