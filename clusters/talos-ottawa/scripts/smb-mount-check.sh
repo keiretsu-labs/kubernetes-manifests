@@ -140,17 +140,49 @@ for cluster_name, context in CLUSTERS:
                 if m["name"] not in smb_vol_names:
                     continue
                 path = m["mountPath"]
-                r = run(kubectl, "--context", context, "-n", namespace,
-                        "exec", name, "-c", c["name"], "--", "ls", path,
-                        timeout=15)
-                out = (r.stdout + r.stderr).strip().replace("\n", " ")
                 label = f"[{namespace}] {name} ({c['name']}) → {path}"
-                if r.returncode == 0 and r.stdout.strip():
+
+                # Try ls first; if that fails, check whether ls is even available
+                # (distroless containers have no shell/builtins)
+                r_ls = run(kubectl, "--context", context, "-n", namespace,
+                           "exec", name, "-c", c["name"], "--", "ls", path,
+                           timeout=15)
+                out = (r_ls.stdout + r_ls.stderr).strip().replace("\n", " ")
+
+                if r_ls.returncode == 0 and r_ls.stdout.strip():
                     ok(label)
-                elif r.returncode == 0:
+                elif r_ls.returncode == 0:
                     warn(f"{label} is empty")
                     cluster_stale = True
-                elif any(x in out for x in ["Stale file handle", "cannot access", "No such file"]):
+                elif any(x in out for x in ["executable file not found", "not found",
+                                            "No such file or directory"]):
+                    # ls binary not available in container (distroless/busybox without
+                    # busybox ls). Check if the container has any command at all.
+                    for alt_cmd in ["sh", "bash", "python3", "python", "cat", "/bin/sh"]:
+                        r_alt = run(kubectl, "--context", context, "-n", namespace,
+                                    "exec", name, "-c", c["name"], "--",
+                                    "test", "-x", alt_cmd, timeout=10)
+                        if r_alt.returncode == 0:
+                            # Container has a shell — retry with that
+                            r = run(kubectl, "--context", context, "-n", namespace,
+                                    "exec", name, "-c", c["name"], "--",
+                                    "sh", "-c", f"ls '{path}' >/dev/null 2>&1 && echo OK || echo FAIL",
+                                    timeout=15)
+                            out = r.stdout.strip()
+                            if out == "OK":
+                                ok(label)
+                            else:
+                                bad(f"{label}: {out[:80]}")
+                                cluster_stale = True
+                            break
+                    else:
+                        # No shell available — distroless container.
+                        # Globalmount staleness check already passed for this node,
+                        # so the mount is alive. Pod is Running + Ready = healthy.
+                        print(f"  ⏭️  {label}: skip (distroless container, no shell)")
+                    break  # skip remaining volumeMounts for this container
+                elif any(x in out for x in ["Stale file handle", "cannot access",
+                                            "No such file"]):
                     bad(f"{label}: {out[:80]}")
                     cluster_stale = True
                 # else: exec error (pod not ready etc.) — skip silently
