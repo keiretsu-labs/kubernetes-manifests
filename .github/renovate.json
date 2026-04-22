@@ -43,25 +43,31 @@
     },
     {
       "description": "Auto merge Docker tags in CI and app Dockerfiles",
-      "matchManagers": ["dockerfile", "docker-compose", "regex"],
-      "matchPaths": [".github/**"],
+      "matchManagers": ["dockerfile", "docker-compose","custom.regex"],
+      "matchFileNames": [
+        ".github/**"
+      ],
       "automerge": true
     },
     {
       "description": "Auto merge npm updates in .github",
       "matchManagers": ["npm"],
-      "matchPaths": [".github/**"],
+      "matchFileNames": [
+        ".github/**"
+      ],
       "automerge": true
     },
     {
       "description": "Auto merge non-critical-infrastructure cluster updates",
-      "matchManagers": ["flux", "helm-values", "kubernetes", "kustomize", "regex"],
-      "matchPaths": ["clusters/**"],
+      "matchManagers": ["flux", "helm-values", "kubernetes", "kustomize","custom.regex"],
+      "matchFileNames": [
+        "clusters/**"
+      ],
       "automerge": true
     },
     {
       "description": "Disable automerge for cluster-critical components",
-      "matchPaths": [
+      "matchFileNames": [
         "clusters/**/bootstrap/**",
         "clusters/**/flux/**",
         "clusters/**/apps/cilium/**",
