@@ -17,7 +17,7 @@ spec:
     - file_mode=0777
     - retrans=10
     - timeo=600
-    - actimeo=0
+    - actimeo=5
   csi:
     driver: smb.csi.k8s.io
     volumeHandle: smb-server.default.svc.cluster.local/k8s/media/jellyfin-config
