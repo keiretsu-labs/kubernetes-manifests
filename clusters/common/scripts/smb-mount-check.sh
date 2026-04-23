@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 # SMB Mount Staleness Checker — Ottawa + Robbinsdale
 #
@@ -8,9 +8,17 @@
 # Based on incident: nagato double-reboot (Apr 2025) caused CIFS reconnect
 # to fire during Samba init, permanently staling all mounts.
 #
-# Usage: ./smb-mount-check.sh
+# Usage: ./smb-mount-check.sh [KUBECTL_PATH]
+# Defaults to /opt/data/bin/kubectl if not on PATH
 
-KUBECTL=$(command -v kubectl)
+KUBECTL="${1:-$(command -v kubectl 2>/dev/null || echo '/opt/data/bin/kubectl')}"
+
+if [ ! -x "$KUBECTL" ]; then
+    echo "ERROR: kubectl not found at $KUBECTL"
+    echo "Usage: $0 /path/to/kubectl"
+    exit 1
+fi
+
 PYTHON=$(command -v python3)
 
 $PYTHON - "$KUBECTL" <<'PYEOF'
