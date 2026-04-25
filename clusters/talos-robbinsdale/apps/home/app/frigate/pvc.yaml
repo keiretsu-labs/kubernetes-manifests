@@ -15,7 +15,6 @@ spec:
   mountOptions:
     - dir_mode=0777
     - file_mode=0777
-    - timeo=600
   csi:
     driver: smb.csi.k8s.io
     volumeHandle: smb-server.default.svc.cluster.local/k8s_shortsnap/home/frigate-data
@@ -54,7 +53,6 @@ spec:
   mountOptions:
     - dir_mode=0777
     - file_mode=0777
-    - timeo=600
   csi:
     driver: smb.csi.k8s.io
     volumeHandle: smb-server.default.svc.cluster.local/k8s_shortsnap/home/frigate-config
