@@ -33,12 +33,23 @@ spec:
             - name: JELLYFIN_PublishedServerUrl
               value: jellyfin.rajsingh.info
           volumeMounts:
+            - name: media
+              mountPath: /media-share
             - name: config-volume
               mountPath: /config
+            - name: transcode
+              mountPath: /config/transcodes
       volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-share
         - name: config-volume
           persistentVolumeClaim:
             claimName: jellyfin-config-ceph
+        - name: transcode
+          emptyDir:
+            medium: Memory
+            sizeLimit: 4Gi
 ---
 apiVersion: v1
 kind: Service
