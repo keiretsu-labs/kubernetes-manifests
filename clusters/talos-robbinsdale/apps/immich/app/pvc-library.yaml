@@ -57,7 +57,7 @@ spec:
     driver: smb.csi.k8s.io
     volumeHandle: smb-server.default.svc.cluster.local/k8s/pics
     volumeAttributes:
-      source: //192.168.50.115/k8s/pics
+      source: //192.168.50.115/k8s_shortsnap/pics
     nodeStageSecretRef:
       name: csi-smbcreds
       namespace: kube-system

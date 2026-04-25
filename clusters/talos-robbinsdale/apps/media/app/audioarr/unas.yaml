@@ -19,7 +19,7 @@ spec:
     driver: smb.csi.k8s.io
     volumeHandle: smb-server.default.svc.cluster.local/k8s/media/audioarr-config
     volumeAttributes:
-      source: //192.168.50.115/k8s/media/audioarr-config
+      source: //192.168.50.115/k8s_shortsnap/media/audioarr-config
     nodeStageSecretRef:
       name: csi-smbcreds
       namespace: kube-system
