@@ -57,7 +57,7 @@ spec:
     driver: smb.csi.k8s.io
     volumeHandle: smb-server.default.svc.cluster.local/k8s/home/frigate-config
     volumeAttributes:
-      source: //192.168.50.115/k8s/home/frigate-config
+      source: //192.168.50.115/k8s_shortsnap/home/frigate-config
     nodeStageSecretRef:
       name: csi-smbcreds
       namespace: kube-system

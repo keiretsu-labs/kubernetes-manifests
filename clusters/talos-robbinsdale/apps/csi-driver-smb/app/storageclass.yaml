@@ -5,7 +5,7 @@ metadata:
   name: unas-smb
 provisioner: smb.csi.k8s.io
 parameters:
-  source: //192.168.50.115/k8s
+  source: //192.168.50.115/k8s_shortsnap
   # if csi.storage.k8s.io/provisioner-secret is provided, will create a sub directory
   # with PV name under source
   csi.storage.k8s.io/provisioner-secret-name: csi-smbcreds
