@@ -33,19 +33,14 @@ spec:
         - name: config
           mountPath: /config
         - name: media
-          mountPath: /books
-        - name: downloads
-          mountPath: /downloads
+          mountPath: /media-share
       volumes:
       - name: config
         persistentVolumeClaim:
           claimName: audioarr-config
       - name: media
         persistentVolumeClaim:
-          claimName: readarr-books-unas
-      - name: downloads
-        persistentVolumeClaim:
-          claimName: transmission-books-data-unas
+          claimName: media-share
 ---
 apiVersion: v1
 kind: Service
