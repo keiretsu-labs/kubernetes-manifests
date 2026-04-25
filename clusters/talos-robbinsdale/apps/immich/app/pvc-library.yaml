@@ -15,6 +15,9 @@ spec:
   mountOptions:
     - dir_mode=0777
     - file_mode=0777
+    - retrans=10
+    - timeo=600
+    - actimeo=5
   csi:
     driver: smb.csi.k8s.io
     volumeHandle: smb-server.default.svc.cluster.local/k8s_shortsnap/immich
@@ -53,9 +56,12 @@ spec:
   mountOptions:
     - dir_mode=0777
     - file_mode=0777
+    - retrans=10
+    - timeo=600
+    - actimeo=5
   csi:
     driver: smb.csi.k8s.io
-    volumeHandle: smb-server.default.svc.cluster.local/k8s/pics
+    volumeHandle: smb-server.default.svc.cluster.local/k8s_shortsnap/pics
     volumeAttributes:
       source: //192.168.50.115/k8s_shortsnap/pics
     nodeStageSecretRef:
@@ -74,60 +80,3 @@ spec:
       storage: 4Ti
   volumeName: immich-pics
   storageClassName: smb
-# ---
-# apiVersion: volsync.backube/v1alpha1
-# kind: ReplicationSource
-# metadata:
-#   name: immich-library
-# spec:
-#   sourcePVC: immich-library
-#   trigger:
-#     schedule: "0 3 * * *"
-#   restic:
-#     pruneIntervalDays: 14
-#     repository: restic-immich-library
-#     retain:
-#       hourly: 1
-#       daily: 3
-#       weekly: 4
-#       monthly: 2
-#       yearly: 1
-#     copyMethod: Snapshot
-#     cacheAccessModes: [ReadWriteOnce]
-# ---
-# apiVersion: volsync.backube/v1alpha1
-# kind: ReplicationDestination
-# metadata:
-#   name: immich-library
-# spec:
-#   trigger:
-#     manual: first
-#   paused: true
-#   restic:
-#     repository: restic-immich-library
-#     destinationPVC: immich-library
-#     copyMethod: Snapshot
-# ---
-# apiVersion: garage.rajsingh.info/v1alpha1
-# kind: GarageKey
-# metadata:
-#   name: volsync-immich-library-key
-# spec:
-#   clusterRef:
-#     name: garage
-#     namespace: garage
-#   name: "Immich Library Volsync Key"
-#   secretTemplate:
-#     name: restic-immich-library
-#     namespace: immich
-#     accessKeyIdKey: AWS_ACCESS_KEY_ID
-#     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
-#     includeEndpoint: false
-#     includeRegion: false
-#     additionalData:
-#       RESTIC_REPOSITORY: "s3:http://${COMMON_S3_ENDPOINT}/keiretsu/${LOCATION}/immich/library"
-#       RESTIC_PASSWORD: "${COMMON_RESTIC_SECRET}"
-#   bucketPermissions:
-#     - globalAlias: keiretsu
-#       read: true
-#       write: true

@@ -4,6 +4,6 @@ kind: Kustomization
 namespace: home
 resources:
   - app.yaml
-  - unas.yaml
+  - pvc.yaml
   - storagestack.yaml
   - httproute.yaml

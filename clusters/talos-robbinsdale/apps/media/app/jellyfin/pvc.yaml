@@ -4,10 +4,10 @@ kind: PersistentVolume
 metadata:
   annotations:
     pv.kubernetes.io/provisioned-by: smb.csi.k8s.io
-  name: jellystat-backup-unas
+  name: jellyfin-config-unas
 spec:
   capacity:
-    storage: 1Gi
+    storage: 10Gi
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
@@ -15,11 +15,14 @@ spec:
   mountOptions:
     - dir_mode=0777
     - file_mode=0777
+    - retrans=10
+    - timeo=600
+    - actimeo=5
   csi:
     driver: smb.csi.k8s.io
-    volumeHandle: smb-server.default.svc.cluster.local/k8s/media/jellystat-backup-pvc
+    volumeHandle: smb-server.default.svc.cluster.local/k8s_shortsnap/media/jellyfin-config
     volumeAttributes:
-      source: //192.168.50.115/k8s_shortsnap/media/jellystat-backup-pvc
+      source: //192.168.50.115/k8s_shortsnap/media/jellyfin-config
     nodeStageSecretRef:
       name: csi-smbcreds
       namespace: kube-system
@@ -27,12 +30,12 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jellystat-backup-unas
+  name: jellyfin-config-unas
 spec:
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 1Gi
-  volumeName: jellystat-backup-unas
-  storageClassName: smb 
+      storage: 10Gi
+  volumeName: jellyfin-config-unas
+  storageClassName: smb

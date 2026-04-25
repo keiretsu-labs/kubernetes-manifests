@@ -4,6 +4,6 @@ kind: Kustomization
 namespace: media
 resources:
   - app.yaml
-  - unas.yaml
+  - pvc.yaml
   - httproute.yaml
   - storagestack.yaml
