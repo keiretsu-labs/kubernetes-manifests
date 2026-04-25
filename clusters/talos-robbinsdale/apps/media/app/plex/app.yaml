@@ -42,36 +42,21 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+            - name: media-volume
+              mountPath: /media-share
             - name: transcode
               mountPath: /transcode
-            - name: tv-volume
-              mountPath: /media/tv
-            - name: movies-volume
-              mountPath: /media/movies
-            - name: audiobooks-volume
-              mountPath: /media/audiobooks
-            - name: music-volume
-              mountPath: /media/music
       volumes:
         - name: config
           persistentVolumeClaim:
             claimName: plex-config-ceph
+        - name: media-volume
+          persistentVolumeClaim:
+            claimName: media-share
         - name: transcode
           emptyDir:
             medium: Memory
             sizeLimit: 6Gi
-        - name: movies-volume
-          persistentVolumeClaim:
-            claimName: radarr-movies-unas
-        - name: tv-volume
-          persistentVolumeClaim:
-            claimName: sonarr-tv-unas
-        - name: audiobooks-volume
-          persistentVolumeClaim:
-            claimName: readarr-books-unas
-        - name: music-volume
-          persistentVolumeClaim:
-            claimName: lidarr-music-unas
 ---
 apiVersion: v1
 kind: Service
