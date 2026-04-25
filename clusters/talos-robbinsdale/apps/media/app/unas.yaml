@@ -1,3 +1,0 @@
-# All SMB PVCs cleaned up - apps now use media-share
-# Previously contained: transmission-books-data-unas, readarr-books-unas, 
-# radarr-movies-unas, sonarr-tv-unas, lidarr-music-unas - all migrated to media-share

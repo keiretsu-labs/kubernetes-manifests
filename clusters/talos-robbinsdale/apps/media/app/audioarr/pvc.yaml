@@ -4,7 +4,7 @@ kind: PersistentVolume
 metadata:
   annotations:
     pv.kubernetes.io/provisioned-by: smb.csi.k8s.io
-  name: jellyseerr-config-unas
+  name: audioarr-config-unas
 spec:
   capacity:
     storage: 1Gi
@@ -15,11 +15,14 @@ spec:
   mountOptions:
     - dir_mode=0777
     - file_mode=0777
+    - retrans=10
+    - timeo=600
+    - actimeo=5
   csi:
     driver: smb.csi.k8s.io
-    volumeHandle: smb-server.default.svc.cluster.local/k8s/media/jellyseerr-config
+    volumeHandle: smb-server.default.svc.cluster.local/k8s_shortsnap/media/audioarr-config
     volumeAttributes:
-      source: //192.168.50.115/k8s_shortsnap/media/jellyseerr-config
+      source: //192.168.50.115/k8s_shortsnap/media/audioarr-config
     nodeStageSecretRef:
       name: csi-smbcreds
       namespace: kube-system
@@ -27,12 +30,12 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jellyseerr-config-unas
+  name: audioarr-config-unas
 spec:
   accessModes:
     - ReadWriteMany
   resources:
     requests:
       storage: 1Gi
-  volumeName: jellyseerr-config-unas
-  storageClassName: smb 
+  volumeName: audioarr-config-unas
+  storageClassName: smb

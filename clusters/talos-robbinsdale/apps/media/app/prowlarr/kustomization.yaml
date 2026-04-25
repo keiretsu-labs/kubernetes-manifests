@@ -5,4 +5,4 @@ resources:
   - app.yaml
   - httproute.yaml
   - storagestack.yaml
-  - unas.yaml
+  - pvc.yaml

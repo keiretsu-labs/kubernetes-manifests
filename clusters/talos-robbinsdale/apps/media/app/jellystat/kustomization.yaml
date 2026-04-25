@@ -6,6 +6,6 @@ resources:
   - deployment.yaml
   - service.yaml
   - httproute.yaml
-  - unas.yaml
+  - pvc.yaml
   - postgres.yaml
   - s3-backup.yaml
