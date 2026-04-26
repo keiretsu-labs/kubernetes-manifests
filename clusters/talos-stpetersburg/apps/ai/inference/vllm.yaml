@@ -64,7 +64,7 @@ spec:
         - "--reasoning-parser"
         - "qwen3"
         - "--default-chat-template-kwargs"
-        - "{\"enable_thinking\": false}"
+        - "{\"enable_thinking\": true, \"thinking_budget\": 2048}"
         - "--attention-backend"
         - "flashinfer"
         - "--enable-prefix-caching"
