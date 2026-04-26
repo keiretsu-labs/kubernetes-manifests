@@ -40,8 +40,7 @@ spec:
         image: oci.rajsingh.info/ai/vllm-spark:0.19.2rc1-v2
         imagePullPolicy: Always
         args:
-        - "vllm"
-        - "serve"
+        - "--model"
         - "Qwen/Qwen3.6-27B-FP8"
         - "--served-model-name"
         - "Qwen3.6-27B"
