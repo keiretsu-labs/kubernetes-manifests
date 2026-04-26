@@ -1,0 +1,17 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: zot-registry
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Registry
+  configMapRef:
+    name: zot-grafana-dashboard
+    key: dashboard.json
+  datasources:
+    - inputName: DS_MIMIR
+      datasourceName: Mimir

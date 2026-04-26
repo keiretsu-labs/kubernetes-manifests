@@ -8,10 +8,10 @@ spec:
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      name: zot-public
+      name: zot
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      name: zot-internal
+      name: zot-public
   timeout:
     http:
       requestTimeout: 300s

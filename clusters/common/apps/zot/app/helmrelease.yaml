@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: zot-public
+  name: zot
 spec:
   interval: 30m
   chart:
@@ -21,7 +21,11 @@ spec:
     remediation:
       retries: 3
   values:
-    replicaCount: 2
+    replicaCount: 1
+    startupProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      failureThreshold: 30
     service:
       type: ClusterIP
       port: 5000
@@ -70,14 +74,16 @@ spec:
               "forcepathstyle": true,
               "secure": false,
               "skipverify": false,
-              "multipartcopymaxconcurrency": 20
+              "multipartcopymaxconcurrency": 8
             }
           },
           "http": {
             "address": "0.0.0.0",
             "port": "5000",
             "compat": ["docker2s2"],
-            "auth": { "htpasswd": { "path": "/secret/htpasswd" } },
+            "auth": {
+              "htpasswd": { "path": "/secret/htpasswd" }
+            },
             "accessControl": {
               "repositories": {
                 "**": {
@@ -85,20 +91,17 @@ spec:
                     "users": ["admin"],
                     "actions": ["read", "create", "update", "delete"]
                   }],
-                  "defaultPolicy": []
+                  "defaultPolicy": ["read"]
                 }
-              },
-              "adminPolicy": {
-                "users": ["admin"],
-                "actions": ["read", "create", "update", "delete"]
               }
             }
           },
           "extensions": {
             "search": { "enable": true },
             "ui": { "enable": true },
+            "metrics": { "enable": true },
             "sync": {
-              "enable": false,
+              "enable": true,
               "registries": [{
                 "urls": ["https://ghcr.io"],
                 "content": [{
