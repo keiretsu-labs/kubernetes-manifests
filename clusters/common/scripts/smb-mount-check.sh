@@ -116,9 +116,7 @@ for cluster_name, context in CLUSTERS:
                 bad(f"{node}: {source}")
                 cluster_stale = True
 
-    # ── Pod Mount Verification ───────────────────────────────────────────────
-    header("Pod Mount Verification (all namespaces)")
-
+    # ── Build SMB PVC set (used by both pending and running checks) ──────────
     r = run(kubectl, "--context", context, "get", "pv", "-o", "json")
     pvs = json.loads(r.stdout)
     smb_pvcs = set()
@@ -130,9 +128,45 @@ for cluster_name, context in CLUSTERS:
 
     r = run(kubectl, "--context", context, "get", "pods",
             "--all-namespaces", "-o", "json")
-    pods = json.loads(r.stdout)
+    all_pods = json.loads(r.stdout)
 
-    for p in pods["items"]:
+    # ── Pending Pods Stuck on FailedMount ────────────────────────────────────
+    header("Pending Pods with FailedMount (initial mount failures)")
+
+    for p in all_pods["items"]:
+        if p["status"].get("phase") != "Pending":
+            continue
+        name      = p["metadata"]["name"]
+        namespace = p["metadata"]["namespace"]
+
+        # Check if any volume uses an SMB PVC
+        vols = {v["name"]: v.get("persistentVolumeClaim", {}).get("claimName", "")
+                for v in p["spec"].get("volumes", [])}
+        if not any(v in smb_pvcs for v in vols.values()):
+            continue
+
+        # Look for FailedMount events
+        r_ev = run(kubectl, "--context", context, "-n", namespace,
+                   "get", "events",
+                   "--field-selector", f"involvedObject.name={name},reason=FailedMount",
+                   "-o", "json")
+        try:
+            events = json.loads(r_ev.stdout).get("items", [])
+        except Exception:
+            events = []
+
+        if not events:
+            continue
+
+        latest = sorted(events, key=lambda e: e.get("lastTimestamp", ""))[-1]
+        msg = latest.get("message", "")[:120]
+        bad(f"[{namespace}] {name}: stuck Pending — {msg}")
+        cluster_stale = True
+
+    # ── Pod Mount Verification ───────────────────────────────────────────────
+    header("Pod Mount Verification (all namespaces)")
+
+    for p in all_pods["items"]:
         if p["status"].get("phase") != "Running":
             continue
         name      = p["metadata"]["name"]

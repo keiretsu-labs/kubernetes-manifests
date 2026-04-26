@@ -17,6 +17,7 @@ spec:
     - file_mode=0777
     - retrans=10
     - actimeo=5
+    - vers=3.0
   csi:
     driver: smb.csi.k8s.io
     volumeHandle: smb-server.default.svc.cluster.local/media-share/garage
