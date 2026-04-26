@@ -1,0 +1,17 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: garage-exporter
+spec:
+  jobLabel: app.kubernetes.io/name
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: garage-exporter
+  namespaceSelector:
+    matchNames:
+      - garage
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
