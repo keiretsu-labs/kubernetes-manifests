@@ -102,6 +102,7 @@ spec:
             "metrics": { "enable": true },
             "sync": {
               "enable": true,
+              "downloadDir": "/var/lib/registry/sync-tmp",
               "registries": [{
                 "urls": ["https://ghcr.io"],
                 "content": [{
