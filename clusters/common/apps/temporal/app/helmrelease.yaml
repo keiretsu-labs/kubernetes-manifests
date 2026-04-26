@@ -1,0 +1,134 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: temporal
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: temporal
+      version: 1.1.1
+      sourceRef:
+        kind: HelmRepository
+        name: temporal
+        namespace: flux-system
+  timeout: 15m
+  install:
+    remediation:
+      retries: 5
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    server:
+      replicaCount: 1
+      dynamicConfig:
+        system.enableNamespaceNotActiveAutoForwarding:
+          - value: true
+            constraints: {}
+      config:
+        dcRedirectionPolicy:
+          policy: "selected-apis-forwarding"
+        clusterMetadata:
+          enableGlobalNamespace: true
+          failoverVersionIncrement: 10
+          masterClusterName: "${LOCATION}"
+          currentClusterName: "${LOCATION}"
+          clusterInformation:
+            ${LOCATION}:
+              enabled: true
+              initialFailoverVersion: ${SITE_ID}
+              rpcAddress: "127.0.0.1:7233"
+              httpAddress: "127.0.0.1:7243"
+        persistence:
+          defaultStore: default
+          visibilityStore: visibility
+          numHistoryShards: 512
+          datastores:
+            default:
+              sql:
+                createDatabase: false
+                manageSchema: true
+                pluginName: postgres12
+                driverName: postgres12
+                databaseName: temporal
+                connectAddr: "temporal-postgres-rw.temporal.svc.cluster.local:5432"
+                connectProtocol: "tcp"
+                user: temporal
+                existingSecret: temporal-postgres-app
+                secretKey: password
+                maxConns: 10
+                maxIdleConns: 10
+            visibility:
+              sql:
+                createDatabase: false
+                manageSchema: true
+                pluginName: postgres12
+                driverName: postgres12
+                databaseName: temporal_visibility
+                connectAddr: "temporal-postgres-rw.temporal.svc.cluster.local:5432"
+                connectProtocol: "tcp"
+                user: temporal
+                existingSecret: temporal-postgres-app
+                secretKey: password
+                maxConns: 10
+                maxIdleConns: 10
+      frontend:
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
+      history:
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
+      matching:
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+      worker:
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+    web:
+      replicaCount: 1
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          memory: 128Mi
+    schema:
+      setup:
+        enabled: true
+      update:
+        enabled: true
+    cassandra:
+      enabled: false
+    mysql:
+      enabled: false
+    postgresql:
+      enabled: false
+    prometheus:
+      enabled: false
+    grafana:
+      enabled: false
+    elasticsearch:
+      enabled: false
