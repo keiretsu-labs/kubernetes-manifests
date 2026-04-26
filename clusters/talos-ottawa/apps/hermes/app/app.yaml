@@ -120,4 +120,3 @@ spec:
     targetPort: 8642
   selector:
     app.kubernetes.io/name: hermes
-      protocol: TCP
