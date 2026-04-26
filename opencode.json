@@ -1,22 +1,17 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "vllm/Qwen3.6-27B",
+  "model": "anthropic/claude-sonnet-4-6",
   "provider": {
-    "vllm": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "vLLM (stpetersburg)",
+    "anthropic": {
       "options": {
-        "baseURL": "http://stpetersburg-vllm/v1"
-      },
-      "models": {
-        "Qwen3.6-27B": {
-          "name": "Qwen3.6-27B",
-          "attachment": false,
-          "limit": {
-            "context": 262144,
-            "output": 16384
-          }
-        }
+        "baseURL": "http://ai",
+        "apiKey": "-"
+      }
+    },
+    "openai": {
+      "options": {
+        "baseURL": "http://ai/v1",
+        "apiKey": "-"
       }
     }
   }
