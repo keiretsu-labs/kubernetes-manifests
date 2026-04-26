@@ -23,7 +23,7 @@ metadata:
   labels:
     app: vllm
 spec:
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -37,7 +37,7 @@ spec:
       enableServiceLinks: false
       containers:
       - name: vllm
-        image: oci.rajsingh.info/ai/vllm-spark:0.19.2rc1
+        image: oci.rajsingh.info/ai/vllm-spark:0.19.2rc1-v2
         imagePullPolicy: Always
         args:
         - "vllm"
