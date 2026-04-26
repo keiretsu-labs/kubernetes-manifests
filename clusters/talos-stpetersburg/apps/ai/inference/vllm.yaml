@@ -64,7 +64,7 @@ spec:
         - "--reasoning-parser"
         - "qwen3"
         - "--default-chat-template-kwargs"
-        - "{\"preserve_thinking\": true}"
+        - "{\"preserve_thinking\": false}"
         - "--attention-backend"
         - "flashinfer"
         - "--enable-prefix-caching"
