@@ -81,8 +81,6 @@ resources:
   - ./mariadb-operator.yaml
   - ./bitnami.yaml
   - ./karmada.yaml
-  - ./temporal.yaml
-  - ./temporal-worker-controller.yaml
   - ./zot.yaml
   - ./woodpecker.yaml
   - ./forgejo.yaml
