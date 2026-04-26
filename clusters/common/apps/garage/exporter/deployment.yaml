@@ -37,9 +37,7 @@ spec:
             limits:
               memory: 64Mi
           readinessProbe:
-            httpGet:
-              path: /metrics
+            tcpSocket:
               port: metrics
             initialDelaySeconds: 5
-            periodSeconds: 30
-            timeoutSeconds: 10
+            periodSeconds: 10
