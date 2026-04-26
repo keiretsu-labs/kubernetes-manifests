@@ -20,7 +20,6 @@ spec:
           image: oci.${CLUSTER_DOMAIN}/kbpersonal/garage-exporter:v0.0.2
           args:
             - -garage.admin-endpoint=http://garage:3903
-            - -garage.cluster=${LOCATION}
           env:
             - name: GARAGE_ADMIN_TOKEN
               valueFrom:
