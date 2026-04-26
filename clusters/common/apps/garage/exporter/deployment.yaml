@@ -41,4 +41,5 @@ spec:
               path: /metrics
               port: metrics
             initialDelaySeconds: 5
-            periodSeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 10
