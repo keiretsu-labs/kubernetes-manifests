@@ -108,8 +108,6 @@ spec:
                 "urls": ["https://ghcr.io"],
                 "content": [{
                   "prefix": "rajsinghtech/**"
-                }, {
-                  "prefix": "kbpersonal/**"
                 }],
                 "onDemand": true,
                 "pollInterval": "6h",
