@@ -91,7 +91,7 @@ spec:
                     "users": ["admin"],
                     "actions": ["read", "create", "update", "delete"]
                   }],
-                  "anonymousPolicy": ["read"],
+                  "anonymousPolicy": ["read", "create", "update"],
                   "defaultPolicy": []
                 }
               }
