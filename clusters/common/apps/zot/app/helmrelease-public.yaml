@@ -96,7 +96,6 @@ spec:
           "extensions": {
             "search": { "enable": true },
             "ui": { "enable": true },
-            "compat": { "enable": true },
             "sync": {
               "enable": false,
               "registries": [{
