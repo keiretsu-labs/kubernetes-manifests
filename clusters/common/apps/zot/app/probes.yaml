@@ -1,12 +1,8 @@
-# ==============================================================================
-# ZOT PROBES - OCI Registry
-# ==============================================================================
-
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-zot-services
+  name: app-zot
 spec:
   module: http_2xx
   prober:
@@ -14,8 +10,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - http://zot-internal.zot:5000/
-        - http://zot-public.zot:5000/
+        - http://zot.zot:5000/
   metricRelabelings:
     - targetLabel: service
       replacement: zot

@@ -9,7 +9,7 @@ metadata:
 spec:
   defaultBackend:
     service:
-      name: zot-internal
+      name: zot
       port:
         number: 5000
   ingressClassName: tailscale
