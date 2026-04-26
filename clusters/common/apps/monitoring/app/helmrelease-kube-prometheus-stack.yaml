@@ -48,8 +48,7 @@ spec:
               capacity: 10000
               maxSamplesPerSend: 5000
               batchSendDeadline: 5s
-        retention: 14d
-        retentionSize: 100GB
+        retention: 2h
         additionalAlertRelabelConfigs:
           - source_labels: [alertname]
             regex: Watchdog
@@ -62,11 +61,7 @@ spec:
           limits:
             memory: 4Gi
         storageSpec:
-          volumeClaimTemplate:
-            spec:
-              resources:
-                requests:
-                  storage: 75Gi
+          emptyDir: {}
 
     alertmanager:
       enabled: true
