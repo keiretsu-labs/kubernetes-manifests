@@ -1,0 +1,17 @@
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: node-exporter-nagato
+spec:
+  staticConfigs:
+    - targets:
+        - nagato:9100
+  metricsPath: /metrics
+  relabelings:
+    - action: replace
+      targetLabel: job
+      replacement: node-exporter
+    - action: replace
+      targetLabel: node
+      replacement: nagato
