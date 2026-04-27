@@ -6,3 +6,6 @@ resources:
   - ./victorialogs.yaml
   - ./mimir.yaml
   - ./mimir-local.yaml
+  - ./mimir-robbinsdale.yaml
+  - ./mimir-ottawa.yaml
+  - ./mimir-stpetersburg.yaml
