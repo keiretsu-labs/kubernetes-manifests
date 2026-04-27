@@ -37,7 +37,7 @@ spec:
       enableServiceLinks: false
       initContainers:
       - name: download-models
-        image: ghcr.io/aeon-7/vllm-spark-omni-q36:v1.2
+        image: ghcr.io/aeon-7/vllm-spark-omni-q36:v2.0
         command: [python3, /scripts/download.py]
         env:
         - name: HUGGING_FACE_HUB_TOKEN
@@ -60,7 +60,7 @@ spec:
             memory: "8Gi"
       containers:
       - name: vllm
-        image: ghcr.io/aeon-7/vllm-spark-omni-q36:v1.2
+        image: ghcr.io/aeon-7/vllm-spark-omni-q36:v2.0
         command: [bash, -c]
         args:
         - |
