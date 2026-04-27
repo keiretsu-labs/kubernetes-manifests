@@ -8,5 +8,6 @@ spec:
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
+  resyncPeriod: "168h"
   folder: Ceph
   url: https://raw.githubusercontent.com/rook/rook/refs/heads/master/deploy/examples/monitoring/grafana/Ceph%20Pools%20Dashboard.json

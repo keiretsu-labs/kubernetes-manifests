@@ -8,5 +8,6 @@ spec:
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
+  resyncPeriod: "168h"
   folder: Envoy Gateway
   url: https://raw.githubusercontent.com/envoyproxy/gateway/main/charts/gateway-addons-helm/dashboards/envoy-proxy-global.json

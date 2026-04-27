@@ -8,6 +8,7 @@ spec:
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
+  resyncPeriod: "168h"
   folder: Kubernetes
   grafanaCom:
     id: 15762
