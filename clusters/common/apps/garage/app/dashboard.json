@@ -1118,8 +1118,8 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "mimir" },
-          "expr": "garage_bucket_bytes{job=\"garage-exporter\", cluster=~\"$cluster\"}",
-          "legendFormat": "{{cluster}} / {{bucket}}",
+          "expr": "max by (bucket) (garage_bucket_bytes{job=\"garage-exporter\", cluster=~\"$cluster\"})",
+          "legendFormat": "{{bucket}}",
           "refId": "A"
         }
       ],
@@ -1176,8 +1176,8 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "mimir" },
-          "expr": "garage_bucket_objects{job=\"garage-exporter\", cluster=~\"$cluster\"}",
-          "legendFormat": "{{cluster}} / {{bucket}}",
+          "expr": "max by (bucket) (garage_bucket_objects{job=\"garage-exporter\", cluster=~\"$cluster\"})",
+          "legendFormat": "{{bucket}}",
           "refId": "A"
         }
       ],
