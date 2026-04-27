@@ -33,6 +33,9 @@
         "10.2.0.10"
     ],
 
+    "corp.ts.net": [
+        "svc:tnl-dns-corp-ts-net-dns"
+    ],
     "ottawa.k8s": [
         "svc:tsdnsproxy"
     ],
