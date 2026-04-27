@@ -138,6 +138,9 @@ spec:
               replacement: ${CLUSTER_NAME}
 
     prometheus-node-exporter:
+      updateStrategy:
+        rollingUpdate:
+          maxUnavailable: "100%"
       prometheus:
         monitor:
           metricRelabelings:
