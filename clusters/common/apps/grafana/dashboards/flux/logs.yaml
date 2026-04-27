@@ -13,3 +13,5 @@ spec:
   datasources:
     - inputName: DS_MIMIR
       datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
+    - inputName: DS_LOKI
+      datasourceName: VictoriaLogs
