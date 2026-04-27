@@ -81,3 +81,26 @@ spec:
           value: nftables
         - name: TS_TAILNET_TARGET_IP
           value: 100.81.69.95
+      - name: tailnetlink
+        image: ghcr.io/rajsinghtech/tailnetlink:latest
+        imagePullPolicy: IfNotPresent
+        args:
+        - -data
+        - /config/data.json
+        - -listen
+        - :8080
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - name: tailnetlink-data
+          mountPath: /config
+  volumeClaimTemplates:
+  - metadata:
+      name: tailnetlink-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
