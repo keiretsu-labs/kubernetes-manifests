@@ -2,23 +2,23 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
-  name: mimir-robbinsdale
+  name: mimir-local
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
   datasource:
-    name: Mimir-Robbinsdale
+    name: Mimir-${CLUSTER_DISPLAY_NAME}
     type: prometheus
-    uid: mimir-robbinsdale
+    uid: mimir-local
     access: proxy
     url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
-    isDefault: false
+    isDefault: true
     jsonData:
       timeInterval: 30s
       httpMethod: GET
       httpHeaderName1: "X-Scope-OrgID"
     secureJsonData:
-      httpHeaderValue1: "talos-robbinsdale"
+      httpHeaderValue1: "${CLUSTER_NAME}"
     editable: false
