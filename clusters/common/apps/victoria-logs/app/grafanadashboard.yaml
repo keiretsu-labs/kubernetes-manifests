@@ -40,6 +40,7 @@ spec:
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
+  resyncPeriod: "168h"
   folder: VictoriaMetrics
   grafanaCom:
     id: 22759

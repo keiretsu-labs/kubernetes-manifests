@@ -8,6 +8,7 @@ spec:
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
+  resyncPeriod: "168h"
   folder: Envoy Gateway
   grafanaCom:
     id: 24459
