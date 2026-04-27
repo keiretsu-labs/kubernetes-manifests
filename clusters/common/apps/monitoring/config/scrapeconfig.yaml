@@ -2,20 +2,6 @@
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: ScrapeConfig
 metadata:
-  name: node-exporter-external
-spec:
-  staticConfigs:
-    - targets:
-        - nagato:9100
-  metricsPath: /metrics
-  relabelings:
-    - action: replace
-      targetLabel: job
-      replacement: node-exporter
----
-apiVersion: monitoring.coreos.com/v1alpha1
-kind: ScrapeConfig
-metadata:
   name: opencost
 spec:
   honorLabels: true
