@@ -48,7 +48,7 @@ spec:
           - /bin/sh
           - -c
           - mkdir -p /headlamp/plugins && cp -r /plugins/* /headlamp/plugins/
-        image: ghcr.io/headlamp-k8s/headlamp-plugin-flux:latest
+        image: ghcr.io/headlamp-k8s/headlamp-plugin-flux:v0.6.0
         imagePullPolicy: Always
         volumeMounts:
           - mountPath: /headlamp/plugins
@@ -70,7 +70,7 @@ spec:
           - /bin/sh
           - -c
           - mkdir -p /headlamp/plugins && cp -r /plugins/* /headlamp/plugins/
-        image: ghcr.io/headlamp-k8s/headlamp-plugin-ai-assistant:latest
+        image: ghcr.io/headlamp-k8s/headlamp-plugin-ai-assistant:v0.2.0-alpha
         imagePullPolicy: Always
         volumeMounts:
           - mountPath: /headlamp/plugins
