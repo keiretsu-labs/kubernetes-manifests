@@ -11,7 +11,7 @@ spec:
   folder: NVIDIA
   datasources:
     - inputName: DS_PROMETHEUS
-      datasourceName: Prometheus
+      datasourceName: Mimir
   json: |
     {
       "__inputs": [
