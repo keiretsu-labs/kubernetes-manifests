@@ -10,6 +10,7 @@ data:
   SITE_ID: "2"
   TIMEZONE: America/New_York
   CLUSTER_NAME: talos-ottawa
+  CLUSTER_DISPLAY_NAME: Ottawa
 
   # K8s
   CLUSTER_POD_CIDR: 10.3.0.0/16
