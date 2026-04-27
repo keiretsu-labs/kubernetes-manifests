@@ -11,6 +11,3 @@ spec:
   folder: Certificates
   grafanaCom:
     id: 20842
-  datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}

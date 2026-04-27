@@ -11,9 +11,6 @@ spec:
   folder: Network
   grafanaCom:
     id: 7587
-  datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -27,6 +24,3 @@ spec:
   folder: Network
   grafanaCom:
     id: 13659
-  datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}

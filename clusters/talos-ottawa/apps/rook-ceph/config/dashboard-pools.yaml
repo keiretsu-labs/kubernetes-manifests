@@ -10,6 +10,3 @@ spec:
       grafana.internal/instance: grafana
   folder: Ceph
   url: https://raw.githubusercontent.com/rook/rook/refs/heads/master/deploy/examples/monitoring/grafana/Ceph%20Pools%20Dashboard.json
-  datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
