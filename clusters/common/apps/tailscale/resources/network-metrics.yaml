@@ -37,7 +37,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "description": "Number of active Tailscale nodes",
           "fieldConfig": {
@@ -88,7 +88,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "count(count by(ts_proxy_parent_name) (tailscaled_health_messages{namespace=\"tailscale\", ts_proxy_type=~\"$proxy_type\"}))",
@@ -103,7 +103,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "description": "Shows ACL and error dropped packets for incoming and outgoing traffic",
           "fieldConfig": {
@@ -190,7 +190,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "sum by(reason)(rate(tailscaled_inbound_dropped_packets_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", reason=\"acl\"}[$__rate_interval]))",
@@ -201,7 +201,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "sum by(reason)(rate(tailscaled_outbound_dropped_packets_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", reason=\"acl\"}[$__rate_interval]))",
@@ -213,7 +213,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "sum by(reason)(rate(tailscaled_inbound_dropped_packets_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", reason=\"error\"}[$__rate_interval]))",
@@ -225,7 +225,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "sum by(reason)(rate(tailscaled_outbound_dropped_packets_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", reason=\"error\"}[$__rate_interval]))",
@@ -241,7 +241,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "description": "Health statuses reported by Tailscale nodes",
           "fieldConfig": {
@@ -298,7 +298,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "tailscaled_health_messages{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\"}",
@@ -325,7 +325,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "description": "Route approval percentage (% of advertised routes that are approved)",
           "fieldConfig": {
@@ -384,7 +384,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "100 * sum(tailscaled_approved_routes{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\"}) / sum(tailscaled_advertised_routes{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\"})",
@@ -399,7 +399,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "description": "Inbound/outbound bytes/sec per interface",
           "fieldConfig": {
@@ -501,7 +501,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "disableTextWrap": false,
               "editorMode": "code",
@@ -516,7 +516,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "irate(tailscaled_outbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", path=~\"$path\"}[$__rate_interval])*8",
@@ -533,7 +533,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "description": "Advertised and approved subnet routes",
           "fieldConfig": {
@@ -587,7 +587,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "tailscaled_advertised_routes{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\"}",
@@ -598,7 +598,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "tailscaled_approved_routes{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\"}",
@@ -653,7 +653,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "fieldConfig": {
             "defaults": {
@@ -754,7 +754,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "disableTextWrap": false,
               "editorMode": "code",
@@ -769,7 +769,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "rate(tailscaled_outbound_dropped_packets_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\"}[$__rate_interval])",
@@ -786,7 +786,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "fieldConfig": {
             "defaults": {
@@ -887,7 +887,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "disableTextWrap": false,
               "editorMode": "code",
@@ -902,7 +902,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "rate(tailscaled_outbound_packets_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\"}[$__rate_interval])",
@@ -919,7 +919,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "description": "Displays the distribution of connection types (DERP relays vs. direct IPv4/IPv6)",
           "fieldConfig": {
@@ -970,7 +970,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "sum(rate(tailscaled_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", path=\"direct_ipv4\"}[$__rate_interval]))",
@@ -981,7 +981,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "sum(rate(tailscaled_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", path=\"direct_ipv6\"}[$__rate_interval]))",
@@ -992,7 +992,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "sum(rate(tailscaled_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", path=\"derp\"}[$__rate_interval]))",
@@ -1007,7 +1007,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "mimir-local"
           },
           "description": "Traffic efficiency - percentage of traffic going through direct connections vs DERP relays",
           "fieldConfig": {
@@ -1075,7 +1075,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "100 * sum(rate(tailscaled_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", path=~\"direct.*\"}[$__rate_interval])) / sum(rate(tailscaled_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\"}[$__rate_interval]))",
@@ -1086,7 +1086,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "mimir-local"
               },
               "editorMode": "code",
               "expr": "100 * sum(rate(tailscaled_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", path=\"derp\"}[$__rate_interval])) / sum(rate(tailscaled_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\"}[$__rate_interval]))",
