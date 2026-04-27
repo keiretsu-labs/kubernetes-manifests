@@ -11,5 +11,5 @@ spec:
   folder: Flux
   url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/control-plane.json
   datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Prometheus
+    - inputName: DS_MIMIR
+      datasourceName: Mimir
