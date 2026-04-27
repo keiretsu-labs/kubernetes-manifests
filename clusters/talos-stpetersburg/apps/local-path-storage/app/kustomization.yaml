@@ -27,6 +27,7 @@ patches:
         name: local-path
         annotations:
           storageclass.kubernetes.io/is-default-class: "true"
+      allowVolumeExpansion: true
   - patch: |-
       apiVersion: v1
       kind: Namespace
