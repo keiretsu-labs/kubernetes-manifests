@@ -110,24 +110,3 @@ spec:
     - bucketRef: mimir
       read: true
       write: true
----
-apiVersion: garage.rajsingh.info/v1alpha1
-kind: GarageKey
-metadata:
-  name: csi-s3-key
-spec:
-  clusterRef:
-    name: garage
-  name: "CSI-S3 Storage Key"
-  secretTemplate:
-    name: csi-s3-secret
-    namespace: csi-s3
-    accessKeyIdKey: accessKeyID
-    secretAccessKeyKey: secretAccessKey
-    additionalData:
-      endpoint: "http://garage.garage.svc.cluster.local:3900"
-      region: "garage"
-  bucketPermissions:
-    - bucketRef: csi-s3
-      read: true
-      write: true

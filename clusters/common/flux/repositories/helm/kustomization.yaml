@@ -66,7 +66,7 @@ resources:
   - ./wger.yaml
   - ./istio.yaml
   - ./homer-operator.yaml
-  - ./csi-s3.yaml
+
   - ./keda.yaml
   - ./kubeshark.yaml
   - ./vector.yaml
@@ -80,7 +80,7 @@ resources:
   - ./fleetdm.yaml
   - ./mariadb-operator.yaml
   - ./bitnami.yaml
-  - ./karmada.yaml
+
   # - ./temporal.yaml
   # - ./temporal-worker-controller.yaml
   - ./zot.yaml
