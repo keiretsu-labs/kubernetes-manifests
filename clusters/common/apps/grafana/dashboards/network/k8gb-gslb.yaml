@@ -11,5 +11,5 @@ spec:
   folder: Network
   url: "https://raw.githubusercontent.com/k8gb-io/k8gb/master/grafana/custom-metrics/pretty-custom-metrics-dashboard.json"
   datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Prometheus
+    - inputName: DS_MIMIR
+      datasourceName: Mimir

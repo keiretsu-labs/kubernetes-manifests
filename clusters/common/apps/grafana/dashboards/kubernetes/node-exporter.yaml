@@ -12,5 +12,5 @@ spec:
   grafanaCom:
     id: 1860
   datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Prometheus
+    - inputName: DS_MIMIR
+      datasourceName: Mimir
