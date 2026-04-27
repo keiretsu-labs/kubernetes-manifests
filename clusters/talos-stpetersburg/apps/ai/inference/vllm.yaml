@@ -38,36 +38,7 @@ spec:
       initContainers:
       - name: download-models
         image: ghcr.io/aeon-7/vllm-spark-omni-q36:v1.2
-        command: [bash, -c]
-        args:
-        - |
-          set -e
-          python3 -c "
-import os, sys
-from huggingface_hub import snapshot_download
-
-if not os.path.exists('/models/qwen36-nvfp4/config.json'):
-    print('Downloading AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4...')
-    snapshot_download(
-        repo_id='AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4',
-        local_dir='/models/qwen36-nvfp4',
-        token=os.environ.get('HUGGING_FACE_HUB_TOKEN')
-    )
-    print('Main model downloaded.')
-else:
-    print('Main model already cached.')
-
-if not os.path.exists('/models/qwen36-dflash/config.json'):
-    print('Downloading z-lab/Qwen3.6-35B-A3B-DFlash...')
-    snapshot_download(
-        repo_id='z-lab/Qwen3.6-35B-A3B-DFlash',
-        local_dir='/models/qwen36-dflash',
-        token=os.environ.get('HUGGING_FACE_HUB_TOKEN')
-    )
-    print('Drafter downloaded.')
-else:
-    print('Drafter already cached.')
-"
+        command: [python3, /scripts/download.py]
         env:
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
@@ -79,6 +50,8 @@ else:
         volumeMounts:
         - name: models
           mountPath: /models
+        - name: download-script
+          mountPath: /scripts
         resources:
           requests:
             memory: "4Gi"
@@ -178,6 +151,9 @@ else:
         emptyDir:
           medium: Memory
           sizeLimit: 8Gi
+      - name: download-script
+        configMap:
+          name: vllm-download-script
       nodeSelector:
         nvidia.com/gpu.present: "true"
       terminationGracePeriodSeconds: 120
@@ -198,6 +174,29 @@ spec:
     targetPort: http
   selector:
     app: vllm
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vllm-download-script
+  namespace: ai
+data:
+  download.py: |
+    import os
+    from huggingface_hub import snapshot_download
+
+    token = os.environ.get('HUGGING_FACE_HUB_TOKEN')
+    models = [
+        ('AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4', '/models/qwen36-nvfp4'),
+        ('z-lab/Qwen3.6-35B-A3B-DFlash', '/models/qwen36-dflash'),
+    ]
+    for repo, path in models:
+        if not os.path.exists(os.path.join(path, 'config.json')):
+            print(f'Downloading {repo}...', flush=True)
+            snapshot_download(repo_id=repo, local_dir=path, token=token)
+            print(f'Done: {repo}', flush=True)
+        else:
+            print(f'Already cached: {repo}', flush=True)
 ---
 apiVersion: v1
 kind: Service
