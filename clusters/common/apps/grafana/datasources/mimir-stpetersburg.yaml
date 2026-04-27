@@ -2,16 +2,16 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
-  name: mimir
+  name: mimir-stpetersburg
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
   datasource:
-    name: Mimir
+    name: Mimir-StPetersburg
     type: prometheus
-    uid: mimir
+    uid: mimir-stpetersburg
     access: proxy
     url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
     isDefault: false
@@ -20,5 +20,5 @@ spec:
       httpMethod: GET
       httpHeaderName1: "X-Scope-OrgID"
     secureJsonData:
-      httpHeaderValue1: "talos-robbinsdale|talos-ottawa|talos-stpetersburg"
+      httpHeaderValue1: "talos-stpetersburg"
     editable: false

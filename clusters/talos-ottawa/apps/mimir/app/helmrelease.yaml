@@ -43,7 +43,9 @@ spec:
 
     mimir:
       structuredConfig:
-        multitenancy_enabled: false
+        multitenancy_enabled: true
+        tenant_federation:
+          enabled: true
         ingest_storage:
           enabled: false
         frontend:
