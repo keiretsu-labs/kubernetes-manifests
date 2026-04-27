@@ -75,9 +75,6 @@ spec:
               - op: add
                 path: /spec/folder
                 value: UniFi
-              - op: replace
-                path: /spec/datasources/0/datasourceName
-                value: "Mimir (Local)"
               - op: add
                 path: /spec/resyncPeriod
                 value: "168h"

@@ -9,7 +9,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   datasource:
-    name: "Mimir (Local)"
+    name: Prometheus
     type: prometheus
     uid: mimir-local
     access: proxy
