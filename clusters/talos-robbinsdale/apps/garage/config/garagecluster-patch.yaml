@@ -7,5 +7,5 @@ metadata:
 spec:
   storage:
     data:
-      size: 1Ti
+      size: 100Gi
       storageClassName: smb
