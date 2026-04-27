@@ -11,7 +11,7 @@
       },
       "models": {
         "Qwen3.6-35B-A3B": {
-          "name": "Qwen3.6 35B MoE",
+          "name": "Qwen3.6 35B MoE (DFlash)",
           "attachment": false,
           "reasoning": true,
           "tool_call": true,

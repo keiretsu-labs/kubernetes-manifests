@@ -1,7 +1,7 @@
 # vLLM Deployment for DGX Spark (GB10/ARM/Blackwell)
-# Model: Qwen/Qwen3.6-35B-A3B-FP8 (MoE 35B total / 3B active, FP8 weights + KV cache)
-# Continuous batching + PagedAttention for concurrent serving
-# Reference: https://github.com/eugr/spark-vllm-docker
+# Model: AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4 + DFlash speculative decoding
+# Image: ghcr.io/aeon-7/vllm-spark-omni-q36:v1.2 (ARM64/SBSA, patched vLLM)
+# Reference: https://github.com/AEON-7/Qwen3.6-NVFP4-DFlash
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -35,53 +35,85 @@ spec:
         app: vllm
     spec:
       enableServiceLinks: false
+      initContainers:
+      - name: download-models
+        image: ghcr.io/aeon-7/vllm-spark-omni-q36:v1.2
+        command: [bash, -c]
+        args:
+        - |
+          set -e
+          if [ ! -f /models/qwen36-nvfp4/config.json ]; then
+            echo "Downloading AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4..."
+            huggingface-cli download AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4 \
+              --local-dir /models/qwen36-nvfp4
+          else
+            echo "Main model already cached."
+          fi
+          if [ ! -f /models/qwen36-dflash/config.json ]; then
+            echo "Downloading z-lab/Qwen3.6-35B-A3B-DFlash..."
+            huggingface-cli download z-lab/Qwen3.6-35B-A3B-DFlash \
+              --local-dir /models/qwen36-dflash
+          else
+            echo "Drafter model already cached."
+          fi
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: HF_TOKEN
+        - name: HF_HOME
+          value: "/models/huggingface"
+        volumeMounts:
+        - name: models
+          mountPath: /models
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2000m"
+          limits:
+            memory: "8Gi"
       containers:
       - name: vllm
-        image: scitrera/dgx-spark-vllm:0.17.0-t5
+        image: ghcr.io/aeon-7/vllm-spark-omni-q36:v1.2
+        command: [bash, -c]
         args:
-        - "vllm"
-        - "serve"
-        - "Qwen/Qwen3.6-35B-A3B-FP8"
-        - "--served-model-name"
-        - "Qwen3.6-35B-A3B"
-        - "--host"
-        - "0.0.0.0"
-        - "--port"
-        - "8000"
-        - "--gpu-memory-utilization"
-        - "0.6"
-        - "--max-model-len"
-        - "262144"
-        - "--max-num-seqs"
-        - "32"
-        - "--max-num-batched-tokens"
-        - "32768"
-        - "--download-dir"
-        - "/models"
-        - "--enable-auto-tool-choice"
-        - "--tool-call-parser"
-        - "qwen3_xml"
-        - "--reasoning-parser"
-        - "qwen3"
-        - "--default-chat-template-kwargs"
-        - "{\"enable_thinking\": true, \"thinking_budget\": 2048}"
-        - "--attention-backend"
-        - "flashinfer"
-        - "--enable-prefix-caching"
-        - "--load-format"
-        - "fastsafetensors"
-        - "--kv-cache-dtype"
-        - "fp8"
+        - |
+          exec vllm serve /models/qwen36-nvfp4 \
+            --served-model-name Qwen3.6-35B-A3B qwen36-fast qwen36-deep \
+            --host 0.0.0.0 \
+            --port 8000 \
+            --tensor-parallel-size 1 \
+            --dtype auto \
+            --quantization compressed-tensors \
+            --max-model-len 262144 \
+            --max-num-seqs 128 \
+            --max-num-batched-tokens 65536 \
+            --gpu-memory-utilization 0.85 \
+            --enable-chunked-prefill \
+            --enable-prefix-caching \
+            --load-format safetensors \
+            --trust-remote-code \
+            --enable-auto-tool-choice \
+            --tool-call-parser qwen3_coder \
+            --reasoning-parser qwen3 \
+            --default-chat-template-kwargs '{"enable_thinking": true, "thinking_budget": 2048}' \
+            --speculative-config '{"method":"dflash","model":"/models/qwen36-dflash","num_speculative_tokens":15}' \
+            --attention-backend flash_attn
         ports:
         - containerPort: 8000
           name: http
           protocol: TCP
         env:
-        - name: NCCL_IGNORE_CPU_AFFINITY
+        - name: VLLM_TEST_FORCE_FP8_MARLIN
           value: "1"
+        - name: TORCH_MATMUL_PRECISION
+          value: "high"
         - name: PYTORCH_CUDA_ALLOC_CONF
           value: "expandable_segments:True"
-        - name: VLLM_MARLIN_USE_ATOMIC_ADD
+        - name: NVIDIA_FORWARD_COMPAT
+          value: "1"
+        - name: NCCL_IGNORE_CPU_AFFINITY
           value: "1"
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
@@ -96,7 +128,7 @@ spec:
             cpu: "4000m"
             nvidia.com/gpu: "1"
           limits:
-            memory: "96Gi"
+            memory: "112Gi"
             nvidia.com/gpu: "1"
         volumeMounts:
         - name: models
