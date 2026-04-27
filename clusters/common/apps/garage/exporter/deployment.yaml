@@ -21,6 +21,7 @@ spec:
           imagePullPolicy: Always
           args:
             - -garage.admin-endpoint=http://garage:3903
+            - -scrape-interval=5m
           env:
             - name: GARAGE_ADMIN_TOKEN
               valueFrom:
