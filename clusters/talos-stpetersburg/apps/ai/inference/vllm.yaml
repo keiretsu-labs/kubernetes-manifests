@@ -42,20 +42,32 @@ spec:
         args:
         - |
           set -e
-          if [ ! -f /models/qwen36-nvfp4/config.json ]; then
-            echo "Downloading AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4..."
-            huggingface-cli download AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4 \
-              --local-dir /models/qwen36-nvfp4
-          else
-            echo "Main model already cached."
-          fi
-          if [ ! -f /models/qwen36-dflash/config.json ]; then
-            echo "Downloading z-lab/Qwen3.6-35B-A3B-DFlash..."
-            huggingface-cli download z-lab/Qwen3.6-35B-A3B-DFlash \
-              --local-dir /models/qwen36-dflash
-          else
-            echo "Drafter model already cached."
-          fi
+          python3 -c "
+import os, sys
+from huggingface_hub import snapshot_download
+
+if not os.path.exists('/models/qwen36-nvfp4/config.json'):
+    print('Downloading AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4...')
+    snapshot_download(
+        repo_id='AEON-7/Qwen3.6-35B-A3B-heretic-NVFP4',
+        local_dir='/models/qwen36-nvfp4',
+        token=os.environ.get('HUGGING_FACE_HUB_TOKEN')
+    )
+    print('Main model downloaded.')
+else:
+    print('Main model already cached.')
+
+if not os.path.exists('/models/qwen36-dflash/config.json'):
+    print('Downloading z-lab/Qwen3.6-35B-A3B-DFlash...')
+    snapshot_download(
+        repo_id='z-lab/Qwen3.6-35B-A3B-DFlash',
+        local_dir='/models/qwen36-dflash',
+        token=os.environ.get('HUGGING_FACE_HUB_TOKEN')
+    )
+    print('Drafter downloaded.')
+else:
+    print('Drafter already cached.')
+"
         env:
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
