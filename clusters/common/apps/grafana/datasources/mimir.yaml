@@ -14,7 +14,7 @@ spec:
     uid: mimir
     access: proxy
     url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
-    isDefault: false
+    isDefault: true
     jsonData:
       timeInterval: 30s
       httpMethod: GET
