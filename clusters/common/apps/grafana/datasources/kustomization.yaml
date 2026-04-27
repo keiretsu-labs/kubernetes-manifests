@@ -5,6 +5,4 @@ resources:
   - ./alertmanager.yaml
   - ./victorialogs.yaml
   - ./mimir.yaml
-  - ./mimir-robbinsdale.yaml
-  - ./mimir-ottawa.yaml
-  - ./mimir-stpetersburg.yaml
+  - ./mimir-local.yaml
