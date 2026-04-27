@@ -10,8 +10,8 @@
         "apiKey": "-"
       },
       "models": {
-        "Qwen3.6-27B": {
-          "name": "Qwen3.6 27B",
+        "Qwen3.6-35B-A3B": {
+          "name": "Qwen3.6 35B MoE",
           "attachment": false,
           "reasoning": true,
           "tool_call": true,
