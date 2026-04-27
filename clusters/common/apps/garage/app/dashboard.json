@@ -1051,8 +1051,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "garage_local_disk_total{job=\"garage\", cluster=~\"$cluster\", volume=\"data\"}",
-          "legendFormat": "{{cluster}} / {{pod}} total",
+          "expr": "garage_local_disk_total{job=\"garage\", cluster=~\"$cluster\"}",
+          "legendFormat": "{{cluster}} / {{pod}} / {{volume}} total",
           "refId": "A"
         },
         {
@@ -1060,8 +1060,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "garage_local_disk_avail{job=\"garage\", cluster=~\"$cluster\", volume=\"data\"}",
-          "legendFormat": "{{cluster}} / {{pod}} avail",
+          "expr": "garage_local_disk_avail{job=\"garage\", cluster=~\"$cluster\"}",
+          "legendFormat": "{{cluster}} / {{pod}} / {{volume}} avail",
           "refId": "B"
         }
       ],
