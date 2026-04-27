@@ -1,0 +1,11 @@
+---
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageCluster
+metadata:
+  name: garage
+  namespace: garage
+spec:
+  storage:
+    data:
+      size: 1Ti
+      storageClassName: smb

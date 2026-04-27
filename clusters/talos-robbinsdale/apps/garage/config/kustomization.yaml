@@ -4,3 +4,10 @@ kind: Kustomization
 namespace: garage
 resources:
   - pv.yaml
+patches:
+  - path: garagecluster-patch.yaml
+    target:
+      group: garage.rajsingh.info
+      version: v1alpha1
+      kind: GarageCluster
+      name: garage
