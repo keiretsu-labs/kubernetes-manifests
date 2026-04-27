@@ -10,6 +10,3 @@ spec:
       grafana.internal/instance: grafana
   folder: NVIDIA
   url: https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/main/grafana/dcgm-exporter-dashboard.json
-  datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}

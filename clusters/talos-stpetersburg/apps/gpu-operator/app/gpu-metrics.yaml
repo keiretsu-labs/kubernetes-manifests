@@ -9,9 +9,6 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: NVIDIA
-  datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
   json: |
     {
       "__inputs": [

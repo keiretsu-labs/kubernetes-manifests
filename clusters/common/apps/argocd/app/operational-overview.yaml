@@ -11,6 +11,3 @@ spec:
   folder: ArgoCD
   grafanaCom:
     id: 19993
-  datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
