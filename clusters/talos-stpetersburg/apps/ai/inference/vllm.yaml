@@ -109,6 +109,8 @@ spec:
           value: "/models/huggingface"
         - name: VLLM_COMPILE_CACHE_DIR
           value: "/models/compile-cache"
+        - name: VLLM_CACHE_ROOT
+          value: "/models/vllm-cache"
         resources:
           requests:
             memory: "16Gi"
