@@ -13,4 +13,4 @@ spec:
     id: 16611
   datasources:
     - inputName: DS_MIMIR
-      datasourceName: Mimir
+      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}

@@ -12,7 +12,7 @@ spec:
   url: https://raw.githubusercontent.com/grafana/mimir/main/operations/mimir-mixin-compiled/dashboards/mimir-overview.json
   datasources:
     - inputName: datasource
-      datasourceName: Mimir
+      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -27,7 +27,7 @@ spec:
   url: https://raw.githubusercontent.com/grafana/mimir/main/operations/mimir-mixin-compiled/dashboards/mimir-writes.json
   datasources:
     - inputName: datasource
-      datasourceName: Mimir
+      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -42,7 +42,7 @@ spec:
   url: https://raw.githubusercontent.com/grafana/mimir/main/operations/mimir-mixin-compiled/dashboards/mimir-reads.json
   datasources:
     - inputName: datasource
-      datasourceName: Mimir
+      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -57,7 +57,7 @@ spec:
   url: https://raw.githubusercontent.com/grafana/mimir/main/operations/mimir-mixin-compiled/dashboards/mimir-queries.json
   datasources:
     - inputName: datasource
-      datasourceName: Mimir
+      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -72,7 +72,7 @@ spec:
   url: https://raw.githubusercontent.com/grafana/mimir/main/operations/mimir-mixin-compiled/dashboards/mimir-compactor.json
   datasources:
     - inputName: datasource
-      datasourceName: Mimir
+      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -87,7 +87,7 @@ spec:
   url: https://raw.githubusercontent.com/grafana/mimir/main/operations/mimir-mixin-compiled/dashboards/mimir-object-store.json
   datasources:
     - inputName: datasource
-      datasourceName: Mimir
+      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -102,4 +102,4 @@ spec:
   url: https://raw.githubusercontent.com/grafana/mimir/main/operations/mimir-mixin-compiled/dashboards/mimir-config.json
   datasources:
     - inputName: datasource
-      datasourceName: Mimir
+      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}

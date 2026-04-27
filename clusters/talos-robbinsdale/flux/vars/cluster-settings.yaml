@@ -10,6 +10,7 @@ data:
   SITE_ID: "1"
   TIMEZONE: America/Chicago
   CLUSTER_NAME: talos-robbinsdale
+  CLUSTER_DISPLAY_NAME: Robbinsdale
 
   # K8s
   CLUSTER_POD_CIDR: 10.1.0.0/16
