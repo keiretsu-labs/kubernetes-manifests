@@ -28,8 +28,6 @@ spec:
       namespace: home
   hostnames:
     - "pocket-id.${CLUSTER_DOMAIN}"
-    - "pocket-id.${COMMON_DOMAIN}"
-    - "pocket-id.cdn.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""

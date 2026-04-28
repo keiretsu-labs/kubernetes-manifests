@@ -13,8 +13,6 @@ metadata:
 spec:
   hostnames:
     - forgejo.${CLUSTER_DOMAIN}
-    - forgejo.${COMMON_DOMAIN}
-    - forgejo.cdn.${COMMON_DOMAIN}
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
