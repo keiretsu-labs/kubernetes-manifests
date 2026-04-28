@@ -57,6 +57,20 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    - dnsName: "oci.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "oci.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "zot.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "zot.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: "status.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
