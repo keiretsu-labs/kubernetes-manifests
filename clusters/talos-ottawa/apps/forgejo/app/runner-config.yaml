@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forgejo-runner-config
+data:
+  config.yaml: |
+    log:
+      level: info
+    runner:
+      file: /data/.runner
+      capacity: 2
+      labels:
+        - "ubuntu-latest:docker://node:20-bookworm"
+        - "ubuntu-22.04:docker://node:20-bookworm"
+        - "ubuntu-20.04:docker://node:20-bookworm"
+    cache:
+      enabled: true
+      dir: /data/cache
+    container:
+      network: bridge
+      privileged: true
+      docker_host: tcp://localhost:2375

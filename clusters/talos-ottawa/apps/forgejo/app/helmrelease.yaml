@@ -76,12 +76,3 @@ spec:
           REVERSE_PROXY_TRUSTED_PROXIES: "127.0.0.0/8,::1/128,10.2.0.0/16,10.3.0.0/16"
         actions:
           ENABLED: "true"
-    runner:
-      enabled: true
-      image:
-        repository: code.forgejo.org/forgejo/runner
-        tag: 6.3.1
-      replicas: 2
-      config:
-        runner:
-          capacity: 2

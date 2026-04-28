@@ -9,3 +9,6 @@ resources:
   - httproute.yaml
   - tcproute.yaml
   - referencegrant.yaml
+  - runner-config.yaml
+  - runner-secret.yaml
+  - runner.yaml
