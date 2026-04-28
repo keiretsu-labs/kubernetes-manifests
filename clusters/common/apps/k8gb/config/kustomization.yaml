@@ -9,7 +9,6 @@ resources:
   - ./gslb-ts-gateway.yaml
   - ./garage-keiretsu-top.yaml
 
-  - ./dashboard-cdn.yaml
   - ./dashboard-ts.yaml
   - ./cnames.yaml
   - ./prometheusrules.yaml
