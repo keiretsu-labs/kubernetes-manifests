@@ -8,3 +8,4 @@ resources:
   - storagestack.yaml
   - secret.yaml
   - pvc-downloads.yaml
+  - referencegrant.yaml

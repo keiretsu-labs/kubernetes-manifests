@@ -1,18 +1,44 @@
 ---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: qbittorrent-cdn
+  namespace: keiretsu-top
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - "qbittorrent.cdn.${COMMON_DOMAIN}"
+    - "qbittorrent.${COMMON_DOMAIN}"
+  rules:
+    - backendRefs:
+        - name: qbittorrent
+          namespace: media
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
 apiVersion: k8gb.absa.oss/v1beta1
 kind: Gslb
 metadata:
   name: qbittorrent
   namespace: keiretsu-top
+  annotations:
+    k8gb.io/exposed-hostnames: "${LOCATION}.${COMMON_DOMAIN}"
 spec:
   resourceRef:
     apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
-    name: qbittorrent
+    name: qbittorrent-cdn
   strategy:
     type: roundRobin
     dnsTtlSeconds: 30
     weight:
-      ottawa: 34
-      robbinsdale: 33
-      stpetersburg: 33
+      ottawa: 100
+      robbinsdale: 0
+      stpetersburg: 0
