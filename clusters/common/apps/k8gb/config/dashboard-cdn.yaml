@@ -173,7 +173,6 @@ spec:
   hostnames:
     - "home.cdn.${COMMON_DOMAIN}"
     - "home.${COMMON_DOMAIN}"
-    - "home.cdn.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - name: dashboard-cdn-homer
