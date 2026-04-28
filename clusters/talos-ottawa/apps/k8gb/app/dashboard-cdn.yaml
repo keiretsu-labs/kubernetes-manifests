@@ -114,7 +114,7 @@ spec:
       - "keiretsu.top"
     gatewaySelector:
       matchLabels:
-        external-dns: keiretsu
+        gateway: public
     ingressSelector:
       matchLabels:
         noexist: "true"
@@ -128,7 +128,7 @@ spec:
       - "keiretsu.top"
     gatewaySelector:
       matchLabels:
-        external-dns: keiretsu
+        gateway: public
     ingressSelector:
       matchLabels:
         noexist: "true"
@@ -142,7 +142,7 @@ spec:
       - "keiretsu.top"
     gatewaySelector:
       matchLabels:
-        external-dns: keiretsu
+        gateway: public
     ingressSelector:
       matchLabels:
         noexist: "true"
