@@ -19,8 +19,8 @@ spec:
       namespace: home
   hostnames:
     - "oci.${CLUSTER_DOMAIN}"
-    - "oci.cdn.keiretsu.top"
-    - "zot.cdn.keiretsu.top"
+    - "oci.cdn.${COMMON_DOMAIN}"
+    - "zot.cdn.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
