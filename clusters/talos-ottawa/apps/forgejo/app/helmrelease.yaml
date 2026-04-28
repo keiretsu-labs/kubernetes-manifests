@@ -33,9 +33,6 @@ spec:
       storageClass: ${STORAGECLASS_DEFAULT}
       size: 10Gi
     gitea:
-      admin:
-        username: rajsingh
-        email: rajsinghcpre@gmail.com
       additionalConfigFromEnvs:
         - name: FORGEJO__database__PASSWD
           valueFrom:
