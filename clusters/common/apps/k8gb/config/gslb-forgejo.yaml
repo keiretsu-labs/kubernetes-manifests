@@ -1,16 +1,39 @@
 ---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: forgejo-cdn
+  namespace: forgejo
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - "forgejo.cdn.${COMMON_DOMAIN}"
+    - "forgejo.${COMMON_DOMAIN}"
+  rules:
+    - backendRefs:
+        - name: forgejo-http
+          port: 3000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
 apiVersion: k8gb.absa.oss/v1beta1
 kind: Gslb
 metadata:
   name: forgejo
-  namespace: forgejo
+  namespace: keiretsu-top
   annotations:
     k8gb.io/exposed-hostnames: "${LOCATION}.${COMMON_DOMAIN}"
 spec:
   resourceRef:
     apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
-    name: forgejo
+    name: forgejo-cdn
     namespace: forgejo
   strategy:
     type: roundRobin
