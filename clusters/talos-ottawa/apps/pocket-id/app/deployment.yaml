@@ -20,7 +20,7 @@ spec:
           image: ghcr.io/pocket-id/pocket-id:v2.6.2
           env:
             - name: APP_URL
-              value: "https://pocket-id.keiretsu.top"
+              value: "https://pocket-id.${COMMON_DOMAIN}"
             - name: TRUST_PROXY
               value: "true"
             - name: MAXMIND_LICENSE_KEY

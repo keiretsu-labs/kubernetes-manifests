@@ -4,7 +4,7 @@ kind: Gslb
 metadata:
   name: pocket-id
   annotations:
-    k8gb.io/exposed-hostnames: "pocket-id.cdn.keiretsu.top"
+    k8gb.io/exposed-hostnames: "pocket-id.cdn.${COMMON_DOMAIN}"
 spec:
   resourceRef:
     apiVersion: gateway.networking.k8s.io/v1

@@ -36,24 +36,24 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
-    - dnsName: "home.keiretsu.top"
+    - dnsName: "home.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
-        - "home.cdn.keiretsu.top"
+        - "home.cdn.${COMMON_DOMAIN}"
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
-    - dnsName: "forgejo.keiretsu.top"
+    - dnsName: "forgejo.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
-        - "forgejo.cdn.keiretsu.top"
+        - "forgejo.cdn.${COMMON_DOMAIN}"
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
-    - dnsName: "pocket-id.keiretsu.top"
+    - dnsName: "pocket-id.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
-        - "pocket-id.cdn.keiretsu.top"
+        - "pocket-id.cdn.${COMMON_DOMAIN}"
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
