@@ -111,9 +111,10 @@ spec:
       key: kubeconfig
     domainFilters:
       - "cdn.keiretsu.top"
+      - "keiretsu.top"
     gatewaySelector:
       matchLabels:
-        gateway: public
+        external-dns: keiretsu
     ingressSelector:
       matchLabels:
         noexist: "true"
@@ -124,9 +125,10 @@ spec:
       key: kubeconfig
     domainFilters:
       - "cdn.keiretsu.top"
+      - "keiretsu.top"
     gatewaySelector:
       matchLabels:
-        gateway: public
+        external-dns: keiretsu
     ingressSelector:
       matchLabels:
         noexist: "true"
@@ -137,15 +139,16 @@ spec:
       key: kubeconfig
     domainFilters:
       - "cdn.keiretsu.top"
+      - "keiretsu.top"
     gatewaySelector:
       matchLabels:
-        gateway: public
+        external-dns: keiretsu
     ingressSelector:
       matchLabels:
         noexist: "true"
   gatewaySelector:
     matchLabels:
-      disable-local-cluster: "true"
+      external-dns: keiretsu
   ingressSelector:
     matchLabels:
       disable-local-cluster: "true"

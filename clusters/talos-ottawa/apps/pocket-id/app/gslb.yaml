@@ -1,0 +1,19 @@
+---
+apiVersion: k8gb.absa.oss/v1beta1
+kind: Gslb
+metadata:
+  name: pocket-id
+  annotations:
+    k8gb.io/exposed-hostnames: "pocket-id.cdn.keiretsu.top"
+spec:
+  resourceRef:
+    apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    name: pocket-id
+  strategy:
+    type: roundRobin
+    dnsTtlSeconds: 30
+    weight:
+      ottawa: 100
+      robbinsdale: 0
+      stpetersburg: 0
