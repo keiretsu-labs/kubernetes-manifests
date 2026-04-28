@@ -4,6 +4,13 @@ kind: HTTPRoute
 metadata:
   name: pocket-id-cdn
   namespace: keiretsu-top
+  annotations:
+    item.homer.rajsingh.info/name: "Pocket ID"
+    item.homer.rajsingh.info/subtitle: "Identity and Authentication"
+    item.homer.rajsingh.info/logo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/pocket-id-light.svg"
+    item.homer.rajsingh.info/keywords: "authentication, identity, sso"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-id-card"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io
