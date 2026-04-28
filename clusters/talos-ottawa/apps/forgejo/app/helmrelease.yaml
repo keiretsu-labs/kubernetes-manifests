@@ -54,9 +54,9 @@ spec:
               key: AWS_SECRET_ACCESS_KEY
       config:
         server:
-          DOMAIN: forgejo.keiretsu.top
-          ROOT_URL: https://forgejo.keiretsu.top
-          SSH_DOMAIN: forgejo.keiretsu.top
+          DOMAIN: forgejo.${COMMON_DOMAIN}
+          ROOT_URL: https://forgejo.${COMMON_DOMAIN}
+          SSH_DOMAIN: forgejo.${COMMON_DOMAIN}
         database:
           DB_TYPE: postgres
           HOST: forgejo-postgres-rw:5432

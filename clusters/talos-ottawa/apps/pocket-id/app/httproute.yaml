@@ -32,8 +32,8 @@ spec:
       namespace: keiretsu
   hostnames:
     - "pocket-id.${CLUSTER_DOMAIN}"
-    - "pocket-id.keiretsu.top"
-    - "pocket-id.cdn.keiretsu.top"
+    - "pocket-id.${COMMON_DOMAIN}"
+    - "pocket-id.cdn.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
