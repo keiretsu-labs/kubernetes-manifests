@@ -13,6 +13,8 @@ metadata:
 spec:
   hostnames:
     - forgejo.${CLUSTER_DOMAIN}
+    - forgejo.keiretsu.top
+    - forgejo.cdn.keiretsu.top
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
@@ -22,6 +24,10 @@ spec:
       kind: Gateway
       name: ts
       namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: cdn
+      namespace: keiretsu
   rules:
     - backendRefs:
         - name: forgejo-http

@@ -7,6 +7,7 @@ resources:
   - gateway-cdn.yaml
   - envoyproxy.yaml
   - certificate-wildcard.yaml
+  - certificate-wildcard-keiretsu-top.yaml
   - redirect.yaml
   - clienttrafficpolicy.yaml
 # DNS
