@@ -7,4 +7,3 @@ resources:
   - service.yaml
   - pvc-config.yaml
   - httproute.yaml
-  - gslb.yaml
