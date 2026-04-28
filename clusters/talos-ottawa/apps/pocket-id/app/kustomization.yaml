@@ -7,3 +7,4 @@ resources:
   - service.yaml
   - pvc-config.yaml
   - httproute.yaml
+  - referencegrant.yaml
