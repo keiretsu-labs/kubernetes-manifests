@@ -8,4 +8,3 @@ resources:
   - pvc-config.yaml
   - httproute.yaml
   - gslb.yaml
-  - dnse.yaml
