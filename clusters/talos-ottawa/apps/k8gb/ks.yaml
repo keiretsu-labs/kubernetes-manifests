@@ -11,7 +11,7 @@ spec:
   dependsOn:
     - name: k8gb-config
     - name: homer-operator-install
-  path: ./clusters/talos-ottawa/apps/k8gb
+  path: ./clusters/talos-ottawa/apps/k8gb/app
   prune: true
   sourceRef:
     kind: GitRepository
