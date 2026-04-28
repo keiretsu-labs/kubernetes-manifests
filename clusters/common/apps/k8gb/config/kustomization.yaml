@@ -15,3 +15,6 @@ resources:
   - ./gslb-zot-public.yaml
   - ./gslb-qbittorrent.yaml
   - ./gslb-garage-s3.yaml
+  - ./gslb-dashboard-cdn.yaml
+  - ./gslb-forgejo.yaml
+  - ./gslb-pocket-id.yaml
