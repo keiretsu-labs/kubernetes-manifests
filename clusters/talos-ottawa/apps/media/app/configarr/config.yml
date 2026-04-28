@@ -1,6 +1,18 @@
 trashGuideUrl: https://github.com/TRaSH-Guides/Guides
 recyclarrConfigUrl: https://github.com/recyclarr/config-templates
 
+customFormatDefinitions:
+  - configarr_id: custom-european-multi-lang-penalty
+    name: "Release: European Multi-Language Penalty"
+    includeCustomFormatWhenRenaming: false
+    specifications:
+      - name: "Bad European Multi-Language Tags"
+        implementation: ReleaseTitleSpecification
+        negate: false
+        required: false
+        fields:
+          value: "(?i)\\b(TRUEFRENCH|VFF|VFQ|ITA|LATINO|GERMAN[ ._-]?DL|FRENCH[ ._-]?DL|SPANISH[ ._-]?DL|MULTI[ ._-]?FRENCH)\\b"
+
 sonarr:
   sonarr-1080p:
     base_url: http://sonarr-1080p:8989
@@ -46,6 +58,12 @@ sonarr:
           # - 9b64dff695c2115facf1b6ea59c9bd07 # x265 (no HDR/DV)
         assign_scores_to:
           - name: WEB-1080p
+
+      - trash_ids:
+          - custom-european-multi-lang-penalty
+        assign_scores_to:
+          - name: WEB-1080p
+            score: -10000
 
   sonarr-4k:
     base_url: http://sonarr-4k:8989
@@ -115,6 +133,12 @@ sonarr:
         assign_scores_to:
           - name: WEB-2160p
 
+      - trash_ids:
+          - custom-european-multi-lang-penalty
+        assign_scores_to:
+          - name: WEB-2160p
+            score: -10000
+
   sonarr-anime:
     base_url: http://sonarr-anime:8989
     api_key: !secret SONARR_ANIME_API_KEY
@@ -157,6 +181,12 @@ sonarr:
           - name: Remux-1080p - Anime
             score: 0 # Adjust scoring as desired
 
+      - trash_ids:
+          - custom-european-multi-lang-penalty
+        assign_scores_to:
+          - name: Remux-1080p - Anime
+            score: -10000
+
 radarr:
   radarr-1080p:
     base_url: http://radarr-1080p:7878
@@ -167,7 +197,7 @@ radarr:
       movie:
         rename: true
       file: jellyfin-tmdb
-    
+
     include:
       # Comment out any of the following includes to disable them
       - template: radarr-quality-definition-movie
@@ -210,6 +240,12 @@ radarr:
           # - 839bea857ed2c0a8e084f3cbdbd65ecb # x265 (no HDR/DV)
         assign_scores_to:
           - name: HD Bluray + WEB
+
+      - trash_ids:
+          - custom-european-multi-lang-penalty
+        assign_scores_to:
+          - name: HD Bluray + WEB
+            score: -10000
 
   radarr-4k:
     base_url: http://radarr-4k:7878
@@ -306,6 +342,12 @@ radarr:
         assign_scores_to:
           - name: UHD Bluray + WEB
 
+      - trash_ids:
+          - custom-european-multi-lang-penalty
+        assign_scores_to:
+          - name: UHD Bluray + WEB
+            score: -10000
+
   radarr-4kremux:
     base_url: http://radarr-4kremux:7878
     api_key: !secret RADARR_4KREMUX_API_KEY
@@ -315,7 +357,7 @@ radarr:
       movie:
         rename: true
       file: jellyfin-tmdb
-    
+
     include:
       # Comment out any of the following includes to disable them
       - template: radarr-quality-definition-movie
@@ -402,6 +444,12 @@ radarr:
         assign_scores_to:
           - name: Remux + WEB 2160p
 
+      - trash_ids:
+          - custom-european-multi-lang-penalty
+        assign_scores_to:
+          - name: Remux + WEB 2160p
+            score: -10000
+
   radarr-anime:
     base_url: http://radarr-anime:7878
     api_key: !secret RADARR_ANIME_API_KEY
@@ -436,4 +484,9 @@ radarr:
         assign_scores_to:
           - name: Remux-1080p - Anime
             score: 0 # Adjust scoring as desired
-    
+
+      - trash_ids:
+          - custom-european-multi-lang-penalty
+        assign_scores_to:
+          - name: Remux-1080p - Anime
+            score: -10000
