@@ -4,6 +4,6 @@ kind: Kustomization
 namespace: hello
 resources:
   - namespace.yaml
-  - deployment-hello-world.yaml
-  - service-hello-world.yaml
-  - approute.yaml
+  # - deployment-hello-world.yaml
+  # - service-hello-world.yaml
+  # - approute.yaml
