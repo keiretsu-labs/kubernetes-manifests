@@ -10,7 +10,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: k8gb-config
-    - name: homer-operator
+    - name: homer-operator-install
   path: ./clusters/talos-ottawa/apps/k8gb
   prune: true
   sourceRef:
