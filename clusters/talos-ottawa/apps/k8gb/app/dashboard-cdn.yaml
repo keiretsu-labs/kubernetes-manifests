@@ -164,8 +164,8 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: cdn
-      namespace: keiretsu
+      name: public
+      namespace: home
   hostnames:
     - "home.cdn.${COMMON_DOMAIN}"
     - "home.${COMMON_DOMAIN}"
