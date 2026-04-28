@@ -41,6 +41,14 @@ spec:
         - group: ''
           kind: Secret
           name: wildcard-${COMMON_DOMAIN//./-}
+    - name: forgejo-ssh
+      protocol: TCP
+      port: 22
+      allowedRoutes:
+        kinds:
+        - kind: TCPRoute
+        namespaces:
+          from: All
     - name: ${COMMON_DOMAIN//./-}-https
       protocol: HTTPS
       port: 443
