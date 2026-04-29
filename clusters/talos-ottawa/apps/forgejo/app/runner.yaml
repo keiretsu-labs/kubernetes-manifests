@@ -22,7 +22,8 @@ spec:
             - -c
             - |
               if [ ! -f /data/.runner ]; then
-                act_runner register \
+                forgejo-runner register \
+                  --config /config/config.yaml \
                   --instance http://forgejo-http:3000 \
                   --token "$(cat /secrets/token)" \
                   --name "$(hostname)" \
@@ -34,10 +35,12 @@ spec:
               mountPath: /data
             - name: token
               mountPath: /secrets
+            - name: config
+              mountPath: /config
       containers:
         - name: runner
           image: code.forgejo.org/forgejo/runner:6.3.1
-          command: [act_runner, daemon, --config, /config/config.yaml]
+          command: [forgejo-runner, daemon, --config, /config/config.yaml]
           env:
             - name: DOCKER_HOST
               value: tcp://localhost:2375
