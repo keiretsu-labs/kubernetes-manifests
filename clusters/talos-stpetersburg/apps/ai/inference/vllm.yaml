@@ -115,10 +115,10 @@ spec:
           requests:
             memory: "16Gi"
             cpu: "4000m"
-            nvidia.com/gpu: "1"
+            nvidia.com/gpu: "4"
           limits:
             memory: "96Gi"
-            nvidia.com/gpu: "1"
+            nvidia.com/gpu: "4"
         volumeMounts:
         - name: models
           mountPath: /models
