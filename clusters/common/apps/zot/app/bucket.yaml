@@ -12,7 +12,8 @@ spec:
     maxSize: 500Gi
     maxObjects: 10000000
   keyPermissions:
-    - keyRef: zot-key
+    - keyRef:
+        name: zot-key
       read: true
       write: true
       owner: true
