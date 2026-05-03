@@ -12,7 +12,8 @@ spec:
     maxSize: 100Gi
     maxObjects: 5000000
   keyPermissions:
-    - keyRef: forgejo-key
+    - keyRef:
+        name: forgejo-key
       read: true
       write: true
       owner: true

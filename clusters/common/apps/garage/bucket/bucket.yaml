@@ -15,7 +15,8 @@ spec:
     indexDocument: index.html
     errorDocument: error.html
   keyPermissions:
-    - keyRef: keiretsu-key
+    - keyRef:
+        name: keiretsu-key
       read: true
       write: true
 ---
@@ -31,7 +32,8 @@ spec:
     maxSize: 100Gi
     maxObjects: 1000000
   keyPermissions:
-    - keyRef: rajsingh-key
+    - keyRef:
+        name: rajsingh-key
       read: true
       write: true
       owner: true
@@ -48,7 +50,8 @@ spec:
     maxSize: 500Gi
     maxObjects: 10000000
   keyPermissions:
-    - keyRef: tailscale-logs-key
+    - keyRef:
+        name: tailscale-logs-key
       read: true
       write: true
 ---
@@ -66,7 +69,8 @@ spec:
     maxSize: 500Gi
     maxObjects: 50000000
   keyPermissions:
-    - keyRef: mimir-key
+    - keyRef:
+        name: mimir-key
       read: true
       write: true
       owner: true
