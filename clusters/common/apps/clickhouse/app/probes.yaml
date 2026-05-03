@@ -1,0 +1,95 @@
+---
+# ClickHouse TCP health checks for local cluster
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-clickhouse-tcp-local
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - clickhouse.clickhouse:9000
+        - clickhouse.clickhouse:8123
+  metricRelabelings:
+    - targetLabel: service
+      replacement: clickhouse
+    - targetLabel: cluster
+      replacement: ottawa
+    - targetLabel: target
+      replacement: local
+      action: replace
+
+---
+# ClickHouse cross-cluster health checks
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-clickhouse-tcp-robbinsdale
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - robbinsdale-clickhouse.clickhouse:9000
+        - robbinsdale-clickhouse.clickhouse:8123
+  metricRelabelings:
+    - targetLabel: service
+      replacement: clickhouse
+    - targetLabel: cluster
+      replacement: robbinsdale
+    - targetLabel: target
+      replacement: cross-cluster
+      action: replace
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-clickhouse-tcp-ottawa
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - ottawa-clickhouse.clickhouse:9000
+        - ottawa-clickhouse.clickhouse:8123
+  metricRelabelings:
+    - targetLabel: service
+      replacement: clickhouse
+    - targetLabel: cluster
+      replacement: ottawa
+    - targetLabel: target
+      replacement: cross-cluster
+      action: replace
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-clickhouse-tcp-stpetersburg
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - stpetersburg-clickhouse.clickhouse:9000
+        - stpetersburg-clickhouse.clickhouse:8123
+  metricRelabelings:
+    - targetLabel: service
+      replacement: clickhouse
+    - targetLabel: cluster
+      replacement: stpetersburg
+    - targetLabel: target
+      replacement: cross-cluster
+      action: replace
+
+---
