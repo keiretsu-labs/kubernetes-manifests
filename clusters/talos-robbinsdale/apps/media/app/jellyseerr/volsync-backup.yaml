@@ -18,7 +18,7 @@ spec:
       yearly: 1
     copyMethod: Direct
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: volsync-media-jellyseerr-config-ceph-key

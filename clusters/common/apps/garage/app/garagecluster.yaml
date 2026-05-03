@@ -1,5 +1,5 @@
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageCluster
 metadata:
   name: garage
@@ -9,7 +9,8 @@ spec:
 
   replication:
     factor: 3
-    zoneRedundancy: "AtLeast(2)"
+    zoneRedundancyMode: "AtLeast"
+    zoneRedundancyMinZones: 2
 
   s3Api:
     rootDomain: ".s3.${COMMON_DOMAIN}"

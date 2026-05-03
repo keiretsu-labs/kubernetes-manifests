@@ -5,6 +5,7 @@ namespace: garage
 resources:
   - admin-token.yaml
   - egress.yaml
+  - reference-grants.yaml
   - service-ts.yaml
   - garagecluster.yaml
   - rpc-secret.yaml

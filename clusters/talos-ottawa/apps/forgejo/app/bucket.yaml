@@ -1,5 +1,5 @@
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
   name: forgejo
@@ -17,7 +17,7 @@ spec:
       write: true
       owner: true
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: forgejo-key
@@ -31,7 +31,8 @@ spec:
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
   bucketPermissions:
-    - bucketRef: forgejo
+    - bucketRef:
+        name: forgejo
       read: true
       write: true
       owner: true

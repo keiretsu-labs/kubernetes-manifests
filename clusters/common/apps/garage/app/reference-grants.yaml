@@ -1,0 +1,27 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: cross-namespace-access
+spec:
+  from:
+    - kind: GarageKey
+      namespace: forgejo
+    - kind: GarageBucket
+      namespace: forgejo
+    - kind: GarageKey
+      namespace: keiretsu-top
+    - kind: GarageBucket
+      namespace: keiretsu-top
+    - kind: GarageKey
+      namespace: zot
+    - kind: GarageBucket
+      namespace: zot
+    - kind: GarageKey
+      namespace: immich
+    - kind: GarageKey
+      namespace: media
+    - kind: GarageKey
+      namespace: hermes
+    - kind: GarageKey
+      namespace: home
