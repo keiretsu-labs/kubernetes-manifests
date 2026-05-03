@@ -83,7 +83,7 @@ spec:
     readyWhen:
     - $${garageKey.status.phase == "Ready"}
     template:
-      apiVersion: garage.rajsingh.info/v1alpha1
+      apiVersion: garage.rajsingh.info/v1beta1
       kind: GarageKey
       metadata:
         name: $${"volsync-" + schema.spec.name + "-key"}
@@ -111,7 +111,7 @@ spec:
     includeWhen:
     - $${schema.spec.bucketCreate}
     template:
-      apiVersion: garage.rajsingh.info/v1alpha1
+      apiVersion: garage.rajsingh.info/v1beta1
       kind: GarageBucket
       metadata:
         name: $${"volsync-" + schema.spec.name + "-bucket"}

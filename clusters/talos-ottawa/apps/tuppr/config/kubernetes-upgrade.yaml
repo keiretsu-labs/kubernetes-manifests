@@ -20,7 +20,7 @@ spec:
       expr: status.ceph.health != "HEALTH_ERR" && !(has(status.ceph.details) && "PG_AVAILABILITY" in status.ceph.details)
       description: Ceph must have no inactive PGs before upgrading next node
       timeout: 30m
-    - apiVersion: garage.rajsingh.info/v1alpha1
+    - apiVersion: garage.rajsingh.info/v1beta1
       kind: GarageCluster
       name: garage
       namespace: garage

@@ -1,5 +1,5 @@
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
   name: keiretsu
@@ -19,7 +19,7 @@ spec:
       read: true
       write: true
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
   name: rajsingh
@@ -36,7 +36,7 @@ spec:
       write: true
       owner: true
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
   name: tailscale-logs
@@ -53,7 +53,7 @@ spec:
       write: true
 ---
 
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
   name: mimir

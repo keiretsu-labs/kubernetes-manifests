@@ -1,5 +1,5 @@
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: tailscale-recorder-key
@@ -13,11 +13,12 @@ spec:
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
   bucketPermissions:
-    - bucketRef: tailscale-logs
+    - bucketRef:
+        name: tailscale-logs
       read: true
       write: true
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: keiretsu-key
@@ -31,11 +32,12 @@ spec:
     accessKeyIdKey: KEIRETSU_S3_ACCESS_KEY
     secretAccessKeyKey: KEIRETSU_S3_SECRET_KEY
   bucketPermissions:
-    - bucketRef: keiretsu
+    - bucketRef:
+        name: keiretsu
       read: true
       write: true
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: rajsingh-key
@@ -49,12 +51,13 @@ spec:
     accessKeyIdKey: RAJSINGH_S3_ACCESS_KEY
     secretAccessKeyKey: RAJSINGH_S3_SECRET_KEY
   bucketPermissions:
-    - bucketRef: rajsingh
+    - bucketRef:
+        name: rajsingh
       read: true
       write: true
       owner: true
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: tailscale-logs-key
@@ -68,11 +71,12 @@ spec:
     accessKeyIdKey: TAILSCALE_LOGS_S3_ACCESS_KEY
     secretAccessKeyKey: TAILSCALE_LOGS_S3_SECRET_KEY
   bucketPermissions:
-    - bucketRef: tailscale-logs
+    - bucketRef:
+        name: tailscale-logs
       read: true
       write: true
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: webui-sidecar-key
@@ -89,7 +93,7 @@ spec:
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
 ---
-apiVersion: garage.rajsingh.info/v1alpha1
+apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: mimir-key
@@ -107,6 +111,7 @@ spec:
       endpoint: "http://garage.garage.svc.cluster.local:3900"
       region: "garage"
   bucketPermissions:
-    - bucketRef: mimir
+    - bucketRef:
+        name: mimir
       read: true
       write: true
