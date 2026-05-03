@@ -1,0 +1,46 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: clickhouse-operator
+spec:
+  interval: 30m
+  dependsOn:
+    - name: clickhouse-operator-crds
+  chart:
+    spec:
+      chart: clickhouse-operator
+      version: v0.31.0
+      sourceRef:
+        kind: HelmRepository
+        name: clickhouse
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        namespace: monitoring
+        namespaceSelector:
+          matchNames:
+            - monitoring
+      port: 8443
+    api:
+      tls:
+        tlsEnabled: true
+        certManager:
+          enabled: true
+    operator:
+      logging:
+        level: "info"
+        flushInterval: "30s"
+        reporters:
+          - type: "json"
+---
