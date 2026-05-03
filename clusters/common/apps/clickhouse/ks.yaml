@@ -1,0 +1,23 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app clickhouse
+  namespace: flux-system
+spec:
+  targetNamespace: clickhouse
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./clusters/common/apps/clickhouse/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: false
+  interval: 0s
+  retryInterval: 1m
+  timeout: 5m
+  dependsOn:
+    - name: clickhouse-operator-system
+---
