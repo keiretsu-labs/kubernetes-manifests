@@ -287,7 +287,6 @@ spec:
       - name: "stone"
         devices:
           - name: "nvme1n1"
-          - name: "sdb"
       - name: "titan"
         devices:
           - name: "nvme0n1"
@@ -297,7 +296,6 @@ spec:
           - name: "sdd"
       - name: "tank"
         devices:
-          - name: "sd[b-z]"
           - name: "nvme*"
     #   - name: "172.17.4.201"
     #     devices: # specific devices to use for storage can be specified for each node
