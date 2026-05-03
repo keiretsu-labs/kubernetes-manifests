@@ -1,0 +1,315 @@
+---
+apiVersion: install.clickhouse.com/v1beta1
+kind: ClickHouseInstallation
+metadata:
+  name: clickhouse
+  namespace: clickhouse
+spec:
+  # Operator creates one cluster per cluster (each cluster gets its own pods)
+  cluster:
+    # ClickHouse cluster name (used for namespace/isolation)
+    name: "${LOCATION}"
+
+    # Default TCP port for ClickHouse connections
+    tcpPort: 9000
+    # HTTP interface port
+    httpPort: 8123
+    # Interserver HTTP port for replication
+    interserverHttpPort: 9009
+
+    # Storage configuration
+    storage:
+      volumes:
+        - name: chunk
+          creationPolicy: Volatile
+          type: Available
+          size: 50Gi
+          storageClass: "${STORAGECLASS_LONGTERM}"
+        - name: log
+          creationPolicy: Volatile
+          type: Available
+          size: 10Gi
+          storageClass: "${STORAGECLASS_LONGTERM}"
+        - name: store
+          creationPolicy: Volatile
+          type: Available
+          size: 100Gi
+          storageClass: "${STORAGECLASS_LONGTERM}"
+      volumeClaimTemplate:
+        storageClassName: "${STORAGECLASS_LONGTERM}"
+        volumeClaimSpec:
+          resources:
+            requests:
+              storage: 150Gi
+
+    # Network configuration for cross-cluster connectivity
+    network:
+      # Port mapping for services
+      ports:
+        - port: 9000
+          name: tcp
+          service: true
+          pod: true
+        - port: 8123
+          name: http
+          service: true
+          pod: true
+        - port: 9009
+          name: interserver
+          service: false
+          pod: true
+
+    # Replication strategy - use ClickHouse native replication
+    layouts:
+      # Data layout defines shards and replicas
+      shards:
+        - count: 1
+          # Pod topology - each shard gets pods on different nodes
+          definitionMeta:
+            topologyKey: "kubernetes.io/hostname"
+          # GRPCCluster for replication
+          grpcsCluster: ""
+          # ZooKeeper path for metadata
+          zkPath: "/clickhouse/cluster-${LOCATION}"
+          # Default replication factor
+          replicationFactor: 1
+
+      # Replicas per shard
+      replicas:
+        count: 3
+
+    # Configuration per shard
+    configuration:
+      # Default settings
+      profiles:
+        default:
+          # Max parallel queries per thread
+          max_threads: 16
+          # Memory limits
+          memory_usage: 100000000000
+          # Query cache
+          query_cache_max_size: 100000000000
+
+      # Data compression
+      compression:
+        rules:
+          - meta:
+              regexp: .*
+            compressor:
+              type: lz4
+              level: 1
+            # Don't compress small files
+            size: 10000000
+            # Keep compressed
+            keep_compressed: true
+
+      # ZooKeeper for metadata (used for CREATE TABLE with MergeTree family)
+      zookeeper:
+        nodes:
+          - host: "${LOCATION}-zookeeper.clickhouse.svc.cluster.local"
+            port: 2181
+
+      # Distributed DDL
+      distributed_ddl:
+        profile: default
+
+      # Query log
+      query_log:
+        retention_time: 8760h
+        flush_interval_milliseconds: 7500
+
+      # Metrics and monitoring
+      metrics:
+        endpoint: /metrics
+        port: 9363
+
+    # Resources per pod
+    resources:
+      cpu: 2
+      memory: 8Gi
+      cores: 4
+
+    # Pod configuration
+    pod:
+      # Number of replicas per shard
+      replicas: 3
+      # Pod template settings
+      template:
+        # Annotations for monitoring
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "9363"
+        # Labels for service selection
+        labels:
+          app.kubernetes.io/name: clickhouse
+          app.kubernetes.io/instance: clickhouse
+          app.kubernetes.io/cluster: ${LOCATION}
+
+        # Container settings
+        container:
+          clickhouse:
+            image: clickhouse/clickhouse-server:latest
+            # Resource limits
+            resources:
+              requests:
+                cpu: 100m
+                memory: 1Gi
+              limits:
+                cpu: 2000m
+                memory:8Gi
+            # Ports
+            ports:
+              tcp: 9000
+              http: 8123
+              interserver: 9009
+              metrics: 9363
+            # Environment variables
+            env:
+              - name: TZ
+                value: "UTC"
+              - name: CLICKHOUSE_DB
+                value: "default"
+              - name: CLICKHOUSE_USER
+                value: "default"
+            # Volume mounts
+            volumeMounts:
+              - name: chunk
+                mountPath: /var/lib/clickhouse/
+              - name: log
+                mountPath: /var/log/clickhouse-server
+              - name: store
+                mountPath: /var/lib/clickhouse/store
+
+        # Init container for configuration
+        initContainer:
+          clickhouse:
+            image: clickhouse/clickhouse-init:latest
+            env:
+              - name: INIT_TYPE
+                value: "full"
+
+    # Service configuration
+    service:
+      # Expose via ClusterIP for internal access
+      clusterIP: None
+      # Port configuration
+      ports:
+        - port: 9000
+          name: tcp
+        - port: 8123
+          name: http
+        - port: 9009
+          name: interserver
+      # Target ports
+      targetPorts:
+        - port: 9000
+        - port: 8123
+        - port: 9009
+
+    # ClickHouse native protocol for internal communication
+    # Use tailscale for cross-cluster access
+    # Network mode: Use tailscale for all traffic
+
+  # Configuration for the operator
+  namespace:
+    # Create namespace for clickhouse pods
+    name: clickhouse
+    # Labels for the namespace
+    labels:
+      app.kubernetes.io/name: clickhouse
+      app.kubernetes.io/instance: clickhouse
+      app.kubernetes.io/cluster: ${LOCATION}
+
+  # Default values for all clusters
+  defaults:
+    # Default number of replicas
+    replicas: 3
+    # Default number of shards
+    shards: 1
+
+  # Volume claims
+  volumeClaims:
+    # Enable volume claims for persistence
+    enabled: true
+    # Zone-specific storage classes
+    zoneKeys:
+      - "failure-domain.kubernetes.io/zone"
+
+  # Configuration files
+  config:
+    # Users
+    users:
+      default:
+        password: ""
+        networks:
+          ip: "::/0"
+        profile: default
+        quota: default
+        # Allow distributed queries
+        access_management: 1
+
+    # Profiles
+    profiles:
+      default:
+        # Max memory usage
+        memory_usage: 100000000000
+        # Max threads
+        max_threads: 16
+        # Query execution timeout
+        max_execution_time: 30
+        # Query cache
+        query_cache_max_size: 100000000000
+        # Log level
+        log_level: INFO
+
+    # Clusters
+    clusters:
+      - name: "${LOCATION}"
+        # Servers
+        servers:
+          - port: 9000
+            # Host pattern
+            host_name: clickhouse-${LOCATION}-*
+
+        # Replication
+        replication:
+          enabled: true
+          # ZooKeeper for replication
+          zookeeper:
+            nodes:
+              - host: "${LOCATION}-zookeeper.clickhouse.svc.cluster.local"
+                port: 2181
+
+        # Shards
+        shards:
+          - name: "shard-1"
+            # Replicas
+            replicas:
+              - name: "replica-1"
+                host: clickhouse-${LOCATION}-0.clickhouse.clickhouse.svc.cluster.local
+                port: 9000
+              - name: "replica-2"
+                host: clickhouse-${LOCATION}-1.clickhouse.clickhouse.svc.cluster.local
+                port: 9000
+              - name: "replica-3"
+                host: clickhouse-${LOCATION}-2.clickhouse.clickhouse.svc.cluster.local
+                port: 9000
+
+    # Distributed tables
+    distributed:
+      engine:
+        name: Distributed
+        arguments:
+          - "${LOCATION}"
+          - default
+          - hits
+          - shard_1
+
+    # Settings
+    settings:
+      # Max memory usage
+      memory_usage: 100000000000
+      # Max threads
+      max_threads: 16
+      # Query execution timeout
+      max_execution_time: 30
