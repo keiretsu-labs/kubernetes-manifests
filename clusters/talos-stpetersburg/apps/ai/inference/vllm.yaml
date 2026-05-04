@@ -58,7 +58,6 @@ spec:
             cpu: "2000m"
           limits:
             memory: "8Gi"
-      # GB10 unified memory: flush page cache so cudaMemGetInfo returns accurate free memory
       - name: drop-caches
         image: busybox:1.37
         command: [sh, -c, "sync && echo 3 > /proc/sys/vm/drop_caches && echo 'page cache dropped'"]
@@ -86,8 +85,7 @@ spec:
             --max-model-len 262144 \
             --max-num-seqs 128 \
             --max-num-batched-tokens 65536 \
-            --gpu-memory-utilization 0.50 \
-            --limit-mm-per-prompt '{"image": 0}' \
+            --gpu-memory-utilization 0.6 \
             --enable-chunked-prefill \
             --enable-prefix-caching \
             --load-format safetensors \
@@ -133,8 +131,7 @@ spec:
             cpu: "4000m"
             nvidia.com/gpu: "4"
           limits:
-            # CPU-side safety net only; CUDA UVM allocations bypass cgroup on GB10
-            memory: "30Gi"
+            memory: "96Gi"
             nvidia.com/gpu: "4"
         volumeMounts:
         - name: models
