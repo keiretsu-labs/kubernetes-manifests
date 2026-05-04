@@ -58,6 +58,18 @@ spec:
             cpu: "2000m"
           limits:
             memory: "8Gi"
+      # GB10 unified memory: flush page cache so cudaMemGetInfo returns accurate free memory
+      - name: drop-caches
+        image: busybox:1.37
+        command: [sh, -c, "sync && echo 3 > /proc/sys/vm/drop_caches && echo 'page cache dropped'"]
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "100m"
+          limits:
+            memory: "32Mi"
       containers:
       - name: vllm
         image: ghcr.io/aeon-7/vllm-spark-omni-q36:v2.0
@@ -111,13 +123,17 @@ spec:
           value: "/models/compile-cache"
         - name: VLLM_CACHE_ROOT
           value: "/models/vllm-cache"
+        securityContext:
+          capabilities:
+            add: ["IPC_LOCK"]
         resources:
           requests:
             memory: "16Gi"
             cpu: "4000m"
             nvidia.com/gpu: "4"
           limits:
-            memory: "96Gi"
+            # CPU-side safety net only; CUDA UVM allocations bypass cgroup on GB10
+            memory: "30Gi"
             nvidia.com/gpu: "4"
         volumeMounts:
         - name: models
