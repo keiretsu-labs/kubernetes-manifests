@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: ai
 
 resources:
+  - namespace.yaml
   - vllm.yaml
   - valkey.yaml
   - searxng.yaml
