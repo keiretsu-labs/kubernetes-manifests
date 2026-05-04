@@ -17,14 +17,6 @@
           "tool_call": true,
           "temperature": true,
           "limit": { "context": 262144, "output": 16384 }
-        },
-        "MiniMax-M2.7": {
-          "name": "MiniMax M2.7",
-          "attachment": false,
-          "reasoning": false,
-          "tool_call": true,
-          "temperature": true,
-          "limit": { "context": 1000000, "output": 16384 }
         }
       }
     }
