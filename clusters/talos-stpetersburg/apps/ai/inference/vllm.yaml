@@ -87,7 +87,7 @@ spec:
             --max-num-seqs 128 \
             --max-num-batched-tokens 65536 \
             --gpu-memory-utilization 0.50 \
-            --limit-mm-per-prompt "image=0" \
+            --limit-mm-per-prompt '{"image": 0}' \
             --enable-chunked-prefill \
             --enable-prefix-caching \
             --load-format safetensors \
