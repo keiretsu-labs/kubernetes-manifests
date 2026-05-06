@@ -66,6 +66,11 @@ spec:
   webApi:
     rootDomain: ".${COMMON_DOMAIN}"
 
+  workers:
+    resyncWorkerCount: 4
+    resyncTranquility: 0
+    scrubTranquility: 4
+
   resources:
     requests:
       cpu: 100m
