@@ -29,6 +29,7 @@ spec:
       labels:
         app: neo4j
     spec:
+      enableServiceLinks: false
       securityContext:
         fsGroup: 7474
       containers:
