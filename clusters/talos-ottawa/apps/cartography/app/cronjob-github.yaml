@@ -1,0 +1,32 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cartography-github
+spec:
+  schedule: "30 */6 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: cartography
+              image: ghcr.io/cartography-cncf/cartography:latest
+              args:
+                - --neo4j-uri=bolt://neo4j:7687
+                - --selected-modules=github
+                - --github-config-env-var=GITHUB_CONFIG
+              envFrom:
+                - secretRef:
+                    name: cartography-secrets
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 512Mi
+                limits:
+                  memory: 2Gi
