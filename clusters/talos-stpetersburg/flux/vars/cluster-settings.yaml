@@ -29,3 +29,4 @@ data:
   # Storage
   STORAGECLASS_LONGTERM: local-path
   STORAGECLASS_DEFAULT: local-path
+  STORAGECLASS_METADATA: local-path

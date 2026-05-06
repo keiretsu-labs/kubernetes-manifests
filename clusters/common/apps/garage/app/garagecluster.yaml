@@ -19,6 +19,7 @@ spec:
   storage:
     metadata:
       size: 3Gi
+      storageClassName: "${STORAGECLASS_METADATA}"
     data:
       size: 2Ti
       storageClassName: "${STORAGECLASS_LONGTERM}"
