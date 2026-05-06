@@ -67,7 +67,7 @@ spec:
     rootDomain: ".${COMMON_DOMAIN}"
 
   workers:
-    resyncWorkerCount: 4
+    resyncWorkerCount: 8
     resyncTranquility: 0
     scrubTranquility: 4
 
