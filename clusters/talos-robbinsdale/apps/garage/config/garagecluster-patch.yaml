@@ -6,6 +6,8 @@ metadata:
   namespace: garage
 spec:
   storage:
+    metadata:
+      storageClassName: local-path
     data:
       size: 100Gi
       storageClassName: smb
