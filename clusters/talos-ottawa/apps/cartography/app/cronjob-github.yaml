@@ -17,10 +17,16 @@ spec:
           containers:
             - name: cartography
               image: ghcr.io/cartography-cncf/cartography:latest
+              command: [/bin/sh, -c]
               args:
-                - --neo4j-uri=bolt://neo4j:7687
-                - --selected-modules=github
-                - --github-config-env-var=GITHUB_CONFIG
+                - |
+                  GITHUB_CONFIG=$$(printf '{"organization":[{"token":"%s","url":"https://api.github.com/graphql","name":"%s"}]}' \
+                    "$$GITHUB_TOKEN" "$$GITHUB_ORG" | base64 -w0)
+                  export GITHUB_CONFIG
+                  exec cartography \
+                    --neo4j-uri=bolt://neo4j:7687 \
+                    --selected-modules=github \
+                    --github-config-env-var=GITHUB_CONFIG
               envFrom:
                 - secretRef:
                     name: cartography-secrets

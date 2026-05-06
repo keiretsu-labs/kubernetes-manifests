@@ -8,5 +8,5 @@ resources:
   - cronjob-k8s.yaml
   - cronjob-github.yaml
   - cronjob-tailscale.yaml
-  - secrets.sops.yaml
+  - secrets.yaml
   - httproute.yaml
