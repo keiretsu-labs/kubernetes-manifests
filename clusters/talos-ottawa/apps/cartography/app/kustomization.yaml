@@ -10,3 +10,4 @@ resources:
   - cronjob-tailscale.yaml
   - secrets.yaml
   - httproute.yaml
+  - tcproute.yaml
