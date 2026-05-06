@@ -35,7 +35,11 @@ data:
     stpetersburg.k8s:53 {
       errors
       cache 30
-      forward . 10.73.69.51
+      reload
+      loop
+      bind 0.0.0.0
+      forward . 10.4.210.24
+      prometheus :9253
     }
     ts.net {
       errors
