@@ -6,6 +6,7 @@ metadata:
 spec:
   replicas: 1
   zone: "${LOCATION}"
+  image: dxflrs/garage:v2.3.0
 
   replication:
     factor: 3
