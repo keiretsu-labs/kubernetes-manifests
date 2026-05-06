@@ -4,6 +4,11 @@ kind: CronJob
 metadata:
   name: cartography-github
 spec:
+  # Suspended: requires `read:user` + `user:email` scopes on
+  # KUBERNETES_MANIFESTS_GITHUB_TOKEN. Without them the membersWithRole
+  # query returns null and the sync hard-fails. Un-suspend after the
+  # token is updated.
+  suspend: true
   schedule: "30 */6 * * *"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
