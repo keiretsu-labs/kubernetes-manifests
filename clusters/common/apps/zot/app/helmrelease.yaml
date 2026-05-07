@@ -55,7 +55,10 @@ spec:
             "remoteCache": true,
             "cacheDriver": {
               "name": "redis",
-              "url": "redis://zot-cache:6379",
+              "addr": ["zot-cache:6379"],
+              "dial_timeout": "10s",
+              "read_timeout": "60s",
+              "write_timeout": "60s",
               "keyprefix": "zot"
             },
             "retention": {
