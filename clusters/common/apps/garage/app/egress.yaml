@@ -21,7 +21,7 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-garage.keiretsu.ts.net
-    # tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-group: common-egress
   name: ottawa-garage
 spec:
   externalName: placeholder
@@ -46,7 +46,7 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-garage.keiretsu.ts.net
-    # tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-group: common-egress
   name: robbinsdale-garage
 spec:
   externalName: placeholder
@@ -71,7 +71,7 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-garage.keiretsu.ts.net
-    # tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-group: common-egress
   name: stpetersburg-garage
 spec:
   externalName: placeholder

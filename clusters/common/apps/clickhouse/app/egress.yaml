@@ -23,6 +23,7 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-clickhouse.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
   name: ottawa-clickhouse
 spec:
   externalName: placeholder
@@ -44,6 +45,7 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-clickhouse.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
   name: robbinsdale-clickhouse
 spec:
   externalName: placeholder
@@ -65,6 +67,7 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-clickhouse.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
   name: stpetersburg-clickhouse
 spec:
   externalName: placeholder

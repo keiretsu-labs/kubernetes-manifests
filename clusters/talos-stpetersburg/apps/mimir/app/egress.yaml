@@ -5,7 +5,7 @@ metadata:
   name: mimir-gateway
   annotations:
     tailscale.com/tailnet-fqdn: mimir.keiretsu.ts.net
-    tailscale.com/proxy-class: "common"
+    tailscale.com/proxy-group: common-egress
 spec:
   type: ExternalName
   externalName: placeholder
