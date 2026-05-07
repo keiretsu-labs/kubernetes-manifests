@@ -12,8 +12,10 @@ clustermesh:
     service:
       annotations:
         tailscale.com/hostname: ${LOCATION}
+        tailscale.com/proxy-group: common-ingress
+        tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
       type: LoadBalancer
-      loadBalancerClass: tailscale 
+      loadBalancerClass: tailscale
     tls:
       authMode: cluster
       server:
