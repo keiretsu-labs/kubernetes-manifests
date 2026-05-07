@@ -6,8 +6,8 @@ metadata:
   namespace: kube-system
   annotations:
     tailscale.com/hostname: "${LOCATION}-coredns"
-    tailscale.com/proxy-class: common
-    tailscale.com/tags: "tag:k8s"
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
 spec:
   ports:
   - name: dns

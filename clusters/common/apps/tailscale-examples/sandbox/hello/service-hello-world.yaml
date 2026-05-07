@@ -5,6 +5,8 @@ metadata:
   name: hello-world
   annotations:
     tailscale.com/hostname: ${LOCATION}-tailscale-examples-hello-world-service
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
 spec:
   selector:
     app: hello-world
