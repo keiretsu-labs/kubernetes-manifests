@@ -89,7 +89,7 @@ spec:
               "ottawa-zot:5000",
               "stpetersburg-zot:5000"
             ],
-            "hashKey": "$${ZOT_CLUSTER_HASHKEY}"
+            "hashKey": "${ZOT_CLUSTER_HASHKEY}"
           },
           "http": {
             "address": "0.0.0.0",
