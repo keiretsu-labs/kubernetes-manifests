@@ -4,15 +4,16 @@ kind: Service
 metadata:
   name: code-server
   annotations:
-    tailscale.com/expose: "true"
     tailscale.com/hostname: ${LOCATION}-code-server
     tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
 spec:
   selector:
-    app: code-server  # Match labels with your Deployment
+    app: code-server
   ports:
     - name: http
       protocol: TCP
-      port: 80  # Port exposed by the service
-      targetPort: 8443  # Port on the pods (matches containerPort in Deployment)
-  type: NodePort  # Expose service on a static port on each node
+      port: 80
+      targetPort: 8443
+  type: LoadBalancer
+  loadBalancerClass: tailscale
