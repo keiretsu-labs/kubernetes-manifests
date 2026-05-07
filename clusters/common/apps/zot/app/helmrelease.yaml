@@ -52,6 +52,12 @@ spec:
             "gc": true,
             "gcDelay": "1h",
             "gcInterval": "6h",
+            "remoteCache": true,
+            "cacheDriver": {
+              "name": "redis",
+              "url": "redis://zot-cache:6379",
+              "keyprefix": "zot"
+            },
             "retention": {
               "policies": [{
                 "repositories": ["**"],
@@ -76,6 +82,14 @@ spec:
               "skipverify": false,
               "multipartcopymaxconcurrency": 8
             }
+          },
+          "cluster": {
+            "members": [
+              "robbinsdale-zot:5000",
+              "ottawa-zot:5000",
+              "stpetersburg-zot:5000"
+            ],
+            "hashKey": "$${ZOT_CLUSTER_HASHKEY}"
           },
           "http": {
             "address": "0.0.0.0",
@@ -119,3 +133,21 @@ spec:
         }
     secretFiles:
       htpasswd: "${COMMON_OCI}"
+  postRenderers:
+    # Inject a hostAlias so the local zot pod's lookup of its own peer name
+    # (e.g. ottawa-zot in the Ottawa cluster) returns 127.0.0.1, satisfying
+    # zot's GetLocalMemberClusterSocket self-identification check at startup.
+    # Without this, zot panics because the ExternalName Service for its own
+    # location resolves to the common-egress proxy IP, not the pod IP.
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: zot
+            patch: |
+              - op: add
+                path: /spec/template/spec/hostAliases
+                value:
+                  - ip: 127.0.0.1
+                    hostnames:
+                      - ${LOCATION}-zot

@@ -1,0 +1,18 @@
+---
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  # Operator creates a Service of the same name. Keep distinct from the
+  # 'zot-cache' ExternalName in common/apps/zot to avoid a name collision.
+  name: dragonfly-zot
+spec:
+  replicas: 2
+  args:
+    - --maxmemory=2G
+    - --proactor_threads=2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 1Gi
+    limits:
+      memory: 2.5Gi

@@ -6,11 +6,13 @@ resources:
   - backendtrafficpolicy.yaml
   - probes.yaml
   - bucket.yaml
+  - egress.yaml
   - grafana-dashboard.yaml
   - helmrelease.yaml
   - httproute-internal.yaml
   - httproute-public.yaml
   - ingress-internal.yaml
+  - service-ts.yaml
   - servicemonitor.yaml
 configMapGenerator:
   - name: zot-grafana-dashboard
