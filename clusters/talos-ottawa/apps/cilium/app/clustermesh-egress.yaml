@@ -5,7 +5,7 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale.keiretsu.ts.net
-    # tailscale.com/proxy-group: common-egress
+    tailscale.com/proxy-group: common-egress
   name: robbinsdale
 spec:
   externalName: placeholder   # any value - will be overwritten by operator
