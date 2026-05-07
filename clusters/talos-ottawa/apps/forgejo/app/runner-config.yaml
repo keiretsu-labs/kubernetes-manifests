@@ -21,4 +21,3 @@ data:
       network: bridge
       privileged: true
       docker_host: tcp://127.0.0.1:2375
-      options: -v /var/run/docker.sock:/var/run/docker.sock
