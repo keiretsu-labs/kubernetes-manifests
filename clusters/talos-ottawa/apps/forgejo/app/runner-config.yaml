@@ -18,6 +18,5 @@ data:
       enabled: true
       dir: /data/cache
     container:
-      network: bridge
       privileged: true
       docker_host: tcp://127.0.0.1:2375
