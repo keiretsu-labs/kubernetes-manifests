@@ -3,6 +3,4 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: zot
 resources:
-  - dragonfly.yaml
-  - service-local.yaml
-  - service-ts.yaml
+  - egress.yaml

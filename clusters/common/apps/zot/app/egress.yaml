@@ -52,22 +52,3 @@ spec:
     - name: http
       port: 5000
       protocol: TCP
----
-# Shared remote cache (DragonflyDB) — single instance lives in Ottawa and
-# is reached by every cluster (including Ottawa itself) via the same
-# Tailscale FQDN.
-apiVersion: v1
-kind: Service
-metadata:
-  name: zot-cache
-  annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
-    tailscale.com/tailnet-fqdn: zot-cache.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
-spec:
-  externalName: placeholder
-  type: ExternalName
-  ports:
-    - name: redis
-      port: 6379
-      protocol: TCP
