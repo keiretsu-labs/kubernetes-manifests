@@ -86,7 +86,7 @@ spec:
     - name: neo4j-bolt
       protocol: TLS
       port: 7687
-      hostname: "*.${CLUSTER_DOMAIN}"
+      hostname: "cartography.${CLUSTER_DOMAIN}"
       tls:
         mode: Terminate
         certificateRefs:
