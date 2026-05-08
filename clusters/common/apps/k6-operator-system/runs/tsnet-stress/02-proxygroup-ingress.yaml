@@ -1,0 +1,47 @@
+# Mode 2: hits the operator's tsnet ingress path via the existing tailnet
+# hostname. Substitute TARGET_LOCATION before applying.
+#   sed 's/TARGET_LOCATION/robbinsdale/g' 02-proxygroup-ingress.yaml | kubectl create -f -
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  generateName: tsnet-pgi-burst-to-TARGET_LOCATION-
+  namespace: k6-operator-system
+spec:
+  parallelism: 2
+  cleanup: post
+  script:
+    configMap:
+      name: k6-test-dialer-burst
+      file: dialer-burst.js
+  arguments: --out experimental-prometheus-rw
+  runner:
+    image: grafana/k6:0.55.0
+    env:
+      - name: TARGET_URL
+        value: "http://hello-world-TARGET_LOCATION.tailscale-examples"
+      - name: CLUSTER_SRC
+        valueFrom:
+          configMapKeyRef:
+            name: cluster-settings
+            key: CLUSTER_NAME
+            optional: true
+      - name: CLUSTER_DST
+        value: "TARGET_LOCATION"
+      - name: TRANSPORT
+        value: "ts-proxygroup-ingress"
+      - name: PAYLOAD
+        value: "small"
+      - name: K6_VERSION
+        value: "0.55.0"
+      - name: K6_PROMETHEUS_RW_SERVER_URL
+        value: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+      - name: K6_PROMETHEUS_RW_TREND_STATS
+        value: "p(50),p(90),p(95),p(99),min,max,avg"
+      - name: PEAK_RATE
+        value: "200"
+      - name: HOLD
+        value: "2m"
+    resources:
+      requests: { cpu: 200m, memory: 256Mi }
+      limits:   { cpu: 1000m, memory: 512Mi }
