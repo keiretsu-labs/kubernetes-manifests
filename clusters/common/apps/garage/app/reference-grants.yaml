@@ -25,3 +25,5 @@ spec:
       namespace: hermes
     - kind: GarageKey
       namespace: home
+    - kind: GarageKey
+      namespace: tailscale-examples

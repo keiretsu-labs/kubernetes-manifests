@@ -17,13 +17,33 @@ spec:
     spec:
       containers:
       - name: tsflow
-        image: ghcr.io/rajsinghtech/tsflow:v1.6.0
+        image: ghcr.io/rajsinghtech/tsflow:v1.6.1
         imagePullPolicy: Always
         ports:
         - name: http
           containerPort: 8080
           protocol: TCP
         env:
+        - name: TSFLOW_FLOW_BACKEND
+          value: "s3"
+        - name: TSFLOW_S3_BUCKET
+          value: "tailscale-logs"
+        - name: TSFLOW_S3_PREFIX
+          value: "network/"
+        - name: TSFLOW_S3_ENDPOINT
+          value: "http://garage-global.garage.svc.cluster.local:3900"
+        - name: TSFLOW_S3_REGION
+          value: "garage"
+        - name: TSFLOW_S3_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: tsflow-tailscale-logs-s3-auth
+              key: TSFLOW_S3_ACCESS_KEY_ID
+        - name: TSFLOW_S3_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: tsflow-tailscale-logs-s3-auth
+              key: TSFLOW_S3_SECRET_ACCESS_KEY
         - name: TSFLOW_INITIAL_BACKFILL
           value: "6h"
         - name: ENVIRONMENT
