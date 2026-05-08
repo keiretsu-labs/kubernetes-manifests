@@ -67,8 +67,14 @@ nodes:
       serial: "202729482BD6" # Crucial CT1000P1SSD8 1TB
     controlPlane: true
     networkInterfaces:
-      - interface: enp1s0f1
-        dhcp: true
+      # Moved off SFP (enp1s0f1) onto onboard ethernet — SFP switch port
+      # disabled due to multicast storm. Static .112 to keep Ceph mons stable.
+      - interface: enp3s0
+        addresses:
+          - "192.168.50.112/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "192.168.50.1"
         vip:
           ip: "192.168.50.25"
 
