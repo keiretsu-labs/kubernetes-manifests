@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
-import { commonTags, targetURL } from './tags.js';
+import { targetURL } from './tags.js';
 import { soakThresholds } from './thresholds.js';
 import { makeCustomMetrics, recordResponse } from './helpers.js';
 
@@ -20,7 +20,6 @@ export const options = {
     },
   },
   thresholds: soakThresholds,
-  tags: commonTags(),
 };
 
 export default function () {

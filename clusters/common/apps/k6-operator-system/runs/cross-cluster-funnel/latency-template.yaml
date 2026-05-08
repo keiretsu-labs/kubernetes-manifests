@@ -26,6 +26,11 @@ spec:
     --tag k6_version=0.55.0
   runner:
     image: grafana/k6:0.55.0
+    # CoreDNS forwards *.ts.net to the Tailscale DNS proxy, which does not
+    # resolve Funnel public IPs. Pass HOSTS_OVERRIDE so the script uses
+    # k6's options.hosts to map the funnel hostname to a public IP.
+    # Get the IP at apply time:
+    #   PUBLIC_IP=$(dig +short ottawa-tailscale-examples-hello-world-funnel.keiretsu.ts.net @8.8.8.8 | head -1)
     envFrom:
       - configMapRef:
           name: cluster-info
@@ -33,6 +38,9 @@ spec:
     env:
       - name: TARGET_URL
         value: "https://TARGET_LOCATION-tailscale-examples-hello-world-funnel.TAILNET_DOMAIN"
+      - name: HOSTS_OVERRIDE
+        # Substitute PUBLIC_IP at apply time (see comment above on runner).
+        value: "TARGET_LOCATION-tailscale-examples-hello-world-funnel.TAILNET_DOMAIN=PUBLIC_IP"
       - name: VUS
         value: "5"
       - name: DURATION

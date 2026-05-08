@@ -1,7 +1,7 @@
 import { check, sleep } from 'k6';
 import { WebSocket } from 'k6/experimental/websockets';
 import { setTimeout, clearTimeout } from 'k6/timers';
-import { commonTags, targetURL } from './tags.js';
+import { targetURL } from './tags.js';
 import { makeCustomMetrics } from './helpers.js';
 
 // Opens many concurrent WebSocket sessions and holds them open. Useful for
@@ -22,7 +22,6 @@ export const options = {
   thresholds: {
     checks: ['rate>0.95'],
   },
-  tags: commonTags(),
 };
 
 export default function () {

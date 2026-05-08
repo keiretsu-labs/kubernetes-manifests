@@ -1,11 +1,18 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
-import { commonTags, targetURL } from './tags.js';
+import { targetURL } from './tags.js';
 import { latencyThresholds } from './thresholds.js';
 import { makeCustomMetrics, recordResponse } from './helpers.js';
 
 const URL = targetURL('http://hello-world.tailscale-examples');
 const m = makeCustomMetrics('k6_latency');
+
+// HOSTS_OVERRIDE format: "host1=ip1,host2=ip2"
+// Used to bypass cluster DNS for paths like Tailscale Funnel where the
+// runner pod cannot resolve the hostname through CoreDNS.
+const hosts = __ENV.HOSTS_OVERRIDE
+  ? Object.fromEntries(__ENV.HOSTS_OVERRIDE.split(',').map((s) => s.split('=')))
+  : undefined;
 
 export const options = {
   scenarios: {
@@ -16,7 +23,7 @@ export const options = {
     },
   },
   thresholds: latencyThresholds,
-  tags: commonTags(),
+  hosts,
 };
 
 export default function () {
