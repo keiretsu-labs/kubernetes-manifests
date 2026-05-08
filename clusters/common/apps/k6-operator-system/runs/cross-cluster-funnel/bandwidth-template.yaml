@@ -1,0 +1,48 @@
+# Substitute TARGET_LOCATION, TAILNET_DOMAIN, CLUSTER_SRC_VALUE, PUBLIC_IP:
+#   PUBLIC_IP=$(dig +short ottawa-tailscale-examples-hello-world-funnel.keiretsu.ts.net @8.8.8.8 | head -1)
+#   sed -e "s/TARGET_LOCATION/ottawa/g" \
+#       -e "s/TAILNET_DOMAIN/keiretsu.ts.net/g" \
+#       -e "s/CLUSTER_SRC_VALUE/talos-ottawa/g" \
+#       -e "s/PUBLIC_IP/$PUBLIC_IP/g" \
+#       bandwidth-template.yaml | kubectl create -f -
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  generateName: funnel-bandwidth-to-TARGET_LOCATION-
+  namespace: k6-operator-system
+spec:
+  parallelism: 4
+  cleanup: post
+  script:
+    configMap:
+      name: k6-test-bandwidth
+      file: bandwidth.js
+  arguments: >-
+    --out experimental-prometheus-rw
+    --insecure-skip-tls-verify
+    --tag cluster_src=CLUSTER_SRC_VALUE
+    --tag cluster_dst=TARGET_LOCATION
+    --tag transport=funnel
+    --tag payload=10mb
+    --tag k6_version=0.55.0
+  runner:
+    image: grafana/k6:0.55.0
+    envFrom:
+      - configMapRef:
+          name: cluster-info
+          optional: true
+    env:
+      - name: TARGET_URL
+        value: "https://TARGET_LOCATION-tailscale-examples-hello-world-funnel.TAILNET_DOMAIN"
+      - name: PATH_SUFFIX
+        value: "/10mb"
+      - name: HOSTS_OVERRIDE
+        value: "TARGET_LOCATION-tailscale-examples-hello-world-funnel.TAILNET_DOMAIN=PUBLIC_IP"
+      - name: VUS
+        value: "4"
+      - name: DURATION
+        value: "3m"
+    resources:
+      requests: { cpu: 200m, memory: 256Mi }
+      limits:   { cpu: 1000m, memory: 512Mi }

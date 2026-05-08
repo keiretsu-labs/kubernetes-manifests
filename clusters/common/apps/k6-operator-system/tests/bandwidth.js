@@ -6,6 +6,10 @@ import { makeCustomMetrics, recordResponse } from './helpers.js';
 const URL = targetURL('http://hello-world.tailscale-examples') + (__ENV.PATH_SUFFIX || '/10mb');
 const m = makeCustomMetrics('k6_bandwidth');
 
+const hosts = __ENV.HOSTS_OVERRIDE
+  ? Object.fromEntries(__ENV.HOSTS_OVERRIDE.split(',').map((s) => s.split('=')))
+  : undefined;
+
 export const options = {
   scenarios: {
     download: {
@@ -16,6 +20,7 @@ export const options = {
   },
   thresholds: bandwidthThresholds,
   noConnectionReuse: __ENV.NO_REUSE === 'true',
+  hosts,
 };
 
 export default function () {
