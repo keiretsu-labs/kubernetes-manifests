@@ -1,7 +1,5 @@
-# Opens many concurrent WebSocket sessions against the cluster's local
-# derper deployment. The derper service is at derp.${CLUSTER_DOMAIN}.
-# Substitute CLUSTER_DOMAIN before applying.
-#   sed 's/CLUSTER_DOMAIN/keiretsu.top/g' websocket-stress.yaml | kubectl create -f -
+# Apply: substitute CLUSTER_SRC_VALUE; CLUSTER_DOMAIN comes from cluster-info.
+#   sed "s/CLUSTER_SRC_VALUE/$(kubectl get cm -n k6-operator-system cluster-info -o jsonpath='{.data.CLUSTER_NAME}')/" websocket-stress.yaml | kubectl create -f -
 ---
 apiVersion: k6.io/v1alpha1
 kind: TestRun
@@ -15,34 +13,27 @@ spec:
     configMap:
       name: k6-test-derp
       file: derp.js
-  arguments: --out experimental-prometheus-rw --insecure-skip-tls-verify
+  arguments: >-
+    --out experimental-prometheus-rw
+    --insecure-skip-tls-verify
+    --tag cluster_src=CLUSTER_SRC_VALUE
+    --tag cluster_dst=local-derper
+    --tag transport=ts-derp
+    --tag payload=ws
+    --tag k6_version=0.55.0
   runner:
     image: grafana/k6:0.55.0
+    envFrom:
+      - configMapRef:
+          name: cluster-info
+          optional: true
     env:
-      - name: TARGET_URL
-        value: "wss://derp.CLUSTER_DOMAIN/derp"
-      - name: CLUSTER_SRC
-        valueFrom:
-          configMapKeyRef:
-            name: cluster-settings
-            key: CLUSTER_NAME
-            optional: true
-      - name: CLUSTER_DST
-        value: "local-derper"
-      - name: TRANSPORT
-        value: "ts-derp"
-      - name: PAYLOAD
-        value: "ws"
+      - name: TARGET_URL_TEMPLATE
+        value: "wss://derp.${CLUSTER_DOMAIN}/derp"
       - name: VUS
         value: "30"
       - name: HOLD_MS
         value: "120000"
-      - name: K6_VERSION
-        value: "0.55.0"
-      - name: K6_PROMETHEUS_RW_SERVER_URL
-        value: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
-      - name: K6_PROMETHEUS_RW_TREND_STATS
-        value: "p(50),p(90),p(95),p(99),min,max,avg"
     resources:
       requests: { cpu: 200m, memory: 256Mi }
       limits:   { cpu: 1000m, memory: 512Mi }

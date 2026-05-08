@@ -1,0 +1,13 @@
+---
+# Cluster identity for k6 TestRun envFrom. Flux postBuild substitutes the
+# values from common/cluster-settings ConfigMaps. Lives in
+# k6-operator-system because that's where TestRuns and runner pods land.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-info
+data:
+  CLUSTER_NAME: ${CLUSTER_NAME}
+  LOCATION: ${LOCATION}
+  CLUSTER_DOMAIN: ${CLUSTER_DOMAIN}
+  TS_TAILNET_DOMAIN: keiretsu.ts.net
