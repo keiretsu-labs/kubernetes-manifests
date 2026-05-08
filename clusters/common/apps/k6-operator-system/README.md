@@ -66,6 +66,37 @@ Tests reuse existing `hello-world` infrastructure in `tailscale-examples`:
 
 DERP tests target the local `derper` deployment at `derp.${CLUSTER_DOMAIN}`.
 
+## First-run gotcha for cross-cluster TS tests
+
+When a brand-new VIPService is advertised by the common-ingress ProxyGroup,
+the common-egress ProxyGroup pods need 30-60 seconds to discover it through
+the control plane. Until then, egress logs show:
+
+```
+error fetching backend addresses for "X-tailscale-examples-hello-world-service.keiretsu.ts.net":
+could not find Tailscale node or service
+```
+
+This clears on its own. Confirm the path is ready before running the test:
+
+```bash
+kubectl exec -n tailscale common-egress-0 -c tailscale -- \
+  tailscale dns query <target>-tailscale-examples-hello-world-service.keiretsu.ts.net
+# expect: A record returning a 100.x.y.z VIP
+```
+
+Once that resolves, `kubectl create -f runs/cross-cluster-tailscale/...`
+will succeed end-to-end.
+
+## Verified end-to-end (sample, from talos-ottawa)
+
+| dst | transport | P95 |
+|---|---|---|
+| (same cluster) | lan | 0.26 ms |
+| robbinsdale | ts-egress | 18.7 ms |
+| stpetersburg | ts-egress | 51.6 ms |
+| ottawa (Funnel hairpin) | funnel | 63.5 ms |
+
 ## Phase 2
 
 - Custom `xk6-tsnet` extension and image build
