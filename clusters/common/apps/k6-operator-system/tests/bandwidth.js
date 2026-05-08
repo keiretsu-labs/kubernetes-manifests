@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { commonTags, targetURL } from './tags.js';
+import { targetURL } from './tags.js';
 import { bandwidthThresholds } from './thresholds.js';
 import { makeCustomMetrics, recordResponse } from './helpers.js';
 
@@ -15,7 +15,6 @@ export const options = {
     },
   },
   thresholds: bandwidthThresholds,
-  tags: commonTags(),
   noConnectionReuse: __ENV.NO_REUSE === 'true',
 };
 
