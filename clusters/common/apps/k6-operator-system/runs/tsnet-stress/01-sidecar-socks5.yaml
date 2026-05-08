@@ -1,0 +1,73 @@
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  generateName: tsnet-sidecar-burst-
+  namespace: k6-operator-system
+spec:
+  parallelism: 2
+  cleanup: post
+  script:
+    configMap:
+      name: k6-test-dialer-burst
+      file: dialer-burst.js
+  arguments: --out experimental-prometheus-rw
+  runner:
+    image: grafana/k6:0.55.0
+    env:
+      - name: TARGET_URL
+        value: "http://hello-world-robbinsdale.tailscale-examples"
+      - name: CLUSTER_SRC
+        valueFrom:
+          configMapKeyRef:
+            name: cluster-settings
+            key: CLUSTER_NAME
+            optional: true
+      - name: CLUSTER_DST
+        value: "robbinsdale"
+      - name: TRANSPORT
+        value: "tsnet-sidecar"
+      - name: PAYLOAD
+        value: "small"
+      - name: K6_VERSION
+        value: "0.55.0"
+      - name: HTTP_PROXY
+        value: "socks5://localhost:1055"
+      - name: HTTPS_PROXY
+        value: "socks5://localhost:1055"
+      - name: K6_PROMETHEUS_RW_SERVER_URL
+        value: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+      - name: K6_PROMETHEUS_RW_TREND_STATS
+        value: "p(50),p(90),p(95),p(99),min,max,avg"
+      - name: PEAK_RATE
+        value: "200"
+      - name: HOLD
+        value: "2m"
+      - name: PRE_VUS
+        value: "100"
+      - name: MAX_VUS
+        value: "1000"
+    resources:
+      requests: { cpu: 500m, memory: 512Mi }
+      limits:   { cpu: 2000m, memory: 1Gi }
+    initContainers:
+      - name: tailscale
+        image: ghcr.io/tailscale/tailscale:latest
+        restartPolicy: Always
+        env:
+          - { name: TS_USERSPACE,      value: "true" }
+          - { name: TS_SOCKS5_SERVER,  value: ":1055" }
+          - { name: TS_HOSTNAME,       value: "k6-tsnet-runner" }
+          - { name: TS_KUBE_SECRET,    value: "" }
+          - name: TS_AUTHKEY
+            valueFrom:
+              secretKeyRef:
+                name: k6-tsnet-authkey
+                key: TS_AUTHKEY
+        securityContext:
+          runAsUser: 0
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests: { cpu: 100m, memory: 128Mi }
+          limits:   { cpu: 1000m, memory: 512Mi }

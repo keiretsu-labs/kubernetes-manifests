@@ -1,0 +1,48 @@
+# Opens many concurrent WebSocket sessions against the cluster's local
+# derper deployment. The derper service is at derp.${CLUSTER_DOMAIN}.
+# Substitute CLUSTER_DOMAIN before applying.
+#   sed 's/CLUSTER_DOMAIN/keiretsu.top/g' websocket-stress.yaml | kubectl create -f -
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  generateName: derp-ws-stress-
+  namespace: k6-operator-system
+spec:
+  parallelism: 2
+  cleanup: post
+  script:
+    configMap:
+      name: k6-test-derp
+      file: derp.js
+  arguments: --out experimental-prometheus-rw --insecure-skip-tls-verify
+  runner:
+    image: grafana/k6:0.55.0
+    env:
+      - name: TARGET_URL
+        value: "wss://derp.CLUSTER_DOMAIN/derp"
+      - name: CLUSTER_SRC
+        valueFrom:
+          configMapKeyRef:
+            name: cluster-settings
+            key: CLUSTER_NAME
+            optional: true
+      - name: CLUSTER_DST
+        value: "local-derper"
+      - name: TRANSPORT
+        value: "ts-derp"
+      - name: PAYLOAD
+        value: "ws"
+      - name: VUS
+        value: "30"
+      - name: HOLD_MS
+        value: "120000"
+      - name: K6_VERSION
+        value: "0.55.0"
+      - name: K6_PROMETHEUS_RW_SERVER_URL
+        value: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+      - name: K6_PROMETHEUS_RW_TREND_STATS
+        value: "p(50),p(90),p(95),p(99),min,max,avg"
+    resources:
+      requests: { cpu: 200m, memory: 256Mi }
+      limits:   { cpu: 1000m, memory: 512Mi }

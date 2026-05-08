@@ -1,0 +1,51 @@
+# Template - substitute TARGET_LOCATION and TAILNET_DOMAIN before kubectl create.
+#   sed -e 's/TARGET_LOCATION/robbinsdale/g' -e 's/TAILNET_DOMAIN/keiretsu.ts.net/g' \
+#     latency-template.yaml | kubectl create -f -
+#
+# This forces the request through the public Internet via Tailscale Funnel.
+# DNS for the funnel hostname resolves to a public IP - the cluster's egress
+# NAT routes the request out and the Funnel ingress terminates TLS.
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  generateName: funnel-latency-to-TARGET_LOCATION-
+  namespace: k6-operator-system
+spec:
+  parallelism: 4
+  cleanup: post
+  script:
+    configMap:
+      name: k6-test-latency
+      file: latency.js
+  arguments: --out experimental-prometheus-rw --insecure-skip-tls-verify
+  runner:
+    image: grafana/k6:0.55.0
+    env:
+      - name: TARGET_URL
+        value: "https://TARGET_LOCATION-tailscale-examples-hello-world-funnel.TAILNET_DOMAIN"
+      - name: CLUSTER_SRC
+        valueFrom:
+          configMapKeyRef:
+            name: cluster-settings
+            key: CLUSTER_NAME
+            optional: true
+      - name: CLUSTER_DST
+        value: "TARGET_LOCATION"
+      - name: TRANSPORT
+        value: "funnel"
+      - name: PAYLOAD
+        value: "small"
+      - name: VUS
+        value: "5"
+      - name: DURATION
+        value: "2m"
+      - name: K6_VERSION
+        value: "0.55.0"
+      - name: K6_PROMETHEUS_RW_SERVER_URL
+        value: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+      - name: K6_PROMETHEUS_RW_TREND_STATS
+        value: "p(50),p(90),p(95),p(99),min,max,avg"
+    resources:
+      requests: { cpu: 100m, memory: 128Mi }
+      limits:   { cpu: 500m, memory: 256Mi }

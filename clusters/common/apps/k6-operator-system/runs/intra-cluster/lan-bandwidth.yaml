@@ -1,0 +1,46 @@
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  generateName: lan-bandwidth-
+  namespace: k6-operator-system
+spec:
+  parallelism: 4
+  cleanup: post
+  script:
+    configMap:
+      name: k6-test-bandwidth
+      file: bandwidth.js
+  arguments: --out experimental-prometheus-rw
+  runner:
+    image: grafana/k6:0.55.0
+    env:
+      - name: TARGET_URL
+        value: "http://hello-world.tailscale-examples"
+      - name: PATH_SUFFIX
+        value: "/10mb"
+      - name: CLUSTER_SRC
+        valueFrom:
+          configMapKeyRef:
+            name: cluster-settings
+            key: CLUSTER_NAME
+            optional: true
+      - name: CLUSTER_DST
+        value: "lan"
+      - name: TRANSPORT
+        value: "lan"
+      - name: PAYLOAD
+        value: "10mb"
+      - name: VUS
+        value: "4"
+      - name: DURATION
+        value: "2m"
+      - name: K6_VERSION
+        value: "0.55.0"
+      - name: K6_PROMETHEUS_RW_SERVER_URL
+        value: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+      - name: K6_PROMETHEUS_RW_TREND_STATS
+        value: "p(50),p(90),p(95),p(99),min,max,avg"
+    resources:
+      requests: { cpu: 200m, memory: 256Mi }
+      limits:   { cpu: 1000m, memory: 512Mi }
