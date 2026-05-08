@@ -1,11 +1,6 @@
 # Mode 3 (Phase 2 - placeholder): custom xk6 build with an xk6-tsnet extension.
-#
-# This file is a structural placeholder. The image must be built first via:
-#   docker run --rm -it -v "$PWD:/xk6" grafana/xk6 build \
-#     --with github.com/<owner>/xk6-tsnet
-#
-# The extension itself does not yet exist as a Go module - building it is
-# tracked as Phase 2 work. See ../README.md.
+# Build the image first - see ../README.md.
+#   sed "s/CLUSTER_SRC_VALUE/$(kubectl get cm -n k6-operator-system cluster-info -o jsonpath='{.data.CLUSTER_NAME}')/" 03-custom-xk6-image.yaml | kubectl create -f -
 ---
 apiVersion: k6.io/v1alpha1
 kind: TestRun
@@ -19,28 +14,22 @@ spec:
     configMap:
       name: k6-test-dialer-burst
       file: dialer-burst.js
-  arguments: --out experimental-prometheus-rw
+  arguments: >-
+    --out experimental-prometheus-rw
+    --tag cluster_src=CLUSTER_SRC_VALUE
+    --tag cluster_dst=robbinsdale
+    --tag transport=tsnet-xk6
+    --tag payload=small
+    --tag k6_version=xk6-tsnet-placeholder
   runner:
     image: ghcr.io/rajsinghtech/xk6-tsnet:placeholder
+    envFrom:
+      - configMapRef:
+          name: cluster-info
+          optional: true
     env:
       - name: TARGET_URL
         value: "http://hello-world-robbinsdale.tailscale-examples"
-      - name: CLUSTER_SRC
-        valueFrom:
-          configMapKeyRef:
-            name: cluster-settings
-            key: CLUSTER_NAME
-            optional: true
-      - name: CLUSTER_DST
-        value: "robbinsdale"
-      - name: TRANSPORT
-        value: "tsnet-xk6"
-      - name: PAYLOAD
-        value: "small"
-      - name: K6_PROMETHEUS_RW_SERVER_URL
-        value: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
-      - name: K6_PROMETHEUS_RW_TREND_STATS
-        value: "p(50),p(90),p(95),p(99),min,max,avg"
       - name: TS_AUTHKEY
         valueFrom:
           secretKeyRef:

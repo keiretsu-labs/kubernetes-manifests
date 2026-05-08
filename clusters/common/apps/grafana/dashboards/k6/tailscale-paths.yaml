@@ -59,11 +59,11 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "k6_http_req_duration{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\", quantile=\"0.95\"}",
+              "expr": "k6_http_req_duration_p95{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\"}",
               "legendFormat": "{{cluster_src}} -> {{cluster_dst}} ({{transport}})"
             }
           ],
-          "fieldConfig": { "defaults": { "unit": "ms" } }
+          "fieldConfig": { "defaults": { "unit": "s" } }
         },
         {
           "id": 2,
@@ -74,11 +74,11 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "k6_http_req_duration{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\", quantile=\"0.99\"}",
+              "expr": "k6_http_req_duration_p99{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\"}",
               "legendFormat": "{{cluster_src}} -> {{cluster_dst}} ({{transport}})"
             }
           ],
-          "fieldConfig": { "defaults": { "unit": "ms" } }
+          "fieldConfig": { "defaults": { "unit": "s" } }
         },
         {
           "id": 3,
@@ -104,16 +104,16 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "k6_http_req_connecting{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\", quantile=\"0.95\"}",
+              "expr": "k6_http_req_connecting_p95{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\"}",
               "legendFormat": "{{cluster_src}} -> {{cluster_dst}} ({{transport}}) connect"
             },
             {
               "refId": "B",
-              "expr": "k6_http_req_tls_handshaking{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\", quantile=\"0.95\"}",
+              "expr": "k6_http_req_tls_handshaking_p95{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\"}",
               "legendFormat": "{{cluster_src}} -> {{cluster_dst}} ({{transport}}) tls"
             }
           ],
-          "fieldConfig": { "defaults": { "unit": "ms" } }
+          "fieldConfig": { "defaults": { "unit": "s" } }
         },
         {
           "id": 5,
@@ -124,7 +124,7 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "rate(k6_http_req_failed_total{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\"}[1m])",
+              "expr": "k6_http_req_failed_rate{cluster_src=~\"$cluster_src\", cluster_dst=~\"$cluster_dst\"}",
               "legendFormat": "{{cluster_src}} -> {{cluster_dst}} ({{transport}})"
             }
           ],
