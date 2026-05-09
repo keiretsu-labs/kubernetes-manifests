@@ -77,7 +77,7 @@ error fetching backend addresses for "X-tailscale-examples-hello-world-service.k
 could not find Tailscale node or service
 ```
 
-This clears on its own. Confirm the path is ready before running the test:
+This clears on its own for FRESH pods. Confirm the path is ready:
 
 ```bash
 kubectl exec -n tailscale common-egress-0 -c tailscale -- \
@@ -85,8 +85,33 @@ kubectl exec -n tailscale common-egress-0 -c tailscale -- \
 # expect: A record returning a 100.x.y.z VIP
 ```
 
-Once that resolves, `kubectl create -f runs/cross-cluster-tailscale/...`
-will succeed end-to-end.
+### Long-running egress pods may need a rollout restart
+
+Long-running common-egress pods (weeks+) sometimes do NOT pick up new
+VIPServices added after they started, while a fresh sibling pod handles them
+fine. Symptom: 50/50 connection failures from cross-cluster ExternalName
+services because Cilium load-balances across both endpoints.
+
+Fix:
+```bash
+kubectl rollout restart statefulset/common-egress -n tailscale
+kubectl rollout status statefulset/common-egress -n tailscale
+# wait ~30s for tailnet sync, then retry connections
+```
+
+Verify both endpoints are healthy:
+```bash
+for ip in $(kubectl get pods -n tailscale -l 'tailscale.com/parent-resource=common-egress' -o jsonpath='{.items[*].status.podIP}'); do
+  kubectl run --rm -i --image=curlimages/curl --restart=Never check-$RANDOM -- \
+    curl -s -o /dev/null -w "$ip => HTTP=%{http_code}\n" --max-time 5 \
+    http://$ip:<matchPort>
+done
+```
+The matchPort can be found in the egress-services config:
+```bash
+kubectl exec -n tailscale common-egress-0 -c tailscale -- \
+  cat /etc/proxies/egress-services
+```
 
 ## Verified end-to-end (sample, from talos-ottawa)
 
