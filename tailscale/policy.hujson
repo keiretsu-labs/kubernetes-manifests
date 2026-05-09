@@ -51,6 +51,7 @@
 		"tag:bubbles":          ["tag:bubbles", "rajsinghtech@github", "kbpersonal@github"],
 		"tag:bridge":           ["autogroup:admin"],
 		"tag:bridge-svc":       ["tag:bridge"],
+		"tag:border0-managed":  ["tag:k8s-operator", "tag:infra", "group:superuser",],
 	},
 	"ipsets": {
 		"ipset:robbinsdale": [
@@ -111,6 +112,7 @@
 			"svc:http-test": ["tag:k8s"],
 			"svc:tcp": ["tag:k8s"],
 			"tag:bridge-svc": ["tag:bridge"],
+			"tag:border0-managed": ["tag:border0-managed"],
 		},
 	},
 	"ssh": [
