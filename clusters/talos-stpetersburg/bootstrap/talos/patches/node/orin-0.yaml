@@ -1,0 +1,8 @@
+# Node-specific configuration for orin-0 (Jetson Orin Nano Super Developer Kit)
+# Tegra integrated GPU is not used here — node serves as control plane only.
+# No NVIDIA kernel modules loaded (schematic excludes nonfree-kmod-nvidia-lts).
+machine:
+  nodeLabels:
+    node.kubernetes.io/instance-type: jetson-orin-nano-super
+    nvidia.com/gpu.product: Ampere-Tegra-Orin
+    nvidia.com/gpu.present: "false"

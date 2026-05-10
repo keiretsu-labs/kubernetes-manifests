@@ -50,19 +50,20 @@ description = "Check NVIDIA GPU status"
 
 [tasks.reset]
 run = """
-echo "[Destructive] This will reset the node!"
+NODE="${1:-spark-0}"
+echo "[Destructive] This will reset node: $NODE"
 echo ""
-echo "WARNING: This will DESTROY your cluster!"
+echo "WARNING: This will DESTROY data on $NODE!"
 echo "Are you absolutely sure you want to proceed? (y/N)"
 read -r response
 
 if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
-  talosctl -n spark-0 -e spark-0 reset --system-labels-to-wipe EPHEMERAL,STATE --graceful=false --reboot --force
+  talosctl -n "$NODE" -e "$NODE" reset --system-labels-to-wipe EPHEMERAL,STATE --graceful=false --reboot --force
 else
   echo "Reset cancelled."
 fi
 """
-description = "Reset cluster with confirmation (DESTRUCTIVE)"
+description = "Reset node with confirmation (DESTRUCTIVE) — usage: mise run reset [node]"
 
 [tasks.disk]
 run = "task -d bootstrap/talos disk"
@@ -82,36 +83,45 @@ description = "List services"
 
 [tasks.reboot]
 run = """
-echo "WARNING: This will reboot the node! Press Ctrl+C to cancel..."
+NODE="${1:-spark-0}"
+echo "WARNING: This will reboot $NODE! Press Ctrl+C to cancel..."
 sleep 5
-talosctl -e spark-0 -n spark-0 reboot --debug
+talosctl -e "$NODE" -n "$NODE" reboot --debug
 """
-description = "Reboot node (DISRUPTIVE)"
+description = "Reboot node (DISRUPTIVE) — usage: mise run reboot [node]"
 
 [tasks.upgrade]
 run = """
-TALOS_VERSION="${1:-v1.12.1}"
-echo "Upgrading to Talos $TALOS_VERSION"
-talosctl upgrade --nodes spark-0 --image ghcr.io/siderolabs/installer:${TALOS_VERSION} -e spark-0 --wait --debug
+NODE="${1:-spark-0}"
+TALOS_VERSION="${2:-v1.12.6}"
+echo "Upgrading $NODE to Talos $TALOS_VERSION"
+talosctl upgrade --nodes "$NODE" --image ghcr.io/siderolabs/installer:${TALOS_VERSION} -e "$NODE" --wait --debug
 """
-description = "Upgrade Talos version"
+description = "Upgrade Talos version — usage: mise run upgrade [node] [version]"
 
 [tasks.k9s]
 run = "k9s --context admin@k8s.stpetersburg.internal"
 description = "Launch k9s with cluster context"
 
-[tasks.iso]
+[tasks.iso-spark]
 run = """
-echo "Generating ISO from talconfig schematic..."
-SCHEMATIC_ID=$(talhelper genurl installer --config-file bootstrap/talos/talconfig.yaml | grep -oE 'factory.talos.dev/installer/[^:]+' | cut -d'/' -f3)
-TALOS_VERSION=$(grep talosVersion bootstrap/talos/talconfig.yaml | awk '{print $2}')
-echo "Schematic ID: $SCHEMATIC_ID"
-echo "Talos Version: $TALOS_VERSION"
-echo "Downloading ISO..."
-curl -O "https://factory.talos.dev/image/${SCHEMATIC_ID}/${TALOS_VERSION}/metal-amd64.iso"
-echo "ISO downloaded: metal-amd64.iso"
+SCHEMATIC_ID=c07545af5f345c55b28c99002209a4d511632ca96774114b0db38ff6352c7b32
+TALOS_VERSION=$(grep '^talosVersion:' bootstrap/talos/talconfig.yaml | awk '{print $2}')
+echo "spark-0 schematic: $SCHEMATIC_ID @ $TALOS_VERSION"
+curl -L --progress-bar -o bootstrap/talos/metal-arm64-spark.iso \\
+  "https://factory.talos.dev/image/${SCHEMATIC_ID}/${TALOS_VERSION}/metal-arm64.iso"
 """
-description = "Download custom ISO with NVIDIA extensions from talconfig"
+description = "Download spark-0 ISO (NVIDIA-flavored arm64)"
+
+[tasks.iso-orin]
+run = """
+SCHEMATIC_ID=f1b5e8899067375144c74b23ae6849ede993b6ac771248b654b521905f65b0fa
+TALOS_VERSION=$(grep '^talosVersion:' bootstrap/talos/talconfig.yaml | awk '{print $2}')
+echo "orin-0 schematic: $SCHEMATIC_ID @ $TALOS_VERSION"
+curl -L --progress-bar -o bootstrap/talos/metal-arm64-orin.iso \\
+  "https://factory.talos.dev/image/${SCHEMATIC_ID}/${TALOS_VERSION}/metal-arm64.iso"
+"""
+description = "Download orin-0 ISO (minimal arm64, no NVIDIA)"
 
 [tasks.nodes]
 run = "kubectl get nodes -o wide"
@@ -122,17 +132,41 @@ run = "kubectl get pods -A"
 description = "Show all pods in cluster"
 
 [tasks.talos-shell]
-run = "talosctl -n spark-0 -e spark-0 shell"
-description = "Open shell on node"
+run = """
+NODE="${1:-spark-0}"
+talosctl -n "$NODE" -e "$NODE" shell
+"""
+description = "Open shell on node — usage: mise run talos-shell [node]"
 
 [tasks.logs]
 run = """
-SERVICE="${1:-kubelet}"
-echo "Showing logs for $SERVICE"
-talosctl -n spark-0 -e spark-0 logs $SERVICE
+NODE="${1:-spark-0}"
+SERVICE="${2:-kubelet}"
+echo "Showing logs for $SERVICE on $NODE"
+talosctl -n "$NODE" -e "$NODE" logs "$SERVICE"
 """
-description = "Show service logs (usage: mise run logs [service])"
+description = "Show service logs — usage: mise run logs [node] [service]"
 
 [tasks.dmesg]
-run = "talosctl -n spark-0 -e spark-0 dmesg"
-description = "Show kernel logs"
+run = """
+NODE="${1:-spark-0}"
+talosctl -n "$NODE" -e "$NODE" dmesg
+"""
+description = "Show kernel logs — usage: mise run dmesg [node]"
+
+[tasks.apply-orin-insecure]
+run = """
+ORIN_IP="${1?usage: mise run apply-orin-insecure <orin-ip>}"
+echo "Applying orin-0 config to $ORIN_IP (maintenance mode)"
+talosctl apply-config --insecure -n "$ORIN_IP" \\
+  --file bootstrap/talos/clusterconfig/k8s.stpetersburg.internal-orin-0.yaml
+"""
+description = "Apply orin-0 config in maintenance mode — usage: mise run apply-orin-insecure <ip>"
+
+[tasks.discover-orin-disk]
+run = """
+ORIN_IP="${1?usage: mise run discover-orin-disk <orin-ip>}"
+echo "Discovering disks on $ORIN_IP (maintenance mode):"
+talosctl --insecure -n "$ORIN_IP" -e "$ORIN_IP" get disks
+"""
+description = "List disks on orin-0 in maintenance mode — usage: mise run discover-orin-disk <ip>"

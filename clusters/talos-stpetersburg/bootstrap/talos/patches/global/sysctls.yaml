@@ -16,5 +16,7 @@ machine:
     fs.inotify.max_user_watches: "1048576"
     fs.inotify.max_user_instances: "8192"
 
-    # Huge pages for GPU memory and databases
-    vm.nr_hugepages: "2048"
+    # eBPF JIT for Cilium
+    net.core.bpf_jit_enable: "1"
+    # Note: vm.nr_hugepages is set per-node — spark-0 reserves them for GPU/DB,
+    # orin-0 has only 8GB RAM and leaves the default (0).
