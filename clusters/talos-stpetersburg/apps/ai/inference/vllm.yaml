@@ -1,6 +1,6 @@
 # vLLM Deployment for DGX Spark (GB10/ARM/Blackwell)
 # Model: AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS + DFlash speculative decoding
-# Image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v3 (ARM64/SBSA, patched vLLM)
+# Image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4 (ARM64/SBSA, patched vLLM)
 # Reference: https://github.com/AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-DFlash
 ---
 apiVersion: v1
@@ -37,7 +37,7 @@ spec:
       enableServiceLinks: false
       initContainers:
       - name: download-models
-        image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v3
+        image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4
         command: [python3, /scripts/download.py]
         env:
         - name: HUGGING_FACE_HUB_TOKEN
@@ -71,7 +71,7 @@ spec:
             memory: "32Mi"
       containers:
       - name: vllm
-        image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v3
+        image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4
         command: [bash, -c]
         args:
         - |
