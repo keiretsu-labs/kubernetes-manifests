@@ -15,6 +15,7 @@ clusterSvcNets:
 
 additionalApiServerCertSans:
   - "192.168.73.25"
+  - "192.168.73.211"
   - "default-kubernetes-stpetersburg-ingress.keiretsu.ts.net"
   - "kubernetes-stpetersburg.keiretsu.ts.net"
   - "kubernetes.stpetersburg.rajsingh.info"
@@ -26,6 +27,9 @@ additionalMachineCertSans:
   - "192.168.73.206"
   - "k8s.stpetersburg.internal"
   - "spark-0.stpetersburg.internal"
+  - "spark-1.stpetersburg.internal"
+  - "orin-0.stpetersburg.internal"
+  - "192.168.73.211"
   - "default-kubernetes-stpetersburg-ingress.keiretsu.ts.net"
   - "kubernetes-stpetersburg.keiretsu.ts.net"
   - "kubernetes.stpetersburg.rajsingh.info"
@@ -44,6 +48,8 @@ nodes:
     # 4.1TB Samsung NVMe
     installDiskSelector:
       serial: "S8C2NG0Y733052"
+    # Pinned to NVIDIA-flavored arm64 schematic (GB10 GPU)
+    talosImageURL: "factory.talos.dev/installer/c07545af5f345c55b28c99002209a4d511632ca96774114b0db38ff6352c7b32"
     controlPlane: true
     networkInterfaces:
       - interface: eth0
@@ -53,19 +59,49 @@ nodes:
     patches:
       - "@./patches/node/spark-0.yaml"
 
-# Global patches
+  ###################################################################
+  - hostname: "orin-0"
+    ipAddress: "orin-0.stpetersburg.internal"
+    # Onboard M.2 NVMe (only NVMe in the unit; mmcblk0 is the SD card we booted from)
+    installDiskSelector:
+      type: "nvme"
+    # Minimal arm64 schematic — no NVIDIA extensions (Tegra integrated GPU not used)
+    talosImageURL: "factory.talos.dev/installer/f1b5e8899067375144c74b23ae6849ede993b6ac771248b654b521905f65b0fa"
+    controlPlane: true
+    networkInterfaces:
+      - interface: eth0
+        dhcp: true
+        vip:
+          ip: "192.168.73.25"
+    patches:
+      - "@./patches/node/orin-0.yaml"
+
+  ###################################################################
+  - hostname: "spark-1"
+    ipAddress: "spark-1.stpetersburg.internal"
+    # 4.1TB Samsung MZALC4T0HBL1 NVMe (same model as spark-0, serial S8C2NG0Y806827)
+    installDiskSelector:
+      type: "nvme"
+    # Same NVIDIA-flavored arm64 schematic as spark-0 (paired GB10 GPU box)
+    talosImageURL: "factory.talos.dev/installer/c07545af5f345c55b28c99002209a4d511632ca96774114b0db38ff6352c7b32"
+    controlPlane: true
+    networkInterfaces:
+      - interface: eth0
+        dhcp: true
+        vip:
+          ip: "192.168.73.25"
+    patches:
+      - "@./patches/node/spark-1.yaml"
+
+# Global patches (apply to all nodes — NVIDIA-specific bits live in node/spark-0.yaml)
 patches:
   - "@./patches/global/cluster-discovery.yaml"
-  - "@./patches/global/containerd.yaml"
   - "@./patches/global/disable-search-domain.yaml"
-  - "@./patches/global/cpu-performance.yaml"
   - "@./patches/global/hostdns.yaml"
   - "@./patches/global/kubelet.yaml"
   - "@./patches/global/local-path-provisioner.yaml"
   - "@./patches/global/metrics-server.yaml"
-  - "@./patches/global/udev.yaml"
   - "@./patches/global/sysctls.yaml"
-  - "@./patches/global/nvidia.yaml"
   - "@./patches/global/machine-logging.yaml"
 
 # Control plane nodes config
