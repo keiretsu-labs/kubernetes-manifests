@@ -54,7 +54,6 @@ spec:
   name: "Immich Library Volsync Key"
   secretTemplate:
     name: restic-immich-library
-    namespace: immich
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
     includeEndpoint: false

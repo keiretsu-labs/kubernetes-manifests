@@ -29,7 +29,6 @@ spec:
   name: "Media Jellyseerr Config Ceph Volsync Key"
   secretTemplate:
     name: restic-media-jellyseerr-config-ceph
-    namespace: media
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
     includeEndpoint: false
