@@ -23,10 +23,15 @@ spec:
   values:
     image:
       tag: v5.35.0
+    podAnnotations:
+      checksum/webhook: "${GATUS_DISCORD_WEBHOOK_URL}"
+    envFrom:
+      - secretRef:
+          name: gatus
     config:
       alerting:
         discord:
-          webhook-url: "${GATUS_DISCORD_WEBHOOK_URL}"
+          webhook-url: "$${discord-webhook-url}"
           failure-threshold: 3
           success-threshold: 2
       ui:
