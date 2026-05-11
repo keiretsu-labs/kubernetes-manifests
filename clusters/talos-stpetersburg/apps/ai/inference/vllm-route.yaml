@@ -1,9 +1,7 @@
-# Envoy AI Gateway routing for vLLM.
-# Stack: Backend (FQDN) -> AIServiceBackend (OpenAI schema) -> AIGatewayRoute.
-# Unlocks token-aware metrics (TTFT, tokens/s, cache hit ratio per request),
-# model-aware routing, and streaming-aware LB. BackendTrafficPolicy preserves
-# consistent-hash sticky routing on X-Session-Id so prefix-cache stays warm
-# per chat session.
+# vLLM routing on the dedicated ai-gateway. Token-aware metrics, model-aware
+# routing, streaming-aware LB via Envoy AI Gateway. Consistent-hash sticky
+# routing on X-Session-Id (BackendTrafficPolicy targets the auto-generated
+# HTTPRoute) keeps prefix-cache warm per chat session.
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: Backend
@@ -36,11 +34,9 @@ metadata:
   namespace: ai
 spec:
   parentRefs:
-    - name: ts
-      namespace: home
+    - name: ai-gateway
       kind: Gateway
       group: gateway.networking.k8s.io
-      sectionName: wildcard-keiretsu-top-https
   # Token-aware metrics exported via Envoy dynamic metadata for Prometheus.
   llmRequestCosts:
     - metadataKey: llm_input_token
@@ -52,15 +48,9 @@ spec:
     - metadataKey: llm_cached_input_token
       type: CachedInputToken
   rules:
-    # AIGatewayRoute has no hostnames field; the generated HTTPRoute attaches
-    # to the gateway listener (wildcard *.keiretsu.top). Filter to this
-    # hostname only so other apps on the same listener don't get LLM-mangled.
-    - matches:
-        - headers:
-            - name: Host
-              type: Exact
-              value: "${LOCATION}-vllm.${COMMON_DOMAIN}"
-      backendRefs:
+    # Dedicated gateway, single listener for *-ai-gateway.${COMMON_DOMAIN}.
+    # No Host filter needed — all traffic on this gateway is AI.
+    - backendRefs:
         - name: vllm
       timeouts:
         # vLLM streaming completions can run for minutes on long generations.
