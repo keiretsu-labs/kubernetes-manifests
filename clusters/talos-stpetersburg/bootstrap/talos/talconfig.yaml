@@ -49,7 +49,7 @@ nodes:
     installDiskSelector:
       serial: "S8C2NG0Y733052"
     # Pinned to NVIDIA-flavored arm64 schematic (GB10 GPU)
-    talosImageURL: "factory.talos.dev/installer/1328418dba652ce7feae2f6bdccfa73d37ba1946de7524426f0b99b807f9ca67"
+    talosImageURL: "factory.talos.dev/installer/8ccc5681e9755a1d77a6363ba61f529789f8d200cb4f96df51b0729b0bb06fac"
     controlPlane: true
     networkInterfaces:
       - interface: eth0
@@ -83,7 +83,7 @@ nodes:
     installDiskSelector:
       type: "nvme"
     # Same NVIDIA-flavored arm64 schematic as spark-0 (paired GB10 GPU box)
-    talosImageURL: "factory.talos.dev/installer/1328418dba652ce7feae2f6bdccfa73d37ba1946de7524426f0b99b807f9ca67"
+    talosImageURL: "factory.talos.dev/installer/8ccc5681e9755a1d77a6363ba61f529789f8d200cb4f96df51b0729b0bb06fac"
     controlPlane: true
     networkInterfaces:
       - interface: eth0
@@ -110,10 +110,11 @@ controlPlane:
     customization:
       systemExtensions:
         officialExtensions:
-          # NVIDIA GPU support — open kernel modules (BTI-compatible on arm64,
-          # eliminates the arm64.nobti workaround needed for nonfree). Supports
-          # GB10 Blackwell.
-          - siderolabs/nvidia-open-gpu-kernel-modules-lts
+          # NVIDIA GPU — proprietary nonfree driver. Required: open-kernel-modules
+          # crashed the GB10 kernel on boot (2026-05-11 upgrade attempt to
+          # schematic 1328418d... rolled back via UEFI). Stay on nonfree + the
+          # arm64.nobti kernel arg workaround (baked into spark schematic 8ccc5681...).
+          - siderolabs/nonfree-kmod-nvidia-lts
           - siderolabs/nvidia-container-toolkit-lts
           # Utilities
           - siderolabs/util-linux-tools
