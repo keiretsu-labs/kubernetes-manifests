@@ -1,0 +1,21 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: hermes-s3-key
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Hermes S3 Reader Key"
+  allBuckets:
+    read: true
+  secretTemplate:
+    name: hermes-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    additionalData:
+      AWS_ENDPOINT_URL: "http://garage.garage.svc.cluster.local:3900"
+      AWS_ENDPOINT_URL_S3: "http://garage.garage.svc.cluster.local:3900"
+      AWS_REGION: "garage"
+      AWS_DEFAULT_REGION: "garage"
