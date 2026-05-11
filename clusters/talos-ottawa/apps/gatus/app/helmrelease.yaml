@@ -543,9 +543,10 @@ spec:
           group: Storage
           url: tcp://robbinsdale-garage.garage:3900
           interval: 60s
+          client:
+            timeout: 30s
           conditions:
             - "[CONNECTED] == true"
-            - "[RESPONSE_TIME] < 2000"
           alerts:
             - type: discord
               send-on-resolved: true
@@ -553,9 +554,10 @@ spec:
           group: Storage
           url: tcp://stpetersburg-garage.garage:3900
           interval: 60s
+          client:
+            timeout: 30s
           conditions:
             - "[CONNECTED] == true"
-            - "[RESPONSE_TIME] < 2000"
           alerts:
             - type: discord
               send-on-resolved: true
