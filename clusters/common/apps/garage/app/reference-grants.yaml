@@ -27,3 +27,5 @@ spec:
       namespace: home
     - kind: GarageKey
       namespace: tailscale-examples
+    - kind: GarageKey
+      namespace: loki
