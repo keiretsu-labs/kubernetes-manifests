@@ -6,6 +6,7 @@ namespace: ai
 resources:
   - namespace.yaml
   - vllm.yaml
+  - vllm-route.yaml
   - valkey.yaml
   - searxng.yaml
   - dashboards.yaml

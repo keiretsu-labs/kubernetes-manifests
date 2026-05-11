@@ -1,0 +1,57 @@
+# Envoy Gateway routing for vLLM with consistent-hash load balancing.
+# Goal: pin a given chat session to the same replica so prefix-cache hits the
+# warm KV blocks. Falls back to source IP when no X-Session-Id header is sent.
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: vllm
+  namespace: ai
+spec:
+  parentRefs:
+    - name: ts
+      namespace: home
+      sectionName: wildcard-rajsingh-info-https
+  hostnames:
+    # Single-level subdomain to match the ts gateway's *.rajsingh.info wildcard cert.
+    # Existing Tailscale-direct endpoint stpetersburg-vllm.keiretsu.ts.net stays
+    # alongside (no consistent-hash there). Aperture can switch to this URL to get
+    # session-sticky prefix-cache.
+    - "${LOCATION}-vllm.${CLUSTER_DOMAIN}"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: vllm
+          port: 8000
+---
+# Consistent-hash LB + long timeouts for streaming completions.
+# Sticky routing by X-Session-Id header keeps prefix-cache warm per chat;
+# clients without the header fall back to source-IP hashing (still sticky
+# per-client, just less granular).
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: vllm
+  namespace: ai
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: vllm
+  loadBalancer:
+    type: ConsistentHash
+    consistentHash:
+      type: Header
+      header:
+        name: X-Session-Id
+  timeout:
+    http:
+      # vLLM streaming completions can take minutes for long generations
+      requestTimeout: 0s              # unlimited
+      connectionIdleTimeout: 600s     # 10 min idle
+      maxConnectionDuration: 0s       # unlimited
+  connection:
+    bufferLimit: 65536
