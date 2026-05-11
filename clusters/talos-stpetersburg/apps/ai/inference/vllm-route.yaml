@@ -13,11 +13,12 @@ spec:
       namespace: home
       sectionName: wildcard-rajsingh-info-https
   hostnames:
-    # Single-level subdomain to match the ts gateway's *.rajsingh.info wildcard cert.
+    # Use keiretsu.top (auto-managed by external-dns-cloudflare-keiretsu-top in
+    # this cluster). rajsingh.info is also accepted by the ts gateway but isn't
+    # auto-DNS'd from stpetersburg, so records wouldn't propagate.
     # Existing Tailscale-direct endpoint stpetersburg-vllm.keiretsu.ts.net stays
-    # alongside (no consistent-hash there). Aperture can switch to this URL to get
-    # session-sticky prefix-cache.
-    - "${LOCATION}-vllm.${CLUSTER_DOMAIN}"
+    # alongside; Aperture should switch to this hostname for sticky prefix-cache.
+    - "${LOCATION}-vllm.${COMMON_DOMAIN}"
   rules:
     - matches:
         - path:
