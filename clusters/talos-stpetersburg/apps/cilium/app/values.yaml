@@ -46,7 +46,17 @@ prometheus:
         replacement: ${CLUSTER_NAME}
 operator:
   rollOutPods: true
-  replicas: 1
+  # 2 replicas with pod anti-affinity so a single node reboot doesn't leave the
+  # cluster without an operator (which is what blocked auto-untaint after spark-1
+  # rebooted under memory pressure — pods on the rebooted node couldn't schedule
+  # because the agent-not-ready taint never got removed).
+  replicas: 2
+  # Make cilium-operator actively strip the `node.cilium.io/agent-not-ready` taint
+  # from any node whose cilium-agent reports Ready. Default in Cilium ≥1.14 but
+  # explicitly required by our chart version (1.18.x). Without this, manual
+  # `kubectl taint nodes ... -` is needed after every node reboot.
+  removeNodeTaints: true
+  setNodeNetworkStatus: true
   prometheus:
     enabled: true
     serviceMonitor:
