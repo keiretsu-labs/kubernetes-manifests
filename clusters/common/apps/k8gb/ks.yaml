@@ -29,13 +29,14 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
+    - name: garage
     - name: k8gb-app
   path: ./clusters/common/apps/k8gb/config
   prune: true
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
-  wait: false
+  wait: true
   interval: 30m
   retryInterval: 1m
   timeout: 5m
