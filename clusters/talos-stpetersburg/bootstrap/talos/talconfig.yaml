@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
 ---
 # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-talosVersion: v1.12.6
+talosVersion: v1.13.0
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.35.4
 clusterName: "k8s.stpetersburg.internal"
@@ -49,7 +49,7 @@ nodes:
     installDiskSelector:
       serial: "S8C2NG0Y733052"
     # Pinned to NVIDIA-flavored arm64 schematic (GB10 GPU)
-    talosImageURL: "factory.talos.dev/installer/c07545af5f345c55b28c99002209a4d511632ca96774114b0db38ff6352c7b32"
+    talosImageURL: "factory.talos.dev/installer/8ccc5681e9755a1d77a6363ba61f529789f8d200cb4f96df51b0729b0bb06fac"
     controlPlane: true
     networkInterfaces:
       - interface: eth0
@@ -83,7 +83,7 @@ nodes:
     installDiskSelector:
       type: "nvme"
     # Same NVIDIA-flavored arm64 schematic as spark-0 (paired GB10 GPU box)
-    talosImageURL: "factory.talos.dev/installer/c07545af5f345c55b28c99002209a4d511632ca96774114b0db38ff6352c7b32"
+    talosImageURL: "factory.talos.dev/installer/8ccc5681e9755a1d77a6363ba61f529789f8d200cb4f96df51b0729b0bb06fac"
     controlPlane: true
     networkInterfaces:
       - interface: eth0
