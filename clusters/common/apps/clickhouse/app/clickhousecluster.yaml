@@ -67,7 +67,7 @@ spec:
 
         container:
           clickhouse:
-            image: clickhouse/clickhouse-server:24.8
+            image: clickhouse/clickhouse-server:24.12
             resources:
               requests:
                 cpu: 2
