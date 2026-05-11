@@ -16,6 +16,35 @@ spec:
       labels:
         app.kubernetes.io/name: hermes
     spec:
+      initContainers:
+        - name: seed-aws-credentials
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p /opt/data/.aws
+              umask 077
+              cat >/opt/data/.aws/credentials <<EOF
+              [default]
+              aws_access_key_id = ${AWS_ACCESS_KEY_ID}
+              aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}
+              EOF
+              cat >/opt/data/.aws/config <<EOF
+              [default]
+              region = ${AWS_REGION}
+              endpoint_url = ${AWS_ENDPOINT_URL}
+              s3 =
+                  endpoint_url = ${AWS_ENDPOINT_URL_S3}
+                  addressing_style = path
+              EOF
+          envFrom:
+            - secretRef:
+                name: hermes-s3
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
       containers:
         - name: hermes
           image: nousresearch/hermes-agent:v2026.5.7
@@ -39,9 +68,15 @@ spec:
               value: "true"
             - name: DISCORD_REACTIONS
               value: "true"
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /opt/data/.aws/credentials
+            - name: AWS_CONFIG_FILE
+              value: /opt/data/.aws/config
           envFrom:
             - secretRef:
                 name: hermes-secrets
+            - secretRef:
+                name: hermes-s3
           ports:
             - name: gateway
               containerPort: 8642

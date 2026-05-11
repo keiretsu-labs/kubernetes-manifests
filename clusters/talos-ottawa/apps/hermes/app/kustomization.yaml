@@ -7,4 +7,5 @@ resources:
   - storagestack.yaml
   - httproute.yaml
   - egress.yaml
+  - garagekey.yaml
   - secret.sops.yaml
