@@ -1,31 +1,29 @@
-# vLLM Deployment for DGX Spark (GB10/ARM/Blackwell)
+# vLLM Deployment for DGX Spark (GB10/ARM/Blackwell) — DATA-PARALLEL REPLICAS
 # Model: AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS + DFlash speculative decoding
 # Image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4 (ARM64/SBSA, patched vLLM)
 # Reference: https://github.com/AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-DFlash
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: vllm-models
-  namespace: ai
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 200Gi
+#
+# CONCURRENCY EXPANSION (2026-05-11):
+#   - 2 replicas, one pinned to each Spark (data-parallel, not tensor-parallel)
+#   - Preserves NVFP4 + DFlash single-node code paths (TP=2 currently breaks both;
+#     NVFP4 multi-node is unsupported in vLLM; DFlash+TP=2 crashes per vllm#41190)
+#   - 2x concurrency at same per-stream speed (37 tok/s decode preserved)
+#   - max-num-seqs 16 → 32 per replica (= 64 cluster-wide concurrent streams)
+#   - kv-cache-dtype fp8 doubles KV-cache capacity for longer contexts
+#   - Each replica has its own PVC (RWO; can't share RWX without NFS/Ceph here)
+#   - 200G ConnectX-7 RoCE link stays available for future NIXL disaggregated prefill
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: vllm
   namespace: ai
   labels:
     app: vllm
 spec:
-  replicas: 1
-  strategy:
-    type: Recreate
+  serviceName: vllm-headless
+  replicas: 2
+  podManagementPolicy: Parallel
   selector:
     matchLabels:
       app: vllm
@@ -35,6 +33,17 @@ spec:
         app: vllm
     spec:
       enableServiceLinks: false
+      # One replica per spark (DGX Spark only — no time-sliced GPUs elsewhere)
+      nodeSelector:
+        node.kubernetes.io/instance-type: dgx-spark
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: vllm
+      terminationGracePeriodSeconds: 120
       initContainers:
       - name: download-models
         image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4
@@ -82,10 +91,11 @@ spec:
             --tensor-parallel-size 1 \
             --dtype auto \
             --quantization modelopt \
+            --kv-cache-dtype fp8 \
             --max-model-len 200000 \
-            --max-num-seqs 16 \
-            --max-num-batched-tokens 32768 \
-            --gpu-memory-utilization 0.70 \
+            --max-num-seqs 32 \
+            --max-num-batched-tokens 49152 \
+            --gpu-memory-utilization 0.72 \
             --enable-chunked-prefill \
             --enable-prefix-caching \
             --load-format safetensors \
@@ -173,9 +183,6 @@ spec:
           timeoutSeconds: 10
           failureThreshold: 60
       volumes:
-      - name: models
-        persistentVolumeClaim:
-          claimName: vllm-models
       - name: shm
         emptyDir:
           medium: Memory
@@ -183,10 +190,32 @@ spec:
       - name: download-script
         configMap:
           name: vllm-download-script
-      nodeSelector:
-        nvidia.com/gpu.present: "true"
-      terminationGracePeriodSeconds: 120
+  volumeClaimTemplates:
+  - metadata:
+      name: models
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 200Gi
 ---
+# Headless service for StatefulSet pod discovery (vllm-0, vllm-1)
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-headless
+  namespace: ai
+spec:
+  clusterIP: None
+  selector:
+    app: vllm
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+---
+# Cluster-internal Service — round-robins across both replicas
 apiVersion: v1
 kind: Service
 metadata:
