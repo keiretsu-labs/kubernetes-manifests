@@ -1,30 +1,14 @@
 # Dedicated Envoy AI Gateway for vLLM. Isolated from the shared `ts` gateway
-# so the ai-gateway-extproc sidecar rollout only churns this proxy, not every
-# other route in the cluster. Exposed as its own Tailscale device via the
-# common-ingress proxy-group.
+# so the ai-gateway-extproc sidecar rollout only churns this proxy. Exposed
+# as its own Tailscale device via the common-ingress proxy-group.
 #
 # Flow:
-#   client → stpetersburg-ai-gateway.keiretsu.top (or .keiretsu.ts.net)
-#         → Tailscale CGNAT VIP
-#         → Envoy proxy (this gateway)
+#   client → http://stpetersburg-ai-gateway.keiretsu.ts.net/  (or any host:80)
+#         → Tailscale CGNAT VIP (100.x.y.z)
+#         → Envoy proxy (this gateway, HTTP/80, any Host)
 #         → AIGatewayRoute → AIServiceBackend → Backend → vllm.ai.svc:8000
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: ai-gateway
-  namespace: ai
-spec:
-  dnsNames:
-    - "${LOCATION}-ai-gateway.${COMMON_DOMAIN}"
-  issuerRef:
-    group: cert-manager.io
-    kind: ClusterIssuer
-    name: keiretsu-top
-  secretName: ai-gateway-tls
-  usages:
-    - digital signature
-    - key encipherment
+#
+# HTTP only — TLS is the tailnet itself (wireguard). No cert needed.
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
@@ -69,28 +53,10 @@ metadata:
 spec:
   gatewayClassName: ai-gateway
   listeners:
-    # HTTP listener accepts any Host header. Tailscale-only access via
-    # http://stpetersburg-ai-gateway.keiretsu.ts.net/ (MagicDNS) hits this.
-    # No hostname field == matches *.
+    # No hostname filter — accepts any Host header.
     - name: http
       protocol: HTTP
       port: 80
       allowedRoutes:
         namespaces:
           from: Same
-    # HTTPS listener with the keiretsu.top cert. Hostname field omitted so
-    # it matches any SNI; cert verification on the client side will only
-    # succeed for *.keiretsu.top, but other clients can still connect with
-    # cert verification disabled (`-k`) or via the HTTP listener.
-    - name: https
-      protocol: HTTPS
-      port: 443
-      allowedRoutes:
-        namespaces:
-          from: Same
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - group: ""
-            kind: Secret
-            name: ai-gateway-tls
