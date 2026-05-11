@@ -2,31 +2,68 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: nvidia-device-plugin
+  name: gpu-operator
   namespace: gpu-operator
 spec:
   interval: 30m
   chart:
     spec:
-      chart: nvidia-device-plugin
-      version: "0.19.1"
+      chart: gpu-operator
+      version: "v26.3.1"
       sourceRef:
         kind: HelmRepository
-        name: nvdp
+        name: nvidia
         namespace: flux-system
   install:
+    crds: CreateReplace
     remediation:
       retries: 3
   upgrade:
+    crds: CreateReplace
     cleanupOnFail: true
     remediation:
       retries: 3
   values:
-    runtimeClassName: nvidia
-    deviceListStrategy: envvar
-    deviceIDStrategy: uuid
-    failOnInitError: false
-    # Time-slicing configuration for GPU sharing
-    config:
-      name: time-slicing-config
-      default: any
+    # Talos provides NVIDIA driver and container-toolkit via system extensions
+    # (nonfree-kmod-nvidia-lts, nvidia-container-toolkit-lts). gpu-operator
+    # only needs to deploy the userspace bits.
+    driver:
+      enabled: false
+    toolkit:
+      enabled: false
+    # Where Talos's nvidia extension installs runtime binaries (ext-nvidia-cdi-gen
+    # writes CDI specs here, and gpu-operator's validator needs nvidia-ctk reachable).
+    hostPaths:
+      driverInstallDir: /run/nvidia/driver
+    operator:
+      defaultRuntime: containerd
+      runtimeClass: nvidia
+    devicePlugin:
+      enabled: true
+      # Use the existing time-slicing-config ConfigMap (4-way GPU sharing)
+      config:
+        name: time-slicing-config
+        default: any
+    # NFD already deployed separately at node-feature-discovery namespace
+    nfd:
+      enabled: false
+    # MIG not used — using time-slicing instead (consumer-grade SoC)
+    mig:
+      strategy: none
+    # GPU Feature Discovery: adds nvidia.com/gpu.* labels for scheduling
+    gfd:
+      enabled: true
+    # DCGM exporter for Prometheus metrics
+    dcgmExporter:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+    nodeStatusExporter:
+      enabled: true
+    # GPU operator's validator runs nvidia-smi after device-plugin DS
+    # is ready; WITH_WORKLOAD=false skips a CUDA test pod (no spare GPU)
+    validator:
+      plugin:
+        env:
+          - name: WITH_WORKLOAD
+            value: "false"
