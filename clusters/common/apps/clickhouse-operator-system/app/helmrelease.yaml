@@ -26,6 +26,12 @@ spec:
     # Keep the resource name aligned with the existing ServiceMonitor selector
     # (app.kubernetes.io/name: clickhouse-operator).
     nameOverride: clickhouse-operator
+    operator:
+      # Watch all namespaces. The operator's default when running outside
+      # kube-system is to watch only its own namespace; ".*" forces watch-all.
+      env:
+        - name: WATCH_NAMESPACES
+          value: ".*"
     metrics:
       enabled: true
     serviceMonitor:
