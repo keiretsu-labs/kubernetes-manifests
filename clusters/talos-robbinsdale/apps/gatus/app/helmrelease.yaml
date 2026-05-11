@@ -23,6 +23,8 @@ spec:
   values:
     image:
       tag: v5.35.0
+    nodeSelector:
+      kubernetes.io/hostname: stone
     envFrom:
       - secretRef:
           name: gatus
