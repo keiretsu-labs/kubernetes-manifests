@@ -28,15 +28,15 @@ spec:
               umask 077
               cat >/opt/data/.aws/credentials <<EOF
               [default]
-              aws_access_key_id = ${AWS_ACCESS_KEY_ID}
-              aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}
+              aws_access_key_id = $${AWS_ACCESS_KEY_ID}
+              aws_secret_access_key = $${AWS_SECRET_ACCESS_KEY}
               EOF
               cat >/opt/data/.aws/config <<EOF
               [default]
-              region = ${AWS_REGION}
-              endpoint_url = ${AWS_ENDPOINT_URL}
+              region = $${AWS_REGION}
+              endpoint_url = $${AWS_ENDPOINT_URL}
               s3 =
-                  endpoint_url = ${AWS_ENDPOINT_URL_S3}
+                  endpoint_url = $${AWS_ENDPOINT_URL_S3}
                   addressing_style = path
               EOF
           envFrom:
