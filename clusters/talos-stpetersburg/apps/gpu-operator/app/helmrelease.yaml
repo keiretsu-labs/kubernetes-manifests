@@ -40,14 +40,12 @@ spec:
       runtimeClass: nvidia
     devicePlugin:
       enabled: true
-      # Use the existing time-slicing-config ConfigMap (4-way GPU sharing)
-      config:
-        name: time-slicing-config
-        default: any
+      # No time-slicing — default replicas: 1 per GPU. Single vLLM consumer per
+      # spark doesn't benefit from fictitious slot multiplication (research 2026-05-11).
     # NFD already deployed separately at node-feature-discovery namespace
     nfd:
       enabled: false
-    # MIG not used — using time-slicing instead (consumer-grade SoC)
+    # MIG not supported on GB10 (consumer-grade SoC, no firmware path)
     mig:
       strategy: none
     # GPU Feature Discovery: adds nvidia.com/gpu.* labels for scheduling
