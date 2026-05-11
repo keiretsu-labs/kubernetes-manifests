@@ -96,7 +96,7 @@ spec:
             --max-model-len 200000 \
             --max-num-seqs 32 \
             --max-num-batched-tokens 49152 \
-            --gpu-memory-utilization 0.72 \
+            --gpu-memory-utilization 0.60 \
             --enable-chunked-prefill \
             --enable-prefix-caching \
             --load-format safetensors \
