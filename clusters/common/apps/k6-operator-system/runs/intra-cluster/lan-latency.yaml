@@ -22,7 +22,7 @@ spec:
     --tag payload=small
     --tag k6_version=0.55.0
   runner:
-    image: grafana/k6:1.7.1
+    image: grafana/k6:2.0.0
     envFrom:
       - configMapRef:
           name: cluster-info

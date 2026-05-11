@@ -25,7 +25,7 @@ spec:
     --tag payload=small
     --tag k6_version=0.55.0
   runner:
-    image: grafana/k6:1.7.1
+    image: grafana/k6:2.0.0
     # CoreDNS forwards *.ts.net to the Tailscale DNS proxy, which does not
     # resolve Funnel public IPs. Pass HOSTS_OVERRIDE so the script uses
     # k6's options.hosts to map the funnel hostname to a public IP.
