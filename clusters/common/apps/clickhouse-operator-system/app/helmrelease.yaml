@@ -5,42 +5,30 @@ metadata:
   name: clickhouse-operator
 spec:
   interval: 30m
-  dependsOn:
-    - name: clickhouse-operator-crds
   chart:
     spec:
-      chart: clickhouse-operator
-      version: v0.31.0
+      chart: altinity-clickhouse-operator
+      version: 0.27.0
       sourceRef:
         kind: HelmRepository
         name: clickhouse
         namespace: flux-system
   install:
+    crds: CreateReplace
     remediation:
       retries: 3
   upgrade:
+    crds: CreateReplace
     cleanupOnFail: true
     remediation:
       retries: 3
   values:
+    # Keep the resource name aligned with the existing ServiceMonitor selector
+    # (app.kubernetes.io/name: clickhouse-operator).
+    nameOverride: clickhouse-operator
     metrics:
       enabled: true
-      serviceMonitor:
-        enabled: true
-        namespace: monitoring
-        namespaceSelector:
-          matchNames:
-            - monitoring
-      port: 8443
-    api:
-      tls:
-        tlsEnabled: true
-        certManager:
-          enabled: true
-    operator:
-      logging:
-        level: "info"
-        flushInterval: "30s"
-        reporters:
-          - type: "json"
----
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: monitoring
