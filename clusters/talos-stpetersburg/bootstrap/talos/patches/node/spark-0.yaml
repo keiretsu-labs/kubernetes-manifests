@@ -6,8 +6,15 @@ machine:
   nodeLabels:
     node.kubernetes.io/instance-type: dgx-spark
     nvidia.com/gpu.product: Blackwell
-    # Required by nvidia-device-plugin chart's nodeAffinity to schedule on this node
     nvidia.com/gpu.present: "true"
+    # gpu-operator NFD-style labels — our NFD doesn't synthesize these on Talos
+    # so they're set manually here. Without them gpu-operator's ClusterPolicy
+    # reconciler can't find the GPU nodes and refuses to deploy device-plugin DS.
+    feature.node.kubernetes.io/pci-10de.present: "true"
+    feature.node.kubernetes.io/system-os_release.ID: ubuntu
+    feature.node.kubernetes.io/system-os_release.VERSION_ID: "24.04"
+    feature.node.kubernetes.io/system-os_release.VERSION_ID.major: "24"
+    feature.node.kubernetes.io/cpu-model.vendor_id: NVIDIA
   sysctls:
     # Reserve 2048 × 2MB = 4GB for huge pages (GPU memory, large databases)
     vm.nr_hugepages: "2048"
