@@ -8,4 +8,5 @@ resources:
   - ./network
   - ./mimir
   - ./loki
+  - ./cnpg
   - ./k6
