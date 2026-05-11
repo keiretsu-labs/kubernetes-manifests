@@ -69,10 +69,22 @@ metadata:
 spec:
   gatewayClassName: ai-gateway
   listeners:
+    # HTTP listener accepts any Host header. Tailscale-only access via
+    # http://stpetersburg-ai-gateway.keiretsu.ts.net/ (MagicDNS) hits this.
+    # No hostname field == matches *.
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HTTPS listener with the keiretsu.top cert. Hostname field omitted so
+    # it matches any SNI; cert verification on the client side will only
+    # succeed for *.keiretsu.top, but other clients can still connect with
+    # cert verification disabled (`-k`) or via the HTTP listener.
     - name: https
       protocol: HTTPS
       port: 443
-      hostname: "${LOCATION}-ai-gateway.${COMMON_DOMAIN}"
       allowedRoutes:
         namespaces:
           from: Same
