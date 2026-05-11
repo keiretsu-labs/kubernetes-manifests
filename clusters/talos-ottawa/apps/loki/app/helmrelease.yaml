@@ -89,9 +89,10 @@ spec:
 
     serviceAccount:
       create: true
-    extraEnvFrom:
-      - secretRef:
-          name: loki-s3
+    global:
+      extraEnvFrom:
+        - secretRef:
+            name: loki-s3
 
     read:
       replicas: 2
