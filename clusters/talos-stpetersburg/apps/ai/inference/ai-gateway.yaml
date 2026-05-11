@@ -1,0 +1,84 @@
+# Dedicated Envoy AI Gateway for vLLM. Isolated from the shared `ts` gateway
+# so the ai-gateway-extproc sidecar rollout only churns this proxy, not every
+# other route in the cluster. Exposed as its own Tailscale device via the
+# common-ingress proxy-group.
+#
+# Flow:
+#   client → stpetersburg-ai-gateway.keiretsu.top (or .keiretsu.ts.net)
+#         → Tailscale CGNAT VIP
+#         → Envoy proxy (this gateway)
+#         → AIGatewayRoute → AIServiceBackend → Backend → vllm.ai.svc:8000
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ai-gateway
+  namespace: ai
+spec:
+  dnsNames:
+    - "${LOCATION}-ai-gateway.${COMMON_DOMAIN}"
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: keiretsu-top
+  secretName: ai-gateway-tls
+  usages:
+    - digital signature
+    - key encipherment
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: ai-gateway
+  namespace: ai
+spec:
+  telemetry:
+    metrics:
+      prometheus:
+        compression:
+          type: Gzip
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 1
+      envoyService:
+        annotations:
+          tailscale.com/hostname: ${LOCATION}-ai-gateway
+          tailscale.com/proxy-group: common-ingress
+          tailscale.com/tags: "tag:singh360,tag:k8s,tag:stpetersburg"
+        loadBalancerClass: tailscale
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: ai-gateway
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: ai-gateway
+    namespace: ai
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ai-gateway
+  namespace: ai
+spec:
+  gatewayClassName: ai-gateway
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "${LOCATION}-ai-gateway.${COMMON_DOMAIN}"
+      allowedRoutes:
+        namespaces:
+          from: Same
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: ai-gateway-tls
