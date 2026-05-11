@@ -29,3 +29,9 @@ spec:
       namespace: tailscale-examples
     - kind: GarageKey
       namespace: loki
+    - kind: GarageKey
+      namespace: tailscale
+    - kind: GarageKey
+      namespace: flux-system
+    - kind: GarageKey
+      namespace: mimir
