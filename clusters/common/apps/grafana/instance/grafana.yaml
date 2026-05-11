@@ -36,8 +36,6 @@ spec:
                 capabilities:
                   drop: ["ALL"]
               env:
-                - name: GF_INSTALL_PLUGINS
-                  value: victoriametrics-logs-datasource
                 - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
                   value: "${TS_IDP_GRAFANA_CLIENT_SECRET}"
           volumes:
