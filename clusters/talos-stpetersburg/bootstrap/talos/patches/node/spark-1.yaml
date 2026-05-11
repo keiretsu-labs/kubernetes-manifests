@@ -1,5 +1,7 @@
 # Node-specific configuration for spark-1 (DGX Spark, paired with spark-0).
 # Same NVIDIA bits as spark-0 — kept in sync because both run the GB10 Blackwell GPU.
+# NOTE: arm64.nobti is baked into the schematic kernel args (factory.talos.dev) because
+# Talos v1.13 uses UKI which forbids runtime install.extraKernelArgs. See talconfig.yaml.
 machine:
   nodeLabels:
     node.kubernetes.io/instance-type: dgx-spark

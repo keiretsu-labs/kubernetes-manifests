@@ -1,5 +1,7 @@
 # Node-specific configuration for spark-0 (DGX Spark).
 # All NVIDIA discrete-style GPU bits live here so orin-0 (Tegra, no PCIe NVIDIA modules) doesn't get them.
+# NOTE: arm64.nobti is baked into the schematic kernel args (factory.talos.dev) because
+# Talos v1.13 uses UKI which forbids runtime install.extraKernelArgs. See talconfig.yaml.
 machine:
   nodeLabels:
     node.kubernetes.io/instance-type: dgx-spark
