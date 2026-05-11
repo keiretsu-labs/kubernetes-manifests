@@ -6,6 +6,8 @@ machine:
   nodeLabels:
     node.kubernetes.io/instance-type: dgx-spark
     nvidia.com/gpu.product: Blackwell
+    # Required by nvidia-device-plugin chart's nodeAffinity to schedule on this node
+    nvidia.com/gpu.present: "true"
   sysctls:
     # Reserve 2048 × 2MB = 4GB for huge pages (GPU memory, large databases)
     vm.nr_hugepages: "2048"
