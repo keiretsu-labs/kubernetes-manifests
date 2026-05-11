@@ -30,7 +30,6 @@ spec:
   name: "Keiretsu-Top Backup Key"
   secretTemplate:
     name: keiretsu-top-s3-creds
-    namespace: keiretsu-top
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
   bucketPermissions:
