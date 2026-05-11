@@ -2,83 +2,6 @@
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
-  name: tailscale-recorder-key
-spec:
-  clusterRef:
-    name: garage
-  name: "Tailscale Recorder Key"
-  secretTemplate:
-    name: s3-auth
-    namespace: tailscale
-    accessKeyIdKey: AWS_ACCESS_KEY_ID
-    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
-  bucketPermissions:
-    - bucketRef:
-        name: tailscale-logs
-      read: true
-      write: true
----
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageKey
-metadata:
-  name: keiretsu-key
-spec:
-  clusterRef:
-    name: garage
-  name: "Keiretsu Backup Key"
-  secretTemplate:
-    name: garage-keiretsu-bucket
-    namespace: flux-system
-    accessKeyIdKey: KEIRETSU_S3_ACCESS_KEY
-    secretAccessKeyKey: KEIRETSU_S3_SECRET_KEY
-  bucketPermissions:
-    - bucketRef:
-        name: keiretsu
-      read: true
-      write: true
----
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageKey
-metadata:
-  name: rajsingh-key
-spec:
-  clusterRef:
-    name: garage
-  name: "Rajsingh Workspace Key"
-  secretTemplate:
-    name: garage-rajsingh-bucket
-    namespace: flux-system
-    accessKeyIdKey: RAJSINGH_S3_ACCESS_KEY
-    secretAccessKeyKey: RAJSINGH_S3_SECRET_KEY
-  bucketPermissions:
-    - bucketRef:
-        name: rajsingh
-      read: true
-      write: true
-      owner: true
----
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageKey
-metadata:
-  name: tailscale-logs-key
-spec:
-  clusterRef:
-    name: garage
-  name: "Tailscale Logs Key"
-  secretTemplate:
-    name: tailscale-logs-s3-auth
-    namespace: flux-system
-    accessKeyIdKey: TAILSCALE_LOGS_S3_ACCESS_KEY
-    secretAccessKeyKey: TAILSCALE_LOGS_S3_SECRET_KEY
-  bucketPermissions:
-    - bucketRef:
-        name: tailscale-logs
-      read: true
-      write: true
----
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageKey
-metadata:
   name: webui-sidecar-key
 spec:
   clusterRef:
@@ -89,29 +12,5 @@ spec:
     write: true
   secretTemplate:
     name: garage-webui-sidecar
-    namespace: garage
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
----
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageKey
-metadata:
-  name: mimir-key
-spec:
-  clusterRef:
-    name: garage
-    namespace: garage
-  name: "Mimir Metrics Key"
-  secretTemplate:
-    name: mimir-s3
-    namespace: mimir
-    accessKeyIdKey: AWS_ACCESS_KEY_ID
-    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
-    additionalData:
-      endpoint: "http://garage.garage.svc.cluster.local:3900"
-      region: "garage"
-  bucketPermissions:
-    - bucketRef:
-        name: mimir
-      read: true
-      write: true
