@@ -69,8 +69,8 @@ spec:
 ---
 # Sticky routing by X-Session-Id keeps prefix-cache warm per chat; clients
 # without the header fall back to source-IP hashing. Long timeouts for
-# streaming. Target the Backend so the policy applies regardless of which
-# HTTPRoute (AI Gateway-generated) fronts it.
+# streaming. AI Gateway controller auto-generates an HTTPRoute named after
+# the AIGatewayRoute ("vllm") — target that.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: BackendTrafficPolicy
 metadata:
@@ -78,8 +78,8 @@ metadata:
   namespace: ai
 spec:
   targetRefs:
-    - group: gateway.envoyproxy.io
-      kind: Backend
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
       name: vllm
   loadBalancer:
     type: ConsistentHash
