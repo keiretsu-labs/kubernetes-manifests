@@ -9,6 +9,13 @@ machine:
   sysctls:
     # Reserve 2048 × 2MB = 4GB for huge pages (GPU memory, large databases)
     vm.nr_hugepages: "2048"
+  network:
+    interfaces:
+      # ConnectX-7 RDMA rail to spark-1 (single 200G DAC link, /30 subnet)
+      - interface: eth2
+        mtu: 9000
+        addresses:
+          - 192.168.74.1/30
   kernel:
     modules:
       - name: nvidia
@@ -18,6 +25,11 @@ machine:
           - modeset=1
           - fbdev=1
       - name: nvidia_modeset
+      # RDMA / RoCE stack (mlx5_core + mlx5_ib + ib_uverbs already loaded by kernel
+      # via PCI probe; these complete the userspace verbs/CM API)
+      - name: ib_core
+      - name: rdma_cm
+      - name: rdma_ucm
   files:
     - content: |
         [plugins."io.containerd.grpc.v1.cri"]
