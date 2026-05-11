@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rdma-devices
+  namespace: rdma-system
+data:
+  config.json: |
+    {
+      "periodicUpdateInterval": 300,
+      "configList": [
+        {
+          "resourceName": "hca_shared_devices_a",
+          "rdmaHcaMax": 64,
+          "selectors": {
+            "vendors": ["15b3"],
+            "deviceIDs": ["1021"]
+          }
+        }
+      ]
+    }

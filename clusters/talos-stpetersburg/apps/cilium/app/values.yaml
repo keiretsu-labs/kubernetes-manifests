@@ -14,6 +14,15 @@ routingMode: native
 bpf:
   masquerade: true
   lbExternalClusterIP: true # https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/#external-access-to-clusterip-services
+# Exclude the ConnectX-7 RDMA rail (spark-0 ↔ spark-1) from SNAT so any TCP
+# fallback for NCCL retains real source IPs. RDMA verbs traffic bypasses the
+# kernel entirely, so this is preemptive insurance.
+ipMasqAgent:
+  enabled: true
+  config:
+    nonMasqueradeCIDRs:
+      - 10.0.0.0/8
+      - 192.168.74.0/30
 ipv4:
   enabled: true
 ipv4NativeRoutingCIDR: 10.0.0.0/8
