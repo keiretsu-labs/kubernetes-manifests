@@ -7,4 +7,5 @@ resources:
   - ./kubernetes
   - ./network
   - ./mimir
+  - ./loki
   - ./k6
