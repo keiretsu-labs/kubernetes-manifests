@@ -11,7 +11,7 @@ spec:
   parentRefs:
     - name: ts
       namespace: home
-      sectionName: wildcard-rajsingh-info-https
+      sectionName: wildcard-keiretsu-top-https
   hostnames:
     # Use keiretsu.top (auto-managed by external-dns-cloudflare-keiretsu-top in
     # this cluster). rajsingh.info is also accepted by the ts gateway but isn't
