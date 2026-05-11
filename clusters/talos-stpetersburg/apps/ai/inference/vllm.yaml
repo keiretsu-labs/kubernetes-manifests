@@ -241,6 +241,7 @@ metadata:
   namespace: ai
 data:
   download.py: |
+    import glob
     import os
     from huggingface_hub import snapshot_download
 
@@ -250,9 +251,15 @@ data:
         ('z-lab/Qwen3.6-27B-DFlash', '/models/aeon-ultimate-dflash'),
     ]
     for repo, path in models:
-        if not os.path.exists(os.path.join(path, 'config.json')):
-            print(f'Downloading {repo}...', flush=True)
-            snapshot_download(repo_id=repo, local_dir=path, token=token)
+        # Verify both config.json AND at least one .safetensors weight file exist.
+        # The previous check (config.json only) missed partial downloads where
+        # the small files landed but the weights got interrupted, causing vLLM
+        # to fail later with "Cannot find any model weights".
+        has_config = os.path.exists(os.path.join(path, 'config.json'))
+        has_weights = bool(glob.glob(os.path.join(path, '*.safetensors')))
+        if not (has_config and has_weights):
+            print(f'Downloading {repo} (config={has_config}, weights={has_weights})...', flush=True)
+            snapshot_download(repo_id=repo, local_dir=path, token=token, max_workers=4)
             print(f'Done: {repo}', flush=True)
         else:
             print(f'Already cached: {repo}', flush=True)
