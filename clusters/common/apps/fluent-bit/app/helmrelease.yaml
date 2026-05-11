@@ -65,26 +65,30 @@ spec:
 
       outputs: |
         [OUTPUT]
-            Name             http
-            Match            kube.*
-            Host             victoria-logs-victoria-logs-single-server.monitoring.svc
-            Port             9428
-            URI              /insert/jsonline?_stream_fields=kubernetes.namespace_name,kubernetes.pod_name,kubernetes.container_name,stream&_msg_field=message,log,msg&_time_field=time
-            Format           json_lines
-            Json_date_key    time
-            Json_date_format iso8601
-            compress         gzip
+            Name                   loki
+            Match                  kube.*
+            Host                   loki-gateway.loki.svc.cluster.local
+            Port                   80
+            Uri                    /loki/api/v1/push
+            tenant_id              ${CLUSTER_NAME}
+            labels                 cluster=${CLUSTER_NAME}, job=fluent-bit
+            label_keys             $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name'],$stream
+            remove_keys            kubernetes,stream
+            auto_kubernetes_labels off
+            line_format            json
+            compress               gzip
 
         [OUTPUT]
-            Name             http
-            Match            talos.*
-            Host             victoria-logs-victoria-logs-single-server.monitoring.svc
-            Port             9428
-            URI              /insert/jsonline?_stream_fields=talos-service,cluster&_msg_field=msg&_time_field=talos-time
-            Format           json_lines
-            Json_date_key    talos-time
-            Json_date_format iso8601
-            compress         gzip
+            Name                   loki
+            Match                  talos.*
+            Host                   loki-gateway.loki.svc.cluster.local
+            Port                   80
+            Uri                    /loki/api/v1/push
+            tenant_id              ${CLUSTER_NAME}
+            labels                 cluster=${CLUSTER_NAME}, job=talos
+            label_keys             $talos-service
+            line_format            json
+            compress               gzip
 
     extraPorts:
       - port: 5170

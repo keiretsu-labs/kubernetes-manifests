@@ -2,16 +2,14 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app victoria-logs
+  name: &app loki
   namespace: flux-system
 spec:
-  targetNamespace: monitoring
+  targetNamespace: loki
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: monitoring
-  path: ./clusters/common/apps/victoria-logs/app
+  path: ./clusters/talos-stpetersburg/apps/loki/app
   prune: true
   sourceRef:
     kind: GitRepository

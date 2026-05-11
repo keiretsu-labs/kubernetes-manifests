@@ -115,3 +115,26 @@ spec:
         name: mimir
       read: true
       write: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: loki-key
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Loki Logs Key"
+  secretTemplate:
+    name: loki-s3
+    namespace: loki
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    additionalData:
+      endpoint: "http://garage.garage.svc.cluster.local:3900"
+      region: "garage"
+  bucketPermissions:
+    - bucketRef:
+        name: loki
+      read: true
+      write: true

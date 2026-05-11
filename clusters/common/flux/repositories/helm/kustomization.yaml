@@ -73,7 +73,6 @@ resources:
   - ./liqo.yaml
   - ./capi-operator.yaml
   - ./actions-runner-controller.yaml
-  - ./victoriametrics.yaml
   - ./unpoller.yaml
   - ./percona.yaml
   - ./fleetdm.yaml
