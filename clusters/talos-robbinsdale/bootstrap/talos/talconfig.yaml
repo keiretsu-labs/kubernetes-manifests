@@ -103,7 +103,6 @@ controlPlane:
           - siderolabs/realtek-firmware
           - siderolabs/thunderbolt
           - siderolabs/util-linux-tools
-          - siderolabs/zfs
       extraKernelArgs:
         - talos.platform=metal
   patches:
