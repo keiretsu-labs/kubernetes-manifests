@@ -6,6 +6,7 @@ kind: Probe
 metadata:
   name: app-cloudflare-public-sites
 spec:
+  jobName: blackbox
   module: http_2xx
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115

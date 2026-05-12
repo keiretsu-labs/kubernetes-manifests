@@ -5,6 +5,7 @@ kind: Probe
 metadata:
   name: app-nodes-tcp
 spec:
+  jobName: blackbox
   module: tcp_connect
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -24,6 +25,7 @@ kind: Probe
 metadata:
   name: app-nas-tcp
 spec:
+  jobName: blackbox
   module: tcp_connect
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -42,6 +44,7 @@ kind: Probe
 metadata:
   name: app-nodes-icmp
 spec:
+  jobName: blackbox
   module: icmp
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
