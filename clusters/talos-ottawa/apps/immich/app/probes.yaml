@@ -1,13 +1,8 @@
-# ==============================================================================
-# IMMICH PROBES - Photo backup service
-# Deployed in immich namespace, probes use blackbox-exporter via FQDN
-# ==============================================================================
-
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-immich-services
+  name: app-immich
 spec:
   jobName: blackbox
   module: http_2xx
@@ -17,7 +12,5 @@ spec:
     staticConfig:
       static:
         - http://immich-server.immich:2283/api/server/ping
-  metricRelabelings:
-    - targetLabel: service
-      replacement: immich
-      action: replace
+      labels:
+        service: immich

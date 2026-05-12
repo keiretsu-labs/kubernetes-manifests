@@ -12,7 +12,5 @@ spec:
     staticConfig:
       static:
         - http://zot.zot:5000/
-  metricRelabelings:
-    - targetLabel: service
-      replacement: zot
-      action: replace
+      labels:
+        service: zot

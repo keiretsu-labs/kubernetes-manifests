@@ -1,9 +1,8 @@
 ---
-# Garage TCP ports - HTTP, Admin
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-garage-tcp-local
+  name: app-garage-local
 spec:
   jobName: blackbox
   module: tcp_connect
@@ -14,43 +13,14 @@ spec:
       static:
         - garage.garage:3900
         - garage.garage:3903
-  metricRelabelings:
-    - targetLabel: service
-      replacement: garage
-    - targetLabel: cluster
-      replacement: ottawa
-    - targetLabel: target
-      replacement: local
-      action: replace
-
+      labels:
+        service: garage
+        target: local
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-garage-tcp-robbinsdale
-spec:
-  jobName: blackbox
-  module: tcp_connect
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - robbinsdale-garage.garage:3900
-        - robbinsdale-garage.garage:3903
-  metricRelabelings:
-    - targetLabel: service
-      replacement: garage
-    - targetLabel: cluster
-      replacement: robbinsdale
-    - targetLabel: target
-      replacement: cross-cluster
-      action: replace
----
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-garage-tcp-ottawa
+  name: app-garage-cross-cluster
 spec:
   jobName: blackbox
   module: tcp_connect
@@ -61,34 +31,10 @@ spec:
       static:
         - ottawa-garage.garage:3900
         - ottawa-garage.garage:3903
-  metricRelabelings:
-    - targetLabel: service
-      replacement: garage
-    - targetLabel: cluster
-      replacement: ottawa
-    - targetLabel: target
-      replacement: cross-cluster
-      action: replace
----
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-garage-tcp-stpetersburg
-spec:
-  jobName: blackbox
-  module: tcp_connect
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
+        - robbinsdale-garage.garage:3900
+        - robbinsdale-garage.garage:3903
         - stpetersburg-garage.garage:3900
         - stpetersburg-garage.garage:3903
-  metricRelabelings:
-    - targetLabel: service
-      replacement: garage
-    - targetLabel: cluster
-      replacement: stpetersburg
-    - targetLabel: target
-      replacement: cross-cluster
-      action: replace
+      labels:
+        service: garage
+        target: cross-cluster

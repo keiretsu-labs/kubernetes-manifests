@@ -1,9 +1,8 @@
 ---
-# ClickHouse TCP health checks for local cluster
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-clickhouse-tcp-local
+  name: app-clickhouse-local
 spec:
   jobName: blackbox
   module: tcp_connect
@@ -14,45 +13,14 @@ spec:
       static:
         - clickhouse.clickhouse:9000
         - clickhouse.clickhouse:8123
-  metricRelabelings:
-    - targetLabel: service
-      replacement: clickhouse
-    - targetLabel: cluster
-      replacement: ottawa
-    - targetLabel: target
-      replacement: local
-      action: replace
-
----
-# ClickHouse cross-cluster health checks
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-clickhouse-tcp-robbinsdale
-spec:
-  jobName: blackbox
-  module: tcp_connect
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - robbinsdale-clickhouse.clickhouse:9000
-        - robbinsdale-clickhouse.clickhouse:8123
-  metricRelabelings:
-    - targetLabel: service
-      replacement: clickhouse
-    - targetLabel: cluster
-      replacement: robbinsdale
-    - targetLabel: target
-      replacement: cross-cluster
-      action: replace
-
+      labels:
+        service: clickhouse
+        target: local
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-clickhouse-tcp-ottawa
+  name: app-clickhouse-cross-cluster
 spec:
   jobName: blackbox
   module: tcp_connect
@@ -63,37 +31,10 @@ spec:
       static:
         - ottawa-clickhouse.clickhouse:9000
         - ottawa-clickhouse.clickhouse:8123
-  metricRelabelings:
-    - targetLabel: service
-      replacement: clickhouse
-    - targetLabel: cluster
-      replacement: ottawa
-    - targetLabel: target
-      replacement: cross-cluster
-      action: replace
-
----
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-clickhouse-tcp-stpetersburg
-spec:
-  jobName: blackbox
-  module: tcp_connect
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
+        - robbinsdale-clickhouse.clickhouse:9000
+        - robbinsdale-clickhouse.clickhouse:8123
         - stpetersburg-clickhouse.clickhouse:9000
         - stpetersburg-clickhouse.clickhouse:8123
-  metricRelabelings:
-    - targetLabel: service
-      replacement: clickhouse
-    - targetLabel: cluster
-      replacement: stpetersburg
-    - targetLabel: target
-      replacement: cross-cluster
-      action: replace
-
----
+      labels:
+        service: clickhouse
+        target: cross-cluster
