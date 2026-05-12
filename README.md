@@ -261,7 +261,6 @@ Cluster ingress via Gateway API:
 ### talos-robbinsdale
 - `cilium` - CNI
 - `rook-ceph` - Distributed storage cluster
-- `1password` - Secret management
 - `immich` - Photo management
 - `media` - Media management stack
 - `home` - Home Assistant
