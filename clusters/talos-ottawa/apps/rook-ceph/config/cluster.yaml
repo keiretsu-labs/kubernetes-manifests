@@ -30,6 +30,7 @@ spec:
       mds_wipe_ino_prealloc: "true"
     mon:
       mon_osd_down_out_interval: "300"
+      mon_osd_auto_mark_in: "true"
       # NVMe optimized allocation size (4KB for NVMe)
       # bluestore_min_alloc_size: "4096"
       # Force more aggressive space reclamation
