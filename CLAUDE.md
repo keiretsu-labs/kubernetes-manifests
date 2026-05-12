@@ -79,7 +79,6 @@ This is a **production GitOps repository** managing multi-cluster Kubernetes inf
 - **cloudflare** - DNS/CDN management
 - **cdn** - Content delivery
 - **homer-operator** - Dashboard operator
-- **1password** - Secrets management (talos-robbinsdale only)
 
 **Bootstrap Configuration:**
 - `/bootstrap/flux/` - Flux installation manifests
@@ -569,7 +568,7 @@ Reusable Kustomize templates for new application deployment:
 ### Security
 - **Zero-Trust:** Tag-based ACLs, no blanket allow rules
 - **SSH Recording:** Enforced via tag:k8s-recorder with S3 backend
-- **Secrets:** SOPS encryption (GitOps-friendly), 1Password integration
+- **Secrets:** SOPS encryption (GitOps-friendly)
 - **TLS:** cert-manager automated certificates
 - **Auth:** GitHub SSO, OAuth clients, OIDC workload identity
 
@@ -610,7 +609,7 @@ Reusable Kustomize templates for new application deployment:
 | **Monitoring** | Prometheus, Grafana, Hubble UI, Gatus |
 | **VPN** | Tailscale (WireGuard) |
 | **Gateway** | Envoy Gateway, Kubernetes Gateway API |
-| **Secrets** | SOPS (PGP), 1Password, Secrets Store CSI |
+| **Secrets** | SOPS (PGP), Secrets Store CSI |
 | **Certificates** | cert-manager |
 | **AI/ML** | Ollama, KServe, Ray, NVIDIA GPU Operator |
 | **Media** | Jellyfin, Plex, Sonarr, Radarr, Prowlarr, qBittorrent |
