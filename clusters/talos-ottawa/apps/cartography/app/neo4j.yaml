@@ -34,7 +34,7 @@ spec:
         fsGroup: 7474
       containers:
         - name: neo4j
-          image: neo4j:5.26.25-community
+          image: neo4j:5.26.26-community
           ports:
             - name: http
               containerPort: 7474
