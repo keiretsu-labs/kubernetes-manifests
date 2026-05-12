@@ -47,6 +47,9 @@ data:
         }
         prometheus :9253
         health
+        header {
+            response set ra
+        }
         }
     in-addr.arpa:53 {
         errors
@@ -138,7 +141,9 @@ spec:
         resources:
           requests:
             cpu: 25m
-            memory: 5Mi
+            memory: 32Mi
+          limits:
+            memory: 256Mi
         args: [ "-localip", "169.254.20.10,10.0.0.10", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream", "-skipteardown=true", "-setupinterface=false", "-setupiptables=false" ]
         ports:
         - containerPort: 53
@@ -156,6 +161,7 @@ spec:
             port: 8080
           initialDelaySeconds: 60
           timeoutSeconds: 5
+          failureThreshold: 6
         volumeMounts:
         - name: config-volume
           mountPath: /etc/coredns
