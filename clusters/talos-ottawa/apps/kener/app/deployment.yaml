@@ -58,7 +58,7 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 30
         - name: redis
-          image: redis:7-alpine
+          image: redis:8-alpine
           imagePullPolicy: IfNotPresent
           args: ["--save", "", "--appendonly", "no"]
           ports:
