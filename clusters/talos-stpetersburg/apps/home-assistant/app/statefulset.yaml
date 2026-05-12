@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: homeassistant
+spec:
+  replicas: 1
+  serviceName: homeassistant
+  selector:
+    matchLabels:
+      app: homeassistant
+  template:
+    metadata:
+      labels:
+        app: homeassistant
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        - name: restic-restore
+          image: restic/restic:0.18.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              if restic snapshots --json --last 1 2>/dev/null | grep -q '"id"'; then
+                echo "Restoring latest snapshot into /config"
+                restic restore latest --target /config
+                echo "Restore complete"
+              else
+                echo "No snapshots in repo (first boot or empty), starting fresh"
+              fi
+              if [ ! -f /config/configuration.yaml ]; then
+                echo "Seeding default configuration.yaml with trusted_proxies"
+                cat > /config/configuration.yaml <<EOF
+              default_config:
+              http:
+                use_x_forwarded_for: true
+                trusted_proxies:
+                  - 10.0.0.0/8
+                  - 192.168.0.0/16
+                  - 172.16.0.0/12
+                  - 100.64.0.0/10
+              EOF
+              fi
+          envFrom:
+            - secretRef:
+                name: restic-homeassistant-config
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      containers:
+        - name: homeassistant
+          image: homeassistant/home-assistant:2026.5
+          env:
+            - name: TZ
+              value: ${TIMEZONE}
+          ports:
+            - name: http
+              containerPort: 8123
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: homeassistant-config

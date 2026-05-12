@@ -1,0 +1,16 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: homeassistant-config
+  labels:
+    keiretsu.ts.net/location: stpetersburg
+spec:
+  name: homeassistant-config
+  size: 10Gi
+  storageClass: local-path
+  s3Path: home-assistant/config
+  schedule: "0 12 * * *"
+  copyMethod: Direct
+  restorePaused: true
+  restorePrevious: 1
