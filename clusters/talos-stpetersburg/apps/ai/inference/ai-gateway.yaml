@@ -1,10 +1,12 @@
 # Dedicated Envoy AI Gateway for vLLM. Isolated from the shared `ts` gateway
 # so the ai-gateway-extproc sidecar rollout only churns this proxy. Exposed
-# as its own Tailscale device via the common-ingress proxy-group.
+# as its own dedicated Tailscale device via proxy-class (legacy per-svc proxy
+# StatefulSet) — ProxyGroup-shared ingress had reachability issues from some
+# tag:k8s clients.
 #
 # Flow:
 #   client → http://stpetersburg-ai-gateway.keiretsu.ts.net/  (or any host:80)
-#         → Tailscale CGNAT VIP (100.x.y.z)
+#         → Tailscale CGNAT VIP (100.x.y.z, served by dedicated ts-* pod)
 #         → Envoy proxy (this gateway, HTTP/80, any Host)
 #         → AIGatewayRoute → AIServiceBackend → Backend → vllm.ai.svc:8000
 #
@@ -29,8 +31,8 @@ spec:
       envoyService:
         annotations:
           tailscale.com/hostname: ${LOCATION}-ai-gateway
-          tailscale.com/proxy-group: common-ingress
-          tailscale.com/tags: "tag:singh360,tag:k8s,tag:stpetersburg"
+          tailscale.com/proxy-class: common
+          tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
         loadBalancerClass: tailscale
 ---
 apiVersion: gateway.networking.k8s.io/v1
