@@ -1,0 +1,21 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: blackbox-exporter-ottawa
+  namespace: flux-system
+spec:
+  targetNamespace: monitoring
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: blackbox-exporter
+  dependsOn:
+    - name: blackbox-exporter
+  path: ./clusters/talos-ottawa/apps/blackbox-exporter/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m

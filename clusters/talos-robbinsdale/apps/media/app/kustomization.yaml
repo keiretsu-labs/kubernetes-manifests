@@ -27,3 +27,4 @@ resources:
   - ./jellystat
   - ./readarr
   - ./audioarr
+  - probes.yaml

@@ -1,0 +1,57 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-nodes-tcp
+spec:
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - tank.local:6443
+        - titan.local:6443
+        - stone.local:6443
+        - silver.local:6443
+        - vault.local:6443
+      labels:
+        service: nodes
+        target: kubelet-port
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-nas-https
+spec:
+  module: http_2xx_insecure
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://nas.local
+      labels:
+        service: nodes
+        target: nas
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-nodes-icmp
+spec:
+  module: icmp
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - tank.local
+        - titan.local
+        - stone.local
+        - silver.local
+        - vault.local
+        - nas.local
+      labels:
+        service: nodes
+        target: ping
