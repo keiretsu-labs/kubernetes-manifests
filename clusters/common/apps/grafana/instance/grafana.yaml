@@ -13,35 +13,8 @@ spec:
       resources:
         requests:
           storage: 10Gi
-  deployment:
-    spec:
-      strategy:
-        type: Recreate
-      replicas: 1
-      template:
-        spec:
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 472
-            runAsGroup: 472
-            fsGroup: 472
-            fsGroupChangePolicy: OnRootMismatch
-          containers:
-            - name: grafana
-              securityContext:
-                allowPrivilegeEscalation: false
-                readOnlyRootFilesystem: false
-                runAsUser: 472
-                runAsGroup: 472
-                capabilities:
-                  drop: ["ALL"]
-              env:
-                - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
-                  value: "${TS_IDP_GRAFANA_CLIENT_SECRET}"
-          volumes:
-            - name: grafana-data
-              persistentVolumeClaim:
-                claimName: grafana-pvc
+  plugins:
+    - grafana-image-renderer
   config:
     log:
       mode: console
@@ -62,3 +35,5 @@ spec:
       api_url: https://${LOCATION}-idp.keiretsu.ts.net/userinfo
       redirect_uri: https://grafana.${CLUSTER_DOMAIN}/login/generic_oauth
       login_attribute: preferred_username
+  instance:
+    replicas: 1
