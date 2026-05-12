@@ -5,7 +5,7 @@ metadata:
   name: ceph-blockpool-replicated-nvme
   namespace: rook-ceph
 spec:
-  failureDomain: osd
+  failureDomain: host
   replicated:
     size: 3
   deviceClass: nvme

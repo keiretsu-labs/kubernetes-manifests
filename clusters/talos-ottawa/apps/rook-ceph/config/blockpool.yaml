@@ -7,6 +7,6 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
-  failureDomain: osd
+  failureDomain: host
   replicated:
     size: 3
