@@ -12,3 +12,4 @@ resources:
   - externaldns-killinit-cc.yaml
   - externaldns-keiretsu-top.yaml
   - secret.yaml
+  - probes.yaml

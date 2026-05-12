@@ -1,9 +1,7 @@
-# ==============================================================================
-# KUBERNETES API PROBES - Cross-cluster monitoring via Tailscale
-# ==============================================================================
-
 ---
-# Kubernetes API via Tailscale operators
+# Kubernetes API servers exposed via Tailscale operator on each cluster.
+# Probed from every cluster — gives multi-vantage uptime data, distinguished
+# by the X-Scope-OrgID tenant label that Prometheus applies on remote_write.
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
@@ -15,15 +13,28 @@ spec:
   targets:
     staticConfig:
       static:
-        # Kubernetes API via Tailscale operators
         - ottawa-k8s-operator.tailscale:443
         - robbinsdale-k8s-operator.tailscale:443
         - stpetersburg-k8s-operator.tailscale:443
-  metricRelabelings:
-    - targetLabel: service
-      replacement: kubernetes-api
-    - targetLabel: cluster
-      replacement: ottawa
-    - targetLabel: target
-      replacement: tailscale-operator
-      action: replace
+      labels:
+        service: kubernetes-api
+        target: tailscale-operator
+---
+# HTTP readyz probe (returns 401 without creds — still proves the API is up).
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-k8s-api-readyz
+spec:
+  module: http_401
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://ottawa-k8s-operator.tailscale/readyz
+        - https://robbinsdale-k8s-operator.tailscale/readyz
+        - https://stpetersburg-k8s-operator.tailscale/readyz
+      labels:
+        service: kubernetes-api
+        target: tailscale-operator

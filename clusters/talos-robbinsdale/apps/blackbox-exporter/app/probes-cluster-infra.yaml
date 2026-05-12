@@ -1,0 +1,32 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-k8s-api-local
+spec:
+  module: http_401
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://k8s.robbinsdale.local:6443/readyz
+      labels:
+        service: kubernetes-api
+        target: cluster-vip
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-cluster-services
+spec:
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - http://kube-dns.kube-system:9153/metrics
+        - http://source-controller.flux-system:80
+      labels:
+        service: cluster-infra
