@@ -23,6 +23,12 @@ spec:
   values:
     image:
       tag: v5.35.0
+    # Forces a Cilium identity whose low byte != 0x08, avoiding a collision with
+    # Tailscale's LinuxBypassMark (0x80000/0xff0000) that diverts ProxyGroup egress
+    # traffic out eth0 instead of tailscale0. Do not remove without verifying
+    # the resulting identity hex; ~1 in 256 identities will reproduce the bug.
+    podLabels:
+      fwmark-workaround: v1
     podAnnotations:
       checksum/webhook: "${DISCORD_WEBHOOK_URL}"
     envFrom:
