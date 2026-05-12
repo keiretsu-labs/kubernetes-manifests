@@ -31,6 +31,9 @@ data:
         loop
         reload
         loadbalance
+        header {
+            response set ra
+        }
     }
     robbinsdale.k8s:53 {
       errors
