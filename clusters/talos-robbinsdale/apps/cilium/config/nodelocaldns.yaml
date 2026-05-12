@@ -47,9 +47,6 @@ data:
         }
         prometheus :9253
         health
-        header {
-            response set ra
-        }
         }
     in-addr.arpa:53 {
         errors
