@@ -5,6 +5,7 @@ kind: Probe
 metadata:
   name: app-gateway-public
 spec:
+  jobName: blackbox
   module: http_2xx
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115

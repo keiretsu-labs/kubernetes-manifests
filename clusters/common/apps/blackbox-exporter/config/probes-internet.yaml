@@ -5,6 +5,7 @@ kind: Probe
 metadata:
   name: app-internet
 spec:
+  jobName: blackbox
   module: http_2xx
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -22,6 +23,7 @@ kind: Probe
 metadata:
   name: app-internet-icmp
 spec:
+  jobName: blackbox
   module: icmp
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115

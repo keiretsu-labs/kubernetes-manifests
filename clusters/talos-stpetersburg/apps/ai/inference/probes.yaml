@@ -5,6 +5,7 @@ kind: Probe
 metadata:
   name: app-vllm
 spec:
+  jobName: blackbox
   module: http_2xx
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -23,6 +24,7 @@ kind: Probe
 metadata:
   name: app-vllm-ts
 spec:
+  jobName: blackbox
   module: http_2xx
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -40,6 +42,7 @@ kind: Probe
 metadata:
   name: app-searxng
 spec:
+  jobName: blackbox
   module: http_2xx
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -58,6 +61,7 @@ kind: Probe
 metadata:
   name: app-ai-gateway
 spec:
+  jobName: blackbox
   module: tcp_connect
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -75,6 +79,7 @@ kind: Probe
 metadata:
   name: app-valkey
 spec:
+  jobName: blackbox
   module: tcp_connect
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115

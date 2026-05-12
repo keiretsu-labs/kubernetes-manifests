@@ -5,6 +5,7 @@ kind: Probe
 metadata:
   name: app-clickhouse-tcp-local
 spec:
+  jobName: blackbox
   module: tcp_connect
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -29,6 +30,7 @@ kind: Probe
 metadata:
   name: app-clickhouse-tcp-robbinsdale
 spec:
+  jobName: blackbox
   module: tcp_connect
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -52,6 +54,7 @@ kind: Probe
 metadata:
   name: app-clickhouse-tcp-ottawa
 spec:
+  jobName: blackbox
   module: tcp_connect
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -75,6 +78,7 @@ kind: Probe
 metadata:
   name: app-clickhouse-tcp-stpetersburg
 spec:
+  jobName: blackbox
   module: tcp_connect
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115

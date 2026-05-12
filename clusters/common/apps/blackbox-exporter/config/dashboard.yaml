@@ -1,4 +1,5 @@
 ---
+# Prometheus Blackbox Exporter — original community dashboard.
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
@@ -12,6 +13,7 @@ spec:
   grafanaCom:
     id: 7587
 ---
+# Blackbox Exporter (HTTP prober).
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
@@ -25,10 +27,11 @@ spec:
   grafanaCom:
     id: 13659
 ---
+# Prometheus Blackbox Exporter (alternate, handles target-relabeled probes).
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  name: blackbox-status-page
+  name: blackbox-exporter-relabeled
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
@@ -36,12 +39,13 @@ spec:
       grafana.internal/instance: grafana
   folder: Network
   grafanaCom:
-    id: 12552
+    id: 14928
 ---
+# Blackbox Exporter — "works out of the box" community dashboard.
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  name: blackbox-exporter-overview
+  name: blackbox-exporter-simple
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
@@ -49,4 +53,4 @@ spec:
       grafana.internal/instance: grafana
   folder: Network
   grafanaCom:
-    id: 13230
+    id: 5345

@@ -5,6 +5,7 @@ kind: Probe
 metadata:
   name: app-k8s-api-local
 spec:
+  jobName: blackbox
   module: http_401
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -22,6 +23,7 @@ kind: Probe
 metadata:
   name: app-etcd
 spec:
+  jobName: blackbox
   module: http_2xx
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
@@ -40,6 +42,7 @@ kind: Probe
 metadata:
   name: app-cluster-services
 spec:
+  jobName: blackbox
   module: http_2xx
   prober:
     url: blackbox-exporter.monitoring.svc.cluster.local:9115
