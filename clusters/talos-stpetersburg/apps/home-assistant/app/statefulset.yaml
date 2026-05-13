@@ -20,6 +20,7 @@ spec:
         # right interface; Cilium's BPF still handles intra-cluster traffic.
         k8s.v1.cni.cncf.io/networks: |
           [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
+    spec:
       initContainers:
         - name: restic-restore
           image: restic/restic:0.18.1

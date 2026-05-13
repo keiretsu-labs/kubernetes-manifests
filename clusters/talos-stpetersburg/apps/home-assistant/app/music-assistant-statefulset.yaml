@@ -21,6 +21,7 @@ spec:
         # Sonos UPnP/SSDP discovery a real LAN identity.
         k8s.v1.cni.cncf.io/networks: |
           [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
+    spec:
       initContainers:
         - name: restic-restore
           image: restic/restic:0.18.0
