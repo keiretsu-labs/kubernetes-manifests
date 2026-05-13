@@ -7,6 +7,5 @@ resources:
   - ./peer-relay
   - ./testing
   - ./ds
-  - ./tsdnsproxy
   - ./tsddns
   - ./derp-client

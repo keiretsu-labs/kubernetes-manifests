@@ -35,15 +35,6 @@ data:
             response set ra
         }
     }
-    stpetersburg.k8s:53 {
-      errors
-      cache 30
-      reload
-      loop
-      bind 0.0.0.0
-      forward . 10.4.210.24
-      prometheus :9253
-    }
     ts.net {
       errors
       cache 30
