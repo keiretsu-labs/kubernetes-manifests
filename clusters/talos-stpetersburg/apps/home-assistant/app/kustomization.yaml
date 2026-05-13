@@ -11,3 +11,4 @@ resources:
   - ./music-assistant-statefulset.yaml
   - ./music-assistant-service.yaml
   - ./music-assistant-httproute.yaml
+  - ./airconnect-deployment.yaml

@@ -1,0 +1,42 @@
+---
+# AirConnect — bridges AirPlay senders (iPhone, Mac, Music Assistant's AirPlay
+# provider) to UPnP/DLNA devices like the Sonos Playbar group, which doesn't
+# speak AirPlay 2 natively. airupnp advertises each Sonos as an AirPlay 2
+# endpoint on the LAN via mDNS.
+#
+# Pinned to spark-0 because hostNetwork + a hard-coded -b bind IP. If we move
+# nodes later, update the bind IP or drop -b to auto-detect.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airconnect
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: airconnect
+  template:
+    metadata:
+      labels:
+        app: airconnect
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: spark-0
+      containers:
+        - name: airconnect
+          image: 1activegeek/airconnect:latest
+          env:
+            - name: AIRUPNP_OPTS
+              value: "-b 192.168.73.206 -l 1000:2000"
+            - name: AIRCAST_OPTS
+              value: "-b 192.168.73.206"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
