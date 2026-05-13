@@ -8,7 +8,6 @@ resources:
   # - ./tsidp
   # - ./tsddns
   - ./tsflow
-  # - ./tsdnsproxy
   - ./sidecar
   - ./secret.yaml
   # - ./golink
