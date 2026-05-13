@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tailscale-log-streaming-script
+data:
+  sync.sh: |
+    #!/bin/sh
+    set -eu
+
+    : "${TAILNET:?}"
+    : "${S3_URL:?}"
+    : "${S3_BUCKET:?}"
+    : "${S3_REGION:?}"
+    : "${COMPRESSION:?}"
+    : "${UPLOAD_PERIOD_MINUTES:?}"
+    : "${TS_CLIENT_ID:?}"
+    : "${TS_CLIENT_SECRET:?}"
+    : "${TAILSCALE_LOGS_S3_ACCESS_KEY:?}"
+    : "${TAILSCALE_LOGS_S3_SECRET_KEY:?}"
+
+    API="https://api.tailscale.com/api/v2"
+
+    echo "Minting OAuth access token for client ${TS_CLIENT_ID%%-*}..."
+    TOKEN_JSON="$(curl -sf -u "${TS_CLIENT_ID}:${TS_CLIENT_SECRET}" \
+        -d 'grant_type=client_credentials' \
+        "${API}/oauth/token")"
+    ACCESS_TOKEN="$(printf '%s' "$TOKEN_JSON" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')"
+    if [ -z "$ACCESS_TOKEN" ]; then
+        echo "Failed to obtain access token" >&2
+        printf '%s\n' "$TOKEN_JSON" >&2
+        exit 1
+    fi
+
+    configure_stream() {
+        log_type="$1"
+        prefix="$2"
+        echo "Configuring log stream: ${log_type} -> s3://${S3_BUCKET}/${prefix}"
+        body=$(cat <<EOF
+    {
+        "destinationType": "s3",
+        "url": "${S3_URL}",
+        "s3Bucket": "${S3_BUCKET}",
+        "s3Region": "${S3_REGION}",
+        "s3KeyPrefix": "${prefix}",
+        "s3AuthenticationType": "accesskey",
+        "s3AccessKeyId": "${TAILSCALE_LOGS_S3_ACCESS_KEY}",
+        "s3SecretAccessKey": "${TAILSCALE_LOGS_S3_SECRET_KEY}",
+        "compressionFormat": "${COMPRESSION}",
+        "uploadPeriodMinutes": ${UPLOAD_PERIOD_MINUTES}
+    }
+    EOF
+        )
+        http_status=$(curl -s -o /tmp/resp -w '%{http_code}' -X PUT \
+            -u "${ACCESS_TOKEN}:" \
+            -H 'Content-Type: application/json' \
+            --data "$body" \
+            "${API}/tailnet/${TAILNET}/logging/${log_type}/stream")
+        if [ "$http_status" != "200" ] && [ "$http_status" != "204" ]; then
+            echo "  ${log_type}: PUT failed (HTTP ${http_status})" >&2
+            cat /tmp/resp >&2
+            echo >&2
+            return 1
+        fi
+        echo "  ${log_type}: configured (HTTP ${http_status})"
+    }
+
+    configure_stream "network" "network/"
+    configure_stream "configuration" "audit/"
+    echo "Done."

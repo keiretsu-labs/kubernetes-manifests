@@ -3,7 +3,7 @@ apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: tailscale-logs-key
-  namespace: flux-system
+  namespace: tailscale-system
 spec:
   clusterRef:
     name: garage

@@ -9,3 +9,4 @@ resources:
   - ./ds
   - ./tsddns
   - ./derp-client
+  - ./log-streaming
