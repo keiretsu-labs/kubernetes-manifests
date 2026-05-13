@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: music-assistant
+spec:
+  replicas: 1
+  serviceName: music-assistant
+  selector:
+    matchLabels:
+      app: music-assistant
+  template:
+    metadata:
+      labels:
+        app: music-assistant
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        - name: restic-restore
+          image: restic/restic:0.18.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              if restic snapshots --json --last 1 2>/dev/null | grep -q '"id"'; then
+                echo "Restoring latest snapshot into /data"
+                restic restore latest --target /data
+                echo "Restore complete"
+              else
+                echo "No snapshots in repo (first boot or empty), starting fresh"
+              fi
+          envFrom:
+            - secretRef:
+                name: restic-musicassistant-data
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      containers:
+        - name: music-assistant
+          image: ghcr.io/music-assistant/server:2.6.0
+          securityContext:
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - DAC_READ_SEARCH
+          env:
+            - name: TZ
+              value: ${TIMEZONE}
+            - name: LOG_LEVEL
+              value: info
+          ports:
+            - name: http
+              containerPort: 8095
+            - name: stream
+              containerPort: 8097
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: musicassistant-data
