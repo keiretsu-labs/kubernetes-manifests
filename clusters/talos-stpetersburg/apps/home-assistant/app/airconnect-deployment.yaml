@@ -4,8 +4,11 @@
 # speak AirPlay 2 natively. airupnp advertises each Sonos as an AirPlay 2
 # endpoint on the LAN via mDNS.
 #
-# Pinned to spark-0 because hostNetwork + a hard-coded -b bind IP. If we move
-# nodes later, update the bind IP or drop -b to auto-detect.
+# Multus macvlan side-leg gives the pod its own LAN IP/MAC, so airupnp and
+# aircast can mDNS-advertise from a unique identity without competing with
+# the host or other pods. -b is omitted now that auto-detect will pick the
+# macvlan iface (default route is on the LAN). Pod is free to schedule
+# anywhere — no nodeSelector needed.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,21 +24,20 @@ spec:
     metadata:
       labels:
         app: airconnect
+      annotations:
+        k8s.v1.cni.cncf.io/networks: |
+          [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
     spec:
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
-      nodeSelector:
-        kubernetes.io/hostname: spark-0
       containers:
         - name: airconnect
           image: 1activegeek/airconnect:1.9.3
           env:
-            # -l 500:1000   audio pre-buffer window in ms (was 1000:2000 — too much lag)
-            # -r 44100      lock sample rate so Sonos doesn't resample (its native rate)
+            # -l 500:1000   audio pre-buffer window in ms
+            # -r 44100      lock sample rate (Sonos native, no resample)
             - name: AIRUPNP_OPTS
-              value: "-b 192.168.73.206 -l 500:1000 -r 44100"
+              value: "-l 500:1000 -r 44100"
             - name: AIRCAST_OPTS
-              value: "-b 192.168.73.206"
+              value: ""
           resources:
             requests:
               cpu: 50m

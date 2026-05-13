@@ -1,0 +1,26 @@
+---
+# Multus NetworkAttachmentDefinition: a macvlan side-leg on the host's LAN
+# interface (eth0 = 192.168.73.0/24), with DHCP IPAM provided by the
+# cni-dhcp-daemon DS in kube-system. Pods that annotate themselves with
+# `k8s.v1.cni.cncf.io/networks: lan` get a second interface (net1) with a
+# real LAN IP leased from the UDM at 192.168.73.1.
+#
+# Why bridge mode: pods can talk to each other but cannot talk to their own
+# host on the same interface (macvlan limitation). That's fine here — apps
+# only need to reach Sonos/Apple devices on the LAN, not their own node.
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: lan
+spec:
+  config: |
+    {
+      "cniVersion": "0.3.1",
+      "name": "lan",
+      "type": "macvlan",
+      "master": "eth0",
+      "mode": "bridge",
+      "ipam": {
+        "type": "dhcp"
+      }
+    }
