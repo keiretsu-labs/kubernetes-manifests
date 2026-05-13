@@ -28,25 +28,6 @@ spec:
         k8s.v1.cni.cncf.io/networks: |
           [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
     spec:
-      initContainers:
-        # See HA statefulset — pin cluster CIDRs to eth0 so they don't lose
-        # to the macvlan default route.
-        - name: route-fix
-          image: busybox:1.36
-          securityContext:
-            capabilities:
-              add: ["NET_ADMIN"]
-          command:
-            - sh
-            - -c
-            - |
-              set -e
-              GW=$(ip -4 route show default 2>/dev/null | awk '/dev eth0/ {print $3; exit}')
-              echo "Cilium gateway: $GW"
-              [ -n "$GW" ] || { echo "no eth0 default route, bailing"; exit 1; }
-              ip route add 10.4.0.0/16 via "$GW" dev eth0 2>/dev/null || true
-              ip route add 10.5.0.0/16 via "$GW" dev eth0 2>/dev/null || true
-              echo "Added cluster routes via $GW"; ip route show
       containers:
         - name: airconnect
           image: 1activegeek/airconnect:1.9.3
