@@ -5,14 +5,7 @@ cni:
 kubeProxyReplacement: true
 socketLB:
   enabled: true
-  # Cilium 1.19 default is false. Was true (conservative copy from initial
-  # install) which disabled BPF socket-level LB for pod netns and forced pods
-  # to reach ClusterIPs via the kernel route table. That breaks Multus pods
-  # that need a LAN default-route (mDNS / stream-IP autodetect) because
-  # service traffic races the LAN default and hits the UDM. With this false,
-  # connect()s to ClusterIPs are rewritten at the pod's cgroup; route table
-  # is irrelevant for service traffic.
-  hostNamespaceOnly: false
+  hostNamespaceOnly: true
 autoDirectNodeRoutes: true
 directRoutingSkipUnreachable: true
 enableIPv4BIGTCP: true
