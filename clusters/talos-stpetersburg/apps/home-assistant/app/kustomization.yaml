@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: home-assistant
 resources:
   - ./network-attachment-lan.yaml
+  - ./egress.yaml
   - ./storagestack.yaml
   - ./statefulset.yaml
   - ./service.yaml
