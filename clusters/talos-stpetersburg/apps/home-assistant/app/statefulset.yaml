@@ -13,9 +13,13 @@ spec:
     metadata:
       labels:
         app: homeassistant
-    spec:
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
+      annotations:
+        # macvlan side-leg on the LAN so HomeKit Bridge + HA mobile app
+        # mDNS discovery can advertise from a real 192.168.73.x IP.
+        # default-route on the LAN iface so HA's mDNS/Bonjour goes out the
+        # right interface; Cilium's BPF still handles intra-cluster traffic.
+        k8s.v1.cni.cncf.io/networks: |
+          [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
       initContainers:
         - name: restic-restore
           image: restic/restic:0.18.1

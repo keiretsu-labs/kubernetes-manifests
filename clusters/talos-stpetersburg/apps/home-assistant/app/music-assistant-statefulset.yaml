@@ -13,9 +13,14 @@ spec:
     metadata:
       labels:
         app: music-assistant
-    spec:
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
+      annotations:
+        # macvlan side-leg + default-route on LAN. MA's stream-server
+        # auto-detects its publish IP via getsockname() on a UDP socket to
+        # 8.8.8.8 — with the default route on the LAN iface, that returns
+        # the 192.168.73.x address Sonos can fetch from. Also gives the
+        # Sonos UPnP/SSDP discovery a real LAN identity.
+        k8s.v1.cni.cncf.io/networks: |
+          [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
       initContainers:
         - name: restic-restore
           image: restic/restic:0.18.0
