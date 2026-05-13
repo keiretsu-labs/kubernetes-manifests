@@ -30,8 +30,10 @@ spec:
         - name: airconnect
           image: 1activegeek/airconnect:latest
           env:
+            # -l 500:1000   audio pre-buffer window in ms (was 1000:2000 — too much lag)
+            # -r 44100      lock sample rate so Sonos doesn't resample (its native rate)
             - name: AIRUPNP_OPTS
-              value: "-b 192.168.73.206 -l 1000:2000"
+              value: "-b 192.168.73.206 -l 500:1000 -r 44100"
             - name: AIRCAST_OPTS
               value: "-b 192.168.73.206"
           resources:
