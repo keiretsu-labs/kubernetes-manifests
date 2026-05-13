@@ -51,10 +51,18 @@ spec:
   quotas:
     maxSize: 500Gi
     maxObjects: 10000000
+  lifecycle:
+    rules:
+      - id: expire-logs-30d
+        status: Enabled
+        expirationDays: 30
+      - id: abort-stuck-multipart-7d
+        status: Enabled
+        abortIncompleteMultipartUploadDays: 7
   keyPermissions:
     - keyRef:
         name: tailscale-logs-key
-        namespace: flux-system
+        namespace: tailscale-system
       read: true
       write: true
     - keyRef:

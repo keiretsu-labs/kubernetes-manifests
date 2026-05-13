@@ -35,3 +35,5 @@ spec:
       namespace: flux-system
     - kind: GarageKey
       namespace: mimir
+    - kind: GarageKey
+      namespace: tailscale-system
