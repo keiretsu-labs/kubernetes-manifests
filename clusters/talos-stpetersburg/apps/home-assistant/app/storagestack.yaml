@@ -9,10 +9,10 @@ spec:
   name: homeassistant-config
   size: 10Gi
   storageClass: local-path
-  # Tailscale FQDN reachable via UDM (LAN default route) → Tailscale subnet
-  # routes → Garage. Avoids the cluster-DNS dependency that pinned us to
-  # using kube-dns + service-CIDR routing from a Multus macvlan pod.
-  s3Endpoint: garage.keiretsu.ts.net:3900
+  # Local Garage ClusterIP — same cluster, no Tailscale egress detour.
+  # Requires cluster DNS + route-fix init container for the Multus pod to
+  # reach the cluster service CIDR over Cilium.
+  s3Endpoint: garage.garage.svc.cluster.local:3900
   s3Path: home-assistant/config
   schedule: "0 12 * * *"
   copyMethod: Direct
