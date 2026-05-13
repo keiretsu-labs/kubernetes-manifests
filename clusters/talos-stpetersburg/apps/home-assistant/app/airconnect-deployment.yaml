@@ -28,7 +28,7 @@ spec:
         kubernetes.io/hostname: spark-0
       containers:
         - name: airconnect
-          image: 1activegeek/airconnect:latest
+          image: 1activegeek/airconnect:1.9.3
           env:
             # -l 500:1000   audio pre-buffer window in ms (was 1000:2000 — too much lag)
             # -r 44100      lock sample rate so Sonos doesn't resample (its native rate)
