@@ -1,13 +1,16 @@
 ---
-# Multus NetworkAttachmentDefinition: a macvlan side-leg on the host's LAN
-# interface (eth0 = 192.168.73.0/24), with DHCP IPAM provided by the
-# cni-dhcp-daemon DS in kube-system. Pods that annotate themselves with
-# `k8s.v1.cni.cncf.io/networks: lan` get a second interface (net1) with a
-# real LAN IP leased from the UDM at 192.168.73.1.
+# Multus NetworkAttachmentDefinition: macvlan side-leg on eth0 with DHCP IPAM
+# from the LAN's UDM, chained with Spiderpool's coordinator plugin which
+# reconciles routing against the primary CNI (Cilium). The coordinator:
+#   - preserves Cilium's default route + cluster service routing
+#   - moves the macvlan default into a per-source policy table
+#   - sets rp_filter=0 so reverse-path doesn't drop reply traffic on the
+#     "wrong" interface
+#   - reads the cluster pod/service CIDRs from the SpiderCoordinator/default
+#     CR (10.5.0.0/16 + 10.4.0.0/16)
 #
-# Why bridge mode: pods can talk to each other but cannot talk to their own
-# host on the same interface (macvlan limitation). That's fine here — apps
-# only need to reach Sonos/Apple devices on the LAN, not their own node.
+# Replaces the route-fix init container that previously had to hand-patch
+# /16 routes inside every pod.
 apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
 metadata:
@@ -17,10 +20,20 @@ spec:
     {
       "cniVersion": "0.3.1",
       "name": "lan",
-      "type": "macvlan",
-      "master": "eth0",
-      "mode": "bridge",
-      "ipam": {
-        "type": "dhcp"
-      }
+      "plugins": [
+        {
+          "type": "macvlan",
+          "master": "eth0",
+          "mode": "bridge",
+          "ipam": {
+            "type": "dhcp"
+          }
+        },
+        {
+          "type": "coordinator",
+          "mode": "overlay",
+          "podCIDRType": "cluster",
+          "tunePodRoutes": true
+        }
+      ]
     }
