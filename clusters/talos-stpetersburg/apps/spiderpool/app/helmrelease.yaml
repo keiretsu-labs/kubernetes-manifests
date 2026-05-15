@@ -66,12 +66,14 @@ spec:
       podAntiAffinity:
         nodeAffinity:
           enabled: true
-    # We don't use Spiderpool's own IPAM (sticking with dhcp via CNI dhcp daemon).
-    # The agent is still required to install the spider-coordinator binary.
+    # IPAM stays enabled so spiderpool-init's readiness check (/v1/ipam/healthy)
+    # succeeds. We don't reference Spiderpool's IPAM in our NAD chain — DHCP
+    # IPAM continues to handle LAN IP allocation — but the controller needs
+    # to expose the IPAM HTTP endpoints for its own startup health.
     ipam:
-      enableIPv4: false
+      enableIPv4: true
       enableIPv6: false
-    # Disable cluster default IP pools - we manage IPs via DHCP IPAM.
+    # Don't create the chart's example default pools; we manage IPs via DHCP.
     clusterDefaultPool:
       installIPv4IPPool: false
       installIPv6IPPool: false
