@@ -4,5 +4,4 @@ kind: Kustomization
 namespace: cloudflare
 resources:
   - cloudflared-luke.yaml
-  - cloudflared-typeo.yaml
   - secret.yaml
