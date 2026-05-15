@@ -11,6 +11,7 @@ resources:
   - ./cilium.yaml
   - ./clickhouse.yaml
   - ./spegel.yaml
+  - ./spiderpool.yaml
   - ./clabernetes.yaml
   - ./cloudnative-pg.yaml
   - ./clusterplex.yaml
