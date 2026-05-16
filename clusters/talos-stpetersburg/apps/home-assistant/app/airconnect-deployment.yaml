@@ -44,6 +44,8 @@ spec:
               value: "-l 500:1000 -r 44100 -Z -x /config/airupnp.xml -I"
             - name: AIRCAST_OPTS
               value: ""
+            - name: AIRCAST_VAR
+              value: "kill"
           resources:
             requests:
               cpu: 50m
