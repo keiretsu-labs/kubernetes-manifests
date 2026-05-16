@@ -8,10 +8,9 @@
 #   - Preserves NVFP4 + DFlash single-node code paths (TP=2 currently breaks both;
 #     NVFP4 multi-node is unsupported in vLLM; DFlash+TP=2 crashes per vllm#41190)
 #   - 2x concurrency at same per-stream speed (37 tok/s decode preserved)
-#   - max-num-seqs 16 → 32 per replica (= 64 cluster-wide concurrent streams)
-#   - kv-cache-dtype defaults to BF16 (fp8 conflicts with FLASH_ATTN backend
-#     which is required by the AEON-7 DFlash patches; vLLM evicts KV blocks
-#     dynamically so max-num-seqs=32 still works without pre-allocation)
+#   - max-num-seqs 64 per replica (= 128 cluster-wide concurrent streams)
+#   - max-num-batched-tokens 500000 → supports ~256 concurrent 2k-context or ~13 concurrent 4k-context
+#   - GPU memory utilization bumped to 0.70 for more KV cache headroom
 #   - Each replica has its own PVC (RWO; can't share RWX without NFS/Ceph here)
 #   - 200G ConnectX-7 RoCE link stays available for future NIXL disaggregated prefill
 ---
@@ -94,9 +93,9 @@ spec:
             --dtype auto \
             --quantization modelopt \
             --max-model-len 200000 \
-            --max-num-seqs 32 \
-            --max-num-batched-tokens 49152 \
-            --gpu-memory-utilization 0.60 \
+            --max-num-seqs 64 \
+            --max-num-batched-tokens 500000 \
+            --gpu-memory-utilization 0.70 \
             --enable-chunked-prefill \
             --enable-prefix-caching \
             --load-format safetensors \
