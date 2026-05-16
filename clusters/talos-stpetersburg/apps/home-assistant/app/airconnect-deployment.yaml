@@ -41,7 +41,7 @@ spec:
           image: 1activegeek/airconnect:1.9.3
           env:
             - name: AIRUPNP_OPTS
-              value: "-l 500:1000 -r 44100 -Z -I"
+              value: "-l 500:1000 -r 44100 -Z -x /config/airupnp.xml -I"
             - name: AIRCAST_OPTS
               value: ""
           resources:
