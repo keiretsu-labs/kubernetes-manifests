@@ -9,6 +9,15 @@
 # the host or other pods. -b is omitted now that auto-detect will pick the
 # macvlan iface (default route is on the LAN). Pod is free to schedule
 # anywhere — no nodeSelector needed.
+#
+# Sonos grouping:
+#   -I  Auto-save config.xml on every UPnP scan. Persists device list so
+#       grouped Sonos devices stay grouped across restarts (no need to
+#       re-discover master/slave on every boot).
+#   -Z  Non-interactive mode. Needed when running with a config file so
+#       the daemon doesn't hang waiting for stdin.
+#
+# Config is persisted via a PVC so config.xml survives restarts.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,10 +41,8 @@ spec:
         - name: airconnect
           image: 1activegeek/airconnect:1.9.3
           env:
-            # -l 500:1000   audio pre-buffer window in ms
-            # -r 44100      lock sample rate (Sonos native, no resample)
             - name: AIRUPNP_OPTS
-              value: "-l 500:1000 -r 44100"
+              value: "-l 500:1000 -r 44100 -Z -I"
             - name: AIRCAST_OPTS
               value: ""
           resources:
@@ -44,3 +51,10 @@ spec:
               memory: 64Mi
             limits:
               memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: airconnect-config
