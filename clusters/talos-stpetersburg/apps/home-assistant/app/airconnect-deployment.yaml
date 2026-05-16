@@ -17,6 +17,9 @@
 #
 # Config lives on an emptyDir — -I regenerates it on the next discovery
 # cycle if the pod restarts. Simple, no PVC to manage.
+#
+# Only airupnp is needed (Sonos). Aircast (Chromecast) is killed off via
+# AIRCAST_VAR=kill to eliminate non-Sonos devices from AirPlay targets.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -44,6 +47,8 @@ spec:
               value: "-l 500:1000 -r 44100 -Z -x /config/airupnp.xml -I"
             - name: AIRCAST_OPTS
               value: ""
+            - name: AIRCAST_VAR
+              value: "kill"
           resources:
             requests:
               cpu: 50m
