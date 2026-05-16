@@ -79,8 +79,9 @@ spec:
       cpu: 3000m
       memory: 3Gi
 
-  # Per-cluster scheduling overrides (JSON-as-YAML for Flux postBuild substitution).
-  # Defaults are no-ops; set GARAGE_NODE_SELECTOR / GARAGE_TOPOLOGY_SPREAD in a
-  # cluster's flux/vars/cluster-settings.yaml to constrain pod placement.
-  nodeSelector: ${GARAGE_NODE_SELECTOR:={}}
-  topologySpreadConstraints: ${GARAGE_TOPOLOGY_SPREAD:=[]}
+  # Per-cluster scheduling overrides (JSON-as-YAML inserted by Flux postBuild
+  # substitution). When the var is unset, the field becomes null and the operator
+  # treats it as absent (omitempty). Set GARAGE_NODE_SELECTOR / GARAGE_TOPOLOGY_SPREAD
+  # in a cluster's flux/vars/cluster-settings.yaml to constrain pod placement.
+  nodeSelector: ${GARAGE_NODE_SELECTOR=}
+  topologySpreadConstraints: ${GARAGE_TOPOLOGY_SPREAD=}
