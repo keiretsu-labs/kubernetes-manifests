@@ -9,7 +9,7 @@
 #   - /dev/shm: 16Gi → multimodal + DFlash shared memory
 #   - VLLM_CPU_KV_TRANSFER_CHUNK_SIZE=16, VLLM_BLOCK_SIZE=32 → CPU/KV cache tuning
 #   - max-num-seqs=64 per replica (128 cluster-wide concurrent streams)
-#   - max-num-batched-tokens 500000 → unblocks concurrent long-context requests
+#   - max-num-batched-tokens 65536 → chunked prefill budget (500000 OOMed on 96Gi container limit)
 #   - --block-size 32 → PagedAttention block size
 #   - CPU freq governance via cpu_freq_scale sysctl (spark-0/1 nodes)
 ---
@@ -93,7 +93,7 @@ spec:
             --quantization modelopt \
             --max-model-len 200000 \
             --max-num-seqs 64 \
-            --max-num-batched-tokens 500000 \
+            --max-num-batched-tokens 65536 \
             --gpu-memory-utilization 0.60 \
             --enable-chunked-prefill \
             --enable-prefix-caching \
