@@ -30,3 +30,8 @@ data:
   STORAGECLASS_LONGTERM: local-path
   STORAGECLASS_DEFAULT: local-path
   STORAGECLASS_METADATA: local-path
+
+  # Garage: run one storage replica per Spark (excludes orin-0).
+  GARAGE_REPLICAS: "2"
+  GARAGE_NODE_SELECTOR: '{"node.kubernetes.io/instance-type":"dgx-spark"}'
+  GARAGE_TOPOLOGY_SPREAD: '[{"maxSkew":1,"topologyKey":"kubernetes.io/hostname","whenUnsatisfiable":"DoNotSchedule","labelSelector":{"matchLabels":{"app.kubernetes.io/name":"garage"}}}]'
