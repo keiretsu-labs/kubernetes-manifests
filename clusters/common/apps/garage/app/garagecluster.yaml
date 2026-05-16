@@ -4,7 +4,7 @@ kind: GarageCluster
 metadata:
   name: garage
 spec:
-  replicas: 1
+  replicas: ${GARAGE_REPLICAS:=1}
   zone: "${LOCATION}"
   image: dxflrs/garage:v2.3.0
 
@@ -78,3 +78,9 @@ spec:
     limits:
       cpu: 3000m
       memory: 3Gi
+
+  # Per-cluster scheduling overrides (JSON-as-YAML for Flux postBuild substitution).
+  # Defaults are no-ops; set GARAGE_NODE_SELECTOR / GARAGE_TOPOLOGY_SPREAD in a
+  # cluster's flux/vars/cluster-settings.yaml to constrain pod placement.
+  nodeSelector: ${GARAGE_NODE_SELECTOR:={}}
+  topologySpreadConstraints: ${GARAGE_TOPOLOGY_SPREAD:=[]}
