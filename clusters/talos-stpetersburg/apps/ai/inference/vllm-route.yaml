@@ -1,7 +1,7 @@
 # vLLM routing on the dedicated ai-gateway. Token-aware metrics, model-aware
-# routing, streaming-aware LB via Envoy AI Gateway. Consistent-hash sticky
-# routing on X-Session-Id (BackendTrafficPolicy targets the auto-generated
-# HTTPRoute) keeps prefix-cache warm per chat session.
+# routing, streaming-aware LB via Envoy AI Gateway. Switched from ConsistentHash
+# to RoundRobin so both DGX Sparks receive traffic (ConsistentHash + fallback
+# to source-IP hash caused all traffic from a single client to land on vllm-0).
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: Backend
@@ -70,12 +70,8 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: vllm
-  loadBalancer:
-    type: ConsistentHash
-    consistentHash:
-      type: Header
-      header:
-        name: X-Session-Id
+   loadBalancer:
+    type: RoundRobin
   timeout:
     http:
       requestTimeout: 0s
