@@ -1,19 +1,17 @@
-# vLLM Deployment for DGX Spark (GB10/ARM/Blackwell) — DATA-PARALLEL REPLICAS
+# vLLM Deployment for DGX Spark (GB10/ARM/Blackwell) — OPTIMIZED DATA-PARALLEL
 # Model: AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS + DFlash speculative decoding
 # Image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4 (ARM64/SBSA, patched vLLM)
 # Reference: https://github.com/AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-DFlash
 #
-# CONCURRENCY EXPANSION (2026-05-11):
-#   - 2 replicas, one pinned to each Spark (data-parallel, not tensor-parallel)
-#   - Preserves NVFP4 + DFlash single-node code paths (TP=2 currently breaks both;
-#     NVFP4 multi-node is unsupported in vLLM; DFlash+TP=2 crashes per vllm#41190)
-#   - 2x concurrency at same per-stream speed (37 tok/s decode preserved)
-#   - max-num-seqs 16 → 32 per replica (= 64 cluster-wide concurrent streams)
-#   - kv-cache-dtype defaults to BF16 (fp8 conflicts with FLASH_ATTN backend
-#     which is required by the AEON-7 DFlash patches; vLLM evicts KV blocks
-#     dynamically so max-num-seqs=32 still works without pre-allocation)
-#   - Each replica has its own PVC (RWO; can't share RWX without NFS/Ceph here)
-#   - 200G ConnectX-7 RoCE link stays available for future NIXL disaggregated prefill
+# PERFORMANCE TUNING (2026-05-12):
+#   - Full GB10 per replica (no time-slicing: 128GB unified memory, all compute units)
+#   - gpu-memory-utilization: 0.80 → more KV cache headroom on unified memory
+#   - /dev/shm: 16Gi → multimodal + DFlash shared memory
+#   - VLLM_CPU_KV_TRANSFER_CHUNK_SIZE=16, VLLM_BLOCK_SIZE=32 → CPU/KV cache tuning
+#   - max-num-seqs=64 per replica (128 cluster-wide concurrent streams)
+#   - max-num-batched-tokens 500000 → unblocks concurrent long-context requests
+#   - --block-size 32 → PagedAttention block size
+#   - CPU freq governance via cpu_freq_scale sysctl (spark-0/1 nodes)
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -94,11 +92,12 @@ spec:
             --dtype auto \
             --quantization modelopt \
             --max-model-len 200000 \
-            --max-num-seqs 32 \
-            --max-num-batched-tokens 49152 \
+            --max-num-seqs 64 \
+            --max-num-batched-tokens 500000 \
             --gpu-memory-utilization 0.60 \
             --enable-chunked-prefill \
             --enable-prefix-caching \
+            --block-size 32 \
             --load-format safetensors \
             --trust-remote-code \
             --enable-auto-tool-choice \
@@ -144,6 +143,10 @@ spec:
           value: "/models/compile-cache"
         - name: VLLM_CACHE_ROOT
           value: "/models/vllm-cache"
+        - name: VLLM_CPU_KV_TRANSFER_CHUNK_SIZE
+          value: "16"
+        - name: VLLM_BLOCK_SIZE
+          value: "32"
         securityContext:
           capabilities:
             add: ["IPC_LOCK"]
@@ -187,7 +190,7 @@ spec:
       - name: shm
         emptyDir:
           medium: Memory
-          sizeLimit: 8Gi
+          sizeLimit: 16Gi
       - name: download-script
         configMap:
           name: vllm-download-script
