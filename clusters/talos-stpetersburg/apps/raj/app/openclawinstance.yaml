@@ -24,6 +24,9 @@ spec:
     persistence:
       enabled: true
       size: 20Gi
+  gateway:
+    controlUiOrigins:
+      - https://openclaw.${CLUSTER_DOMAIN}
   networking:
     service:
       type: ClusterIP
