@@ -17,7 +17,7 @@ spec:
         name: openclaw-api-keys
   env:
     - name: OPENAI_BASE_URL
-      value: http://aperture.keiretsu.ts.net/v1
+      value: http://aperture.raj.svc.cluster.local/v1
     - name: OPENCLAW_DISABLE_BONJOUR
       value: "1"
   storage:
