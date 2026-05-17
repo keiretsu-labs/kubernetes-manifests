@@ -1,0 +1,11 @@
+# Spegel requirement: containerd must retain unpacked image layers in the content
+# store so peer nodes can serve blobs over the P2P mirror. Talos containerd discards
+# unpacked layers by default to save disk. This fragment is merged with other
+# /etc/cri/conf.d/*.part files at containerd startup.
+machine:
+  files:
+    - path: /etc/cri/conf.d/30-spegel.part
+      op: create
+      content: |
+        [plugins."io.containerd.cri.v1.images"]
+          discard_unpacked_layers = false

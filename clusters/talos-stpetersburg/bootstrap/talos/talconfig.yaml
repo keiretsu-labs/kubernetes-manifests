@@ -103,6 +103,7 @@ patches:
   - "@./patches/global/metrics-server.yaml"
   - "@./patches/global/sysctls.yaml"
   - "@./patches/global/machine-logging.yaml"
+  - "@./patches/global/spegel-containerd.yaml"
 
 # Control plane nodes config
 controlPlane:
