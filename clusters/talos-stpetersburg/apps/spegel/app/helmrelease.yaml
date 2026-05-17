@@ -29,7 +29,7 @@ spec:
     spegel:
       # Talos containerd is preconfigured to read hosts.toml fragments from this directory
       containerdRegistryConfigPath: /etc/cri/conf.d/hosts
-      logLevel: DEBUG
+      logLevel: INFO
     service:
       registry:
         # exposed via hostPort on every node; spegel peers reach each other on this port
