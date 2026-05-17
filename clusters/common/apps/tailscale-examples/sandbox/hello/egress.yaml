@@ -4,7 +4,10 @@ kind: Service
 metadata:
   name: hello-world-robbinsdale
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    # IfNotPresent: Flux creates the Service once with placeholder externalName,
+    # then never re-applies. The Tailscale operator owns spec.externalName
+    # exclusively. See SSA-field-conflict notes.
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: robbinsdale-tailscale-examples-hello-world-service.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
