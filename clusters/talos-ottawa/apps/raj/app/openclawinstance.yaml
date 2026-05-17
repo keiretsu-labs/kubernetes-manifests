@@ -23,10 +23,12 @@ spec:
   storage:
     persistence:
       enabled: true
+      storageClass: ceph-block-replicated
       size: 20Gi
   gateway:
     controlUiOrigins:
-      - https://openclaw.${CLUSTER_DOMAIN}
+      - http://raj-assistant.keiretsu.ts.net
+      - http://raj-assistant
   networking:
     service:
       type: ClusterIP
