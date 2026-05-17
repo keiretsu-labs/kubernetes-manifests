@@ -44,6 +44,14 @@ tasks:
       - sh: test -d clusterconfig
         msg: Missing clusterconfig directory - run 'mise run genconfig' first
 
+  apply-staged:
+    desc: Stage Talos config — applied on each node's next reboot (no immediate disruption)
+    cmds:
+      - talhelper gencommand apply --extra-flags="--mode=staged" | bash
+    preconditions:
+      - sh: test -d clusterconfig
+        msg: Missing clusterconfig directory - run 'mise run genconfig' first
+
   bootstrap:
     desc: Bootstrap the etcd cluster on first node
     cmds:

@@ -32,6 +32,10 @@ description = "Apply Talos configuration to nodes"
 run = "task -d bootstrap/talos apply-insecure"
 description = "Apply Talos configuration to nodes in maintenance mode (initial install)"
 
+[tasks.apply-staged]
+run = "task -d bootstrap/talos apply-staged"
+description = "Stage Talos config — applied on each node's next reboot (no immediate disruption)"
+
 [tasks.kubeconfig]
 run = "task -d bootstrap/talos kubeconfig"
 description = "Fetch kubeconfig from cluster"
