@@ -23,6 +23,9 @@ spec:
     remediation:
       retries: 3
   values:
+    image:
+      # chart appVersion lags upstream; pin to current spegel release
+      tag: v0.7.0
     spegel:
       # Talos containerd is preconfigured to read hosts.toml fragments from this directory
       containerdRegistryConfigPath: /etc/cri/conf.d/hosts
