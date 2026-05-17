@@ -50,7 +50,7 @@ spec:
           ruler: loki
           admin: loki
         s3:
-          endpoint: garage.garage.svc.cluster.local:3900
+          endpoint: garage-gw.keiretsu.ts.net:3900
           region: garage
           s3ForcePathStyle: true
           insecure: true
