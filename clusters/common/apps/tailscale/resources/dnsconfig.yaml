@@ -5,6 +5,7 @@ metadata:
   name: ts-dns
 spec:
   nameserver:
+    replicas: 2
     image:
       # repo: ghcr.io/rajsinghtech/k8s-nameserver
       tag: unstable
