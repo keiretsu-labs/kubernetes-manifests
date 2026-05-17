@@ -4,5 +4,6 @@ kind: Kustomization
 namespace: raj
 resources:
   - secret.yaml
+  - egress.yaml
   - openclawinstance.yaml
   - httproute.yaml
