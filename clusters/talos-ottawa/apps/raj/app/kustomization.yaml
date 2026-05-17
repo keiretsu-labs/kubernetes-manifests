@@ -6,4 +6,4 @@ resources:
   - secret.yaml
   - egress.yaml
   - openclawinstance.yaml
-  - httproute.yaml
+  - ingress-ts.yaml
