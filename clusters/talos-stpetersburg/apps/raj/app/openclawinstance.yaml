@@ -27,6 +27,9 @@ spec:
   networking:
     service:
       type: ClusterIP
+  security:
+    networkPolicy:
+      enabled: false
   resources:
     requests:
       cpu: 100m
