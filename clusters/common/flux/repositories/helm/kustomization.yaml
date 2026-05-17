@@ -89,3 +89,4 @@ resources:
   - ./kro.yaml
   - ./ocm.yaml
   - ./valkey.yaml
+  - ./openclaw-rocks.yaml
