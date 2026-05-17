@@ -1,5 +1,7 @@
 machine:
   files:
+    # discard_unpacked_layers=false is required by spegel so peers can serve content blobs.
+    # op: overwrite (not create) — Talos v1.13 blocks file create outside /var.
     - content: |
         [plugins."io.containerd.grpc.v1.cri"]
           enable_unprivileged_ports = true
@@ -7,5 +9,7 @@ machine:
         [plugins."io.containerd.cri.v1.runtime"]
           cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
           device_ownership_from_security_context = true
+        [plugins."io.containerd.cri.v1.images"]
+          discard_unpacked_layers = false
       path: /etc/cri/conf.d/20-customization.part
-      op: create
+      op: overwrite
