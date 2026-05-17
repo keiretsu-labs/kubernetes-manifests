@@ -1,0 +1,37 @@
+---
+apiVersion: openclaw.rocks/v1alpha1
+kind: OpenClawInstance
+metadata:
+  name: raj
+spec:
+  config:
+    raw:
+      agents:
+        defaults:
+          model:
+            primary: openai/Qwen3.6-27B
+          sandbox: true
+      session:
+        scope: per-sender
+  envFrom:
+    - secretRef:
+        name: openclaw-api-keys
+  env:
+    - name: OPENAI_BASE_URL
+      value: http://aperture.raj.svc.cluster.local/v1
+    - name: OPENCLAW_DISABLE_BONJOUR
+      value: "1"
+  storage:
+    persistence:
+      enabled: true
+      size: 20Gi
+  networking:
+    service:
+      type: ClusterIP
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: "2"
+      memory: 4Gi
