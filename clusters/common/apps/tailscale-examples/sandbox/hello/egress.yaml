@@ -23,7 +23,7 @@ kind: Service
 metadata:
   name: hello-world-ottawa
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: ottawa-tailscale-examples-hello-world-service.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
@@ -39,7 +39,7 @@ kind: Service
 metadata:
   name: hello-world-stpetersburg
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: stpetersburg-tailscale-examples-hello-world-service.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:

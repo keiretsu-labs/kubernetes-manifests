@@ -4,6 +4,7 @@ kind: Service
 metadata:
   name: mimir-gateway
   annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: mimir.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:

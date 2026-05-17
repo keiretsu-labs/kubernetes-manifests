@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: garage-gw.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: garage-global
@@ -19,7 +19,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: ottawa-garage.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: ottawa-garage
@@ -44,7 +44,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: robbinsdale-garage.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: robbinsdale-garage
@@ -69,7 +69,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: stpetersburg-garage.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: stpetersburg-garage
@@ -96,7 +96,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: ottawa-garage-gw.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: ottawa-garage-gw
@@ -112,7 +112,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: robbinsdale-garage-gw.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: robbinsdale-garage-gw
@@ -128,7 +128,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: stpetersburg-garage-gw.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: stpetersburg-garage-gw
