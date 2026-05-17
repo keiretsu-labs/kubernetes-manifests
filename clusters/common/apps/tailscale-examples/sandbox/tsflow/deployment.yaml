@@ -31,7 +31,7 @@ spec:
         - name: TSFLOW_S3_PREFIX
           value: "network/"
         - name: TSFLOW_S3_ENDPOINT
-          value: "http://garage-global.garage.svc.cluster.local:3900"
+          value: "http://garage-gw.keiretsu.ts.net:3900"
         - name: TSFLOW_S3_REGION
           value: "garage"
         - name: TSFLOW_S3_ACCESS_KEY_ID
