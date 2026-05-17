@@ -5,15 +5,35 @@ metadata:
   name: spegel
   namespace: spegel
 spec:
-  interval: 1m
+  interval: 5m
   chart:
     spec:
       chart: spegel
-      interval: 5m
+      version: 0.7.0
       sourceRef:
         kind: HelmRepository
         name: spegel
         namespace: flux-system
+      interval: 30m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
   values:
     spegel:
+      # Talos containerd is preconfigured to read hosts.toml fragments from this directory
       containerdRegistryConfigPath: /etc/cri/conf.d/hosts
+      logLevel: INFO
+    service:
+      registry:
+        nodePort: 30020
+        port: 5000
+    serviceMonitor:
+      enabled: true
+    grafanaDashboard:
+      enabled: true
+      labels:
+        grafana_dashboard: "1"
