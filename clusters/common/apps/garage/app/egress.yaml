@@ -89,3 +89,53 @@ spec:
     - name: admin
       port: 3903
       protocol: TCP
+---
+# Per-region gateway egress entries — let gateway pods in any region dial
+# remote gateway RPC (port 3901) by hostname for full gateway↔gateway peering.
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
+    tailscale.com/tailnet-fqdn: ottawa-garage-gw.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: ottawa-garage-gw
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
+    tailscale.com/tailnet-fqdn: robbinsdale-garage-gw.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: robbinsdale-garage-gw
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: merge
+    tailscale.com/tailnet-fqdn: stpetersburg-garage-gw.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: stpetersburg-garage-gw
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP

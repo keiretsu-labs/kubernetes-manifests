@@ -11,11 +11,16 @@ metadata:
     tailscale.com/proxy-group: "common-ingress"
   name: garage-gateway-ts
 spec:
+  publishNotReadyAddresses: true
   ports:
     - name: s3-api
       port: 3900
       protocol: TCP
       targetPort: 3900
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
     - name: s3-web
       port: 3902
       protocol: TCP

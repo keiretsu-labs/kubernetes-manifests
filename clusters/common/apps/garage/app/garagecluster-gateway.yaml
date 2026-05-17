@@ -39,6 +39,11 @@ spec:
       storageClassName: "${STORAGECLASS_METADATA}"
 
   network:
+    # Advertise a per-region tailnet hostname so cross-region peers can dial
+    # this gateway's RPC port. Without this, the gateway falls back to its
+    # pod IP which is unreachable outside the cluster — causing remote nodes
+    # to render this gateway as disconnected in the WebUI.
+    rpcPublicAddr: "${LOCATION}-garage-gw.keiretsu.ts.net:3901"
     rpcSecretRef:
       name: garage-rpc-secret
       key: rpc-secret
