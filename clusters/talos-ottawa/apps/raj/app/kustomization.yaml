@@ -6,4 +6,4 @@ resources:
   - secret.yaml
   - egress.yaml
   - openclawinstance.yaml
-  - ingress-ts.yaml
+  - service-lb.yaml
