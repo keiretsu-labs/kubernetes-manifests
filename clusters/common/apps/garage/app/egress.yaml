@@ -4,7 +4,7 @@ kind: Service
 metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: merge
-    tailscale.com/tailnet-fqdn: garage.keiretsu.ts.net
+    tailscale.com/tailnet-fqdn: garage-gw.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: garage-global
 spec:
