@@ -6,18 +6,30 @@ metadata:
 spec:
   config:
     raw:
+      models:
+        mode: merge
+        providers:
+          codex:
+            baseUrl: http://ai.raj.svc.cluster.local/v1
+            auth: api-key
+          openai:
+            baseUrl: http://aperture.raj.svc.cluster.local/v1
+            auth: api-key
       agents:
         defaults:
+          embeddedHarness:
+            runtime: codex
+            fallback: pi
           model:
-            primary: openai/gpt-5.5
+            primary: codex/gpt-5.5
+            fallbacks:
+              - openai/Qwen3.6-27B
       session:
         scope: per-sender
   envFrom:
     - secretRef:
         name: openclaw-api-keys
   env:
-    - name: OPENAI_BASE_URL
-      value: http://ai.raj.svc.cluster.local/v1
     - name: OPENCLAW_DISABLE_BONJOUR
       value: "1"
   storage:
