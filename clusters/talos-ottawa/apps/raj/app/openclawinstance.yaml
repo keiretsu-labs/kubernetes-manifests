@@ -12,9 +12,13 @@ spec:
           codex:
             baseUrl: http://ai.raj.svc.cluster.local/v1
             auth: api-key
+            models:
+              - id: gpt-5.5
           openai:
             baseUrl: http://aperture.raj.svc.cluster.local/v1
             auth: api-key
+            models:
+              - id: Qwen3.6-27B
       agents:
         defaults:
           embeddedHarness:
