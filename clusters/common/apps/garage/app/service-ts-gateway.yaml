@@ -1,0 +1,61 @@
+---
+# Per-region gateway escape-hatch LB.
+# Use for targeted regional access (debugging, migration tests, hot-spot pinning).
+# Apps should normally hit `garage-gateway-global-ts` instead.
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ${LOCATION}-garage-gw
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-gateway-ts
+spec:
+  ports:
+    - name: s3-api
+      port: 3900
+      protocol: TCP
+      targetPort: 3900
+    - name: s3-web
+      port: 3902
+      protocol: TCP
+      targetPort: 3902
+    - name: admin
+      port: 3903
+      protocol: TCP
+      targetPort: 3903
+  selector:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: garage-gateway
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+# Anycast global gateway LB — Tailscale routes clients to the nearest region's
+# gateway pods via the shared common-ingress proxy-group.
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: garage-gw
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s"
+  name: garage-gateway-global-ts
+spec:
+  ports:
+    - name: s3-api
+      port: 3900
+      protocol: TCP
+      targetPort: 3900
+    - name: s3-web
+      port: 3902
+      protocol: TCP
+      targetPort: 3902
+    - name: admin
+      port: 3903
+      protocol: TCP
+      targetPort: 3903
+  selector:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: garage-gateway
+  type: LoadBalancer
+  loadBalancerClass: tailscale

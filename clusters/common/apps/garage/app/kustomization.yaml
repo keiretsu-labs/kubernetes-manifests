@@ -7,7 +7,9 @@ resources:
   - egress.yaml
   - reference-grants.yaml
   - service-ts.yaml
+  - service-ts-gateway.yaml
   - garagecluster.yaml
+  - garagecluster-gateway.yaml
   - rpc-secret.yaml
   - httproute-s3.yaml
   - httproute-web.yaml
