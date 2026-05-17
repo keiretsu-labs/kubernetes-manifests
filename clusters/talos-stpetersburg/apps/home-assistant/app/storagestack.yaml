@@ -12,7 +12,7 @@ spec:
   # Local Garage ClusterIP — same cluster, no Tailscale egress detour.
   # Requires cluster DNS + route-fix init container for the Multus pod to
   # reach the cluster service CIDR over Cilium.
-  s3Endpoint: garage.garage.svc.cluster.local:3900
+  s3Endpoint: garage-gw.keiretsu.ts.net:3900
   s3Path: home-assistant/config
   schedule: "0 12 * * *"
   copyMethod: Direct
