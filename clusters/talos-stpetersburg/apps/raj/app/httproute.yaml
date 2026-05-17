@@ -17,7 +17,7 @@ spec:
       name: ts
       namespace: home
   hostnames:
-    - raj.${CLUSTER_DOMAIN}
+    - raj.ts.keiretsu.top
   rules:
     - backendRefs:
         - group: ""
