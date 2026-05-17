@@ -49,7 +49,7 @@ spec:
       bucketAlias: "string | default=keiretsu"
       bucketQuota: "string | default=100Gi"
       # S3/Restic
-      s3Endpoint: "string | default=garage-global.garage.svc.cluster.local:3900"
+      s3Endpoint: "string | default=garage-gw.keiretsu.ts.net:3900"
       s3Path: "string | required=true"
       resticPassword: "string | default=${COMMON_RESTIC_SECRET}"
       # Backup schedule
