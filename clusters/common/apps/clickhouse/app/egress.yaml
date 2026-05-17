@@ -5,7 +5,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: clickhouse.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: clickhouse-global
@@ -21,7 +21,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: ottawa-clickhouse.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: ottawa-clickhouse
@@ -43,7 +43,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: robbinsdale-clickhouse.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: robbinsdale-clickhouse
@@ -65,7 +65,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: merge
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: stpetersburg-clickhouse.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: stpetersburg-clickhouse
