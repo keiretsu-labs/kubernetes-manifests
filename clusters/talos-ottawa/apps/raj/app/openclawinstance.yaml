@@ -9,25 +9,21 @@ spec:
       models:
         mode: merge
         providers:
-          codex:
+          openai:
             baseUrl: http://ai.raj.svc.cluster.local/v1
             auth: api-key
             models:
               - id: gpt-5.5
                 name: gpt-5.5
-          openai:
-            baseUrl: http://aperture.raj.svc.cluster.local/v1
-            auth: api-key
-            models:
               - id: Qwen3.6-27B
                 name: Qwen3.6-27B
       agents:
         defaults:
           embeddedHarness:
-            runtime: codex
-            fallback: pi
+            runtime: pi
+            fallback: none
           model:
-            primary: codex/gpt-5.5
+            primary: openai/gpt-5.5
             fallbacks:
               - openai/Qwen3.6-27B
       session:
@@ -36,6 +32,8 @@ spec:
     - secretRef:
         name: openclaw-api-keys
   env:
+    - name: OPENAI_BASE_URL
+      value: http://ai.raj.svc.cluster.local/v1
     - name: OPENCLAW_DISABLE_BONJOUR
       value: "1"
   storage:
