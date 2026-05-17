@@ -12,7 +12,7 @@ spec:
     factor: 3
     zoneRedundancyMode: "AtLeast"
     zoneRedundancyMinZones: 2
-    consistencyMode: "degraded" # "consistent" or "degraded"
+    consistencyMode: "consistent" # "consistent" or "degraded"
 
   s3Api:
     rootDomain: ".s3.${COMMON_DOMAIN}"

@@ -7,3 +7,11 @@ metadata:
 data:
   COMMON_DOMAIN: keiretsu.top
   K8GB_EXT_GEO_TAGS: "ottawa,robbinsdale,stpetersburg"
+
+  # Garage scheduling defaults — CRD rejects YAML null on these fields, so we
+  # supply empty JSON object/array. Clusters with specific placement needs
+  # override in their flux/vars/cluster-settings.yaml.
+  GARAGE_REPLICAS: "1"
+  GARAGE_GATEWAY_REPLICAS: "2"
+  GARAGE_NODE_SELECTOR: '{}'
+  GARAGE_TOPOLOGY_SPREAD: '[]'
