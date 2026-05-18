@@ -5,6 +5,7 @@ metadata:
   name: gatus
   namespace: gatus
   annotations:
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
     item.homer.rajsingh.info/name: "Gatus"
     item.homer.rajsingh.info/subtitle: "Service Monitoring"
     item.homer.rajsingh.info/logo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/gatus.svg"
