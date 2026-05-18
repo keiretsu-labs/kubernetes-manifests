@@ -33,5 +33,8 @@ spec:
   selector:
     app.kubernetes.io/name: garage
     app.kubernetes.io/instance: garage
+    # Tier filter required since v1beta2: both storage and gateway pods carry
+    # instance=garage on the unified CR. This LB serves the storage tier only.
+    garage.rajsingh.info/tier: storage
   type: LoadBalancer
   loadBalancerClass: tailscale
