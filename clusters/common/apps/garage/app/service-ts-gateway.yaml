@@ -31,7 +31,8 @@ spec:
       targetPort: 3903
   selector:
     app.kubernetes.io/name: garage
-    app.kubernetes.io/instance: garage-gateway
+    app.kubernetes.io/instance: garage
+    garage.rajsingh.info/tier: gateway
   type: LoadBalancer
   loadBalancerClass: tailscale
 ---
@@ -61,6 +62,7 @@ spec:
       targetPort: 3903
   selector:
     app.kubernetes.io/name: garage
-    app.kubernetes.io/instance: garage-gateway
+    app.kubernetes.io/instance: garage
+    garage.rajsingh.info/tier: gateway
   type: LoadBalancer
   loadBalancerClass: tailscale

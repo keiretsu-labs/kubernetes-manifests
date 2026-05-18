@@ -1,10 +1,15 @@
 ---
-apiVersion: garage.rajsingh.info/v1beta1
+# Unified GarageCluster (v1beta2) — storage + gateway tiers in one CR.
+#
+# Gateway tier is ephemeral (Deployment + EmptyDir): node identities rotate per
+# pod restart, and the operator garbage-collects stale layout entries via the
+# tombstone reconciler. Cross-region peering is established by the storage tier
+# (via spec.remoteClusters); the gateway tier rides on that mesh.
+apiVersion: garage.rajsingh.info/v1beta2
 kind: GarageCluster
 metadata:
   name: garage
 spec:
-  replicas: ${GARAGE_REPLICAS:=1}
   zone: "${LOCATION}"
   image: dxflrs/garage:v2.3.0
 
@@ -17,13 +22,8 @@ spec:
   s3Api:
     rootDomain: ".s3.${COMMON_DOMAIN}"
 
-  storage:
-    metadata:
-      size: 3Gi
-      storageClassName: "${STORAGECLASS_METADATA}"
-    data:
-      size: 2Ti
-      storageClassName: "${STORAGECLASS_LONGTERM}"
+  webApi:
+    rootDomain: ".${COMMON_DOMAIN}"
 
   network:
     rpcPublicAddr: "${LOCATION}-garage.keiretsu.ts.net:3901"
@@ -63,25 +63,50 @@ spec:
     enabled: true
     interval: 30s
 
-  webApi:
-    rootDomain: ".${COMMON_DOMAIN}"
-
   workers:
     resyncWorkerCount: 8
     resyncTranquility: 0
     scrubTranquility: 4
 
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 3000m
-      memory: 3Gi
+  # Storage tier — persistent identity in metadata PVC; data PVC holds blocks.
+  storage:
+    replicas: ${GARAGE_REPLICAS:=1}
+    metadata:
+      size: 3Gi
+      storageClassName: "${STORAGECLASS_METADATA}"
+    data:
+      size: 2Ti
+      storageClassName: "${STORAGECLASS_LONGTERM}"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 3000m
+        memory: 3Gi
+    # Per-cluster scheduling overrides via Flux postBuild substitution.
+    nodeSelector: ${GARAGE_NODE_SELECTOR=}
+    topologySpreadConstraints: ${GARAGE_TOPOLOGY_SPREAD=}
 
-  # Per-cluster scheduling overrides (JSON-as-YAML inserted by Flux postBuild
-  # substitution). When the var is unset, the field becomes null and the operator
-  # treats it as absent (omitempty). Set GARAGE_NODE_SELECTOR / GARAGE_TOPOLOGY_SPREAD
-  # in a cluster's flux/vars/cluster-settings.yaml to constrain pod placement.
-  nodeSelector: ${GARAGE_NODE_SELECTOR=}
-  topologySpreadConstraints: ${GARAGE_TOPOLOGY_SPREAD=}
+  # Gateway tier — ephemeral; peers with the local storage tier in-process and
+  # inherits federation through it. RPCPublicAddr lets remote regions dial these
+  # gateway pods for cluster-wide admin / table sync operations.
+  gateway:
+    replicas: ${GARAGE_GATEWAY_REPLICAS:=2}
+    rpcPublicAddr: "${LOCATION}-garage-gw.keiretsu.ts.net:3901"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 1Gi
+    nodeSelector: ${GARAGE_NODE_SELECTOR=}
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: garage
+            garage.rajsingh.info/tier: gateway
