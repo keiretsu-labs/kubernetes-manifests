@@ -57,11 +57,11 @@ spec:
         request: 0s
         backendRequest: 0s
 ---
-# LeastRequest load balancing across both DGX Sparks. Each Spark runs an
-# independent vLLM instance (data-parallel), so routing by active connections
-# distributes load more efficiently than RoundRobin (which ignores request
-# duration) or ConsistentHash (which pinned all traffic to vllm-0 for
-# single-source-IP clients).
+# ConsistentHash on X-Session-Id pins each chat session to a single Spark so
+# the warm prefix cache (system prompt + conversation context) keeps hitting.
+# Clients without the header fall back to source-IP hashing — still sticky
+# per-client, just coarser. Tradeoff vs LeastRequest: gives up active-connection
+# balancing in exchange for KV-cache locality.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: BackendTrafficPolicy
 metadata:
@@ -73,7 +73,11 @@ spec:
       kind: HTTPRoute
       name: vllm
   loadBalancer:
-    type: LeastRequest
+    type: ConsistentHash
+    consistentHash:
+      type: Header
+      header:
+        name: X-Session-Id
   timeout:
     http:
       requestTimeout: 0s
