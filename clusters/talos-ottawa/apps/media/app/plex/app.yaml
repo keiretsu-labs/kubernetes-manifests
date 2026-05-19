@@ -29,7 +29,7 @@ spec:
           resourceClaimTemplateName: plex-gpu
       containers:
         - name: plex
-          image: ghcr.io/home-operations/plex-next:1.43.1.10611
+          image: ghcr.io/home-operations/plex-next:1.43.2.10687
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
