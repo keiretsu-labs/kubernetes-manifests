@@ -64,8 +64,13 @@ spec:
     interval: 30s
 
   workers:
-    resyncWorkerCount: 8
-    resyncTranquility: 0
+    # Conservative resync settings: aggressive defaults (workerCount: 8,
+    # tranquility: 0) starve the admin API for hours after a large layout
+    # churn — GetKeyInfo/GetBucketInfo by-ID quorum reads time out and
+    # the operator's status updates stall (2026-05-19 outage). Restore to
+    # 0/8 once the cluster fully drains its resync queue.
+    resyncWorkerCount: 2
+    resyncTranquility: 30
     scrubTranquility: 4
 
   # Storage tier — persistent identity in metadata PVC; data PVC holds blocks.
