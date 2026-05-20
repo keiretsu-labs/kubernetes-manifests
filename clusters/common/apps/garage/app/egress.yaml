@@ -139,3 +139,105 @@ spec:
     - name: rpc
       port: 3901
       protocol: TCP
+---
+# Per-pod gateway egress entries (one per gateway pod per remote region).
+# Required by the operator's federation code (gatewayRpcEndpointTemplate)
+# so the in-cluster operator can resolve and dial each remote gateway pod
+# individually instead of the shared LB hostname (which Tailscale routes to
+# only one of N pods, leaving the rest in layout.all_nodes() as Not
+# connected and breaking FullReplication quorum cross-region).
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-gw-0.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: ottawa-gw-0
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-gw-1.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: ottawa-gw-1
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-gw-0.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: robbinsdale-gw-0
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-gw-1.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: robbinsdale-gw-1
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-gw-0.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: stpetersburg-gw-0
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-gw-1.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: stpetersburg-gw-1
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
