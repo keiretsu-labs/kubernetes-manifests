@@ -36,7 +36,7 @@ spec:
       zone: ottawa
       connection:
         adminApiEndpoint: "http://ottawa-garage.keiretsu.ts.net:3903"
-        gatewayRpcEndpointTemplate: "ottawa-garage-gw-{ordinal}.keiretsu.ts.net:3901"
+        gatewayRpcEndpointTemplate: "ottawa-gw-{ordinal}.keiretsu.ts.net:3901"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
@@ -44,7 +44,7 @@ spec:
       zone: robbinsdale
       connection:
         adminApiEndpoint: "http://robbinsdale-garage.keiretsu.ts.net:3903"
-        gatewayRpcEndpointTemplate: "robbinsdale-garage-gw-{ordinal}.keiretsu.ts.net:3901"
+        gatewayRpcEndpointTemplate: "robbinsdale-gw-{ordinal}.keiretsu.ts.net:3901"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
@@ -52,7 +52,7 @@ spec:
       zone: stpetersburg
       connection:
         adminApiEndpoint: "http://stpetersburg-garage.keiretsu.ts.net:3903"
-        gatewayRpcEndpointTemplate: "stpetersburg-garage-gw-{ordinal}.keiretsu.ts.net:3901"
+        gatewayRpcEndpointTemplate: "stpetersburg-gw-{ordinal}.keiretsu.ts.net:3901"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token

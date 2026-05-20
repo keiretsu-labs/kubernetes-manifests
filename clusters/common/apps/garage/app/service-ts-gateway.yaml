@@ -46,7 +46,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    tailscale.com/hostname: ${LOCATION}-garage-gw-0
+    tailscale.com/hostname: ${LOCATION}-gw-0
     tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
   name: garage-gateway-0-ts
 spec:
@@ -68,7 +68,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    tailscale.com/hostname: ${LOCATION}-garage-gw-1
+    tailscale.com/hostname: ${LOCATION}-gw-1
     tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
   name: garage-gateway-1-ts
 spec:
