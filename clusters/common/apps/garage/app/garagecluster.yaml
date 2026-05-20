@@ -64,13 +64,12 @@ spec:
     interval: 30s
 
   workers:
-    # Conservative resync settings: aggressive defaults (workerCount: 8,
-    # tranquility: 0) starve the admin API for hours after a large layout
-    # churn — GetKeyInfo/GetBucketInfo by-ID quorum reads time out and
-    # the operator's status updates stall (2026-05-19 outage). Restore to
-    # 0/8 once the cluster fully drains its resync queue.
-    resyncWorkerCount: 2
-    resyncTranquility: 30
+    # Aggressive drain: layout converged and federation restored, but each
+    # storage node has ~300k blocks in the resync queue from the 2026-05-19
+    # outage. Run all 8 workers with no throttle to drain. Revisit if admin
+    # API latency regresses.
+    resyncWorkerCount: 8
+    resyncTranquility: 0
     scrubTranquility: 4
 
   # Storage tier — persistent identity in metadata PVC; data PVC holds blocks.
