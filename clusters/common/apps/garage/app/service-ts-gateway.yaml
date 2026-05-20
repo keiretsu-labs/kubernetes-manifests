@@ -36,6 +36,58 @@ spec:
   type: LoadBalancer
   loadBalancerClass: tailscale
 ---
+# Per-pod gateway LB for cross-region peering. Each ordinal-stable hostname
+# resolves to exactly one gateway pod, so storage nodes in other regions can
+# ConnectClusterNodes() to a specific peer instead of having Tailscale's
+# load-balancer pick one of N pods. Required by the operator's federation
+# code (RemoteClusterConnection.gatewayRpcEndpointTemplate) so all gateways
+# participate in FullReplication quorum cross-region.
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ${LOCATION}-garage-gw-0
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-gateway-0-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: garage
+    garage.rajsingh.info/tier: gateway
+    statefulset.kubernetes.io/pod-name: garage-gateway-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ${LOCATION}-garage-gw-1
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-gateway-1-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: garage
+    garage.rajsingh.info/tier: gateway
+    statefulset.kubernetes.io/pod-name: garage-gateway-1
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
 # Anycast global gateway LB — Tailscale routes clients to the nearest region's
 # gateway pods via the shared common-ingress proxy-group.
 apiVersion: v1
