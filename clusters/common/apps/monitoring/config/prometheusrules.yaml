@@ -185,21 +185,6 @@ spec:
           labels:
             severity: warning
 
-    - name: garage.rules
-      rules:
-        - alert: GarageNodeDisconnected
-          # Each Garage node self-reports `0` for its own id (self-observation).
-          # Aggregate per id so the alert only fires when no node in the cluster
-          # can see it.
-          expr: |
-            sum by (id) (cluster_layout_node_connected{job="garage"}) == 0
-          for: 5m
-          annotations:
-            summary: >-
-              Garage node {{ $labels.id }} is disconnected from the cluster layout.
-          labels:
-            severity: warning
-
     - name: kubelet.rules
       rules:
         # Override of the upstream kube-prometheus-stack KubeletDown rule.
