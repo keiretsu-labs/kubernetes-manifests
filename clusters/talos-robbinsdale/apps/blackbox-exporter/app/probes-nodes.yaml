@@ -14,8 +14,6 @@ spec:
         - tank.local:6443
         - titan.local:6443
         - stone.local:6443
-        - silver.local:6443
-        - vault.local:6443
       labels:
         service: nodes
         target: kubelet-port
@@ -52,8 +50,6 @@ spec:
         - tank.local
         - titan.local
         - stone.local
-        - silver.local
-        - vault.local
         - nas.local
       labels:
         service: nodes

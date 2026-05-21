@@ -35,8 +35,8 @@ spec:
         - http://bazarr-1080p.media:6767
         - http://bazarr-anime.media:6767
         # Download clients
-        - http://qb.media
-        - http://qb-pvt.media
+        - http://qbittorrent.media
+        - http://qbittorrent-pvt.media
         - http://sabnzbd.media:80
         - http://autobrr.media:7474
         - http://flaresolverr.media:8191

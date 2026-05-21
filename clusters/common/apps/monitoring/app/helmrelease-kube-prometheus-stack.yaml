@@ -21,6 +21,13 @@ spec:
       valuesKey: kube-state-metrics-config.yaml
   values:
     cleanPrometheusOperatorObjectNames: true
+    # Disable the upstream KubeletDown rule — its expr relies on a `cluster`
+    # label join that doesn't hold in our setup (kubelet `up{}` has empty
+    # cluster, kube_node_info has cluster=talos-<location> via externalLabels).
+    # Replacement rule lives in clusters/common/apps/monitoring/config/prometheusrules.yaml.
+    defaultRules:
+      disabled:
+        KubeletDown: true
     grafana:
       enabled: false
 

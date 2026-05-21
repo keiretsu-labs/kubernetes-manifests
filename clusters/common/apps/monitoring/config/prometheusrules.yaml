@@ -173,11 +173,52 @@ spec:
             severity: warning
 
         - alert: PrometheusStorageFull
+          # Guard against division by zero: we use time-based retention only,
+          # so prometheus_tsdb_retention_limit_bytes is 0 and the ratio is +Inf.
           expr: |
             (prometheus_tsdb_storage_blocks_bytes / prometheus_tsdb_retention_limit_bytes) * 100 > 90
+            and prometheus_tsdb_retention_limit_bytes > 0
           for: 5m
           annotations:
             summary: >-
               Prometheus storage is {{ printf "%.0f" $value }}% full.
           labels:
             severity: warning
+
+    - name: garage.rules
+      rules:
+        - alert: GarageNodeDisconnected
+          # Each Garage node self-reports `0` for its own id (self-observation).
+          # Aggregate per id so the alert only fires when no node in the cluster
+          # can see it.
+          expr: |
+            sum by (id) (cluster_layout_node_connected{job="garage"}) == 0
+          for: 5m
+          annotations:
+            summary: >-
+              Garage node {{ $labels.id }} is disconnected from the cluster layout.
+          labels:
+            severity: warning
+
+    - name: kubelet.rules
+      rules:
+        # Override of the upstream kube-prometheus-stack KubeletDown rule.
+        # The upstream expr joins `up{job="kubelet"}` with `kube_node_info` on
+        # the `cluster` label, but our kubelet ServiceMonitor's synthetic `up`
+        # series has an empty `cluster` label while `kube_node_info` carries
+        # `cluster=talos-<location>` via externalLabels, so the join never
+        # matches and the alert false-fires. Joining on `node` instead works
+        # for our deployment.
+        - alert: KubeletDown
+          expr: |
+            absent(up{job="kubelet"} == 1) or
+            (
+              count by (node) (up{job="kubelet"} == 0)
+              and on (node) kube_node_info
+            ) > 0
+          for: 15m
+          annotations:
+            summary: >-
+              Kubelet on {{ $labels.node }} is down or unreachable.
+          labels:
+            severity: critical
