@@ -80,15 +80,15 @@ spec:
             - |
               set -u
               while true; do
-                CAM_ID=$(curl -ks -X GET "https://${UNIFI_PROTECT_HOST}/proxy/protect/integration/v1/cameras" \
-                  -H "X-API-KEY: ${UNIFI_PROTECT_API_KEY}" -H "Accept: application/json" \
-                  | jq -r --arg n "${UNIFI_CAMERA_NAME}" '.[] | select(.name == $n) | .id' | head -n1)
-                if [ -z "${CAM_ID}" ]; then
-                  echo "$(date -u +%FT%TZ) ERROR: camera '${UNIFI_CAMERA_NAME}' not found"
+                CAM_ID=$(curl -ks -X GET "https://$${UNIFI_PROTECT_HOST}/proxy/protect/integration/v1/cameras" \
+                  -H "X-API-KEY: $${UNIFI_PROTECT_API_KEY}" -H "Accept: application/json" \
+                  | jq -r --arg n "$${UNIFI_CAMERA_NAME}" '.[] | select(.name == $$n) | .id' | head -n1)
+                if [ -z "$${CAM_ID}" ]; then
+                  echo "$(date -u +%FT%TZ) ERROR: camera '$${UNIFI_CAMERA_NAME}' not found"
                 else
-                  RESP=$(curl -ks -X POST "https://${UNIFI_PROTECT_HOST}/proxy/protect/integration/v1/cameras/${CAM_ID}/talkback-session" \
-                    -H "X-API-KEY: ${UNIFI_PROTECT_API_KEY}" -H "Accept: application/json")
-                  echo "$(date -u +%FT%TZ) talkback-session ${UNIFI_CAMERA_NAME} (${CAM_ID}): ${RESP}"
+                  RESP=$(curl -ks -X POST "https://$${UNIFI_PROTECT_HOST}/proxy/protect/integration/v1/cameras/$${CAM_ID}/talkback-session" \
+                    -H "X-API-KEY: $${UNIFI_PROTECT_API_KEY}" -H "Accept: application/json")
+                  echo "$(date -u +%FT%TZ) talkback-session $${UNIFI_CAMERA_NAME} ($${CAM_ID}): $${RESP}"
                 fi
                 sleep 300
               done
