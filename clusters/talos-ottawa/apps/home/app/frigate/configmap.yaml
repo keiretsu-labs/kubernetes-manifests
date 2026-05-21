@@ -15,6 +15,7 @@ data:
       enabled: false
 
     ffmpeg:
+      path: "7.0"
       hwaccel_args: preset-vaapi
 
     detectors:
