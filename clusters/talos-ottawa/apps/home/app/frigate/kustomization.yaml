@@ -11,3 +11,4 @@ resources:
   - ./httproute.yaml
   - ./securitypolicy.yaml
   - ./oidc-secret.yaml
+  - ./unifi-talkback-secret.yaml
