@@ -10,4 +10,14 @@ resources:
   - probes.yaml
   - grafana-dashboard.yaml
   - service-monitor.yaml
+# Wrap dashboard.json in the ConfigMap that the GrafanaDashboard CR references
+# via configMapRef. Without this the grafana-operator endlessly retries SSA
+# against the apiserver and drives apiserver_request_total{code=5..} through
+# the roof, tripping KubeAPIErrorsHigh.
+configMapGenerator:
+  - name: clickhouse-grafana-dashboard
+    files:
+      - dashboard.json
+generatorOptions:
+  disableNameSuffixHash: true
 ---

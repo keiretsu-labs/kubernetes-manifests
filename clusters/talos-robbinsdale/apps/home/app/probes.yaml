@@ -12,7 +12,7 @@ spec:
     staticConfig:
       static:
         - http://frigate.home:5000
-        - http://home-assistant.home:8123
+        - http://homeassistant.home:8123
       labels:
         service: home-automation
 ---

@@ -22,6 +22,28 @@ spec:
     remediation:
       retries: 3
     crds: CreateReplace
+  # Chart's ServiceMonitor selector matches both the metrics Service (port 8443)
+  # and the webhook Service (port 443) because they share identical labels and
+  # both name a port `https`. Prometheus ends up scraping the webhook on /metrics
+  # and getting 404s. Tag the metrics Service with a component label and pin the
+  # ServiceMonitor selector to it.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Service
+              name: garage-operator-metrics
+            patch: |
+              - op: add
+                path: /metadata/labels/app.kubernetes.io~1component
+                value: metrics
+          - target:
+              kind: ServiceMonitor
+              name: garage-operator
+            patch: |
+              - op: add
+                path: /spec/selector/matchLabels/app.kubernetes.io~1component
+                value: metrics
   values:
     resources:
       limits:
