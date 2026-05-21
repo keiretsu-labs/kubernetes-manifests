@@ -21,7 +21,7 @@ spec:
           resourceClaimTemplateName: jellyfin-gpu
       containers:
         - name: jellyfin
-          image: jellyfin/jellyfin:10.11.8
+          image: jellyfin/jellyfin:10.11.9
           resources:
             claims:
               - name: gpu
