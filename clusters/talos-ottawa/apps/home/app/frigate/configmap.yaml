@@ -11,6 +11,9 @@ data:
     mqtt:
       enabled: false
 
+    auth:
+      enabled: false
+
     ffmpeg:
       hwaccel_args: preset-vaapi
 
@@ -46,4 +49,4 @@ data:
             days: 3
             mode: motion
 
-    version: 0.14-1
+    version: 0.17-0
