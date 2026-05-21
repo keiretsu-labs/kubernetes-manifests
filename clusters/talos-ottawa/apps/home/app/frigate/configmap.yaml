@@ -24,8 +24,7 @@ data:
     go2rtc:
       streams:
         ottawa_cam:
-          - rtsps://192.168.169.1:7441/YgigQ2PzZ1QwPCHW?enableSrtp#video=copy#audio=copy
-          - "ffmpeg:ottawa_cam#audio=opus"
+          - rtsps://192.168.169.1:7441/YgigQ2PzZ1QwPCHW?enableSrtp#video=copy#audio=opus
 
     cameras:
       ottawa_cam:
