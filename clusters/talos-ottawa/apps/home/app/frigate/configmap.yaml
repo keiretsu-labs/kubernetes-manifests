@@ -18,17 +18,8 @@ data:
       hwaccel_args: preset-vaapi
 
     detectors:
-      onnx:
-        type: onnx
-
-    model:
-      model_type: yolo-generic
-      width: 320
-      height: 320
-      input_tensor: nchw
-      input_dtype: float
-      path: /config/model_cache/yolov9-t-relu6.onnx
-      labelmap_path: /labelmap/coco-80.txt
+      cpu1:
+        type: cpu
 
     cameras:
       ottawa_cam:
@@ -38,18 +29,13 @@ data:
               input_args: preset-rtsp-restream
               roles:
                 - detect
-                - record
         detect:
           enabled: false
           width: 1280
           height: 720
         record:
-          enabled: true
-          alerts:
-            retain:
-              days: 7
-          detections:
-            retain:
-              days: 3
+          enabled: false
+        snapshots:
+          enabled: false
 
     version: 0.17-0

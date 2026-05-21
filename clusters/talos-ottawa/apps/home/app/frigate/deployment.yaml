@@ -82,8 +82,8 @@ spec:
           configMap:
             name: frigate-config
         - name: media
-          persistentVolumeClaim:
-            claimName: frigate-media
+          emptyDir:
+            sizeLimit: 1Gi
         - name: dshm
           emptyDir:
             medium: Memory
