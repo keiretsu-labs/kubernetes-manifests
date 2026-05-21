@@ -14,7 +14,11 @@ spec:
     staticConfig:
       static:
         - https://www.rajsingh.info
-        - https://status.rajsingh.info
+        # status.rajsingh.info removed: cluster DNS hijacks it to a local
+        # Tailscale LB VIP that doesn't terminate TLS for this hostname,
+        # so the in-cluster probe always fails. The site itself is served
+        # by gatus (which monitors its own targets externally), so an
+        # in-cluster reachability probe adds no signal.
         - https://www.lukehouge.com
         - https://frigate.lukehouge.com
         - https://homeassistant.lukehouge.com
