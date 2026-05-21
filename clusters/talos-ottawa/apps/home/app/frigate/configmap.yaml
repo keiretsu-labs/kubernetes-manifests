@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frigate-config
+  namespace: home
+  labels:
+    app: frigate
+data:
+  config.yml: |
+    mqtt:
+      enabled: false
+
+    ffmpeg:
+      hwaccel_args: preset-vaapi
+
+    detectors:
+      onnx:
+        type: onnx
+
+    model:
+      model_type: yolo-generic
+      width: 320
+      height: 320
+      input_tensor: nchw
+      input_dtype: float
+      path: /config/model_cache/yolov9-t-relu6.onnx
+      labelmap_path: /labelmap/coco-80.txt
+
+    cameras:
+      ottawa_cam:
+        ffmpeg:
+          inputs:
+            - path: rtsps://192.168.169.1:7441/YgigQ2PzZ1QwPCHW?enableSrtp
+              input_args: preset-rtsp-restream
+              roles:
+                - detect
+                - record
+        detect:
+          enabled: false
+          width: 1280
+          height: 720
+        record:
+          enabled: true
+          retain:
+            days: 3
+            mode: motion
+
+    version: 0.14-1
