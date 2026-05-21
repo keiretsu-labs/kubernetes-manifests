@@ -21,11 +21,17 @@ data:
       cpu1:
         type: cpu
 
+    go2rtc:
+      streams:
+        ottawa_cam:
+          - rtsps://192.168.169.1:7441/YgigQ2PzZ1QwPCHW?enableSrtp#video=copy#audio=copy
+          - "ffmpeg:ottawa_cam#audio=opus"
+
     cameras:
       ottawa_cam:
         ffmpeg:
           inputs:
-            - path: rtsps://192.168.169.1:7441/YgigQ2PzZ1QwPCHW?enableSrtp
+            - path: rtsp://127.0.0.1:8554/ottawa_cam
               input_args: preset-rtsp-restream
               roles:
                 - detect
@@ -37,5 +43,7 @@ data:
           enabled: false
         snapshots:
           enabled: false
+        live:
+          stream_name: ottawa_cam
 
     version: 0.17-0
