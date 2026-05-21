@@ -52,6 +52,8 @@ spec:
               value: ${TIMEZONE}
             - name: LIBVA_DRIVER_NAME
               value: radeonsi
+            - name: GO2RTC_ALLOW_ARBITRARY_EXEC
+              value: "true"
           ports:
             - containerPort: 5000
               name: http
