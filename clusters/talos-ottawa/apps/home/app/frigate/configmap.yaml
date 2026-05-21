@@ -29,10 +29,9 @@ data:
 
     cameras:
       ottawa_cam:
-        enabled: false
         ffmpeg:
           inputs:
-            - path: rtsps://192.168.169.1:7441/YgigQ2PzZ1QwPCHW?enableSrtp
+            - path: rtsp://127.0.0.1:8554/ottawa_cam
               input_args: preset-rtsp-restream
               roles:
                 - detect
