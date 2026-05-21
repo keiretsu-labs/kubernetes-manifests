@@ -45,8 +45,11 @@ data:
           height: 720
         record:
           enabled: true
-          retain:
-            days: 3
-            mode: motion
+          alerts:
+            retain:
+              days: 7
+          detections:
+            retain:
+              days: 3
 
     version: 0.17-0
