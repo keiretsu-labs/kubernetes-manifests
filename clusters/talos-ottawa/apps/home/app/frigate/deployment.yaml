@@ -72,6 +72,42 @@ spec:
               mountPath: /dev/shm
             - name: cache
               mountPath: /tmp/cache
+        - name: talkback-keepalive
+          image: ghcr.io/blakeblackshear/frigate:stable-rocm
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -u
+              while true; do
+                CAM_ID=$(curl -ks -X GET "https://${UNIFI_PROTECT_HOST}/proxy/protect/integration/v1/cameras" \
+                  -H "X-API-KEY: ${UNIFI_PROTECT_API_KEY}" -H "Accept: application/json" \
+                  | jq -r --arg n "${UNIFI_CAMERA_NAME}" '.[] | select(.name == $n) | .id' | head -n1)
+                if [ -z "${CAM_ID}" ]; then
+                  echo "$(date -u +%FT%TZ) ERROR: camera '${UNIFI_CAMERA_NAME}' not found"
+                else
+                  RESP=$(curl -ks -X POST "https://${UNIFI_PROTECT_HOST}/proxy/protect/integration/v1/cameras/${CAM_ID}/talkback-session" \
+                    -H "X-API-KEY: ${UNIFI_PROTECT_API_KEY}" -H "Accept: application/json")
+                  echo "$(date -u +%FT%TZ) talkback-session ${UNIFI_CAMERA_NAME} (${CAM_ID}): ${RESP}"
+                fi
+                sleep 300
+              done
+          env:
+            - name: UNIFI_PROTECT_HOST
+              value: "192.168.169.1"
+            - name: UNIFI_CAMERA_NAME
+              value: "Basement"
+            - name: UNIFI_PROTECT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: frigate-unifi-talkback
+                  key: UNIFI_PROTECT_API_KEY
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
       restartPolicy: Always
       terminationGracePeriodSeconds: 60
       volumes:
