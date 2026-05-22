@@ -23,6 +23,15 @@ data:
         type: cpu
 
     go2rtc:
+      webrtc:
+        ice_servers:
+          - urls: ["stun:stun.cloudflare.com:3478"]
+          - urls: ["turn:openrelay.metered.ca:443?transport=tcp"]
+            username: openrelayproject
+            credential: openrelayproject
+          - urls: ["turn:openrelay.metered.ca:80?transport=tcp"]
+            username: openrelayproject
+            credential: openrelayproject
       streams:
         ottawa_cam:
           - rtspx://192.168.169.1:7441/YgigQ2PzZ1QwPCHW#backchannel=0
