@@ -48,11 +48,16 @@ spec:
                   - 172.16.0.0/12
                   - 100.64.0.0/10
               google_assistant: !include google_assistant.yaml
+              light: !include lights.yaml
               EOF
               fi
               if ! grep -q "^google_assistant:" /config/configuration.yaml; then
                 echo "Appending google_assistant include to configuration.yaml"
                 printf "\ngoogle_assistant: !include google_assistant.yaml\n" >> /config/configuration.yaml
+              fi
+              if ! grep -q "^light:" /config/configuration.yaml; then
+                echo "Appending light include to configuration.yaml"
+                printf "\nlight: !include lights.yaml\n" >> /config/configuration.yaml
               fi
           envFrom:
             - secretRef:
@@ -76,6 +81,10 @@ spec:
               mountPath: /config/google_assistant.yaml
               subPath: google_assistant.yaml
               readOnly: true
+            - name: lights
+              mountPath: /config/lights.yaml
+              subPath: lights.yaml
+              readOnly: true
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -83,3 +92,6 @@ spec:
         - name: google-assistant
           secret:
             secretName: home-assistant-google-assistant
+        - name: lights
+          configMap:
+            name: home-assistant-lights
