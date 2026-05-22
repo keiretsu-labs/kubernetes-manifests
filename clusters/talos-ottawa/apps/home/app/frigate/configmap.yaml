@@ -29,7 +29,7 @@ data:
           - "stun:8555"
       streams:
         ottawa_cam:
-          - rtspx://192.168.169.1:7441/YgigQ2PzZ1QwPCHW#backchannel=0
+          - rtspx://192.168.169.1:7441/YgigQ2PzZ1QwPCHW
           - "exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f s16be -ar 8000 -i - -vn -acodec libopus -ar 24000 -sample_fmt s16 -b:a 32k -f rtp rtp://192.168.169.66:7004#backchannel=1"
 
     cameras:
