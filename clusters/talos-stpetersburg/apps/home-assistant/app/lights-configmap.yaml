@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: home-assistant-lights
+data:
+  lights.yaml: |
+    - platform: group
+      name: Master Bedroom
+      unique_id: master_bedroom
+      entities:
+        - light.bedside_lamp_left
+        - light.bedside_lamp_right
