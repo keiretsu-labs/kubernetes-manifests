@@ -37,7 +37,7 @@ spec:
                 echo "No snapshots in repo (first boot or empty), starting fresh"
               fi
               if [ ! -f /config/configuration.yaml ]; then
-                echo "Seeding default configuration.yaml with trusted_proxies"
+                echo "Seeding default configuration.yaml"
                 cat > /config/configuration.yaml <<EOF
               default_config:
               http:
@@ -47,7 +47,12 @@ spec:
                   - 192.168.0.0/16
                   - 172.16.0.0/12
                   - 100.64.0.0/10
+              google_assistant: !include google_assistant.yaml
               EOF
+              fi
+              if ! grep -q "^google_assistant:" /config/configuration.yaml; then
+                echo "Appending google_assistant include to configuration.yaml"
+                printf "\ngoogle_assistant: !include google_assistant.yaml\n" >> /config/configuration.yaml
               fi
           envFrom:
             - secretRef:
@@ -67,7 +72,14 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+            - name: google-assistant
+              mountPath: /config/google_assistant.yaml
+              subPath: google_assistant.yaml
+              readOnly: true
       volumes:
         - name: config
           persistentVolumeClaim:
             claimName: homeassistant-config
+        - name: google-assistant
+          secret:
+            secretName: home-assistant-google-assistant

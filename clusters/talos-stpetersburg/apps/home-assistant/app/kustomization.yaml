@@ -13,3 +13,4 @@ resources:
   - ./music-assistant-service.yaml
   - ./music-assistant-httproute.yaml
   - ./airconnect-deployment.yaml
+  - ./google-assistant-secret.sops.yaml
