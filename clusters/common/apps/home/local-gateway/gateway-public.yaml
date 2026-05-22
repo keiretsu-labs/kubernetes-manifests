@@ -89,3 +89,19 @@ spec:
         - kind: TCPRoute
         namespaces:
           from: All
+    - name: webrtc-tcp
+      protocol: TCP
+      port: 8555
+      allowedRoutes:
+        kinds:
+        - kind: TCPRoute
+        namespaces:
+          from: All
+    - name: webrtc-udp
+      protocol: UDP
+      port: 8555
+      allowedRoutes:
+        kinds:
+        - kind: UDPRoute
+        namespaces:
+          from: All

@@ -12,3 +12,4 @@ resources:
   - ./securitypolicy.yaml
   - ./oidc-secret.yaml
   - ./unifi-talkback-secret.yaml
+  - ./webrtc-routes.yaml
