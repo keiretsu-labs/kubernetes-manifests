@@ -30,6 +30,7 @@ spec:
   dataPools:
     - name: replicated
       failureDomain: host
+      enableCrushUpdates: true
       replicated:
         size: 3
         # Disallow setting pool with replica 1, this could lead to data loss without recovery.
