@@ -29,6 +29,8 @@ spec:
       namespace: tailscale-examples
     - kind: GarageKey
       namespace: loki
+    - kind: GarageBucket
+      namespace: loki
     - kind: GarageKey
       namespace: tailscale
     - kind: GarageKey
