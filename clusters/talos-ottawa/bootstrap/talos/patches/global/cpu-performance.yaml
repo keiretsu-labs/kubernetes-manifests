@@ -17,7 +17,3 @@ machine:
     devices.system.cpu.cpu13.cpufreq.scaling_governor: performance
     devices.system.cpu.cpu14.cpufreq.scaling_governor: performance
     devices.system.cpu.cpu15.cpufreq.scaling_governor: performance
-    devices.system.cpu.cpu16.cpufreq.scaling_governor: performance
-    devices.system.cpu.cpu17.cpufreq.scaling_governor: performance
-    devices.system.cpu.cpu18.cpufreq.scaling_governor: performance
-    devices.system.cpu.cpu19.cpufreq.scaling_governor: performance

@@ -2,7 +2,11 @@ machine:
   sysfs:
     # AMD P-State preferred core and energy performance preference
     devices.system.cpu.amd_pstate.status: active
-    # Additional cores on MS-A2 vs MS-01
+    # Cores beyond the global cpu-performance.yaml LCD (cpu0..cpu15) — MS-A2 has 24 threads
+    devices.system.cpu.cpu16.cpufreq.scaling_governor: performance
+    devices.system.cpu.cpu17.cpufreq.scaling_governor: performance
+    devices.system.cpu.cpu18.cpufreq.scaling_governor: performance
+    devices.system.cpu.cpu19.cpufreq.scaling_governor: performance
     devices.system.cpu.cpu20.cpufreq.scaling_governor: performance
     devices.system.cpu.cpu21.cpufreq.scaling_governor: performance
     devices.system.cpu.cpu22.cpufreq.scaling_governor: performance
