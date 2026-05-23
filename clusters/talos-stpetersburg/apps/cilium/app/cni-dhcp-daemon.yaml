@@ -27,7 +27,7 @@ spec:
       priorityClassName: system-node-critical
       containers:
         - name: dhcp
-          image: busybox:1.37
+          image: busybox:1.38
           command: ["/opt/cni/bin/dhcp"]
           args: ["daemon"]
           securityContext:
