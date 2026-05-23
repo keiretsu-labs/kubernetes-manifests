@@ -38,7 +38,6 @@ resources:
   - ./k8s-gateway.yaml
   - ./kyverno.yaml
   - ./metrics-server.yaml
-  - ./minio-operator.yaml
   - ./nextcloud.yaml
   - ./node-feature-discovery.yaml
   - ./ollama.yaml
