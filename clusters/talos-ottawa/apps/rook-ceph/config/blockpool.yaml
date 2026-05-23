@@ -8,5 +8,6 @@ metadata:
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   failureDomain: host
+  enableCrushUpdates: true
   replicated:
     size: 3
