@@ -1,0 +1,7 @@
+---
+apiVersion: ceph.rook.io/v1
+kind: CephObjectRealm
+metadata:
+  name: multisite-keiretsu
+  namespace: rook-ceph
+spec: {}

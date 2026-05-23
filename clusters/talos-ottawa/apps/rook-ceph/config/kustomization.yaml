@@ -15,3 +15,5 @@ resources:
   - ./dashboard-pools.yaml
   # Probes
   - ./probes.yaml
+  # TEMPORARY: orphan RGW cleanup — adopt then delete
+  - ../cleanup
