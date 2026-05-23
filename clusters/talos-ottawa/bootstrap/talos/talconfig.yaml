@@ -93,6 +93,50 @@ nodes:
         dhcp: true
         vip:
           ip: "192.168.169.25"
+  ###################################################################
+  - hostname: "shiro"
+    ipAddress: "192.168.169.116"
+    installDiskSelector:
+      serial: "2316E6CC4FC6" # Crucial P3 CT500P3SSD8 500GB
+    controlPlane: false
+    nodeLabels:
+      workload-class: specialized
+    nodeTaints:
+      workload-class: "specialized:NoSchedule"
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+            - siderolabs/nut-client
+            - siderolabs/util-linux-tools
+        extraKernelArgs:
+          - apparmor=0
+          - init_on_alloc=0
+          - init_on_free=0
+          - intel_idle.max_cstate=0
+          - intel_iommu=on
+          - iommu=pt
+          - mitigations=off
+          - security=none
+          - talos.auditd.disabled=1
+          - net.ifnames=0
+          - cpufreq.default_governor=performance
+          - talos.logging.kernel=tcp://10.169.69.51:5170/
+    networkInterfaces:
+      - interface: bond0
+        bond:
+          deviceSelectors:
+            - hardwareAddr: "58:47:ca:77:73:22"  # eth2 - X710 SFP+ port 0
+            - hardwareAddr: "58:47:ca:77:73:23"  # eth3 - X710 SFP+ port 1
+          mode: 802.3ad
+          xmitHashPolicy: layer3+4
+          lacpRate: fast
+          miimon: 100
+        dhcp: true
+    patches:
+      - "@./patches/node/shiro-intel.yaml"
 
 # Global patches
 patches:
@@ -156,6 +200,14 @@ controlPlane:
     - "@./patches/controller/kubelet-certs.yaml"
     - "@./patches/controller/etcd-metrics-patch.yaml"
 
-# Worker nodes configs (if you add workers later)
-# worker:
-#   patches: []
+# Worker nodes config
+worker:
+  extensionServices:
+    - name: nut-client
+      configFiles:
+        - content: |
+            MONITOR ups@localhost 1 monuser pass slave
+            SHUTDOWNCMD "/sbin/poweroff"
+            NOCOMMWARNTIME 86400
+          mountPath: /usr/local/etc/nut/upsmon.conf
+  patches: []
