@@ -52,8 +52,6 @@ nodes:
           xmitHashPolicy: layer3+4
           lacpRate: fast
           miimon: 100
-          upDelay: 200
-          downDelay: 200
         dhcp: true
         vip:
           ip: "192.168.169.25"
@@ -73,8 +71,6 @@ nodes:
           xmitHashPolicy: layer3+4
           lacpRate: fast
           miimon: 100
-          upDelay: 200
-          downDelay: 200
         dhcp: true
         vip:
           ip: "192.168.169.25"
@@ -94,8 +90,6 @@ nodes:
           xmitHashPolicy: layer3+4
           lacpRate: fast
           miimon: 100
-          upDelay: 200
-          downDelay: 200
         dhcp: true
         vip:
           ip: "192.168.169.25"
