@@ -36,7 +36,6 @@ resources:
   - ./itzg.yaml
   - ./jetstack.yaml
   - ./k8s-gateway.yaml
-  - ./kubernetes-dashboard.yaml
   - ./kyverno.yaml
   - ./metrics-server.yaml
   - ./minio-operator.yaml
