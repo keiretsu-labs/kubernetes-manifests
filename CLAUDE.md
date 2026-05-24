@@ -187,7 +187,7 @@ This is a **production GitOps repository** managing multi-cluster Kubernetes inf
 **Configuration Files:**
 - `/talos/talosconfig` - Cluster configuration
 - `/talos/metal-amd64.iso` - Installation ISO
-- `/scripts/` - Utility scripts (bond-test, thunderbolt-test, verify-disks)
+- `/scripts/` - Utility scripts (verify-disks, cluster-health-check, ceph-osd-slow-ops-diag)
 - `/opnsense/frr.conf` - OPNsense routing
 - `/unifi/frr.conf` - UniFi routing
 - `/jobs/diskspeedtest/` - Performance testing

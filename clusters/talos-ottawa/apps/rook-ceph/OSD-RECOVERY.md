@@ -8,10 +8,10 @@
 
 ```bash
 # 1. Install ceph-volume in debug pod (if using Alpine)
-kubectl exec -n kube-system <thunderbolt-debug-pod> -c debug -- apk add --no-cache ceph19-volume
+kubectl exec -n kube-system <privileged-debug-pod> -c debug -- apk add --no-cache ceph19-volume
 
 # 2. Wipe disk with ceph-volume (for raw mode OSDs)
-kubectl exec -n kube-system <thunderbolt-debug-pod> -c debug -- ceph-volume raw zap /dev/nvme0n1
+kubectl exec -n kube-system <privileged-debug-pod> -c debug -- ceph-volume raw zap /dev/nvme0n1
 
 # 3. Remove OSD from Ceph cluster
 kubectl exec -n rook-ceph <toolbox-pod> -- bash -c "ceph osd out <osd-id> && ceph osd down <osd-id> && ceph osd purge <osd-id> --yes-i-really-mean-it"

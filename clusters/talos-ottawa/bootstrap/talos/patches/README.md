@@ -12,20 +12,27 @@ This directory contains configuration patches that are applied to the Talos clus
 
 - `cluster-discovery.yaml` - Enables cluster discovery mechanisms
 - `containerd.yaml` - Containerd runtime configuration
+- `cpu-performance.yaml` - CPU performance tuning
 - `disable-search-domain.yaml` - Disables DNS search domain
 - `hostdns.yaml` - Host DNS configuration
-- `kernel-args.yaml` - Kernel arguments including Thunderbolt support
 - `kubelet.yaml` - Kubelet configuration and feature gates
 - `local-path-provisioner.yaml` - Mounts for local path provisioner
+- `machine-logging.yaml` - Machine log shipping
 - `metrics-server.yaml` - Deploys metrics server
-- `thunderbolt.yaml` - Loads Thunderbolt kernel module
+- `sysctls.yaml` - Kernel sysctl tuning
+- `udev.yaml` - udev rules
 
 ## Controller Patches
 
+- `amd.yaml` - AMD-specific tuning for MS-A2 nodes
 - `api-access.yaml` - KubePrism configuration for API access
-- `cluster.yaml` - Allows scheduling on control planes
 - `disable-proxy.yaml` - Disables kube-proxy (for Cilium)
+- `etcd-metrics-patch.yaml` - etcd metrics endpoint
 - `kubelet-certs.yaml` - Kubelet certificate approver
+
+## Node Patches
+
+- `shiro-intel.yaml` - Intel-specific tuning for shiro worker
 
 ## Adding New Patches
 

@@ -13,7 +13,6 @@ resources:
   # - clustermesh-egress.yaml
   - helmrelease.yaml
   - irqbalance-daemonset.yaml
-  - thunderbolt-debug.yaml
 generatorOptions:
   disableNameSuffixHash: true
 configMapGenerator:

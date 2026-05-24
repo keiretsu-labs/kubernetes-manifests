@@ -38,7 +38,7 @@ echo
 # ============================================================================
 # 1. CSI Plugin Restart Check (CRITICAL)
 # ============================================================================
-echo -e "${BOLD}${BLUE}[1/9] CSI Plugin Restart Counts${NC}"
+echo -e "${BOLD}${BLUE}[1/8] CSI Plugin Restart Counts${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 CSI_ISSUE_FOUND=false
@@ -77,7 +77,7 @@ echo
 # ============================================================================
 # 2. Ceph Cluster Health
 # ============================================================================
-echo -e "${BOLD}${BLUE}[2/9] Ceph Cluster Health${NC}"
+echo -e "${BOLD}${BLUE}[2/8] Ceph Cluster Health${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 CEPH_STATUS=$(kubectl exec -n rook-ceph deploy/rook-ceph-tools -- ceph health 2>/dev/null | awk '{print $1}')
@@ -106,7 +106,7 @@ echo
 # ============================================================================
 # 3. Ceph Exporter Status (crashes were precursor to node failure)
 # ============================================================================
-echo -e "${BOLD}${BLUE}[3/9] Ceph Exporter Status${NC}"
+echo -e "${BOLD}${BLUE}[3/8] Ceph Exporter Status${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 for node in rei asuka kaji; do
@@ -134,7 +134,7 @@ echo
 # ============================================================================
 # 4. Node Resource Usage
 # ============================================================================
-echo -e "${BOLD}${BLUE}[4/9] Node Resource Usage${NC}"
+echo -e "${BOLD}${BLUE}[4/8] Node Resource Usage${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 kubectl top nodes 2>/dev/null | tail -n +2 | while read -r node cpu cpu_pct mem mem_pct; do
@@ -168,7 +168,7 @@ echo
 # ============================================================================
 # 5. Pod Distribution
 # ============================================================================
-echo -e "${BOLD}${BLUE}[5/9] Pod Distribution Across Nodes${NC}"
+echo -e "${BOLD}${BLUE}[5/8] Pod Distribution Across Nodes${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 POD_COUNTS=$(kubectl get pods --all-namespaces -o json 2>/dev/null | \
@@ -186,33 +186,9 @@ done
 echo
 
 # ============================================================================
-# 6. Thunderbolt Network Errors
+# 6. Bond Interface Errors
 # ============================================================================
-echo -e "${BOLD}${BLUE}[6/9] Thunderbolt Network Errors${NC}"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-for node in rei asuka kaji; do
-    ip=${NODE_IPS[$node]}
-    RX_ERRORS=$(talosctl -n $ip -e $ip read /sys/class/net/thunderbolt0/statistics/rx_errors 2>/dev/null || echo "N/A")
-    TX_ERRORS=$(talosctl -n $ip -e $ip read /sys/class/net/thunderbolt0/statistics/tx_errors 2>/dev/null || echo "N/A")
-
-    if [[ "$RX_ERRORS" = "N/A" ]]; then
-        echo -e "  ${YELLOW}⚠${NC} $node: Thunderbolt interface not found"
-    elif [[ $RX_ERRORS -gt 10000 ]]; then
-        echo -e "  ${RED}✗${NC} $node: RX errors: ${RED}$RX_ERRORS${NC}, TX errors: $TX_ERRORS"
-    elif [[ $RX_ERRORS -gt 1000 ]]; then
-        echo -e "  ${YELLOW}⚠${NC} $node: RX errors: ${YELLOW}$RX_ERRORS${NC}, TX errors: $TX_ERRORS"
-    else
-        echo -e "  ${GREEN}✓${NC} $node: RX errors: $RX_ERRORS, TX errors: $TX_ERRORS"
-    fi
-done
-
-echo
-
-# ============================================================================
-# 7. Bond Interface Errors
-# ============================================================================
-echo -e "${BOLD}${BLUE}[7/9] Bond Interface Errors${NC}"
+echo -e "${BOLD}${BLUE}[6/8] Bond Interface Errors${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 for node in rei asuka kaji; do
@@ -234,7 +210,7 @@ echo
 # ============================================================================
 # 8. Failed/Crashing Pods
 # ============================================================================
-echo -e "${BOLD}${BLUE}[8/9] Failed or Crashing Pods${NC}"
+echo -e "${BOLD}${BLUE}[7/8] Failed or Crashing Pods${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 FAILED_PODS=$(kubectl get pods --all-namespaces --field-selector=status.phase!=Running,status.phase!=Succeeded 2>/dev/null | tail -n +2)
@@ -264,7 +240,7 @@ echo
 # ============================================================================
 # 9. Recent Kernel Errors (on kaji specifically)
 # ============================================================================
-echo -e "${BOLD}${BLUE}[9/9] Recent Kernel Errors on kaji${NC}"
+echo -e "${BOLD}${BLUE}[8/8] Recent Kernel Errors on kaji${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 KAJI_IP=${NODE_IPS[kaji]}
@@ -288,6 +264,6 @@ echo
 echo -e "${BOLD}Key Indicators to Watch:${NC}"
 echo -e "  • CSI plugin restarts on kaji (restart every ~2 days = problem returning)"
 echo -e "  • Ceph exporter crashes (precursor to node failure)"
-echo -e "  • Network errors on bond0 or Thunderbolt interfaces"
+echo -e "  • Network errors on bond0 interfaces"
 echo -e "  • Kernel segfaults or OOM messages"
 echo

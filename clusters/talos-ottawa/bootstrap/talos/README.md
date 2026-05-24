@@ -1,6 +1,6 @@
-# Talos Kubernetes Cluster with Thunderbolt Networking
+# Talos Kubernetes Cluster (Ottawa)
 
-This setup uses `mise` and `talhelper` to manage a 3-node Talos Kubernetes cluster with high-speed Thunderbolt networking.
+This setup uses `mise` and `talhelper` to manage the Ottawa Talos Kubernetes cluster (3 control planes + 1 Intel worker).
 
 ## Table of Contents
 
@@ -15,43 +15,16 @@ This setup uses `mise` and `talhelper` to manage a 3-node Talos Kubernetes clust
 
 ### Hardware Requirements
 
-- 3 bare-metal nodes with:
-  - 2x Thunderbolt ports per node
+- Bare-metal nodes with:
   - Multiple NVMe drives (using `/dev/nvme1n1` for Talos)
   - Network interfaces configured with static DHCP mappings
-  - Thunderbolt cables connecting all nodes in a mesh topology
-
-### Network Topology
-
-```
-        rei (169.254.255.101)
-        Port 1          Port 2
-          |               |
-          |               |
-        Port 2          Port 2
-    kaji (169.254.255.103)  asuka (169.254.255.102)
-        Port 1----------Port 1
-
-Cable connections:
-- rei Port 1 <--> kaji Port 2
-- rei Port 2 <--> asuka Port 2  
-- asuka Port 1 <--> kaji Port 1
-```
 
 ### Expected Network Configuration
 
-- **rei**:
-  - Primary: 192.168.169.117 (Static DHCP on eth1)
-  - Secondary: 192.168.249.117/24 (Static on eth2)
-  - Thunderbolt: 169.254.255.101/32
-- **asuka**:
-  - Primary: 192.168.169.118 (Static DHCP on eth1)
-  - Secondary: 192.168.249.118/24 (Static on eth2)
-  - Thunderbolt: 169.254.255.102/32
-- **kaji**:
-  - Primary: 192.168.169.119 (Static DHCP on eth1)
-  - Secondary: 192.168.249.119/24 (Static on eth2)
-  - Thunderbolt: 169.254.255.103/32
+- **rei**: 192.168.169.117 (Static DHCP on eth1)
+- **asuka**: 192.168.169.118 (Static DHCP on eth1)
+- **kaji**: 192.168.169.119 (Static DHCP on eth1)
+- **shiro** (worker): 192.168.169.116
 - **VIP**: 192.168.169.25 (shared between control planes)
 
 ## Complete Fresh Installation Workflow
@@ -106,7 +79,7 @@ sops -d bootstrap/talos/talsecret.sops.yaml | head -5  # Should show decrypted c
 
 ```bash
 # 1. Download Talos ISO with required extensions
-# This schematic includes: thunderbolt, intel-ucode, amd-ucode, util-linux-tools, zfs
+# This schematic includes: intel-ucode, amd-ucode, util-linux-tools, zfs
 SCHEMATIC_ID="d07283f5e88e9fedac14ee45b711b7d4f6e036363f1c31bb61b5194a0ff0519f"
 TALOS_VERSION="v1.10.6"
 curl -O "https://factory.talos.dev/image/${SCHEMATIC_ID}/${TALOS_VERSION}/metal-amd64.iso"
@@ -123,7 +96,6 @@ diskutil eject /dev/diskX
 ### Phase 3: Physical Setup & Installation
 
 1. **Pre-Installation Checklist:**
-   - [ ] Connect Thunderbolt cables between all nodes (full mesh)
    - [ ] Connect network cables
    - [ ] Ensure static DHCP mappings are configured for:
      - rei: 192.168.169.117
@@ -216,10 +188,6 @@ for node in rei asuka kaji; do
   grep "linkName:" hardware-info/${node}-links.yaml 2>/dev/null | grep -v "lo" | awk '{print "  - " $2}'
 done
 
-echo ""
-echo "=== 🔍 Thunderbolt Bus Paths (for future reference) ==="
-echo "These will be needed AFTER cluster creation:"
-grep -h "busPath:" hardware-info/*-links.yaml 2>/dev/null | grep -v "0000:" | sort -u || echo "No Thunderbolt interfaces detected yet"
 ```
 
 ### Phase 5: Update Configuration with Actual Hardware Info
@@ -297,7 +265,7 @@ kubectl get nodes
 
 ### Phase 7: Install Cilium CNI
 
-**IMPORTANT**: Cilium must be installed before configuring Thunderbolt networking and before Flux.
+**IMPORTANT**: Cilium must be installed before Flux.
 
 ```bash
 # 1. Verify cluster is running
@@ -327,64 +295,7 @@ kubectl -n kube-system rollout status deployment/cilium-operator
 kubectl get nodes -o wide
 ```
 
-### Phase 8: Configure Thunderbolt Networking
-
-**Reference**: Based on https://gist.github.com/gavinmcfall/ea6cb1233d3a300e9f44caf65a32d519
-
-**IMPORTANT**: Thunderbolt interfaces can only be properly discovered AFTER the cluster and CNI are running.
-
-```bash
-# 1. Deploy Thunderbolt debug DaemonSet for discovery
-kubectl apply -f bootstrap/talos/thunderbolt-debug.yaml
-
-# 2. Discover Thunderbolt interfaces on each node
-echo "🔍 Discovering Thunderbolt interfaces..."
-
-# For each node, find the Thunderbolt bus paths
-for node in rei asuka kaji; do
-  echo "Checking $node..."
-  pod=$(kubectl get pods -n kube-system -l app=thunderbolt-debug -o jsonpath="{.items[?(@.spec.nodeName==\"$node\")].metadata.name}")
-  
-  # Check dmesg for Thunderbolt connections
-  kubectl exec -n kube-system $pod -c debug -- dmesg | grep -i "Intel Corp"
-  
-  # List network interfaces with bus paths
-  kubectl exec -n kube-system $pod -c debug -- ls -la /sys/class/net/
-done
-
-# 3. Identify bus paths (they look like "0-1.0", "1-1.0" NOT "0000:xx:xx.x")
-# The patches are already created in patches/node/ directory with correct bus paths
-
-# 4. Verify the node patches are included in talconfig.yaml
-# Each node should have:
-# patches:
-#   - "@./patches/node/rei-thunderbolt.yaml"
-
-# 5. Apply the Thunderbolt configuration
-echo "📤 Applying Thunderbolt configuration..."
-mise run genconfig
-mise run apply
-
-# 6. Wait for nodes to reboot
-echo "⏳ Waiting for nodes to apply Thunderbolt config..."
-sleep 90
-
-# 7. Verify Thunderbolt is working
-echo "✅ Testing Thunderbolt connectivity..."
-
-# Use the test script for comprehensive testing
-./scripts/thunderbolt-test.sh
-
-# Or test manually
-for node in rei asuka kaji; do
-  echo "Testing from $node..."
-  talosctl -n $node shell -- ping -c 3 169.254.255.101
-  talosctl -n $node shell -- ping -c 3 169.254.255.102
-  talosctl -n $node shell -- ping -c 3 169.254.255.103
-done
-```
-
-### Phase 9: Install Flux GitOps
+### Phase 8: Install Flux GitOps
 
 ```bash  
 # 1. Install Flux GitOps
@@ -433,32 +344,9 @@ kubectl get nodes
 kubectl get pods -n kube-system
 kubectl get pods -n flux-system
 
-# 3. Thunderbolt network should be functional
-for node in rei asuka kaji; do
-  echo "$node Thunderbolt IPs:"
-  talosctl -n $node get addresses | grep 169.254
-done
-
-# 4. Flux should be syncing
+# 3. Flux should be syncing
 flux get sources git
 flux get ks -A
-```
-
-### Performance Testing
-
-```bash
-# Run comprehensive Thunderbolt performance tests
-./scripts/thunderbolt-test.sh
-
-# This script will:
-# - Test ping connectivity between all node pairs (6 tests)
-# - Run iperf3 speed tests for all connections (6 tests)
-# - Output results with color coding to console
-# - Save detailed results to a timestamped file
-
-# Expected speeds:
-# - Most connections: ~26-27 Gbps
-# - rei ↔ kaji connection: ~18-19 Gbps (known hardware limitation)
 ```
 
 ## Common Operations
@@ -478,9 +366,6 @@ talosctl -n rei logs kubelet
 # Update configuration (edit talconfig.yaml first)
 mise run genconfig
 mise run apply
-
-# Test Thunderbolt connectivity
-mise run test-thunderbolt
 ```
 
 ### Upgrade Operations
@@ -517,21 +402,6 @@ talosctl -n NODE_IP -e NODE_IP get disks --insecure -o yaml | grep -B2 -A3 nvme1
 # Config files are named: k8s.ottawa.local-NODENAME.yaml
 # Example for rei:
 talosctl -n 192.168.169.117 -e 192.168.169.117 apply-config --insecure --file bootstrap/talos/clusterconfig/k8s.ottawa.local-rei.yaml
-```
-
-### Thunderbolt Not Working
-
-```bash
-# 1. Verify cables are connected
-# 2. Check kernel module loaded
-talosctl -n rei get kernelmodulespecs | grep thunder
-
-# 3. Check for Thunderbolt devices
-talosctl -n rei shell
-ls /sys/bus/thunderbolt/devices/
-
-# 4. Check dmesg for errors
-talosctl -n rei dmesg | grep -i thunder
 ```
 
 ### PGP/SOPS Issues - Finding Your Key
@@ -609,7 +479,6 @@ export KUBECONFIG=$(pwd)/kubeconfig
 | `mise run kubeconfig` | Get kubeconfig |
 | `mise run health` | Check health |
 | `mise run dashboard` | Open dashboard |
-| `mise run test-thunderbolt` | Test Thunderbolt |
 | `mise run reset` | Reset cluster (DESTRUCTIVE) |
 
 ### Critical Files to Backup
