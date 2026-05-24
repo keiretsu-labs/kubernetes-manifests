@@ -27,7 +27,7 @@ spec:
         - name: grafana-image-renderer
           image: docker.io/grafana/grafana-image-renderer:v5.8.3
           imagePullPolicy: IfNotPresent
-          args: ["--server", "http://localhost:8081"]
+          args: ["server", "--server.addr=:8081"]
           ports:
             - name: renderer
               containerPort: 8081
@@ -46,12 +46,12 @@ spec:
           readinessProbe:
             httpGet:
               port: renderer
-              path: /render
+              path: /healthz
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
               port: renderer
-              path: /render
+              path: /healthz
             initialDelaySeconds: 15
             periodSeconds: 20
