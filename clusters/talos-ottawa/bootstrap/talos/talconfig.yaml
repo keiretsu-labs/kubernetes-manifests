@@ -101,8 +101,6 @@ nodes:
     controlPlane: false
     nodeLabels:
       workload-class: specialized
-    nodeTaints:
-      workload-class: "specialized:NoSchedule"
     schematic:
       customization:
         systemExtensions:
