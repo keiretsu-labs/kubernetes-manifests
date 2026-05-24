@@ -49,14 +49,6 @@ description = "Check cluster health"
 run = "task -d bootstrap/talos dashboard"
 description = "Open Talos dashboard"
 
-[tasks.test-thunderbolt]
-run = "task -d bootstrap/talos test-thunderbolt"
-description = "Test Thunderbolt connectivity"
-
-[tasks.deploy-thunderbolt-debug]
-run = "task -d bootstrap/talos deploy-thunderbolt-debug"
-description = "Deploy privileged DaemonSet for Thunderbolt debugging"
-
 [tasks.reset]
 run = """
 echo "[Destructive] This will reset nodes and wipe Ceph NVMe drives!"
@@ -114,10 +106,6 @@ fi
 rm -f "$commands_file"
 """
 description = "Reset cluster and wipe Ceph drives with confirmation (DESTRUCTIVE)"
-
-[tasks.cleanup-thunderbolt-debug]
-run = "task -d bootstrap/talos cleanup-thunderbolt-debug"
-description = "Remove Thunderbolt debug DaemonSet"
 
 # Additional Talos management tasks (converted from Makefile)
 
