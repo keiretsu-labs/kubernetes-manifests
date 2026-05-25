@@ -31,10 +31,11 @@ spec:
       protocol: TCP
       targetPort: 3903
   selector:
-    app.kubernetes.io/name: garage
-    app.kubernetes.io/instance: garage
-    # Tier filter required since v1beta2: both storage and gateway pods carry
-    # instance=garage on the unified CR. This LB serves the storage tier only.
+    # Match by operator-stamped cluster + tier labels (v0.6.0+).
+    # Pre-v0.6.0 selectors of {name=garage, instance=garage, tier=storage}
+    # silently lost endpoints when the #190 refactor relabeled storage pods to
+    # {name=garagenode, instance=<garagenode-name>}.
+    garage.rajsingh.info/cluster: garage
     garage.rajsingh.info/tier: storage
   type: LoadBalancer
   loadBalancerClass: tailscale
