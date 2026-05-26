@@ -68,7 +68,7 @@ spec:
           limits:
             memory: "8Gi"
       - name: drop-caches
-        image: busybox:1.37
+        image: busybox:1.38
         command: [sh, -c, "sync && echo 3 > /proc/sys/vm/drop_caches && echo 'page cache dropped'"]
         securityContext:
           privileged: true
