@@ -39,3 +39,7 @@ spec:
       namespace: mimir
     - kind: GarageKey
       namespace: tailscale-system
+    - kind: GarageKey
+      namespace: agents
+    - kind: GarageBucket
+      namespace: agents
