@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: aperture
+  name: stpetersburg-vllm
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
-    tailscale.com/tailnet-fqdn: aperture.keiretsu.ts.net
+    tailscale.com/tailnet-fqdn: stpetersburg-vllm.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
   externalName: placeholder
