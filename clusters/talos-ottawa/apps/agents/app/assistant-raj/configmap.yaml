@@ -20,6 +20,14 @@ data:
   OPENAI_BASE_URL: "http://stpetersburg-vllm/v1"
   OPENAI_API_KEY: "unused"
 
+  # ---- WhatsApp bridge (Baileys, self-chat mode) ----
+  # Pair once: kubectl exec -it deploy/assistant-raj -c gateway --
+  #   /opt/hermes/.venv/bin/hermes whatsapp
+  # Session persists at /opt/data/whatsapp/session/ in the PVC.
+  WHATSAPP_ENABLED: "true"
+  WHATSAPP_MODE: "self-chat"
+  WHATSAPP_ALLOWED_USERS: "16516051493"
+
   # ---- Persona ----
   AGENT_NAME: "assistant-raj"
   AGENT_PERSONA: "assistant"
