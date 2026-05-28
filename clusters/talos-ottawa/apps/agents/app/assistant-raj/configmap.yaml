@@ -13,9 +13,10 @@ data:
   DISCORD_AUTO_THREAD: "true"
   DISCORD_REACTIONS: "true"
 
-  # ---- LLM endpoint: aperture (Qwen) via Tailscale egress ----
-  OPENAI_BASE_URL: "http://aperture/v1"
+  # ---- LLM endpoint: stpetersburg vLLM (Qwen3.6-27B) via Tailscale egress ----
+  OPENAI_BASE_URL: "http://stpetersburg-vllm/v1"
   OPENAI_API_KEY: "unused"
+  OPENAI_MODEL: "Qwen3.6-27B"
 
   # ---- Persona ----
   AGENT_NAME: "assistant-raj"
