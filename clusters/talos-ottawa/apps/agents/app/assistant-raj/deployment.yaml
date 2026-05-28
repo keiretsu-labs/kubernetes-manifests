@@ -47,34 +47,6 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /opt/data
-        - name: seed-hermes-config
-          image: busybox:1.38
-          command:
-            - sh
-            - -c
-            - |
-              set -eu
-              # Patch model.{provider,base_url,default} in config.yaml so Hermes
-              # uses our local vLLM. The file is created by Hermes on first boot
-              # from the image's bundled template; if it doesn't exist yet
-              # (fresh PVC), the gateway will create it and we'll patch on the
-              # next restart.
-              rm -f /opt/data/cli-config.yaml
-              if [ -f /opt/data/config.yaml ]; then
-                sed -i \
-                  -e 's|provider: "auto"|provider: "custom"|' \
-                  -e 's|provider: "openrouter"|provider: "custom"|' \
-                  -e 's|base_url: "https://openrouter.ai/api/v1"|base_url: "http://stpetersburg-vllm/v1"|' \
-                  -e 's|default: "anthropic/claude-opus-4.6"|default: "Qwen3.6-27B"|' \
-                  /opt/data/config.yaml
-                echo "patched /opt/data/config.yaml"
-                grep -E '^\s*(provider|base_url|default):' /opt/data/config.yaml | head -5
-              else
-                echo "/opt/data/config.yaml not present — first boot, gateway will create it"
-              fi
-          volumeMounts:
-            - name: data
-              mountPath: /opt/data
       containers:
         - name: gateway
           image: nousresearch/hermes-agent:v2026.5.16

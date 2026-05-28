@@ -13,11 +13,10 @@ data:
   DISCORD_AUTO_THREAD: "true"
   DISCORD_REACTIONS: "true"
 
-  # ---- LLM endpoint: stpetersburg vLLM (Qwen3.6-27B) via Tailscale egress ----
-  # HERMES_INFERENCE_PROVIDER overrides model.provider in config.yaml so that
-  # OPENAI_BASE_URL is honored (default provider is openrouter which ignores it).
-  HERMES_INFERENCE_PROVIDER: "custom"
-  HERMES_MODEL: "Qwen3.6-27B"
+  # LLM endpoint lives in /opt/data/config.yaml inside the PVC (set once via
+  # kubectl exec; reachable through the `stpetersburg-vllm` ExternalName).
+  # OPENAI_BASE_URL is kept so Hermes auxiliary clients (summarization /
+  # compression) route to the same vLLM endpoint when they're invoked.
   OPENAI_BASE_URL: "http://stpetersburg-vllm/v1"
   OPENAI_API_KEY: "unused"
 
