@@ -14,9 +14,12 @@ data:
   DISCORD_REACTIONS: "true"
 
   # ---- LLM endpoint: stpetersburg vLLM (Qwen3.6-27B) via Tailscale egress ----
+  # HERMES_INFERENCE_PROVIDER overrides model.provider in config.yaml so that
+  # OPENAI_BASE_URL is honored (default provider is openrouter which ignores it).
+  HERMES_INFERENCE_PROVIDER: "custom"
+  HERMES_MODEL: "Qwen3.6-27B"
   OPENAI_BASE_URL: "http://stpetersburg-vllm/v1"
   OPENAI_API_KEY: "unused"
-  OPENAI_MODEL: "Qwen3.6-27B"
 
   # ---- Persona ----
   AGENT_NAME: "assistant-raj"
