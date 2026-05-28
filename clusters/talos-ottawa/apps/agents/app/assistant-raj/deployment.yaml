@@ -47,6 +47,25 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /opt/data
+        - name: seed-hermes-config
+          image: busybox:1.38
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              cat >/opt/data/cli-config.yaml <<'EOF'
+              # Local override — points Hermes at stpetersburg-vllm.
+              # Merged on top of bundled config.yaml.
+              model:
+                provider: custom
+                default: Qwen3.6-27B
+                base_url: http://stpetersburg-vllm/v1
+                api_key: unused
+              EOF
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
       containers:
         - name: gateway
           image: nousresearch/hermes-agent:v2026.5.16
