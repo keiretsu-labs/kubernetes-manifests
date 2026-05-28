@@ -48,6 +48,7 @@
 		"tag:admin-granted":    ["tag:tailgrant-worker", "group:superuser",],
 		"tag:debug-granted":    ["tag:tailgrant-worker", "group:superuser",],
 		"tag:raj-workspace":    ["tag:k8s-operator", "rajsinghtech@github",],
+		"tag:raj":              ["tag:k8s-operator", "rajsinghtech@github",],
 		"tag:bubbles":          ["tag:bubbles", "rajsinghtech@github", "kbpersonal@github"],
 		"tag:bridge":           ["autogroup:admin"],
 		"tag:bridge-svc":       ["tag:bridge"],
@@ -184,6 +185,11 @@
 		{
 			"src": ["rajsinghtech@github"],
 			"dst": ["tag:raj-workspace"],
+			"ip":  ["*"],
+		},
+		{
+			"src": ["rajsinghtech@github", "tag:raj"],
+			"dst": ["tag:raj"],
 			"ip":  ["*"],
 		},
 		{
