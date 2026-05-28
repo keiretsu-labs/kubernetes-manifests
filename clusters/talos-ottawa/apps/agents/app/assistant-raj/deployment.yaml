@@ -1,0 +1,114 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assistant-raj
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: assistant-raj
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: assistant-raj
+        agents.keiretsu.ts.net/persona: assistant
+        agents.keiretsu.ts.net/owner: raj
+    spec:
+      initContainers:
+        - name: seed-aws-credentials
+          image: busybox:1.38
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p /opt/data/.aws
+              umask 077
+              cat >/opt/data/.aws/credentials <<EOF
+              [default]
+              aws_access_key_id = $${AWS_ACCESS_KEY_ID}
+              aws_secret_access_key = $${AWS_SECRET_ACCESS_KEY}
+              EOF
+              cat >/opt/data/.aws/config <<EOF
+              [default]
+              region = $${AWS_REGION}
+              endpoint_url = $${AWS_ENDPOINT_URL}
+              s3 =
+                  endpoint_url = $${AWS_ENDPOINT_URL_S3}
+                  addressing_style = path
+              EOF
+          envFrom:
+            - secretRef:
+                name: assistant-raj-s3
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+      containers:
+        - name: gateway
+          image: nousresearch/hermes-agent:v2026.5.16
+          args: ["gateway", "run"]
+          envFrom:
+            - configMapRef:
+                name: assistant-raj-config
+            - secretRef:
+                name: assistant-raj-secrets
+            - secretRef:
+                name: assistant-raj-s3
+          env:
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /opt/data/.aws/credentials
+            - name: AWS_CONFIG_FILE
+              value: /opt/data/.aws/config
+          ports:
+            - name: gateway
+              containerPort: 8642
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+            - name: shm
+              mountPath: /dev/shm
+        - name: dashboard
+          image: nousresearch/hermes-agent:v2026.5.16
+          args: ["dashboard", "--host", "0.0.0.0", "--no-open", "--insecure"]
+          env:
+            - name: GATEWAY_HEALTH_URL
+              value: "http://localhost:8642"
+            - name: HERMES_DASHBOARD_TUI
+              value: "1"
+            - name: HERMES_DASHBOARD_HOST
+              value: "0.0.0.0"
+            - name: HERMES_DASHBOARD_PORT
+              value: "9119"
+          ports:
+            - name: dashboard
+              containerPort: 9119
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: assistant-raj-data
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+      terminationGracePeriodSeconds: 30

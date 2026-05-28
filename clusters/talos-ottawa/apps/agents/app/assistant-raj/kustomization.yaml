@@ -1,0 +1,13 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: agents
+resources:
+  - deployment.yaml
+  - service.yaml
+  - service-tailscale.yaml
+  - storagestack.yaml
+  - garagekey.yaml
+  - egress.yaml
+  - configmap.yaml
+  - secret.yaml
