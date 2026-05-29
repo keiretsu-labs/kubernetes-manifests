@@ -47,7 +47,7 @@ spec:
               mountPath: /opt/data
       containers:
         - name: hermes
-          image: nousresearch/hermes-agent:v2026.5.16
+          image: nousresearch/hermes-agent:v2026.5.29
           args: ["gateway", "run"]
           env:
             - name: OPENAI_API_KEY
@@ -72,6 +72,21 @@ spec:
               value: /opt/data/.aws/credentials
             - name: AWS_CONFIG_FILE
               value: /opt/data/.aws/config
+            # v2026.5.29 introduced s6 supervision — dashboard runs in the same
+            # container as the gateway. HERMES_DASHBOARD=1 spawns it; TUI=1
+            # enables the embedded chat tab; HOST=0.0.0.0 exposes it.
+            # HERMES_DASHBOARD_INSECURE=1 skips the dashboard's OAuth gate;
+            # network access is already gated by the Tailscale `ts` gateway ACL.
+            - name: HERMES_DASHBOARD
+              value: "1"
+            - name: HERMES_DASHBOARD_TUI
+              value: "1"
+            - name: HERMES_DASHBOARD_HOST
+              value: "0.0.0.0"
+            - name: HERMES_DASHBOARD_PORT
+              value: "9119"
+            - name: HERMES_DASHBOARD_INSECURE
+              value: "1"
           envFrom:
             - secretRef:
                 name: hermes-secrets
@@ -80,6 +95,9 @@ spec:
           ports:
             - name: gateway
               containerPort: 8642
+              protocol: TCP
+            - name: dashboard
+              containerPort: 9119
               protocol: TCP
           resources:
             requests:
@@ -92,25 +110,6 @@ spec:
               mountPath: /opt/data
             - name: shm
               mountPath: /dev/shm
-        - name: dashboard
-          image: nousresearch/hermes-agent:v2026.5.16
-          args: ["dashboard", "--host", "0.0.0.0", "--no-open", "--insecure"]
-          env:
-            - name: GATEWAY_HEALTH_URL
-              value: "http://localhost:8642"
-          ports:
-            - name: dashboard
-              containerPort: 9119
-              protocol: TCP
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              memory: 512Mi
-          volumeMounts:
-            - name: data
-              mountPath: /opt/data
       volumes:
         - name: data
           persistentVolumeClaim:
@@ -136,6 +135,7 @@ spec:
     - name: dashboard
       port: 9119
       targetPort: 9119
+      protocol: TCP
 ---
 apiVersion: v1
 kind: Service
