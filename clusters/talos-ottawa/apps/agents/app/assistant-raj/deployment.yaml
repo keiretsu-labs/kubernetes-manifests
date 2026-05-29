@@ -74,6 +74,10 @@ spec:
               value: "0.0.0.0"
             - name: HERMES_DASHBOARD_PORT
               value: "9119"
+            # Skip the dashboard's OAuth gate. Safe here because access is
+            # already gated at the network layer by Tailscale `tag:raj` ACL.
+            - name: HERMES_DASHBOARD_INSECURE
+              value: "1"
           ports:
             - name: gateway
               containerPort: 8642
