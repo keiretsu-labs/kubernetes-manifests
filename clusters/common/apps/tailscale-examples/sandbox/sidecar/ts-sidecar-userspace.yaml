@@ -19,7 +19,7 @@ spec:
       containers:
       - name: netshoot
         image: nicolaka/netshoot:latest
-        command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
+        command: ["python3", "-m", "http.server", "8080", "--bind", "127.0.0.1"]
       - name: tailscale
         imagePullPolicy: Always
         image: "ghcr.io/tailscale/tailscale:latest"
