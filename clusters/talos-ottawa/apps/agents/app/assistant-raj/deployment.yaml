@@ -49,7 +49,7 @@ spec:
               mountPath: /opt/data
       containers:
         - name: gateway
-          image: nousresearch/hermes-agent:v2026.5.16
+          image: nousresearch/hermes-agent:v2026.5.29
           args: ["gateway", "run"]
           envFrom:
             - configMapRef:
@@ -79,7 +79,7 @@ spec:
             - name: shm
               mountPath: /dev/shm
         - name: dashboard
-          image: nousresearch/hermes-agent:v2026.5.16
+          image: nousresearch/hermes-agent:v2026.5.29
           args: ["dashboard", "--host", "0.0.0.0", "--no-open", "--insecure"]
           env:
             - name: GATEWAY_HEALTH_URL
