@@ -13,4 +13,4 @@ spec:
   schedule: "0 13 * * *"
   copyMethod: Snapshot
   restorePaused: false
-  restoreTrigger: "restore-2026-05-30"
+  restoreTrigger: "restore-2026-05-30-v2"
