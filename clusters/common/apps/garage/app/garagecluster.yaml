@@ -14,10 +14,8 @@ spec:
   image: dxflrs/garage:v2.3.0
 
   replication:
-    factor: 3
-    zoneRedundancyMode: "AtLeast"
-    zoneRedundancyMinZones: 2
-    consistencyMode: "degraded" # stpetersburg down; revert to "consistent" when 3 zones restored
+    factor: 2
+    consistencyMode: "degraded" # stpetersburg down; revert factor: 3 + zoneRedundancy when restored
 
   s3Api:
     rootDomain: ".s3.${COMMON_DOMAIN}"
