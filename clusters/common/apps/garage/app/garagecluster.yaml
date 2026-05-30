@@ -62,9 +62,12 @@ spec:
   layoutManagement:
     autoApply: true
 
+  blocks:
+    ramBufferMax: 128Mi
+
   workers:
-    resyncWorkerCount: 2
-    resyncTranquility: 2
+    resyncWorkerCount: 1
+    resyncTranquility: 3
     scrubTranquility: 4
 
   # Storage tier — persistent identity in metadata PVC; data PVC holds blocks.
