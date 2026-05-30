@@ -19,6 +19,16 @@ spec:
       labels:
         app: plex
     spec:
+      initContainers:
+        - name: plex-init
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - rm -f '/config/Library/Application Support/Plex Media Server/Cache/cert-v2.p12'
+          volumeMounts:
+            - name: config
+              mountPath: /config
       containers:
         - name: plex
           image: docker.io/plexinc/pms-docker:plexpass
