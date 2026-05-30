@@ -31,5 +31,6 @@ data:
   STORAGECLASS_DEFAULT: ceph-block-replicated-nvme
   STORAGECLASS_METADATA: ceph-block-replicated-nvme
 
+  GARAGE_GATEWAY_AFFINITY: '{}'
   # Temporarily 0 during factor-2 layout migration; restore to 2 after
   GARAGE_GATEWAY_REPLICAS: "0"
