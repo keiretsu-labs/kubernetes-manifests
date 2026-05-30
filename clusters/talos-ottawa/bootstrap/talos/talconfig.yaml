@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
 ---
 # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-talosVersion: v1.13.2
+talosVersion: v1.13.3
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.36.1
 clusterName: "k8s.killinit.internal"
@@ -105,6 +105,7 @@ nodes:
       customization:
         systemExtensions:
           officialExtensions:
+            - siderolabs/gvisor
             - siderolabs/i915
             - siderolabs/intel-ucode
             - siderolabs/nut-client
@@ -174,6 +175,7 @@ controlPlane:
         officialExtensions:
           - siderolabs/amd-ucode
           - siderolabs/amdgpu
+          - siderolabs/gvisor
           - siderolabs/nut-client
           - siderolabs/util-linux-tools
       extraKernelArgs:

@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
 ---
 # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-talosVersion: v1.13.2
+talosVersion: v1.13.3
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.36.1
 clusterName: "k8s.stpetersburg.internal"
@@ -49,7 +49,7 @@ nodes:
     installDiskSelector:
       serial: "S8C2NG0Y733052"
     # Pinned to NVIDIA-flavored arm64 schematic (GB10 GPU)
-    talosImageURL: "factory.talos.dev/installer/8ccc5681e9755a1d77a6363ba61f529789f8d200cb4f96df51b0729b0bb06fac"
+    talosImageURL: "factory.talos.dev/installer/fa4bd9762d62e94cf3de1d8f7dbfb4cfe11647c205ba673d831a2fa1ae055113"
     controlPlane: true
     networkInterfaces:
       - interface: eth0
@@ -66,7 +66,7 @@ nodes:
     installDiskSelector:
       type: "nvme"
     # Minimal arm64 schematic — no NVIDIA extensions (Tegra integrated GPU not used)
-    talosImageURL: "factory.talos.dev/installer/f1b5e8899067375144c74b23ae6849ede993b6ac771248b654b521905f65b0fa"
+    talosImageURL: "factory.talos.dev/installer/4c073ebf8a42d342831306af45e6fec8edee66c8e2db76ef2a950b809882253b"
     controlPlane: true
     networkInterfaces:
       - interface: eth0
@@ -83,7 +83,7 @@ nodes:
     installDiskSelector:
       type: "nvme"
     # Same NVIDIA-flavored arm64 schematic as spark-0 (paired GB10 GPU box)
-    talosImageURL: "factory.talos.dev/installer/8ccc5681e9755a1d77a6363ba61f529789f8d200cb4f96df51b0729b0bb06fac"
+    talosImageURL: "factory.talos.dev/installer/fa4bd9762d62e94cf3de1d8f7dbfb4cfe11647c205ba673d831a2fa1ae055113"
     controlPlane: true
     networkInterfaces:
       - interface: eth0
@@ -110,10 +110,11 @@ controlPlane:
     customization:
       systemExtensions:
         officialExtensions:
+          - siderolabs/gvisor
           # NVIDIA GPU — proprietary nonfree driver. Required: open-kernel-modules
           # crashed the GB10 kernel on boot (2026-05-11 upgrade attempt to
           # schematic 1328418d... rolled back via UEFI). Stay on nonfree + the
-          # arm64.nobti kernel arg workaround (baked into spark schematic 8ccc5681...).
+          # arm64.nobti kernel arg workaround (baked into spark schematic fa4bd976...).
           - siderolabs/nonfree-kmod-nvidia-lts
           - siderolabs/nvidia-container-toolkit-lts
           # Utilities

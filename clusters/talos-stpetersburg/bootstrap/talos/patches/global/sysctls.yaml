@@ -18,5 +18,8 @@ machine:
 
     # eBPF JIT for Cilium
     net.core.bpf_jit_enable: "1"
+
+    # gVisor: needs unprivileged user namespace creation (overrides KSPP default of 0)
+    user.max_user_namespaces: "11255"
     # Note: vm.nr_hugepages is set per-node — spark-0 reserves them for GPU/DB,
     # orin-0 has only 8GB RAM and leaves the default (0).
