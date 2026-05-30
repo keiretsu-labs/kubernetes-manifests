@@ -10,3 +10,14 @@ kind: RuntimeClass
 metadata:
   name: runsc
 handler: runsc
+---
+# KVM-accelerated gVisor: runsc runs its sentry/platform on the host KVM
+# hypervisor (/dev/kvm) instead of the ptrace/systrap platform. Lower syscall
+# and memory-fault overhead — meaningfully faster for syscall-heavy workloads
+# like Hermes. Handler `runsc-kvm` is registered by the siderolabs/gvisor
+# extension. Verified booting on shiro (kernel 4.19.0-gvisor, KVM platform).
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: runsc-kvm
+handler: runsc-kvm

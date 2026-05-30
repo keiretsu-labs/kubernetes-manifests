@@ -19,7 +19,9 @@ spec:
         agents.keiretsu.ts.net/owner: raj
     spec:
       # ---- gVisor sandbox: pod gets its own user-space kernel (runsc) ----
-      runtimeClassName: gvisor
+      # runsc-kvm = KVM-accelerated platform (sentry on /dev/kvm), lower syscall
+      # overhead than plain runsc. Verified bootable on shiro.
+      runtimeClassName: runsc-kvm
       # Pin to the worker carrying the gVisor extension.
       nodeSelector:
         workload-class: specialized
