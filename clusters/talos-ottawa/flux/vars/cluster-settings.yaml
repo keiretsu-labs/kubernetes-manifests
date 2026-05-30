@@ -33,5 +33,3 @@ data:
 
   # Garage: exclude asuka from gateway scheduling (SIGILL on that node)
   GARAGE_GATEWAY_AFFINITY: '{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/hostname","operator":"NotIn","values":["asuka"]}]}]}}}'
-  # Temporarily 0 during factor-2 layout migration; restore to 2 after
-  GARAGE_GATEWAY_REPLICAS: "0"
