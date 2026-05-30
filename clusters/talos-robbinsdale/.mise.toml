@@ -181,7 +181,7 @@ description = "Reset a single node to maintenance mode (DESTRUCTIVE)"
 
 [tasks.upgrade]
 run = """
-TALOS_VERSION="${1:-v1.10.5}"
+TALOS_VERSION="${1:-v1.13.3}"
 echo "Upgrading cluster to Talos $TALOS_VERSION"
 for node in tank stone titan; do
   echo "Upgrading $node..."

@@ -97,7 +97,7 @@ description = "Reboot node (DISRUPTIVE) — usage: mise run reboot [node]"
 [tasks.upgrade]
 run = """
 NODE="${1:-spark-0}"
-TALOS_VERSION="${2:-v1.12.6}"
+TALOS_VERSION="${2:-v1.13.3}"
 echo "Upgrading $NODE to Talos $TALOS_VERSION"
 talosctl upgrade --nodes "$NODE" --image ghcr.io/siderolabs/installer:${TALOS_VERSION} -e "$NODE" --wait --debug
 """

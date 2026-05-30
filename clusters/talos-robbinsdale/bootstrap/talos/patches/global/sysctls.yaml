@@ -18,3 +18,6 @@ machine:
 
     # Huge pages for databases
     vm.nr_hugepages: "1024"
+
+    # gVisor: needs unprivileged user namespace creation (overrides KSPP default of 0)
+    user.max_user_namespaces: "11255"
