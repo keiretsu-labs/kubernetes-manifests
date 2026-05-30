@@ -101,6 +101,7 @@ spec:
         cpu: 2000m
         memory: 1536Mi
     nodeSelector: ${GARAGE_NODE_SELECTOR=}
+    affinity: ${GARAGE_GATEWAY_AFFINITY=}
     topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname

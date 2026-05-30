@@ -30,3 +30,6 @@ data:
   STORAGECLASS_LONGTERM: smb
   STORAGECLASS_DEFAULT: ceph-block-replicated
   STORAGECLASS_METADATA: ceph-block-replicated
+
+  # Garage: exclude asuka from gateway scheduling (SIGILL on that node)
+  GARAGE_GATEWAY_AFFINITY: '{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/hostname","operator":"NotIn","values":["asuka"]}]}]}}}'
