@@ -1,13 +1,14 @@
 # assistant-public — gVisor-sandboxed public agent (PREP NOTES)
 
-Branch: `agents-assistant-public-gvisor`. Flux-side is built and validated.
-The ONLY remaining build step requires the real talconfig + node access (you, at home).
+Branch: `agents-assistant-public-gvisor` (rebased on main @ 9c892a27a).
+gVisor runtime + RuntimeClass now land cluster-wide via Raj's commit
+(`clusters/common/apps/gvisor` + talconfig extension on all nodes). This branch
+just consumes the `gvisor` RuntimeClass — it no longer defines its own.
 
 ## What's done (pure GitOps, in this branch)
 ```
 clusters/talos-ottawa/apps/agents/app/
-├── kustomization.yaml            # + runtimeclass-gvisor.yaml, + assistant-public
-├── runtimeclass-gvisor.yaml      # RuntimeClass gvisor -> handler runsc (NEW)
+├── kustomization.yaml            # + assistant-public  (RuntimeClass now from common/apps/gvisor)
 ├── bucket.yaml                   # + assistant-public-s3-key owner perms
 └── assistant-public/             # NEW persona dir
     ├── kustomization.yaml
@@ -25,45 +26,20 @@ Note: NO `service-tailscale.yaml` — the operator LoadBalancer is intentionally
 replaced by the in-pod full-fat Tailscale client.
 Note: NO `egress.yaml` — the `stpetersburg-vllm` ExternalName already exists once
 in the shared `agents` namespace (defined by assistant-raj) and is reused.
+Note: deployment keeps `nodeSelector: workload-class=specialized` (pins to shiro,
+off the control-plane nodes). gVisor is on all nodes now, so this is preference,
+not a requirement.
 
-## Remaining step 1 — Talos: add gVisor extension to shiro (NEEDS YOUR TALCONFIG + node access)
-File: `clusters/talos-ottawa/bootstrap/talos/talconfig.yaml`, shiro's block (~line 104).
-Add `siderolabs/gvisor` to shiro's `officialExtensions`:
-
-```yaml
-  - hostname: "shiro"
-    ...
-    schematic:
-      customization:
-        systemExtensions:
-          officialExtensions:
-            - siderolabs/i915
-            - siderolabs/intel-ucode
-            - siderolabs/nut-client
-            - siderolabs/util-linux-tools
-            - siderolabs/gvisor      # <-- ADD: ships runsc + registers io.containerd.runsc.v1
-```
-
-Then regenerate + upgrade JUST shiro (changing extensions changes the schematic ID,
-which requires an installer-image upgrade = one reboot of the worker):
-
+## Step 1 — Talos gVisor extension — DONE upstream (commit 9c892a27a)
+Added `siderolabs/gvisor` to all schematics + `user.max_user_namespaces=11255`
+sysctl (required: Talos KSPP-defaults it to 0, runsc needs unprivileged userns) +
+bumped to Talos v1.13.3. STILL REQUIRES the nodes to be upgraded/rebooted to pick
+up the new schematic, then verify:
 ```bash
-cd clusters/talos-ottawa
-mise install                                   # talhelper, talosctl, sops, task
-task genconfig                                 # talhelper genconfig (renders clusterconfig/)
-# Get the NEW schematic-pinned installer image for shiro from the rendered config:
-talosctl --nodes 192.168.169.116 upgrade \
-  --image $(grep -m1 'image:.*installer' clusterconfig/*shiro*.yaml | awk '{print $2}') \
-  --preserve=true --wait=true --timeout=10m
-# (or use the Taskfile: `task upgrade node=192.168.169.116 image=<factory installer url>`)
-```
-`--preserve=true` keeps the node's data; only the OS image (with the extension) changes.
-
-Verify after reboot:
-```bash
+cd clusters/talos-ottawa && mise install && task genconfig
+task upgrade node=192.168.169.116 image=<factory installer url from clusterconfig/*shiro*.yaml>
 export KUBECONFIG=$HOME/.kube/operator-config
-kubectl --context ottawa get node shiro -o jsonpath='{.status.runtimeHandlers[*].name}{"\n"}'
-# want: runc runsc
+kubectl --context ottawa get node shiro -o jsonpath='{.status.runtimeHandlers[*].name}{"\n"}'  # want: runc runsc
 ```
 
 ## Remaining step 2 — secrets
