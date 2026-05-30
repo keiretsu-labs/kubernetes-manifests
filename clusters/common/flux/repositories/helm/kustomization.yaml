@@ -70,7 +70,6 @@ resources:
   - ./vector.yaml
   - ./kuberay.yaml
   - ./liqo.yaml
-  - ./capi-operator.yaml
   - ./actions-runner-controller.yaml
   - ./unpoller.yaml
   - ./percona.yaml
