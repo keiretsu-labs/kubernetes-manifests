@@ -17,7 +17,7 @@ spec:
     factor: 3
     zoneRedundancyMode: "AtLeast"
     zoneRedundancyMinZones: 2
-    consistencyMode: "consistent" # "consistent" or "degraded"
+    consistencyMode: "degraded" # stpetersburg down; revert to "consistent" when 3 zones restored
 
   s3Api:
     rootDomain: ".s3.${COMMON_DOMAIN}"
@@ -48,14 +48,7 @@ spec:
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
-    - name: stpetersburg
-      zone: stpetersburg
-      connection:
-        adminApiEndpoint: "http://stpetersburg-garage.keiretsu.ts.net:3903"
-        gatewayRpcEndpointTemplate: "stpetersburg-gw-{ordinal}.keiretsu.ts.net:3901"
-        adminTokenSecretRef:
-          name: garage-admin-token
-          key: admin-token
+  # stpetersburg removed 2026-05-30: node is down; re-add when restored
 
   admin:
     adminTokenSecretRef:
@@ -66,13 +59,12 @@ spec:
     enabled: true
     interval: 30s
 
+  layoutManagement:
+    autoApply: true
+
   workers:
-    # Aggressive drain: layout converged and federation restored, but each
-    # storage node has ~300k blocks in the resync queue from the 2026-05-19
-    # outage. Run all 8 workers with no throttle to drain. Revisit if admin
-    # API latency regresses.
-    resyncWorkerCount: 8
-    resyncTranquility: 0
+    resyncWorkerCount: 2
+    resyncTranquility: 2
     scrubTranquility: 4
 
   # Storage tier — persistent identity in metadata PVC; data PVC holds blocks.
@@ -104,10 +96,10 @@ spec:
     resources:
       requests:
         cpu: 100m
-        memory: 128Mi
+        memory: 256Mi
       limits:
         cpu: 2000m
-        memory: 1Gi
+        memory: 1536Mi
     nodeSelector: ${GARAGE_NODE_SELECTOR=}
     topologySpreadConstraints:
       - maxSkew: 1
