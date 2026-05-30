@@ -1,0 +1,157 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assistant-public
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: assistant-public
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: assistant-public
+        agents.keiretsu.ts.net/persona: assistant
+        agents.keiretsu.ts.net/owner: raj
+    spec:
+      # ---- gVisor sandbox: pod gets its own user-space kernel (runsc) ----
+      runtimeClassName: gvisor
+      # Pin to the worker carrying the gVisor extension.
+      nodeSelector:
+        workload-class: specialized
+      initContainers:
+        - name: seed-aws-credentials
+          image: busybox:1.38
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p /opt/data/.aws
+              umask 077
+              cat >/opt/data/.aws/credentials <<EOF
+              [default]
+              aws_access_key_id = $${AWS_ACCESS_KEY_ID}
+              aws_secret_access_key = $${AWS_SECRET_ACCESS_KEY}
+              EOF
+              cat >/opt/data/.aws/config <<EOF
+              [default]
+              region = $${AWS_REGION}
+              endpoint_url = $${AWS_ENDPOINT_URL}
+              s3 =
+                  endpoint_url = $${AWS_ENDPOINT_URL_S3}
+                  addressing_style = path
+              EOF
+          envFrom:
+            - secretRef:
+                name: assistant-public-s3
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+      containers:
+        # ---- Full-fat Tailscale client (userspace mode — gVisor-compatible) ----
+        # Userspace networking uses gVisor's netstack: no /dev/net/tun, no
+        # NET_ADMIN, no privilege — composes cleanly inside the runsc sandbox.
+        # State persists in the PVC so the node identity survives restarts.
+        # `tailscale serve` config (ts-serve-config.yaml) publishes the dashboard
+        # to the tailnet on this node's own identity (hostname `assistant`).
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:v1.98.4
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TS_USERSPACE
+              value: "true"
+            - name: TS_STATE_DIR
+              value: /opt/data/tailscale/state
+            - name: TS_HOSTNAME
+              value: assistant
+            # Auth via the SOPS-encrypted OAuth client (Flux var-sub). The
+            # ts-auth Secret renders TS_AUTHKEY from ${TS_OAUTH_CLIENT_SECRET};
+            # non-ephemeral + preauthorized = stable identity on every start.
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: assistant-public-ts-auth
+                  key: TS_AUTHKEY
+            - name: TS_ACCEPT_DNS
+              value: "true"
+            # tag:raj gates access via the tailnet ACL. The OAuth client MUST be
+            # scoped to assign tag:raj or tailscaled will refuse to come up.
+            - name: TS_EXTRA_ARGS
+              value: "--advertise-tags=tag:raj"
+            # Serve config: publish https://assistant (dashboard 9119) on tailnet.
+            - name: TS_SERVE_CONFIG
+              value: /etc/ts/serve.json
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+            - name: ts-serve
+              mountPath: /etc/ts
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+        - name: gateway
+          image: nousresearch/hermes-agent:v2026.5.29
+          args: ["gateway", "run"]
+          envFrom:
+            - configMapRef:
+                name: assistant-public-config
+            - secretRef:
+                name: assistant-public-secrets
+            - secretRef:
+                name: assistant-public-s3
+          env:
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /opt/data/.aws/credentials
+            - name: AWS_CONFIG_FILE
+              value: /opt/data/.aws/config
+            - name: HERMES_DASHBOARD
+              value: "1"
+            - name: HERMES_DASHBOARD_TUI
+              value: "1"
+            - name: HERMES_DASHBOARD_HOST
+              value: "0.0.0.0"
+            - name: HERMES_DASHBOARD_PORT
+              value: "9119"
+            # PUBLIC service: do NOT skip the dashboard OAuth gate. Network-layer
+            # gating (tag:raj) no longer covers the public Gateway path, so the
+            # dashboard must authenticate users itself. HERMES_DASHBOARD_INSECURE
+            # is intentionally absent (defaults to secure).
+          ports:
+            - name: gateway
+              containerPort: 8642
+              protocol: TCP
+            - name: dashboard
+              containerPort: 9119
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+            - name: shm
+              mountPath: /dev/shm
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: assistant-public-data
+        - name: ts-serve
+          configMap:
+            name: assistant-public-ts-serve
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+      terminationGracePeriodSeconds: 30

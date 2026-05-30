@@ -1,0 +1,14 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: assistant-public-data
+  labels:
+    keiretsu.ts.net/location: ottawa
+spec:
+  name: assistant-public-data
+  size: 20Gi
+  storageClass: ceph-block-replicated
+  s3Path: agents/assistant-public/data
+  schedule: 0 4 * * *
+  copyMethod: Snapshot

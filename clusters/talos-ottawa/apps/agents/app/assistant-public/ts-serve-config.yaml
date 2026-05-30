@@ -1,0 +1,23 @@
+---
+# `tailscale serve` config consumed via TS_SERVE_CONFIG. Publishes the Hermes
+# dashboard (container port 9119) over HTTPS on this node's MagicDNS name
+# (assistant.<tailnet>.ts.net) for tailnet/private reachability. Public reach
+# is handled separately by the Envoy public Gateway + httproute.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: assistant-public-ts-serve
+data:
+  serve.json: |
+    {
+      "TCP": {
+        "443": { "HTTPS": true }
+      },
+      "Web": {
+        "${TS_CERT_DOMAIN}:443": {
+          "Handlers": {
+            "/": { "Proxy": "http://127.0.0.1:9119" }
+          }
+        }
+      }
+    }

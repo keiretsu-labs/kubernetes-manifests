@@ -1,0 +1,48 @@
+---
+# Public exposure at assistant.keiretsu.top.
+# parentRefs copied from a sibling already on `public` (immich/garage-web shape):
+#   ts      -> tailnet
+#   private -> LAN/internal
+#   public  -> external (Envoy public Gateway, 10.169.10.15)
+# TLS auto-issued by cert-manager ClusterIssuer `keiretsu-top` (LE + Cloudflare DNS-01).
+# DNS A record for assistant.keiretsu.top must be added via the ddup/k8gb path
+# used by other public hosts (not ExternalDNS).
+#
+# Backend is the dashboard (9119). The raw gateway API (8642) is intentionally
+# NOT exposed publicly.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: assistant-public
+  annotations:
+    item.homer.rajsingh.info/name: "Assistant"
+    item.homer.rajsingh.info/subtitle: "Keiretsu public AI assistant"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-robot"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - "assistant.${COMMON_DOMAIN}"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: assistant-public
+          port: 9119
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

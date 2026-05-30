@@ -17,3 +17,8 @@ spec:
       read: true
       write: true
       owner: true
+    - keyRef:
+        name: assistant-public-s3-key
+      read: true
+      write: true
+      owner: true

@@ -1,0 +1,18 @@
+---
+# Tailscale OAuth client credential, rendered from the SOPS-encrypted
+# common-secrets via Flux postBuild var-substitution (same ${TS_OAUTH_CLIENT_*}
+# vars the operator's ts-oauth Secret uses — see
+# clusters/common/apps/tailscale-system/app/secret.yaml).
+#
+# ?ephemeral=false  -> stable node (survives pod restarts; not auto-removed)
+# ?preauthorized=true -> node is approved without manual admin click
+#
+# NOTE: the OAuth client backing ${TS_OAUTH_CLIENT_SECRET} must be scoped to
+# assign tag:raj, otherwise `--advertise-tags=tag:raj` is rejected at login.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: assistant-public-ts-auth
+type: Opaque
+stringData:
+  TS_AUTHKEY: ${TS_OAUTH_CLIENT_SECRET}?ephemeral=false&preauthorized=true
