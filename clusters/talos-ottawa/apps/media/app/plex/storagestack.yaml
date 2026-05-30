@@ -12,3 +12,5 @@ spec:
   s3Path: media/plex-config
   schedule: "0 13 * * *"
   copyMethod: Snapshot
+  restorePaused: false
+  restoreTrigger: "restore-2026-05-30"
