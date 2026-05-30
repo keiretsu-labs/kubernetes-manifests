@@ -30,3 +30,6 @@ data:
   STORAGECLASS_LONGTERM: smb
   STORAGECLASS_DEFAULT: ceph-block-replicated-nvme
   STORAGECLASS_METADATA: ceph-block-replicated-nvme
+
+  # Temporarily 0 during factor-2 layout migration; restore to 2 after
+  GARAGE_GATEWAY_REPLICAS: "0"
