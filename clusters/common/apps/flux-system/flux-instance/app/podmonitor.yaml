@@ -19,8 +19,6 @@ spec:
           - source-controller
           - kustomize-controller
           - notification-controller
-          - image-automation-controller
-          - image-reflector-controller
   podMetricsEndpoints:
     - honorLabels: true
       port: http-prom

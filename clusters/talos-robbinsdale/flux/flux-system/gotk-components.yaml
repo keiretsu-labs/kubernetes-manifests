@@ -297,12 +297,6 @@ subjects:
   name: notification-controller
   namespace: flux-system
 - kind: ServiceAccount
-  name: image-reflector-controller
-  namespace: flux-system
-- kind: ServiceAccount
-  name: image-automation-controller
-  namespace: flux-system
-- kind: ServiceAccount
   name: source-watcher
   namespace: flux-system
 ---
