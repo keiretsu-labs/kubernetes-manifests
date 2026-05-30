@@ -27,6 +27,24 @@ spec:
       resourceClaims:
         - name: gpu
           resourceClaimTemplateName: plex-gpu
+      initContainers:
+        - name: plex-init
+          image: busybox:1.37
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          command:
+            - sh
+            - -c
+            - rm -f '/config/Library/Application Support/Plex Media Server/Cache/cert-v2.p12'
+          volumeMounts:
+            - name: config
+              mountPath: /config
       containers:
         - name: plex
           image: ghcr.io/home-operations/plex-next:1.43.2.10687
