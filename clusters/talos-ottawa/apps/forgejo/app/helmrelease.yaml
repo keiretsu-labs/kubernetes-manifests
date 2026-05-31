@@ -68,7 +68,7 @@ spec:
           DISABLE_REGISTRATION: "true"
         storage:
           STORAGE_TYPE: minio
-          MINIO_ENDPOINT: garage-gw.keiretsu.ts.net:3900
+          MINIO_ENDPOINT: garage.garage.svc.cluster.local:3900
           MINIO_BUCKET: forgejo
           MINIO_LOCATION: garage
           MINIO_USE_SSL: "false"

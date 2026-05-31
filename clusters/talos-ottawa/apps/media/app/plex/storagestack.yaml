@@ -10,7 +10,7 @@ spec:
   size: 50Gi
   storageClass: ceph-block-replicated
   s3Path: media/plex-config
-  s3Endpoint: "garage-gateway.garage.svc.cluster.local:3900"
+  s3Endpoint: "garage.garage.svc.cluster.local:3900"
   schedule: "0 13 * * *"
   copyMethod: Snapshot
   restorePaused: true
