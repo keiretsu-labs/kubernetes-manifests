@@ -17,8 +17,6 @@ spec:
   tags:
     - "tag:k8s"
     - "tag:robbinsdale"
-  mode: subnet
   routes:
     - 192.168.169.0/24    # ottawa LAN (advertised by tag:ottawa subnet router)
   acceptRoutes: true      # gateway accepts the ottawa advertised route (default)
-  replicas: 1
