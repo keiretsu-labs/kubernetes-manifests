@@ -89,8 +89,7 @@ spec:
           "cluster": {
             "members": [
               "robbinsdale-zot:5000",
-              "ottawa-zot:5000",
-              "stpetersburg-zot:5000"
+              "ottawa-zot:5000"
             ],
             "hashKey": "${ZOT_CLUSTER_HASHKEY}"
           },
