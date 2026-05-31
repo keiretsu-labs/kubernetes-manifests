@@ -9,7 +9,7 @@ spec:
   name: musicassistant-data
   size: 20Gi
   storageClass: local-path
-  s3Endpoint: garage-gw.keiretsu.ts.net:3900
+  s3Endpoint: garage.garage.svc.cluster.local:3900
   s3Path: music-assistant/data
   schedule: "0 12 * * *"
   copyMethod: Direct
