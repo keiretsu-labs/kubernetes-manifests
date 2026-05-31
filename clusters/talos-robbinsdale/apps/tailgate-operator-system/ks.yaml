@@ -1,0 +1,47 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app tailgate-operator
+  namespace: flux-system
+spec:
+  targetNamespace: tailgate-operator-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./clusters/talos-robbinsdale/apps/tailgate-operator-system/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  # decryption + postBuild.substituteFrom (common-secrets etc.) are injected into every
+  # child Kustomization by the cluster-apps patch, so ${TS_OAUTH_CLIENT_*} resolve here.
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+---
+# The EgressGroup is cluster-scoped, so it gets its own Kustomization (no
+# targetNamespace, which would otherwise stamp a namespace onto a cluster-scoped
+# CR). dependsOn + the install's wait:true means it only applies once the operator
+# HelmRelease is Ready and its CRD is installed.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: tailgate-operator-egress
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: tailgate-operator
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: tailgate-operator-egress
+  path: ./clusters/talos-robbinsdale/apps/tailgate-operator-system/egress
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
