@@ -9,8 +9,6 @@ resources:
   - ai-gateway.yaml
   - vllm-route.yaml
   - vllm-dnsrecord.yaml
-  - valkey.yaml
-  - searxng.yaml
   - dashboards.yaml
   - scrapeconfig.yaml
   - secret.yaml
