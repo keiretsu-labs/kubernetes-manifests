@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: probe
-          image: busybox:1.37
+          image: busybox:1.38
           command: ["sleep", "infinity"]
           resources:
             requests:
