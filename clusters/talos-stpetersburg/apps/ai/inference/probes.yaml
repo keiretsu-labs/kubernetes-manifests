@@ -17,39 +17,3 @@ spec:
       labels:
         service: ai-inference
         target: vllm
----
-# SearXNG meta-search backend used by AI agents.
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-searxng
-spec:
-  jobName: blackbox
-  module: http_2xx
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - http://searxng.ai:8080/healthz
-      labels:
-        service: ai-inference
-        target: searxng
----
-# Valkey (Redis-compat) backing store for the AI stack.
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-valkey
-spec:
-  jobName: blackbox
-  module: tcp_connect
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - valkey.ai:6379
-      labels:
-        service: ai-inference
-        target: valkey
