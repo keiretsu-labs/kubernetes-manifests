@@ -15,7 +15,7 @@ spec:
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
     additionalData:
-      AWS_ENDPOINT_URL: "http://garage-gw.keiretsu.ts.net:3900"
-      AWS_ENDPOINT_URL_S3: "http://garage-gw.keiretsu.ts.net:3900"
+      AWS_ENDPOINT_URL: "http://garage.garage.svc.cluster.local:3900"
+      AWS_ENDPOINT_URL_S3: "http://garage.garage.svc.cluster.local:3900"
       AWS_REGION: "garage"
       AWS_DEFAULT_REGION: "garage"

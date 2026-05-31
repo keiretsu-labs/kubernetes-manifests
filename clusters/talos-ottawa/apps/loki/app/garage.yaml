@@ -35,7 +35,7 @@ spec:
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
     additionalData:
-      endpoint: "http://garage-gw.keiretsu.ts.net:3900"
+      endpoint: "http://garage.garage.svc.cluster.local:3900"
       region: "garage"
   bucketPermissions:
     - bucketRef:

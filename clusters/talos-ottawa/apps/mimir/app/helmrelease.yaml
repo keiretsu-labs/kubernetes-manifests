@@ -61,7 +61,7 @@ spec:
           storage:
             backend: s3
             s3:
-              endpoint: garage-gw.keiretsu.ts.net:3900
+              endpoint: garage.garage.svc.cluster.local:3900
               bucket_name: mimir
               insecure: true
         limits:
