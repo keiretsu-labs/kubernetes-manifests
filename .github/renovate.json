@@ -66,11 +66,13 @@
       "automerge": true
     },
     {
-      "description": "Disable automerge for cluster-critical components",
+      "description": "Disable automerge for cluster-critical components (incl. CNI layer: cilium/multus/spiderpool)",
       "matchFileNames": [
         "clusters/**/bootstrap/**",
         "clusters/**/flux/**",
         "clusters/**/apps/cilium/**",
+        "clusters/**/apps/spiderpool/**",
+        "clusters/**/apps/multus/**",
         "clusters/**/apps/rook-ceph/**",
         "clusters/**/apps/tuppr/**",
         "clusters/**/apps/cert-manager/**"
