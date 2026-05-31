@@ -31,6 +31,13 @@ data:
   STORAGECLASS_DEFAULT: local-path
   STORAGECLASS_METADATA: local-path
 
+  # Garage S3 endpoint override (takes precedence over common-secrets COMMON_S3_ENDPOINT).
+  # Point at the cluster-local STORAGE service (tier:storage) instead of the gateway:
+  # gateway pods are not layout-assigned in unified Auto-mode (operator v0.6.5 gap), so
+  # their local key_table is frequently empty -> "403 No such key" / Access Denied. The
+  # storage service always holds the full FullReplication key_table. Resolves per-cluster.
+  COMMON_S3_ENDPOINT: "garage.garage.svc.cluster.local:3900"
+
   # Garage: run one storage replica per Spark (excludes orin-0).
   GARAGE_REPLICAS: "2"
   GARAGE_NODE_SELECTOR: '{"node.kubernetes.io/instance-type":"dgx-spark"}'
