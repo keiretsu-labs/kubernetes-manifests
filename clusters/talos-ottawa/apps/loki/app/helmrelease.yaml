@@ -14,10 +14,12 @@ spec:
         name: grafana
         namespace: flux-system
   install:
+    disableWait: true
     remediation:
       retries: 3
   upgrade:
     cleanupOnFail: true
+    disableWait: true
     remediation:
       retries: 3
   values:
