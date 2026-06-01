@@ -1,0 +1,18 @@
+---
+# NetworkFenceClass tells CephCSI how to fence a failed node's RBD client.
+# When a node is tainted node.kubernetes.io/out-of-service=...:NoExecute, the
+# CephCSI driver auto-creates a NetworkFence referencing this class, which
+# blocklists the dead node in Ceph (breaking its exclusive-lock) so RWO volumes
+# can immediately reattach on a healthy node instead of waiting out the kubelet
+# force-detach timeout + a stale Ceph lock.
+# Secret + clusterID match the rook-csi-rbd-provisioner used by the StorageClass.
+apiVersion: csiaddons.openshift.io/v1alpha1
+kind: NetworkFenceClass
+metadata:
+  name: ceph-rbd-network-fence
+spec:
+  provisioner: rook-ceph.rbd.csi.ceph.com
+  parameters:
+    clusterID: rook-ceph
+    csiaddons.openshift.io/networkfence-secret-name: rook-csi-rbd-provisioner
+    csiaddons.openshift.io/networkfence-secret-namespace: rook-ceph
