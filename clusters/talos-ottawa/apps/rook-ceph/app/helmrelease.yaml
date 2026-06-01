@@ -25,14 +25,4 @@ spec:
       enabled: true
       createPrometheusRules: true
     toolbox:
-      enabled: true
-    csi:
-      # Deploy the csi-addons sidecar into the RBD provisioner + nodeplugin pods.
-      # Required for automatic RBD network fencing on hard node loss: when a node
-      # is tainted node.kubernetes.io/out-of-service, CephCSI uses the sidecar +
-      # NetworkFenceClass (clusters/talos-ottawa/apps/csi-addons) to blocklist the
-      # dead node in Ceph, breaking its RBD exclusive-lock so RWO volumes reattach
-      # on a healthy node immediately instead of waiting out the force-detach timeout.
-      # The csi-addons CONTROLLER + CRDs are installed by the csi-addons app.
-      csiAddons:
-        enabled: true 
+      enabled: true 
