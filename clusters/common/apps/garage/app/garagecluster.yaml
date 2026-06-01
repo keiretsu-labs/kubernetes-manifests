@@ -1,10 +1,13 @@
 ---
 # Unified GarageCluster (v1beta2) — storage + gateway tiers in one CR.
 #
-# Gateway tier is ephemeral (Deployment + EmptyDir): node identities rotate per
-# pod restart, and the operator garbage-collects stale layout entries via the
-# tombstone reconciler. Cross-region peering is established by the storage tier
-# (via spec.remoteClusters); the gateway tier rides on that mesh.
+# In a unified cluster the operator reconciles the gateway tier as one per-pod
+# GarageNode (garage-gateway-N) — each a single-replica StatefulSet with a small
+# metadata PVC (persistent node identity) and EmptyDir data. Each gets a
+# capacity:null layout role so key/bucket auth resolves locally. Stale roles on
+# scale-down are tombstone-reaped (autoApply below applies the cleanup).
+# Cross-region peering is established by the storage tier (via
+# spec.remoteClusters); the gateway tier rides on that mesh.
 apiVersion: garage.rajsingh.info/v1beta2
 kind: GarageCluster
 metadata:
@@ -88,9 +91,16 @@ spec:
     nodeSelector: ${GARAGE_NODE_SELECTOR=}
     topologySpreadConstraints: ${GARAGE_TOPOLOGY_SPREAD=}
 
-  # Gateway tier — ephemeral; peers with the local storage tier in-process and
-  # inherits federation through it. RPCPublicAddr lets remote regions dial these
-  # gateway pods for cluster-wide admin / table sync operations.
+  # Gateway tier — per-pod GarageNodes with persistent identity; peers with the
+  # local storage tier and inherits federation through it. rpcPublicAddr is the
+  # advertised RPC address so remote regions can reach the gateway nodes for
+  # cluster-wide table sync (key/bucket FullReplication).
+  # NOTE: this is a single shared address for all gateway pods. With
+  # gateway.replicas > 1, remote regions reach only one pod via this address;
+  # per-pod cross-region reachability needs remoteClusters[].gatewayRpcEndpointTemplate
+  # (operator issue: the per-ordinal parser currently requires Manual gateway
+  # nodes tagged garage-gateway-<N>). Local S3/Admin HA is unaffected; only
+  # cross-region gateway table-sync latency is.
   gateway:
     replicas: ${GARAGE_GATEWAY_REPLICAS:=2}
     rpcPublicAddr: "${LOCATION}-garage-gw.keiretsu.ts.net:3901"
