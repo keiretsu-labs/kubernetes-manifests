@@ -1,4 +1,9 @@
 ---
+# CSI-Addons controller + CRDs, pulled straight from the upstream repo at a
+# pinned tag (see clusters/common/flux/repositories/git/csi-addons.yaml).
+# No kustomization.yaml exists at ./deploy/controller upstream, so Flux
+# auto-generates one and builds all manifests in that dir
+# (crds.yaml, rbac.yaml, setup-controller.yaml, csi-addons-config.yaml).
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -9,8 +14,30 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    # Rook operator owns the RBD CSI driver that the csi-addons sidecar attaches to.
+    # Rook operator owns the RBD CSI driver the csi-addons sidecar attaches to.
     - name: rook-ceph-operator
+  path: ./deploy/controller
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: csi-addons
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+---
+# NetworkFenceClass (+ any other cluster-local fencing config) lives in-repo and
+# depends on the CRDs installed by the csi-addons controller above.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app csi-addons-config
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: csi-addons
   path: ./clusters/${CLUSTER_NAME}/apps/csi-addons/app
   prune: true
   sourceRef:
