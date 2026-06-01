@@ -61,16 +61,14 @@ spec:
     interval: 30s
 
   layoutManagement:
-    # autoApply DISABLED 2026-06-01: in this federated deployment both regions
-    # share the cluster ownership tag "cluster:garage/garage", so each region's
-    # gateway tombstone reaper classifies the OTHER region's gateway roles as
-    # stale and removes them, while each region's per-node controller re-adds its
-    # own — an endless cross-region layout churn that leaves gateway key_table
-    # unsynced (S3 403 "No such key"). With autoApply:false the reaper only
-    # reports pending tombstones (status.pendingGatewayTombstones) instead of
-    # applying removals, so the layout stabilizes. Re-enable once the operator
-    # scopes the reaper per-zone (garage-operator#220).
-    autoApply: false
+    # autoApply RE-ENABLED 2026-06-01 (operator v0.6.7): the gateway tombstone
+    # reaper is now scoped to the local zone (garage-operator#220), so a region no
+    # longer classifies the OTHER region's gateway roles as stale. The earlier
+    # cross-region layout churn (which left gateway key_table unsynced → S3 403
+    # "No such key") is fixed; both regions report zero pendingGatewayTombstones.
+    # autoApply lets the operator apply legitimate same-zone tombstone cleanup on
+    # gateway scale-down/replacement instead of leaving it pending.
+    autoApply: true
 
   blocks:
     ramBufferMax: 128Mi
