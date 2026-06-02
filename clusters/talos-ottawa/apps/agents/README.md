@@ -10,6 +10,7 @@ reach it.
 | Persona       | Tailscale hostname | Purpose                              |
 | ------------- | ------------------ | ------------------------------------ |
 | assistant-raj | `assistant-raj`    | Calendar / email / notes / reminders |
+| abtar         | `abtar`            | Calendar / email / notes / reminders |
 
 Reach it from your tailnet:
 
