@@ -23,7 +23,7 @@ spec:
       write: true
       owner: true
     - keyRef:
-        name: karthik-s3-key
+        name: kartik-s3-key
       read: true
       write: true
       owner: true

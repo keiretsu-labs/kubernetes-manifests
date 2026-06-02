@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: karthik
+  name: kartik
 spec:
   replicas: 1
   revisionHistoryLimit: 3
@@ -10,13 +10,13 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: karthik
+      app.kubernetes.io/name: kartik
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: karthik
+        app.kubernetes.io/name: kartik
         agents.keiretsu.ts.net/persona: assistant
-        agents.keiretsu.ts.net/owner: karthik
+        agents.keiretsu.ts.net/owner: kartik
     spec:
       initContainers:
         - name: seed-aws-credentials
@@ -43,7 +43,7 @@ spec:
               EOF
           envFrom:
             - secretRef:
-                name: karthik-s3
+                name: kartik-s3
           volumeMounts:
             - name: data
               mountPath: /opt/data
@@ -53,11 +53,11 @@ spec:
           args: ["gateway", "run"]
           envFrom:
             - configMapRef:
-                name: karthik-config
+                name: kartik-config
             - secretRef:
-                name: karthik-secrets
+                name: kartik-secrets
             - secretRef:
-                name: karthik-s3
+                name: kartik-s3
           env:
             - name: AWS_SHARED_CREDENTIALS_FILE
               value: /opt/data/.aws/credentials
@@ -99,7 +99,7 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: karthik-data
+            claimName: kartik-data
         - name: shm
           emptyDir:
             medium: Memory
