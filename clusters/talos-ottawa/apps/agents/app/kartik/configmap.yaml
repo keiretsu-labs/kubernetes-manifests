@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: karthik-config
+  name: kartik-config
 data:
   GATEWAY_ALLOW_ALL_USERS: "true"
   API_SERVER_ENABLED: "true"
@@ -38,7 +38,7 @@ data:
   OPENAI_API_KEY: "unused"
 
   # ---- WhatsApp bridge (Baileys, self-chat mode) ----
-  # Pair once: kubectl exec -it deploy/karthik -c gateway --
+  # Pair once: kubectl exec -it deploy/kartik -c gateway --
   #   /opt/hermes/.venv/bin/hermes whatsapp
   # Session persists at /opt/data/whatsapp/session/ in the PVC.
   WHATSAPP_ENABLED: "true"
@@ -47,7 +47,7 @@ data:
   WHATSAPP_ALLOWED_USERS: "REPLACE_WITH_KARTHIK_PHONE"
 
   # ---- Persona ----
-  AGENT_NAME: "karthik"
+  AGENT_NAME: "kartik"
   AGENT_PERSONA: "assistant"
   AGENT_SYSTEM_PROMPT: |
     You are Karthik's personal assistant.
