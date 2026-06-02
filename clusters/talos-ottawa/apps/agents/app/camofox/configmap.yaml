@@ -1,0 +1,22 @@
+---
+# Overrides the image's baked-in /app/camofox.config.json. The shipped config
+# sets vnc.enabled=false, and the plugin loader builds its allowlist from this
+# file BEFORE the plugin's register() runs — so ENABLE_VNC env alone is ignored
+# (it's only read inside the plugin). We must enable vnc here. Password,
+# resolution and novncPort are supplied via env (VNC_PASSWORD/NOVNC_PORT), which
+# the plugin treats as overrides.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: camofox-config
+data:
+  camofox.config.json: |
+    {
+      "id": "camofox-browser",
+      "name": "Camofox Browser",
+      "plugins": {
+        "youtube": { "enabled": true },
+        "persistence": { "enabled": true },
+        "vnc": { "enabled": true, "resolution": "1920x1080", "novncPort": 6080 }
+      }
+    }
