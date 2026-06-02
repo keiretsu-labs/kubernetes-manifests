@@ -21,6 +21,25 @@ spec:
           # Upstream prebuilt image (no vendored blob). Camoufox is baked in at
           # build time (~300MB) so first start is fast.
           image: ghcr.io/jo-inc/camofox-browser:1.11.2
+          # The published image bakes the vnc plugin CODE but not its runtime
+          # binaries (install-plugin-deps.sh runs against the shipped config
+          # where vnc.enabled=false, so x11vnc/noVNC/websockify are absent).
+          # Install them at startup (runs as root, apt egress available), then
+          # hand off to the image's normal CMD. ~15s added to cold start.
+          # NOTE future hardening: bake a thin custom image (FROM this + apt
+          # install) in Harbor to drop the runtime install + network dep.
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              if ! command -v x11vnc >/dev/null 2>&1; then
+                apt-get update
+                apt-get install -y --no-install-recommends \
+                  x11vnc novnc python3-websockify net-tools procps
+                rm -rf /var/lib/apt/lists/*
+              fi
+              exec node --max-old-space-size=${MAX_OLD_SPACE_SIZE:-128} server.js
           env:
             # REST API port consumed by Hermes via CAMOFOX_URL (cluster-internal).
             - name: CAMOFOX_PORT
@@ -52,7 +71,7 @@ spec:
             httpGet:
               path: /health
               port: api
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 30
           resources:
             requests:
