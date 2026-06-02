@@ -13,6 +13,15 @@ data:
   DISCORD_AUTO_THREAD: "true"
   DISCORD_REACTIONS: "true"
 
+  # ---- Browser toolset (web_extract / browser_* tools) ----
+  # The image already bundles Chromium (Chrome for Testing) + the agent-browser
+  # CLI. Hermes auto-injects --no-sandbox only when running as root or on
+  # AppArmor-restricted hosts. This pod runs as uid 10000 (non-root, via
+  # s6-setuidgid) on Talos with no AppArmor userns flag, so neither trigger
+  # fires and Chromium dies with "No usable sandbox". Setting the flag
+  # explicitly is the documented fix (browser_tool.py honours AGENT_BROWSER_ARGS).
+  AGENT_BROWSER_ARGS: "--no-sandbox,--disable-dev-shm-usage"
+
   # LLM endpoint lives in /opt/data/config.yaml inside the PVC (set once via
   # kubectl exec; reachable through the `stpetersburg-vllm` ExternalName).
   # OPENAI_BASE_URL is kept so Hermes auxiliary clients (summarization /
