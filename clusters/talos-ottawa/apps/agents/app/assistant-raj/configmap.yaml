@@ -22,6 +22,14 @@ data:
   # explicitly is the documented fix (browser_tool.py honours AGENT_BROWSER_ARGS).
   AGENT_BROWSER_ARGS: "--no-sandbox,--disable-dev-shm-usage"
 
+  # ---- Camofox browser backend (watchable browser) ----
+  # Routes the browser_* tools through the camofox deployment instead of the
+  # bundled headless shell. Camofox runs headed with a noVNC viewer, so raj can
+  # watch live and take over (logins) at https://camofox.keiretsu.ts.net.
+  # Cluster-internal API; no auth header is sent by Hermes, so the API service
+  # is ClusterIP-only.
+  CAMOFOX_URL: "http://camofox.agents.svc.cluster.local:9377"
+
   # LLM endpoint lives in /opt/data/config.yaml inside the PVC (set once via
   # kubectl exec; reachable through the `stpetersburg-vllm` ExternalName).
   # OPENAI_BASE_URL is kept so Hermes auxiliary clients (summarization /
