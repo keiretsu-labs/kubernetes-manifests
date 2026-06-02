@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: karthik-ts
+  annotations:
+    tailscale.com/hostname: karthik
+    # Using tag:raj for now so the LB provisions immediately (tag:karthik does
+    # not exist in tailscale/policy.hujson yet). If Karthik should own/reach this
+    # independently of Raj, add `tag:karthik` to policy.hujson (tagOwners + an
+    # ACL grant for karthik's tailnet identity) and switch this to "tag:karthik".
+    tailscale.com/tags: "tag:raj"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app.kubernetes.io/name: karthik
+  ports:
+    - name: dashboard
+      port: 80
+      targetPort: 9119
+      protocol: TCP
+    - name: gateway
+      port: 8642
+      targetPort: 8642
+      protocol: TCP
