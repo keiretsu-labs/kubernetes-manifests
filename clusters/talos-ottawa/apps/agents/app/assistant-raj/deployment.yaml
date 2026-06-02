@@ -87,10 +87,10 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 500m
-              memory: 1Gi
+              cpu: 1000m
+              memory: 2Gi
             limits:
-              memory: 4Gi
+              memory: 6Gi
           volumeMounts:
             - name: data
               mountPath: /opt/data
@@ -103,5 +103,5 @@ spec:
         - name: shm
           emptyDir:
             medium: Memory
-            sizeLimit: 1Gi
+            sizeLimit: 2Gi
       terminationGracePeriodSeconds: 30
