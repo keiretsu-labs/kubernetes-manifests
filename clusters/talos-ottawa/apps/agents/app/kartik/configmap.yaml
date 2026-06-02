@@ -43,8 +43,8 @@ data:
   # Session persists at /opt/data/whatsapp/session/ in the PVC.
   WHATSAPP_ENABLED: "true"
   WHATSAPP_MODE: "self-chat"
-  # Karthik's WhatsApp number (E.164 without +). PLACEHOLDER — Raj/Karthik to set.
-  WHATSAPP_ALLOWED_USERS: "REPLACE_WITH_KARTHIK_PHONE"
+  # Kartik's WhatsApp number (E.164 without +).
+  WHATSAPP_ALLOWED_USERS: "16147437286"
 
   # ---- Persona ----
   AGENT_NAME: "kartik"
