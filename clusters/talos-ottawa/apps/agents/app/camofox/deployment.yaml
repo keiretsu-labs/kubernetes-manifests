@@ -50,6 +50,11 @@ spec:
               value: "1"
             - name: NOVNC_PORT
               value: "6080"
+            # websockify defaults to binding 127.0.0.1; the Tailscale LB routes
+            # to the pod IP, so bind 0.0.0.0. Safe because VNC is password
+            # protected (VNC_PASSWORD) and only the noVNC port is LB-exposed.
+            - name: VNC_BIND
+              value: "0.0.0.0"
           envFrom:
             # VNC_PASSWORD = ${DEFAULT_PASSWORD} (see secret.yaml).
             - secretRef:
