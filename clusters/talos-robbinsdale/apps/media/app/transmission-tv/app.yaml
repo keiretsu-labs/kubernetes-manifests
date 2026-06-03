@@ -69,7 +69,7 @@ spec:
           mountPath: /gluetun
       - name: client
         # renovate: datasource=docker depName=lscr.io/linuxserver/transmission
-        image: lscr.io/linuxserver/transmission:4.1.1
+        image: lscr.io/linuxserver/transmission:4.1.2
         ports:
         - name: webui
           containerPort: 9091
