@@ -87,3 +87,48 @@ spec:
         service: garage
         target: cross-cluster
         check: serving
+---
+# GATEWAY path — what S3 clients now hit via COMMON_S3_ENDPOINT (garage-gateway
+# svc, tier:gateway). A gateway-tier outage breaks clients but would NOT show in
+# the storage probes above (storage stays up), so probe the gateway Service
+# directly so the monitored path matches the client path: tcp_connect confirms
+# the gateway has ready endpoints on the S3/admin ports, http_2xx /health
+# confirms a gateway pod can serve.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-gateway-local
+spec:
+  jobName: blackbox
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - garage-gateway.garage:3900
+        - garage-gateway.garage:3903
+      labels:
+        service: garage
+        target: local
+        tier: gateway
+        check: port-open
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-gateway-health-local
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - http://garage-gateway.garage:3903/health
+      labels:
+        service: garage
+        target: local
+        tier: gateway
+        check: serving

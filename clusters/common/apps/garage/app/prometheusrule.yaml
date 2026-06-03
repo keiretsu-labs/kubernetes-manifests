@@ -28,3 +28,22 @@ spec:
               missing storage node or add write headroom.
           labels:
             severity: critical
+
+        # The gateway tier is the S3 CLIENT path (COMMON_S3_ENDPOINT ->
+        # garage-gateway svc). This fires when the gateway Service has no
+        # reachable endpoint — clients fail — but storage may still be up, so it
+        # would NOT trip the storage probes. Distinct from GarageServingUnavailable
+        # (that's write-quorum); this is "clients can't reach a gateway at all."
+        - alert: GarageGatewayUnreachable
+          expr: probe_success{service="garage", tier="gateway", check="port-open", target="local"} == 0
+          for: 2m
+          annotations:
+            summary: Garage gateway tier unreachable in this region ({{ $labels.instance }})
+            description: >-
+              The garage-gateway Service has had no reachable endpoint for 2m.
+              In-cluster S3 clients reach Garage through it (COMMON_S3_ENDPOINT),
+              so they are failing. Check the gateway pods (garage-gateway-N) and
+              their readiness — storage may still be up (this won't show in the
+              storage probes).
+          labels:
+            severity: critical

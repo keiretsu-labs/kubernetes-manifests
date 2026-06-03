@@ -16,22 +16,36 @@ selector `tier:storage`) instead of any gateway endpoint. Storage pods are alway
 the layout and always hold the full FullReplication key_table.
 
 Upstream issue: rajsinghtech/garage-operator#209 (operator should layout-assign
-gateways in unified Auto mode). The storage-Service redirect below is the workaround;
-keep it even after stp returns — it is strictly more reliable than the gateway path.
+gateways in unified Auto mode).
+
+> **UPDATE 2026-06-03 — #209/#224 FIXED (operator v0.6.9); storage-svc workaround SUPERSEDED.**
+> Gateways now hold the full FullReplication key_table (capacity:null layout role), so the
+> gateway path is reliable (verified: S3 ListBuckets/GetObject through the gateway, no 403).
+> All S3 clients were moved BACK to the cluster-local **GATEWAY** service via
+> `COMMON_S3_ENDPOINT` (commit d6beac7ca) — preferred because it ALSO survives
+> local-storage-loss (the gateway proxies reads to a surviving region; read_quorum=1),
+> whereas the storage svc has no endpoints if local storage is destroyed. The old "keep the
+> storage svc / strictly more reliable than the gateway path" guidance is obsolete; the KEEP
+> section below is updated accordingly.
 
 ## KEEP (do NOT revert — these are correct permanently)
 
-- **742786ad3** — S3 clients (loki, mimir, zot, forgejo, plex, hermes, assistant-raj,
-  common mimir-key) point at `garage.garage.svc.cluster.local:3900`.
-- **0fe403407** — stpetersburg home-assistant + music-assistant StorageStacks point at
-  the storage Service.
-- **57ed17ab7** — `COMMON_S3_ENDPOINT` overridden to the storage Service in all three
-  clusters' plaintext `cluster-settings` ConfigMaps (overrides the SOPS
-  `common-secrets` value, which still points at `garage-gw.keiretsu.ts.net`).
-  - Optional cleanup when someone has the SOPS PGP key: set `COMMON_S3_ENDPOINT`
-    directly in `clusters/common/flux/vars/common-secrets.sops.yaml` to
-    `garage.garage.svc.cluster.local:3900` and drop the three cluster-settings
-    overrides. Not required — the overrides are harmless and correct.
+- **d6beac7ca (supersedes 742786ad3 / 0fe403407)** — ALL S3 clients now point at the
+  cluster-local **GATEWAY** service via `${COMMON_S3_ENDPOINT}` =
+  `garage-gateway.garage.svc.cluster.local:3900` (operator v0.6.9+, gateways hold the full
+  key_table). Every app uses the var (no hardcoded endpoints except gatus probes + per-region
+  hostnames), so the endpoint is swappable in one line. (Originally pointed at the storage svc
+  as the #209 workaround — superseded; see the 2026-06-03 update above.)
+- **57ed17ab7 (value updated by d6beac7ca)** — `COMMON_S3_ENDPOINT` set in all three clusters'
+  plaintext `cluster-settings` ConfigMaps (overrides the SOPS `common-secrets` value). Now
+  `garage-gateway.garage.svc.cluster.local:3900`.
+  - Optional cleanup when someone has the SOPS PGP key: set `COMMON_S3_ENDPOINT` directly in
+    `clusters/common/flux/vars/common-secrets.sops.yaml` to the gateway svc and drop the three
+    cluster-settings overrides. Not required — the overrides are harmless and correct.
+- **Monitoring** — `probes.yaml` now also probes the gateway path
+  (`app-garage-gateway-local` tcp + `app-garage-gateway-health-local` /health) and
+  `prometheusrule.yaml` has `GarageGatewayUnreachable` (client-path down) +
+  `GarageServingUnavailable` (write-quorum lost). Correct permanently.
 
 ## REVERT when stpetersburg is back online + healthy
 
