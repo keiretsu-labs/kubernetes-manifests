@@ -1,0 +1,30 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: garage-rules
+spec:
+  groups:
+    - name: garage.rules
+      rules:
+        # The local /health serving probe runs in each region and reports the
+        # cluster-wide health from that region's view. probe_success==0 means
+        # /health returned non-2xx (503 = Unavailable: a partition lost
+        # write-quorum, so writes fail) or the local endpoint is unreachable.
+        # Scoped to target=local so a known-down remote region's cross-cluster
+        # probe doesn't fire this; cross-cluster serving probes stay for
+        # dashboards / the generic blackbox ProbeFailed rule.
+        - alert: GarageServingUnavailable
+          expr: probe_success{service="garage", check="serving", target="local"} == 0
+          for: 3m
+          annotations:
+            summary: Garage cannot serve writes in this region ({{ $labels.instance }})
+            description: >-
+              The Garage /health serving probe has been non-2xx for 3m
+              (503 Unavailable = a partition lost its write-quorum of up storage
+              nodes, or the admin endpoint is unreachable). Reads may still work
+              in degraded mode, but writes are failing. With replication.factor=2
+              this is one storage node away from a full write outage — restore the
+              missing storage node or add write headroom.
+          labels:
+            severity: critical
