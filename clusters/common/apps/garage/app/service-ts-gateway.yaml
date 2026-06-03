@@ -60,7 +60,9 @@ spec:
     app.kubernetes.io/name: garage
     app.kubernetes.io/instance: garage
     garage.rajsingh.info/tier: gateway
-    statefulset.kubernetes.io/pod-name: garage-gateway-0
+    # Per-node gateway STS (post-#210): GarageNode "garage-gateway-0" -> pod
+    # "garage-gateway-0-0". (Pre-#210 single-STS pods were "garage-gateway-0".)
+    statefulset.kubernetes.io/pod-name: garage-gateway-0-0
   type: LoadBalancer
   loadBalancerClass: tailscale
 ---
@@ -82,7 +84,9 @@ spec:
     app.kubernetes.io/name: garage
     app.kubernetes.io/instance: garage
     garage.rajsingh.info/tier: gateway
-    statefulset.kubernetes.io/pod-name: garage-gateway-1
+    # Per-node gateway STS (post-#210): GarageNode "garage-gateway-1" -> pod
+    # "garage-gateway-1-0".
+    statefulset.kubernetes.io/pod-name: garage-gateway-1-0
   type: LoadBalancer
   loadBalancerClass: tailscale
 ---

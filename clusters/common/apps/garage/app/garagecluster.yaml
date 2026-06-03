@@ -102,15 +102,15 @@ spec:
   # local storage tier and inherits federation through it. rpcPublicAddr is the
   # advertised RPC address so remote regions can reach the gateway nodes for
   # cluster-wide table sync (key/bucket FullReplication).
-  # NOTE: this is a single shared address for all gateway pods. With
-  # gateway.replicas > 1, remote regions reach only one pod via this address;
-  # per-pod cross-region reachability needs remoteClusters[].gatewayRpcEndpointTemplate
-  # (operator issue: the per-ordinal parser currently requires Manual gateway
-  # nodes tagged garage-gateway-<N>). Local S3/Admin HA is unaffected; only
-  # cross-region gateway table-sync latency is.
+  # PER-ORDINAL address (operator v0.6.9+, garage-operator#226): the operator
+  # substitutes {ordinal} with each gateway pod's index, so pod N advertises
+  # ${LOCATION}-gw-N.keiretsu.ts.net — which the per-pod LB in service-ts-gateway.yaml
+  # routes to that exact pod. This matches remoteClusters[].gatewayRpcEndpointTemplate
+  # so all gateway pods (not just one) are reachable cross-region and join
+  # FullReplication quorum. (A single shared addr could only ever route to one pod.)
   gateway:
     replicas: ${GARAGE_GATEWAY_REPLICAS:=2}
-    rpcPublicAddr: "${LOCATION}-garage-gw.keiretsu.ts.net:3901"
+    rpcPublicAddr: "${LOCATION}-gw-{ordinal}.keiretsu.ts.net:3901"
     resources:
       requests:
         cpu: 100m
