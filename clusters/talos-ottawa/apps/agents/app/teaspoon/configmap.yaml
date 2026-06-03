@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teaspoon-config
+data:
+  GATEWAY_ALLOW_ALL_USERS: "true"
+  API_SERVER_ENABLED: "true"
+  API_SERVER_HOST: "0.0.0.0"
+  API_SERVER_PORT: "8642"
+  API_SERVER_KEY: "${DEFAULT_PASSWORD}"
+
+  # ---- Discord bridge ----
+  # teaspoon is the templated successor to the old ns/hermes Discord bot.
+  # The bot token lives in the teaspoon-secrets Secret (DISCORD_BOT_TOKEN).
+  # Mirrors the old app's Discord behaviour: respond without an explicit
+  # @mention, auto-thread replies, add status reactions.
+  DISCORD_REQUIRE_MENTION: "false"
+  DISCORD_AUTO_THREAD: "true"
+  DISCORD_REACTIONS: "true"
+
+  # ---- Browser toolset (web_extract / browser_* tools) ----
+  # The image already bundles Chromium (Chrome for Testing) + the agent-browser
+  # CLI. Hermes auto-injects --no-sandbox only when running as root or on
+  # AppArmor-restricted hosts. This pod runs as uid 10000 (non-root, via
+  # s6-setuidgid) on Talos with no AppArmor userns flag, so neither trigger
+  # fires and Chromium dies with "No usable sandbox". Setting the flag
+  # explicitly is the documented fix (browser_tool.py honours AGENT_BROWSER_ARGS).
+  AGENT_BROWSER_ARGS: "--no-sandbox,--disable-dev-shm-usage"
+
+  # ---- Camofox browser backend (watchable browser) ----
+  # Routes the browser_* tools through the shared camofox deployment in this ns.
+  # Camofox runs headed with a noVNC viewer at https://camofox.keiretsu.ts.net.
+  # Cluster-internal API; no auth header is sent by Hermes, so it's ClusterIP-only.
+  CAMOFOX_URL: "http://camofox.agents.svc.cluster.local:9377"
+
+  # LLM endpoint lives in /opt/data/config.yaml inside the PVC (set once via
+  # kubectl exec). The "new model" for templated agents is anthropic/claude-opus-4-8
+  # (Anthropic OAuth credential in /opt/data/auth.json). OPENAI_BASE_URL is kept
+  # so Hermes auxiliary clients (summarization / compression) route to the shared
+  # vLLM endpoint when invoked.
+  OPENAI_BASE_URL: "http://stpetersburg-vllm/v1"
+  OPENAI_API_KEY: "unused"
+
+  # ---- Persona ----
+  AGENT_NAME: "teaspoon"
+  AGENT_PERSONA: "assistant"
+  AGENT_SYSTEM_PROMPT: |
+    You are teaspoon, an AI agent that lives in Discord.
+    You help with general questions, infrastructure, and coding tasks.
+    Default tone: helpful, concise, technically precise.
+    When uncertain, prefer to ask one clarifying question over guessing.
