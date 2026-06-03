@@ -32,11 +32,13 @@ data:
   STORAGECLASS_METADATA: ceph-block-replicated
 
   # Garage S3 endpoint override (takes precedence over common-secrets COMMON_S3_ENDPOINT).
-  # Point at the cluster-local STORAGE service (tier:storage) instead of the gateway:
-  # gateway pods are not layout-assigned in unified Auto-mode (operator v0.6.5 gap), so
-  # their local key_table is frequently empty -> "403 No such key" / Access Denied. The
-  # storage service always holds the full FullReplication key_table. Resolves per-cluster.
-  COMMON_S3_ENDPOINT: "garage.garage.svc.cluster.local:3900"
+  # Point at the cluster-local GATEWAY service (tier:gateway). As of operator v0.6.9 the
+  # gateway holds the full FullReplication key_table (garage-operator#209/#224 fixed), so
+  # S3 sig-auth resolves locally — no more "403 No such key". The gateway also survives
+  # local-storage-loss: it proxies reads to a surviving region's storage (read_quorum=1),
+  # whereas the storage service has NO endpoints if local storage is destroyed. Swap this
+  # one value to repoint every app — all S3 clients use ${COMMON_S3_ENDPOINT}.
+  COMMON_S3_ENDPOINT: "garage-gateway.garage.svc.cluster.local:3900"
 
   # Garage: exclude asuka from gateway scheduling (SIGILL on that node)
   GARAGE_GATEWAY_AFFINITY: '{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/hostname","operator":"NotIn","values":["asuka"]}]}]}}}'

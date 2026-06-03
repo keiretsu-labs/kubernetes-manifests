@@ -58,7 +58,7 @@ spec:
       # empty -> "403 No such key" on ~50-100% of requests. The cross-region
       # garage-gw.keiretsu.ts.net hostname additionally routes through any zone
       # incl. a down site. Override per-app only if a specific cluster needs it.
-      s3Endpoint: "string | default=garage.garage.svc.cluster.local:3900"
+      s3Endpoint: "string | default=${COMMON_S3_ENDPOINT}"
       s3Path: "string | required=true"
       resticPassword: "string | default=${COMMON_RESTIC_SECRET}"
       # Backup schedule
