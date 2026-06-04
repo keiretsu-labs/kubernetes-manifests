@@ -113,6 +113,12 @@
 			"svc:http": ["tag:k8s"],
 			"svc:http-test": ["tag:k8s"],
 			"svc:tcp": ["tag:k8s"],
+			// Auto-approve the tailzero connector (tag:border0-managed) as a HOST
+			// of its k8s-API-proxy VIP service. autoApprovers.services entries MUST
+			// be keyed by the service NAME (not a tag) — the tag-keyed line below
+			// does NOT cover this, which left the service advertised with ZERO hosts
+			// (VIP assigned but no backing endpoint -> dashboard hangs forever).
+			"svc:robbinsdale-k8sapiserver-proxy": ["tag:border0-managed"],
 			"tag:bridge-svc": ["tag:bridge"],
 			"tag:border0-managed": ["tag:border0-managed"],
 		},
@@ -212,6 +218,17 @@
 		{
 			"src": ["group:superuser"],
 			"dst": ["svc:tcp", "tag:k8s"],
+			"ip":  ["*"],
+		},
+		{
+			// Border0 / tailzero native Cluster Dashboard: allow operators (and the
+			// ephemeral browser client they spawn) to reach the k8s-API-proxy VIP
+			// service advertised by the tailzero connector (tag:border0-managed).
+			// Without this grant the connector drops inbound packets with
+			// "no match found in trie for source IP" / current_rules:{} and the
+			// dashboard hangs forever.
+			"src": ["group:superuser"],
+			"dst": ["svc:robbinsdale-k8sapiserver-proxy"],
 			"ip":  ["*"],
 		},
 		{
