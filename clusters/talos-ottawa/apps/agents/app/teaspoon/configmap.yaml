@@ -34,6 +34,14 @@ data:
   # Cluster-internal API; no auth header is sent by Hermes, so it's ClusterIP-only.
   CAMOFOX_URL: "http://camofox.agents.svc.cluster.local:9377"
 
+  # ---- Web extract backend (self-hosted Firecrawl) ----
+  # web_extract routes to the self-hosted Firecrawl canary in the firecrawl ns
+  # (clusters/talos-ottawa/apps/firecrawl). SearXNG is search-only and cannot
+  # extract URL content, so web.extract_backend=firecrawl in /opt/data/config.yaml
+  # plus this URL is what makes web_extract work. Same-cluster ClusterIP; no key
+  # needed for self-hosted scrape->markdown.
+  FIRECRAWL_API_URL: "http://api.firecrawl.svc.cluster.local:3002"
+
   # LLM endpoint lives in /opt/data/config.yaml inside the PVC (set once via
   # kubectl exec). The "new model" for templated agents is anthropic/claude-opus-4-8
   # (Anthropic OAuth credential in /opt/data/auth.json). OPENAI_BASE_URL is kept
