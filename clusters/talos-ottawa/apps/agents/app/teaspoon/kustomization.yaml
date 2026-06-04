@@ -7,6 +7,7 @@ resources:
   - service.yaml
   - service-tailscale.yaml
   - egress.yaml
+  - httproute.yaml
   - storagestack.yaml
   - garagekey.yaml
   - configmap.yaml

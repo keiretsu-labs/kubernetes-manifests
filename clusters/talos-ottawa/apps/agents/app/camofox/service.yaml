@@ -16,3 +16,11 @@ spec:
       port: 9377
       targetPort: 9377
       protocol: TCP
+    # noVNC web viewer — exposed cluster-internally so the HTTPRoute on the
+    # `ts` gateway can target it (camofox.${CLUSTER_DOMAIN} over HTTPS, which
+    # makes noVNC use wss and fixes the broken stream over the plain-HTTP LB).
+    # The API (9377) is deliberately NOT routed externally.
+    - name: novnc
+      port: 6080
+      targetPort: 6080
+      protocol: TCP
