@@ -1,5 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+# Applied by the cluster-apps Kustomization (which recursively builds
+# clusters/talos-stpetersburg/apps). `namespace` pins these namespaced GarageNode
+# CRs to the garage namespace — without it cluster-apps applies them with no
+# namespace and fails ("namespace not specified").
+namespace: garage
 resources:
   - garage-storage-0.yaml
   - garage-storage-1.yaml
