@@ -1,0 +1,42 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: border0-connector
+  namespace: border0
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: border0-connector
+      version: 0.6.0
+      sourceRef:
+        kind: HelmRepository
+        name: border0
+        namespace: flux-system
+      interval: 30m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    image:
+      repository: ghcr.io/borderzero/border0
+      tag: latest
+      pullPolicy: Always
+    # api-admin grants the connector's ServiceAccount wildcard access to the
+    # kube-apiserver. Per-user authorization is enforced by Border0 policies in
+    # the admin portal (identity/context-aware), not by k8s RBAC.
+    # https://docs.border0.com/docs/kubernetes-api-sockets
+    rbac:
+      clusterRoleMode: api-admin
+    config:
+      # Invite code minted in the Border0 admin portal (Connectors page).
+      # The connector exchanges it for a token on first start and persists the
+      # token into a k8s Secret (token-persistence-mode=k8s-secret), so the
+      # invite is single-use and short-lived. Kept out of git via Flux var
+      # substitution from the cluster's SOPS secret (cluster-secrets).
+      inviteCode: ${BORDER0_INVITE_CODE}
