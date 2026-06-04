@@ -7,3 +7,4 @@ resources:
   - bitbucket-ssh-secret.sops.yaml
   - garage.yaml
   - csi-addons.yaml
+  - firecrawl.yaml

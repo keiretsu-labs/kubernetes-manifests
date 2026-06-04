@@ -1,0 +1,45 @@
+---
+# Firecrawl (self-hosted web scrape/extract) -- CANARY.
+# Upstream "simple" cluster-install manifests pulled straight from the firecrawl
+# repo at a pinned tag (see clusters/common/flux/repositories/git/firecrawl.yaml).
+# No kustomization.yaml exists in that upstream dir, so Flux auto-generates one
+# and builds every manifest there: api, worker, nuq-worker, nuq-postgres, redis,
+# playwright-service, configmap, secret.
+#
+# Notes:
+#  - nuq-postgres uses an emptyDir (ephemeral queue state) -- fine for a canary.
+#  - upstream secret.yaml ships empty values (no LLM key etc). Scrape->markdown
+#    works without them; only schema/LLM-extract features need OPENAI_API_KEY.
+#  - imagePullSecret `docker-registry-secret` is referenced but unneeded: the
+#    ghcr.io/firecrawl images are public and pull anonymously.
+#  - same-cluster: Hermes (agents ns) reaches this over the ClusterIP `api`
+#    svc, exactly like it reaches searxng. No tailscale LB needed.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app firecrawl
+  namespace: flux-system
+spec:
+  targetNamespace: firecrawl
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./examples/kubernetes/cluster-install
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: firecrawl
+  wait: false
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+  patches:
+    # Upstream ships nuq-worker at replicas: 5 (~15G mem requests). Way too heavy
+    # for a canary -- trim to 1. Bump later if throughput needs it.
+    - target:
+        kind: Deployment
+        name: nuq-worker
+      patch: |-
+        - op: replace
+          path: /spec/replicas
+          value: 1
