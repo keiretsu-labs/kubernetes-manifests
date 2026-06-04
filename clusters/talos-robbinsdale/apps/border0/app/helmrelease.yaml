@@ -2,14 +2,14 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: border0-connector
+  name: tailzero-connector
   namespace: border0
 spec:
   interval: 30m
   chart:
     spec:
-      chart: border0-connector
-      version: 0.6.0
+      chart: tailzero-connector
+      version: 0.3.0
       sourceRef:
         kind: HelmRepository
         name: border0
@@ -24,39 +24,30 @@ spec:
       retries: 3
   values:
     image:
-      repository: ghcr.io/borderzero/border0
+      repository: ghcr.io/borderzero/tailzero
       tag: latest
       pullPolicy: Always
     # api-admin grants the connector's ServiceAccount wildcard access to the
-    # kube-apiserver. Per-user authorization is enforced by Border0 policies in
-    # the admin portal (identity/context-aware), not by k8s RBAC.
-    # https://docs.border0.com/docs/kubernetes-api-sockets
+    # kube-apiserver + impersonation. REQUIRED for Kubernetes API proxying
+    # (the Cluster Dashboard / kubectl-over-Border0 path). Per-user authz is
+    # enforced by Border0 policies in the admin portal, not k8s RBAC.
     rbac:
       clusterRoleMode: api-admin
     config:
-      # The durable connector token is NEVER stored in git. It lives only in the
-      # in-cluster Secret "border0-connector-config" (key: config.yaml), which is
-      # created out-of-band with kubectl (see below). We do NOT use Flux var
-      # substitution / SOPS for it.
+      # One-time invite code minted in the Border0 admin portal (Connectors page).
+      # The tailzero connector exchanges this ONCE for a durable connector token +
+      # Tailscale auth key, then persists them into the chart-managed Secret
+      # "tailzero-connector-credentials" (in ns border0) via its secret-manager Role.
+      # On every restart it loads creds FROM that Secret and does NOT re-exchange the
+      # invite, so leaving the (already-consumed) invite here is safe and idempotent.
+      # The Secret's data is runtime-populated and NOT in git; Flux's 3-way merge
+      # preserves it across reconciles (manifest declares no .data).
       #
-      # Why a placeholder inviteCode instead of leaving it empty:
-      #   This chart only mounts/reads the persisted-token Secret when inviteCode
-      #   is non-empty. With inviteCode set, the Deployment runs
-      #     connector start --invite=<x> --token-persistence-mode=k8s-secret \
-      #                     --k8s-secret=border0-connector-config
-      #   On start the connector reads the EXISTING token from that Secret and
-      #   uses it; the placeholder invite is only ever exchanged if the Secret has
-      #   no valid token. (Verified live on robbinsdale: a pre-seeded Secret +
-      #   placeholder invite loads the existing token, ignores the invite.)
-      #
-      # Onboarding a fresh connector (one-time, out-of-band):
-      #   1. Mint an invite in the Border0 portal (Connectors page).
-      #   2. Seed the token into the cluster WITHOUT going through git, either:
-      #      a. let the connector self-exchange once by temporarily running it
-      #         with the real invite, then it persists config.yaml itself; or
-      #      b. kubectl create secret generic border0-connector-config \
-      #           -n border0 --from-file=config.yaml=<file containing
-      #           'token: "<JWT>"' and 'device_state_path: /etc/border0-device/state.yaml'>
-      #   The Secret is intentionally unmanaged by Flux/Helm so it survives
-      #   reconciles and the token never lands in git.
-      inviteCode: "placeholder-token-persisted-in-k8s-secret"
+      # NOTE: this REPLACES the legacy `border0-connector` chart
+      # (image ghcr.io/borderzero/border0), which could not serve the Tailscale-
+      # integrated k8s API-proxy data path (clients connected as WireGuard peers but
+      # packets were dropped at the connector's empty filter trie -> infinite spin in
+      # the Cluster Dashboard). tailzero (ghcr.io/borderzero/tailzero) is the current
+      # connector the portal's "Launch New Connector" wizard provisions.
+      inviteCode: "7cSHjV6_0O8"
+      hostname: robbinsdale-tailzero
