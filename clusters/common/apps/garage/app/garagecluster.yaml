@@ -89,6 +89,14 @@ spec:
   # Storage tier — persistent identity in metadata PVC; data PVC holds blocks.
   storage:
     replicas: ${GARAGE_REPLICAS:=1}
+    # Per-tier layout ownership (operator v0.6.11+). Default Auto: the operator
+    # generates and owns one storage GarageNode per replica. A region can set
+    # GARAGE_STORAGE_LAYOUT_POLICY=Manual in its cluster-settings to hand-manage
+    # storage GarageNode CRs in gitops (e.g. stpetersburg's per-spark storage
+    # arrays under clusters/talos-stpetersburg/apps/garage) while the GATEWAY
+    # tier stays operator-managed. Auto->Manual is one-way (operator ejects its
+    # storage nodes; Manual->Auto is rejected by the webhook).
+    layoutPolicy: "${GARAGE_STORAGE_LAYOUT_POLICY:=Auto}"
     metadata:
       size: 3Gi
       storageClassName: "${STORAGECLASS_METADATA}"

@@ -40,7 +40,14 @@ data:
   # one value to repoint every app — all S3 clients use ${COMMON_S3_ENDPOINT}.
   COMMON_S3_ENDPOINT: "garage-gateway.garage.svc.cluster.local:3900"
 
-  # Garage: run one storage replica per Spark (excludes orin-0).
+  # Garage: STORAGE layout is hand-managed per Spark node via GarageNode CRs in
+  # clusters/talos-stpetersburg/apps/garage (decoupled from clusters/common so
+  # each Spark can carry its own heterogeneous storage array). Per-tier Manual
+  # stops the operator from generating/owning storage GarageNodes here; the
+  # GATEWAY tier stays operator-managed (Auto). The cluster CR (federation,
+  # gateway tier, replication) still comes from common. Requires operator
+  # v0.6.11+ (spec.storage.layoutPolicy).
+  GARAGE_STORAGE_LAYOUT_POLICY: "Manual"
   GARAGE_REPLICAS: "2"
   GARAGE_NODE_SELECTOR: '{"node.kubernetes.io/instance-type":"dgx-spark"}'
   GARAGE_TOPOLOGY_SPREAD: '[{"maxSkew":1,"topologyKey":"kubernetes.io/hostname","whenUnsatisfiable":"DoNotSchedule","labelSelector":{"matchLabels":{"app.kubernetes.io/name":"garage"}}}]'

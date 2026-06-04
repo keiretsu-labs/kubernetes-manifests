@@ -1,0 +1,26 @@
+---
+# Spark-1 storage node. Binds the existing metadata + data PVCs via existingClaim
+# so the node_key (Garage node identity f863543b…) and all data survive the
+# Auto->Manual migration. local-path PV node-affinity pins this to spark-1.
+#
+# Add spec.storage.dataPaths[] here to describe a multi-disk array on spark-1
+# independently of spark-0.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageNode
+metadata:
+  name: garage-storage-1
+spec:
+  clusterRef:
+    name: garage
+  zone: "${LOCATION}"
+  capacity: 2Ti
+  nodeId: f863543b50d70a7b516c3092520908f90162720a82fd6a5ccfe06069ef0c82b7
+  tags:
+    - cluster:garage/garage
+    - tier:storage
+    - garage-storage-1-0
+  storage:
+    metadata:
+      existingClaim: metadata-garage-1
+    data:
+      existingClaim: data-garage-1
