@@ -34,20 +34,25 @@ spec:
     rbac:
       clusterRoleMode: api-admin
     config:
-      # One-time invite code minted in the Border0 admin portal (Connectors page).
-      # The tailzero connector exchanges this ONCE for a durable connector token +
-      # Tailscale auth key, then persists them into the chart-managed Secret
-      # "tailzero-connector-credentials" (in ns border0) via its secret-manager Role.
-      # On every restart it loads creds FROM that Secret and does NOT re-exchange the
-      # invite, so leaving the (already-consumed) invite here is safe and idempotent.
-      # The Secret's data is runtime-populated and NOT in git; Flux's 3-way merge
-      # preserves it across reconciles (manifest declares no .data).
+      # PLACEHOLDER invite — intentionally NOT a live invite code.
       #
-      # NOTE: this REPLACES the legacy `border0-connector` chart
-      # (image ghcr.io/borderzero/border0), which could not serve the Tailscale-
-      # integrated k8s API-proxy data path (clients connected as WireGuard peers but
-      # packets were dropped at the connector's empty filter trie -> infinite spin in
-      # the Cluster Dashboard). tailzero (ghcr.io/borderzero/tailzero) is the current
-      # connector the portal's "Launch New Connector" wizard provisions.
-      inviteCode: "7cSHjV6_0O8"
+      # The chart's validateConfig fails on an empty inviteCode, so this must be
+      # non-empty, but it is NEVER exchanged: the connector's durable credentials
+      # are pre-seeded out-of-band into the chart's credential-cache Secret
+      # "tailzero-connector-credentials" (ns border0). On boot tailzero loads
+      # creds FROM that Secret (-cache-k8s-secret-name) and skips the invite
+      # exchange entirely. This is the Terraform-native pattern: the API/TF
+      # primitive is a CONNECTOR TOKEN (POST /connector/token), not a portal
+      # invite. The Secret's config.yaml = {connector_id, connector_token,
+      # tailscale_auth_key} for the "robbinsdale-tailzero" connector
+      # (id 7d3cdae5-c530-4865-b3a1-21fe3d050dcd). Seeded with Helm ownership
+      # metadata so helm-controller adopts it; .data never in git, preserved by
+      # Flux 3-way merge (manifest declares no .data).
+      #
+      # NOTE: tailzero (ghcr.io/borderzero/tailzero) REPLACES the legacy
+      # `border0-connector` chart (image ghcr.io/borderzero/border0), which
+      # could not serve the Tailscale-integrated k8s API-proxy data path
+      # (clients connected as WireGuard peers but packets were dropped at the
+      # connector's empty filter trie -> infinite spin in the Cluster Dashboard).
+      inviteCode: "seeded-via-credentials-secret-do-not-edit"
       hostname: robbinsdale-tailzero
