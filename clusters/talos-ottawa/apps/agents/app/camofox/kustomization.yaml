@@ -8,4 +8,5 @@ resources:
   - service.yaml
   - service-tailscale.yaml
   - httproute.yaml
+  - storagestack.yaml
   - secret.yaml

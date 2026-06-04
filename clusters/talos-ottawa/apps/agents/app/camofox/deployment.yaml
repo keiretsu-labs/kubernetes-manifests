@@ -90,6 +90,11 @@ spec:
             - name: config
               mountPath: /app/camofox.config.json
               subPath: camofox.config.json
+            # Persistent browser profile (cookies, logins, per-user storage
+            # state) so they survive pod restarts. HOME=/root, and camofox
+            # writes profiles/cookies under ~/.camofox.
+            - name: data
+              mountPath: /root/.camofox
       volumes:
         - name: shm
           emptyDir:
@@ -98,4 +103,7 @@ spec:
         - name: config
           configMap:
             name: camofox-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: camofox-data
       terminationGracePeriodSeconds: 30
