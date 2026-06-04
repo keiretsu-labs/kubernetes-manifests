@@ -49,7 +49,15 @@ spec:
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
-  # stpetersburg removed 2026-05-30: node is down; re-add when restored
+    - name: stpetersburg
+      zone: stpetersburg
+      connection:
+        adminApiEndpoint: "http://stpetersburg-garage.keiretsu.ts.net:3903"
+        gatewayRpcEndpointTemplate: "stpetersburg-gw-{ordinal}.keiretsu.ts.net:3901"
+        adminTokenSecretRef:
+          name: garage-admin-token
+          key: admin-token
+  # stpetersburg re-added 2026-06-04: node back online, rejoining federation
 
   admin:
     adminTokenSecretRef:
