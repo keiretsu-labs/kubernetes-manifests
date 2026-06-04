@@ -34,29 +34,14 @@ spec:
     rbac:
       clusterRoleMode: api-admin
     config:
-      # The durable connector token is NEVER stored in git. It lives only in the
-      # in-cluster Secret "border0-connector-config" (key: config.yaml), which is
-      # created out-of-band with kubectl (see below). We do NOT use Flux var
-      # substitution / SOPS for it.
+      # Token mode: Helm renders the connector's token Secret from this value.
+      # The token is supplied via Flux var substitution from the cluster's SOPS
+      # secret (cluster-secrets.sops.yaml -> BORDER0_TOKEN), so it is encrypted
+      # in git and the deployment is fully GitOps-reproducible (survives a
+      # cluster rebuild with no manual kubectl step).
       #
-      # Why a placeholder inviteCode instead of leaving it empty:
-      #   This chart only mounts/reads the persisted-token Secret when inviteCode
-      #   is non-empty. With inviteCode set, the Deployment runs
-      #     connector start --invite=<x> --token-persistence-mode=k8s-secret \
-      #                     --k8s-secret=border0-connector-config
-      #   On start the connector reads the EXISTING token from that Secret and
-      #   uses it; the placeholder invite is only ever exchanged if the Secret has
-      #   no valid token. (Verified live on robbinsdale: a pre-seeded Secret +
-      #   placeholder invite loads the existing token, ignores the invite.)
-      #
-      # Onboarding a fresh connector (one-time, out-of-band):
-      #   1. Mint an invite in the Border0 portal (Connectors page).
-      #   2. Seed the token into the cluster WITHOUT going through git, either:
-      #      a. let the connector self-exchange once by temporarily running it
-      #         with the real invite, then it persists config.yaml itself; or
-      #      b. kubectl create secret generic border0-connector-config \
-      #           -n border0 --from-file=config.yaml=<file containing
-      #           'token: "<JWT>"' and 'device_state_path: /etc/border0-device/state.yaml'>
-      #   The Secret is intentionally unmanaged by Flux/Helm so it survives
-      #   reconciles and the token never lands in git.
-      inviteCode: "placeholder-token-persisted-in-k8s-secret"
+      # Mint the token in the Border0 portal: create a connector with an
+      # EXPLICIT name (e.g. "robbinsdale-k8s") so the dashboard + built-in SSH
+      # socket get a readable name instead of a random hex nickname, then copy
+      # its token into cluster-secrets as BORDER0_TOKEN and `sops -e` it.
+      token: ${BORDER0_TOKEN}
