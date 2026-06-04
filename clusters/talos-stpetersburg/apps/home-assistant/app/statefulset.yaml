@@ -67,7 +67,7 @@ spec:
               mountPath: /config
       containers:
         - name: homeassistant
-          image: homeassistant/home-assistant:2026.5
+          image: homeassistant/home-assistant:2026.6
           env:
             - name: TZ
               value: ${TIMEZONE}
