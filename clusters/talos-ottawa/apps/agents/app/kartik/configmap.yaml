@@ -43,8 +43,14 @@ data:
   # Session persists at /opt/data/whatsapp/session/ in the PVC.
   WHATSAPP_ENABLED: "true"
   WHATSAPP_MODE: "self-chat"
-  # Kartik's WhatsApp number (E.164 without +), substituted from common-secrets.
-  WHATSAPP_ALLOWED_USERS: "${KARTIK_WHATSAPP_NUMBER}"
+  # Kartik's WhatsApp number (E.164 without +).
+  # NOTE: must be a hardcoded quoted literal, NOT "${KARTIK_WHATSAPP_NUMBER}".
+  # kustomize strips quotes off a bare ${VAR} scalar, then Flux substitutes the
+  # numeric secret -> the ConfigMap value becomes an int -> SSA dry-run fails
+  # (".data.WHATSAPP_ALLOWED_USERS: expected string, got <int>") and WEDGES the
+  # entire agents Kustomization. To source from common-secrets, store the value
+  # already-quoted in the SOPS secret.
+  WHATSAPP_ALLOWED_USERS: "16147437286"
 
   # ---- Persona ----
   AGENT_NAME: "kartik"
