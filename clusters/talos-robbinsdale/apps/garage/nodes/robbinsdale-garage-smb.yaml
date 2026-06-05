@@ -9,15 +9,11 @@
 # pod-name tag) so the rejoin is a zero-churn no-op. To move this array off SMB
 # later, add a new node (e.g. robbinsdale-garage-cephrbd), sync, then drain.
 #
-# STAGED CUTOVER (created suspended): metadata is on local-path (RWO is NOT
-# kernel-enforced for two pods on the same node), so spawning this node's STS
-# while the old garage-storage-0 still mounts metadata-garage-0 on node `stone`
-# would risk two Garage processes opening the same node_key concurrently. So
-# this CR ships suspended (no STS/pod). Runbook: (1) delete the ejected
-# garage-storage-0, (2) wait for its pod + volumes to release, (3) remove the
-# maintenance block below so the operator brings this node up on the freed PVCs.
-# (ottawa's metadata is on ceph CSI, which Multi-Attach-blocks the handoff, so
-# ottawa-garage-smb needs no staging.)
+# Migrated 2026-06-04 from the operator-owned garage-storage-0 via existingClaim.
+# Because metadata is on local-path (RWO is not kernel-enforced across same-node
+# pods), the live cutover deleted the old node first, then brought this one up on
+# the freed PVCs — so it was shipped suspended initially. Now live; no staging
+# needed on subsequent reconciles.
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageNode
 metadata:
@@ -25,8 +21,6 @@ metadata:
 spec:
   clusterRef:
     name: garage
-  maintenance:
-    suspended: true
   zone: "${LOCATION}"
   capacity: 2Ti
   nodeId: 62b5e2ddcba5261e9b6ce201039d93bc4411d53810869bcc55ab1f267e505bb4
