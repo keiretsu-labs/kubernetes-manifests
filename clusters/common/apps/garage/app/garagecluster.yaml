@@ -82,8 +82,11 @@ spec:
     ramBufferMax: 128Mi
 
   workers:
-    resyncWorkerCount: 1
-    resyncTranquility: 3
+    # Temporarily accelerated (2026-06-05) to clear a large resync backlog from the
+    # stp-rejoin re-replication + node-rename layout churn. Revert to 1 / 3 once the
+    # block_resync_queue_length drains to ~0 across nodes.
+    resyncWorkerCount: 4
+    resyncTranquility: 1
     scrubTranquility: 4
 
   # Storage tier — persistent identity in metadata PVC; data PVC holds blocks.
