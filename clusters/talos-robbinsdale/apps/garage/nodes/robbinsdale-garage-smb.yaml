@@ -1,19 +1,18 @@
 ---
 # Robbinsdale storage node, hand-managed (Manual). Data lives on SMB; metadata
-# on local-path (node-pinned to its current node until metadata moves to ceph),
-# so the pod is effectively pinned for now. Named by the data backend (smb).
+# on ceph RBD (ceph-block-replicated-nvme) — so the pod is schedulable and
+# node-fault-tolerant (no local-path node pin). Named by the data backend (smb).
 # Binds the existing PVCs via existingClaim so node_key identity (Garage NodeID
-# 62b5e2dd…) and all data are preserved across the Auto->Manual rename.
+# 62b5e2dd…) and all data are preserved.
 #
 # spec.tags keep the EXACT existing layout-role tags (including the legacy
-# pod-name tag) so the rejoin is a zero-churn no-op. To move this array off SMB
-# later, add a new node (e.g. robbinsdale-garage-cephrbd), sync, then drain.
+# pod-name tag). To move the data array off SMB later, add a new node
+# (e.g. robbinsdale-garage-cephrbd), sync, then drain.
 #
-# Migrated 2026-06-04 from the operator-owned garage-storage-0 via existingClaim.
-# Because metadata is on local-path (RWO is not kernel-enforced across same-node
-# pods), the live cutover deleted the old node first, then brought this one up on
-# the freed PVCs — so it was shipped suspended initially. Now live; no staging
-# needed on subsequent reconciles.
+# History: migrated 2026-06-04 from operator-owned garage-storage-0 via
+# existingClaim; metadata then cold-copied from local-path -> ceph RBD
+# (node_key preserved byte-for-byte, layout unchanged) so the node is no longer
+# pinned to one host.
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageNode
 metadata:
@@ -21,12 +20,6 @@ metadata:
 spec:
   clusterRef:
     name: garage
-  # TEMPORARY (metadata local-path -> ceph migration): suspended so the operator
-  # won't recreate the STS while the old pod is orphan-deleted and the metadata
-  # dir is cold-copied to a ceph PVC. Reverted in the same change that swaps
-  # metadata.existingClaim to metadata-garage-ceph.
-  maintenance:
-    suspended: true
   zone: "${LOCATION}"
   capacity: 2Ti
   nodeId: 62b5e2ddcba5261e9b6ce201039d93bc4411d53810869bcc55ab1f267e505bb4
@@ -36,6 +29,6 @@ spec:
     - garage-storage-0-0
   storage:
     metadata:
-      existingClaim: metadata-garage-0
+      existingClaim: metadata-garage-ceph
     data:
       existingClaim: data-garage-0
