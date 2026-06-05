@@ -20,8 +20,6 @@ metadata:
 spec:
   clusterRef:
     name: garage
-  maintenance:
-    suspended: true
   zone: "${LOCATION}"
   capacity: 2Ti
   nodeId: 5b58bb8e679ba9689288b12814e788b5ec8f5217a9bb556d175e33de35762e66
