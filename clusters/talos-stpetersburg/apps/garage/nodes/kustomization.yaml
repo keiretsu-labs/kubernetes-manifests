@@ -6,10 +6,8 @@ kind: Kustomization
 # namespace and fails ("namespace not specified").
 namespace: garage
 resources:
-  # Descriptive rename in progress (garage-storage-N -> stpetersburg-garage-localpath-spark-N).
-  # The new nodes ship suspended and bind the same PVCs; the old nodes are removed
-  # one at a time after a skip-drain delete. Both coexist transiently here.
-  - garage-storage-0.yaml
+  # Descriptive rename in progress (garage-storage-1 -> stpetersburg-garage-localpath-spark-1
+  # still pending its skip-drain cutover). spark-0 already migrated.
   - garage-storage-1.yaml
   - stpetersburg-garage-localpath-spark-0.yaml
   - stpetersburg-garage-localpath-spark-1.yaml
