@@ -18,3 +18,29 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
+---
+# Per-location hand-managed storage GarageNode CRs (Manual). The cluster CR
+# (from clusters/common) is per-tier Manual for storage via
+# GARAGE_STORAGE_LAYOUT_POLICY, so the operator ejects its Auto storage node and
+# these take over. Gateway tier stays Auto.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app garage-nodes
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: garage
+  targetNamespace: garage
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./clusters/${CLUSTER_NAME}/apps/garage/nodes
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m

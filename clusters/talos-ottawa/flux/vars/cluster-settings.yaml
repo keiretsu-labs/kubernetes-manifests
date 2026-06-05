@@ -40,5 +40,10 @@ data:
   # one value to repoint every app — all S3 clients use ${COMMON_S3_ENDPOINT}.
   COMMON_S3_ENDPOINT: "garage-gateway.garage.svc.cluster.local:3900"
 
+  # Garage: storage layout hand-managed per-node in clusters/talos-ottawa/apps/garage
+  # (Manual) so the array can move off SMB to ceph/local-path per node. Gateway
+  # tier stays operator-managed (Auto). Requires operator v0.6.11+.
+  GARAGE_STORAGE_LAYOUT_POLICY: "Manual"
+
   # Garage: exclude asuka from gateway scheduling (SIGILL on that node)
   GARAGE_GATEWAY_AFFINITY: '{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/hostname","operator":"NotIn","values":["asuka"]}]}]}}}'
