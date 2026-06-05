@@ -1,0 +1,30 @@
+---
+# Ottawa storage node, hand-managed (Manual). Data lives on SMB (schedulable,
+# node-fault-tolerant) and metadata on ceph-block-replicated — so the pod is
+# free to reschedule; no node pin. Named by the data backend (smb). Binds the
+# existing PVCs via existingClaim so node_key identity (Garage NodeID
+# 9107ef0e…) and all data are preserved across the Auto->Manual rename.
+#
+# spec.tags keep the EXACT existing layout-role tags (including the legacy
+# pod-name tag) so the rejoin is a zero-churn no-op (no layout version bump).
+# To move this array off SMB later, add a new node (e.g. ottawa-garage-cephrbd),
+# let it sync, then drain+remove this one.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageNode
+metadata:
+  name: ottawa-garage-smb
+spec:
+  clusterRef:
+    name: garage
+  zone: "${LOCATION}"
+  capacity: 2Ti
+  nodeId: 9107ef0ef2600c5d9968998c62f9954e8de419ab943d9476f142c86aef72390f
+  tags:
+    - cluster:garage/garage
+    - tier:storage
+    - garage-storage-0-0
+  storage:
+    metadata:
+      existingClaim: metadata-garage-0
+    data:
+      existingClaim: data-garage-0
