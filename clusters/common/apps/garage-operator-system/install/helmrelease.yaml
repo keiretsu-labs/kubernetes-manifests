@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: garage-operator
-      version: "0.6.11"
+      version: "0.6.12"
       sourceRef:
         kind: HelmRepository
         name: garage-operator
