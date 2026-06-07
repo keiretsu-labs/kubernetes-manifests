@@ -9,4 +9,7 @@ resources:
   - kartik
   - teaspoon
   - camofox
-  - groups/demo
+# NOTE: hermes groups (groups/<name>) are NOT listed here. Each is reconciled by
+# its own Flux Kustomization (ks-<name>.yaml) so tenants build independently —
+# no shared kustomize accumulation (group-meta would collide) and one group's
+# failure can't block the others. `add-group.sh` wires those up.
