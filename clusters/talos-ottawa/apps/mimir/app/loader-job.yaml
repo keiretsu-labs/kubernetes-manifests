@@ -4,6 +4,11 @@
 # alertmanager ConfigMaps change, because the configMapGenerator hash suffix
 # changes the Job's volume references and the force annotation lets Flux replace
 # the otherwise-immutable Job.
+#
+# grafana/mimirtool is distroless (no /bin/sh), so each step runs the mimirtool
+# entrypoint directly instead of a shell loop. The render initContainer
+# (dibi/envsubst, alpine-based) injects the Discord/Gatus secrets into the AM
+# config at runtime so they never live in the repo or a ConfigMap.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -11,7 +16,7 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/force: enabled
 spec:
-  backoffLimit: 3
+  backoffLimit: 6
   ttlSecondsAfterFinished: 3600
   template:
     spec:
@@ -22,8 +27,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       initContainers:
-        # Render the Alertmanager config template, injecting the Discord/Gatus
-        # secrets at runtime so they never live in the repo or a ConfigMap.
+        # 1. Render the Alertmanager config template with the secrets.
         - name: render-alertmanager
           image: docker.io/dibi/envsubst:1
           command:
@@ -34,50 +38,93 @@ spec:
             - secretRef:
                 name: alertmanager-secret
           volumeMounts:
-            - name: alertmanager
-              mountPath: /am
-            - name: render
-              mountPath: /render
-          securityContext:
+            - { name: alertmanager, mountPath: /am }
+            - { name: render, mountPath: /render }
+          securityContext: &sc
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
             capabilities:
               drop: ["ALL"]
+        # 2-4. Sync rule groups for each tenant.
+        - name: rules-ottawa
+          image: &mt docker.io/grafana/mimirtool:3.1.0
+          args: &rulesyncottawa
+            - rules
+            - sync
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-ottawa
+            - /rules/blackbox.yaml
+            - /rules/flux.yaml
+            - /rules/garage.yaml
+            - /rules/k8gb.yaml
+            - /rules/monitoring.yaml
+            - /rules/smartctl.yaml
+          volumeMounts: &rulesmount
+            - { name: rules, mountPath: /rules }
+          securityContext: *sc
+        - name: rules-robbinsdale
+          image: *mt
+          args:
+            - rules
+            - sync
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-robbinsdale
+            - /rules/blackbox.yaml
+            - /rules/flux.yaml
+            - /rules/garage.yaml
+            - /rules/k8gb.yaml
+            - /rules/monitoring.yaml
+            - /rules/smartctl.yaml
+          volumeMounts: *rulesmount
+          securityContext: *sc
+        - name: rules-stpetersburg
+          image: *mt
+          args:
+            - rules
+            - sync
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-stpetersburg
+            - /rules/blackbox.yaml
+            - /rules/flux.yaml
+            - /rules/garage.yaml
+            - /rules/k8gb.yaml
+            - /rules/monitoring.yaml
+            - /rules/smartctl.yaml
+          volumeMounts: *rulesmount
+          securityContext: *sc
+        # 5-6. Load Alertmanager config for two tenants (third is the main container).
+        - name: alertmanager-ottawa
+          image: *mt
+          args: &amloadottawa
+            - alertmanager
+            - load
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-ottawa
+            - /render/alertmanager.yaml
+          volumeMounts: &rendermount
+            - { name: render, mountPath: /render }
+          securityContext: *sc
+        - name: alertmanager-robbinsdale
+          image: *mt
+          args:
+            - alertmanager
+            - load
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-robbinsdale
+            - /render/alertmanager.yaml
+          volumeMounts: *rendermount
+          securityContext: *sc
       containers:
-        - name: load
-          image: docker.io/grafana/mimirtool:3.1.0
-          command:
-            - /bin/sh
-            - -c
-            - |
-              set -eu
-              ADDR=http://mimir-gateway.mimir.svc.cluster.local:8080
-              TENANTS="talos-ottawa talos-robbinsdale talos-stpetersburg"
-              for T in $TENANTS; do
-                echo "=== $T: syncing rules ==="
-                n=0
-                until mimirtool rules sync --address="$ADDR" --id="$T" /rules/*.yaml; do
-                  n=$((n+1)); [ "$n" -ge 30 ] && echo "rules sync failed for $T" && exit 1
-                  echo "mimir not ready / sync failed, retry $n"; sleep 10
-                done
-                echo "=== $T: loading alertmanager config ==="
-                n=0
-                until mimirtool alertmanager load --address="$ADDR" --id="$T" /render/alertmanager.yaml; do
-                  n=$((n+1)); [ "$n" -ge 30 ] && echo "alertmanager load failed for $T" && exit 1
-                  echo "am load failed, retry $n"; sleep 10
-                done
-              done
-              echo "all tenants synced"
-          volumeMounts:
-            - name: rules
-              mountPath: /rules
-            - name: render
-              mountPath: /render
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop: ["ALL"]
+        # 7. Load Alertmanager config for the last tenant.
+        - name: alertmanager-stpetersburg
+          image: *mt
+          args:
+            - alertmanager
+            - load
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-stpetersburg
+            - /render/alertmanager.yaml
+          volumeMounts: *rendermount
+          securityContext: *sc
       volumes:
         - name: rules
           configMap:
