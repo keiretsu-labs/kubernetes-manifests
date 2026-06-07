@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: agents
 resources:
   - bucket.yaml
+  - egress.yaml
   - assistant-raj
   - abtar
   - kartik
