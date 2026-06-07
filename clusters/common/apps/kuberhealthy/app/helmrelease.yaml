@@ -36,6 +36,7 @@ spec:
         release: kube-prometheus-stack
       prometheusRule:
         enabled: true
+        namespace: monitoring
         release: kube-prometheus-stack
 
     # === Synthetic CAPABILITY checks (the real gap our monitoring map found) ===
