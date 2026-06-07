@@ -17,8 +17,8 @@ spec:
   image: dxflrs/garage:v2.3.0
 
   replication:
-    factor: 2
-    consistencyMode: "degraded" # 2-zone operation; restore factor:3 + zoneRedundancy when stpetersburg returns
+    factor: 3
+    consistencyMode: "consistent" # Full 3-zone read-after-write consistency
 
   s3Api:
     rootDomain: ".s3.${COMMON_DOMAIN}"
