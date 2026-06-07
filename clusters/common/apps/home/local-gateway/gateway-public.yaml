@@ -42,6 +42,19 @@ spec:
         - group: ''
           kind: Secret
           name: wildcard-${COMMON_DOMAIN//./-}
+    - name: wildcard-agents-${COMMON_DOMAIN//./-}-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.agents.${COMMON_DOMAIN}"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-agents-${COMMON_DOMAIN//./-}
     - name: ${COMMON_DOMAIN//./-}-https
       protocol: HTTPS
       port: 443
