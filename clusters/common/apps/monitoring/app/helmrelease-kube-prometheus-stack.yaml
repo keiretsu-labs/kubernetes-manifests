@@ -21,13 +21,11 @@ spec:
       valuesKey: kube-state-metrics-config.yaml
   values:
     cleanPrometheusOperatorObjectNames: true
-    # Disable the upstream KubeletDown rule — its expr relies on a `cluster`
-    # label join that doesn't hold in our setup (kubelet `up{}` has empty
-    # cluster, kube_node_info has cluster=talos-<location> via externalLabels).
-    # Replacement rule lives in clusters/common/apps/monitoring/config/prometheusrules.yaml.
+    # Agent mode evaluates no rules — don't ship dead PrometheusRule objects.
+    # The infra alerts in config/prometheusrules.yaml are now unevaluated;
+    # re-home them in the Mimir ruler when alerting is reinstated.
     defaultRules:
-      disabled:
-        KubeletDown: true
+      create: false
     grafana:
       enabled: false
 
@@ -35,45 +33,46 @@ spec:
       admissionWebhooks:
         enabled: true
     prometheus:
+      # Agent mode: scrape + remote_write only. No local TSDB query engine,
+      # rule evaluation, or alerting — Mimir is the store/query layer. This
+      # sheds both the head-block TSDB and the ~25% remote_write series-cache
+      # tax a full server pays, dropping RSS from multi-GB to a few hundred MB.
+      agentMode: true
       prometheusSpec:
         externalLabels:
           cluster: ${CLUSTER_NAME}
-        serviceMonitorSelector: {}
         externalUrl: https://prometheus.${CLUSTER_DOMAIN}
+        serviceMonitorSelector: {}
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false
         probeSelectorNilUsesHelmValues: false
-        ruleSelectorNilUsesHelmValues: false
         scrapeConfigSelectorNilUsesHelmValues: false
-        enableRemoteWriteReceiver: true
-        enableFeatures:
-          - exemplar-storage
         remoteWrite:
           - url: http://mimir-gateway.mimir.svc.cluster.local:8080/api/v1/push
             headers:
               X-Scope-OrgID: ${CLUSTER_NAME}
             remoteTimeout: 30s
             queueConfig:
+              # shard memory ≈ maxShards * (capacity + maxSamplesPerSend).
+              # Bound maxShards so a Mimir backlog can't balloon the agent;
+              # keep capacity ~5x maxSamplesPerSend to avoid WAL stalls.
               capacity: 10000
-              maxSamplesPerSend: 5000
+              maxSamplesPerSend: 2000
+              maxShards: 50
               batchSendDeadline: 5s
-        retention: 2h
-        additionalAlertRelabelConfigs:
-          - source_labels: [alertname]
-            regex: Watchdog
-            target_label: namespace
-            replacement: monitoring
         resources:
           requests:
             cpu: 100m
-            memory: 1Gi
+            memory: 256Mi
           limits:
-            memory: 4Gi
+            memory: 1Gi
         storageSpec:
           emptyDir: {}
 
+    # No local rule evaluation in agent mode, so nothing fires alerts here.
+    # Re-enable once the Mimir ruler is wired up to drive Alertmanager.
     alertmanager:
-      enabled: true
+      enabled: false
       alertmanagerSpec:
         alertmanagerConfigSelector:
           matchLabels:
