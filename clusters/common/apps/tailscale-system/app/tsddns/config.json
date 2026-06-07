@@ -2,6 +2,9 @@
     "ts.keiretsu.top": [
       "svc:ottawa-k8gb-coredns"
     ],
+    "keiretsu.top": [
+      "1.1.1.1"
+    ],
     "rajsingh.info": [
       "svc:stpetersburg-home-envoy-gateway"
     ],
