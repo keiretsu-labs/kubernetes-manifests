@@ -10,3 +10,4 @@ resources:
   - ./loki
   - ./cnpg
   - ./k6
+  - ./kuberhealthy

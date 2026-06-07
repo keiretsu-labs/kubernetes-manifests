@@ -1,0 +1,16 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: kuberhealthy
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: Kuberhealthy
+  url: https://raw.githubusercontent.com/kuberhealthy/kuberhealthy/master/deploy/grafana/dashboard.json
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Mimir
