@@ -86,7 +86,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: head }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: head }
@@ -150,8 +150,8 @@ spec:
             --distributed-executor-backend ray \
             --moe-backend marlin --enforce-eager \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 8192 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.66 \
+            --max-model-len 4096 --max-num-seqs 6 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.80 \
             --enable-prefix-caching \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
@@ -170,7 +170,7 @@ spec:
         - { name: RAY_memory_usage_threshold, value: "0.97" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "27:43" }
+        - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "42" }
         # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
         # verified from the device GID table. This NCCL build is IB-only (socket NET
         # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
@@ -227,7 +227,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: worker }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: worker }
@@ -291,7 +291,7 @@ spec:
         - { name: RAY_memory_usage_threshold, value: "0.97" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "27:43" }
+        - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "42" }
         # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
         # verified from the device GID table. This NCCL build is IB-only (socket NET
         # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
