@@ -86,7 +86,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: head }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: head }
@@ -138,7 +138,7 @@ spec:
             --kv-cache-dtype fp8 --block-size 256 \
             --max-model-len 200000 --max-num-seqs 6 --max-num-batched-tokens 8192 \
             --gpu-memory-utilization 0.76 \
-            --enable-prefix-caching \
+            --enable-prefix-caching --enable-expert-parallel --enforce-eager \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
@@ -213,7 +213,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: worker }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: worker }
@@ -265,7 +265,7 @@ spec:
             --kv-cache-dtype fp8 --block-size 256 \
             --max-model-len 200000 --max-num-seqs 6 --max-num-batched-tokens 8192 \
             --gpu-memory-utilization 0.76 \
-            --enable-prefix-caching \
+            --enable-prefix-caching --enable-expert-parallel --enforce-eager \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
