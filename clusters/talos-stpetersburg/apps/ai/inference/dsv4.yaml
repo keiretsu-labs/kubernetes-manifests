@@ -1,22 +1,23 @@
 # DeepSeek-V4-Flash on the DGX Sparks — multi-node TP=2 over the 200G RDMA rail.
 #
-# Model: 0xSero/DeepSeek-V4-Flash-180B (deepseek_v4 arch, FP8 block-scaled, ~103GB).
-#   Chosen over the full 284B flagship because 103GB / 2 = ~52GB/node leaves ~35GB/node
-#   for the 1M-token KV cache — so FULL 1M context fits OOM-safely. The flagship (~160GB,
-#   ~80GB/node) left <15GB/node and could not hold 1M without OOM risk.
+# Model: deepseek-ai/DeepSeek-V4-Flash (official, 256 experts, FP8, ~160GB → ~80GB/node).
+#   The recipe image's MoE kernels only support the official 256-expert layout, so the
+#   smaller 0xSero 180B (160 experts) was rejected ("Unsupported expert number: 160").
+#   At ~80GB/node weights, full 1M KV would need util ~0.82 (the recipe's razor's edge);
+#   for OOM-safety on these shared nodes we run util 0.78 + 512K context (still 2.5x Qwen).
 # Image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready (recipe image — vLLM 0.21.1,
-#   b12x MoE kernels, deepseek_v4 tokenizer/tool/reasoning parsers, multi-node entrypoint).
+#   deepseek_v4 tokenizer/tool/reasoning parsers, multi-node entrypoint).
 #
 # Topology: dsv4-head (spark-0, rank 0, serves :8000) + dsv4-worker (spark-1, rank 1,
-#   headless). NCCL all-reduce runs over the ConnectX-7 rail (mlx5_1 / eth2,
-#   192.168.74.1 <-> .2, RoCEv2). hostNetwork + privileged + /dev/infiniband mounts because
-#   the k8s RDMA device-plugin reports "0 devices" on this hardware (see rdma-shared-dp note).
+#   headless). NCCL collectives run over the ConnectX-7 rail (mlx5_1 / eth2, RoCEv2 GID 3,
+#   192.168.74.1 <-> .2). hostNetwork + privileged + /dev/infiniband mounts because the k8s
+#   RDMA device-plugin reports "0 devices" here. GDR is disabled — the GB10's unified LPDDR5X
+#   hangs GPUDirect RDMA, so NCCL stages through host buffers. (Spiderpool/SR-IOV migration
+#   to follow for proper GPUDirect.)
 #
-# OOM-safety (the hard constraint): util 0.70 (~87GB GPU view) + Guaranteed QoS limit 92Gi
-#   (request==limit) so the kernel evicts co-tenants before vLLM. ~52GB weights + ~30GB KV +
-#   ~5GB overhead. ClickHouse is descheduled (clusters/common/apps/clickhouse) to clear the
-#   ~16Gi burst that previously caused OOMs on spark-1. shm 16Gi (NOT the recipe's 64GB — that
-#   would compete with weights on a 128GB unified-memory node).
+# OOM-safety: util 0.78 (~97GB GPU view) + Guaranteed QoS limit 100Gi (request==limit) so the
+#   kernel evicts co-tenants before vLLM. ~80GB weights + ~15GB KV. ClickHouse is descheduled
+#   (clusters/common/apps/clickhouse) to clear the ~16Gi burst that caused OOMs on spark-1.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -25,10 +26,16 @@ metadata:
   namespace: ai
 data:
   download.py: |
-    import glob, os
+    import glob, os, shutil
     from huggingface_hub import snapshot_download, hf_hub_download
     token = os.environ.get('HUGGING_FACE_HUB_TOKEN')
-    repo, path = '0xSero/DeepSeek-V4-Flash-180B', '/models/dsv4-180b'
+    # The 0xSero 180B variant has 160 experts, which the recipe image's MoE kernels
+    # reject ("Unsupported expert number: 160"). Use the official 256-expert FP8 model
+    # the image was built for. Remove the old weights first to free PVC space.
+    old = '/models/dsv4-180b'
+    if os.path.exists(old):
+        print('Removing old 180B weights...', flush=True); shutil.rmtree(old, ignore_errors=True)
+    repo, path = 'deepseek-ai/DeepSeek-V4-Flash', '/models/dsv4'
     has_config = os.path.exists(os.path.join(path, 'config.json'))
     has_weights = bool(glob.glob(os.path.join(path, '*.safetensors')))
     if not (has_config and has_weights):
@@ -124,13 +131,13 @@ spec:
         command: [bash, -c]
         args:
         - |
-          exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4-180b \
+          exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
             --served-model-name DeepSeek-V4-Flash deepseek-v4-flash \
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 1000000 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.70 \
+            --max-model-len 524288 --max-num-seqs 6 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.78 \
             --enable-prefix-caching \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
@@ -172,8 +179,8 @@ spec:
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
         resources:
-          requests: { memory: "92Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "92Gi", nvidia.com/gpu: "1" }
+          requests: { memory: "100Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "100Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
@@ -251,13 +258,13 @@ spec:
         command: [bash, -c]
         args:
         - |
-          exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4-180b \
+          exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
             --served-model-name DeepSeek-V4-Flash deepseek-v4-flash \
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 1000000 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.70 \
+            --max-model-len 524288 --max-num-seqs 6 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.78 \
             --enable-prefix-caching \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
@@ -299,8 +306,8 @@ spec:
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
         resources:
-          requests: { memory: "92Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "92Gi", nvidia.com/gpu: "1" }
+          requests: { memory: "100Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "100Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
