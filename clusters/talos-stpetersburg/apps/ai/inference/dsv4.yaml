@@ -5,7 +5,7 @@
 #   smaller 0xSero 180B (160 experts) was rejected ("Unsupported expert number: 160").
 #   At ~80GB/node weights, full 1M KV would need util ~0.82 (the recipe's razor's edge);
 #   for OOM-safety on these shared nodes we run util 0.78 + 512K context (still 2.5x Qwen).
-# Image: lmxxf/vllm-deepseek-v4-dgx-spark:latest (recipe image — vLLM 0.21.1,
+# Image: vllm/vllm-openai:nightly-aarch64 (recipe image — vLLM 0.21.1,
 #   deepseek_v4 tokenizer/tool/reasoning parsers, multi-node entrypoint).
 #
 # Topology: dsv4-head (spark-0, rank 0, serves :8000) + dsv4-worker (spark-1, rank 1,
@@ -103,7 +103,7 @@ spec:
       terminationGracePeriodSeconds: 120
       initContainers:
       - name: download-models
-        image: lmxxf/vllm-deepseek-v4-dgx-spark:latest
+        image: vllm/vllm-openai:nightly-aarch64
         command: [python3, /scripts/download.py]
         env:
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
@@ -127,7 +127,7 @@ spec:
           limits: { memory: "32Mi" }
       containers:
       - name: vllm
-        image: lmxxf/vllm-deepseek-v4-dgx-spark:latest
+        image: vllm/vllm-openai:nightly-aarch64
         command: [bash, -c]
         args:
         - |
@@ -171,7 +171,6 @@ spec:
         - { name: RAY_memory_monitor_refresh_ms, value: "0" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "42" }
         # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
         # verified from the device GID table. This NCCL build is IB-only (socket NET
         # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
@@ -245,7 +244,7 @@ spec:
       terminationGracePeriodSeconds: 120
       initContainers:
       - name: download-models
-        image: lmxxf/vllm-deepseek-v4-dgx-spark:latest
+        image: vllm/vllm-openai:nightly-aarch64
         command: [python3, /scripts/download.py]
         env:
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
@@ -269,7 +268,7 @@ spec:
           limits: { memory: "32Mi" }
       containers:
       - name: vllm
-        image: lmxxf/vllm-deepseek-v4-dgx-spark:latest
+        image: vllm/vllm-openai:nightly-aarch64
         command: [bash, -c]
         args:
         - |
@@ -293,7 +292,6 @@ spec:
         - { name: RAY_memory_monitor_refresh_ms, value: "0" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "42" }
         # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
         # verified from the device GID table. This NCCL build is IB-only (socket NET
         # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
