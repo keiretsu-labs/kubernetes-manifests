@@ -86,7 +86,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: head }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: head }
@@ -136,7 +136,7 @@ spec:
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 200000 --max-num-seqs 6 --max-num-batched-tokens 8192 \
+            --max-model-len 131072 --max-num-seqs 6 --max-num-batched-tokens 8192 \
             --gpu-memory-utilization 0.76 \
             --enable-prefix-caching \
             --tokenizer-mode auto \
@@ -157,6 +157,7 @@ spec:
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
+        - { name: VLLM_USE_V1, value: "0" }
         # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
         # verified from the device GID table. This NCCL build is IB-only (socket NET
         # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
@@ -213,7 +214,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: worker }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: worker }
@@ -263,7 +264,7 @@ spec:
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 200000 --max-num-seqs 6 --max-num-batched-tokens 8192 \
+            --max-model-len 131072 --max-num-seqs 6 --max-num-batched-tokens 8192 \
             --gpu-memory-utilization 0.76 \
             --enable-prefix-caching \
             --tokenizer-mode auto \
@@ -284,6 +285,7 @@ spec:
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
+        - { name: VLLM_USE_V1, value: "0" }
         # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
         # verified from the device GID table. This NCCL build is IB-only (socket NET
         # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
