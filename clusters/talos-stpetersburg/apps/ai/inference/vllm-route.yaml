@@ -12,7 +12,7 @@ spec:
   endpoints:
     - fqdn:
         # Repointed from the Qwen `vllm` Service to the DeepSeek-V4-Flash head pod (dsv4.yaml).
-        hostname: dsv4.ai.svc.cluster.local
+        hostname: vllm.ai.svc.cluster.local
         port: 8000
 ---
 apiVersion: aigateway.envoyproxy.io/v1beta1
