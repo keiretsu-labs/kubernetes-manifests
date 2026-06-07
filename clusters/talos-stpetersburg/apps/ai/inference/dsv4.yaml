@@ -159,6 +159,7 @@ spec:
         - { containerPort: 8000, name: http, protocol: TCP }
         env:
         - { name: NODE_RANK, value: "0" }
+        - { name: VLLM_HOST_IP, value: "192.168.74.1" }
         - { name: MASTER_ADDR, value: "192.168.74.1" }
         # b12x fused-MoE kernel — required for correct + fast MoE on the official
         # 256-expert DSV4. (It was briefly disabled for the 160-expert 180B variant,
@@ -276,6 +277,7 @@ spec:
             --disable-usage-stats --block
         env:
         - { name: NODE_RANK, value: "1" }
+        - { name: VLLM_HOST_IP, value: "192.168.74.2" }
         - { name: MASTER_ADDR, value: "192.168.74.1" }
         - { name: HEADLESS, value: "1" }
         # b12x fused-MoE kernel — required for correct + fast MoE on the official
