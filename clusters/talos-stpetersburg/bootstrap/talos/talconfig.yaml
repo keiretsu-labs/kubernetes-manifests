@@ -52,7 +52,9 @@ nodes:
     talosImageURL: "factory.talos.dev/installer/fa4bd9762d62e94cf3de1d8f7dbfb4cfe11647c205ba673d831a2fa1ae055113"
     controlPlane: true
     networkInterfaces:
-      - interface: eth0
+        # Pinned by MAC — net.ifnames=0 + 5 NICs means bare "eth0" can reorder on reboot/firmware update
+      - deviceSelector:
+          hardwareAddr: "4c:bb:47:2d:95:33"  # onboard mgmt NIC
         dhcp: true
         vip:
           ip: "192.168.73.25"
@@ -69,7 +71,8 @@ nodes:
     talosImageURL: "factory.talos.dev/installer/4c073ebf8a42d342831306af45e6fec8edee66c8e2db76ef2a950b809882253b"
     controlPlane: true
     networkInterfaces:
-      - interface: eth0
+      - deviceSelector:
+          hardwareAddr: "3c:6d:66:76:77:55"  # single onboard NIC
         dhcp: true
         vip:
           ip: "192.168.73.25"
@@ -86,7 +89,9 @@ nodes:
     talosImageURL: "factory.talos.dev/installer/fa4bd9762d62e94cf3de1d8f7dbfb4cfe11647c205ba673d831a2fa1ae055113"
     controlPlane: true
     networkInterfaces:
-      - interface: eth0
+        # Pinned by MAC — net.ifnames=0 + 5 NICs means bare "eth0" can reorder on reboot/firmware update
+      - deviceSelector:
+          hardwareAddr: "4c:bb:47:2b:90:4c"  # onboard mgmt NIC
         dhcp: true
         vip:
           ip: "192.168.73.25"
