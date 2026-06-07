@@ -150,12 +150,13 @@ spec:
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        - { name: NCCL_IB_HCA, value: "mlx5_1" }
+        # NCCL over TCP on the 200G rail (eth2/192.168.74.x). RoCE/IB verbs hung in
+        # the collective (heartbeat-monitor abort); sockets over the rail are reliable
+        # to get serving. GPUDirect RDMA comes with the Spiderpool/SR-IOV migration.
         - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
         - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
-        - { name: NCCL_IB_GID_INDEX, value: "3" }
-        - { name: NCCL_NET, value: "IB" }
-        - { name: NCCL_IB_DISABLE, value: "0" }
+        - { name: NCCL_IB_DISABLE, value: "1" }
+        - { name: NCCL_DEBUG, value: "INFO" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
         - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
@@ -270,12 +271,13 @@ spec:
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        - { name: NCCL_IB_HCA, value: "mlx5_1" }
+        # NCCL over TCP on the 200G rail (eth2/192.168.74.x). RoCE/IB verbs hung in
+        # the collective (heartbeat-monitor abort); sockets over the rail are reliable
+        # to get serving. GPUDirect RDMA comes with the Spiderpool/SR-IOV migration.
         - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
         - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
-        - { name: NCCL_IB_GID_INDEX, value: "3" }
-        - { name: NCCL_NET, value: "IB" }
-        - { name: NCCL_IB_DISABLE, value: "0" }
+        - { name: NCCL_IB_DISABLE, value: "1" }
+        - { name: NCCL_DEBUG, value: "INFO" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
         - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
