@@ -1,0 +1,89 @@
+---
+# Pushes the native rule groups + Alertmanager config into Mimir, once per
+# tenant (each cluster is a tenant). Recreated by Flux whenever the rules or
+# alertmanager ConfigMaps change, because the configMapGenerator hash suffix
+# changes the Job's volume references and the force annotation lets Flux replace
+# the otherwise-immutable Job.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mimir-config-loader
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        # Render the Alertmanager config template, injecting the Discord/Gatus
+        # secrets at runtime so they never live in the repo or a ConfigMap.
+        - name: render-alertmanager
+          image: docker.io/dibi/envsubst:1
+          command:
+            - sh
+            - -c
+            - envsubst < /am/alertmanager.yaml > /render/alertmanager.yaml
+          envFrom:
+            - secretRef:
+                name: alertmanager-secret
+          volumeMounts:
+            - name: alertmanager
+              mountPath: /am
+            - name: render
+              mountPath: /render
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      containers:
+        - name: load
+          image: docker.io/grafana/mimirtool:3.0.4
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              ADDR=http://mimir-gateway.mimir.svc.cluster.local:8080
+              TENANTS="talos-ottawa talos-robbinsdale talos-stpetersburg"
+              for T in $TENANTS; do
+                echo "=== $T: syncing rules ==="
+                n=0
+                until mimirtool rules sync --address="$ADDR" --id="$T" /rules/*.yaml; do
+                  n=$((n+1)); [ "$n" -ge 30 ] && echo "rules sync failed for $T" && exit 1
+                  echo "mimir not ready / sync failed, retry $n"; sleep 10
+                done
+                echo "=== $T: loading alertmanager config ==="
+                n=0
+                until mimirtool alertmanager load --address="$ADDR" --id="$T" /render/alertmanager.yaml; do
+                  n=$((n+1)); [ "$n" -ge 30 ] && echo "alertmanager load failed for $T" && exit 1
+                  echo "am load failed, retry $n"; sleep 10
+                done
+              done
+              echo "all tenants synced"
+          volumeMounts:
+            - name: rules
+              mountPath: /rules
+            - name: render
+              mountPath: /render
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: rules
+          configMap:
+            name: mimir-rules
+        - name: alertmanager
+          configMap:
+            name: mimir-alertmanager
+        - name: render
+          emptyDir: {}
