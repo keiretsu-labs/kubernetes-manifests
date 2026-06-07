@@ -9,6 +9,6 @@ spec:
   name: hermes-placeholder-data
   size: 20Gi
   storageClass: ceph-block-replicated
-  s3Path: agents/placeholder
+  s3Path: agents/placeholder/data
   schedule: 0 4 * * *
   copyMethod: Snapshot
