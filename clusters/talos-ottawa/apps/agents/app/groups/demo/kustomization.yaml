@@ -1,0 +1,27 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: agents
+components:
+  - ../../_component/hermes-group
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: group-meta
+    literals:
+      - name=demo
+      - host=demo.agents.${COMMON_DOMAIN}
+      - clientID=REPLACE_WITH_POCKET_ID_CLIENT_ID
+      - size=20Gi
+resources:
+  - secret.sops.yaml
+patches:
+  - target:
+      kind: ConfigMap
+      name: hermes-placeholder-config
+    patch: |-
+      - op: replace
+        path: /data/AGENT_SYSTEM_PROMPT
+        value: |
+          You are the Demo group's shared assistant.
+          Keep answers terse and technical.
