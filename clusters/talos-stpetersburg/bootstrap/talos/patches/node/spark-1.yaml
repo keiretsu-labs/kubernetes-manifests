@@ -18,7 +18,9 @@ machine:
   network:
     interfaces:
       # ConnectX-7 RDMA rail to spark-0 (single 200G DAC link, /30 subnet)
-      - interface: eth2
+      # Pinned by MAC — net.ifnames=0 ordering isn't stable across reboots
+      - deviceSelector:
+          hardwareAddr: "4c:bb:47:2b:90:4e"
         mtu: 9000
         addresses:
           - 192.168.74.2/30
