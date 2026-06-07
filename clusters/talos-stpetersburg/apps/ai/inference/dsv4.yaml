@@ -131,10 +131,22 @@ spec:
         command: [bash, -c]
         args:
         - |
+          set -e
+          # Ray head on the rail. lmxxf's confirmed-coherent recipe uses the Ray
+          # executor — the mp/--nnodes cross-node TP path produced broken (uniform)
+          # logits identically across two different images, pointing at mp itself.
+          ray start --head --node-ip-address=192.168.74.1 --port=6379 \
+            --num-gpus=1 --disable-usage-stats
+          echo "waiting for worker GPU to join Ray (need 2 GPUs)..."
+          for i in $(seq 1 100); do
+            n=$(python3 -c 'import ray; ray.init(address="auto"); print(int(ray.cluster_resources().get("GPU",0)))' 2>/dev/null || echo 0)
+            echo "ray GPUs: $n"; [ "$n" = "2" ] && break; sleep 3
+          done
           exec vllm serve /models/dsv4 \
             --served-model-name DeepSeek-V4-Flash deepseek-v4-flash \
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
+            --distributed-executor-backend ray \
             --moe-backend marlin --enforce-eager \
             --kv-cache-dtype fp8 --block-size 256 \
             --max-model-len 8192 --max-num-seqs 6 --max-num-batched-tokens 8192 \
@@ -142,10 +154,7 @@ spec:
             --enable-prefix-caching \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
-            --reasoning-parser deepseek_v4 \
-            --distributed-executor-backend mp \
-            --nnodes 2 --node-rank 0 \
-            --master-addr 192.168.74.1 --master-port 25000
+            --reasoning-parser deepseek_v4
         ports:
         - { containerPort: 8000, name: http, protocol: TCP }
         env:
@@ -260,22 +269,11 @@ spec:
         command: [bash, -c]
         args:
         - |
-          exec vllm serve /models/dsv4 \
-            --served-model-name DeepSeek-V4-Flash deepseek-v4-flash \
-            --host 0.0.0.0 --port 8000 --trust-remote-code \
-            --tensor-parallel-size 2 --pipeline-parallel-size 1 \
-            --moe-backend marlin --enforce-eager \
-            --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 8192 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.72 \
-            --enable-prefix-caching \
-            --tokenizer-mode auto \
-            --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
-            --reasoning-parser deepseek_v4 \
-            --distributed-executor-backend mp \
-            --nnodes 2 --node-rank 1 \
-            --master-addr 192.168.74.1 --master-port 25000 \
-            --headless
+          # Worker just joins the head's Ray cluster and stays as a Ray node;
+          # the head's vllm serve drives TP=2 across both via Ray + NCCL/RoCE.
+          exec ray start --address=192.168.74.1:6379 \
+            --node-ip-address=192.168.74.2 --num-gpus=1 \
+            --disable-usage-stats --block
         env:
         - { name: NODE_RANK, value: "1" }
         - { name: MASTER_ADDR, value: "192.168.74.1" }
