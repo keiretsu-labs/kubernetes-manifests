@@ -6,7 +6,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - service-tailscale.yaml
-  - egress.yaml
+  # egress.yaml removed — aperture consolidated to agents/app/egress.yaml
   - httproute.yaml
   - storagestack.yaml
   - garagekey.yaml
