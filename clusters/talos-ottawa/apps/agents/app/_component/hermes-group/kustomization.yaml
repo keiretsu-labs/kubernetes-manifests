@@ -24,7 +24,6 @@ replacements:
           - spec.template.spec.containers.0.envFrom.0.configMapRef.name
           - spec.template.spec.containers.0.envFrom.1.secretRef.name
           - spec.template.spec.containers.1.env.2.valueFrom.secretKeyRef.name
-          - spec.template.spec.containers.1.env.3.valueFrom.secretKeyRef.name
         options: { delimiter: "-", index: 1 }
       - select: { kind: Service, name: hermes-placeholder }
         fieldPaths:

@@ -62,12 +62,11 @@ spec:
                 secretKeyRef:
                   name: hermes-placeholder-secrets
                   key: API_SERVER_KEY
-            # Human unlock password for the workspace UI. Decoupled from the
-            # machine API token above: access is already gated by Pocket ID OIDC
-            # at the edge, so this is the shared cluster password raj knows, not
-            # the per-group gateway bearer.
-            - name: HERMES_PASSWORD
-              value: "${DEFAULT_PASSWORD}"
+            # No HERMES_PASSWORD: the workspace's own gate only engages when a
+            # password is set (isAuthRequired = getConfiguredPassword().length>0).
+            # Access is already authenticated by Pocket ID OIDC at the edge, so we
+            # leave it unset for autologin. HERMES_API_TOKEN above still secures
+            # the workspace->gateway (loopback) call.
             - name: PORT
               value: "3000"
           ports:
