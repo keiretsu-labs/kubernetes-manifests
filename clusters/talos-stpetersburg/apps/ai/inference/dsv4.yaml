@@ -86,7 +86,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: head }
 spec:
-  replicas: 1
+  replicas: 0
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: head }
@@ -214,7 +214,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: worker }
 spec:
-  replicas: 1
+  replicas: 0
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: worker }

@@ -24,7 +24,7 @@ spec:
   serviceName: vllm-headless
   # Scaled to 0: both DGX Spark GPUs are now claimed by the DeepSeek-V4-Flash TP=2
   # instance (dsv4.yaml). Kept in-repo for rollback — set back to 2 to restore Qwen.
-  replicas: 0
+  replicas: 2
   podManagementPolicy: Parallel
   selector:
     matchLabels:
