@@ -30,13 +30,11 @@ spec:
     kafka:
       enabled: false
 
+    # Bundled Mimir AM disabled — upstream notify bug (mimir#2910), every notify
+    # fails with "invalid service state: Terminated" even for a no-op receiver.
+    # The ruler sends to the kube-prometheus-stack (Prometheus) Alertmanager.
     alertmanager:
-      enabled: true
-      replicas: 1
-      zoneAwareReplication:
-        enabled: false
-      persistentVolume:
-        enabled: false
+      enabled: false
 
     ruler:
       enabled: true
@@ -65,19 +63,14 @@ spec:
             replication_factor: 1
         ruler:
           # Ruler evaluates the rule groups loaded by mimir-config-loader and
-          # pushes firing alerts to the bundled Alertmanager (per-tenant via
-          # X-Scope-OrgID). /alertmanager is the default AM API prefix.
-          alertmanager_url: http://mimir-alertmanager.mimir.svc.cluster.local:8080/alertmanager
+          # pushes firing alerts to the kube-prometheus-stack (Prometheus)
+          # Alertmanager — the bundled Mimir AM hits an upstream notify bug
+          # (mimir#2910). One ruler (ottawa) drives all tenants' alerts here.
+          alertmanager_url: http://kube-prometheus-stack-alertmanager.monitoring.svc.cluster.local:9093/
           enable_api: true
         ruler_storage:
-          # Shares the mimir bucket with blocks; distinct prefix keeps the
-          # three storage types from colliding (blocks="" / ruler / alertmanager).
+          # Shares the mimir bucket with blocks; distinct prefix avoids collision.
           storage_prefix: ruler
-        alertmanager:
-          sharding_ring:
-            replication_factor: 1
-        alertmanager_storage:
-          storage_prefix: alertmanager
         common:
           storage:
             backend: s3

@@ -1,14 +1,13 @@
 ---
-# Pushes the native rule groups + Alertmanager config into Mimir, once per
-# tenant (each cluster is a tenant). Recreated by Flux whenever the rules or
-# alertmanager ConfigMaps change, because the configMapGenerator hash suffix
-# changes the Job's volume references and the force annotation lets Flux replace
-# the otherwise-immutable Job.
+# Syncs the native rule groups into the Mimir ruler, once per tenant (each
+# cluster is a tenant). Recreated by Flux whenever the rules ConfigMap changes,
+# because the configMapGenerator hash suffix changes the Job's volume reference
+# and the force annotation lets Flux replace the otherwise-immutable Job.
 #
-# grafana/mimirtool is distroless (no /bin/sh), so each step runs the mimirtool
-# entrypoint directly instead of a shell loop. The render initContainer
-# (dibi/envsubst, alpine-based) injects the Discord/Gatus secrets into the AM
-# config at runtime so they never live in the repo or a ConfigMap.
+# grafana/mimirtool is distroless (no /bin/sh), so each tenant sync runs the
+# mimirtool entrypoint directly instead of a shell loop. Alertmanager config is
+# NOT managed here — the ruler notifies the kube-prometheus-stack Alertmanager
+# (the bundled Mimir AM is disabled, mimir#2910).
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -27,27 +26,9 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       initContainers:
-        # 1. Render the Alertmanager config template with the secrets.
-        - name: render-alertmanager
-          image: docker.io/dibi/envsubst:1
-          command:
-            - sh
-            - -c
-            - envsubst < /am/alertmanager.yaml > /render/alertmanager.yaml
-          envFrom:
-            - secretRef:
-                name: alertmanager-secret
-          volumeMounts:
-            - { name: alertmanager, mountPath: /am }
-            - { name: render, mountPath: /render }
-          securityContext: &sc
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
-        # 2-4. Sync rule groups for each tenant.
         - name: rules-ottawa
           image: &mt docker.io/grafana/mimirtool:3.1.0
-          args: &rulesyncottawa
+          args:
             - rules
             - sync
             - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
@@ -60,7 +41,10 @@ spec:
             - /rules/smartctl.yaml
           volumeMounts: &rulesmount
             - { name: rules, mountPath: /rules }
-          securityContext: *sc
+          securityContext: &sc
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
         - name: rules-robbinsdale
           image: *mt
           args:
@@ -76,6 +60,7 @@ spec:
             - /rules/smartctl.yaml
           volumeMounts: *rulesmount
           securityContext: *sc
+      containers:
         - name: rules-stpetersburg
           image: *mt
           args:
@@ -91,46 +76,7 @@ spec:
             - /rules/smartctl.yaml
           volumeMounts: *rulesmount
           securityContext: *sc
-        # 5-6. Load Alertmanager config for two tenants (third is the main container).
-        - name: alertmanager-ottawa
-          image: *mt
-          args: &amloadottawa
-            - alertmanager
-            - load
-            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
-            - --id=talos-ottawa
-            - /render/alertmanager.yaml
-          volumeMounts: &rendermount
-            - { name: render, mountPath: /render }
-          securityContext: *sc
-        - name: alertmanager-robbinsdale
-          image: *mt
-          args:
-            - alertmanager
-            - load
-            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
-            - --id=talos-robbinsdale
-            - /render/alertmanager.yaml
-          volumeMounts: *rendermount
-          securityContext: *sc
-      containers:
-        # 7. Load Alertmanager config for the last tenant.
-        - name: alertmanager-stpetersburg
-          image: *mt
-          args:
-            - alertmanager
-            - load
-            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
-            - --id=talos-stpetersburg
-            - /render/alertmanager.yaml
-          volumeMounts: *rendermount
-          securityContext: *sc
       volumes:
         - name: rules
           configMap:
             name: mimir-rules
-        - name: alertmanager
-          configMap:
-            name: mimir-alertmanager
-        - name: render
-          emptyDir: {}
