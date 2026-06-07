@@ -115,7 +115,10 @@ spec:
         # cadvisor on constrained nodes (Jetson Orin) reports lagging embedded
         # timestamps; honoring them drops ~10k samples/scrape as out-of-order.
         # Use scrape time instead — slightly less precise rates, no data loss.
+        # The chart forces honorTimestamps=true on the cadvisor endpoint while
+        # trackTimestampsStaleness is true, so both must be false to take effect.
         honorTimestamps: false
+        trackTimestampsStaleness: false
         metricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
