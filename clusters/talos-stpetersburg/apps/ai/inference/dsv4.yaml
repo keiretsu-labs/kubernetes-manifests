@@ -150,12 +150,18 @@ spec:
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        # NCCL over TCP on the 200G rail (eth2/192.168.74.x). RoCE/IB verbs hung in
-        # the collective (heartbeat-monitor abort); sockets over the rail are reliable
-        # to get serving. GPUDirect RDMA comes with the Spiderpool/SR-IOV migration.
+        # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
+        # verified from the device GID table. This NCCL build is IB-only (socket NET
+        # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
+        # the GB10's unified LPDDR5X confuses GPUDirect RDMA, which hung the collective
+        # — force host-buffer staging instead.
         - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
         - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
-        - { name: NCCL_IB_DISABLE, value: "1" }
+        - { name: NCCL_IB_HCA, value: "mlx5_1" }
+        - { name: NCCL_IB_GID_INDEX, value: "3" }
+        - { name: NCCL_IB_DISABLE, value: "0" }
+        - { name: NCCL_NET_GDR_LEVEL, value: "0" }
+        - { name: NCCL_IB_TIMEOUT, value: "22" }
         - { name: NCCL_DEBUG, value: "INFO" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
@@ -271,12 +277,18 @@ spec:
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        # NCCL over TCP on the 200G rail (eth2/192.168.74.x). RoCE/IB verbs hung in
-        # the collective (heartbeat-monitor abort); sockets over the rail are reliable
-        # to get serving. GPUDirect RDMA comes with the Spiderpool/SR-IOV migration.
+        # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
+        # verified from the device GID table. This NCCL build is IB-only (socket NET
+        # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
+        # the GB10's unified LPDDR5X confuses GPUDirect RDMA, which hung the collective
+        # — force host-buffer staging instead.
         - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
         - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
-        - { name: NCCL_IB_DISABLE, value: "1" }
+        - { name: NCCL_IB_HCA, value: "mlx5_1" }
+        - { name: NCCL_IB_GID_INDEX, value: "3" }
+        - { name: NCCL_IB_DISABLE, value: "0" }
+        - { name: NCCL_NET_GDR_LEVEL, value: "0" }
+        - { name: NCCL_IB_TIMEOUT, value: "22" }
         - { name: NCCL_DEBUG, value: "INFO" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
