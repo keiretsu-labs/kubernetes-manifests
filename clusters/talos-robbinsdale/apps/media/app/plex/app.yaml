@@ -65,8 +65,7 @@ spec:
             claimName: media-share
         - name: transcode
           emptyDir:
-            medium: Memory
-            sizeLimit: 6Gi
+            sizeLimit: 32Gi
 ---
 apiVersion: v1
 kind: Service
