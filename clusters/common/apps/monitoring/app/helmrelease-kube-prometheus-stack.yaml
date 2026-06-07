@@ -73,11 +73,15 @@ spec:
         storageSpec:
           emptyDir: {}
 
-    # No local rule evaluation in agent mode, so nothing fires alerts here.
-    # Re-enable once the Mimir ruler is wired up to drive Alertmanager.
+    # Prometheus Alertmanager — the Mimir ruler's notification target, since the
+    # bundled Mimir AM hits an upstream notify bug (mimir#2910). matcherStrategy
+    # None so the AlertmanagerConfig routes apply by alertname/severity across
+    # all namespaces/clusters (the ruler sends alerts from every namespace).
     alertmanager:
-      enabled: false
+      enabled: true
       alertmanagerSpec:
+        alertmanagerConfigMatcherStrategy:
+          type: None
         alertmanagerConfigSelector:
           matchLabels:
             team: monitoring

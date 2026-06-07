@@ -6,11 +6,10 @@ resources:
   - helmrelease.yaml
   - ingress-ts.yaml
   - egress.yaml
-  - alertmanager-secret.sops.yaml
   - loader-job.yaml
 configMapGenerator:
-  # Hash-suffixed so any rule/AM change rolls the mimir-config-loader Job
-  # (its volume refs change), forcing a re-sync into Mimir.
+  # Hash-suffixed so any rule change rolls the mimir-config-loader Job
+  # (its volume ref changes), forcing a re-sync into the Mimir ruler.
   - name: mimir-rules
     files:
       - rules/blackbox.yaml
@@ -19,6 +18,3 @@ configMapGenerator:
       - rules/k8gb.yaml
       - rules/monitoring.yaml
       - rules/smartctl.yaml
-  - name: mimir-alertmanager
-    files:
-      - alertmanager/alertmanager.yaml
