@@ -54,6 +54,7 @@ spec:
       connection:
         adminApiEndpoint: "http://stpetersburg-garage.keiretsu.ts.net:3903"
         gatewayRpcEndpointTemplate: "stpetersburg-gw-{ordinal}.keiretsu.ts.net:3901"
+        storageRpcEndpointTemplate: "stpetersburg-garage-spark-{ordinal}.keiretsu.ts.net:3901"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token

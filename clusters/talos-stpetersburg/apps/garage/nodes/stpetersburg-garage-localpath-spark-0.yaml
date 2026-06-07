@@ -27,6 +27,8 @@ spec:
     - cluster:garage/garage
     - tier:storage
     - garage-storage-0-0
+  network:
+    rpcPublicAddr: "stpetersburg-garage-spark-0.keiretsu.ts.net:3901"
   storage:
     metadata:
       existingClaim: metadata-garage-0
