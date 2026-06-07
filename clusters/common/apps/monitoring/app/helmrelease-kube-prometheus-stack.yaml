@@ -63,9 +63,13 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 256Mi
-          limits:
             memory: 1Gi
+          limits:
+            # Agent WAL + remote_write series cache scales with active series;
+            # kubelet/cadvisor cardinality on these nodes needs more than 1Gi.
+            # Still half the old full-server 4Gi. auto-gomemlimit (~1.8Gi) keeps
+            # GC ahead of the cgroup ceiling. Trim cadvisor cardinality to go lower.
+            memory: 2Gi
         storageSpec:
           emptyDir: {}
 
@@ -108,6 +112,10 @@ spec:
 
     kubelet:
       serviceMonitor:
+        # cadvisor on constrained nodes (Jetson Orin) reports lagging embedded
+        # timestamps; honoring them drops ~10k samples/scrape as out-of-order.
+        # Use scrape time instead — slightly less precise rates, no data loss.
+        honorTimestamps: false
         metricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
