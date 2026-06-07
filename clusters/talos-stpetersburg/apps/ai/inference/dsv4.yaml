@@ -151,7 +151,7 @@ spec:
             --moe-backend marlin --enforce-eager \
             --kv-cache-dtype fp8 --block-size 256 \
             --max-model-len 4096 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.80 \
+            --gpu-memory-utilization 0.78 \
             --enable-prefix-caching \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
