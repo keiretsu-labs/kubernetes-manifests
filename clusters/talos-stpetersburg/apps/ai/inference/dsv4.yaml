@@ -136,9 +136,9 @@ spec:
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 131072 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.70 \
-            --enable-prefix-caching \
+            --max-model-len 262144 --max-num-seqs 6 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.76 \
+            --enable-prefix-caching --enforce-eager \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
@@ -179,8 +179,8 @@ spec:
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
         resources:
-          requests: { memory: "88Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "88Gi", nvidia.com/gpu: "1" }
+          requests: { memory: "96Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "96Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
@@ -263,9 +263,9 @@ spec:
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 131072 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.70 \
-            --enable-prefix-caching \
+            --max-model-len 262144 --max-num-seqs 6 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.76 \
+            --enable-prefix-caching --enforce-eager \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
@@ -306,8 +306,8 @@ spec:
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
         resources:
-          requests: { memory: "88Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "88Gi", nvidia.com/gpu: "1" }
+          requests: { memory: "96Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "96Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
