@@ -5,7 +5,7 @@
 #   smaller 0xSero 180B (160 experts) was rejected ("Unsupported expert number: 160").
 #   At ~80GB/node weights, full 1M KV would need util ~0.82 (the recipe's razor's edge);
 #   for OOM-safety on these shared nodes we run util 0.78 + 512K context (still 2.5x Qwen).
-# Image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready (recipe image — vLLM 0.21.1,
+# Image: lmxxf/vllm-deepseek-v4-dgx-spark:latest (recipe image — vLLM 0.21.1,
 #   deepseek_v4 tokenizer/tool/reasoning parsers, multi-node entrypoint).
 #
 # Topology: dsv4-head (spark-0, rank 0, serves :8000) + dsv4-worker (spark-1, rank 1,
@@ -86,7 +86,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: head }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: head }
@@ -103,7 +103,7 @@ spec:
       terminationGracePeriodSeconds: 120
       initContainers:
       - name: download-models
-        image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+        image: lmxxf/vllm-deepseek-v4-dgx-spark:latest
         command: [python3, /scripts/download.py]
         env:
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
@@ -127,17 +127,18 @@ spec:
           limits: { memory: "32Mi" }
       containers:
       - name: vllm
-        image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+        image: lmxxf/vllm-deepseek-v4-dgx-spark:latest
         command: [bash, -c]
         args:
         - |
-          exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
+          exec vllm serve /models/dsv4 \
             --served-model-name DeepSeek-V4-Flash deepseek-v4-flash \
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
+            --moe-backend marlin --enforce-eager \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 131072 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.76 \
+            --max-model-len 8192 --max-num-seqs 6 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.72 \
             --enable-prefix-caching \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
@@ -153,11 +154,11 @@ spec:
         # b12x fused-MoE kernel — required for correct + fast MoE on the official
         # 256-expert DSV4. (It was briefly disabled for the 160-expert 180B variant,
         # which produced gibberish with the fallback kernel.)
-        - { name: VLLM_USE_B12X_MOE, value: "1" }
+        - { name: TRANSFORMERS_OFFLINE, value: "1" }
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        - { name: VLLM_USE_V1, value: "0" }
+        - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "42" }
         # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
         # verified from the device GID table. This NCCL build is IB-only (socket NET
         # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
@@ -214,7 +215,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: worker }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: worker }
@@ -231,7 +232,7 @@ spec:
       terminationGracePeriodSeconds: 120
       initContainers:
       - name: download-models
-        image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+        image: lmxxf/vllm-deepseek-v4-dgx-spark:latest
         command: [python3, /scripts/download.py]
         env:
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
@@ -255,17 +256,18 @@ spec:
           limits: { memory: "32Mi" }
       containers:
       - name: vllm
-        image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+        image: lmxxf/vllm-deepseek-v4-dgx-spark:latest
         command: [bash, -c]
         args:
         - |
-          exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
+          exec vllm serve /models/dsv4 \
             --served-model-name DeepSeek-V4-Flash deepseek-v4-flash \
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
+            --moe-backend marlin --enforce-eager \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 131072 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.76 \
+            --max-model-len 8192 --max-num-seqs 6 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.72 \
             --enable-prefix-caching \
             --tokenizer-mode auto \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
@@ -281,11 +283,11 @@ spec:
         # b12x fused-MoE kernel — required for correct + fast MoE on the official
         # 256-expert DSV4. (It was briefly disabled for the 160-expert 180B variant,
         # which produced gibberish with the fallback kernel.)
-        - { name: VLLM_USE_B12X_MOE, value: "1" }
+        - { name: TRANSFORMERS_OFFLINE, value: "1" }
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        - { name: VLLM_USE_V1, value: "0" }
+        - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "42" }
         # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
         # verified from the device GID table. This NCCL build is IB-only (socket NET
         # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
