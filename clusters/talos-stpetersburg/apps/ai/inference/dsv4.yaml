@@ -143,7 +143,10 @@ spec:
         env:
         - { name: NODE_RANK, value: "0" }
         - { name: MASTER_ADDR, value: "192.168.74.1" }
-        - { name: VLLM_USE_B12X_MOE, value: "1" }
+        # b12x fused-MoE kernel only supports the official 256-expert layout; the
+        # 180B variant has 160 experts ("Unsupported expert number: 160"), so use
+        # the standard fused-MoE kernel (arbitrary expert count, slightly slower prefill).
+        - { name: VLLM_USE_B12X_MOE, value: "0" }
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
@@ -260,7 +263,10 @@ spec:
         - { name: NODE_RANK, value: "1" }
         - { name: MASTER_ADDR, value: "192.168.74.1" }
         - { name: HEADLESS, value: "1" }
-        - { name: VLLM_USE_B12X_MOE, value: "1" }
+        # b12x fused-MoE kernel only supports the official 256-expert layout; the
+        # 180B variant has 160 experts ("Unsupported expert number: 160"), so use
+        # the standard fused-MoE kernel (arbitrary expert count, slightly slower prefill).
+        - { name: VLLM_USE_B12X_MOE, value: "0" }
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
