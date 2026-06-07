@@ -92,3 +92,14 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    # multi-tenant hermes agents: every <group>.agents.${COMMON_DOMAIN} lands on
+    # the ottawa public gateway (per-group HTTPRoute + OIDC). one wildcard covers
+    # all groups; DNS-only (proxied=false) so the *.agents wildcard cert is served
+    # at origin (cloudflare universal TLS does not cover the second-level wildcard).
+    - dnsName: "*.agents.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "${LOCATION}.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
