@@ -132,6 +132,7 @@ spec:
         args:
         - |
           set -e
+          ray stop --force >/dev/null 2>&1 || true; rm -rf /tmp/ray >/dev/null 2>&1 || true
           # Ray head on the rail. lmxxf's confirmed-coherent recipe uses the Ray
           # executor — the mp/--nnodes cross-node TP path produced broken (uniform)
           # logits identically across two different images, pointing at mp itself.
@@ -272,6 +273,7 @@ spec:
         - |
           # Worker just joins the head's Ray cluster and stays as a Ray node;
           # the head's vllm serve drives TP=2 across both via Ray + NCCL/RoCE.
+          ray stop --force >/dev/null 2>&1 || true; rm -rf /tmp/ray >/dev/null 2>&1 || true
           exec ray start --address=192.168.74.1:6379 \
             --node-ip-address=192.168.74.2 --num-gpus=1 \
             --disable-usage-stats --block
