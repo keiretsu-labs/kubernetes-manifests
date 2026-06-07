@@ -87,4 +87,3 @@ resources:
   - ./ocm.yaml
   - ./valkey.yaml
   - ./border0.yaml
-  - ./kuberhealthy.yaml
