@@ -167,7 +167,8 @@ spec:
         # which produced gibberish with the fallback kernel.)
         - { name: TRANSFORMERS_OFFLINE, value: "1" }
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
-        - { name: RAY_memory_usage_threshold, value: "0.97" }
+        - { name: RAY_memory_usage_threshold, value: "0.99" }
+        - { name: RAY_memory_monitor_refresh_ms, value: "0" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
         - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "42" }
@@ -288,7 +289,8 @@ spec:
         # which produced gibberish with the fallback kernel.)
         - { name: TRANSFORMERS_OFFLINE, value: "1" }
         - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
-        - { name: RAY_memory_usage_threshold, value: "0.97" }
+        - { name: RAY_memory_usage_threshold, value: "0.99" }
+        - { name: RAY_memory_monitor_refresh_ms, value: "0" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
         - { name: VLLM_MXFP4_MARLIN_DEEPGEMM_LAYERS, value: "42" }
