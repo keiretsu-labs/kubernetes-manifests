@@ -17,8 +17,8 @@ spec:
   image: dxflrs/garage:v2.3.0
 
   replication:
-    factor: 3
-    consistencyMode: "consistent" # Full 3-zone read-after-write consistency
+    factor: 2
+    consistencyMode: "consistent" # Read-after-write consistency (read quorum=2) prevents restic AEAD corruption
 
   s3Api:
     rootDomain: ".s3.${COMMON_DOMAIN}"
