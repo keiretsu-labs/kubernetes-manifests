@@ -11,7 +11,7 @@ configMapGenerator:
     literals:
       - name=demo
       - host=demo.agents.${COMMON_DOMAIN}
-      - clientID=REPLACE_WITH_POCKET_ID_CLIENT_ID
+      - clientID=521f2f61-f465-4f06-8c84-eafd501cdf62
       - size=20Gi
 resources:
   - secret.sops.yaml
