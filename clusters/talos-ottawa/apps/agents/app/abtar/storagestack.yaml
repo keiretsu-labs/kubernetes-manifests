@@ -12,3 +12,4 @@ spec:
   s3Path: agents/abtar/data
   schedule: 0 4 * * *
   copyMethod: Snapshot
+  restorePaused: false

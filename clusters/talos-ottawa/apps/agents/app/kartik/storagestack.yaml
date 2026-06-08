@@ -12,3 +12,4 @@ spec:
   s3Path: agents/kartik/data
   schedule: 0 4 * * *
   copyMethod: Snapshot
+  restorePaused: false

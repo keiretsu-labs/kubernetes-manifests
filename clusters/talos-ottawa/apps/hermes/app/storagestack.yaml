@@ -12,3 +12,4 @@ spec:
   s3Path: hermes/hermes-data
   schedule: 0 4 * * *
   copyMethod: Snapshot
+  restorePaused: false
