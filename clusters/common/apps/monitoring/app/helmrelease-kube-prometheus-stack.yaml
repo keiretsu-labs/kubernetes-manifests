@@ -58,7 +58,7 @@ spec:
               # keep capacity ~5x maxSamplesPerSend to avoid WAL stalls.
               capacity: 10000
               maxSamplesPerSend: 2000
-              maxShards: 50
+              maxShards: 10
               batchSendDeadline: 5s
         resources:
           requests:
@@ -129,6 +129,8 @@ spec:
         cAdvisorMetricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
+          - action: labeldrop
+            regex: ^id$
         probesMetricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
