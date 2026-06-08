@@ -18,7 +18,7 @@ spec:
           image: ghcr.io/kashalls/kromgo:v0.10.0
           env:
             - name: PROMETHEUS_URL
-              value: http://localhost:9090/prometheus
+              value: http://127.0.0.1:9090/prometheus
             - name: SERVER_PORT
               value: "8080"
             - name: HEALTH_PORT
