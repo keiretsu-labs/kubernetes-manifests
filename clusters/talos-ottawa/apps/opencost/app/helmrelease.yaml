@@ -32,7 +32,6 @@ spec:
             release: prometheus
       prometheus:
         internal:
-          enabled: true
-          serviceName: kube-prometheus-stack-prometheus
-          namespaceName: monitoring
-          port: 9090
+          enabled: false
+        external:
+          url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
