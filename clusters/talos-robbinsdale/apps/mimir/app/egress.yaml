@@ -14,3 +14,19 @@ spec:
     - name: http
       port: 8080
       protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-qf
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: mimir-qf.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: grpc
+      port: 9095
+      protocol: TCP
