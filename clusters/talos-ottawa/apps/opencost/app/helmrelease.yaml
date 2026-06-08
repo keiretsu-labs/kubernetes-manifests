@@ -24,15 +24,15 @@ spec:
   values:
     opencost:
       exporter:
-        defaultClusterId: robbinsdale
+        defaultClusterId: ottawa
       metrics:
         serviceMonitor:
           enabled: true
           additionalLabels:
-            release: prometheus # Assuming this label is still correct for prometheus-community operator
+            release: prometheus
       prometheus:
         internal:
           enabled: true
           serviceName: kube-prometheus-stack-prometheus
           namespaceName: monitoring
-          port: 9090 
+          port: 9090
