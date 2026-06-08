@@ -16,3 +16,16 @@ machine:
           shutdownGracePeriodSeconds: 20
         - priority: 2000001000
           shutdownGracePeriodSeconds: 30
+      # Memory protection: reserve RAM for the kubelet + system so a runaway pod
+      # (e.g. a large model load) can NEVER starve the node into NotReady. The
+      # kubepods cgroup is capped at allocatable (capacity - reserved - eviction),
+      # so the offending pod gets OOM-killed/evicted while the node stays healthy.
+      # (spark-0 was wedged twice by a 74GB DSV4 weight-load with no reservations.)
+      systemReserved:
+        memory: "4Gi"
+      kubeReserved:
+        memory: "4Gi"
+      evictionHard:
+        memory.available: "6Gi"
+      evictionMinimumReclaim:
+        memory.available: "2Gi"

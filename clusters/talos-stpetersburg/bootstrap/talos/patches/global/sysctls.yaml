@@ -21,5 +21,10 @@ machine:
 
     # gVisor: needs unprivileged user namespace creation (overrides KSPP default of 0)
     user.max_user_namespaces: "11255"
+
+    # Keep a large free-memory floor so the kernel reclaims page cache aggressively
+    # during big sequential reads (e.g. loading multi-GB model weights from local PVC),
+    # rather than letting cache fill RAM and starve the kubelet. ~4GB floor.
+    vm.min_free_kbytes: "4194304"
     # Note: vm.nr_hugepages is set per-node — spark-0 reserves them for GPU/DB,
     # orin-0 has only 8GB RAM and leaves the default (0).
