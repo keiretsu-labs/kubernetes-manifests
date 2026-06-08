@@ -47,6 +47,7 @@ spec:
 
     mimir:
       structuredConfig:
+        no_auth_tenant: talos-ottawa
         multitenancy_enabled: true
         tenant_federation:
           enabled: true
