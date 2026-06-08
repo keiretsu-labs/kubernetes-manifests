@@ -1,0 +1,12 @@
+multitenancy_enabled: true
+ruler_storage:
+  backend: local
+  local:
+    directory: /data/rules
+ruler:
+  query_frontend:
+    address: dns:///mimir-qf.mimir.svc.cluster.local:9095
+  alertmanager_url: http://kube-prometheus-stack-alertmanager.monitoring.svc.cluster.local:9093/
+  ring:
+    kvstore:
+      store: inmemory

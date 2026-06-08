@@ -5,6 +5,7 @@ namespace: mimir
 resources:
   - helmrelease.yaml
   - ingress-ts.yaml
+  - ingress-qf-ts.yaml
   - egress.yaml
   - loader-job.yaml
 configMapGenerator:

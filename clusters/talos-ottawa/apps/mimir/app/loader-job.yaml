@@ -25,7 +25,7 @@ spec:
         runAsUser: 65534
         seccompProfile:
           type: RuntimeDefault
-      initContainers:
+      containers:
         - name: rules-ottawa
           image: &mt docker.io/grafana/mimirtool:3.1.0
           args:
@@ -45,37 +45,6 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-        - name: rules-robbinsdale
-          image: *mt
-          args:
-            - rules
-            - sync
-            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
-            - --id=talos-robbinsdale
-            - /rules/blackbox.yaml
-            - /rules/flux.yaml
-            - /rules/garage.yaml
-            - /rules/k8gb.yaml
-            - /rules/monitoring.yaml
-            - /rules/smartctl.yaml
-          volumeMounts: *rulesmount
-          securityContext: *sc
-      containers:
-        - name: rules-stpetersburg
-          image: *mt
-          args:
-            - rules
-            - sync
-            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
-            - --id=talos-stpetersburg
-            - /rules/blackbox.yaml
-            - /rules/flux.yaml
-            - /rules/garage.yaml
-            - /rules/k8gb.yaml
-            - /rules/monitoring.yaml
-            - /rules/smartctl.yaml
-          volumeMounts: *rulesmount
-          securityContext: *sc
       volumes:
         - name: rules
           configMap:
