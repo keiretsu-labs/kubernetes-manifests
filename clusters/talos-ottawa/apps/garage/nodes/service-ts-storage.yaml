@@ -35,3 +35,41 @@ spec:
     statefulset.kubernetes.io/pod-name: ottawa-garage-localpath-kaji-0
   type: LoadBalancer
   loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-asuka
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+  name: garage-storage-asuka-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    statefulset.kubernetes.io/pod-name: ottawa-garage-localpath-asuka-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-rei
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+  name: garage-storage-rei-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    statefulset.kubernetes.io/pod-name: ottawa-garage-localpath-rei-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale
