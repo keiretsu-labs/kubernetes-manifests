@@ -9,7 +9,7 @@ data:
     ruler_storage:
       backend: local
       local:
-        directory: /data/rules
+        directory: /rules
     ruler:
       query_frontend:
         address: dns:///mimir-qf.mimir.svc.cluster.local:9095
