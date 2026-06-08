@@ -16,7 +16,7 @@ spec:
   clusterRef:
     name: garage
   zone: "${LOCATION}"
-  capacity: 100Gi
+  capacity: 700Gi
   tags:
     - cluster:garage/garage
     - tier:storage
@@ -27,7 +27,7 @@ spec:
       size: 1Gi
       storageClassName: local-path
     data:
-      size: 100Gi
+      size: 700Gi
       storageClassName: local-path
   nodeSelector:
     kubernetes.io/hostname: tank
