@@ -20,9 +20,28 @@ spec:
         fsGroup: 10001
         seccompProfile:
           type: RuntimeDefault
+      initContainers:
+        - name: copy-rules
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              rm -rf /data/rules
+              cp -r /rules-source/talos-robbinsdale /data/rules
+          volumeMounts:
+            - name: rules-source
+              mountPath: /rules-source
+            - name: data
+              mountPath: /data
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: false
       containers:
         - name: ruler
-          image: grafana/mimir:3.1.0
+          image: grafana/mimir:3.0.4
           args:
             - -target=ruler
             - -config.file=/conf/mimir.yaml
@@ -47,8 +66,8 @@ spec:
             - name: config
               mountPath: /conf
               readOnly: true
-            - name: rules
-              mountPath: /rules
+            - name: rules-source
+              mountPath: /rules-source
               readOnly: true
             - name: data
               mountPath: /data
@@ -67,7 +86,7 @@ spec:
         - name: config
           configMap:
             name: mimir-ruler-config
-        - name: rules
+        - name: rules-source
           configMap:
             name: mimir-ruler-rules
         - name: data
