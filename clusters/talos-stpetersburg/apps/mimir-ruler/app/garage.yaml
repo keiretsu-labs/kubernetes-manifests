@@ -1,5 +1,4 @@
 # Ported from clusters/common/apps/garage/app/prometheusrule.yaml.
-namespace: garage
 groups:
   - name: garage.rules
     rules:
