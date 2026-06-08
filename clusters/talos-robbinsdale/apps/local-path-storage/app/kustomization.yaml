@@ -21,6 +21,10 @@ patches:
                   {
                           "node":"tank",
                           "paths":["/var/local-path-provisioner"]
+                  },
+                  {
+                          "node":"titan",
+                          "paths":["/var/local-path-provisioner"]
                   }
                   ]
           }
