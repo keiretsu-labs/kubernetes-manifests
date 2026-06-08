@@ -1,0 +1,40 @@
+# Ported from clusters/common/apps/garage/app/prometheusrule.yaml.
+namespace: garage
+groups:
+  - name: garage.rules
+    rules:
+      # probe_success==0 on the local serving probe means /health returned
+      # non-2xx (503 = a partition lost write-quorum) or the endpoint is
+      # unreachable. Scoped to target=local so a known-down remote region's
+      # cross-cluster probe doesn't fire this.
+      - alert: GarageServingUnavailable
+        expr: probe_success{service="garage", check="serving", target="local"} == 0
+        for: 3m
+        annotations:
+          summary: Garage cannot serve writes in this region ({{ $labels.instance }})
+          description: >-
+            The Garage /health serving probe has been non-2xx for 3m
+            (503 Unavailable = a partition lost its write-quorum of up storage
+            nodes, or the admin endpoint is unreachable). Reads may still work
+            in degraded mode, but writes are failing. With replication.factor=2
+            this is one storage node away from a full write outage — restore the
+            missing storage node or add write headroom.
+        labels:
+          severity: critical
+
+      # The gateway tier is the S3 client path (COMMON_S3_ENDPOINT ->
+      # garage-gateway svc). Fires when the gateway Service has no reachable
+      # endpoint — clients fail — even when storage is up.
+      - alert: GarageGatewayUnreachable
+        expr: probe_success{service="garage", tier="gateway", check="port-open", target="local"} == 0
+        for: 2m
+        annotations:
+          summary: Garage gateway tier unreachable in this region ({{ $labels.instance }})
+          description: >-
+            The garage-gateway Service has had no reachable endpoint for 2m.
+            In-cluster S3 clients reach Garage through it (COMMON_S3_ENDPOINT),
+            so they are failing. Check the gateway pods (garage-gateway-N) and
+            their readiness — storage may still be up (this won't show in the
+            storage probes).
+        labels:
+          severity: critical

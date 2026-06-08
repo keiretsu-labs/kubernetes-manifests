@@ -1,0 +1,97 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir-ruler
+  labels:
+    app.kubernetes.io/name: mimir-ruler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir-ruler
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mimir-ruler
+    spec:
+      serviceAccountName: mimir-ruler
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: copy-rules
+          image: grafana/mimir:3.0.4
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mkdir -p /data/rules/robbinsdale && \
+              cp /rules-source/*.yaml /data/rules/robbinsdale/
+          volumeMounts:
+            - name: rules
+              mountPath: /rules-source
+              readOnly: true
+            - name: data
+              mountPath: /data
+      containers:
+        - name: ruler
+          image: grafana/mimir:3.0.4
+          imagePullPolicy: IfNotPresent
+          args:
+            - -target=ruler
+            - -config.file=/conf/mimir.yaml
+          ports:
+            - containerPort: 8080
+              name: http-metrics
+            - containerPort: 9095
+              name: grpc
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: config
+              mountPath: /conf
+              readOnly: true
+            - name: rules
+              mountPath: /rules-source
+              readOnly: true
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: config
+          configMap:
+            name: mimir-ruler-config
+        - name: rules
+          configMap:
+            name: mimir-ruler-rules
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mimir-ruler
+  labels:
+    app.kubernetes.io/name: mimir-ruler
