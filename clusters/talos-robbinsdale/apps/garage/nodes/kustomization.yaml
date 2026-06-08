@@ -5,4 +5,5 @@ resources:
   - robbinsdale-garage-smb.yaml
   - robbinsdale-garage-localpath-tank.yaml
   - robbinsdale-garage-localpath-titan.yaml
+  - robbinsdale-garage-localpath-stone.yaml
   - service-ts-storage.yaml

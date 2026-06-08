@@ -20,6 +20,14 @@ patches:
                   {
                           "node":"kaji",
                           "paths":["/var/local-path-provisioner"]
+                  },
+                  {
+                          "node":"asuka",
+                          "paths":["/var/local-path-provisioner"]
+                  },
+                  {
+                          "node":"rei",
+                          "paths":["/var/local-path-provisioner"]
                   }
                   ]
           }
