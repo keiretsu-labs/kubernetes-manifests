@@ -4,6 +4,5 @@ kind: Kustomization
 resources:
   - alertmanager-secret.sops.yaml
   - alertmanagerconfig.yaml
-  - scrapeconfig.yaml
   - prometheusrules.yaml
   - httproute.yaml

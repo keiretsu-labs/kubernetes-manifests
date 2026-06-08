@@ -11,11 +11,11 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: monitoring
-  path: ./clusters/common/apps/opencost/app
+  path: ./clusters/talos-ottawa/apps/opencost/app
   prune: true
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
   interval: 30m
   retryInterval: 1m
-  timeout: 5m 
+  timeout: 5m
