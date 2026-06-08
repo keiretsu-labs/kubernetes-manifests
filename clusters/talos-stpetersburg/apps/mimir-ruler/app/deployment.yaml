@@ -28,7 +28,8 @@ spec:
             - -c
             - |
               rm -rf /data/rules
-              cp -r /rules-source/talos-stpetersburg /data/rules
+              mkdir -p /data/rules/talos-stpetersburg
+              cp /rules-source/*.yaml /data/rules/talos-stpetersburg/
           volumeMounts:
             - name: rules-source
               mountPath: /rules-source
