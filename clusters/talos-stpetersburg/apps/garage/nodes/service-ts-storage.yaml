@@ -47,3 +47,23 @@ spec:
     statefulset.kubernetes.io/pod-name: stpetersburg-garage-localpath-spark-1-0
   type: LoadBalancer
   loadBalancerClass: tailscale
+---
+# Per-pod Tailscale LB for the 3rd storage node on orin-0.
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: stpetersburg-garage-orin-0
+    tailscale.com/tags: "tag:k8s,tag:stpetersburg"
+  name: garage-storage-orin-0-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    statefulset.kubernetes.io/pod-name: stpetersburg-garage-localpath-orin-0-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale
