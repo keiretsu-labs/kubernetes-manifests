@@ -46,7 +46,7 @@ data:
         title: Pods
 
       - name: cluster_cpu_usage
-        query: round(avg(instance:node_cpu_utilisation:rate5m) * 100, 0.1)
+        query: round(100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100), 0.1)
         suffix: "%"
         colors:
           - {color: "green", min: 0, max: 35}
