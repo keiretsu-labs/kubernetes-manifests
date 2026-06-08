@@ -26,7 +26,6 @@ spec:
           args:
             - -target=ruler
             - -config.file=/conf/mimir.yaml
-          workingDir: /data
           ports:
             - name: http-metrics
               containerPort: 8080
