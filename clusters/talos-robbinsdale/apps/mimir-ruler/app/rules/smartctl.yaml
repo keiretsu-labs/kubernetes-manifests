@@ -1,6 +1,7 @@
 # Ported from clusters/*/apps/smartctl-exporter/config/prometheusrule.yaml.
 # Loaded into every tenant; inert where smartctl_* metrics are absent
 # (e.g. stpetersburg has no smartctl-exporter).
+namespace: smartctl
 groups:
   - name: smartctl-exporter.rules
     rules:
