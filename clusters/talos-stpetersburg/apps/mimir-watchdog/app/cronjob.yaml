@@ -21,7 +21,7 @@ spec:
                 - -c
                 - |
                   curl -s -o /dev/null -w "%{http_code}" \
-                    -XPOST http://kube-prometheus-stack-alertmanager.monitoring.svc.cluster.local:9093/api/v1/alerts \
+                    -XPOST http://kube-prometheus-stack-alertmanager.monitoring.svc.cluster.local:9093/api/v2/alerts \
                     -H "Content-Type: application/json" \
                     -d '[{"labels":{"alertname":"Watchdog","severity":"none","cluster":"talos-stpetersburg"},"annotations":{"message":"Watchdog: synthetic heartbeat for talos-stpetersburg"}}]'
 ---
