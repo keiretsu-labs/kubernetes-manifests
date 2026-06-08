@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       initContainers:
         - name: copy-rules
-          image: grafana/mimir:3.1.0
+          image: busybox:1.36.1
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
