@@ -4,8 +4,10 @@ kind: Kustomization
 namespace: mimir
 resources:
   - deployment.yaml
-  - configmap-mimir.yaml
 configMapGenerator:
+  - name: mimir-ruler-config
+    files:
+      - mimir.yaml=mimir-config.yaml
   - name: mimir-ruler-rules
     files:
       - rules/blackbox.yaml
