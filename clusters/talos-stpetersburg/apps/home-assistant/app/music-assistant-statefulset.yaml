@@ -4,7 +4,7 @@ kind: StatefulSet
 metadata:
   name: music-assistant
 spec:
-  replicas: 1
+  replicas: 0
   serviceName: music-assistant
   selector:
     matchLabels:
