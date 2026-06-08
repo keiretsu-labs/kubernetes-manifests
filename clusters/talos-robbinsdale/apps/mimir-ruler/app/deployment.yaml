@@ -24,20 +24,12 @@ spec:
         - name: copy-rules
           image: grafana/mimir:3.1.0
           imagePullPolicy: IfNotPresent
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
           command:
             - /bin/sh
             - -c
             - |
-              mkdir -p /data/rules/robbinsdale && \
-              cp /rules-source/*.yaml /data/rules/robbinsdale/
+              mkdir -p /data/rules/talos-robbinsdale && \
+              cp /rules-source/*.yaml /data/rules/talos-robbinsdale/
           volumeMounts:
             - name: rules
               mountPath: /rules-source
