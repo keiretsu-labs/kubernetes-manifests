@@ -45,7 +45,37 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-      containers: []
+        - name: rules-robbinsdale
+          image: *mt
+          args:
+            - rules
+            - sync
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-robbinsdale
+            - /rules/blackbox.yaml
+            - /rules/flux.yaml
+            - /rules/garage.yaml
+            - /rules/k8gb.yaml
+            - /rules/monitoring.yaml
+            - /rules/smartctl.yaml
+          volumeMounts: *rulesmount
+          securityContext: *sc
+      containers:
+        - name: rules-stpetersburg
+          image: *mt
+          args:
+            - rules
+            - sync
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-stpetersburg
+            - /rules/blackbox.yaml
+            - /rules/flux.yaml
+            - /rules/garage.yaml
+            - /rules/k8gb.yaml
+            - /rules/monitoring.yaml
+            - /rules/smartctl.yaml
+          volumeMounts: *rulesmount
+          securityContext: *sc
       volumes:
         - name: rules
           configMap:
