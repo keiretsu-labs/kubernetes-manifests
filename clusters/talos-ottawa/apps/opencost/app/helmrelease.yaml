@@ -31,7 +31,8 @@ spec:
           additionalLabels:
             release: prometheus
       prometheus:
+        external:
+          enabled: true
+          url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
         internal:
           enabled: false
-        external:
-          url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
