@@ -1,5 +1,4 @@
 # Ported from clusters/common/apps/k8gb/config/prometheusrules.yaml.
-namespace: k8gb
 groups:
   - name: k8gb.rules
     rules:
