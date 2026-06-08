@@ -1,6 +1,7 @@
 # Ported from clusters/common/apps/monitoring/config/prometheusrules.yaml.
 # Mimir ruler evaluates these per tenant; the PrometheusRule CRs are no longer
 # evaluated now that Prometheus runs in agent mode.
+namespace: monitoring
 groups:
   - name: container.rules
     rules:
