@@ -17,7 +17,7 @@ spec:
   clusterRef:
     name: garage
   zone: "${LOCATION}"
-  capacity: 100Gi
+  capacity: 200Gi
   tags:
     - cluster:garage/garage
     - tier:storage
@@ -28,7 +28,7 @@ spec:
       size: 1Gi
       storageClassName: local-path
     data:
-      size: 100Gi
+      size: 200Gi
       storageClassName: local-path
   nodeSelector:
     node.kubernetes.io/instance-type: jetson-orin-nano-super
