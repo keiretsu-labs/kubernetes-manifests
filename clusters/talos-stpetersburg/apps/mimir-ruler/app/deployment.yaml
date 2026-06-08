@@ -17,7 +17,6 @@ spec:
     spec:
       serviceAccountName: mimir-ruler
       securityContext:
-        runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
       initContainers:
