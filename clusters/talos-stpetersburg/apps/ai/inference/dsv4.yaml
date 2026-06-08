@@ -86,7 +86,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: head }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: head }
@@ -141,8 +141,8 @@ spec:
             --distributed-executor-backend mp \
             --moe-backend marlin --enforce-eager \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 4096 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.78 \
+            --max-model-len 4096 --max-num-seqs 2 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.70 \
             --enable-prefix-caching --tokenizer-mode auto \
             --nnodes 2 --node-rank 0 \
             --master-addr 192.168.74.1 --master-port 25000
@@ -183,8 +183,8 @@ spec:
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
         resources:
-          requests: { memory: "96Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "96Gi", nvidia.com/gpu: "1" }
+          requests: { memory: "90Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "90Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
@@ -217,7 +217,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: worker }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: worker }
@@ -270,8 +270,8 @@ spec:
             --distributed-executor-backend mp \
             --moe-backend marlin --enforce-eager \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 4096 --max-num-seqs 6 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.78 \
+            --max-model-len 4096 --max-num-seqs 2 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.70 \
             --enable-prefix-caching --tokenizer-mode auto \
             --nnodes 2 --node-rank 1 \
             --master-addr 192.168.74.1 --master-port 25000 \
@@ -312,8 +312,8 @@ spec:
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
         resources:
-          requests: { memory: "96Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "96Gi", nvidia.com/gpu: "1" }
+          requests: { memory: "90Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "90Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
