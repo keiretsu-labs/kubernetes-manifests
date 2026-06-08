@@ -9,7 +9,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: mimir
+    - name: mimir-egress
   path: ./clusters/talos-robbinsdale/apps/mimir-ruler/app
   prune: true
   sourceRef:
