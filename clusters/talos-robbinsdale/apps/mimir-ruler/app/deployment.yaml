@@ -28,7 +28,8 @@ spec:
             - -c
             - |
               rm -rf /data/rules
-              cp -r /rules-source/talos-robbinsdale /data/rules
+              mkdir -p /data/rules/talos-robbinsdale
+              cp /rules-source/*.yaml /data/rules/talos-robbinsdale/
           volumeMounts:
             - name: rules-source
               mountPath: /rules-source
