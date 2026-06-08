@@ -86,7 +86,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: head }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: head }
@@ -126,6 +126,16 @@ spec:
           requests: { memory: "16Mi", cpu: "100m" }
           limits: { memory: "32Mi" }
       containers:
+      # Continuously drop page cache so the 74GB weight read from the local PVC
+      # doesn't accumulate node-wide cache and trip the kubelet eviction threshold
+      # during load (the eugr/lmxxf trick). Belt-and-suspenders with the kubelet guard.
+      - name: drop-caches-loop
+        image: busybox:1.38
+        command: [sh, -c, "while true; do sync; echo 1 > /proc/sys/vm/drop_caches; sleep 15; done"]
+        securityContext: { privileged: true }
+        resources:
+          requests: { memory: "16Mi", cpu: "50m" }
+          limits: { memory: "64Mi" }
       - name: vllm
         image: vllm/vllm-openai:nightly-aarch64
         command: [bash, -c]
@@ -217,7 +227,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: worker }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: worker }
@@ -257,6 +267,16 @@ spec:
           requests: { memory: "16Mi", cpu: "100m" }
           limits: { memory: "32Mi" }
       containers:
+      # Continuously drop page cache so the 74GB weight read from the local PVC
+      # doesn't accumulate node-wide cache and trip the kubelet eviction threshold
+      # during load (the eugr/lmxxf trick). Belt-and-suspenders with the kubelet guard.
+      - name: drop-caches-loop
+        image: busybox:1.38
+        command: [sh, -c, "while true; do sync; echo 1 > /proc/sys/vm/drop_caches; sleep 15; done"]
+        securityContext: { privileged: true }
+        resources:
+          requests: { memory: "16Mi", cpu: "50m" }
+          limits: { memory: "64Mi" }
       - name: vllm
         image: vllm/vllm-openai:nightly-aarch64
         command: [bash, -c]
