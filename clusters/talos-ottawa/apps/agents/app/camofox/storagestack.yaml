@@ -18,3 +18,4 @@ spec:
   s3Path: agents/camofox/data
   schedule: 0 4 * * *
   copyMethod: Snapshot
+  restorePaused: false

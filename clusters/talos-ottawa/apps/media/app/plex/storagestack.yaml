@@ -13,4 +13,4 @@ spec:
   s3Endpoint: "${COMMON_S3_ENDPOINT}"
   schedule: "0 13 * * *"
   copyMethod: Snapshot
-  restorePaused: true
+  restorePaused: false
