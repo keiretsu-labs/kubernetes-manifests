@@ -1,0 +1,23 @@
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageNode
+metadata:
+  name: robbinsdale-garage-localpath-titan
+spec:
+  clusterRef:
+    name: garage
+  zone: "${LOCATION}"
+  capacity: 100Gi
+  tags:
+    - cluster:garage/garage
+    - tier:storage
+  network:
+    rpcPublicAddr: "robbinsdale-garage-titan.keiretsu.ts.net:3901"
+  storage:
+    metadata:
+      size: 1Gi
+      storageClassName: local-path
+    data:
+      size: 100Gi
+      storageClassName: local-path
+  nodeSelector:
+    kubernetes.io/hostname: titan

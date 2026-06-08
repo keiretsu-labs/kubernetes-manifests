@@ -4,4 +4,5 @@ namespace: garage
 resources:
   - robbinsdale-garage-smb.yaml
   - robbinsdale-garage-localpath-tank.yaml
+  - robbinsdale-garage-localpath-titan.yaml
   - service-ts-storage.yaml

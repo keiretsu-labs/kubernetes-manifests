@@ -16,6 +16,10 @@ patches:
                   {
                           "node":"shiro",
                           "paths":["/var/local-path-provisioner"]
+                  },
+                  {
+                          "node":"kaji",
+                          "paths":["/var/local-path-provisioner"]
                   }
                   ]
           }
