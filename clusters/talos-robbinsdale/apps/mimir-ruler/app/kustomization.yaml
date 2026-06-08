@@ -8,9 +8,9 @@ resources:
 configMapGenerator:
   - name: mimir-ruler-rules
     files:
-      - rules/blackbox.yaml
-      - rules/flux.yaml
-      - rules/garage.yaml
-      - rules/k8gb.yaml
-      - rules/monitoring.yaml
-      - rules/smartctl.yaml
+      - rules/talos-robbinsdale/blackbox.yaml
+      - rules/talos-robbinsdale/flux.yaml
+      - rules/talos-robbinsdale/garage.yaml
+      - rules/talos-robbinsdale/k8gb.yaml
+      - rules/talos-robbinsdale/monitoring.yaml
+      - rules/talos-robbinsdale/smartctl.yaml
