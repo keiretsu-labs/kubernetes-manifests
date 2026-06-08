@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: robbinsdale-garage-tank
+    tailscale.com/tags: "tag:k8s,tag:robbinsdale"
+  name: garage-storage-tank-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    statefulset.kubernetes.io/pod-name: robbinsdale-garage-localpath-tank-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale
