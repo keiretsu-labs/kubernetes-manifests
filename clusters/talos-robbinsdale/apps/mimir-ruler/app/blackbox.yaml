@@ -1,5 +1,4 @@
 # Ported from clusters/common/apps/blackbox-exporter/config/prometheusrule.yaml.
-namespace: blackbox
 groups:
   - name: blackbox-exporter.rules
     rules:

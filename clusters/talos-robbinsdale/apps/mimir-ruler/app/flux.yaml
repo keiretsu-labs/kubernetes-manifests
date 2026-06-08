@@ -1,5 +1,4 @@
 # Ported from clusters/common/apps/flux-system/flux-instance/app/prometheusrule.yaml.
-namespace: flux
 groups:
   - name: flux-instance.rules
     rules:
