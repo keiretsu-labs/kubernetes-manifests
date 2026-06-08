@@ -25,10 +25,9 @@ spec:
         runAsUser: 65534
         seccompProfile:
           type: RuntimeDefault
-      initContainers: []
-      containers:
+      initContainers:
         - name: rules-ottawa
-          image: docker.io/grafana/mimirtool:3.1.0
+          image: &mt docker.io/grafana/mimirtool:3.1.0
           args:
             - rules
             - sync
@@ -40,12 +39,13 @@ spec:
             - /rules/k8gb.yaml
             - /rules/monitoring.yaml
             - /rules/smartctl.yaml
-          volumeMounts:
+          volumeMounts: &rulesmount
             - { name: rules, mountPath: /rules }
-          securityContext:
+          securityContext: &sc
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+      containers: []
       volumes:
         - name: rules
           configMap:
