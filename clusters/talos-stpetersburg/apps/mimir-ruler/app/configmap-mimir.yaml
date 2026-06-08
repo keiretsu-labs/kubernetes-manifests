@@ -17,3 +17,5 @@ data:
       ring:
         kvstore:
           store: inmemory
+    server:
+      data_directory: /data
