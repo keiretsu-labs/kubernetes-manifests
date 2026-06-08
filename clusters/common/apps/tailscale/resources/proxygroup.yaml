@@ -23,7 +23,7 @@ spec:
     - tag:${LOCATION}
   proxyClass: common
   type: ingress
-  replicas: 2
+  replicas: 3
 ---
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyGroup

@@ -8,6 +8,14 @@ spec:
     enable: true
     serviceMonitor:
       enable: true
+  statefulSet:
+    pod:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          matchLabelKeys:
+            - tailscale.com/parent-resource
 ---
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyClass
@@ -20,6 +28,14 @@ spec:
     enable: true
     serviceMonitor:
       enable: true
+  statefulSet:
+    pod:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          matchLabelKeys:
+            - tailscale.com/parent-resource
 ---
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyClass
