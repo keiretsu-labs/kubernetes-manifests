@@ -49,8 +49,6 @@ spec:
             - name: rules
               mountPath: /rules
               readOnly: true
-            - name: data
-              mountPath: /data
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -69,5 +67,3 @@ spec:
         - name: rules
           configMap:
             name: mimir-ruler-rules
-        - name: data
-          emptyDir: {}
