@@ -32,7 +32,3 @@ spec:
       storageClassName: local-path
   nodeSelector:
     node.kubernetes.io/instance-type: jetson-orin-nano-super
-  tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-      effect: NoSchedule
