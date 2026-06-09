@@ -5,7 +5,7 @@ metadata:
   name: grafana-redirect
   namespace: flux-system
 spec:
-  targetNamespace: monitoring
+  targetNamespace: home
   path: ./clusters/talos-robbinsdale/apps/grafana-redirect
   prune: true
   sourceRef:
