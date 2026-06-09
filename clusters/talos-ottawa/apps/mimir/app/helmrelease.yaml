@@ -54,7 +54,7 @@ spec:
         ingest_storage:
           enabled: false
         frontend:
-          parallelize_shardable_queries: false
+          parallelize_shardable_queries: true
         ingester:
           push_grpc_method_enabled: true
           ring:
@@ -85,7 +85,7 @@ spec:
           ingestion_burst_size: 1000000
           max_global_series_per_user: 10000000
           max_label_names_per_series: 300
-          query_sharding_total_shards: 1
+          query_sharding_total_shards: 16
 
     ingester:
       replicas: 1
