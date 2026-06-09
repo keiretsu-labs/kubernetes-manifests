@@ -48,7 +48,7 @@ spec:
       spec:
         containers:
           - name: runner
-            image: ghcr.io/actions/actions-runner:2.335.0
+            image: ghcr.io/actions/actions-runner:2.335.1
             command: ["/home/runner/run.sh"]
             resources:
               limits:
