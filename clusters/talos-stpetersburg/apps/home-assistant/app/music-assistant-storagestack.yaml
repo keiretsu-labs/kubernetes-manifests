@@ -13,5 +13,5 @@ spec:
   s3Path: music-assistant/data
   schedule: "0 12 * * *"
   copyMethod: Direct
-  restorePaused: true
+  restorePaused: false
   restorePrevious: 1

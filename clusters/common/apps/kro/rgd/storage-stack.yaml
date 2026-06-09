@@ -75,7 +75,7 @@ spec:
       snapshotClass: "string | default=csi-rbdplugin-snapclass"
       backupPaused: "boolean | default=false"
       # Restore config
-      restorePaused: "boolean | default=true"
+      restorePaused: "boolean | default=false"
       restorePrevious: "integer | default=0"
       # Increment to trigger a new restore run (e.g. "restore-2026-04-19")
       restoreTrigger: "string | default=restore-once"
