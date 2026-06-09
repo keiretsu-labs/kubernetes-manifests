@@ -43,13 +43,13 @@ spec:
         createConfigmap: true
         provider: custom
         costModel:
-          description: Ottawa bare-metal pricing (Talos)
-          CPU: 0.50
-          spotCPU: 0.10
-          RAM: 0.10
-          spotRAM: 0.02
-          GPU: 0.00
-          storage: 0.05
-          zoneNetworkEgress: 0.00
-          regionNetworkEgress: 0.00
-          internetNetworkEgress: 0.01
+          description: Market-based pricing (AWS c6i/m6i comparable)
+          CPU: 0.04
+          spotCPU: 0.012
+          RAM: 0.008
+          spotRAM: 0.0024
+          GPU: 1.50
+          storage: 0.08
+          zoneNetworkEgress: 0.01
+          regionNetworkEgress: 0.01
+          internetNetworkEgress: 0.09
