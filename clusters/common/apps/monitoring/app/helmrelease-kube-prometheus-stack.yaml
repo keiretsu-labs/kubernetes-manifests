@@ -32,6 +32,7 @@ spec:
     prometheusOperator:
       admissionWebhooks:
         enabled: true
+      priorityClassName: "infra-high"
     prometheus:
       # Agent mode: scrape + remote_write only. No local TSDB query engine,
       # rule evaluation, or alerting — Mimir is the store/query layer. This
@@ -80,6 +81,7 @@ spec:
     alertmanager:
       enabled: true
       alertmanagerSpec:
+        priorityClassName: "infra-high"
         alertmanagerConfigMatcherStrategy:
           type: None
         alertmanagerConfigSelector:
@@ -154,6 +156,7 @@ spec:
 
     kube-state-metrics:
       enabled: true
+      priorityClassName: "infra-high"
       prometheus:
         monitor:
           metricRelabelings:
@@ -161,6 +164,7 @@ spec:
               replacement: ${CLUSTER_NAME}
 
     prometheus-node-exporter:
+      priorityClassName: "infra-high"
       updateStrategy:
         rollingUpdate:
           maxUnavailable: "100%"
