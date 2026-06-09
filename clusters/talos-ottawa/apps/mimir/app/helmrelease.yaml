@@ -54,7 +54,7 @@ spec:
         ingest_storage:
           enabled: false
         frontend:
-          parallelize_shardable_queries: true
+          parallelize_shardable_queries: false
         ingester:
           push_grpc_method_enabled: true
           ring:
@@ -101,7 +101,8 @@ spec:
       zoneAwareReplication:
         enabled: false
       persistentVolume:
-        enabled: false
+        enabled: true
+        size: 2Gi
       extraArgs:
         "-store-gateway.sharding-ring.replication-factor": "1"
 
