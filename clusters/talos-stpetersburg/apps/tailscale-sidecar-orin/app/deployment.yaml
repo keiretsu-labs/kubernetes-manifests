@@ -18,6 +18,10 @@ spec:
       serviceAccountName: "tailscale"
       nodeSelector:
         node.kubernetes.io/instance-type: jetson-orin-nano-super
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
       initContainers:
       - args:
         - sysctl -w net.ipv4.ip_forward=1 && if sysctl net.ipv6.conf.all.forwarding;
