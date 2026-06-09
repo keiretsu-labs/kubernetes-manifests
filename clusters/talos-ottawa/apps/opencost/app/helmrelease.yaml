@@ -25,6 +25,8 @@ spec:
     opencost:
       exporter:
         defaultClusterId: ottawa
+        extraArgs:
+          - log-level=info
       metrics:
         serviceMonitor:
           enabled: true
@@ -36,3 +38,18 @@ spec:
           url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
         internal:
           enabled: false
+      customPricing:
+        enabled: true
+        createConfigmap: true
+        provider: custom
+        costModel:
+          description: Ottawa bare-metal pricing (Talos)
+          CPU: 0.50
+          spotCPU: 0.10
+          RAM: 0.10
+          spotRAM: 0.02
+          GPU: 0.00
+          storage: 0.05
+          zoneNetworkEgress: 0.00
+          regionNetworkEgress: 0.00
+          internetNetworkEgress: 0.01
