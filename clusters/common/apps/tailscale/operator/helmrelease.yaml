@@ -34,6 +34,7 @@ spec:
       #   tag: "80"
       hostname: "${LOCATION}-k8s-operator"
       logging: "info" # info, debug, dev
+      priorityClassName: "infra-critical"
       defaultTags:
         - "tag:${LOCATION}"
         - "tag:k8s-operator"

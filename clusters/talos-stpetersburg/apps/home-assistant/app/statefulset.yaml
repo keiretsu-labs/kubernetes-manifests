@@ -21,6 +21,7 @@ spec:
         k8s.v1.cni.cncf.io/networks: |
           [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
     spec:
+      priorityClassName: "infra-high"
       initContainers:
         - name: restic-restore
           image: restic/restic:0.18.1
