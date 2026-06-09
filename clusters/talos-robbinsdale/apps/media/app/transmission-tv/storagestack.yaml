@@ -12,6 +12,6 @@ spec:
   storageClass: ceph-block-replicated-nvme
   s3Path: media/transmission-tv-config
   schedule: "0 4 * * *"
-  restorePaused: true
+  restorePaused: false
   restorePrevious: 4
   copyMethod: Snapshot

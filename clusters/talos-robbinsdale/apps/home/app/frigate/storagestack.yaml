@@ -12,5 +12,5 @@ spec:
   storageClass: ceph-block-replicated-nvme
   s3Path: home/frigate-config
   schedule: "0 5 * * *"
-  restorePaused: true
+  restorePaused: false
   copyMethod: Snapshot

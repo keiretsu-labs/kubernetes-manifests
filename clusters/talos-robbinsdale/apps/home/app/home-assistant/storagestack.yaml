@@ -12,6 +12,6 @@ spec:
   storageClass: ceph-block-replicated-nvme
   s3Path: home/homeassistant-config
   schedule: "0 12 * * *"
-  restorePaused: true
+  restorePaused: false
   restorePrevious: 1
   copyMethod: Snapshot

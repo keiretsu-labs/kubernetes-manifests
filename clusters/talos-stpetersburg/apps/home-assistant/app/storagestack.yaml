@@ -16,5 +16,5 @@ spec:
   s3Path: home-assistant/config
   schedule: "0 12 * * *"
   copyMethod: Direct
-  restorePaused: true
+  restorePaused: false
   restorePrevious: 1
