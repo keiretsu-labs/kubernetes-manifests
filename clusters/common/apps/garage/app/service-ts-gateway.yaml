@@ -48,6 +48,7 @@ metadata:
   annotations:
     tailscale.com/hostname: ${LOCATION}-gw-0
     tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-gateway-0-ts
 spec:
   publishNotReadyAddresses: true
@@ -72,6 +73,7 @@ metadata:
   annotations:
     tailscale.com/hostname: ${LOCATION}-gw-1
     tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-gateway-1-ts
 spec:
   publishNotReadyAddresses: true

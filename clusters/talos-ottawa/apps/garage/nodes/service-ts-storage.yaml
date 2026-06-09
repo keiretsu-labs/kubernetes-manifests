@@ -4,6 +4,7 @@ metadata:
   annotations:
     tailscale.com/hostname: ottawa-garage-shiro
     tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-shiro-ts
 spec:
   publishNotReadyAddresses: true
@@ -23,6 +24,7 @@ metadata:
   annotations:
     tailscale.com/hostname: ottawa-garage-kaji
     tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-kaji-ts
 spec:
   publishNotReadyAddresses: true
@@ -42,6 +44,7 @@ metadata:
   annotations:
     tailscale.com/hostname: ottawa-garage-asuka
     tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-asuka-ts
 spec:
   publishNotReadyAddresses: true
@@ -61,6 +64,7 @@ metadata:
   annotations:
     tailscale.com/hostname: ottawa-garage-rei
     tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-rei-ts
 spec:
   publishNotReadyAddresses: true
