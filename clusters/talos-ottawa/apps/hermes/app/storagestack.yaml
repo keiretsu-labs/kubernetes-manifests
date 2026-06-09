@@ -9,7 +9,7 @@ spec:
   name: hermes-data
   size: 10Gi
   storageClass: ceph-block-replicated
-  s3Path: hermes/hermes-data
+  s3Path: hermes/hermes-data-v2
   schedule: 0 4 * * *
   copyMethod: Snapshot
   restorePaused: false
