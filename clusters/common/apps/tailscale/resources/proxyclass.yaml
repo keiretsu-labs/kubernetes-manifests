@@ -10,6 +10,9 @@ spec:
       enable: true
   statefulSet:
     pod:
+      dnsConfig:
+        nameservers:
+          - 100.100.100.100
       priorityClassName: "infra-high"
       topologySpreadConstraints:
         - maxSkew: 1
