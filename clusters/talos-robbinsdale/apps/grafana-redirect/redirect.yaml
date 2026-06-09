@@ -10,6 +10,7 @@ spec:
       kind: Gateway
       name: ts
       namespace: home
+      sectionName: http
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: public
