@@ -4,6 +4,7 @@ metadata:
   annotations:
     tailscale.com/hostname: robbinsdale-garage-tank
     tailscale.com/tags: "tag:k8s,tag:robbinsdale"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-tank-ts
 spec:
   publishNotReadyAddresses: true
@@ -23,6 +24,7 @@ metadata:
   annotations:
     tailscale.com/hostname: robbinsdale-garage-titan
     tailscale.com/tags: "tag:k8s,tag:robbinsdale"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-titan-ts
 spec:
   publishNotReadyAddresses: true
@@ -42,6 +44,7 @@ metadata:
   annotations:
     tailscale.com/hostname: robbinsdale-garage-stone
     tailscale.com/tags: "tag:k8s,tag:robbinsdale"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-stone-ts
 spec:
   publishNotReadyAddresses: true

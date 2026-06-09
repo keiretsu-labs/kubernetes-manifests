@@ -16,6 +16,7 @@ metadata:
   annotations:
     tailscale.com/hostname: stpetersburg-garage-spark-0
     tailscale.com/tags: "tag:k8s,tag:stpetersburg"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-spark-0-ts
 spec:
   publishNotReadyAddresses: true
@@ -35,6 +36,7 @@ metadata:
   annotations:
     tailscale.com/hostname: stpetersburg-garage-spark-1
     tailscale.com/tags: "tag:k8s,tag:stpetersburg"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-spark-1-ts
 spec:
   publishNotReadyAddresses: true
@@ -55,6 +57,7 @@ metadata:
   annotations:
     tailscale.com/hostname: stpetersburg-garage-orin-0
     tailscale.com/tags: "tag:k8s,tag:stpetersburg"
+    tailscale.com/proxy-group: "common-ingress"
   name: garage-storage-orin-0-ts
 spec:
   publishNotReadyAddresses: true
