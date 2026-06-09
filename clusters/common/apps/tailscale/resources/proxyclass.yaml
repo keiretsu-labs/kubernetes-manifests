@@ -10,6 +10,7 @@ spec:
       enable: true
   statefulSet:
     pod:
+      priorityClassName: "infra-high"
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
@@ -33,6 +34,7 @@ spec:
       enable: true
   statefulSet:
     pod:
+      priorityClassName: "infra-high"
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
