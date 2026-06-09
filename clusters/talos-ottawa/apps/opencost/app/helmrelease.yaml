@@ -27,6 +27,8 @@ spec:
         defaultClusterId: ottawa
         extraArgs:
           - log-level=info
+        prometheusDataSource:
+          queryResolutionSeconds: 900
       metrics:
         serviceMonitor:
           enabled: true
