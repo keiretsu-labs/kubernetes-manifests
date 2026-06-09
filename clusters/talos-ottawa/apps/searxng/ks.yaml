@@ -9,7 +9,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./clusters/common/apps/searxng/app
+  path: ./clusters/talos-ottawa/apps/searxng/app
   prune: true
   sourceRef:
     kind: GitRepository
