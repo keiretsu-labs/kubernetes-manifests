@@ -107,6 +107,7 @@ spec:
     data:
       size: 2Ti
       storageClassName: "${STORAGECLASS_LONGTERM}"
+    priorityClassName: "infra-critical"
     resources:
       requests:
         cpu: 100m
@@ -131,6 +132,7 @@ spec:
   gateway:
     replicas: ${GARAGE_GATEWAY_REPLICAS:=2}
     rpcPublicAddr: "${LOCATION}-gw-{ordinal}.keiretsu.ts.net:3901"
+    priorityClassName: "infra-high"
     resources:
       requests:
         cpu: 100m
