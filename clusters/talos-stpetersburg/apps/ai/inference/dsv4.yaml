@@ -16,8 +16,8 @@
 #   thresholds. vLLM startup script also drops caches immediately before weight load.
 #   kubelet memory guard: systemReserved 4Gi, kubeReserved 4Gi, evictionHard 6Gi.
 #   Guaranteed QoS at 85Gi (request==limit) to ensure predictable accounting.
-#   Start with conservative --gpu-memory-utilization 0.75 / 32K ctx / 2 seqs for
-#   OOM testing; can increase once stable.
+#   Current: 0.70 util, 32K ctx, 1 seq, expert-parallel ON, flashinfer OFF, MTP ON.
+#   Step up ctx: 32K → 64K → 128K → 256K as KV cache allows.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -149,14 +149,16 @@ spec:
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --distributed-executor-backend mp \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 8192 \
+            --max-model-len 32768 \
             --max-num-seqs 1 --max-num-batched-tokens 4096 \
             --gpu-memory-utilization 0.70 \
             --enable-prefix-caching \
+            --enable-expert-parallel \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
-            --enable-flashinfer-autotune \
+            --no-enable-flashinfer-autotune \
+            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --nnodes 2 --node-rank 0 \
             --master-addr 192.168.74.1 --master-port 25000
         ports:
@@ -279,14 +281,16 @@ spec:
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --distributed-executor-backend mp \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 8192 \
+            --max-model-len 32768 \
             --max-num-seqs 1 --max-num-batched-tokens 4096 \
             --gpu-memory-utilization 0.70 \
             --enable-prefix-caching \
+            --enable-expert-parallel \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
-            --enable-flashinfer-autotune \
+            --no-enable-flashinfer-autotune \
+            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --nnodes 2 --node-rank 1 \
             --master-addr 192.168.74.1 --master-port 25000 \
             --headless
