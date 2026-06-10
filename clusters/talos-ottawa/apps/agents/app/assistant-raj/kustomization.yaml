@@ -8,6 +8,11 @@ resources:
   - service-tailscale.yaml
   - storagestack.yaml
   - garagekey.yaml
+  - garagekey-web.yaml
+  - bucket.yaml
+  - httproute-web.yaml
+  - securitypolicy-web.yaml
+  - oidc-secret.yaml
   - egress.yaml
   - configmap.yaml
   - secret.yaml
