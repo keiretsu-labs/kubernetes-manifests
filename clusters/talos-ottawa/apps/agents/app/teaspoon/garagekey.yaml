@@ -7,9 +7,10 @@ spec:
   clusterRef:
     name: garage
     namespace: garage
-  name: "teaspoon S3 Reader Key"
+  name: "teaspoon S3 Key"
   allBuckets:
     read: true
+    write: true
   secretTemplate:
     name: teaspoon-s3
     accessKeyIdKey: AWS_ACCESS_KEY_ID
