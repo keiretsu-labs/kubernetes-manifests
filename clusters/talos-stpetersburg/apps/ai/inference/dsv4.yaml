@@ -341,20 +341,6 @@ spec:
         resources:
           requests: { memory: "85Gi", cpu: "8000m", nvidia.com/gpu: "1" }
           limits: { memory: "85Gi", nvidia.com/gpu: "1" }
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 900
-          periodSeconds: 30
-          timeoutSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 900
-          periodSeconds: 15
-          timeoutSeconds: 10
       volumes:
       - name: shm
         emptyDir:
