@@ -1,5 +1,6 @@
 # Vendored from https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/nfd?ref=main
 # upstream commit at vendor time: c0850a1ef8c853050f4c50110c770b98636414dd
+# re-render with: kustomize build 'https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/nfd?ref=main'
 apiVersion: v1
 kind: Namespace
 metadata:
