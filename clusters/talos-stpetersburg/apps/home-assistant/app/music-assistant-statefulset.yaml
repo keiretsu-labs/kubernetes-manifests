@@ -45,7 +45,7 @@ spec:
               mountPath: /data
       containers:
         - name: music-assistant
-          image: ghcr.io/music-assistant/server:2.8.9
+          image: ghcr.io/music-assistant/server:2.9.0
           securityContext:
             capabilities:
               add:
