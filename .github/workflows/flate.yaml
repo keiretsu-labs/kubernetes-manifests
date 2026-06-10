@@ -1,0 +1,69 @@
+name: flate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "clusters/**"
+  workflow_dispatch:
+
+concurrency:
+  group: flate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cluster: [talos-ottawa, talos-robbinsdale, talos-stpetersburg]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: home-operations/flate/action@main
+        with:
+          cache: true
+      - name: flate test
+        run: >-
+          flate test all
+          --path clusters/${{ matrix.cluster }}/flux/config
+          --no-progress
+
+  diff:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        cluster: [talos-ottawa, talos-robbinsdale, talos-stpetersburg]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: home-operations/flate/action@main
+        with:
+          cache: true
+      - name: flate diff
+        id: diff
+        run: |
+          flate diff all \
+            --path clusters/${{ matrix.cluster }}/flux/config \
+            --base origin/main \
+            --no-progress \
+            -o github > diff.md || true
+          if [ ! -s diff.md ]; then
+            echo "No rendered changes for ${{ matrix.cluster }}." > diff.md
+          fi
+          head -c 60000 diff.md > comment.md
+          if [ "$(wc -c < diff.md)" -gt 60000 ]; then
+            echo "" >> comment.md
+            echo "_…truncated; run \`make diff\` locally for the full diff._" >> comment.md
+          fi
+          cat comment.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: flate-diff-${{ matrix.cluster }}
+          path: comment.md
