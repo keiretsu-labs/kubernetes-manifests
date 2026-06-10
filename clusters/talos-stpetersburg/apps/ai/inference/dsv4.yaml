@@ -146,7 +146,6 @@ spec:
             --max-num-seqs 2 --max-num-batched-tokens 8192 \
             --gpu-memory-utilization 0.70 \
             --enable-prefix-caching \
-            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
@@ -277,7 +276,6 @@ spec:
             --max-num-seqs 2 --max-num-batched-tokens 8192 \
             --gpu-memory-utilization 0.70 \
             --enable-prefix-caching \
-            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
