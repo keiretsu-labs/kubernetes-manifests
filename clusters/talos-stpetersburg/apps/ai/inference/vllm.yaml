@@ -287,4 +287,5 @@ spec:
     protocol: TCP
     targetPort: 8000
   selector:
-    app: vllm
+    app: dsv4
+    role: head
