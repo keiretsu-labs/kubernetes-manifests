@@ -78,6 +78,12 @@ spec:
         enable_api: false
       ingester:
         chunk_encoding: snappy
+        # Flush chunks aggressively to prevent WAL from filling the disk
+        chunk_idle_period: 5m
+        max_chunk_age: 30m
+        chunk_target_size: 1048576
+        wal:
+          disk_full_threshold: 0.85
       tracing:
         enabled: false
       querier:
@@ -86,6 +92,9 @@ spec:
         memberlist:
           join_members:
             - loki-memberlist
+        storage_config:
+          tsdb_shipper:
+            cache_ttl: 1h
 
     serviceAccount:
       create: true
