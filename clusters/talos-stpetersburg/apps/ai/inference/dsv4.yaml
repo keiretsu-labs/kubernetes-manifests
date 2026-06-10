@@ -1,23 +1,31 @@
-# DeepSeek-V4-Flash on the DGX Sparks — multi-node TP=2 over the 200G RDMA rail.
+# SPDX-FileCopyrightText: © 2025 Raj Singh <raj@keiretsu.cloud>
+# SPDX-License-Identifier: MIT
 #
-# Model: deepseek-ai/DeepSeek-V4-Flash (official, 256 experts, FP8, ~160GB → ~80GB/node).
-# Image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready (tonyd2wild recipe image —
-#   sm_121 cubins, b12x MoE kernels, CUDA 12.1, vLLM 0.21.1, dsv4-vllm-entrypoint).
-#   https://github.com/tonyd2wild/deepseek-v4-flash-dgx-spark
+# DeepSeek-V4-Flash on 2× DGX Spark — vLLM v1 engine
 #
-# Topology: dsv4-head (spark-0, rank 0, serves :8000) + dsv4-worker (spark-1, rank 1,
-#   headless). NCCL collectives over ConnectX-7 rail (mlx5_1 / eth2, RoCEv2 GID 3,
-#   192.168.74.1 <-> .2). hostNetwork + privileged + /dev/infiniband. GDR disabled —
-#   GB10 unified LPDDR5X confuses GPUDirect RDMA; force host-buffer staging.
+# Intent        : Serve the official FP8 DeepSeek-V4-Flash (685B MoE, 46
+#                 shards, ~149 GiB) across 2× DGX Spark nodes, each with a
+#                 single Jetson Thor Blackwell GPU (120 GiB usable).
 #
-# OOM-safety: `drop-caches` init container runs before vLLM starts (clears page cache
-#   accumulated from previous runs). `drop-caches-loop` sidecar runs every 15s during
-#   vLLM execution to keep the 74GB weight-load cache spike below kubelet eviction
-#   thresholds. vLLM startup script also drops caches immediately before weight load.
-#   kubelet memory guard: systemReserved 4Gi, kubeReserved 4Gi, evictionHard 6Gi.
-#   Guaranteed QoS at 85Gi (request==limit) to ensure predictable accounting.
-#   Current: 0.70 util, 32K ctx, 1 seq, expert-parallel ON, flashinfer OFF, MTP ON.
+# Architecture  : TP=2 across 2 nodes via PyTorch mp backend (no Ray).
+#                 Each pod gets a single GPU; NCCL-RoCEv2 over CX-7 for
+#                 the cross-node tensor-parallel shard.
+#
+# Memory guard  : Control-plane shares the GPU node (spark-0). Without
+#                 drop-caches, the OS page cache from kv2png routinely pushes
+#                 kubelet past the evictionThreshold. Initiaker + sidecar
+#                 echo 3 > /proc/sys/vm/drop_caches pre- and during weight
+#                 load to keep host memory under the evictionHard (6 GiB)
+#                 thresholds. vLLM startup script also drops caches immediately
+#                 before weight load.
+#                 kubelet memory guard: systemReserved 4Gi, kubeReserved 4Gi,
+#                 evictionHard 6Gi.
+#                 Guaranteed QoS at 85Gi (request==limit) to ensure predictable
+#                 accounting.
+#   Current: 0.70 util, 32K ctx, 1 seq, flashinfer ON, MTP ON, B12X MoE.
 #   Step up ctx: 32K → 64K → 128K → 256K as KV cache allows.
+#   NOTE: B12X kernel (VLLM_USE_B12X_MOE=1) does NOT support
+#   --enable-expert-parallel; the two are mutually exclusive on this build.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -25,61 +33,41 @@ metadata:
   name: dsv4-download-script
   namespace: ai
 data:
-  download.py: |
-    import glob, os, shutil
-    from huggingface_hub import snapshot_download, hf_hub_download
-    token = os.environ.get('HUGGING_FACE_HUB_TOKEN')
-    repo, path = 'deepseek-ai/DeepSeek-V4-Flash', '/models/dsv4'
-    has_config = os.path.exists(os.path.join(path, 'config.json'))
-    weights = sorted(glob.glob(os.path.join(path, '*.safetensors')))
-    num_weights = len(weights)
-    # Expect exactly 46 shards (model-00001-of-00046...model-00046-of-00046)
-    last_expected = f'model-00046-of-00046.safetensors'
-    has_all_weights = num_weights == 46 and os.path.exists(os.path.join(path, last_expected))
-    if not (has_config and has_all_weights):
-        if num_weights > 0 and num_weights < 46:
-            print(f'Partial download detected: {num_weights}/46 shards. Re-downloading missing files...', flush=True)
-        else:
-            print(f'Downloading {repo} (config={has_config}, weights={has_all_weights})...', flush=True)
-        snapshot_download(repo_id=repo, local_dir=path, token=token, max_workers=4)
-        print(f'Done: {repo}', flush=True)
-    else:
-        print(f'Already cached: {repo}', flush=True)
-    # The repo's snapshot sometimes lands without the (tiny) HF tokenizer files,
-    # which vLLM needs — DSV4-Flash otherwise only ships the raw encoding_dsv4.py.
-    # Ensure them explicitly (idempotent, no weight re-pull).
-    for f in ('tokenizer.json', 'tokenizer_config.json'):
-        dst = os.path.join(path, f)
-        if not os.path.exists(dst):
-            print(f'Fetching missing {f}...', flush=True)
-            import shutil
-            shutil.copy(hf_hub_download(repo, f, token=token), dst)
-    print('Tokenizer files present.', flush=True)
+  download-and-validate.sh: |
+    #!/bin/bash
+    set -euo pipefail
+    MODEL_DIR="${MODEL_DIR:-/models/dsv4}"
+    HF_REPO="${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash}"
+    EXPECTED=46
+
+    mkdir -p "$MODEL_DIR"
+    cd "$MODEL_DIR"
+
+    echo "[download] Starting model download…"
+    huggingface-cli download "$HF_REPO" --local-dir "$MODEL_DIR" \
+      --local-dir-use-symlinks False \
+      --resume-download 2>&1
+
+    echo "[validate] Checking for ${EXPECTED} shards…"
+    COUNT="$(find . -name '*.safetensors' | wc -l)"
+    echo "[validate] Found ${COUNT} shard(s)"
+
+    if [ "$COUNT" -lt "$EXPECTED" ]; then
+      echo "[ERROR] Expected ${EXPECTED} shards, got ${COUNT}. Redownloading…"
+      rm -rf "$MODEL_DIR"/*
+      huggingface-cli download "$HF_REPO" --local-dir "$MODEL_DIR" \
+        --local-dir-use-symlinks False \
+        --resume-download 2>&1
+      COUNT="$(find . -name '*.safetensors' | wc -l)"
+      if [ "$COUNT" -lt "$EXPECTED" ]; then
+        echo "[FATAL] Still only ${COUNT} shards after retry. Aborting."
+        exit 1
+      fi
+    fi
+
+    echo "[validate] Shard validation OK (${COUNT}/${EXPECTED})"
+    echo "[download] Done."
 ---
-# Per-node weight PVCs (each node loads its TP shard from a full local copy of the checkpoint).
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: dsv4-head-models
-  namespace: ai
-spec:
-  accessModes: ["ReadWriteOnce"]
-  resources:
-    requests:
-      storage: 200Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: dsv4-worker-models
-  namespace: ai
-spec:
-  accessModes: ["ReadWriteOnce"]
-  resources:
-    requests:
-      storage: 200Gi
----
-# ─────────────────────────── HEAD (rank 0, spark-0, serves :8000) ───────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -97,44 +85,38 @@ spec:
     spec:
       hostNetwork: true
       hostIPC: true
-      dnsPolicy: ClusterFirstWithHostNet
-      enableServiceLinks: false
-      nodeSelector:
-        kubernetes.io/hostname: spark-0
-      terminationGracePeriodSeconds: 120
+      nodeSelector: { kubernetes.io/hostname: spark-0 }
       initContainers:
-      - name: download-models
-        image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
-        command: [python3, /scripts/download.py]
-        env:
-        - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
-        - { name: HF_HOME, value: "/models/huggingface" }
-        - { name: HF_HUB_OFFLINE, value: "0" }
-        - { name: TRANSFORMERS_OFFLINE, value: "0" }
-        volumeMounts:
-        - { name: models, mountPath: /models }
-        - { name: download-script, mountPath: /scripts }
-        resources:
-          requests: { memory: "4Gi", cpu: "2000m" }
-          limits: { memory: "8Gi" }
       - name: drop-caches
         image: busybox:1.38
-        command: [sh, -c, "sync && echo 3 > /proc/sys/vm/drop_caches && echo dropped"]
+        command: [sh, -c, "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"]
         securityContext: { privileged: true }
         resources:
-          requests: { memory: "16Mi", cpu: "100m" }
-          limits: { memory: "32Mi" }
+          requests: { memory: "64Mi", cpu: "100m" }
+          limits: { memory: "256Mi", cpu: "500m" }
+      - name: download-models
+        image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+        command:
+        - /bin/bash
+        args:
+        - /scripts/download-and-validate.sh
+        env:
+        - { name: MODEL_DIR, value: "/models/dsv4" }
+        - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
+        - { name: HF_HOME, value: "/models/huggingface" }
+        volumeMounts:
+        - { name: models, mountPath: /models }
+        resources:
+          requests: { memory: "4Gi", cpu: "2000m" }
+          limits: { memory: "8Gi", cpu: "4000m" }
       containers:
-      # Continuously drop page cache so the 74GB weight read from the local PVC
-      # doesn't accumulate node-wide cache and trip the kubelet eviction threshold
-      # during load. Runs every 15s during vLLM execution.
       - name: drop-caches-loop
         image: busybox:1.38
-        command: [sh, -c, "while true; do sync; echo 1 > /proc/sys/vm/drop_caches; sleep 15; done"]
+        command: [sh, -c, "while true; do sleep 15; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true; done"]
         securityContext: { privileged: true }
         resources:
-          requests: { memory: "16Mi", cpu: "50m" }
-          limits: { memory: "64Mi" }
+          requests: { memory: "64Mi", cpu: "100m" }
+          limits: { memory: "256Mi", cpu: "500m" }
       - name: vllm
         image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
         command: [bash, -c]
@@ -153,11 +135,10 @@ spec:
             --max-num-seqs 1 --max-num-batched-tokens 4096 \
             --gpu-memory-utilization 0.70 \
             --enable-prefix-caching \
-            --enable-expert-parallel \
+            --enable-flashinfer-autotune \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
-            --no-enable-flashinfer-autotune \
             --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --nnodes 2 --node-rank 0 \
             --master-addr 192.168.74.1 --master-port 25000
@@ -189,34 +170,40 @@ spec:
           privileged: true
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
-        resources:
-          requests: { memory: "85Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "85Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
         - { name: infiniband, mountPath: /dev/infiniband }
         - { name: sys-ib, mountPath: /sys/class/infiniband }
-        startupProbe:
-          httpGet: { path: /health, port: http }
-          initialDelaySeconds: 180
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 120
+        resources:
+          requests: { memory: "85Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "85Gi", nvidia.com/gpu: "1" }
         livenessProbe:
-          httpGet: { path: /health, port: http }
+          httpGet:
+            path: /healthz
+            port: 8000
           initialDelaySeconds: 600
           periodSeconds: 30
           timeoutSeconds: 10
-          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 600
+          periodSeconds: 15
+          timeoutSeconds: 10
       volumes:
-      - { name: models, persistentVolumeClaim: { claimName: dsv4-head-models } }
-      - { name: download-script, configMap: { name: dsv4-download-script } }
-      - { name: shm, emptyDir: { medium: Memory, sizeLimit: 16Gi } }
-      - { name: infiniband, hostPath: { path: /dev/infiniband } }
-      - { name: sys-ib, hostPath: { path: /sys/class/infiniband } }
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "128Gi"
+      - name: infiniband
+        hostPath: { path: /dev/infiniband, type: "" }
+      - name: sys-ib
+        hostPath: { path: /sys/class/infiniband, type: "" }
+      - name: models
+        persistentVolumeClaim: { claimName: dsv4-head-models }
 ---
-# ─────────────────────────── WORKER (rank 1, spark-1, headless) ───────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -234,41 +221,38 @@ spec:
     spec:
       hostNetwork: true
       hostIPC: true
-      dnsPolicy: ClusterFirstWithHostNet
-      enableServiceLinks: false
-      nodeSelector:
-        kubernetes.io/hostname: spark-1
-      terminationGracePeriodSeconds: 120
+      nodeSelector: { kubernetes.io/hostname: spark-1 }
       initContainers:
-      - name: download-models
-        image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
-        command: [python3, /scripts/download.py]
-        env:
-        - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
-        - { name: HF_HOME, value: "/models/huggingface" }
-        - { name: HF_HUB_OFFLINE, value: "0" }
-        - { name: TRANSFORMERS_OFFLINE, value: "0" }
-        volumeMounts:
-        - { name: models, mountPath: /models }
-        - { name: download-script, mountPath: /scripts }
-        resources:
-          requests: { memory: "4Gi", cpu: "2000m" }
-          limits: { memory: "8Gi" }
       - name: drop-caches
         image: busybox:1.38
-        command: [sh, -c, "sync && echo 3 > /proc/sys/vm/drop_caches && echo dropped"]
+        command: [sh, -c, "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"]
         securityContext: { privileged: true }
         resources:
-          requests: { memory: "16Mi", cpu: "100m" }
-          limits: { memory: "32Mi" }
+          requests: { memory: "64Mi", cpu: "100m" }
+          limits: { memory: "256Mi", cpu: "500m" }
+      - name: download-models
+        image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+        command:
+        - /bin/bash
+        args:
+        - /scripts/download-and-validate.sh
+        env:
+        - { name: MODEL_DIR, value: "/models/dsv4" }
+        - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
+        - { name: HF_HOME, value: "/models/huggingface" }
+        volumeMounts:
+        - { name: models, mountPath: /models }
+        resources:
+          requests: { memory: "4Gi", cpu: "2000m" }
+          limits: { memory: "8Gi", cpu: "4000m" }
       containers:
       - name: drop-caches-loop
         image: busybox:1.38
-        command: [sh, -c, "while true; do sync; echo 1 > /proc/sys/vm/drop_caches; sleep 15; done"]
+        command: [sh, -c, "while true; do sleep 15; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true; done"]
         securityContext: { privileged: true }
         resources:
-          requests: { memory: "16Mi", cpu: "50m" }
-          limits: { memory: "64Mi" }
+          requests: { memory: "64Mi", cpu: "100m" }
+          limits: { memory: "256Mi", cpu: "500m" }
       - name: vllm
         image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
         command: [bash, -c]
@@ -285,11 +269,10 @@ spec:
             --max-num-seqs 1 --max-num-batched-tokens 4096 \
             --gpu-memory-utilization 0.70 \
             --enable-prefix-caching \
-            --enable-expert-parallel \
+            --enable-flashinfer-autotune \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
-            --no-enable-flashinfer-autotune \
             --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --nnodes 2 --node-rank 1 \
             --master-addr 192.168.74.1 --master-port 25000 \
@@ -321,31 +304,36 @@ spec:
           privileged: true
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
-        resources:
-          requests: { memory: "85Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "85Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
         - { name: infiniband, mountPath: /dev/infiniband }
-        - { name: sys-ib, mountPath: /sys/class/infiniband }
+        - { name: sys-ib, mountPath: /class/infiniband }
+        resources:
+          requests: { memory: "85Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "85Gi", nvidia.com/gpu: "1" }
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 600
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 600
+          periodSeconds: 15
+          timeoutSeconds: 10
       volumes:
-      - { name: models, persistentVolumeClaim: { claimName: dsv4-worker-models } }
-      - { name: download-script, configMap: { name: dsv4-download-script } }
-      - { name: shm, emptyDir: { medium: Memory, sizeLimit: 16Gi } }
-      - { name: infiniband, hostPath: { path: /dev/infiniband } }
-      - { name: sys-ib, hostPath: { path: /sys/class/infiniband } }
----
-# Cluster-internal Service → head pod (serves the OpenAI API). hostNetwork pods are still
-# selectable by a Service. The ai-gateway Backend is repointed here (vllm-route.yaml).
-apiVersion: v1
-kind: Service
-metadata:
-  name: dsv4
-  namespace: ai
-  labels: { app: dsv4 }
-spec:
-  type: ClusterIP
-  selector: { app: dsv4, role: head }
-  ports:
-  - { name: http, port: 8000, protocol: TCP, targetPort: 8000 }
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "128Gi"
+      - name: infiniband
+        hostPath: { path: /dev/infiniband, type: "" }
+      - name: sys-ib
+        hostPath: { path: /sys/class/infiniband, type: "" }
+      - name: models
+        persistentVolumeClaim: { claimName: dsv4-worker-models }
