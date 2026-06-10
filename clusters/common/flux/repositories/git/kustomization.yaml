@@ -6,3 +6,4 @@ resources:
   - garage.yaml
   - csi-addons.yaml
   - firecrawl.yaml
+  - valkey-helm.yaml
