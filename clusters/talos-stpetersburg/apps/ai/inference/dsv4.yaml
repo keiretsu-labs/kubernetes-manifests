@@ -31,9 +31,16 @@ data:
     token = os.environ.get('HUGGING_FACE_HUB_TOKEN')
     repo, path = 'deepseek-ai/DeepSeek-V4-Flash', '/models/dsv4'
     has_config = os.path.exists(os.path.join(path, 'config.json'))
-    has_weights = bool(glob.glob(os.path.join(path, '*.safetensors')))
-    if not (has_config and has_weights):
-        print(f'Downloading {repo} (config={has_config}, weights={has_weights})...', flush=True)
+    weights = sorted(glob.glob(os.path.join(path, '*.safetensors')))
+    num_weights = len(weights)
+    # Expect exactly 46 shards (model-00001-of-00046...model-00046-of-00046)
+    last_expected = f'model-00046-of-00046.safetensors'
+    has_all_weights = num_weights == 46 and os.path.exists(os.path.join(path, last_expected))
+    if not (has_config and has_all_weights):
+        if num_weights > 0 and num_weights < 46:
+            print(f'Partial download detected: {num_weights}/46 shards. Re-downloading missing files...', flush=True)
+        else:
+            print(f'Downloading {repo} (config={has_config}, weights={has_all_weights})...', flush=True)
         snapshot_download(repo_id=repo, local_dir=path, token=token, max_workers=4)
         print(f'Done: {repo}', flush=True)
     else:
