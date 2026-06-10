@@ -10,7 +10,6 @@ resources:
   - ai-gateway.yaml
   - vllm-route.yaml
   - vllm-dnsrecord.yaml
-  - dashboards.yaml
   - scrapeconfig.yaml
   - secret.yaml
   - probes.yaml
