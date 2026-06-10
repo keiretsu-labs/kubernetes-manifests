@@ -202,14 +202,14 @@ spec:
           limits: { memory: "85Gi", nvidia.com/gpu: "1" }
         livenessProbe:
           httpGet:
-            path: /healthz
+            path: /health
             port: 8000
           initialDelaySeconds: 900
           periodSeconds: 30
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
-            path: /healthz
+            path: /health
             port: 8000
           initialDelaySeconds: 900
           periodSeconds: 15
@@ -343,14 +343,14 @@ spec:
           limits: { memory: "85Gi", nvidia.com/gpu: "1" }
         livenessProbe:
           httpGet:
-            path: /healthz
+            path: /health
             port: 8000
           initialDelaySeconds: 900
           periodSeconds: 30
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
-            path: /healthz
+            path: /health
             port: 8000
           initialDelaySeconds: 900
           periodSeconds: 15
