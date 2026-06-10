@@ -68,6 +68,28 @@ data:
     echo "[validate] Shard validation OK (${COUNT}/${EXPECTED})"
     echo "[download] Done."
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dsv4-head-models
+  namespace: ai
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 200Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dsv4-worker-models
+  namespace: ai
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 200Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -337,3 +359,15 @@ spec:
         hostPath: { path: /sys/class/infiniband, type: "" }
       - name: models
         persistentVolumeClaim: { claimName: dsv4-worker-models }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dsv4
+  namespace: ai
+  labels: { app: dsv4 }
+spec:
+  type: ClusterIP
+  selector: { app: dsv4, role: head }
+  ports:
+  - { name: http, port: 8000, protocol: TCP, targetPort: 8000 }
