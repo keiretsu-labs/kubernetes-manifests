@@ -12,6 +12,7 @@ resources:
   - rpc-secret.yaml
   - httproute-s3.yaml
   - httproute-web.yaml
+  - referencegrant-agent-web.yaml
   - probes.yaml
   - prometheusrule.yaml
   - grafana-dashboard.yaml
