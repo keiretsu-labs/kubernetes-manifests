@@ -154,7 +154,7 @@ spec:
             --kv-cache-dtype fp8 --block-size 256 \
             --max-model-len 262144 \
             --max-num-seqs 1 --max-num-batched-tokens 4096 \
-            --gpu-memory-utilization 0.70 \
+            --gpu-memory-utilization 0.78 \
             --enable-prefix-caching \
             --enable-flashinfer-autotune \
             --tokenizer-mode deepseek_v4 \
@@ -295,7 +295,7 @@ spec:
             --kv-cache-dtype fp8 --block-size 256 \
             --max-model-len 262144 \
             --max-num-seqs 1 --max-num-batched-tokens 4096 \
-            --gpu-memory-utilization 0.70 \
+            --gpu-memory-utilization 0.78 \
             --enable-prefix-caching \
             --enable-flashinfer-autotune \
             --tokenizer-mode deepseek_v4 \
