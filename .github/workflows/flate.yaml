@@ -26,10 +26,14 @@ jobs:
         with:
           cache: true
       - name: flate test
-        run: >-
-          flate test all
-          --path clusters/${{ matrix.cluster }}/flux/config
-          --no-progress
+        # the flate action exports FLATE_BASE=<pr base> which switches test to
+        # changed-only mode and requires rendering the base tree; unset it so a
+        # broken main can never fail PR tests — always test the full head tree
+        run: |
+          unset FLATE_BASE
+          flate test all \
+            --path clusters/${{ matrix.cluster }}/flux/config \
+            --no-progress
 
   diff:
     runs-on: ubuntu-latest
@@ -75,11 +79,13 @@ jobs:
             echo "_…truncated; run \`make diff\` locally for the full diff._" >> comment.md
           fi
           cat comment.md >> "$GITHUB_STEP_SUMMARY"
-          echo "flate_exit=$FLATE_EXIT" >> "$GITHUB_OUTPUT"
+          # informational only: a diff failure (e.g. unrenderable base tree) is
+          # surfaced via the PR comment and a warning annotation; the test job
+          # is the merge gate
+          if [ "$FLATE_EXIT" -ne 0 ]; then
+            echo "::warning::flate diff exited $FLATE_EXIT for ${{ matrix.cluster }} — see the sticky PR comment"
+          fi
       - uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: flate-diff-${{ matrix.cluster }}
           path: comment.md
-      - name: fail on diff error
-        if: steps.diff.outputs.flate_exit != '0'
-        run: exit 1
