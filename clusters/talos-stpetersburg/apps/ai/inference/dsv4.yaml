@@ -43,10 +43,9 @@ data:
     mkdir -p "$MODEL_DIR"
     cd "$MODEL_DIR"
 
-    echo "[download] Starting model download…"
-    huggingface-cli download "$HF_REPO" --local-dir "$MODEL_DIR" \
-      --local-dir-use-symlinks False \
-      --resume-download 2>&1
+    echo "[download] Starting model download with hf CLI…"
+    hf download "$HF_REPO" --local-dir "$MODEL_DIR" \
+      --resume 2>&1
 
     echo "[validate] Checking for ${EXPECTED} shards…"
     COUNT="$(find . -name '*.safetensors' | wc -l)"
@@ -55,9 +54,8 @@ data:
     if [ "$COUNT" -lt "$EXPECTED" ]; then
       echo "[ERROR] Expected ${EXPECTED} shards, got ${COUNT}. Redownloading…"
       rm -rf "$MODEL_DIR"/*
-      huggingface-cli download "$HF_REPO" --local-dir "$MODEL_DIR" \
-        --local-dir-use-symlinks False \
-        --resume-download 2>&1
+      hf download "$HF_REPO" --local-dir "$MODEL_DIR" \
+        --resume 2>&1
       COUNT="$(find . -name '*.safetensors' | wc -l)"
       if [ "$COUNT" -lt "$EXPECTED" ]; then
         echo "[FATAL] Still only ${COUNT} shards after retry. Aborting."
