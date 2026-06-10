@@ -14,13 +14,15 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         cluster: [talos-ottawa, talos-robbinsdale, talos-stpetersburg]
     steps:
       - uses: actions/checkout@v6
-      - uses: home-operations/flate/action@main
+      - uses: home-operations/flate/action@v0.3.4
         with:
           cache: true
       - name: flate test
@@ -43,18 +45,28 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: home-operations/flate/action@main
+      - uses: home-operations/flate/action@v0.3.4
         with:
           cache: true
       - name: flate diff
         id: diff
         run: |
+          set +e
           flate diff all \
             --path clusters/${{ matrix.cluster }}/flux/config \
             --base origin/main \
             --no-progress \
-            -o github > diff.md || true
-          if [ ! -s diff.md ]; then
+            -o github > diff.md 2>diff.err
+          FLATE_EXIT=$?
+          set -e
+          if [ "$FLATE_EXIT" -ne 0 ]; then
+            {
+              echo "**flate diff failed (exit $FLATE_EXIT) for ${{ matrix.cluster }}**"
+              echo '```'
+              tail -c 4000 diff.err
+              echo '```'
+            } > diff.md
+          elif [ ! -s diff.md ]; then
             echo "No rendered changes for ${{ matrix.cluster }}." > diff.md
           fi
           head -c 60000 diff.md > comment.md
@@ -63,7 +75,11 @@ jobs:
             echo "_…truncated; run \`make diff\` locally for the full diff._" >> comment.md
           fi
           cat comment.md >> "$GITHUB_STEP_SUMMARY"
+          echo "flate_exit=$FLATE_EXIT" >> "$GITHUB_OUTPUT"
       - uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: flate-diff-${{ matrix.cluster }}
           path: comment.md
+      - name: fail on diff error
+        if: steps.diff.outputs.flate_exit != '0'
+        run: exit 1
