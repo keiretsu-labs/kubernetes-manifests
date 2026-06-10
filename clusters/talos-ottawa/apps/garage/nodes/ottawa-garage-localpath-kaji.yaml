@@ -2,6 +2,8 @@ apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageNode
 metadata:
   name: ottawa-garage-localpath-kaji
+  labels:
+    garage.rajsingh.info/cluster: garage
 spec:
   clusterRef:
     name: garage
