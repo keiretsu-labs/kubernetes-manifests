@@ -183,6 +183,7 @@ spec:
         - { name: NCCL_NET_GDR_LEVEL, value: "5" }
         - { name: NCCL_IB_TIMEOUT, value: "22" }
         - { name: NCCL_DEBUG, value: "INFO" }
+        - { name: VLLM_PORT, value: "25001" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
         - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
@@ -323,6 +324,7 @@ spec:
         - { name: NCCL_NET_GDR_LEVEL, value: "5" }
         - { name: NCCL_IB_TIMEOUT, value: "22" }
         - { name: NCCL_DEBUG, value: "INFO" }
+        - { name: VLLM_PORT, value: "25001" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
         - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
