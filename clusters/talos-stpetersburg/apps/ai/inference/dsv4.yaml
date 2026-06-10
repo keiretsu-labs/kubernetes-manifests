@@ -153,14 +153,14 @@ spec:
             --distributed-executor-backend mp \
             --kv-cache-dtype fp8 --block-size 256 \
             --max-model-len 262144 \
-            --max-num-seqs 1 --max-num-batched-tokens 4096 \
+            --max-num-seqs 2 --max-num-batched-tokens 8192 \
             --gpu-memory-utilization 0.75 \
             --enable-prefix-caching \
             --enable-flashinfer-autotune \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
-            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
+            --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
             --nnodes 2 --node-rank 0 \
             --master-addr 192.168.74.1 --master-port 25000
         ports:
@@ -294,14 +294,14 @@ spec:
             --distributed-executor-backend mp \
             --kv-cache-dtype fp8 --block-size 256 \
             --max-model-len 262144 \
-            --max-num-seqs 1 --max-num-batched-tokens 4096 \
+            --max-num-seqs 2 --max-num-batched-tokens 8192 \
             --gpu-memory-utilization 0.75 \
             --enable-prefix-caching \
             --enable-flashinfer-autotune \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
-            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
+            --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
             --nnodes 2 --node-rank 1 \
             --master-addr 192.168.74.1 --master-port 25000 \
             --headless
@@ -367,3 +367,28 @@ spec:
   selector: { app: dsv4, role: head }
   ports:
   - { name: http, port: 8000, protocol: TCP, targetPort: 8000 }
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dsv4
+  namespace: ai
+  labels:
+    app: dsv4
+    release: kube-prometheus-stack
+spec:
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+    metricRelabelings:
+    - action: replace
+      replacement: talos-stpetersburg
+      targetLabel: cluster
+  selector:
+    matchLabels:
+      app: dsv4
+  namespaceSelector:
+    matchNames:
+    - ai
