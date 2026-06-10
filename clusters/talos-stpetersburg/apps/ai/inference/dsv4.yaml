@@ -216,12 +216,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: worker }
 spec:
-  # IMPORTANT: Deploy worker FIRST (replicas 1), then head. The worker must be
-  # ready with its GPU before the head starts its vLLM serve. Use:
-  #   kubectl scale deploy -n ai dsv4-worker --replicas=1
-  #   (wait for worker Ready)
-  #   kubectl scale deploy -n ai dsv4-head --replicas=1
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: worker }
