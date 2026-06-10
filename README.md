@@ -494,10 +494,28 @@ sops secret.sops.yaml
 
 ### Validation
 
+Every PR touching `clusters/**` is rendered offline with [flate](https://github.com/home-operations/flate) — the CI runs `flate test` for all three clusters and comments the rendered manifest diff on the PR.
+
 ```bash
-# Validate all kustomizations
-make validate-kustomize
+# Install
+brew install --cask home-operations/tap/flate
+
+# Render-test all three clusters (what CI runs)
+make test
+
+# One cluster
+make test-talos-ottawa
+
+# Rendered manifest diff vs origin/main (CI comments this on your PR)
+make diff
 ```
+
+Gotchas CI will catch for you: helm values schema violations, broken kustomizations, unresolvable chart versions. Two repo rules it enforces by construction:
+
+- Remote *git-directory* kustomize bases don't render offline — vendor the YAML instead (see `clusters/*/apps/cilium/app/descheduler-cronjob.yaml` for the pattern: provenance header with upstream ref/SHA and the re-render command).
+- HelmRepository URLs need a trailing slash when the index uses relative tgz paths (`https://pkgs.tailscale.com/helmcharts/`).
+
+SOPS secret values render as placeholders; charts gated on CRD capability checks (e.g. cilium ServiceMonitors) set `trustCRDsExist: true` in values.
 
 ## Networking Reference
 
