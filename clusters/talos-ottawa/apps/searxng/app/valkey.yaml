@@ -8,11 +8,10 @@ spec:
   interval: 30m
   chart:
     spec:
-      chart: valkey
-      version: "0.9.4"
+      chart: ./valkey
       sourceRef:
-        kind: HelmRepository
-        name: valkey
+        kind: GitRepository
+        name: valkey-helm
         namespace: flux-system
       interval: 30m
   releaseName: valkey
