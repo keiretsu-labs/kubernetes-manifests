@@ -1,0 +1,14 @@
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: vllm
+  namespace: ai
+  labels:
+    release: kube-prometheus-stack
+spec:
+  staticConfigs:
+  - targets:
+    - vllm.ai.svc.cluster.local:8000
+  metricsPath: /metrics
+  scrapeInterval: 15s
