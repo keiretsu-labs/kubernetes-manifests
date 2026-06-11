@@ -1,0 +1,109 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: camofox
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: camofox
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: camofox
+    spec:
+      containers:
+        - name: camofox
+          # Upstream prebuilt image (no vendored blob). Camoufox is baked in at
+          # build time (~300MB) so first start is fast.
+          image: ghcr.io/jo-inc/camofox-browser:1.11.2
+          # The published image bakes the vnc plugin CODE but not its runtime
+          # binaries (install-plugin-deps.sh runs against the shipped config
+          # where vnc.enabled=false, so x11vnc/noVNC/websockify are absent).
+          # Install them at startup (runs as root, apt egress available), then
+          # hand off to the image's normal CMD. ~15s added to cold start.
+          # NOTE future hardening: bake a thin custom image (FROM this + apt
+          # install) in Harbor to drop the runtime install + network dep.
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              if ! command -v x11vnc >/dev/null 2>&1; then
+                apt-get update
+                apt-get install -y --no-install-recommends \
+                  x11vnc novnc python3-websockify net-tools procps
+                rm -rf /var/lib/apt/lists/*
+              fi
+              exec node --max-old-space-size=${MAX_OLD_SPACE_SIZE:-128} server.js
+          env:
+            # REST API port consumed by Hermes via CAMOFOX_URL (cluster-internal).
+            - name: CAMOFOX_PORT
+              value: "9377"
+            # Headed mode + interactive noVNC web viewer so raj can watch the
+            # browser live and take over (e.g. logins) mid-task.
+            - name: ENABLE_VNC
+              value: "1"
+            - name: NOVNC_PORT
+              value: "6080"
+            # websockify defaults to binding 127.0.0.1; the Tailscale LB routes
+            # to the pod IP, so bind 0.0.0.0. Safe because VNC is password
+            # protected (VNC_PASSWORD) and only the noVNC port is LB-exposed.
+            - name: VNC_BIND
+              value: "0.0.0.0"
+          envFrom:
+            # VNC_PASSWORD = ${DEFAULT_PASSWORD} (see secret.yaml).
+            - secretRef:
+                name: camofox-secrets
+          ports:
+            - name: api
+              containerPort: 9377
+              protocol: TCP
+            - name: novnc
+              containerPort: 6080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: api
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: api
+            initialDelaySeconds: 90
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              memory: 3Gi
+          volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+            - name: config
+              mountPath: /app/camofox.config.json
+              subPath: camofox.config.json
+            # Persistent browser profile (cookies, logins, per-user storage
+            # state) so they survive pod restarts. HOME=/root, and camofox
+            # writes profiles/cookies under ~/.camofox.
+            - name: data
+              mountPath: /root/.camofox
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: config
+          configMap:
+            name: camofox-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: camofox-data
+      terminationGracePeriodSeconds: 30

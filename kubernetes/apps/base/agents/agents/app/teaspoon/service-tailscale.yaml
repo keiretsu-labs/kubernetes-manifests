@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: teaspoon-ts
+  annotations:
+    tailscale.com/hostname: teaspoon
+    # tag:k8s already exists in tailscale/policy.hujson (tagOwners incl.
+    # tag:k8s-operator), so the Tailscale LoadBalancer provisions immediately —
+    # no policy.hujson edit needed. Carried over from the old ns/hermes app.
+    tailscale.com/tags: "tag:k8s"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app.kubernetes.io/name: teaspoon
+  ports:
+    - name: dashboard
+      port: 80
+      targetPort: 9119
+      protocol: TCP
+    - name: gateway
+      port: 8642
+      targetPort: 8642
+      protocol: TCP
