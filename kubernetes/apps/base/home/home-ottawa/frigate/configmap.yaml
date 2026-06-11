@@ -1,0 +1,76 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frigate-config
+  namespace: home
+  labels:
+    app: frigate
+data:
+  config.yml: |
+    mqtt:
+      enabled: false
+
+    auth:
+      enabled: false
+
+    ffmpeg:
+      path: "7.0"
+      hwaccel_args: preset-vaapi
+
+    detectors:
+      cpu1:
+        type: cpu
+
+    go2rtc:
+      webrtc:
+        candidates:
+          - "frigate.${CLUSTER_DOMAIN}:8555"
+          - "stun:8555"
+      streams:
+        ottawa_cam:
+          - rtspx://192.168.169.1:7441/YgigQ2PzZ1QwPCHW#backchannel=0
+          - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f alaw -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.66:7004#backchannel=1#audio=pcma/8000
+          - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f mulaw -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.66:7004#backchannel=1#audio=pcmu/8000
+          - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f s16le -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.66:7004#backchannel=1#audio=pcml/8000
+          - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f s16be -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.66:7004#backchannel=1#audio=pcm/8000
+        kitchen_cam:
+          - rtspx://192.168.169.1:7441/VZouUKvu0Acus3hO#backchannel=0
+          - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f alaw -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.64:7004#backchannel=1#audio=pcma/8000
+          - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f mulaw -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.64:7004#backchannel=1#audio=pcmu/8000
+          - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f s16le -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.64:7004#backchannel=1#audio=pcml/8000
+          - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f s16be -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.64:7004#backchannel=1#audio=pcm/8000
+
+    cameras:
+      ottawa_cam:
+        ffmpeg:
+          inputs:
+            - path: rtsp://127.0.0.1:8554/ottawa_cam
+              input_args: preset-rtsp-restream
+              roles:
+                - detect
+        detect:
+          enabled: false
+          width: 1280
+          height: 720
+        record:
+          enabled: false
+        snapshots:
+          enabled: false
+      kitchen_cam:
+        ffmpeg:
+          inputs:
+            - path: rtsp://127.0.0.1:8554/kitchen_cam
+              input_args: preset-rtsp-restream
+              roles:
+                - detect
+        detect:
+          enabled: false
+          width: 1280
+          height: 720
+        record:
+          enabled: false
+        snapshots:
+          enabled: false
+
+    version: 0.17-0

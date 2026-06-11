@@ -3,5 +3,4 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./namespace.yaml
-  - ./grafana-redirect.yaml
-  - ./home-robbinsdale.yaml
+  - ./home-ottawa.yaml
