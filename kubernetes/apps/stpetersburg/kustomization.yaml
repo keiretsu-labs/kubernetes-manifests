@@ -19,3 +19,4 @@ resources:
   - ./dragonfly-operator-system
   - ./gvisor
   - ./kube-system
+  - ./ai
