@@ -32,7 +32,7 @@ spec:
           {
             "name": "cluster_src",
             "type": "query",
-            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "datasource": { "type": "prometheus", "uid": "$${datasource}" },
             "query": "label_values(k6_http_reqs_total, cluster_src)",
             "refresh": 2,
             "includeAll": true,
@@ -41,7 +41,7 @@ spec:
           {
             "name": "cluster_dst",
             "type": "query",
-            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "datasource": { "type": "prometheus", "uid": "$${datasource}" },
             "query": "label_values(k6_http_reqs_total, cluster_dst)",
             "refresh": 2,
             "includeAll": true,
@@ -54,7 +54,7 @@ spec:
           "id": 1,
           "title": "P95 latency by transport",
           "type": "timeseries",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
           "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 },
           "targets": [
             {
@@ -69,7 +69,7 @@ spec:
           "id": 2,
           "title": "P99 latency by transport",
           "type": "timeseries",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
           "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 },
           "targets": [
             {
@@ -84,7 +84,7 @@ spec:
           "id": 3,
           "title": "Throughput (received bytes/sec)",
           "type": "timeseries",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
           "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
           "targets": [
             {
@@ -99,7 +99,7 @@ spec:
           "id": 4,
           "title": "Connection establishment time (P95)",
           "type": "timeseries",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
           "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
           "targets": [
             {
@@ -119,7 +119,7 @@ spec:
           "id": 5,
           "title": "Error rate by transport",
           "type": "timeseries",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
           "gridPos": { "x": 0, "y": 24, "w": 24, "h": 6 },
           "targets": [
             {

@@ -58,7 +58,7 @@ spec:
           protocol: UDP
         volumeMounts:
         - name: certs
-          mountPath: /root/derper/${TS_DERP_HOSTNAME}
+          mountPath: /root/derper/${TS_DERP_HOSTNAME:-}
         - name: tailscale-state
           mountPath: /var/lib/tailscale
       volumes:

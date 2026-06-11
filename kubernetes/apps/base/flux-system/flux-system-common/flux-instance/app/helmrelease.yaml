@@ -29,6 +29,15 @@ spec:
         size: medium
       kustomize:
         patches:
+          # undefined ${VAR} in postBuild-substituted manifests is an error
+          # instead of a silent empty string (phase 5; repo audited first)
+          - patch: |-
+              - op: add
+                path: /spec/template/spec/containers/0/args/-
+                value: --feature-gates=StrictPostBuildSubstitutions=true
+            target:
+              kind: Deployment
+              name: kustomize-controller
           # size: medium sets memory=1Gi; bump to 2Gi to match current config
           - patch: |-
               apiVersion: apps/v1
