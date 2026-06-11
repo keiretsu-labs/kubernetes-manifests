@@ -17,6 +17,8 @@ apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageNode
 metadata:
   name: stpetersburg-garage-localpath-spark-0
+  labels:
+    garage.rajsingh.info/cluster: garage
 spec:
   clusterRef:
     name: garage
