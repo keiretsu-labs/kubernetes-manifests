@@ -10,3 +10,5 @@ resources:
   - ./cnpg-system
   - ./fluent-bit
   - ./dragonfly-operator-system
+  - ./gvisor
+  - ./kube-system
