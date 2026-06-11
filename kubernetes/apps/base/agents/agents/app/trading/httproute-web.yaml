@@ -1,0 +1,43 @@
+---
+# trading.rajsingh.info static site served from Garage S3 via web API (port 3902).
+# OIDC-gated through the public gateway using the shared envoy Gateway OIDC client.
+# Garage resolves buckets by stripping the root_domain suffix from the Host
+# header, so we rewrite hostname → trading-web.keiretsu.top (bucket's globalAlias).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: trading-web
+  annotations:
+    item.homer.rajsingh.info/name: "Trading Dashboard"
+    item.homer.rajsingh.info/subtitle: "Robinhood Portfolio"
+    item.homer.rajsingh.info/keywords: "trading, portfolio, robinhood, rajsingh"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-chart-line"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+  hostnames:
+    - "trading.rajsingh.info"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: "trading-web.${COMMON_DOMAIN}"
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: garage-gateway
+          namespace: garage
+          port: 3902
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

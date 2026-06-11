@@ -1,0 +1,24 @@
+---
+# S3 key for the trading site to write to its Garage bucket (trading-web).
+# Used by the trading-dashboard cron job to upload HTML to Garage.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: trading-web-s3-key
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "trading web S3 key"
+  allBuckets:
+    read: true
+    write: true
+  secretTemplate:
+    name: trading-web-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    additionalData:
+      AWS_ENDPOINT_URL: "http://${COMMON_S3_ENDPOINT}"
+      AWS_ENDPOINT_URL_S3: "http://${COMMON_S3_ENDPOINT}"
+      AWS_REGION: "garage"
+      AWS_DEFAULT_REGION: "garage"

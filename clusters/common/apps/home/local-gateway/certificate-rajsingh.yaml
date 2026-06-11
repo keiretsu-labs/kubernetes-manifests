@@ -1,0 +1,18 @@
+---
+# Wildcard cert for *.rajsingh.info — needed to serve trading.rajsingh.info
+# and any future rajsingh.info subdomains from Garage via the public gateway.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-rajsingh-info
+spec:
+  dnsNames:
+    - '*.rajsingh.info'
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: rajsingh-info
+  secretName: wildcard-rajsingh-info
+  usages:
+    - digital signature
+    - key encipherment

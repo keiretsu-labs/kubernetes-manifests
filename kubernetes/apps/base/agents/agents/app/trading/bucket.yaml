@@ -1,0 +1,23 @@
+---
+# Garage bucket for the trading.rajsingh.info static website (served via Garage Web API)
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: trading-web
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: trading-web
+  quotas:
+    maxSize: 1Gi
+    maxObjects: 10000
+  website:
+    indexDocument: "index.html"
+    errorDocument: "error.html"
+  keyPermissions:
+    - keyRef:
+        name: trading-web-s3-key
+      read: true
+      write: true
+      owner: true
