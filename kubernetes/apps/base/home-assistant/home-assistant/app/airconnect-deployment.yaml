@@ -1,0 +1,60 @@
+---
+# AirConnect — bridges AirPlay senders (iPhone, Mac, Music Assistant's AirPlay
+# provider) to UPnP/DLNA devices like the Sonos Playbar group, which doesn't
+# speak AirPlay 2 natively. airupnp advertises each Sonos as an AirPlay 2
+# endpoint on the LAN via mDNS.
+#
+# Multus macvlan side-leg gives the pod its own LAN IP/MAC, so airupnp and
+# aircast can mDNS-advertise from a unique identity without competing with
+# the host or other pods. -b is omitted now that auto-detect will pick the
+# macvlan iface (default route is on the LAN). Pod is free to schedule
+# anywhere — no nodeSelector needed.
+#
+# Sonos grouping:
+#   -I  Auto-save config.xml on every UPnP scan. Persists device list so
+#       grouped Sonos devices stay grouped across restarts.
+#   -Z  Non-interactive mode. Needed so the daemon doesn't hang on stdin.
+#
+# Config lives on an emptyDir — -I regenerates it on the next discovery
+# cycle if the pod restarts. Simple, no PVC to manage.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airconnect
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: airconnect
+  template:
+    metadata:
+      labels:
+        app: airconnect
+      annotations:
+        k8s.v1.cni.cncf.io/networks: |
+          [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
+    spec:
+      containers:
+        - name: airconnect
+          image: 1activegeek/airconnect:1.9.3
+          env:
+            - name: AIRUPNP_OPTS
+              value: "-l 500:1000 -r 44100 -Z -x /config/airupnp.xml -I"
+            - name: AIRCAST_OPTS
+              value: ""
+            - name: AIRCAST_VAR
+              value: "kill"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          emptyDir: {}

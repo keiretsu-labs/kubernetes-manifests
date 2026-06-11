@@ -1,0 +1,20 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: homeassistant-config
+  labels:
+    keiretsu.ts.net/location: stpetersburg
+spec:
+  name: homeassistant-config
+  size: 10Gi
+  storageClass: local-path
+  # Local Garage ClusterIP — same cluster, no Tailscale egress detour.
+  # Requires cluster DNS + route-fix init container for the Multus pod to
+  # reach the cluster service CIDR over Cilium.
+  s3Endpoint: ${COMMON_S3_ENDPOINT}
+  s3Path: home-assistant/config
+  schedule: "0 12 * * *"
+  copyMethod: Direct
+  restorePaused: false
+  restorePrevious: 1
