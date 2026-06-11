@@ -25,7 +25,6 @@ resources:
   - ./hermes
   - ./homer-operator
   - ./immich
-  - ./k6-operator-system
   - ./kener
   - ./kro-system
   - ./kube-system
