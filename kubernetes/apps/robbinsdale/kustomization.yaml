@@ -44,3 +44,4 @@ resources:
   - ./node-feature-discovery
   - ./tailscale-examples
   - ./tailscale-system
+  - ./tailscale
