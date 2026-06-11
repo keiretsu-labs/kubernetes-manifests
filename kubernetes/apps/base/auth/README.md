@@ -1,21 +1,20 @@
 # auth: route-level access control
 
-tinyauth is a *central* forward-auth: it owns the authorization decision and
-keys it on the request host. that's why protecting a new app historically meant
-editing `tinyauth/configmap.yaml` (the `TINYAUTH_APPS_<NAME>_*` keys) — the
-HTTPRoute and SecurityPolicy only route traffic to tinyauth, they can't carry
-the allow-list into it. every new `*.keiretsu.top` app = two more lines in one
-configmap that one deployment consumes.
+tinyauth is the single auth solution for `*.keiretsu.top` web apps (pocket-id is
+retired for these). it does **authN only** — google login, gated by a global
+whitelist — and injects identity headers (`Remote-Email`, `Remote-Groups`). the
+**authZ** decision (who may reach a given app) lives on each route's
+SecurityPolicy, because Envoy Gateway's `authorization` block matches on
+`principal.headers` and its RBAC filter runs *after* extAuth, so it sees the
+header tinyauth injected.
 
-## the pattern: gate on the route, not in the configmap
+## the pattern
 
-Envoy Gateway's `authorization` block supports `principal.headers`, and its RBAC
-filter runs *after* extAuth. so we can demote tinyauth to **authN only** (log the
-user in via google, inject `Remote-Email` / `Remote-Groups`) and put the
-**authZ** decision in the per-app SecurityPolicy, right next to its HTTPRoute:
+a protected route = an HTTPRoute + a SecurityPolicy with two blocks:
 
 ```yaml
-extAuth:            # shared, no per-app config — just authenticates
+extAuth:            # shared, no per-app config — just authenticates via tinyauth
+  headersToExtAuth: [cookie, x-forwarded-proto, x-forwarded-for, user-agent]
   http:
     backendRefs: [{name: tinyauth, namespace: tinyauth, port: 3000}]
     path: "/api/auth/envoy?path="
@@ -23,23 +22,35 @@ extAuth:            # shared, no per-app config — just authenticates
 authorization:      # the allow-list, on the route
   defaultAction: Deny
   rules:
-    - name: allow-admins
+    - name: allow
       action: Allow
       principal:
         headers:
-          - name: Remote-Groups
-            values: ["admins"]
+          - name: Remote-Email
+            values: ["someone@gmail.com"]
 ```
 
-adding a protected app becomes: its `httproute.yaml` + `securitypolicy.yaml` in
-the app's own folder. the central `tinyauth-config` configmap stays frozen — at
-most a coarse global `TINYAUTH_OAUTH_WHITELIST` of who may log in at all.
+cross-namespace extAuth to the tinyauth Service is allowed by the ReferenceGrant
+in `tinyauth/referencegrant.yaml` — add a new app namespace to its `from` list.
 
-## status
+live examples: `agents/agents/app/hermes-auth-securitypolicy.yaml` (per-user
+dashboards) and `teaspoon/securitypolicy.yaml`.
 
-proven first on `authtest/securitypolicy.yaml`. once the deny path is confirmed
-in-cluster, real apps migrate to this shape and the per-app `TINYAUTH_APPS_*`
-keys come out of `tinyauth/configmap.yaml`.
+## onboarding a new user
+
+1. add their google email to `TINYAUTH_OAUTH_WHITELIST` in `tinyauth/tinyauth.env`
+   (the authN gate — who may log in at all). the configMapGenerator hash rolls
+   tinyauth automatically on merge.
+2. add the same email to the `authorization` allow-list of each route they should
+   reach. that's the only per-app edit; no central ACL.
+
+removing a user is the reverse: drop them from the whitelist and any route lists.
+
+## two layers, on purpose
+
+- `TINYAUTH_OAUTH_WHITELIST` — coarse authN gate + fail-safe (a route that ships
+  without an `authorization` block is still capped to known users).
+- per-route `authorization` — the real per-app allow-list.
 
 refs: [EG header/method authz](https://gateway.envoyproxy.io/docs/tasks/security/http-header-method-auth/),
 [EG ext-auth](https://gateway.envoyproxy.io/docs/tasks/security/ext-auth/).

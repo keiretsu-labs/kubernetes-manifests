@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - ./monitoring
   - ./auth
-  - ./authtest
   - ./agent-sandbox-system
   - ./agents
   - ./arc-systems
