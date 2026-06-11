@@ -1,0 +1,34 @@
+---
+# Dashboard / web UI over the tailnet via the `ts` gateway
+# (HTTPS on *.${CLUSTER_DOMAIN}). Routes the dashboard (9119);
+# the gateway API (8642) is reached via the -ts LB, not here.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hermes-placeholder-ts
+  annotations:
+    item.homer.rajsingh.info/name: "Hermes Placeholder"
+    item.homer.rajsingh.info/subtitle: "AI Agent"
+    item.homer.rajsingh.info/logo: "https://hermes-agent.nousresearch.com/docs/img/logo.png"
+    item.homer.rajsingh.info/keywords: "ai, agent, assistant, hermes"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-robot"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+  hostnames:
+    - "placeholder.${CLUSTER_DOMAIN}"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: hermes-placeholder
+          port: 9119
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
