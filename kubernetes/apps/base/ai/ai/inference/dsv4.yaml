@@ -46,22 +46,22 @@ data:
     echo "[download] Starting model download with hf CLI…"
     hf download "$HF_REPO" --local-dir "$MODEL_DIR" 2>&1
 
-    echo "[validate] Checking for ${EXPECTED} shards…"
+    echo "[validate] Checking for $${EXPECTED} shards…"
     COUNT="$(find . -name '*.safetensors' | wc -l)"
-    echo "[validate] Found ${COUNT} shard(s)"
+    echo "[validate] Found $${COUNT} shard(s)"
 
     if [ "$COUNT" -lt "$EXPECTED" ]; then
-      echo "[ERROR] Expected ${EXPECTED} shards, got ${COUNT}. Redownloading…"
+      echo "[ERROR] Expected $${EXPECTED} shards, got $${COUNT}. Redownloading…"
       rm -rf "$MODEL_DIR"/*
       hf download "$HF_REPO" --local-dir "$MODEL_DIR" 2>&1
       COUNT="$(find . -name '*.safetensors' | wc -l)"
       if [ "$COUNT" -lt "$EXPECTED" ]; then
-        echo "[FATAL] Still only ${COUNT} shards after retry. Aborting."
+        echo "[FATAL] Still only $${COUNT} shards after retry. Aborting."
         exit 1
       fi
     fi
 
-    echo "[validate] Shard validation OK (${COUNT}/${EXPECTED})"
+    echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
     echo "[download] Done."
 ---
 apiVersion: v1
