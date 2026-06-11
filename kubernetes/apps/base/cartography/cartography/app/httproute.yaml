@@ -1,0 +1,35 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: cartography
+  annotations:
+    item.homer.rajsingh.info/name: Cartography
+    item.homer.rajsingh.info/subtitle: Infrastructure graph (Neo4j)
+    item.homer.rajsingh.info/logo: https://raw.githubusercontent.com/cartography-cncf/cartography/master/docs/root/images/logo-horizontal.png
+    item.homer.rajsingh.info/keywords: graph, security, neo4j, cncf
+    service.homer.rajsingh.info/name: Tools
+    service.homer.rajsingh.info/icon: fas fa-project-diagram
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+  hostnames:
+    - cartography.${CLUSTER_DOMAIN}
+  rules:
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: neo4j
+          port: 7474
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
