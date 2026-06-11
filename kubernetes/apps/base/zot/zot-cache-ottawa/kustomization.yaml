@@ -1,7 +1,8 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: zot
 resources:
-  - ./garage-cluster.yaml
-  - ./garage.yaml
-  - ./namespace.yaml
+  - dragonfly.yaml
+  - service-local.yaml
+  - service-ts.yaml

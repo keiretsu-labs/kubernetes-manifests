@@ -1,0 +1,25 @@
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageNode
+metadata:
+  name: ottawa-garage-localpath-rei
+  labels:
+    garage.rajsingh.info/cluster: garage
+spec:
+  clusterRef:
+    name: garage
+  zone: "${LOCATION}"
+  capacity: 700Gi
+  tags:
+    - cluster:garage/garage
+    - tier:storage
+  network:
+    rpcPublicAddr: "ottawa-garage-rei.keiretsu.ts.net:3901"
+  storage:
+    metadata:
+      size: 1Gi
+      storageClassName: local-path
+    data:
+      size: 700Gi
+      storageClassName: local-path
+  nodeSelector:
+    kubernetes.io/hostname: rei

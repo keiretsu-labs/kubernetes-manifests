@@ -1,0 +1,154 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mimir
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: mimir-distributed
+      version: "6.0.6"
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    rollout_operator:
+      enabled: false
+
+    minio:
+      enabled: false
+
+    kafka:
+      enabled: false
+
+    # Bundled Mimir AM disabled — upstream notify bug (mimir#2910), every notify
+    # fails with "invalid service state: Terminated" even for a no-op receiver.
+    # The ruler sends to the kube-prometheus-stack (Prometheus) Alertmanager.
+    alertmanager:
+      enabled: false
+
+    ruler:
+      enabled: true
+      replicas: 1
+
+    global:
+      extraEnvFrom:
+        - secretRef:
+            name: mimir-s3
+
+    mimir:
+      structuredConfig:
+        no_auth_tenant: talos-ottawa
+        multitenancy_enabled: true
+        tenant_federation:
+          enabled: true
+        ingest_storage:
+          enabled: false
+        frontend:
+          parallelize_shardable_queries: false
+        ingester:
+          push_grpc_method_enabled: true
+          ring:
+            replication_factor: 1
+        store_gateway:
+          sharding_ring:
+            replication_factor: 1
+        ruler:
+          # Ruler evaluates the rule groups loaded by mimir-config-loader and
+          # pushes firing alerts to the kube-prometheus-stack (Prometheus)
+          # Alertmanager — the bundled Mimir AM hits an upstream notify bug
+          # (mimir#2910). One ruler (ottawa) drives all tenants' alerts here.
+          alertmanager_url: http://kube-prometheus-stack-alertmanager.monitoring.svc.cluster.local:9093/
+          enable_api: true
+        ruler_storage:
+          # Shares the mimir bucket with blocks; distinct prefix avoids collision.
+          storage_prefix: ruler
+        common:
+          storage:
+            backend: s3
+            s3:
+              endpoint: ${COMMON_S3_ENDPOINT}
+              bucket_name: mimir
+              insecure: true
+        limits:
+          compactor_blocks_retention_period: 7d
+          ingestion_rate: 500000
+          ingestion_burst_size: 1000000
+          max_global_series_per_user: 10000000
+          max_label_names_per_series: 300
+          query_sharding_total_shards: 16
+          max_outstanding_per_tenant: 100
+
+    ingester:
+      replicas: 1
+      zoneAwareReplication:
+        enabled: false
+      persistentVolume:
+        enabled: false
+      extraArgs:
+        "-ingester.ring.replication-factor": "1"
+
+    store_gateway:
+      replicas: 1
+      zoneAwareReplication:
+        enabled: false
+      persistentVolume:
+        enabled: true
+        size: 2Gi
+      extraArgs:
+        "-store-gateway.sharding-ring.replication-factor": "1"
+
+    compactor:
+      replicas: 1
+      persistentVolume:
+        enabled: false
+
+    distributor:
+      replicas: 2
+
+    querier:
+      replicas: 2
+
+    query_frontend:
+      replicas: 1
+
+    query_scheduler:
+      replicas: 1
+
+    gateway:
+      nginxConfig:
+        serverSnippet: |
+          location /nginx_status {
+            stub_status on;
+            access_log off;
+          }
+          location /metrics {
+            proxy_pass http://localhost:9113/metrics;
+            access_log off;
+          }
+      extraContainers:
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:1.5
+          args:
+            - --nginx.scrape-uri=http://localhost:8080/nginx_status
+          ports:
+            - name: metrics
+              containerPort: 9113
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+
+    metaMonitoring:
+      serviceMonitor:
+        enabled: true
+        clusterLabel: ottawa
