@@ -22,17 +22,21 @@ spec:
             - configMapRef:
                 name: tinyauth-config
           env:
-            - name: TINYAUTH_OAUTH_PROVIDERS_GITHUB_CLIENTID
+            - name: TINYAUTH_OAUTH_PROVIDERS_GOOGLE_CLIENTID
               valueFrom:
                 secretKeyRef:
                   name: tinyauth-secret
-                  key: github-client-id
-                  optional: true
-            - name: TINYAUTH_OAUTH_PROVIDERS_GITHUB_CLIENTSECRET
+                  key: google-client-id
+            - name: TINYAUTH_OAUTH_PROVIDERS_GOOGLE_CLIENTSECRET
               valueFrom:
                 secretKeyRef:
                   name: tinyauth-secret
-                  key: github-client-secret
+                  key: google-client-secret
+            - name: TINYAUTH_AUTH_USERS
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: users
                   optional: true
             - name: TINYAUTH_SECRET
               valueFrom:
