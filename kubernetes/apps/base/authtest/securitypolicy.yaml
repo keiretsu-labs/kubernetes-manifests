@@ -42,17 +42,18 @@ spec:
   # real apps and drop the per-app keys from the configmap entirely. adding a
   # protected app then = its httproute + this securitypolicy, no configmap edit.
   #
-  # validate: log in as rajsinghcpre@gmail.com -> 200 (allow rule matches).
-  # log in as any other google account -> 403 from the gateway (defaultAction
-  # Deny), NOT a tinyauth redirect. that 403 is the proof EG is enforcing on
-  # the injected header.
+  # validate: log in as an allowed email -> 200 (allow rule matches). log in as
+  # any other google account -> 403 from the gateway (defaultAction Deny), NOT a
+  # tinyauth redirect. that 403 is the proof EG is enforcing on the injected
+  # header.
   authorization:
     defaultAction: Deny
     rules:
-      - name: allow-raj
+      - name: allow-users
         action: Allow
         principal:
           headers:
             - name: Remote-Email
               values:
                 - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com
