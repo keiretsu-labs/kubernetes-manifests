@@ -980,7 +980,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.uid
-        image: registry.k8s.io/nfd/node-feature-discovery:v0.17.1
+        image: registry.k8s.io/nfd/node-feature-discovery:v0.18.3
         imagePullPolicy: IfNotPresent
         name: nfd-gc
         ports:
@@ -1053,7 +1053,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.uid
-        image: registry.k8s.io/nfd/node-feature-discovery:v0.17.1
+        image: registry.k8s.io/nfd/node-feature-discovery:v0.18.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           grpc:
@@ -1136,7 +1136,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.uid
-        image: registry.k8s.io/nfd/node-feature-discovery:v0.17.1
+        image: registry.k8s.io/nfd/node-feature-discovery:v0.18.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           grpc:
