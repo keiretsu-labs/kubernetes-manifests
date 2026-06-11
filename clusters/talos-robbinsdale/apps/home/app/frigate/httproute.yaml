@@ -17,12 +17,12 @@ spec:
       kind: Gateway
       name: private
       namespace: home
-      sectionName: luke-wildcard-https
+      sectionName: wildcard-lukehouge-com-https
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: ts
       namespace: home
-      sectionName: luke-wildcard-https
+      sectionName: wildcard-lukehouge-com-https
   hostnames:
     - "frigate.${CLUSTER_DOMAIN}"
   rules:
