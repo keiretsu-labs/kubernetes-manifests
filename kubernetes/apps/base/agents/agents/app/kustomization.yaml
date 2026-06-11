@@ -1,0 +1,16 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: agents
+resources:
+  - bucket.yaml
+  - egress.yaml
+  - assistant-raj
+  - abtar
+  - kartik
+  - teaspoon
+  - camofox
+# NOTE: hermes groups (groups/<name>) are NOT listed here. Each is reconciled by
+# its own Flux Kustomization (ks-<name>.yaml) so tenants build independently —
+# no shared kustomize accumulation (group-meta would collide) and one group's
+# failure can't block the others. `add-group.sh` wires those up.
