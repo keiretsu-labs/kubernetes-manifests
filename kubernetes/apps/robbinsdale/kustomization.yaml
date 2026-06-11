@@ -45,3 +45,4 @@ resources:
   - ./tailscale-examples
   - ./tailscale-system
   - ./tailscale
+  - ./local-path-storage

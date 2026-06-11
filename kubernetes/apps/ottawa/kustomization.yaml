@@ -54,3 +54,4 @@ resources:
   - ./flux-system
   - ./node-feature-discovery
   - ./tailscale
+  - ./local-path-storage
