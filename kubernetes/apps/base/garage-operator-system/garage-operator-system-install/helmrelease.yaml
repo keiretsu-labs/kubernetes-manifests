@@ -1,0 +1,76 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: garage-operator
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: garage-operator
+      version: "0.6.12"
+      sourceRef:
+        kind: HelmRepository
+        name: garage-operator
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+    crds: CreateReplace
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+    crds: CreateReplace
+  # Chart's ServiceMonitor selector matches both the metrics Service (port 8443)
+  # and the webhook Service (port 443) because they share identical labels and
+  # both name a port `https`. Prometheus ends up scraping the webhook on /metrics
+  # and getting 404s. Tag the metrics Service with a component label and pin the
+  # ServiceMonitor selector to it.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Service
+              name: garage-operator-metrics
+            patch: |
+              - op: add
+                path: /metadata/labels/app.kubernetes.io~1component
+                value: metrics
+          - target:
+              kind: ServiceMonitor
+              name: garage-operator
+            patch: |
+              - op: add
+                path: /spec/selector/matchLabels/app.kubernetes.io~1component
+                value: metrics
+          # Chart's GarageNodeDisconnected rule fires on per-node
+          # self-observation series (each node reports 0 for its own id).
+          # Aggregate by id so the alert only triggers when no peer sees a
+          # given node. Path indexes the garage.cluster group (idx 2),
+          # GarageNodeDisconnected rule (idx 4).
+          - target:
+              kind: PrometheusRule
+              name: garage-operator-garage
+            patch: |
+              - op: replace
+                path: /spec/groups/2/rules/4/expr
+                value: sum by (id) (cluster_layout_node_connected{job="garage"}) == 0
+  values:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 10m
+        memory: 128Mi
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: monitoring
+    prometheusRules:
+      enabled: true
+      labels:
+        release: monitoring
+    webhooks:
+      enabled: true

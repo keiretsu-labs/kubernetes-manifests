@@ -1,0 +1,49 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: garage-rules
+spec:
+  groups:
+    - name: garage.rules
+      rules:
+        # The local /health serving probe runs in each region and reports the
+        # cluster-wide health from that region's view. probe_success==0 means
+        # /health returned non-2xx (503 = Unavailable: a partition lost
+        # write-quorum, so writes fail) or the local endpoint is unreachable.
+        # Scoped to target=local so a known-down remote region's cross-cluster
+        # probe doesn't fire this; cross-cluster serving probes stay for
+        # dashboards / the generic blackbox ProbeFailed rule.
+        - alert: GarageServingUnavailable
+          expr: probe_success{service="garage", check="serving", target="local"} == 0
+          for: 3m
+          annotations:
+            summary: Garage cannot serve writes in this region ({{ $labels.instance }})
+            description: >-
+              The Garage /health serving probe has been non-2xx for 3m
+              (503 Unavailable = a partition lost its write-quorum of up storage
+              nodes, or the admin endpoint is unreachable). Reads may still work
+              in degraded mode, but writes are failing. With replication.factor=2
+              this is one storage node away from a full write outage — restore the
+              missing storage node or add write headroom.
+          labels:
+            severity: critical
+
+        # The gateway tier is the S3 CLIENT path (COMMON_S3_ENDPOINT ->
+        # garage-gateway svc). This fires when the gateway Service has no
+        # reachable endpoint — clients fail — but storage may still be up, so it
+        # would NOT trip the storage probes. Distinct from GarageServingUnavailable
+        # (that's write-quorum); this is "clients can't reach a gateway at all."
+        - alert: GarageGatewayUnreachable
+          expr: probe_success{service="garage", tier="gateway", check="port-open", target="local"} == 0
+          for: 2m
+          annotations:
+            summary: Garage gateway tier unreachable in this region ({{ $labels.instance }})
+            description: >-
+              The garage-gateway Service has had no reachable endpoint for 2m.
+              In-cluster S3 clients reach Garage through it (COMMON_S3_ENDPOINT),
+              so they are failing. Check the gateway pods (garage-gateway-N) and
+              their readiness — storage may still be up (this won't show in the
+              storage probes).
+          labels:
+            severity: critical

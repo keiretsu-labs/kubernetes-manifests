@@ -1,0 +1,298 @@
+{
+  "title": "Zot Registry",
+  "uid": "zot-registry",
+  "tags": ["zot", "registry"],
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "time": { "from": "now-3h", "to": "now" },
+  "timepicker": {},
+  "links": [],
+  "annotations": { "list": [] },
+  "templating": {
+    "list": [
+      {
+        "name": "job",
+        "label": "Registry",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "mimir" },
+        "query": "label_values(zot_http_requests_total, job)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "sort": 1,
+        "current": {}
+      },
+      {
+        "name": "repo",
+        "label": "Repo",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "mimir" },
+        "query": "label_values(zot_repo_storage_bytes{job=~\"$job\"}, repo)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "sort": 1,
+        "current": {}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Traffic",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Requests / sec",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 } },
+      "targets": [
+        {
+          "expr": "sum(rate(zot_http_requests_total{job=~\"$job\"}[5m]))",
+          "legendFormat": "rps",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Error Rate",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.05 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(zot_http_requests_total{job=~\"$job\",code=~\"5..\"}[5m])) / sum(rate(zot_http_requests_total{job=~\"$job\"}[5m]))",
+          "legendFormat": "errors",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Total Storage",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "targets": [
+        {
+          "expr": "sum(zot_repo_storage_bytes{job=~\"$job\"})",
+          "legendFormat": "total",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Requests by Method",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 5, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        {
+          "expr": "sum by (method) (rate(zot_http_requests_total{job=~\"$job\"}[5m]))",
+          "legendFormat": "{{method}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Requests by Status Code",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 12, "y": 5, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        {
+          "expr": "sum by (code) (rate(zot_http_requests_total{job=~\"$job\"}[5m]))",
+          "legendFormat": "HTTP {{code}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "Latency",
+      "gridPos": { "x": 0, "y": 13, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Request Latency by Method (p50 / p95 / p99)",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 14, "w": 16, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, method) (rate(zot_http_method_latency_seconds_bucket{job=~\"$job\"}[5m])))",
+          "legendFormat": "p50 {{method}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, method) (rate(zot_http_method_latency_seconds_bucket{job=~\"$job\"}[5m])))",
+          "legendFormat": "p95 {{method}}",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le, method) (rate(zot_http_method_latency_seconds_bucket{job=~\"$job\"}[5m])))",
+          "legendFormat": "p99 {{method}}",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Mean Latency by Repo",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 16, "y": 14, "w": 8, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean"] } },
+      "targets": [
+        {
+          "expr": "topk(10, rate(zot_http_repo_latency_seconds_sum{job=~\"$job\",repo=~\"$repo\"}[5m]) / rate(zot_http_repo_latency_seconds_count{job=~\"$job\",repo=~\"$repo\"}[5m]))",
+          "legendFormat": "{{repo}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "Storage & Transfer",
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 21,
+      "type": "table",
+      "title": "Storage by Repo",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 23, "w": 8, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "repo" }, "properties": [{ "id": "custom.width", "value": 200 }] }
+        ]
+      },
+      "options": { "sortBy": [{ "displayName": "Value", "desc": true }], "footer": { "show": true, "reducer": ["sum"] } },
+      "targets": [
+        {
+          "expr": "sort_desc(sum by (repo) (zot_repo_storage_bytes{job=~\"$job\",repo=~\"$repo\"}))",
+          "legendFormat": "{{repo}}",
+          "refId": "A",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        { "id": "filterFieldsByName", "options": { "include": { "names": ["repo", "Value"] } } },
+        { "id": "organize", "options": { "renameByName": { "Value": "Size" } } }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "Downloads / sec (top 10 repos)",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 8, "y": 23, "w": 8, "h": 10 },
+      "fieldConfig": { "defaults": { "unit": "ops" } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (repo) (rate(zot_repo_downloads_total{job=~\"$job\",repo=~\"$repo\"}[5m])))",
+          "legendFormat": "{{repo}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "Uploads / sec (top 10 repos)",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 16, "y": 23, "w": 8, "h": 10 },
+      "fieldConfig": { "defaults": { "unit": "ops" } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (repo) (rate(zot_repo_uploads_total{job=~\"$job\",repo=~\"$repo\"}[5m])))",
+          "legendFormat": "{{repo}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "type": "row",
+      "title": "Scheduler",
+      "gridPos": { "x": 0, "y": 33, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 31,
+      "type": "timeseries",
+      "title": "Task Queue Length",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 34, "w": 12, "h": 7 },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (job) (zot_scheduler_tasksqueue_length{job=~\"$job\"})",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "type": "timeseries",
+      "title": "Scheduler Workers",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 12, "y": 34, "w": 12, "h": 7 },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "expr": "sum by (job, state) (zot_scheduler_workers{job=~\"$job\"})",
+          "legendFormat": "{{job}} {{state}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

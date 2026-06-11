@@ -1,0 +1,152 @@
+---
+# Unified GarageCluster (v1beta2) — storage + gateway tiers in one CR.
+#
+# In a unified cluster the operator reconciles the gateway tier as one per-pod
+# GarageNode (garage-gateway-N) — each a single-replica StatefulSet with a small
+# metadata PVC (persistent node identity) and EmptyDir data. Each gets a
+# capacity:null layout role so key/bucket auth resolves locally. Stale roles on
+# scale-down are tombstone-reaped (autoApply below applies the cleanup).
+# Cross-region peering is established by the storage tier (via
+# spec.remoteClusters); the gateway tier rides on that mesh.
+apiVersion: garage.rajsingh.info/v1beta2
+kind: GarageCluster
+metadata:
+  name: garage
+spec:
+  zone: "${LOCATION}"
+  image: dxflrs/garage:v2.3.0
+
+  replication:
+    factor: 2
+    consistencyMode: "consistent" # Read-after-write consistency (read quorum=2) prevents restic AEAD corruption
+
+  s3Api:
+    rootDomain: ".s3.${COMMON_DOMAIN}"
+
+  webApi:
+    rootDomain: ".${COMMON_DOMAIN}"
+
+  network:
+    rpcPublicAddr: "${LOCATION}-garage.keiretsu.ts.net:3901"
+    rpcSecretRef:
+      name: garage-rpc-secret
+      key: rpc-secret
+
+  remoteClusters:
+    - name: ottawa
+      zone: ottawa
+      connection:
+        adminApiEndpoint: "http://ottawa-garage.keiretsu.ts.net:3903"
+        gatewayRpcEndpointTemplate: "ottawa-gw-{ordinal}.keiretsu.ts.net:3901"
+        adminTokenSecretRef:
+          name: garage-admin-token
+          key: admin-token
+    - name: robbinsdale
+      zone: robbinsdale
+      connection:
+        adminApiEndpoint: "http://robbinsdale-garage.keiretsu.ts.net:3903"
+        gatewayRpcEndpointTemplate: "robbinsdale-gw-{ordinal}.keiretsu.ts.net:3901"
+        adminTokenSecretRef:
+          name: garage-admin-token
+          key: admin-token
+    - name: stpetersburg
+      zone: stpetersburg
+      connection:
+        adminApiEndpoint: "http://stpetersburg-garage.keiretsu.ts.net:3903"
+        gatewayRpcEndpointTemplate: "stpetersburg-gw-{ordinal}.keiretsu.ts.net:3901"
+        storageRpcEndpointTemplate: "stpetersburg-garage-spark-{ordinal}.keiretsu.ts.net:3901"
+        adminTokenSecretRef:
+          name: garage-admin-token
+          key: admin-token
+  # stpetersburg re-added 2026-06-04: node back online, rejoining federation
+
+  admin:
+    adminTokenSecretRef:
+      name: garage-admin-token
+      key: admin-token
+
+  monitoring:
+    enabled: true
+    interval: 30s
+
+  layoutManagement:
+    # autoApply RE-ENABLED 2026-06-01 (operator v0.6.7): the gateway tombstone
+    # reaper is now scoped to the local zone (garage-operator#220), so a region no
+    # longer classifies the OTHER region's gateway roles as stale. The earlier
+    # cross-region layout churn (which left gateway key_table unsynced → S3 403
+    # "No such key") is fixed; both regions report zero pendingGatewayTombstones.
+    # autoApply lets the operator apply legitimate same-zone tombstone cleanup on
+    # gateway scale-down/replacement instead of leaving it pending.
+    autoApply: true
+
+  blocks:
+    ramBufferMax: 128Mi
+
+  workers:
+    # Temporarily accelerated (2026-06-05) to clear a large resync backlog from the
+    # stp-rejoin re-replication + node-rename layout churn. Revert to 1 / 3 once the
+    # block_resync_queue_length drains to ~0 across nodes.
+    resyncWorkerCount: 4
+    resyncTranquility: 1
+    scrubTranquility: 4
+
+  # Storage tier — persistent identity in metadata PVC; data PVC holds blocks.
+  storage:
+    replicas: ${GARAGE_REPLICAS:=1}
+    # Per-tier layout ownership (operator v0.6.11+). Default Auto: the operator
+    # generates and owns one storage GarageNode per replica. A region can set
+    # GARAGE_STORAGE_LAYOUT_POLICY=Manual in its cluster-settings to hand-manage
+    # storage GarageNode CRs in gitops (e.g. stpetersburg's per-spark storage
+    # arrays under clusters/talos-stpetersburg/apps/garage) while the GATEWAY
+    # tier stays operator-managed. Auto->Manual is one-way (operator ejects its
+    # storage nodes; Manual->Auto is rejected by the webhook).
+    layoutPolicy: "${GARAGE_STORAGE_LAYOUT_POLICY:=Auto}"
+    metadata:
+      size: 3Gi
+      storageClassName: "${STORAGECLASS_METADATA}"
+    data:
+      size: 2Ti
+      storageClassName: "${STORAGECLASS_LONGTERM}"
+    priorityClassName: "infra-critical"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 3000m
+        memory: 3Gi
+    # Per-cluster scheduling overrides via Flux postBuild substitution.
+    nodeSelector: ${GARAGE_NODE_SELECTOR=}
+    topologySpreadConstraints: ${GARAGE_TOPOLOGY_SPREAD=}
+
+  # Gateway tier — per-pod GarageNodes with persistent identity; peers with the
+  # local storage tier and inherits federation through it. rpcPublicAddr is the
+  # advertised RPC address so remote regions can reach the gateway nodes for
+  # cluster-wide table sync (key/bucket FullReplication).
+  # PER-ORDINAL address (operator v0.6.9+, garage-operator#226): the operator
+  # substitutes {ordinal} with each gateway pod's index, so pod N advertises
+  # ${LOCATION}-gw-N.keiretsu.ts.net — which the per-pod LB in service-ts-gateway.yaml
+  # routes to that exact pod. This matches remoteClusters[].gatewayRpcEndpointTemplate
+  # so all gateway pods (not just one) are reachable cross-region and join
+  # FullReplication quorum. (A single shared addr could only ever route to one pod.)
+  gateway:
+    replicas: ${GARAGE_GATEWAY_REPLICAS:=2}
+    rpcPublicAddr: "${LOCATION}-gw-{ordinal}.keiretsu.ts.net:3901"
+    priorityClassName: "infra-high"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 2000m
+        memory: 1536Mi
+    nodeSelector: ${GARAGE_NODE_SELECTOR=}
+    affinity: ${GARAGE_GATEWAY_AFFINITY=}
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: garage
+            garage.rajsingh.info/tier: gateway
