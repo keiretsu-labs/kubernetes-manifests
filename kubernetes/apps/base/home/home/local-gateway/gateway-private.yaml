@@ -92,7 +92,7 @@ spec:
         certificateRefs:
         - group: ''
           kind: Secret
-          name: wildcard-${COMMON_DOMAIN//./-}
+          name: wildcard-hermes-keiretsu-top
     - name: forgejo-ssh
       protocol: TCP
       port: 22
