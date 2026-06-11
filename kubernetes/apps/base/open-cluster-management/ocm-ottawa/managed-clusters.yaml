@@ -1,0 +1,36 @@
+---
+# Pre-accept all member clusters so registration is fully automated
+# The klusterlet registers, creates ManagedCluster with hubAcceptsClient=false,
+# then this manifest patches it to true — no manual clusteradm accept needed
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: talos-ottawa
+  labels:
+    location: ottawa
+    cloud: onprem
+    vendor: Talos
+spec:
+  hubAcceptsClient: true
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: talos-robbinsdale
+  labels:
+    location: robbinsdale
+    cloud: onprem
+    vendor: Talos
+spec:
+  hubAcceptsClient: true
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: talos-stpetersburg
+  labels:
+    location: stpetersburg
+    cloud: onprem
+    vendor: Talos
+spec:
+  hubAcceptsClient: true
