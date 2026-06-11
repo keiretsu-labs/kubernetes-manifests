@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./cloudflare.yaml
+  - ./cloudflare-cluster-app.yaml
