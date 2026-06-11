@@ -1,0 +1,93 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kometa
+spec:
+  schedule: "0 6 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+            - name: download-fonts
+              image: alpine:3.24
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  mkdir -p /config/metadata/overlays
+                  if [ ! -f /config/metadata/overlays/fonts/Adlib.ttf ]; then
+                    wget -q https://raw.githubusercontent.com/Kometa-Team/Community-Configs/master/bullmoose20/fonts.zip -O /tmp/fonts.zip
+                    unzip -o /tmp/fonts.zip -d /config/metadata/overlays/
+                    rm /tmp/fonts.zip
+                  fi
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+          containers:
+            - name: kometa
+              image: kometateam/kometa:latest
+              command:
+                - /bin/sh
+                - -c
+              args:
+                - |
+                  python3 kometa.py --run --read-only-config --run-libraries "Movies-1080p";
+                  python3 kometa.py --run --read-only-config --run-libraries "Movies-4K";
+                  python3 kometa.py --run --read-only-config --run-libraries "Movies-4KRemux";
+                  python3 kometa.py --run --read-only-config --run-libraries "Movies-Anime";
+                  python3 kometa.py --run --read-only-config --run-libraries "TV-1080p";
+                  python3 kometa.py --run --read-only-config --run-libraries "TV-4K";
+                  python3 kometa.py --run --read-only-config --run-libraries "TV-Anime";
+              env:
+                - name: TZ
+                  value: ${TIMEZONE}
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 4Gi
+                limits:
+                  memory: 8Gi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                - name: config-secret
+                  mountPath: /config/config.yml
+                  subPath: config.yml
+                - name: movies
+                  mountPath: /config/movies.yml
+                  subPath: movies.yml
+                - name: tv
+                  mountPath: /config/tv.yml
+                  subPath: tv.yml
+                - name: logs
+                  mountPath: /config/logs
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 100
+            fsGroup: 100
+            fsGroupChangePolicy: OnRootMismatch
+          volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: kometa
+            - name: config-secret
+              secret:
+                secretName: kometa
+            - name: movies
+              configMap:
+                name: kometa-movies
+            - name: tv
+              configMap:
+                name: kometa-tv
+            - name: logs
+              emptyDir: {}
+          restartPolicy: Never

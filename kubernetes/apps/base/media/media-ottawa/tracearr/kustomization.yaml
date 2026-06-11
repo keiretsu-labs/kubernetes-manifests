@@ -1,0 +1,12 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: media
+resources:
+- app.yaml
+- httproute.yaml
+- postgres.yaml
+- s3-backup.yaml
+- dragonfly.yaml
+- secret.yaml
+- storagestack.yaml
