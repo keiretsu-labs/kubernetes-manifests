@@ -1,0 +1,36 @@
+---
+# Spark-0 storage node (renamed from garage-storage-0 to the descriptive
+# <location>-garage-<backend>-<node> convention). Backend = local-path, pinned
+# to spark-0. node_key/identity 5b58bb8e… and all data are preserved via
+# existingClaim (same metadata + data PVCs). spec.tags keep the legacy
+# garage-storage-0-0 layout-role tag verbatim so the rename is a zero-churn
+# no-op (the layout tag is decoupled from the CR name).
+#
+# Created suspended for the staged rename cutover: local-path RWO is not
+# kernel-enforced across same-node pods, so the old garage-storage-0 is deleted
+# (skip-drain, identity role retained in layout) before this node is unsuspended
+# onto the freed PVCs. Reverted in the same change that removes garage-storage-0.
+#
+# Per-Spark "storage array" hook: add spec.storage.dataPaths[] here for a
+# multi-disk array on spark-0 without touching the other Spark or common config.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageNode
+metadata:
+  name: stpetersburg-garage-localpath-spark-0
+spec:
+  clusterRef:
+    name: garage
+  zone: "${LOCATION}"
+  capacity: 2Ti
+  nodeId: 5b58bb8e679ba9689288b12814e788b5ec8f5217a9bb556d175e33de35762e66
+  tags:
+    - cluster:garage/garage
+    - tier:storage
+    - garage-storage-0-0
+  network:
+    rpcPublicAddr: "stpetersburg-garage-spark-0.keiretsu.ts.net:3901"
+  storage:
+    metadata:
+      existingClaim: metadata-garage-0
+    data:
+      existingClaim: data-garage-0
