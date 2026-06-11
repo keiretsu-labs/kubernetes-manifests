@@ -33,5 +33,7 @@ resources:
   - ./spegel
   - ./volsync
   - ./zot
+  - ./external-secrets
   - ./hubble-ui
   - ./open-cluster-management-agent
+  - ./snapshot-controller
