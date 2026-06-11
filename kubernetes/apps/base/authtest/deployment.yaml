@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: whoami
-          image: docker.io/traefik/whoami:v1.10.7
+          image: ghcr.io/traefik/whoami:v1.11.0
           ports:
             - containerPort: 80
           resources:
