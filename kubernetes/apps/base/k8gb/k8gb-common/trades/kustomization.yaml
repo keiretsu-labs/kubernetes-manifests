@@ -1,0 +1,10 @@
+---
+# trades.rajsingh.info — first cdn-site consumer. Serves the raj-assistant-web
+# Garage bucket (same content as raj.agents.keiretsu.top) as a GSLB-fronted,
+# health-checked public site. Values are supplied per-cluster via the
+# cdn-site-trades Flux Kustomization's postBuild.substitute.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: garage
+components:
+  - ../../../../../components/cdn-site

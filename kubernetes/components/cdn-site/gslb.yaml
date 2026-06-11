@@ -1,0 +1,19 @@
+---
+apiVersion: k8gb.absa.oss/v1beta1
+kind: Gslb
+metadata:
+  name: ${SITE}
+  annotations:
+    k8gb.io/exposed-hostnames: "${LOCATION}.${COMMON_DOMAIN}"
+spec:
+  resourceRef:
+    apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    name: ${SITE}-cdn
+  strategy:
+    type: roundRobin
+    dnsTtlSeconds: 30
+    weight:
+      ottawa: 34
+      robbinsdale: 33
+      stpetersburg: 33

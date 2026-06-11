@@ -33,12 +33,18 @@ spec:
             key: RAJSINGH_INFO_CLOUDFLARE_API_TOKEN
     extraArgs:
       - --gateway-label-filter=gateway==public
-      # Route the public gateway's hostnames to THIS zone's own ${LOCATION}.<domain>
-      # (same Cloudflare account) instead of inheriting the gateway's default
-      # target ${LOCATION}.keiretsu.top, which is a different account and triggers
-      # Cloudflare Error 1014 (CNAME cross-user banned).
+      # The public gateway's default target is ${LOCATION}.keiretsu.top — a
+      # different Cloudflare account, so an un-annotated rajsingh.info route would
+      # CNAME cross-account and hit Error 1014. --default-targets is the
+      # same-account fallback, but NOTE it only applies when neither the route nor
+      # the gateway provides a target; the gateway annotation outranks it. So every
+      # public rajsingh.info HTTPRoute MUST carry its own
+      # external-dns.alpha.kubernetes.io/target:
+      #   - single-site site → ${LOCATION}.rajsingh.info
+      #   - cdn-site (GSLB)  → <name>.cdn.keiretsu.top   (see components/cdn-site)
+      # We do NOT use --force-default-targets: it would clobber those per-route
+      # targets and break GSLB fronting.
       - --default-targets=${LOCATION}.rajsingh.info
-      - --force-default-targets
     policy: sync
     sources:
       - gateway-httproute
