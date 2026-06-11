@@ -44,15 +44,6 @@ spec:
         title: "K8s St. Petersburg Status"
         description: "GitOps-managed Kubernetes cluster monitoring"
         header: "K8s-StPetersburg Infrastructure Dashboard"
-      external-endpoints:
-        - name: Heartbeat
-          group: Alertmanager
-          token: "${GATUS_HEARTBEAT_TOKEN}"
-          heartbeat:
-            interval: 5m
-          alerts:
-            - type: discord
-              send-on-resolved: true
       endpoints:
         - name: Kubernetes API
           group: kubernetes

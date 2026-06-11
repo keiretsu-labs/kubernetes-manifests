@@ -46,17 +46,6 @@ spec:
             link: "https://github.com/keiretsu-labs/kubernetes-manifests"
           - name: "Portfolio"
             link: "https://www.rajsingh.info"
-      external-endpoints:
-        - name: Heartbeat
-          group: Alertmanager
-          url: "${GATUS_HEARTBEAT_URL:-}"
-          token: "${GATUS_HEARTBEAT_TOKEN}"
-          heartbeat:
-            interval: 5m
-          alerts:
-            - type: discord
-              send-on-resolved: true
-
       endpoints:
         - name: Kubernetes API
           group: kubernetes
