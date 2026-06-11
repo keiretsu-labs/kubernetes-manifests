@@ -10,3 +10,6 @@ resources:
   - ./gatus
   - ./home-assistant
   - ./jellyswarrm
+  - ./border0
+  - ./zot
+  - ./tailbench
