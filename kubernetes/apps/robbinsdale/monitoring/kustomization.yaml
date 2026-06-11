@@ -5,3 +5,5 @@ resources:
   - ./kromgo.yaml
   - ./unpoller.yaml
   - ./blackbox-exporter.yaml
+  - ./blackbox-exporter-robbinsdale.yaml
+  - ./smartctl-exporter.yaml
