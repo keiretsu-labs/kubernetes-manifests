@@ -15,6 +15,7 @@ resources:
   - ./garage
   - ./gatus
   - ./gvisor
+  - ./home
   - ./immich
   - ./kube-system
   - ./loki
