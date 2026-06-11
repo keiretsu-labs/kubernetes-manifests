@@ -10,7 +10,6 @@
 #     BUCKET:      <garage bucket, e.g. raj-assistant-web>
 #     PUBLIC_HOST: <user-facing host, e.g. trades.rajsingh.info>
 #     CDN_HOST:    <GSLB name under cdn.${COMMON_DOMAIN}, e.g. trades.cdn.keiretsu.top>
-#     PROXIED:     "true" | "false"               # Cloudflare edge in front of GSLB?
 #
 # Generates:
 #   - HTTPRoute on the `public` gateway: matches both CDN_HOST and PUBLIC_HOST,
