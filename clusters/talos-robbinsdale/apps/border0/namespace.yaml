@@ -1,9 +1,0 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: border0
-  labels:
-    # privileged: the connector needs a TUN device (NET_ADMIN + /dev/net/tun)
-    pod-security.kubernetes.io/enforce: privileged
-    kustomize.toolkit.fluxcd.io/prune: disabled
