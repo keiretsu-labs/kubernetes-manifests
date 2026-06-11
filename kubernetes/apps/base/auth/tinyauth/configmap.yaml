@@ -13,7 +13,7 @@ data:
   TINYAUTH_OAUTH_AUTOREDIRECT: "google"
   TINYAUTH_ANALYTICS_ENABLED: "false"
   # authentication is google; AUTHORIZATION is this whitelist + per-app ACLs
-  TINYAUTH_OAUTH_WHITELIST: "rajsinghcpre@gmail.com"
+  TINYAUTH_OAUTH_WHITELIST: "rajsinghcpre@gmail.com,kartikbharath@gmail.com"
   # --- per-FQDN ACLs ---
   TINYAUTH_APPS_AUTHTEST_CONFIG_DOMAIN: "authtest.keiretsu.top"
   TINYAUTH_APPS_AUTHTEST_OAUTH_WHITELIST: "rajsinghcpre@gmail.com"
