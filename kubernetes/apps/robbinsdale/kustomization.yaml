@@ -24,3 +24,4 @@ resources:
   - ./agent-sandbox-system
   - ./immich
   - ./tailgate-operator-system
+  - ./home
