@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,6 +9,12 @@ data:
   TINYAUTH_AUTH_SESSIONEXPIRY: "86400"
   TINYAUTH_AUTH_SECURECOOKIE: "true"
   TINYAUTH_AUTH_SUBDOMAINSENABLED: "true"
-  TINYAUTH_AUTH_ACLS_POLICY: "allow"
-  TINYAUTH_OAUTH_AUTOREDIRECT: "github"
+  # NOTE: TINYAUTH_AUTH_ACLS_POLICY is main-branch-only; the released v5
+  # image crashes on it ("field not found, node: acls"). default is allow.
+  TINYAUTH_OAUTH_AUTOREDIRECT: "google"
   TINYAUTH_ANALYTICS_ENABLED: "false"
+  # authentication is google; AUTHORIZATION is this whitelist + per-app ACLs
+  TINYAUTH_OAUTH_WHITELIST: "rajsinghcpre@gmail.com"
+  # --- per-FQDN ACLs ---
+  TINYAUTH_APPS_AUTHTEST_CONFIG_DOMAIN: "authtest.keiretsu.top"
+  TINYAUTH_APPS_AUTHTEST_OAUTH_WHITELIST: "rajsinghcpre@gmail.com"
