@@ -1,0 +1,63 @@
+---
+# ApplicationSet for Keiretsu app resources — deploys to clusters labeled tier=app-host
+# Uses matrix generator: cluster labels × git directory discovery
+# Injects cluster-specific values (LOCATION, S3 endpoint, etc.) via Kustomize patches
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: keiretsu-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  tier: app-host
+              values:
+                location: '{{ index .metadata.labels "location" }}'
+          - git:
+              repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+              revision: HEAD
+              directories:
+                - path: clusters/apps/*/app
+  template:
+    metadata:
+      name: 'keiretsu-{{index .path.segments 2}}-{{.name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/keiretsu-labs/kubernetes-manifests
+        targetRevision: HEAD
+        path: "{{.path.path}}"
+        kustomize:
+          commonLabels:
+            keiretsu.ts.net/location: '{{.values.location}}'
+      destination:
+        name: "{{.name}}"
+        namespace: '{{index .path.segments 2}}'
+      ignoreDifferences:
+        - group: network.keiretsu.ts.net
+          kind: ServiceIngress
+          managedFieldsManagers:
+            - kro
+            - kro.run/labeller
+            - kro.run/applyset
+            - kro.run/applyset-parent
+        - group: network.keiretsu.ts.net
+          kind: AppRoute
+          managedFieldsManagers:
+            - kro
+            - kro.run/labeller
+            - kro.run/applyset
+            - kro.run/applyset-parent
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
