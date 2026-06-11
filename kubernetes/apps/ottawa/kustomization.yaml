@@ -23,6 +23,7 @@ resources:
   - ./gatus
   - ./gvisor
   - ./hermes
+  - ./home
   - ./homer-operator
   - ./immich
   - ./kener
@@ -37,3 +38,4 @@ resources:
   - ./open-cluster-management-agent
   - ./snapshot-controller
   - ./media
+  - ./lan
