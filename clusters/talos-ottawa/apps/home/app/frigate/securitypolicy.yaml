@@ -11,7 +11,7 @@ spec:
       name: frigate
   oidc:
     provider:
-      issuer: "https://pocket-id.${COMMON_DOMAIN}"
+      issuer: "https://pocket-id.keiretsu.top"
     clientID: "${ENVOY_GATEWAY_OIDC_CLIENT_ID}"
     clientSecret:
       name: frigate-oidc-secret

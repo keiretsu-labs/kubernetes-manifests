@@ -10,7 +10,7 @@ spec:
       name: hermes-placeholder
   oidc:
     provider:
-      issuer: "https://pocket-id.${COMMON_DOMAIN}"
+      issuer: "https://pocket-id.keiretsu.top"
     clientID: "placeholder-client-id"
     clientSecret:
       name: hermes-placeholder-oidc
