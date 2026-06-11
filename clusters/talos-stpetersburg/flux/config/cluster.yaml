@@ -13,7 +13,6 @@ spec:
     # exclude all
     /*
     # include kubernetes directory
-    !/clusters/template
     !/clusters/common
     !/swarm
     !/laptop
