@@ -118,51 +118,34 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 
 ## Directory Structure
 
-> **Migration in progress:** apps are moving from `clusters/` into the new
-> [`kubernetes/`](kubernetes/README.md) base+pointer tree (config once, thin per-cluster
-> pointers). **New apps go in `kubernetes/`** — see its README for the layout and the
-> two-PR recipe for moving existing apps.
+The app tree is [`kubernetes/`](kubernetes/README.md): config lives once in `base/`,
+clusters opt in with thin pointer files. The old `clusters/*/apps` trees are drained
+(any stragglers are mid-migration; see issue #1553). `clusters/` still owns cluster
+bootstrap, Talos config, and the Flux entrypoints/vars.
 
 ```
-├── kubernetes/                        # NEW tree (see kubernetes/README.md)
-│   ├── apps/base/<ns>/<app>/          # app config, exactly once
-│   ├── apps/{ottawa,robbinsdale,stpetersburg}/  # per-cluster pointer files
-│   └── components/
-├── clusters/
-│   ├── common/                    # Shared across all clusters
-│   │   ├── apps/                  # Common applications (46+ apps)
-│   │   ├── bootstrap/flux/        # FluxCD bootstrap configuration
-│   │   └── flux/                  # Common Flux kustomizations & repos
-│   │       ├── repositories/      # Helm/OCI/Git repositories
-│   │       │   ├── helm/          # 80+ HelmRepository definitions
-│   │       │   ├── oci/           # OCI repositories
-│   │       │   └── git/           # Git repositories
-│   │       └── vars/              # Common settings ConfigMap
-│   │
-│   ├── talos-ottawa/              # Ottawa cluster
-│   │   ├── apps/                  # Cluster-specific apps
-│   │   ├── bootstrap/talos/       # Talos configuration (talhelper)
-│   │   ├── flux/                  # Cluster Flux config & secrets
-│   │   └── scripts/               # Utility scripts
-│   │
-│   ├── talos-robbinsdale/         # Robbinsdale cluster
-│   │   ├── apps/
-│   │   ├── flux/
-│   │   └── talos/
-│   │
-│   ├── talos-stpetersburg/        # St. Petersburg cluster
-│   │   ├── apps/                  # GPU operator, KubeRay, KServe
-│   │   ├── bootstrap/talos/
-│   │   └── flux/
-│   │
-│   └── template/                  # App templates
-│       ├── app-httproute/         # HTTPRoute + Backend template
-│       ├── app-tcproute/          # TCPRoute template
-│       └── app-udproute/          # UDPRoute template
+├── kubernetes/                    # the app tree (see kubernetes/README.md)
+│   ├── apps/base/<ns>/<app>/      # ALL app config, exactly once
+│   │                              #   <app>-<location>/ for cluster-specific variants
+│   ├── apps/ottawa/<ns>/          # pointer Flux Kustomizations per cluster
+│   ├── apps/robbinsdale/<ns>/     #   app deploys wherever its pointer exists
+│   ├── apps/stpetersburg/<ns>/
+│   └── components/                # shared kustomize components (oidc-protect, ...)
 │
-├── tailscale/                     # Tailscale CI/CD & scripts
-├── kubernetes-devcontainer/       # Dev container configuration
-└── Makefile                       # Validation commands
+├── clusters/
+│   ├── common/
+│   │   ├── bootstrap/flux/        # FluxCD bootstrap
+│   │   ├── components/            # legacy component location (migrating)
+│   │   └── flux/                  # common Flux layer
+│   │       ├── repositories/      # Helm/OCI/Git repository definitions
+│   │       └── vars/              # common-settings / common-secrets (sops)
+│   ├── talos-<location>/          # per cluster: ottawa | robbinsdale | stpetersburg
+│   │   ├── bootstrap/talos/       # Talos configuration (talhelper)
+│   │   └── flux/                  # entrypoints (config/cluster.yaml) + vars (sops)
+│   └── template/                  # legacy templates (superseded by kubernetes/)
+│
+├── tailscale/                     # tailnet policy (hujson), scripts, CI tailnets
+└── Makefile                       # make test / make diff (flate)
 ```
 
 ## Key Infrastructure Components
@@ -249,7 +232,7 @@ Cluster ingress via Gateway API:
 - **TCPRoute/UDPRoute**: L4 routing
 - **CDN Integration**: Multi-cluster backends with failover
 
-## Common Applications (clusters/common/apps/)
+## Common Applications (kubernetes/apps/base/, pointers in all three location trees)
 
 ### Core Infrastructure
 - `cert-manager` - TLS certificate management
@@ -296,7 +279,7 @@ Cluster ingress via Gateway API:
 - `actions-runner-controller` - GitHub Actions runners
 - `keda` - Event-driven autoscaling
 
-## Cluster-Specific Applications
+## Cluster-Specific Applications (pointer exists only in that location tree)
 
 ### talos-ottawa
 - [cilium](https://github.com/cilium/cilium) - CNI with custom config
@@ -382,84 +365,81 @@ flux get ks -A --watch
 
 ## Adding a New Application
 
-### Cluster-Specific vs Common Apps
+One directory of config + one ~20-line pointer file per target cluster. Full
+recipe and the move guide for old-tree apps: [`kubernetes/README.md`](kubernetes/README.md).
 
-- **`clusters/common/apps/`** - Apps deployed across **ALL** clusters. Only put apps here if you want Flux to deploy them everywhere.
-- **`clusters/<cluster-name>/apps/`** - Apps deployed only to that specific cluster. Use this for cluster-specific workloads, hardware-dependent apps, or apps that shouldn't run everywhere.
-
-### 1. Create App Directory
+### 1. App config (once)
 
 ```bash
-# For apps deployed to ALL clusters:
-mkdir -p clusters/common/apps/<namespace>/{app,config}
-
-# For cluster-specific apps:
-mkdir -p clusters/<cluster-name>/apps/<namespace>/{app,config}
+mkdir -p kubernetes/apps/base/<namespace>/<app>
+# helmrelease.yaml / deployment.yaml, httproute.yaml, kustomization.yaml ...
+# copy a neighbor in base/ as your starting point
 ```
 
-### 2. Create Kustomization
+### 2. Pointer per target cluster
+
+`kubernetes/apps/<location>/<namespace>/<app>.yaml` — deploys wherever this file exists:
 
 ```yaml
-# clusters/common/apps/<namespace>/ks.yaml
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app <app-name>
+  name: &app <app>
   namespace: flux-system
 spec:
   targetNamespace: <namespace>
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./clusters/common/apps/<namespace>/app
+  path: ./kubernetes/apps/base/<namespace>/<app>
   prune: true
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
   interval: 30m
+  retryInterval: 1m
+  timeout: 5m
 ```
 
-### 3. Create HelmRelease (if using Helm)
+List it (and a `namespace.yaml` if the namespace is new) in that directory's
+`kustomization.yaml`, and the namespace dir in the location root `kustomization.yaml`.
+sops decryption + settings/secrets substitution are injected by the parent — pointers
+stay thin.
+
+### 3. Ingress
+
+One HTTPRoute next to the app. parentRefs = exposure tiers, hostname = any of the
+four domains at any location (all gateways terminate all domains):
 
 ```yaml
-# clusters/common/apps/<namespace>/app/helmrelease.yaml
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: <app-name>
+  name: <app>
 spec:
-  interval: 30m
-  chart:
-    spec:
-      chart: <chart-name>
-      version: x.x.x
-      sourceRef:
-        kind: HelmRepository
-        name: <repo-name>
-        namespace: flux-system
-  values:
-    # ... your values
+  parentRefs:                      # pick any subset: ts | private | public
+    - { name: ts, namespace: home }
+  hostnames: [<app>.keiretsu.top]
+  rules:
+    - backendRefs: [{ name: <app>, port: 80 }]
 ```
 
-### 4. Add to Kustomization
+Certs are on the listeners; DNS follows from which gateways you attach to
+(public → cloudflare, private → unifi, ts → pihole). NOTE: keiretsu.top names need
+public records (tailnet split-DNS forwards keiretsu.top to 1.1.1.1) — add a CNAME
+in the k8gb cnames config if the route is not on the public gateway.
 
-```yaml
-# clusters/common/apps/kustomization.yaml
-resources:
-  - ./<namespace>
-```
+### 4. Auth (optional)
 
-## Using App Templates
+Google-account SSO via tinyauth forward-auth: add the app FQDN + allowed emails to
+the tinyauth config (`kubernetes/apps/base/auth/tinyauth/configmap.yaml`) and drop a
+SecurityPolicy on the route (copy `kubernetes/apps/base/authtest/securitypolicy.yaml`).
+Per-FQDN allow-lists in plain repo config; see issue #1547. (The pocket-id OIDC
+component `oidc-protect` remains for apps needing real OIDC tokens.)
 
-Templates in `clusters/template/` provide reusable patterns:
+### 5. Validate
 
-```bash
-# Copy and customize
-cp -r clusters/template/app-httproute clusters/common/apps/myapp/routes
-
-# Uses variable substitution:
-# ${APP}, ${LOCATION}, ${FAILOVER}, ${APP_PORT}, ${COMMON_DOMAIN}
-```
+`make test` renders all three clusters; the PR gets per-cluster rendered diffs.
 
 ## Common Operations
 
