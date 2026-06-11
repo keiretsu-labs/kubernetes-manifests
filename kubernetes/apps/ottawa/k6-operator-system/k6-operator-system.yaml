@@ -1,0 +1,42 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: k6-operator-system-install
+  namespace: flux-system
+spec:
+  targetNamespace: k6-operator-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: k6-operator-system-install
+  path: ./kubernetes/apps/base/k6-operator-system/k6-operator-system/install
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: false
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: k6-operator-system-tests
+  namespace: flux-system
+spec:
+  targetNamespace: k6-operator-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: k6-operator-system-tests
+  dependsOn:
+    - name: k6-operator-system-install
+  path: ./kubernetes/apps/base/k6-operator-system/k6-operator-system/tests
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: false
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
