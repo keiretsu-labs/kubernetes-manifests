@@ -1,0 +1,21 @@
+---
+# Kubernetes API server self-probe. Each cluster probes its own apiserver via
+# in-cluster DNS — gives per-cluster API uptime distinguished by the
+# X-Scope-OrgID tenant label that Prometheus applies on remote_write.
+# Returns 401 without creds — still proves the API is up.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-k8s-api-readyz
+spec:
+  jobName: blackbox
+  module: http_401
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://kubernetes.default.svc:443/readyz
+      labels:
+        service: kubernetes-api
+        target: in-cluster

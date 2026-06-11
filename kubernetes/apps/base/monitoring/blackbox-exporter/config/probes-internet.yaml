@@ -1,0 +1,37 @@
+---
+# Internet reachability — TCP and HTTPS to 1.1.1.1.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-internet
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://1.1.1.1
+        - https://8.8.8.8
+      labels:
+        service: internet
+        target: dns-public
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-internet-icmp
+spec:
+  jobName: blackbox
+  module: icmp
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - 1.1.1.1
+        - 8.8.8.8
+      labels:
+        service: internet
+        target: ping
