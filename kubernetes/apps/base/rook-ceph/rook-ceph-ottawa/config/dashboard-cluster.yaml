@@ -1,0 +1,13 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: ceph-cluster
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: Ceph
+  url: https://raw.githubusercontent.com/rook/rook/refs/heads/master/deploy/examples/monitoring/grafana/Ceph%20Cluster%20Dashboard.json

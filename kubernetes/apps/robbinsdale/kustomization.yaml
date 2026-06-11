@@ -49,3 +49,4 @@ resources:
   - ./csi-addons
   - ./csi-driver-smb
   - ./tuppr
+  - ./rook-ceph
