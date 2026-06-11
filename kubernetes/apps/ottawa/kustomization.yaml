@@ -46,3 +46,4 @@ resources:
   - ./volsync
   - ./zot
   - ./external-secrets
+  - ./tailscale-system
