@@ -13,3 +13,6 @@ resources:
   - ./dragonfly-operator-system
   - ./gvisor
   - ./kube-system
+  - ./border0
+  - ./gatus
+  - ./speedtest
