@@ -33,3 +33,4 @@ resources:
   - ./hubble-ui
   - ./open-cluster-management-agent
   - ./snapshot-controller
+  - ./media
