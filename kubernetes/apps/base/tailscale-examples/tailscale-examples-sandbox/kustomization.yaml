@@ -1,0 +1,16 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # - ./derper
+  # - ./hello
+  - ./proxyt
+  # - ./tsidp
+  # - ./tsddns
+  - ./tsflow
+  - ./sidecar
+  - ./secret.yaml
+  # - ./golink
+  # - ./egress
+  # - ./vector
+  - ./tsk9s
