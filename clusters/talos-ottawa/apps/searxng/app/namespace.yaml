@@ -1,8 +1,0 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: searxng
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    kustomize.toolkit.fluxcd.io/prune: disabled
