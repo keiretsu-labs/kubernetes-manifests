@@ -118,7 +118,16 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 
 ## Directory Structure
 
+> **Migration in progress:** apps are moving from `clusters/` into the new
+> [`kubernetes/`](kubernetes/README.md) base+pointer tree (config once, thin per-cluster
+> pointers). **New apps go in `kubernetes/`** — see its README for the layout and the
+> two-PR recipe for moving existing apps.
+
 ```
+├── kubernetes/                        # NEW tree (see kubernetes/README.md)
+│   ├── apps/base/<ns>/<app>/          # app config, exactly once
+│   ├── apps/{ottawa,robbinsdale,stpetersburg}/  # per-cluster pointer files
+│   └── components/
 ├── clusters/
 │   ├── common/                    # Shared across all clusters
 │   │   ├── apps/                  # Common applications (46+ apps)
