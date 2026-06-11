@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ./monitoring
   - ./auth
+  - ./authtest
   - ./agent-sandbox-system
   - ./border0
   - ./clickhouse-operator-system
