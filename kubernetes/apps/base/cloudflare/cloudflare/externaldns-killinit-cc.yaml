@@ -33,6 +33,12 @@ spec:
             key: KILLINIT_CC_CLOUDFLARE_API_TOKEN
     extraArgs:
       - --gateway-label-filter=gateway==public
+      # Route the public gateway's hostnames to THIS zone's own ${LOCATION}.<domain>
+      # (same Cloudflare account) instead of inheriting the gateway's default
+      # target ${LOCATION}.keiretsu.top, which is a different account and triggers
+      # Cloudflare Error 1014 (CNAME cross-user banned).
+      - --default-targets=${LOCATION}.killinit.cc
+      - --force-default-targets
     policy: sync
     sources:
       - gateway-httproute
