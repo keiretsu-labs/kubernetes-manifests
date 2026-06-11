@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tinyauth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tinyauth
+  template:
+    metadata:
+      labels:
+        app: tinyauth
+    spec:
+      containers:
+        - name: tinyauth
+          image: ghcr.io/steveiliop56/tinyauth:v5
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: tinyauth-config
+          env:
+            - name: TINYAUTH_OAUTH_PROVIDERS_GITHUB_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: github-client-id
+                  optional: true
+            - name: TINYAUTH_OAUTH_PROVIDERS_GITHUB_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: github-client-secret
+                  optional: true
+            - name: TINYAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: tinyauth-secret
+                  optional: true
+            - name: TINYAUTH_DATABASE_PATH
+              value: /data/tinyauth.db
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command:
+                - tinyauth
+                - healthcheck
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - tinyauth
+                - healthcheck
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+      volumes:
+        - name: data
+          emptyDir: {}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault

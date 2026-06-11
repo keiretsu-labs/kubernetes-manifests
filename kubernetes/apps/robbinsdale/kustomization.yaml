@@ -1,27 +1,27 @@
----
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./monitoring
+  - ./auth
+  - ./agent-sandbox-system
+  - ./border0
   - ./clickhouse-operator-system
   - ./clickhouse
-  - ./loki
-  - ./mimir
   - ./cloudflare
   - ./cnpg-system
-  - ./fluent-bit
   - ./dragonfly-operator-system
-  - ./gvisor
-  - ./kube-system
-  - ./border0
-  - ./gatus
-  - ./speedtest
+  - ./fluent-bit
   - ./garage-operator-system
   - ./garage
+  - ./gatus
+  - ./gvisor
+  - ./home
+  - ./immich
+  - ./kube-system
+  - ./loki
+  - ./mimir
   - ./spegel
+  - ./speedtest
+  - ./tailgate-operator-system
   - ./volsync
   - ./zot
-  - ./agent-sandbox-system
-  - ./immich
-  - ./tailgate-operator-system
-  - ./home
