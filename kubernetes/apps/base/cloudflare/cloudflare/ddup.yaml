@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ddup
+  labels:
+    app: ddup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ddup
+  template:
+    metadata:
+      labels:
+        app: ddup
+    spec:
+      containers:
+        - name: ddup
+          image: ghcr.io/rajsinghtech/ddup:latest
+          ports:
+            - name: http
+              containerPort: 7401
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/ddup
+              readOnly: true
+          securityContext:
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      volumes:
+        - name: config
+          secret:
+            secretName: ddup-config

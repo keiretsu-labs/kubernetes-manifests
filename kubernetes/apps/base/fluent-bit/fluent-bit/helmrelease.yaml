@@ -1,0 +1,114 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: fluent-bit
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: fluent-bit
+      version: "0.57.7"
+      sourceRef:
+        kind: HelmRepository
+        name: fluent
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    config:
+      inputs: |
+        [INPUT]
+            Name              tail
+            Path              /var/log/containers/*.log
+            Exclude_Path      /var/log/containers/*fluent-bit*.log
+            multiline.parser  docker, cri
+            Tag               kube.*
+            Refresh_Interval  10
+            Mem_Buf_Limit     50MB
+            Skip_Long_Lines   On
+
+        [INPUT]
+            Name        tcp
+            Listen      0.0.0.0
+            Port        5170
+            Tag         talos.*
+            Format      json
+            Chunk_Size  32KB
+            Buffer_Size 128KB
+
+      filters: |
+        [FILTER]
+            Name                kubernetes
+            Match               kube.*
+            Kube_URL            https://kubernetes.default.svc:443
+            Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
+            Merge_Log           On
+            Keep_Log            Off
+            K8S-Logging.Parser  On
+            K8S-Logging.Exclude On
+            Labels              On
+            Annotations         Off
+
+        [FILTER]
+            Name         nest
+            Match        kube.*
+            Operation    lift
+            Nested_under kubernetes
+            Add_prefix   kubernetes.
+
+      outputs: |
+        [OUTPUT]
+            Name                   loki
+            Match                  kube.*
+            Host                   loki-gateway.loki.svc.cluster.local
+            Port                   80
+            Uri                    /loki/api/v1/push
+            tenant_id              ${CLUSTER_NAME}
+            labels                 cluster=${CLUSTER_NAME}, job=fluent-bit
+            label_keys             $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name'],$stream
+            remove_keys            kubernetes,stream
+            auto_kubernetes_labels off
+            line_format            json
+            compress               gzip
+
+        [OUTPUT]
+            Name                   loki
+            Match                  talos.*
+            Host                   loki-gateway.loki.svc.cluster.local
+            Port                   80
+            Uri                    /loki/api/v1/push
+            tenant_id              ${CLUSTER_NAME}
+            labels                 cluster=${CLUSTER_NAME}, job=talos
+            label_keys             $talos-service
+            line_format            json
+            compress               gzip
+
+    extraPorts:
+      - port: 5170
+        containerPort: 5170
+        protocol: TCP
+        name: tcp-talos
+    dashboards:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+    logLevel: warn
+    priorityClassName: "infra-critical"
+
+    tolerations:
+      - operator: Exists
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi

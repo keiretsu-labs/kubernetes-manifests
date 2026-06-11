@@ -6,3 +6,7 @@ resources:
   - ./clickhouse-operator-system
   - ./clickhouse
   - ./agents
+  - ./cloudflare
+  - ./cnpg-system
+  - ./fluent-bit
+  - ./dragonfly-operator-system
