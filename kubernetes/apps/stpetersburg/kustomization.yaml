@@ -45,3 +45,4 @@ resources:
   - ./tailscale-system
   - ./tailscale
   - ./local-path-storage
+  - ./tuppr

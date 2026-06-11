@@ -48,3 +48,4 @@ resources:
   - ./local-path-storage
   - ./csi-addons
   - ./csi-driver-smb
+  - ./tuppr
