@@ -1,0 +1,36 @@
+---
+# Public, un-authenticated alias of raj-assistant-web at trades.rajsingh.info.
+# Same Garage S3 static site as raj.agents.keiretsu.top, but attached only to
+# the `public` gateway with NO SecurityPolicy, so it's world-readable.
+# Garage resolves the bucket by stripping its root_domain (keiretsu.top) from
+# the Host header, so we rewrite hostname → raj-assistant-web.keiretsu.top.
+# DNS (Cloudflare) is auto-created by external-dns-cloudflare-rajsingh-info
+# (watches gateway==public); TLS uses the gateway's *.rajsingh.info cert.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: raj-assistant-web-public
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - "trades.rajsingh.info"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: "raj-assistant-web.${COMMON_DOMAIN}"
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: garage-gateway
+          namespace: garage
+          port: 3902
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
