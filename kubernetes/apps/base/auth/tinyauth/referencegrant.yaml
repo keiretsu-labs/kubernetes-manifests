@@ -1,0 +1,15 @@
+---
+# allow SecurityPolicies in app namespaces to point extAuth at tinyauth
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: extauth-to-tinyauth
+spec:
+  from:
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: authtest
+  to:
+    - group: ""
+      kind: Service
+      name: tinyauth
