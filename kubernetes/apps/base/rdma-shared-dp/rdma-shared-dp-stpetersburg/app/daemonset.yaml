@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rdma-shared-dp
+  namespace: rdma-system
+  labels:
+    app.kubernetes.io/name: rdma-shared-dp
+    app.kubernetes.io/component: device-plugin
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rdma-shared-dp
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rdma-shared-dp
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        node.kubernetes.io/instance-type: dgx-spark
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      priorityClassName: system-node-critical
+      serviceAccountName: rdma-shared-dp
+      containers:
+        - name: rdma-shared-dp
+          image: ghcr.io/mellanox/k8s-rdma-shared-dev-plugin:v1.5.3
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_RESOURCE
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          volumeMounts:
+            - name: config
+              mountPath: /k8s-rdma-shared-dev-plugin
+            - name: device-plugin
+              mountPath: /var/lib/kubelet/device-plugins
+            - name: plugins-registry
+              mountPath: /var/lib/kubelet/plugins_registry
+            - name: log-dir
+              mountPath: /var/log
+            - name: dev
+              mountPath: /dev
+      volumes:
+        - name: config
+          configMap:
+            name: rdma-devices
+            items:
+              - key: config.json
+                path: config.json
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+        - name: plugins-registry
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry
+        - name: log-dir
+          hostPath:
+            path: /var/log
+        - name: dev
+          hostPath:
+            path: /dev
