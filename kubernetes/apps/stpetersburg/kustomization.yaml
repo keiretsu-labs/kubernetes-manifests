@@ -46,3 +46,6 @@ resources:
   - ./tailscale
   - ./local-path-storage
   - ./tuppr
+  - ./rdma-shared-dp
+  - ./spiderpool
+  - ./gpu-operator
