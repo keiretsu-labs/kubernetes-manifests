@@ -1,0 +1,119 @@
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: keiretsu-top-cnames
+  namespace: cloudflare
+  labels:
+    dns-target: cloudflare
+spec:
+  endpoints:
+    - dnsName: "${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "keiretsu.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "true"
+    - dnsName: "www.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "keiretsu.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "true"
+    - dnsName: "auth.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "authtest.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "hello.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "hello.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "home.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "home.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "home.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "home.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "forgejo.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "forgejo.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "pocket-id.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "pocket-id.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "oci.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "oci.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "zot.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "zot.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "status.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "status.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "s3.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "s3.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "tailscale-logs.s3.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "s3.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    # multi-tenant hermes agents: every <group>.agents.${COMMON_DOMAIN} lands on
+    # the ottawa public gateway (per-group HTTPRoute + OIDC). one wildcard covers
+    # all groups; DNS-only (proxied=false) so the *.agents wildcard cert is served
+    # at origin (cloudflare universal TLS does not cover the second-level wildcard).
+    - dnsName: "*.agents.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"

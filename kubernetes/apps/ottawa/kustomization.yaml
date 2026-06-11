@@ -47,3 +47,9 @@ resources:
   - ./zot
   - ./external-secrets
   - ./tailscale-system
+  - ./cert-manager
+  - ./default
+  - ./envoy-ai-gateway-system
+  - ./envoy-gateway-system
+  - ./flux-system
+  - ./node-feature-discovery

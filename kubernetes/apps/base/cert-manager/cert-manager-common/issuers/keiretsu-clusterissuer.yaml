@@ -1,0 +1,21 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: keiretsu-top
+spec:
+  acme:
+    email: ${RAJSINGH_INFO_CLOUDFLARE_EMAIL}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-keiretsu-key
+    solvers:
+    - dns01:
+        # follow the _acme-challenge CNAME that k8gb coredns serves for the
+        # NS-delegated cdn zone; no-op for names without a CNAME
+        cnameStrategy: Follow
+        cloudflare:
+          email: ${RAJSINGH_INFO_CLOUDFLARE_EMAIL}
+          apiTokenSecretRef:
+            name: cloudflare-keiretsu
+            key: cert-manager-api-token

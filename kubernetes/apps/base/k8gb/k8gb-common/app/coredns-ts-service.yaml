@@ -1,0 +1,28 @@
+---
+# Tailscale-facing Service for k8gb CoreDNS.
+# Exposes the same CoreDNS pods via Tailscale LB so that Tailscale
+# clients can query ts.keiretsu.top records via split DNS.
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8gb-coredns-ts
+  namespace: k8gb
+  annotations:
+    tailscale.com/hostname: "${LOCATION}-k8gb-coredns"
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app.kubernetes.io/instance: k8gb
+    app.kubernetes.io/name: coredns
+  ports:
+    - name: udp-dns
+      port: 53
+      protocol: UDP
+      targetPort: 5353
+    - name: tcp-dns
+      port: 53
+      protocol: TCP
+      targetPort: 5353
