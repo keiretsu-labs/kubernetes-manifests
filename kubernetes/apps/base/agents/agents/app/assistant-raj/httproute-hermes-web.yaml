@@ -1,5 +1,5 @@
 ---
-# Hermes dashboard at assistant-raj.hermes.keiretsu.top — Tinyauth-gated
+# Hermes dashboard at raj.hermes.keiretsu.top — Tinyauth-gated
 # via the shared hermes-auth securitypolicy.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -16,7 +16,7 @@ spec:
       name: private
       namespace: home
   hostnames:
-    - "assistant-raj.hermes.${COMMON_DOMAIN}"
+    - "raj.hermes.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
