@@ -21,7 +21,6 @@ resources:
   - ./home-assistant
   - ./homer-operator
   - ./jellyswarrm
-  - ./k6-operator-system
   - ./kro-system
   - ./kube-system
   - ./loki
