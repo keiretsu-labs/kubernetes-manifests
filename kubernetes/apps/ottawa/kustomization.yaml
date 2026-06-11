@@ -58,3 +58,5 @@ resources:
   - ./csi-addons
   - ./csi-driver-smb
   - ./tuppr
+  - ./k8s-gpu-dra-driver
+  - ./rook-ceph
