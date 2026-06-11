@@ -1,19 +1,24 @@
 ---
-# extAuth via Tinyauth for raj.hermes.keiretsu.top — Google OAuth gated
-# to rajsinghcpre@gmail.com (the global whitelist on the tinyauth ConfigMap).
-# Tinyauth's envoy mode reads the original host from the check request's own
-# authority, the original path from ?path=, and requires cookie +
-# x-forwarded-proto to be forwarded. On deny, envoy passes tinyauth's
-# 302/Set-Cookie through to the browser.
+# Shared Tinyauth extAuth for all *.hermes.keiretsu.top agent dashboards.
+# Uses the global tinyauth config (Google OAuth, whitelist: rajsinghcpre@gmail.com).
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
-  name: teaspoon-hermes-web-auth
+  name: hermes-auth
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: teaspoon-hermes-web
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: assistant-raj-hermes-web
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: kartik-hermes-web
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: abtar-hermes-web
   extAuth:
     headersToExtAuth:
       - cookie

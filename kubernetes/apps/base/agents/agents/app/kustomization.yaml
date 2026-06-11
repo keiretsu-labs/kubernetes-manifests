@@ -10,6 +10,7 @@ resources:
   - kartik
   - teaspoon
   - camofox
+  - hermes-auth-securitypolicy.yaml
 # NOTE: hermes groups (groups/<name>) are NOT listed here. Each is reconciled by
 # its own Flux Kustomization (ks-<name>.yaml) so tenants build independently —
 # no shared kustomize accumulation (group-meta would collide) and one group's
