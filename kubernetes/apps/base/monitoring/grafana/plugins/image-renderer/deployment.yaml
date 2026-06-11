@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-image-renderer
+  namespace: monitoring
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: grafana-image-renderer
+  template:
+    metadata:
+      labels:
+        app: grafana-image-renderer
+      annotations:
+        rendering/grafana: "true"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
+      containers:
+        - name: grafana-image-renderer
+          image: docker.io/grafana/grafana-image-renderer:v5.8.8
+          imagePullPolicy: IfNotPresent
+          args: ["server", "--server.addr=:8081"]
+          ports:
+            - name: renderer
+              containerPort: 8081
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              port: renderer
+              path: /healthz
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: renderer
+              path: /healthz
+            initialDelaySeconds: 15
+            periodSeconds: 20

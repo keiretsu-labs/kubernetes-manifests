@@ -1,0 +1,18 @@
+---
+# Envoy gateway reachability via the public status endpoint.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-gateway-public
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://status.killinit.cc
+      labels:
+        service: gateway
+        target: public
