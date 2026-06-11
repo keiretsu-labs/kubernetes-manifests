@@ -1,0 +1,13 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: envoy-gateway-metrics
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: Envoy Gateway
+  url: https://raw.githubusercontent.com/envoyproxy/gateway/main/charts/gateway-addons-helm/dashboards/envoy-gateway-global.json

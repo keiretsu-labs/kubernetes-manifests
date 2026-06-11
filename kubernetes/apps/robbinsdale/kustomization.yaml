@@ -35,5 +35,12 @@ resources:
   - ./snapshot-controller
   - ./media
   - ./strimzi
+  - ./cert-manager
+  - ./default
+  - ./envoy-ai-gateway-system
+  - ./envoy-gateway-system
+  - ./flux-system
+  - ./k8gb
+  - ./node-feature-discovery
   - ./tailscale-examples
   - ./tailscale-system
