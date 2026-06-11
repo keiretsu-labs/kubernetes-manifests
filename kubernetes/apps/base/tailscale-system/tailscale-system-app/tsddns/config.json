@@ -1,0 +1,38 @@
+{
+    "ts.keiretsu.top": [
+      "svc:ottawa-k8gb-coredns"
+    ],
+    "keiretsu.top": [
+      "1.1.1.1"
+    ],
+    "rajsingh.info": [
+      "svc:stpetersburg-home-envoy-gateway"
+    ],
+    "cdn.rajsingh.info": [
+      "1.1.1.1"
+    ],
+    "cdn.keiretsu.top": [
+      "1.1.1.1"
+    ],
+    "stpetersburg.internal": [
+        "192.168.73.1"
+    ],
+
+    "killinit.cc": [
+        "svc:ottawa-home-envoy-gateway"
+      ],
+    "killinit.internal": [
+        "192.168.169.1"
+    ],
+
+    "lukehouge.com": [
+        "svc:robbinsdale-home-envoy-gateway"
+      ],
+    "robbinsdale.lan": [
+        "192.168.50.1",
+        "device:robbinsdale-udm-pro"
+    ],
+    "tailscale-system.svc.cluster.local": [
+        "10.2.0.10"
+    ]
+}

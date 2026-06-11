@@ -36,3 +36,4 @@ resources:
   - ./media
   - ./strimzi
   - ./tailscale-examples
+  - ./tailscale-system
