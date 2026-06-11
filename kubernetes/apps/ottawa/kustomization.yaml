@@ -18,3 +18,8 @@ resources:
   - ./volsync
   - ./zot
   - ./agent-sandbox-system
+  - ./argocd
+  - ./border0
+  - ./cartography
+  - ./firecrawl
+  - ./gatus
