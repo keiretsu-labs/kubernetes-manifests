@@ -1,0 +1,65 @@
+---
+# CNI DHCP daemon — provides IPAM type "dhcp" for Multus secondary networks.
+# Each node already has /opt/cni/bin/dhcp installed by siderolabs/install-cni
+# (the same DaemonSet that installs the Multus shim). This DS just runs the
+# binary in daemon mode, listening on /run/cni/dhcp.sock, so that NADs with
+# `"ipam":{"type":"dhcp"}` can lease IPs from the LAN DHCP server (UDM at
+# 192.168.73.1).
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cni-dhcp-daemon
+  namespace: kube-system
+  labels:
+    app: cni-dhcp-daemon
+spec:
+  selector:
+    matchLabels:
+      app: cni-dhcp-daemon
+  template:
+    metadata:
+      labels:
+        app: cni-dhcp-daemon
+    spec:
+      hostNetwork: true
+      tolerations:
+        - operator: Exists
+      priorityClassName: system-node-critical
+      containers:
+        - name: dhcp
+          image: busybox:1.38
+          command: ["/opt/cni/bin/dhcp"]
+          args: ["daemon"]
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          volumeMounts:
+            - name: cni-bin
+              mountPath: /opt/cni/bin
+              readOnly: true
+            - name: cni-socket
+              mountPath: /run/cni
+            # /var/run/netns is where Multus puts pod network namespaces;
+            # the daemon needs to setns() into each one to do DHCPDISCOVER.
+            - name: host-netns
+              mountPath: /var/run/netns
+              mountPropagation: HostToContainer
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: cni-bin
+          hostPath:
+            path: /opt/cni/bin
+            type: Directory
+        - name: cni-socket
+          hostPath:
+            path: /run/cni
+            type: DirectoryOrCreate
+        - name: host-netns
+          hostPath:
+            path: /var/run/netns
+            type: Directory
