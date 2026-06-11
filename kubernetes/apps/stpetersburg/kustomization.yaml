@@ -18,6 +18,7 @@ resources:
   - ./garage
   - ./gatus
   - ./gvisor
+  - ./home
   - ./home-assistant
   - ./homer-operator
   - ./jellyswarrm

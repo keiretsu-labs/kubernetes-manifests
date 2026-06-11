@@ -1,0 +1,23 @@
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: robbinsdale-internal
+spec:
+  endpoints:
+    - dnsName: k8s.robbinsdale.internal
+      recordType: A
+      targets:
+        - 192.168.50.25
+    - dnsName: stone.robbinsdale.internal
+      recordType: A
+      targets:
+        - 192.168.50.82
+    - dnsName: tank.robbinsdale.internal
+      recordType: A
+      targets:
+        - 192.168.50.51
+    - dnsName: titan.robbinsdale.internal
+      recordType: A
+      targets:
+        - 192.168.50.112

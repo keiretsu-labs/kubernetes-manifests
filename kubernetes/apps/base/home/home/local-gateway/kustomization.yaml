@@ -1,0 +1,16 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: home
+resources:
+  - gatewayclass-private.yaml
+  - gatewayclass-public.yaml
+  - gateway-private.yaml
+  - gateway-public.yaml
+  - envoyproxy-private.yaml
+  - envoyproxy-public.yaml
+  - external-dns-unifi.yaml
+  - secret.yaml
+  - clienttrafficpolicy.yaml
+  - certificate-s3.yaml
+  - certificate-agents.yaml

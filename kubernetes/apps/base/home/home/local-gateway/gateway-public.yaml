@@ -1,0 +1,146 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: public
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "${LOCATION}.${CLUSTER_DOMAIN}"
+  labels:
+    gateway: public
+spec:
+  gatewayClassName: public
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: wildcard-killinit-cc-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.killinit.cc"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-killinit-cc
+    - name: wildcard-lukehouge-com-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.lukehouge.com"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-lukehouge-com
+    - name: wildcard-rajsingh-info-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.rajsingh.info"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-rajsingh-info
+    - name: wildcard-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-keiretsu-top
+    - name: keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-keiretsu-top
+    - name: wildcard-agents-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.agents.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-agents-${COMMON_DOMAIN//./-}
+    - name: wildcard-cdn-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.cdn.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-cdn-keiretsu-top
+    - name: wildcard-s3-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.s3.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-s3-keiretsu-top
+    - name: forgejo-ssh
+      protocol: TCP
+      port: 22
+      allowedRoutes:
+        kinds:
+        - kind: TCPRoute
+        namespaces:
+          from: All
+    - name: webrtc-tcp
+      protocol: TCP
+      port: 8555
+      allowedRoutes:
+        kinds:
+        - kind: TCPRoute
+        namespaces:
+          from: All
+    - name: webrtc-udp
+      protocol: UDP
+      port: 8555
+      allowedRoutes:
+        kinds:
+        - kind: UDPRoute
+        namespaces:
+          from: All
