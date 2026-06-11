@@ -10,7 +10,6 @@ resources:
   - httproute-web.yaml
   - httproute-hermes-web.yaml
   - securitypolicy.yaml
-  - oidc-secret.yaml
   - storagestack.yaml
   - garagekey.yaml
   - configmap.yaml
