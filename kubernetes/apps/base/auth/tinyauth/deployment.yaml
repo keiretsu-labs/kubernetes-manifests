@@ -40,6 +40,11 @@ spec:
                   name: tinyauth-secret
                   key: tinyauth-secret
                   optional: true
+            - name: TINYAUTH_DATABASE_PATH
+              value: /data/tinyauth.db
+          volumeMounts:
+            - name: data
+              mountPath: /data
           livenessProbe:
             exec:
               command:
@@ -65,6 +70,9 @@ spec:
               memory: 64Mi
             limits:
               memory: 256Mi
+      volumes:
+        - name: data
+          emptyDir: {}
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
