@@ -1,0 +1,17 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: musicassistant-data
+  labels:
+    keiretsu.ts.net/location: stpetersburg
+spec:
+  name: musicassistant-data
+  size: 20Gi
+  storageClass: local-path
+  s3Endpoint: ${COMMON_S3_ENDPOINT}
+  s3Path: music-assistant/data
+  schedule: "0 12 * * *"
+  copyMethod: Direct
+  restorePaused: false
+  restorePrevious: 1

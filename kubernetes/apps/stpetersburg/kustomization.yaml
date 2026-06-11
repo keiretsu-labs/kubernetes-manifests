@@ -7,3 +7,6 @@ resources:
   - ./clickhouse
   - ./loki
   - ./mimir
+  - ./gatus
+  - ./home-assistant
+  - ./jellyswarrm
