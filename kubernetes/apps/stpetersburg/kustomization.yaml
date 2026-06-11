@@ -5,3 +5,5 @@ resources:
   - ./monitoring
   - ./clickhouse-operator-system
   - ./clickhouse
+  - ./loki
+  - ./mimir

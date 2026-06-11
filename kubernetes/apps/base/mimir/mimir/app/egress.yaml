@@ -1,0 +1,34 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-gateway
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: mimir.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-qf
+  annotations:
+    tailscale.com/tailnet-fqdn: mimir-qf.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: grpc
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
