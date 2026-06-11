@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: derper
+  namespace: tailscale
+  labels:
+    app.kubernetes.io/name: derper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: derper
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: derper
+    spec:
+      containers:
+      - name: derper
+        image: ghcr.io/erisa/ts-derper:latest
+        env:
+        - name: TS_DERP_HOSTNAME
+          value: "derp.${CLUSTER_DOMAIN}"
+        - name: TS_DERP_VERIFY_CLIENTS
+          value: "true"
+        - name: TS_DERP_CERTMODE
+          value: "letsencrypt"
+        - name: TS_DERP_HTTP_PORT
+          value: "80"
+        - name: TS_DERP_LISTEN_PORT
+          value: "443"
+        - name: TS_DERP_STUN_PORT
+          value: "3478"
+        - name: TS_RUN_TAILSCALE
+          value: "true"
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: derper
+              key: TS_AUTHKEY
+        - name: TS_HOSTNAME
+          value: "derp-${LOCATION}"
+        - name: TS_USERSPACE
+          value: "false"
+        - name: TS_ACCEPT_DNS
+          value: "false"
+        - name: TS_STATE_DIR
+          value: "/var/lib/tailscale"
+        - name: TS_AUTH_ONCE
+          value: "true"
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        - containerPort: 443
+          protocol: TCP
+        - containerPort: 3478
+          protocol: UDP
+        volumeMounts:
+        - name: certs
+          mountPath: /root/derper/${TS_DERP_HOSTNAME}
+        - name: tailscale-state
+          mountPath: /var/lib/tailscale
+      volumes:
+      - name: certs
+        secret:
+          secretName: common-derper-tls
+      - name: tailscale-state
+        emptyDir: {}
+      hostNetwork: false
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

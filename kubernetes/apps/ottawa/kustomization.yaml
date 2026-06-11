@@ -39,3 +39,4 @@ resources:
   - ./snapshot-controller
   - ./media
   - ./lan
+  - ./tailscale-examples
