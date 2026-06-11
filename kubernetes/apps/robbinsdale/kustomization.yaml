@@ -22,3 +22,5 @@ resources:
   - ./volsync
   - ./zot
   - ./agent-sandbox-system
+  - ./immich
+  - ./tailgate-operator-system

@@ -1,0 +1,34 @@
+---
+# Robbinsdale storage node, hand-managed (Manual). Data lives on SMB; metadata
+# on ceph RBD (ceph-block-replicated-nvme) — so the pod is schedulable and
+# node-fault-tolerant (no local-path node pin). Named by the data backend (smb).
+# Binds the existing PVCs via existingClaim so node_key identity (Garage NodeID
+# 62b5e2dd…) and all data are preserved.
+#
+# spec.tags keep the EXACT existing layout-role tags (including the legacy
+# pod-name tag). To move the data array off SMB later, add a new node
+# (e.g. robbinsdale-garage-cephrbd), sync, then drain.
+#
+# History: migrated 2026-06-04 from operator-owned garage-storage-0 via
+# existingClaim; metadata then cold-copied from local-path -> ceph RBD
+# (node_key preserved byte-for-byte, layout unchanged) so the node is no longer
+# pinned to one host.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageNode
+metadata:
+  name: robbinsdale-garage-smb
+spec:
+  clusterRef:
+    name: garage
+  zone: "${LOCATION}"
+  capacity: 2Ti
+  nodeId: 62b5e2ddcba5261e9b6ce201039d93bc4411d53810869bcc55ab1f267e505bb4
+  tags:
+    - cluster:garage/garage
+    - tier:storage
+    - garage-storage-0-0
+  storage:
+    metadata:
+      existingClaim: metadata-garage-ceph
+    data:
+      existingClaim: data-garage-0
