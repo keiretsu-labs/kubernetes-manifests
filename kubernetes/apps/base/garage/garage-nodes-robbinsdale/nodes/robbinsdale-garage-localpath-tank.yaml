@@ -1,0 +1,33 @@
+---
+# Tank storage node — 2nd storage node for Robbinsdale, adding LocalPath
+# capacity alongside the existing SMB-backed node.
+#
+# Backend = local-path, pinned to tank (control-plane node, ~1Ti SSD).
+# Dynamic PVCs via spec.storage.{metadata,data}.size — no existingClaim needed
+# since this is a fresh node with no prior data to migrate.
+#
+# NodeSelector pins directly to tank. The operator auto-discovers the nodeId
+# from the pod's Garage admin API on first connect, so nodeId is omitted here.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageNode
+metadata:
+  name: robbinsdale-garage-localpath-tank
+spec:
+  clusterRef:
+    name: garage
+  zone: "${LOCATION}"
+  capacity: 700Gi
+  tags:
+    - cluster:garage/garage
+    - tier:storage
+  network:
+    rpcPublicAddr: "robbinsdale-garage-tank.keiretsu.ts.net:3901"
+  storage:
+    metadata:
+      size: 1Gi
+      storageClassName: local-path
+    data:
+      size: 700Gi
+      storageClassName: local-path
+  nodeSelector:
+    kubernetes.io/hostname: tank

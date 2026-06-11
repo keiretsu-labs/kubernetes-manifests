@@ -1,0 +1,34 @@
+---
+# Connectivity probe for the canary: a busybox the EgressGroup selects (label
+# tailgate.rajsingh.info/egress=robbinsdale). Lives in default (NOT the gateway namespace —
+# the agent skips its own namespace). Verify the cross-site path with:
+#   kubectl exec deploy/tailgate-canary-probe -- ping -c3 192.168.169.1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tailgate-canary-probe
+  namespace: default
+  labels:
+    app.kubernetes.io/name: tailgate-canary-probe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tailgate-canary-probe
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tailgate-canary-probe
+        tailgate.rajsingh.info/egress: robbinsdale
+    spec:
+      containers:
+        - name: probe
+          image: busybox:1.38
+          command: ["sleep", "infinity"]
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
