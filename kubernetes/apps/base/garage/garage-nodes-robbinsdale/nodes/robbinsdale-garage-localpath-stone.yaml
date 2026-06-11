@@ -2,6 +2,8 @@ apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageNode
 metadata:
   name: robbinsdale-garage-localpath-stone
+  labels:
+    garage.rajsingh.info/cluster: garage
 spec:
   clusterRef:
     name: garage
