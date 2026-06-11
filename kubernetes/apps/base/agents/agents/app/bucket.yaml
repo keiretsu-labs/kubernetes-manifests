@@ -11,6 +11,9 @@ spec:
   quotas:
     maxSize: 100Gi
     maxObjects: 10000000
+  website:
+    indexDocument: "index.html"
+    errorDocument: "error.html"
   keyPermissions:
     - keyRef:
         name: assistant-raj-s3-key
@@ -29,6 +32,11 @@ spec:
       owner: true
     - keyRef:
         name: teaspoon-s3-key
+      read: true
+      write: true
+      owner: true
+    - keyRef:
+        name: trading-web-s3-key
       read: true
       write: true
       owner: true

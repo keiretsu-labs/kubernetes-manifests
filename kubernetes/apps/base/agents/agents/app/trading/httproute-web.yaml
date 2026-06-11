@@ -1,0 +1,37 @@
+---
+# trading.rajsingh.info static site served from Garage S3 via web API (port 3902).
+# Public — no OIDC, anyone can visit. Maps to the shared agents Garage bucket.
+# Garage resolves buckets by stripping the root_domain suffix from the Host
+# header, so we rewrite hostname -> agents.keiretsu.top.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: trading-web
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+  hostnames:
+    - "trading.rajsingh.info"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: "agents.${COMMON_DOMAIN}"
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: garage-gateway
+          namespace: garage
+          port: 3902
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
