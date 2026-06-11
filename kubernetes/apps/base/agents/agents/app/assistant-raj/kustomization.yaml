@@ -13,7 +13,6 @@ resources:
   - httproute-web.yaml
   - httproute-hermes-web.yaml
   - securitypolicy-web.yaml
-  - oidc-secret.yaml
   - egress.yaml
   - configmap.yaml
   - secret.yaml

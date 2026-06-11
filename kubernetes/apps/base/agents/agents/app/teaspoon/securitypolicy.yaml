@@ -1,22 +1,43 @@
 ---
-# OIDC gate for teaspoon-web — uses the shared/enovy gateway OIDC client
-# (the same one grafana, frigate, etc. use) so users don't need a separate
-# Pocket ID client per agent web app.
+# teaspoon-web access control via tinyauth (pocket-id OIDC retired here).
+# tinyauth does authN only (google login, injects remote-email); the per-user
+# authorization decision lives in this policy's authorization block. EG's RBAC
+# filter runs after extAuth, so it matches on the header tinyauth injects.
+# teaspoon is the shared agent — raj + kartik.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
-  name: teaspoon-web-oidc
+  name: teaspoon-web-tinyauth
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: teaspoon-web
-  oidc:
-    provider:
-      issuer: "https://pocket-id.keiretsu.top"
-    clientID: "${ENVOY_GATEWAY_OIDC_CLIENT_ID}"
-    clientSecret:
-      name: teaspoon-web-oidc
-    redirectURL: "https://teaspoon.agents.${COMMON_DOMAIN}/oauth2/callback"
-    logoutPath: "/logout"
-    cookieDomain: "agents.${COMMON_DOMAIN}"
+  extAuth:
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-proto
+      - x-forwarded-for
+      - user-agent
+    http:
+      backendRefs:
+        - name: tinyauth
+          namespace: tinyauth
+          port: 3000
+      path: "/api/auth/envoy?path="
+      headersToBackend:
+        - remote-user
+        - remote-email
+        - remote-name
+        - remote-groups
+  authorization:
+    defaultAction: Deny
+    rules:
+      - name: allow-shared
+        action: Allow
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com
