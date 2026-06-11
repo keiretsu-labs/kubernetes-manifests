@@ -1,0 +1,14 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - helmrelease.yaml
+  - httproute.yaml
+  - ingress.yaml
+
+secretGenerator:
+  - name: headlamp-kubeconfig
+    files:
+      - config=kubeconfig.yaml
+    options:
+      disableNameSuffixHash: true

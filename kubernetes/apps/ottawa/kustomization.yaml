@@ -23,6 +23,7 @@ resources:
   - ./gatus
   - ./gvisor
   - ./hermes
+  - ./homer-operator
   - ./immich
   - ./kener
   - ./kube-system
