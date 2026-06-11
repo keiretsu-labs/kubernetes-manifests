@@ -14,3 +14,4 @@ resources:
   - clienttrafficpolicy.yaml
   - certificate-s3.yaml
   - certificate-agents.yaml
+  - certificate-rajsingh.yaml
