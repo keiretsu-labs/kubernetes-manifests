@@ -34,3 +34,4 @@ resources:
   - ./open-cluster-management-agent
   - ./snapshot-controller
   - ./media
+  - ./strimzi
