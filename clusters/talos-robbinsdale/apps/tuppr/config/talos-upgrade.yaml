@@ -14,8 +14,8 @@ spec:
     placement: soft
     timeout: 30m
   drain:
-    deleteLocalData: true
-    ignoreDaemonSets: true
+    enabled: true
+    disableEviction: true
   healthChecks:
     - apiVersion: v1
       kind: Node
