@@ -159,7 +159,7 @@ spec:
             - "3"
             command:
             - /bin/descheduler
-            image: registry.k8s.io/descheduler/descheduler:v0.32.2
+            image: registry.k8s.io/descheduler/descheduler:v0.36.0
             livenessProbe:
               failureThreshold: 3
               httpGet:
