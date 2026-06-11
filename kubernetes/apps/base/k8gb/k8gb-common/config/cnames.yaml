@@ -117,3 +117,10 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    - dnsName: "*.hermes.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
