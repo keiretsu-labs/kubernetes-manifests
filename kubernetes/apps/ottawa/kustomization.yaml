@@ -17,3 +17,4 @@ resources:
   - ./spegel
   - ./volsync
   - ./zot
+  - ./agent-sandbox-system
