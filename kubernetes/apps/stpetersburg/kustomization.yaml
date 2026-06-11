@@ -33,5 +33,12 @@ resources:
   - ./hubble-ui
   - ./open-cluster-management-agent
   - ./snapshot-controller
+  - ./cert-manager
+  - ./default
+  - ./envoy-ai-gateway-system
+  - ./envoy-gateway-system
+  - ./flux-system
+  - ./k8gb
+  - ./node-feature-discovery
   - ./tailscale-examples
   - ./tailscale-system
