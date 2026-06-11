@@ -5,10 +5,10 @@ namespace: agents
 resources:
   - deployment.yaml
   - service.yaml
-  - service-tailscale.yaml
   # egress.yaml removed — aperture consolidated to agents/app/egress.yaml
   - httproute.yaml
   - httproute-web.yaml
+  - httproute-hermes-web.yaml
   - securitypolicy.yaml
   - oidc-secret.yaml
   - storagestack.yaml

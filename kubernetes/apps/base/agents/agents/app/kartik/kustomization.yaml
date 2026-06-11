@@ -10,3 +10,4 @@ resources:
   - garagekey.yaml
   - configmap.yaml
   - secret.yaml
+  - httproute-hermes-web.yaml
