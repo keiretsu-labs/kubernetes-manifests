@@ -33,6 +33,12 @@ spec:
             key: LUKEHOUGE_COM_CLOUDFLARE_API_TOKEN
     extraArgs:
       - --gateway-label-filter=gateway==public
+      # Route the public gateway's hostnames to THIS zone's own ottawa.<domain>
+      # (same Cloudflare account) instead of inheriting the gateway's default
+      # target ottawa.keiretsu.top, which is a different account and triggers
+      # Cloudflare Error 1014 (CNAME cross-user banned).
+      - --default-targets=ottawa.lukehouge.com
+      - --force-default-targets
     policy: sync
     sources:
       - gateway-httproute

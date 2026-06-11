@@ -6,19 +6,14 @@
 # the Host header, so we rewrite hostname → raj-assistant-web.keiretsu.top.
 # DNS (Cloudflare) is auto-created by external-dns-cloudflare-rajsingh-info
 # (watches gateway==public); TLS uses the gateway's *.rajsingh.info cert.
-#
-# The `public` gateway's default external-dns target is ottawa.keiretsu.top,
-# but keiretsu.top and rajsingh.info live in different Cloudflare accounts —
-# a cross-account CNAME gets Cloudflare Error 1014. Override the target to
-# ottawa.rajsingh.info (same account, ddns-maintained → home IP) and keep it
-# DNS-only, matching how raj.agents.keiretsu.top resolves.
+# That instance forces a same-account target (ottawa.rajsingh.info) via
+# --default-targets, so this route needs no per-host target override — the
+# gateway's cross-account ottawa.keiretsu.top default (Cloudflare Error 1014)
+# is handled centrally for every domain.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: raj-assistant-web-public
-  annotations:
-    external-dns.alpha.kubernetes.io/target: "ottawa.rajsingh.info"
-    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io
