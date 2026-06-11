@@ -5,3 +5,4 @@ resources:
   - ./core-dns.yaml
   - ./csi-secrets-store.yaml
   - ./headlamp.yaml
+  - ./cilium.yaml
