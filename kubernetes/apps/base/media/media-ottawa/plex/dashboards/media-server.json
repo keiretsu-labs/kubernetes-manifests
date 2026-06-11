@@ -106,7 +106,7 @@
             "mode": "shades"
           },
           "decimals": 0,
-          "displayName": "${cores}c/${threads}t",
+          "displayName": "$${cores}c/$${threads}t",
           "mappings": [
             {
               "options": {
