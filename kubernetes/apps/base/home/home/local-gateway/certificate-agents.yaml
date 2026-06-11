@@ -1,0 +1,16 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-agents-${COMMON_DOMAIN//./-}
+spec:
+  dnsNames:
+    - '*.agents.${COMMON_DOMAIN}'
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: keiretsu-top
+  secretName: wildcard-agents-${COMMON_DOMAIN//./-}
+  usages:
+    - digital signature
+    - key encipherment

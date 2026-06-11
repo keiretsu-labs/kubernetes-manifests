@@ -1,0 +1,126 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ts
+  labels:
+    external-dns: ts
+spec:
+  gatewayClassName: home-ts
+  listeners:
+    - name: wildcard-killinit-cc-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.killinit.cc"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-killinit-cc
+    - name: wildcard-lukehouge-com-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.lukehouge.com"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-lukehouge-com
+    - name: wildcard-rajsingh-info-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.rajsingh.info"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-rajsingh-info
+    - name: wildcard-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-keiretsu-top
+    - name: keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-keiretsu-top
+    - name: wildcard-ts-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.ts.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-ts-keiretsu-top
+    - name: http
+      port: 80
+      protocol: HTTP
+    - name: pihole-udp
+      protocol: UDP
+      port: 53
+      allowedRoutes:
+        kinds:
+        - kind: UDPRoute
+    - name: pihole-tcp
+      protocol: TCP
+      port: 53
+      allowedRoutes:
+        kinds:
+        - kind: TCPRoute
+    - name: forgejo-ssh
+      protocol: TCP
+      port: 22
+      allowedRoutes:
+        kinds:
+        - kind: TCPRoute
+        namespaces:
+          from: All
+    - name: neo4j-bolt
+      protocol: TLS
+      port: 7687
+      hostname: "cartography.${CLUSTER_DOMAIN}"
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-${CLUSTER_DOMAIN//./-}
+      allowedRoutes:
+        kinds:
+        - kind: TCPRoute
+        namespaces:
+          from: All
