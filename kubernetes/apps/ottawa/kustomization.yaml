@@ -3,17 +3,23 @@ kind: Kustomization
 resources:
   - ./monitoring
   - ./auth
+  - ./agent-sandbox-system
+  - ./agents
+  - ./argocd
+  - ./border0
+  - ./cartography
   - ./clickhouse-operator-system
   - ./clickhouse
-  - ./agents
   - ./cloudflare
   - ./cnpg-system
-  - ./fluent-bit
   - ./dragonfly-operator-system
-  - ./gvisor
-  - ./kube-system
+  - ./firecrawl
+  - ./fluent-bit
   - ./garage-operator-system
   - ./garage
+  - ./gatus
+  - ./gvisor
+  - ./kube-system
   - ./spegel
   - ./volsync
   - ./zot

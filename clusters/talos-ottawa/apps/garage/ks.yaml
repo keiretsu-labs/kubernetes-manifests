@@ -11,7 +11,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: garage-exporter
-  path: ./clusters/common/apps/garage/exporter
+  path: ./kubernetes/apps/base/garage/garage-exporter
   prune: true
   sourceRef:
     kind: GitRepository

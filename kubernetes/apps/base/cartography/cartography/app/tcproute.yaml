@@ -1,0 +1,17 @@
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: neo4j-bolt
+spec:
+  parentRefs:
+    - name: private
+      namespace: home
+      sectionName: neo4j-bolt
+    - name: ts
+      namespace: home
+      sectionName: neo4j-bolt
+  rules:
+    - backendRefs:
+        - name: neo4j
+          port: 7687
