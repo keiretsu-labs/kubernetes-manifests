@@ -1,0 +1,98 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: forgejo-runner
+spec:
+  replicas: 6
+  serviceName: forgejo-runner
+  selector:
+    matchLabels:
+      app: forgejo-runner
+  template:
+    metadata:
+      labels:
+        app: forgejo-runner
+    spec:
+      initContainers:
+        - name: chown-data
+          image: busybox:latest
+          command: [sh, -c, chown -R 1000:1000 /data]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+        - name: register
+          image: code.forgejo.org/forgejo/runner:12.10.2
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ ! -f /data/.runner ]; then
+                forgejo-runner register \
+                  --config /config/config.yaml \
+                  --instance http://forgejo-http:3000 \
+                  --token "$(cat /secrets/token)" \
+                  --name "$(hostname)" \
+                  --labels ubuntu-latest:docker://node:20-bookworm,ubuntu-22.04:docker://node:20-bookworm \
+                  --no-interactive
+              fi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: token
+              mountPath: /secrets
+            - name: config
+              mountPath: /config
+      containers:
+        - name: runner
+          image: code.forgejo.org/forgejo/runner:12.10.2
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until nc -z 127.0.0.1 2375 2>/dev/null; do
+                echo "waiting for docker..."; sleep 2
+              done
+              forgejo-runner daemon --config /config/config.yaml
+          env:
+            - name: DOCKER_HOST
+              value: tcp://127.0.0.1:2375
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+        - name: dind
+          image: docker:dind
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+          volumeMounts:
+            - name: docker-storage
+              mountPath: /var/lib/docker
+      volumes:
+        - name: token
+          secret:
+            secretName: forgejo-runner-token
+        - name: config
+          configMap:
+            name: forgejo-runner-config
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: ${STORAGECLASS_DEFAULT}
+        resources:
+          requests:
+            storage: 1Gi
+    - metadata:
+        name: docker-storage
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: ${STORAGECLASS_DEFAULT}
+        resources:
+          requests:
+            storage: 10Gi
