@@ -60,24 +60,30 @@ jobs:
             --path clusters/${{ matrix.cluster }}/flux/config \
             --base origin/main \
             --no-progress \
-            -o github > diff.md 2>diff.err
+            -o github > diff.txt 2>diff.err
           FLATE_EXIT=$?
           set -e
-          if [ "$FLATE_EXIT" -ne 0 ]; then
-            {
-              echo "**flate diff failed (exit $FLATE_EXIT) for ${{ matrix.cluster }}**"
+          # -o github emits text for GitHub's diff lexer — it must live inside a
+          # ```diff fence or the '# resource' lines render as markdown headings
+          {
+            echo "### flate diff — ${{ matrix.cluster }}"
+            if [ "$FLATE_EXIT" -ne 0 ]; then
+              echo "**flate diff failed (exit $FLATE_EXIT)**"
               echo '```'
               tail -c 4000 diff.err
               echo '```'
-            } > diff.md
-          elif [ ! -s diff.md ]; then
-            echo "No rendered changes for ${{ matrix.cluster }}." > diff.md
-          fi
-          head -c 60000 diff.md > comment.md
-          if [ "$(wc -c < diff.md)" -gt 60000 ]; then
-            echo "" >> comment.md
-            echo "_…truncated; run \`make diff\` locally for the full diff._" >> comment.md
-          fi
+            elif [ ! -s diff.txt ]; then
+              echo "No rendered changes."
+            else
+              echo '```diff'
+              head -c 58000 diff.txt
+              if [ "$(wc -c < diff.txt)" -gt 58000 ]; then
+                echo ""
+                echo "# ... truncated; run 'make diff' locally for the full diff."
+              fi
+              echo '```'
+            fi
+          } > comment.md
           cat comment.md >> "$GITHUB_STEP_SUMMARY"
           # informational only: a diff failure (e.g. unrenderable base tree) is
           # surfaced via the PR comment and a warning annotation; the test job
