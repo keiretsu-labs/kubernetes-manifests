@@ -1,0 +1,5 @@
+# All apps migrated to kubernetes/apps/base/ — this directory is a placeholder
+# to keep cluster-apps Kustomization valid while remaining clusters complete migration.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: []
