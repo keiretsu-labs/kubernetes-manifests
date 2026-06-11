@@ -1,0 +1,24 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: mimir-ottawa
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  datasource:
+    name: Mimir-Ottawa
+    type: prometheus
+    uid: mimir-ottawa
+    access: proxy
+    url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
+    isDefault: false
+    jsonData:
+      timeInterval: 30s
+      httpMethod: GET
+      httpHeaderName1: "X-Scope-OrgID"
+    secureJsonData:
+      httpHeaderValue1: "talos-ottawa"
+    editable: false
