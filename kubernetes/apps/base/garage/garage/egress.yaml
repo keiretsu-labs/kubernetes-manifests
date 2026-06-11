@@ -1,9 +1,16 @@
+# ssa: merge (not IfNotPresent) on every egress entry. The tailscale operator
+# owns spec.externalName via a separate field manager, so Flux's merge SSA does
+# not reset it (verified: kustomize-controller never owns externalName). merge
+# keeps the rest of the spec self-healing — under IfNotPresent the per-pod
+# gateway egress (*-gw-N) silently froze and a common-egress restart that raced
+# ahead of common-ingress left the gateway egress routes dead for ~2.4 days
+# (cross-region gateway RPC mesh down) with no gitops self-correction.
 ---
 apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: garage-gw.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: garage-global
@@ -19,7 +26,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-garage.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: ottawa-garage
@@ -44,7 +51,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-garage.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: robbinsdale-garage
@@ -69,7 +76,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-garage.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: stpetersburg-garage
@@ -96,7 +103,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-garage-gw.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: ottawa-garage-gw
@@ -112,7 +119,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-garage-gw.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: robbinsdale-garage-gw
@@ -128,7 +135,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-garage-gw.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: stpetersburg-garage-gw
@@ -150,7 +157,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-gw-0.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: ottawa-gw-0
@@ -166,7 +173,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-gw-1.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: ottawa-gw-1
@@ -182,7 +189,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-gw-0.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: robbinsdale-gw-0
@@ -198,7 +205,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-gw-1.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: robbinsdale-gw-1
@@ -214,7 +221,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-gw-0.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: stpetersburg-gw-0
@@ -230,7 +237,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-gw-1.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: stpetersburg-gw-1
