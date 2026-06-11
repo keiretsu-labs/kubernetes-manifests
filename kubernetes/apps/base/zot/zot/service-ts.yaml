@@ -1,0 +1,23 @@
+---
+# Per-cluster Tailscale ingress LB so peers in other clusters can reach this zot.
+# Each cluster gets a stable hostname: ${LOCATION}-zot.keiretsu.ts.net
+apiVersion: v1
+kind: Service
+metadata:
+  name: zot-ts
+  annotations:
+    tailscale.com/hostname: ${LOCATION}-zot
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
+    tailscale.com/proxy-group: common-ingress
+spec:
+  publishNotReadyAddresses: true
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+    - name: http
+      port: 5000
+      protocol: TCP
+      targetPort: 5000
+  selector:
+    app.kubernetes.io/name: zot
+    app.kubernetes.io/instance: zot

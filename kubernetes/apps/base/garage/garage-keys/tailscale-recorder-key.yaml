@@ -1,0 +1,21 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: tailscale-recorder-key
+  namespace: tailscale
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Tailscale Recorder Key"
+  secretTemplate:
+    name: s3-auth
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: tailscale-logs
+        namespace: garage
+      read: true
+      write: true

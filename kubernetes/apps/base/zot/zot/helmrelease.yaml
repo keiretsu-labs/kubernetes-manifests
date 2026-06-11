@@ -1,0 +1,155 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: zot
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: zot
+      version: 0.1.117
+      sourceRef:
+        kind: HelmRepository
+        name: zot
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    replicaCount: 1
+    startupProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      failureThreshold: 30
+    service:
+      type: ClusterIP
+      port: 5000
+    persistence: false
+    mountConfig: true
+    mountSecret: true
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: garage-s3-auth
+            key: AWS_ACCESS_KEY_ID
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: garage-s3-auth
+            key: AWS_SECRET_ACCESS_KEY
+    configFiles:
+      config.json: |-
+        {
+          "storage": {
+            "rootDirectory": "/var/lib/registry",
+            "dedupe": false,
+            "gc": true,
+            "gcDelay": "1h",
+            "gcInterval": "6h",
+            "remoteCache": true,
+            "cacheDriver": {
+              "name": "redis",
+              "addr": ["zot-cache:6379"],
+              "dial_timeout": "10s",
+              "read_timeout": "60s",
+              "write_timeout": "60s",
+              "keyprefix": "zot"
+            },
+            "retention": {
+              "policies": [{
+                "repositories": ["**"],
+                "deleteReferrers": true,
+                "deleteUntagged": true,
+                "keepTags": [{
+                  "mostRecentlyPushedCount": 10,
+                  "mostRecentlyPulledCount": 10,
+                  "pulledWithin": "720h",
+                  "pushedWithin": "720h"
+                }]
+              }]
+            },
+            "storageDriver": {
+              "name": "s3",
+              "rootdirectory": "/zot",
+              "region": "garage",
+              "regionendpoint": "http://${COMMON_S3_ENDPOINT}",
+              "bucket": "zot",
+              "forcepathstyle": true,
+              "secure": false,
+              "skipverify": false,
+              "multipartcopymaxconcurrency": 8
+            }
+          },
+          "cluster": {
+            "members": [
+              "robbinsdale-zot:5000",
+              "ottawa-zot:5000"
+            ],
+            "hashKey": "${ZOT_CLUSTER_HASHKEY}"
+          },
+          "http": {
+            "address": "0.0.0.0",
+            "port": "5000",
+            "compat": ["docker2s2"],
+            "auth": {
+              "htpasswd": { "path": "/secret/htpasswd" }
+            },
+            "accessControl": {
+              "repositories": {
+                "**": {
+                  "policies": [{
+                    "users": ["admin"],
+                    "actions": ["read", "create", "update", "delete"]
+                  }],
+                  "anonymousPolicy": ["read", "create", "update"],
+                  "defaultPolicy": []
+                }
+              }
+            }
+          },
+          "extensions": {
+            "search": { "enable": true },
+            "ui": { "enable": true },
+            "metrics": { "enable": true },
+            "sync": {
+              "enable": true,
+              "downloadDir": "/var/lib/registry/sync-tmp",
+              "registries": [{
+                "urls": ["https://ghcr.io"],
+                "content": [{
+                  "prefix": "rajsinghtech/**"
+                }],
+                "onDemand": true,
+                "pollInterval": "6h",
+                "tlsVerify": true
+              }]
+            }
+          },
+          "log": { "level": "info" }
+        }
+    secretFiles:
+      htpasswd: "${COMMON_OCI}"
+  postRenderers:
+    # Inject a hostAlias so the local zot pod's lookup of its own peer name
+    # (e.g. ottawa-zot in the Ottawa cluster) returns 127.0.0.1, satisfying
+    # zot's GetLocalMemberClusterSocket self-identification check at startup.
+    # Without this, zot panics because the ExternalName Service for its own
+    # location resolves to the common-egress proxy IP, not the pod IP.
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: zot
+            patch: |
+              - op: add
+                path: /spec/template/spec/hostAliases
+                value:
+                  - ip: 127.0.0.1
+                    hostnames:
+                      - ${LOCATION}-zot

@@ -16,3 +16,8 @@ resources:
   - ./border0
   - ./gatus
   - ./speedtest
+  - ./garage-operator-system
+  - ./garage
+  - ./spegel
+  - ./volsync
+  - ./zot

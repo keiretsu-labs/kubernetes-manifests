@@ -1,0 +1,134 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-local
+spec:
+  jobName: blackbox
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - garage.garage:3900
+        - garage.garage:3903
+      labels:
+        service: garage
+        target: local
+        # tcp_connect = port-open only; stays GREEN on a wedged-but-listening
+        # gateway. The http_2xx /health serving probes below are the real signal.
+        check: port-open
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-cross-cluster
+spec:
+  jobName: blackbox
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - ottawa-garage.garage:3900
+        - ottawa-garage.garage:3903
+        - robbinsdale-garage.garage:3900
+        - robbinsdale-garage.garage:3903
+        - stpetersburg-garage.garage:3900
+        - stpetersburg-garage.garage:3903
+      labels:
+        service: garage
+        target: cross-cluster
+        check: port-open
+---
+# SERVING probes: GET the unauthenticated admin /health. Garage returns 200 for
+# Healthy AND Degraded and 503 only for Unavailable (no partition has a
+# write-quorum of up nodes). Unlike the tcp_connect probes above, these go RED
+# exactly when the cluster cannot serve writes — the same signal the gateway
+# readiness probe gates on — so a wedged-but-listening region is detected
+# instead of looking green. Losing only local storage stays 200 (the gateway
+# still serves via remote storage), which is correct.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-health-local
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - http://garage.garage:3903/health
+      labels:
+        service: garage
+        target: local
+        check: serving
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-health-cross-cluster
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - http://ottawa-garage.garage:3903/health
+        - http://robbinsdale-garage.garage:3903/health
+        - http://stpetersburg-garage.garage:3903/health
+      labels:
+        service: garage
+        target: cross-cluster
+        check: serving
+---
+# GATEWAY path — what S3 clients now hit via COMMON_S3_ENDPOINT (garage-gateway
+# svc, tier:gateway). A gateway-tier outage breaks clients but would NOT show in
+# the storage probes above (storage stays up), so probe the gateway Service
+# directly so the monitored path matches the client path: tcp_connect confirms
+# the gateway has ready endpoints on the S3/admin ports, http_2xx /health
+# confirms a gateway pod can serve.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-gateway-local
+spec:
+  jobName: blackbox
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - garage-gateway.garage:3900
+        - garage-gateway.garage:3903
+      labels:
+        service: garage
+        target: local
+        tier: gateway
+        check: port-open
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-garage-gateway-health-local
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - http://garage-gateway.garage:3903/health
+      labels:
+        service: garage
+        target: local
+        tier: gateway
+        check: serving

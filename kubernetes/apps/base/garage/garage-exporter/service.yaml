@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: garage-exporter
+  labels:
+    app.kubernetes.io/name: garage-exporter
+spec:
+  selector:
+    app.kubernetes.io/name: garage-exporter
+  ports:
+    - name: metrics
+      port: 9095
+      targetPort: metrics
