@@ -35,3 +35,4 @@ resources:
   - ./snapshot-controller
   - ./media
   - ./strimzi
+  - ./tailscale-examples
