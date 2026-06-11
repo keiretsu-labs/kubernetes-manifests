@@ -1,3 +1,4 @@
+---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -15,10 +16,14 @@ resources:
   - ./dragonfly-operator-system
   - ./firecrawl
   - ./fluent-bit
+  - ./forgejo
   - ./garage-operator-system
   - ./garage
   - ./gatus
   - ./gvisor
+  - ./hermes
+  - ./immich
+  - ./kener
   - ./kube-system
   - ./spegel
   - ./volsync

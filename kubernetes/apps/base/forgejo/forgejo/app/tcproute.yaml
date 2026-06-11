@@ -1,0 +1,20 @@
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: forgejo-ssh
+spec:
+  parentRefs:
+    - name: public
+      namespace: home
+      sectionName: forgejo-ssh
+    - name: private
+      namespace: home
+      sectionName: forgejo-ssh
+    - name: ts
+      namespace: home
+      sectionName: forgejo-ssh
+  rules:
+    - backendRefs:
+        - name: forgejo-ssh
+          port: 22
