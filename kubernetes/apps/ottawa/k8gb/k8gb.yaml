@@ -68,4 +68,3 @@ spec:
       BUCKET: raj-assistant-web
       PUBLIC_HOST: trades.rajsingh.info
       CDN_HOST: trades.cdn.keiretsu.top
-      PROXIED: "true"
