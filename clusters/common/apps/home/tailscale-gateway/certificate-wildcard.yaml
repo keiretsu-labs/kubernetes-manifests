@@ -2,15 +2,15 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: wildcard-${CLUSTER_DOMAIN//./-}
+  name: wildcard-killinit-cc
 spec:
   dnsNames:
-    - '*.${CLUSTER_DOMAIN}'
+    - '*.killinit.cc'
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
-    name: ${CLUSTER_DOMAIN//./-}
-  secretName: wildcard-${CLUSTER_DOMAIN//./-}
+    name: killinit-cc
+  secretName: wildcard-killinit-cc
   usages:
     - digital signature
     - key encipherment
@@ -18,16 +18,48 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: wildcard-${COMMON_DOMAIN//./-}
+  name: wildcard-lukehouge-com
 spec:
   dnsNames:
-    - '*.${COMMON_DOMAIN}'
-    - '${COMMON_DOMAIN}'
+    - '*.lukehouge.com'
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: lukehouge-com
+  secretName: wildcard-lukehouge-com
+  usages:
+    - digital signature
+    - key encipherment
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-rajsingh-info
+spec:
+  dnsNames:
+    - '*.rajsingh.info'
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: rajsingh-info
+  secretName: wildcard-rajsingh-info
+  usages:
+    - digital signature
+    - key encipherment
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-keiretsu-top
+spec:
+  dnsNames:
+    - '*.keiretsu.top'
+    - 'keiretsu.top'
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
     name: keiretsu-top
-  secretName: wildcard-${COMMON_DOMAIN//./-}
+  secretName: wildcard-keiretsu-top
   usages:
     - digital signature
     - key encipherment
