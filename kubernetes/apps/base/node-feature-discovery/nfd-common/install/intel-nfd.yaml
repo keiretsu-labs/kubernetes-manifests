@@ -1056,16 +1056,18 @@ spec:
         image: registry.k8s.io/nfd/node-feature-discovery:v0.18.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
-          grpc:
-            port: 8082
+          httpGet:
+            path: /healthz
+            port: 8080
         name: nfd-master
         ports:
         - containerPort: 8081
           name: metrics
         readinessProbe:
           failureThreshold: 10
-          grpc:
-            port: 8082
+          httpGet:
+            path: /healthz
+            port: 8080
         resources:
           limits:
             cpu: 300m
@@ -1082,8 +1084,9 @@ spec:
           runAsNonRoot: true
         startupProbe:
           failureThreshold: 30
-          grpc:
-            port: 8082
+          httpGet:
+            path: /healthz
+            port: 8080
         volumeMounts:
         - mountPath: /etc/kubernetes/node-feature-discovery
           name: nfd-master-conf
@@ -1139,8 +1142,9 @@ spec:
         image: registry.k8s.io/nfd/node-feature-discovery:v0.18.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
-          grpc:
-            port: 8082
+          httpGet:
+            path: /healthz
+            port: 8080
           initialDelaySeconds: 10
           periodSeconds: 10
         name: nfd-worker
@@ -1149,8 +1153,9 @@ spec:
           name: metrics
         readinessProbe:
           failureThreshold: 10
-          grpc:
-            port: 8082
+          httpGet:
+            path: /healthz
+            port: 8080
           initialDelaySeconds: 5
           periodSeconds: 10
         resources:
