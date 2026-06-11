@@ -8,10 +8,10 @@ metadata:
 spec:
   gatewayClassName: home-ts
   listeners:
-    - name: wildcard-${CLUSTER_DOMAIN//./-}-https
+    - name: wildcard-killinit-cc-https
       protocol: HTTPS
       port: 443
-      hostname: "*.${CLUSTER_DOMAIN}"
+      hostname: "*.killinit.cc"
       allowedRoutes:
         namespaces:
           from: All
@@ -20,11 +20,11 @@ spec:
         certificateRefs:
         - group: ''
           kind: Secret
-          name: wildcard-${CLUSTER_DOMAIN//./-}
-    - name: wildcard-${COMMON_DOMAIN//./-}-https
+          name: wildcard-killinit-cc
+    - name: wildcard-lukehouge-com-https
       protocol: HTTPS
       port: 443
-      hostname: "*.${COMMON_DOMAIN}"
+      hostname: "*.lukehouge.com"
       allowedRoutes:
         namespaces:
           from: All
@@ -33,7 +33,46 @@ spec:
         certificateRefs:
         - group: ''
           kind: Secret
-          name: wildcard-${COMMON_DOMAIN//./-}
+          name: wildcard-lukehouge-com
+    - name: wildcard-rajsingh-info-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.rajsingh.info"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-rajsingh-info
+    - name: wildcard-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-keiretsu-top
+    - name: keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-keiretsu-top
     - name: wildcard-ts-keiretsu-top-https
       protocol: HTTPS
       port: 443
@@ -47,19 +86,6 @@ spec:
         - group: ''
           kind: Secret
           name: wildcard-ts-keiretsu-top
-    - name: ${COMMON_DOMAIN//./-}-https
-      protocol: HTTPS
-      port: 443
-      hostname: "${COMMON_DOMAIN}"
-      allowedRoutes:
-        namespaces:
-          from: All
-      tls:
-        mode: Terminate
-        certificateRefs:
-        - group: ''
-          kind: Secret
-          name: wildcard-${COMMON_DOMAIN//./-}
     - name: http
       port: 80
       protocol: HTTP
