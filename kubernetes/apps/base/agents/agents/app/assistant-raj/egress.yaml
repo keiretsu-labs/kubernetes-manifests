@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: stpetersburg-vllm
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-vllm.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:

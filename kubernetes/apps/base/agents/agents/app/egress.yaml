@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: ai
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ai.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
@@ -20,7 +20,7 @@ kind: Service
 metadata:
   name: aperture
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: aperture.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:

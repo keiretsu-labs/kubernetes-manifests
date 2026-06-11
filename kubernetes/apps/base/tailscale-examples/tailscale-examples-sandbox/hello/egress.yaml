@@ -7,7 +7,7 @@ metadata:
     # IfNotPresent: Flux creates the Service once with placeholder externalName,
     # then never re-applies. The Tailscale operator owns spec.externalName
     # exclusively. See SSA-field-conflict notes.
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-tailscale-examples-hello-world-service.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
@@ -23,7 +23,7 @@ kind: Service
 metadata:
   name: hello-world-ottawa
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-tailscale-examples-hello-world-service.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
@@ -39,7 +39,7 @@ kind: Service
 metadata:
   name: hello-world-stpetersburg
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-tailscale-examples-hello-world-service.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:

@@ -10,7 +10,7 @@ kind: Service
 metadata:
   name: robbinsdale-zot
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: robbinsdale-zot.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
@@ -26,7 +26,7 @@ kind: Service
 metadata:
   name: ottawa-zot
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: ottawa-zot.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
@@ -42,7 +42,7 @@ kind: Service
 metadata:
   name: stpetersburg-zot
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: stpetersburg-zot.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:

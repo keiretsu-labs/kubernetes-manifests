@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: loki-gateway
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: merge
     tailscale.com/tailnet-fqdn: loki.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
 spec:
