@@ -1,0 +1,82 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jellyfin
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      hostname: jellyfin
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: jellyfin-gpu
+      containers:
+        - name: jellyfin
+          image: jellyfin/jellyfin:10.11.11
+          resources:
+            claims:
+              - name: gpu
+          ports:
+            - name: http
+              containerPort: 8096
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "0"
+            - name: GUID
+              value: "0"
+            - name: TZ
+              value: ${TIMEZONE}
+            - name: JELLYFIN_PublishedServerUrl
+              value: jellyfin.${CLUSTER_DOMAIN}
+            - name: JELLYFIN_FFmpeg__probesize
+              value: "50000000"
+            - name: JELLYFIN_FFmpeg__analyzeduration
+              value: "50000000"
+          volumeMounts:
+            - name: media
+              mountPath: /media-share
+            - name: config
+              mountPath: /config
+            - name: transcode
+              mountPath: /config/transcodes
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-share
+        - name: config
+          persistentVolumeClaim:
+            claimName: jellyfin-config
+        - name: transcode
+          emptyDir:
+            medium: Memory
+            sizeLimit: 4Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin
+  labels:
+    app: jellyfin
+  annotations:
+    tailscale.com/hostname: ${LOCATION}-jellyfin
+    tailscale.com/proxy-group: common-ingress
+spec:
+  selector:
+    app: jellyfin
+  ports:
+    - name: http
+      port: 8096
+      protocol: TCP
+      targetPort: 8096
+  type: LoadBalancer
+  loadBalancerClass: tailscale

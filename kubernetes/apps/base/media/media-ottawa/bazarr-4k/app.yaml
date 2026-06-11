@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr-4k
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bazarr-4k
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: bazarr-4k
+    spec:
+      containers:
+      - name: bazarr-4k
+        image: lscr.io/linuxserver/bazarr:1.5.6
+        ports:
+        - name: http
+          containerPort: 6767
+          protocol: TCP
+        env:
+        - name: PUID
+          value: '0'
+        - name: GUID
+          value: '0'
+        - name: TZ
+          value: UTC
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: media
+          mountPath: /media-share
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: bazarr-4k-config
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-share
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bazarr-4k
+spec:
+  selector:
+    app: bazarr-4k
+  ports:
+  - name: http
+    port: 6767
+    protocol: TCP
+    targetPort: 6767

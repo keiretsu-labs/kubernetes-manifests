@@ -1,0 +1,16 @@
+---
+apiVersion: storage.keiretsu.ts.net/v1alpha1
+kind: StorageStack
+metadata:
+  name: plex-config
+  labels:
+    keiretsu.ts.net/location: ottawa
+spec:
+  name: plex-config
+  size: 50Gi
+  storageClass: ceph-block-replicated
+  s3Path: media/plex-config
+  s3Endpoint: "${COMMON_S3_ENDPOINT}"
+  schedule: "0 13 * * *"
+  copyMethod: Snapshot
+  restorePaused: false
