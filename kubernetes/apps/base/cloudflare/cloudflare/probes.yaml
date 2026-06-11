@@ -1,0 +1,27 @@
+---
+# Public-facing sites served via Cloudflare. Probed from every cluster so an
+# outage in any single cluster doesn't mask reachability from the rest.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-cloudflare-public-sites
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://www.rajsingh.info
+        # status.rajsingh.info removed: cluster DNS hijacks it to a local
+        # Tailscale LB VIP that doesn't terminate TLS for this hostname,
+        # so the in-cluster probe always fails. The site itself is served
+        # by gatus (which monitors its own targets externally), so an
+        # in-cluster reachability probe adds no signal.
+        - https://www.lukehouge.com
+        - https://frigate.lukehouge.com
+        - https://homeassistant.lukehouge.com
+      labels:
+        service: cloudflare
+        target: public-site

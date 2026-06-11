@@ -13,3 +13,7 @@ resources:
   - ./border0
   - ./zot
   - ./tailbench
+  - ./cloudflare
+  - ./cnpg-system
+  - ./fluent-bit
+  - ./dragonfly-operator-system
