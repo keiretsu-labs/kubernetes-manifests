@@ -1,6 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: garage
+commonLabels:
+  garage.rajsingh.info/cluster: garage
 resources:
   - ottawa-garage-smb.yaml
   - ottawa-garage-localpath-shiro.yaml

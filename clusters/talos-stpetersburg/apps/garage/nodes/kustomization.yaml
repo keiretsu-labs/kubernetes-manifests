@@ -5,6 +5,8 @@ kind: Kustomization
 # CRs to the garage namespace — without it cluster-apps applies them with no
 # namespace and fails ("namespace not specified").
 namespace: garage
+commonLabels:
+  garage.rajsingh.info/cluster: garage
 resources:
   - stpetersburg-garage-localpath-spark-0.yaml
   - stpetersburg-garage-localpath-spark-1.yaml
