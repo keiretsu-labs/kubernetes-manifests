@@ -20,4 +20,4 @@ spec:
   postBuild:
     substitute:
       APP: hubble
-      APP_HOST: hubble.${CLUSTER_DOMAIN} 
+      APP_HOST: hubble.${CLUSTER_DOMAIN}
