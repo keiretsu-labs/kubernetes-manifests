@@ -20,3 +20,7 @@ resources:
   - ./gvisor
   - ./kube-system
   - ./ai
+  - ./garage-operator-system
+  - ./garage
+  - ./spegel
+  - ./volsync

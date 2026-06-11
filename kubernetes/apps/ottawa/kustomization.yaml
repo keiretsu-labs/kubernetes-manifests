@@ -12,3 +12,8 @@ resources:
   - ./dragonfly-operator-system
   - ./gvisor
   - ./kube-system
+  - ./garage-operator-system
+  - ./garage
+  - ./spegel
+  - ./volsync
+  - ./zot
