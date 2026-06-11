@@ -6,4 +6,5 @@ resources:
   - helmrelease.yaml
   - dns-visibility.yaml
   - httproute.yaml
-  - secret.yaml
+components:
+  - ../../../components/oidc-protect
