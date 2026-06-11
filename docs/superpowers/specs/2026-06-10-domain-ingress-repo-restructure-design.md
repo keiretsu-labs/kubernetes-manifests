@@ -111,7 +111,7 @@ spec:
 
 | Resolver | Zones | Writer | Clients |
 |---|---|---|---|
-| Cloudflare | all 4 domains (public horizon) | **one** external-dns (4 domain filters, `gateway==public`) | internet |
+| Cloudflare | all 4 domains (public horizon) | one external-dns per domain (per-account tokens, `gateway==public`) | internet |
 | Pi-hole (per cluster) | all 4 domains (tailnet horizon) | ts-external-dns (`external-dns==ts`) | tailnet via split DNS |
 | UniFi (per site) | all 4 domains + `*.internal` (LAN horizon) | external-dns-unifi (`external-dns==private`) | LAN |
 | K8GB CoreDNS | `cdn.keiretsu.top` (public NS-delegated), `ts.keiretsu.top` (tailnet) | Gslb resources | multi-cluster opt-in |
