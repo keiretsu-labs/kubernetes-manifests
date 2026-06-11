@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-shiro
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-storage-shiro-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    statefulset.kubernetes.io/pod-name: ottawa-garage-localpath-shiro-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-kaji
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-storage-kaji-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    statefulset.kubernetes.io/pod-name: ottawa-garage-localpath-kaji-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-asuka
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-storage-asuka-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    statefulset.kubernetes.io/pod-name: ottawa-garage-localpath-asuka-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-rei
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-storage-rei-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    statefulset.kubernetes.io/pod-name: ottawa-garage-localpath-rei-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale

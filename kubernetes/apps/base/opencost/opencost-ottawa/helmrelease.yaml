@@ -1,0 +1,57 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: opencost
+  namespace: opencost
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: opencost
+      version: 2.5.23
+      sourceRef:
+        kind: HelmRepository
+        name: opencost
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    opencost:
+      exporter:
+        defaultClusterId: ottawa
+        extraArgs:
+          - log-level=info
+        prometheusDataSource:
+          queryResolutionSeconds: 900
+      metrics:
+        serviceMonitor:
+          enabled: true
+          additionalLabels:
+            release: prometheus
+      prometheus:
+        external:
+          enabled: true
+          url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
+        internal:
+          enabled: false
+      customPricing:
+        enabled: true
+        createConfigmap: true
+        provider: custom
+        costModel:
+          description: Market-based pricing (AWS c6i/m6i comparable)
+          CPU: 0.04
+          spotCPU: 0.012
+          RAM: 0.008
+          spotRAM: 0.0024
+          GPU: 1.50
+          storage: 0.08
+          zoneNetworkEgress: 0.01
+          regionNetworkEgress: 0.01
+          internetNetworkEgress: 0.09

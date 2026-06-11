@@ -25,18 +25,24 @@ resources:
   - ./hermes
   - ./home
   - ./homer-operator
+  - ./hubble-ui
   - ./immich
+  - ./k8gb
   - ./kener
   - ./kro-system
   - ./kube-system
+  - ./lan
+  - ./loki
+  - ./media
+  - ./mimir
+  - ./open-cluster-management
+  - ./open-cluster-management-agent
+  - ./opencost
+  - ./pocket-id
   - ./searxng
+  - ./snapshot-controller
   - ./spegel
+  - ./tailscale-examples
   - ./volsync
   - ./zot
   - ./external-secrets
-  - ./hubble-ui
-  - ./open-cluster-management-agent
-  - ./snapshot-controller
-  - ./media
-  - ./lan
-  - ./tailscale-examples
