@@ -97,9 +97,10 @@ spec:
   per-domain Cloudflare ClusterIssuers, shared by all three gateways. Replaces today's
   per-purpose cert sprawl.
 - The `ts` gateway Service stays on `loadBalancerClass: tailscale` + `tailscale.com/proxy-group:
-  common-ingress`, and gains a **Tailscale Service VIP** as its stable
-  `external-dns.alpha.kubernetes.io/target` (Tailscale Services are GA; kills per-pod address
-  churn). This matches Tailscale's official BYOD-with-Gateway-API solution doc.
+  common-ingress`, which already provisions a **Tailscale Service VIP** (verified live:
+  `ipMode: VIP`, stable `<location>-home-envoy-gateway.keiretsu.ts.net` hostname). Tailnet
+  split-DNS (tsddns) already targets `svc:<location>-home-envoy-gateway`. This matches
+  Tailscale's official BYOD-with-Gateway-API solution doc.
 - Listener hostname semantics (most-specific wins, route∩listener intersection) make the
   overlapping wildcards safe; `NoMatchingListenerHostname` should become impossible for the
   four domains.
@@ -117,9 +118,14 @@ spec:
 
 Changes from today:
 
-- Collapse the four per-domain Cloudflare external-dns instances into one.
+- Cloudflare external-dns stays one-instance-per-domain: the vanity domains live in
+  different Cloudflare accounts (kb/Luke/Raj) and external-dns takes a single
+  CF_API_TOKEN, so the split is a credential boundary. All four instances already run
+  on every cluster, so the public horizon already covers all four domains.
 - Add all four domains to the Pi-hole and UniFi instances' domain filters.
-- Delete the orphaned Tailscale DNSConfig nameserver (deployed, referenced by nothing).
+- The Tailscale DNSConfig nameserver stays: each cluster's CoreDNS forwards the
+  `ts.net` zone to it (cilium/config/coredns.yaml) for in-cluster MagicDNS
+  resolution. The earlier "orphaned" finding was wrong.
 - Keep tsddns (45-min split-DNS sync cron) — it is the right tool, now documented.
 - Keep `.internal` static DNSEndpoints under UniFi.
 - Same hostname in different horizons is by design (split horizon); per-location TXT ownership
