@@ -30,5 +30,7 @@ resources:
   - ./tailgate-operator-system
   - ./volsync
   - ./zot
+  - ./external-secrets
   - ./hubble-ui
   - ./open-cluster-management-agent
+  - ./snapshot-controller
