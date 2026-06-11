@@ -1,0 +1,85 @@
+---
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - httproute.yaml
+  - securitypolicy.yaml
+  - storagestack.yaml
+  - garagekey.yaml
+replacements:
+  - source:
+      kind: ConfigMap
+      name: group-meta
+      fieldPath: data.name
+    targets:
+      - select: { kind: Deployment, name: hermes-placeholder }
+        fieldPaths:
+          - metadata.name
+          - spec.selector.matchLabels.[app.kubernetes.io/name]
+          - spec.template.metadata.labels.[app.kubernetes.io/name]
+          - spec.template.spec.volumes.0.persistentVolumeClaim.claimName
+          - spec.template.spec.containers.0.envFrom.0.configMapRef.name
+          - spec.template.spec.containers.0.envFrom.1.secretRef.name
+          - spec.template.spec.containers.1.env.2.valueFrom.secretKeyRef.name
+        options: { delimiter: "-", index: 1 }
+      - select: { kind: Service, name: hermes-placeholder }
+        fieldPaths:
+          - metadata.name
+          - spec.selector.[app.kubernetes.io/name]
+        options: { delimiter: "-", index: 1 }
+      - select: { kind: HTTPRoute, name: hermes-placeholder }
+        fieldPaths:
+          - metadata.name
+          - spec.rules.0.backendRefs.0.name
+        options: { delimiter: "-", index: 1 }
+      - select: { group: gateway.envoyproxy.io, kind: SecurityPolicy, name: hermes-placeholder }
+        fieldPaths:
+          - metadata.name
+          - spec.targetRefs.0.name
+          - spec.oidc.clientSecret.name
+        options: { delimiter: "-", index: 1 }
+      - select: { kind: StorageStack, name: hermes-placeholder-data }
+        fieldPaths:
+          - metadata.name
+          - spec.name
+        options: { delimiter: "-", index: 1 }
+      - select: { group: garage.rajsingh.info, kind: GarageKey }
+        fieldPaths:
+          - metadata.name
+          - spec.name
+          - spec.secretTemplate.name
+        options: { delimiter: "-", index: 1 }
+      - select: { kind: ConfigMap, name: hermes-placeholder-config }
+        fieldPaths:
+          - metadata.name
+        options: { delimiter: "-", index: 1 }
+  - source: { kind: ConfigMap, name: group-meta, fieldPath: data.name }
+    targets:
+      - select: { kind: ConfigMap }
+        reject:
+          - name: group-meta
+        fieldPaths:
+          - data.AGENT_NAME
+  - source: { kind: ConfigMap, name: group-meta, fieldPath: data.name }
+    targets:
+      - select: { kind: StorageStack }
+        fieldPaths: [ spec.s3Path ]
+        options: { delimiter: "/", index: 1 }
+  - source: { kind: ConfigMap, name: group-meta, fieldPath: data.host }
+    targets:
+      - select: { kind: HTTPRoute }
+        fieldPaths: [ spec.hostnames.0 ]
+      - select: { group: gateway.envoyproxy.io, kind: SecurityPolicy }
+        fieldPaths: [ spec.oidc.redirectURL ]
+        options: { delimiter: "/", index: 2 }
+  - source: { kind: ConfigMap, name: group-meta, fieldPath: data.clientID }
+    targets:
+      - select: { group: gateway.envoyproxy.io, kind: SecurityPolicy }
+        fieldPaths: [ spec.oidc.clientID ]
+  - source: { kind: ConfigMap, name: group-meta, fieldPath: data.size }
+    targets:
+      - select: { kind: StorageStack }
+        fieldPaths: [ spec.size ]

@@ -1,0 +1,26 @@
+---
+# Cluster-internal REST API. Hermes (assistant-raj) reaches camofox at
+# http://camofox.agents.svc.cluster.local:9377 via CAMOFOX_URL.
+# NOT exposed beyond the cluster: Hermes's camofox client sends no auth
+# header, so the API must stay unauthenticated AND unreachable externally.
+apiVersion: v1
+kind: Service
+metadata:
+  name: camofox
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: camofox
+  ports:
+    - name: api
+      port: 9377
+      targetPort: 9377
+      protocol: TCP
+    # noVNC web viewer — exposed cluster-internally so the HTTPRoute on the
+    # `ts` gateway can target it (camofox.${CLUSTER_DOMAIN} over HTTPS, which
+    # makes noVNC use wss and fixes the broken stream over the plain-HTTP LB).
+    # The API (9377) is deliberately NOT routed externally.
+    - name: novnc
+      port: 6080
+      targetPort: 6080
+      protocol: TCP
