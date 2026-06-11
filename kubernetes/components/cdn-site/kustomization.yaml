@@ -1,0 +1,30 @@
+# cdn-site: expose a Garage S3 static bucket as a GSLB-fronted, health-checked
+# public site — the no-kro replacement for the per-site HTTPRoute + Gslb pairs.
+#
+# Opt in from an app dir:
+#   components:
+#     - ../../../../../components/cdn-site      # adjust relative depth
+# and set in the app's Flux ks.yaml:
+#   spec.postBuild.substitute:
+#     SITE:        <short name, e.g. trades>      # resource names + Gslb name
+#     BUCKET:      <garage bucket, e.g. raj-assistant-web>
+#     PUBLIC_HOST: <user-facing host, e.g. trades.rajsingh.info>
+#     CDN_HOST:    <GSLB name under cdn.${COMMON_DOMAIN}, e.g. trades.cdn.keiretsu.top>
+#     PROXIED:     "true" | "false"               # Cloudflare edge in front of GSLB?
+#
+# Generates:
+#   - HTTPRoute on the `public` gateway: matches both CDN_HOST and PUBLIC_HOST,
+#     URLRewrite Host -> <BUCKET>.${COMMON_DOMAIN} so Garage resolves the bucket,
+#     backend garage-gateway:3902. Carries the external-dns target annotation so
+#     the zone's gateway-watching external-dns publishes PUBLIC_HOST -> CDN_HOST.
+#   - Gslb (k8gb): health-checks garage-gateway per cluster and publishes CDN_HOST
+#     in the delegated cdn.${COMMON_DOMAIN} zone, weighted roundRobin.
+#
+# Deploy in the `garage` namespace (same as garage-gateway) to avoid a
+# cross-namespace ReferenceGrant. For the public CNAME to land, the zone's
+# external-dns must honor per-route targets (no --force-default-targets).
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - httproute.yaml
+  - gslb.yaml
