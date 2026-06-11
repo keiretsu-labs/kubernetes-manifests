@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forgejo-runner-config
+data:
+  config.yaml: |
+    log:
+      level: info
+    runner:
+      file: /data/.runner
+      capacity: 4
+      labels:
+        - "ubuntu-latest:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:latest"
+        - "ubuntu-22.04:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:latest"
+        - "ubuntu-20.04:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:latest"
+    cache:
+      enabled: true
+      dir: /data/cache
+    container:
+      network: bridge
+      privileged: true
+      docker_host: tcp://127.0.0.1:2375
