@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keiretsu-platform-config
+  namespace: kro-system
+data:
+  # Gateway references (used by AppRoute)
+  gateway.ts.name: "ts"
+  gateway.ts.namespace: "home"
+  gateway.private.name: "private"
+  gateway.private.namespace: "home"
+  gateway.public.name: "public"
+  gateway.public.namespace: "home"
+
+  # Storage defaults (used by StorageStack)
+  storage.defaultStorageClass: "ceph-block-replicated-nvme"
+  storage.defaultSnapshotClass: "csi-rbdplugin-snapclass"
+  storage.defaultBucket: "keiretsu"
+  storage.s3Endpoint: "${COMMON_S3_ENDPOINT}"
+  storage.resticPassword: "${COMMON_RESTIC_SECRET}"
+
+  # Networking defaults (used by ServiceIngress/Egress)
+  network.defaultIngressProxyGroup: "common-ingress"
+  network.defaultEgressProxyGroup: "common-egress"
+  network.defaultLocalTags: "tag:k8s,tag:${LOCATION}"
+  network.defaultGlobalTags: "tag:k8s"
+  network.location: "${LOCATION}"
+
+  # Cluster topology (used by ServiceEgress)
+  clusters: "ottawa,robbinsdale,stpetersburg"

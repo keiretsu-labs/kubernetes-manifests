@@ -6,6 +6,7 @@ resources:
   - ./auth
   - ./authtest
   - ./agent-sandbox-system
+  - ./arc-systems
   - ./border0
   - ./clickhouse-operator-system
   - ./clickhouse
@@ -20,6 +21,8 @@ resources:
   - ./home
   - ./homer-operator
   - ./immich
+  - ./k6-operator-system
+  - ./kro-system
   - ./kube-system
   - ./loki
   - ./mimir
