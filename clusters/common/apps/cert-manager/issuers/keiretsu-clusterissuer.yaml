@@ -11,6 +11,9 @@ spec:
       name: letsencrypt-keiretsu-key
     solvers:
     - dns01:
+        # follow the _acme-challenge CNAME that k8gb coredns serves for the
+        # NS-delegated cdn zone; no-op for names without a CNAME
+        cnameStrategy: Follow
         cloudflare:
           email: ${RAJSINGH_INFO_CLOUDFLARE_EMAIL}
           apiTokenSecretRef:

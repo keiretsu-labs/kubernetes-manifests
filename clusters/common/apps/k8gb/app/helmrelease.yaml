@@ -24,6 +24,15 @@ spec:
         - parentZone: "keiretsu.top"
           loadBalancedZone: "cdn.keiretsu.top"
           dnsZoneNegTTL: 30
+          # cdn.keiretsu.top is NS-delegated here, which occludes the
+          # _acme-challenge TXT cert-manager writes into cloudflare. Answer the
+          # challenge name with a CNAME back into the undelegated parent zone
+          # (cert-manager follows it via the issuer's cnameStrategy: Follow).
+          extraPlugins:
+            - |
+              template IN ANY _acme-challenge.cdn.keiretsu.top {
+                answer "_acme-challenge.cdn.keiretsu.top. 30 IN CNAME _acme-challenge-cdn.keiretsu.top."
+              }
         - parentZone: "keiretsu.top"
           loadBalancedZone: "ts.keiretsu.top"
           dnsZoneNegTTL: 30
