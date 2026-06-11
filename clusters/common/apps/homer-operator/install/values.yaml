@@ -1,6 +1,0 @@
-operator:
-  enableGatewayAPI: true
-  metrics:
-    enabled: true
-serviceMonitor:
-  create: true
