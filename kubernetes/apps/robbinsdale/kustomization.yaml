@@ -46,3 +46,5 @@ resources:
   - ./tailscale-system
   - ./tailscale
   - ./local-path-storage
+  - ./csi-addons
+  - ./csi-driver-smb

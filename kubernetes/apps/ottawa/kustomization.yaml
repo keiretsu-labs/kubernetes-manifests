@@ -55,3 +55,5 @@ resources:
   - ./node-feature-discovery
   - ./tailscale
   - ./local-path-storage
+  - ./csi-addons
+  - ./csi-driver-smb
