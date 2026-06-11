@@ -20,7 +20,6 @@ resources:
   - ./home
   - ./homer-operator
   - ./immich
-  - ./k6-operator-system
   - ./kro-system
   - ./kube-system
   - ./loki
