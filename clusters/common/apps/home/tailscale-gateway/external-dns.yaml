@@ -44,7 +44,9 @@ spec:
       - gateway-udproute
       - service
     domainFilters:
-      - ${CLUSTER_DOMAIN}
-      - ${COMMON_DOMAIN}
+      - killinit.cc
+      - lukehouge.com
+      - rajsingh.info
+      - keiretsu.top
     txtOwnerId: ${LOCATION}-${CLUSTER_DOMAIN//./-}
     txtPrefix: k8s.${LOCATION}.
