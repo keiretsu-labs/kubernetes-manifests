@@ -1,0 +1,69 @@
+---
+# Prometheus Blackbox Exporter (id 7587).
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: blackbox-exporter-prometheus
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Network
+  grafanaCom:
+    id: 7587
+  datasources:
+    - inputName: DS_SIGNCL-PROMETHEUS
+      datasourceName: Prometheus
+---
+# Blackbox Exporter (HTTP prober) (id 13659).
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: blackbox-http-prober
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Network
+  grafanaCom:
+    id: 13659
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus
+---
+# Prometheus Blackbox Exporter (id 14928) — alternate Prom-relabeled view.
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: blackbox-exporter-relabeled
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Network
+  grafanaCom:
+    id: 14928
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Prometheus
+---
+# Blackbox Exporter Overview (id 5345) — declares its input as
+# DS_PROMETHEUS-APL (with a dash). Mapped accordingly.
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: blackbox-exporter-overview
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Network
+  grafanaCom:
+    id: 5345
+  datasources:
+    - inputName: DS_PROMETHEUS-APL
+      datasourceName: Prometheus

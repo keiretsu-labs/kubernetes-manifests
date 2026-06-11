@@ -1,0 +1,8 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./prometheusrule.yaml
+  - ./dashboard.yaml
+  - ./probes-k8s-api.yaml
+  - ./probes-internet.yaml
