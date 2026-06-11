@@ -76,7 +76,7 @@ spec:
       name: grafana-public
   oidc:
     provider:
-      issuer: "https://pocket-id.killinit.cc"
+      issuer: "https://pocket-id.keiretsu.top"
     clientID: "${ENVOY_GATEWAY_OIDC_CLIENT_ID}"
     clientSecret:
       name: grafana-oidc-secret
