@@ -47,7 +47,7 @@ spec:
       name: code
   oidc:
     provider:
-      issuer: "https://pocket-id.${CLUSTER_DOMAIN}"
+      issuer: "https://pocket-id.keiretsu.top"
     clientID: "6e0ae47f-0ebe-4044-9aae-28e9da38ac3e"
     clientSecret:
       name: "code-server-secret"
