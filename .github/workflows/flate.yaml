@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "clusters/**"
+      - "kubernetes/**"
   workflow_dispatch:
 
 concurrency:
