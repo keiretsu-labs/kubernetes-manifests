@@ -24,3 +24,4 @@ resources:
   - ./garage
   - ./spegel
   - ./volsync
+  - ./agent-sandbox-system
