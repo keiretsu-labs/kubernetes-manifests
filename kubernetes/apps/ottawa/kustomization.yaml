@@ -26,6 +26,7 @@ resources:
   - ./immich
   - ./kener
   - ./kube-system
+  - ./searxng
   - ./spegel
   - ./volsync
   - ./zot
