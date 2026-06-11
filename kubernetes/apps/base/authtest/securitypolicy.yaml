@@ -1,0 +1,27 @@
+---
+# Envoy Gateway SecurityPolicy: forward-auth via tinyauth extAuth
+# Every request to authtest.keiretsu.top is checked by tinyauth.
+# On deny, tinyauth returns 302 -> login; on allow, headers are forwarded.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: authtest-tinyauth
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: authtest
+  extAuth:
+    http:
+      backendRefs:
+        - name: tinyauth
+          namespace: tinyauth
+          port: 3000
+      path: /api/auth/envoy
+      headersToBackend:
+        - remote-user
+        - remote-email
+      # Send the upstream Host so tinyauth can do per-FQDN ACL matching
+      headersToExtAuth:
+        - X-Forwarded-Host
+        - X-Forwarded-Proto
