@@ -167,14 +167,15 @@ split-DNS targeting must map each domain to the right Pi-hole(s). Documented; a 
 3. **OIDC canonicalization** — issuer URLs, oidc-protect component, secret-to-SOPS.
 4. **New tree + migrate** — `kubernetes/` skeleton lands beside `clusters/`; apps move
    namespace-by-namespace in reviewable PRs; old and new Flux entrypoints coexist per cluster.
-   IN PROGRESS 2026-06-10: foundation + kromgo pilot + wave 1 (unpoller, blackbox-exporter)
-   shipped and live-verified; the two-PR adopt/release recipe is documented in
-   `kubernetes/README.md` (zero workload churn — the same-named Kustomization CR re-parents,
-   Flux GC skips foreign-owned objects). Note: `StrictPostBuildSubstitutions` is a
-   kustomize-controller feature gate, not per-Kustomization — enabling it moves to phase 5,
-   after the old tree (which may depend on empty-string substitution) is gone.
+   COMPLETE 2026-06-11: ~110 apps migrated across all three clusters; old `clusters/*/apps`
+   trees fully drained (empty placeholder kustomizations only, pending entrypoint retirement).
+   The two-PR adopt/release recipe is documented in `kubernetes/README.md`. Note:
+   `StrictPostBuildSubstitutions` is a kustomize-controller feature gate, not
+   per-Kustomization — enabling it moves to phase 5, after the old tree fully clears.
 5. **Retire** — old tree deleted; README/CLAUDE.md rewritten to the new mental model; stale
    docs (the "COMMON_DOMAIN is not routable" note) corrected.
+   IN PROGRESS 2026-06-11: CLAUDE.md rewritten; README.md updated; entrypoint retirement
+   + StrictPostBuildSubstitutions gate + home→network namespace rename remaining.
 
 ## out of scope
 
