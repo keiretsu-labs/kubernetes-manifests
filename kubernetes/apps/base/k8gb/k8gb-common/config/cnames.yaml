@@ -29,13 +29,6 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
-    - dnsName: "authtest.${COMMON_DOMAIN}"
-      recordType: CNAME
-      targets:
-        - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "hello.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
