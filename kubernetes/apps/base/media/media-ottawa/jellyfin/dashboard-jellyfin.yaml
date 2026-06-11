@@ -36,7 +36,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Current number of requests in progress",
           "fieldConfig": {
@@ -91,7 +91,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "sum(http_requests_in_progress{job=\"jellyfin\"})",
               "refId": "A"
@@ -103,7 +103,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Total HTTP requests received",
           "fieldConfig": {
@@ -150,7 +150,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "sum(http_requests_received_total{job=\"jellyfin\"})",
               "refId": "A"
@@ -162,7 +162,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Current memory usage by generation",
           "fieldConfig": {
@@ -212,7 +212,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_gc_heap_size_bytes{job=\"jellyfin\"}",
               "legendFormat": "Gen {{gc_generation}}",
@@ -225,7 +225,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "CPU time spent in seconds",
           "fieldConfig": {
@@ -272,7 +272,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "process_cpu_seconds_total{job=\"jellyfin\"}",
               "refId": "A"
@@ -284,7 +284,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Process working set memory",
           "fieldConfig": {
@@ -339,7 +339,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "process_working_set_bytes{job=\"jellyfin\"}",
               "refId": "A"
@@ -351,7 +351,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Active thread count",
           "fieldConfig": {
@@ -398,7 +398,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "process_num_threads{job=\"jellyfin\"}",
               "refId": "A"
@@ -410,7 +410,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "HTTP request rate by endpoint",
           "fieldConfig": {
@@ -478,7 +478,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "rate(http_requests_received_total{job=\"jellyfin\"}[5m])",
               "legendFormat": "{{method}} {{endpoint}} ({{code}})",
@@ -491,7 +491,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "HTTP request duration quantiles",
           "fieldConfig": {
@@ -559,7 +559,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"jellyfin\"}[5m])) by (le, endpoint))",
               "legendFormat": "p50 {{endpoint}}",
@@ -568,7 +568,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"jellyfin\"}[5m])) by (le, endpoint))",
               "legendFormat": "p95 {{endpoint}}",
@@ -577,7 +577,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"jellyfin\"}[5m])) by (le, endpoint))",
               "legendFormat": "p99 {{endpoint}}",
@@ -590,7 +590,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "GC collection count by generation",
           "fieldConfig": {
@@ -658,7 +658,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_gc_collection_count_total{job=\"jellyfin\"}",
               "legendFormat": "Gen {{gc_generation}}",
@@ -671,7 +671,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Memory usage over time",
           "fieldConfig": {
@@ -739,7 +739,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "process_working_set_bytes{job=\"jellyfin\"}",
               "legendFormat": "Working Set",
@@ -748,7 +748,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "process_private_memory_bytes{job=\"jellyfin\"}",
               "legendFormat": "Private Memory",
@@ -757,7 +757,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_total_memory_bytes{job=\"jellyfin\"}",
               "legendFormat": "Total Managed",
@@ -770,7 +770,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Threadpool metrics",
           "fieldConfig": {
@@ -838,7 +838,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_threadpool_num_threads{job=\"jellyfin\"}",
               "legendFormat": "Active Threads",
@@ -847,7 +847,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_threadpool_timer_count{job=\"jellyfin\"}",
               "legendFormat": "Timer Count",
@@ -860,7 +860,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Network bytes sent and received",
           "fieldConfig": {
@@ -928,7 +928,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "rate(dotnet_sockets_bytes_sent_total{job=\"jellyfin\"}[5m])",
               "legendFormat": "Sent",
@@ -937,7 +937,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "rate(dotnet_sockets_bytes_received_total{job=\"jellyfin\"}[5m])",
               "legendFormat": "Received",
@@ -950,7 +950,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Library item counts by type",
           "fieldConfig": {
@@ -1002,7 +1002,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "jellyfin_library_items_total{job=\"jellyfin\"}",
               "legendFormat": "{{item_type}}",
@@ -1015,7 +1015,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Exception count over time",
           "fieldConfig": {
@@ -1083,7 +1083,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_exceptions_total{job=\"jellyfin\"}",
               "legendFormat": "Exceptions",
@@ -1096,7 +1096,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "GC pause ratio (percentage of time spent in GC)",
           "fieldConfig": {
@@ -1154,7 +1154,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_gc_pause_ratio{job=\"jellyfin\"}",
               "refId": "A"
@@ -1166,7 +1166,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "JIT compilation stats",
           "fieldConfig": {
@@ -1234,7 +1234,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_jit_method_total{job=\"jellyfin\"}",
               "legendFormat": "Methods Compiled",
@@ -1243,7 +1243,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_jit_il_bytes{job=\"jellyfin\"}",
               "legendFormat": "IL Bytes",
@@ -1256,7 +1256,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "TCP connection statistics",
           "fieldConfig": {
@@ -1324,7 +1324,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_sockets_connections_established_incoming_total{job=\"jellyfin\"}",
               "legendFormat": "Incoming Connections",
@@ -1333,7 +1333,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "dotnet_sockets_connections_established_outgoing_total{job=\"jellyfin\"}",
               "legendFormat": "Outgoing Connections",
@@ -1346,7 +1346,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "ThreadPool queue length and throughput",
           "fieldConfig": {
@@ -1414,7 +1414,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "rate(dotnet_threadpool_throughput_total{job=\"jellyfin\"}[5m])",
               "legendFormat": "Work Items/sec",
@@ -1427,7 +1427,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "$${DS_PROMETHEUS}"
           },
           "description": "Allocated bytes on managed heap",
           "fieldConfig": {
@@ -1495,7 +1495,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "$${DS_PROMETHEUS}"
               },
               "expr": "rate(dotnet_gc_allocated_bytes_total{job=\"jellyfin\"}[5m])",
               "legendFormat": "Allocation Rate",
