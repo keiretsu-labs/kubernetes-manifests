@@ -32,8 +32,9 @@
 #                 before weight load.
 #                 kubelet memory guard: systemReserved 4Gi, kubeReserved 4Gi,
 #                 evictionHard 6Gi.
-#                 Guaranteed QoS at 100Gi (request==limit) — bumped from 85Gi
-#                 (previous ceiling) to match higher gpu-memory-utilization.
+#                 Guaranteed QoS at 95Gi (request==limit) — bumped from 85Gi
+#                 (previous ceiling). 95Gi fits under spark-0's 101.6Gi
+#                 allocatable with room for kubelet+system (~6.6Gi).
 #                 Raj freed etcd, making room on spark-0.
 #   Current: 0.78 util / 262K ctx / 2 seqs — stepping up from 0.75.
 #   GPU reset at startup. NCCL tuning: CROSS_NIC=1, CUMEM_ENABLE=0,
@@ -219,8 +220,8 @@ spec:
           - { name: infiniband, mountPath: /dev/infiniband }
           - { name: sys-ib, mountPath: /sys/class/infiniband }
           resources:
-            requests: { memory: "100Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-            limits: { memory: "100Gi", nvidia.com/gpu: "1" }
+            requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "95Gi", nvidia.com/gpu: "1" }
           livenessProbe:
             httpGet:
               path: /health
@@ -353,8 +354,8 @@ spec:
           - { name: infiniband, mountPath: /dev/infiniband }
           - { name: sys-ib, mountPath: /sys/class/infiniband }
           resources:
-            requests: { memory: "100Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-            limits: { memory: "100Gi", nvidia.com/gpu: "1" }
+            requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "95Gi", nvidia.com/gpu: "1" }
         volumes:
         - name: shm
           emptyDir:
