@@ -16,3 +16,4 @@ configMapGenerator:
   - name: homepage-config
     files:
       - style.css
+      - garage.html
