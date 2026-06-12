@@ -81,6 +81,11 @@ body {
   <h1>🏗️ Garage Infrastructure</h1>
   <p class="subtitle">Multi-region S3-compatible object store · Geo-replicated across 3 datacenters</p>
   <span class="version-badge">Garage v2.3.0 · dxflrs/garage</span>
+  <div style="margin-top:0.5rem; font-size:0.75rem; color:#a09080;">
+    <span id="val-timestamp">loading metrics…</span>
+    <span style="margin:0 0.3rem">·</span>
+    refreshed on every page load
+  </div>
 </section>
 
 <h2 style="margin-bottom:0.75rem; font-size:1rem; color:#f5deb3; text-transform:uppercase; letter-spacing:0.05em">📊 Live Cluster Metrics</h2>
@@ -429,6 +434,20 @@ const gn = (m.garage_nodes_ottawa||0)+(m.garage_nodes_robbinsdale||0)+(m.garage_
 setVal('val-garage-nodes', gn);
 setVal('val-queue', fmtQ(m.queue_length));
 setVal('val-errors', fmtQ(m.block_errors));
+
+// Data freshness
+const ts = document.getElementById('val-timestamp');
+if (ts) {
+  const now = new Date();
+  const allNull = Object.values(m).every(v => v === null || v === undefined);
+  if (allNull) {
+    ts.textContent = '\u26a0\ufe0f Mimir unreachable \u2014 metrics may be stale';
+    ts.style.color = '#ef4444';
+  } else {
+    ts.textContent = 'last updated ' + now.toLocaleTimeString() + ' UTC';
+    ts.style.color = '#a09080';
+  }
+}
 
 // Per-cluster disk utilization bars
 function renderDiskBar(prefix, totalKey, availKey) {
