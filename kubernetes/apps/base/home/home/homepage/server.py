@@ -139,9 +139,15 @@ def fetch_garage_metrics():
         if result is None:
             metrics[key] = None
         elif key == "layout_version":
-            metrics[key] = result[0]["value"][1] if result else None
+            try:
+                metrics[key] = str(result[0]["value"][1]) if result else None
+            except (KeyError, IndexError, TypeError):
+                metrics[key] = None
         else:
-            metrics[key] = float(result[0]["value"][1]) if result else 0.0
+            try:
+                metrics[key] = float(result[0]["value"][1]) if result else 0.0
+            except (ValueError, KeyError, IndexError, TypeError):
+                metrics[key] = 0.0
     return metrics
 
 
