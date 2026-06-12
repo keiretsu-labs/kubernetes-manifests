@@ -16,7 +16,7 @@ spec:
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: ScheduleAnyway
+          whenUnsatisfiable: DoNotSchedule
       containers:
         - name: code-server
           image: lscr.io/linuxserver/code-server:latest # Docker image for code-server
