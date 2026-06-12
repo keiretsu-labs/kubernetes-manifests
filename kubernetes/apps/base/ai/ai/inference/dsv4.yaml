@@ -34,9 +34,9 @@
 #                 evictionHard 6Gi.
 #                 Guaranteed QoS at 85Gi (request==limit) to ensure predictable
 #                 accounting.
-#   Current: 0.82 util / 1M ctx / 6 seqs — Aiden recipe. GPU reset at
-#   startup clears leaked CUDA contexts. NCCL tuning: CROSS_NIC=1,
-#   CUMEM_ENABLE=0, IGNORE_CPU_AFFINITY=1 over RoCE via ConnectX-7.
+#   Current: 0.78 util / 262K ctx / 2 seqs — stepping up from 0.75.
+#   GPU reset at startup. NCCL tuning: CROSS_NIC=1, CUMEM_ENABLE=0,
+#   IGNORE_CPU_AFFINITY=1 over RoCE via ConnectX-7.
 #   terminationGracePeriodSeconds=180
 #   NOTE: B12X kernel (VLLM_USE_B12X_MOE=1) does NOT support
 #   --enable-expert-parallel; the two are mutually exclusive on this build.
@@ -170,9 +170,9 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 1000000 \
-              --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.82 \
+              --max-model-len 262144 \
+              --max-num-seqs 2 --max-num-batched-tokens 8192 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
@@ -181,9 +181,8 @@ spec:
               --reasoning-parser deepseek_v4 \
               --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
               --nnodes 2 --node-rank 0 \
-              --master-addr 192.168.74.1 --master-port 25000 \
-              >> /tmp/vllm-crash.log 2>&1; rc=$?; echo "=== EXIT CODE: $rc ===" >> /tmp/vllm-crash.log; sleep 3600
-          ports:
+              --master-addr 192.168.74.1 --master-port 25000
+           ports:
           - { containerPort: 8000, name: http, protocol: TCP }
           env:
           - { name: NODE_RANK, value: "0" }
@@ -305,9 +304,9 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 1000000 \
-              --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.82 \
+              --max-model-len 262144 \
+              --max-num-seqs 2 --max-num-batched-tokens 8192 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
