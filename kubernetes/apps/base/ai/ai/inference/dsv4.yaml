@@ -34,10 +34,10 @@
 #                 evictionHard 6Gi.
 #                 Guaranteed QoS at 85Gi (request==limit) to ensure predictable
 #                 accounting.
-#   Current: 0.78 util (clean-start avoids the 0.75 restart-race; 0.78 gives
-#   ~7 GiB KV cache, enough for 262K ctx with fp8 MLA).
-#   terminationGracePeriodSeconds=180 ensures old-vLLM releases VRAM before
-#   LWS spawns the replacement (killing the restart race at high util).
+#   Current: 0.75 util (sweet spot: enough KV cache for 262K ctx but doesn't
+#   exceed the ~90.2 GiB free-VRAM floor on restart, even with ~3 GiB of
+#   residual VRAM from the previous pod). terminationGracePeriodSeconds=180
+#   helps the old process release VRAM before the replacement probes GPU.
 #   Step up ctx: 32K → 64K → 128K → 256K as KV cache allows.
 #   NOTE: B12X kernel (VLLM_USE_B12X_MOE=1) does NOT support
 #   --enable-expert-parallel; the two are mutually exclusive on this build.
@@ -172,7 +172,7 @@ spec:
               --kv-cache-dtype fp8 --block-size 256 \
               --max-model-len 262144 \
               --max-num-seqs 2 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.78 \
+              --gpu-memory-utilization 0.75 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
@@ -304,7 +304,7 @@ spec:
               --kv-cache-dtype fp8 --block-size 256 \
               --max-model-len 262144 \
               --max-num-seqs 2 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.78 \
+              --gpu-memory-utilization 0.75 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
