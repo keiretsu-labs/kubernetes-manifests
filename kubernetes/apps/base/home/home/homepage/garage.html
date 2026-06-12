@@ -94,13 +94,13 @@ body {
 
 <h2 style="margin-bottom:0.75rem; font-size:1rem; color:#f5deb3; text-transform:uppercase; letter-spacing:0.05em">📊 Live Cluster Metrics</h2>
 <div class="metric-grid" id="metrics-grid">
-  <div class="metric-card"><div class="value" id="val-bytes">...</div><div class="label">Total Bucket Data</div></div>
-  <div class="metric-card"><div class="value" id="val-objects">...</div><div class="label">Total Objects</div></div>
-  <div class="metric-card"><div class="value" id="val-nodes">...</div><div class="label">Kubernetes Nodes</div></div>
-  <div class="metric-card"><div class="value" id="val-replication">...</div><div class="label">Replication</div></div>
-  <div class="metric-card"><div class="value" id="val-garage-nodes">...</div><div class="label">Garage Nodes</div></div>
-  <div class="metric-card"><div class="value" id="val-queue">...</div><div class="label">Max Queue Depth</div></div>
-  <div class="metric-card"><div class="value" id="val-errors">...</div><div class="label">Block Errors</div></div>
+  <div class="metric-card"><div class="value skeleton" id="val-bytes">...</div><div class="label">Total Bucket Data</div></div>
+  <div class="metric-card"><div class="value skeleton" id="val-objects">...</div><div class="label">Total Objects</div></div>
+  <div class="metric-card"><div class="value skeleton" id="val-nodes">...</div><div class="label">Kubernetes Nodes</div></div>
+  <div class="metric-card"><div class="value skeleton" id="val-replication">...</div><div class="label">Replication</div></div>
+  <div class="metric-card"><div class="value skeleton" id="val-garage-nodes">...</div><div class="label">Garage Nodes</div></div>
+  <div class="metric-card"><div class="value skeleton" id="val-queue">...</div><div class="label">Max Queue Depth</div></div>
+  <div class="metric-card"><div class="value skeleton" id="val-errors">...</div><div class="label">Block Errors</div></div>
   <div class="metric-card"><div class="value" id="val-disk-used">...</div><div class="label">Total Disk Used</div><div class="trend">across all regions</div></div>
     <div class="metric-card"><div class="value" id="val-disk-total">...</div><div class="label">Total Disk Capacity</div><div class="trend">across all regions</div></div>
     <div class="metric-card"><div class="value">mimir</div><div class="label">Data Source</div><div class="trend">prometheus · server-side</div></div>
@@ -423,7 +423,7 @@ function fmtBytes(b) {
 }
 function setVal(id, val, cls) {
   const el = document.getElementById(id);
-  if (el) { el.textContent = val; if (cls) el.className = 'value ' + cls; }
+  if (el) { el.textContent = val; el.className = cls ? 'value ' + cls : 'value'; }
 }
 function fmtQ(v) {
   if (v === null || v === undefined) return '—';
