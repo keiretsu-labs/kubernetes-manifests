@@ -61,6 +61,10 @@ spec:
               maxSamplesPerSend: 2000
               maxShards: 10
               batchSendDeadline: 5s
+        topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
         resources:
           requests:
             cpu: 100m

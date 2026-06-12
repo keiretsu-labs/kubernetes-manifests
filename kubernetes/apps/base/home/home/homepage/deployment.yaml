@@ -13,6 +13,10 @@ spec:
         app: homepage
     spec:
       serviceAccountName: homepage
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
       containers:
         - name: homepage
           image: python:3.13-alpine
