@@ -14,7 +14,6 @@ spec:
       namespace: home
   hostnames:
     - "home.cdn.${COMMON_DOMAIN}"
-    - "home.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - name: dashboard-cdn-homer
