@@ -12,6 +12,7 @@ spec:
       labels:
         app: homepage
     spec:
+      serviceAccountName: homepage
       containers:
         - name: homepage
           image: python:3.13-alpine

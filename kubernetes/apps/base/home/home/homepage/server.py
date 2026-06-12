@@ -218,7 +218,7 @@ HEAD = """<!DOCTYPE html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>keiretsu home</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F3E0;</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>\U0001F3E0</text></svg>">
   <style>{style}</style>
 </head>
 <body>
@@ -321,7 +321,6 @@ class HomepageHandler(BaseHTTPRequestHandler):
 
 def main():
     HomepageHandler.style = load_style()
-
     port = int(os.environ.get("PORT", "8080"))
     server = HTTPServer(("0.0.0.0", port), HomepageHandler)
     print(f"homepage server listening on :{port}", flush=True)
