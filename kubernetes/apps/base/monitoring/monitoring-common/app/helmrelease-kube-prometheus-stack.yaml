@@ -64,7 +64,7 @@ spec:
         topologySpreadConstraints:
           - maxSkew: 1
             topologyKey: kubernetes.io/hostname
-            whenUnsatisfiable: DoNotSchedule
+            whenUnsatisfiable: ScheduleAnyway
         resources:
           requests:
             cpu: 100m
