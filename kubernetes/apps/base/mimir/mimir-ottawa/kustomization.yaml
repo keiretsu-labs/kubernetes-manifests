@@ -8,6 +8,7 @@ resources:
   - ingress-qf-ts.yaml
   - egress.yaml
   - loader-job.yaml
+  - referencegrant.yaml
 configMapGenerator:
   # Hash-suffixed so any rule change rolls the mimir-config-loader Job
   # (its volume ref changes), forcing a re-sync into the Mimir ruler.
