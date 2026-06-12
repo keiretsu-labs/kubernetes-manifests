@@ -1,0 +1,20 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: lws-system-install
+  namespace: flux-system
+spec:
+  targetNamespace: lws-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: lws-system-install
+  path: ./kubernetes/apps/base/lws-system/lws-install
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
