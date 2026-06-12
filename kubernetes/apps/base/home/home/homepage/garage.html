@@ -30,7 +30,9 @@ body {
 .metric-card .label { font-size: 0.75rem; color: #a09080; text-transform: uppercase; letter-spacing: 0.05em; }
 .metric-card .trend { font-size: 0.7rem; margin-top: 0.3rem; color: #34d399; }
 .topology { position: relative; overflow: hidden; }
-.topology svg { width: 100%; height: auto; }
+.topology svg { width: 100%; height: auto; max-width: 1000px; display: block; }
+.topology { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@media (max-width: 500px) { .topology { margin: 0 -0.75rem; border-radius: 0; } }
 @keyframes dot-flow     { 0% { offset-distance: 0%; } 100% { offset-distance: 100%; } }
 @keyframes dot-flow-rev { 0% { offset-distance: 100%; } 100% { offset-distance: 0%; } }
 @keyframes fade-in-up   { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
