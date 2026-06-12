@@ -1,0 +1,26 @@
+---
+# Allow Prometheus and blackbox-exporter in the monitoring namespace
+# to reach Flux controller ports:
+#   - 8080 (http-prom / Prometheus scrape endpoint)
+#   - 9090 (http / health-check root endpoint)
+# Without this, blackbox-probe and Prometheus can't reach flux-system
+# pods from the monitoring namespace on these ports.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring
+  namespace: flux-system
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 8080
+          protocol: TCP
+        - port: 9090
+          protocol: TCP

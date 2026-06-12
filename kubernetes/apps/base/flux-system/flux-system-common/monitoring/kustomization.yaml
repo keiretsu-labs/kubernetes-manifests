@@ -5,6 +5,7 @@ namespace: monitoring
 resources:
   - networkpolicy-gatus.yaml
   - networkpolicy-webhooks.yaml
+  - networkpolicy-monitoring.yaml
 configMapGenerator:
   - name: flux-grafana-dashboards
     files:
