@@ -19,7 +19,7 @@ spec:
       timeout: 60
       httpHeaderName1: "X-Scope-OrgID"
     secureJsonData:
-      httpHeaderValue1: "talos-robbinsdale|talos-ottawa|talos-stpetersburg"
+      httpHeaderValue1: "talos-ottawa"
     editable: false
 ---
 apiVersion: grafana.integreatly.org/v1beta1
