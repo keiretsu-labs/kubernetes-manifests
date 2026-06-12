@@ -34,7 +34,10 @@
 #                 evictionHard 6Gi.
 #                 Guaranteed QoS at 85Gi (request==limit) to ensure predictable
 #                 accounting.
-#   Current: 0.70 util, 32K ctx, 1 seq, flashinfer ON, MTP ON, B12X MoE.
+#   Current: 0.78 util (clean-start avoids the 0.75 restart-race; 0.78 gives
+#   ~7 GiB KV cache, enough for 262K ctx with fp8 MLA).
+#   terminationGracePeriodSeconds=180 ensures old-vLLM releases VRAM before
+#   LWS spawns the replacement (killing the restart race at high util).
 #   Step up ctx: 32K → 64K → 128K → 256K as KV cache allows.
 #   NOTE: B12X kernel (VLLM_USE_B12X_MOE=1) does NOT support
 #   --enable-expert-parallel; the two are mutually exclusive on this build.
@@ -115,6 +118,7 @@ spec:
       metadata:
         labels: { app: dsv4, role: head }
       spec:
+        terminationGracePeriodSeconds: 180
         hostNetwork: true
         hostIPC: true
         nodeSelector: { kubernetes.io/hostname: spark-0 }
@@ -168,7 +172,7 @@ spec:
               --kv-cache-dtype fp8 --block-size 256 \
               --max-model-len 262144 \
               --max-num-seqs 2 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.70 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
@@ -248,6 +252,7 @@ spec:
       metadata:
         labels: { app: dsv4, role: worker }
       spec:
+        terminationGracePeriodSeconds: 180
         hostNetwork: true
         hostIPC: true
         nodeSelector: { kubernetes.io/hostname: spark-1 }
@@ -299,7 +304,7 @@ spec:
               --kv-cache-dtype fp8 --block-size 256 \
               --max-model-len 262144 \
               --max-num-seqs 2 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.70 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
