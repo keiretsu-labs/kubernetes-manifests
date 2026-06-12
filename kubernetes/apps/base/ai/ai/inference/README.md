@@ -32,37 +32,39 @@
 ### Sampling (per Unsloth docs)
 - `--temp 1.0`, `--top-p 0.95`, `--top-k 40`, `--min-p 0.01`
 
-## Previous Setup: vLLM (FP8)
+## Previous Setup: vLLM (DFlash) — currently disabled (replicas: 0)
 
-**Model**: `Qwen/Qwen3-Coder-Next-FP8` (~85GB)
-**Image**: `scitrera/dgx-spark-vllm:0.15.1-t5`
-**Performance**: ~43 tok/s decode
+**Model**: `AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS` (~90GB)
+**Image**: `ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4`
+**Decode**: speculative decoding via DFlash (15 draft tokens)
+**Status**: `replicas: 0` — both DGX Spark GPUs are claimed by the DeepSeek-V4-Flash
+TP=2 instance (`dsv4.yaml`). Kept in-repo for rollback.
 
-Config is commented out in `vllm.yaml` for easy rollback.
+Config lives in `vllm.yaml` but the StatefulSet is scaled to zero.
 
 ### vLLM Tuning Notes (for future use)
-- `--gpu-memory-utilization 0.85` (was 0.75 — can safely go higher on Spark)
+- `--gpu-memory-utilization 0.60` (conservative for unified memory buffer cache)
 - `--enable-prefix-caching` — free throughput for repeated system prompts
-- `--kv-cache-dtype fp8` — halves KV cache memory
 - `--enable-chunked-prefill` — better TTFT
-- `--attention-backend flashinfer` — required for DGX Spark
-- `--load-format fastsafetensors` — faster model loading
-- `unsloth/Qwen3-Coder-Next-FP8-Dynamic` — claims 25%+ throughput over standard FP8
+- `--speculative-config '{"method":"dflash","model":"...","num_speculative_tokens":15}'`
+- `--block-size 32` — PagedAttention block size
+- `--attention-backend flash_attn`
+- `MMProcessor` cache on `/dev/shm` (`--mm-processor-cache-type shm`)
+- `VLLM_CPU_KV_TRANSFER_CHUNK_SIZE=16`, `VLLM_BLOCK_SIZE=32` — CPU/KV cache tuning
 
-## Comparison: vLLM vs llama.cpp on DGX Spark
+## Comparison: vLLM (DFlash, disabled) vs llama.cpp (Q4, active)
 
-| | vLLM (FP8) | llama.cpp (Q4) |
+| | vLLM DFlash (disabled) | llama.cpp Q4 (active) |
 |---|---|---|
-| Model size | ~85GB | ~46GB |
-| Decode speed | ~43 tok/s | ~33 tok/s |
-| Free memory | ~43GB | ~82GB |
-| Context | 32K (configurable) | 131K (single slot) |
-| Parallel requests | 8 | 1 |
-| Tool calling | Native (qwen3_coder parser) | Jinja templates |
-| OpenAI API | Full compatibility | Compatible (llama-server) |
-| Quantization | FP8 (2x compression) | Q4_K_XL (4x compression) |
-
-**Verdict**: vLLM is faster (~30% more tok/s) and handles concurrent requests better. llama.cpp uses ~40GB less memory and supports longer context per request. Choose based on whether you need speed/concurrency (vLLM) or memory/context (llama.cpp).
+| Model | Qwen3.6-27B NVFP4-MTP-XS | Qwen3-Coder-Next UD-Q4_K_XL |
+| Model size | ~90GB | ~46GB |
+| Decode speed | ~40+ tok/s (speculative) | ~33 tok/s |
+| Free memory | ~38GB | ~82GB |
+| Context | 200K | 131K |
+| Parallel requests | 64/replica | 1 |
+| Tool calling | Native auto-tool-choice | Jinja templates |
+| Status | `replicas: 0` (disabled) | Active |
+| Speculative decode | DFlash (15 tokens) | None |
 
 ## Quantization Options for DGX Spark
 

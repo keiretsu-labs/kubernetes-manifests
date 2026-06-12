@@ -42,7 +42,7 @@ authoritative** — review the rendered output, not just the yaml source.
 **flux envsubst mangles bare `$`** — drone/envsubst interprets every `$` as a
 variable reference. bcrypt hashes, regexes, or any value containing `$` must
 live in a Secret or ConfigMap and be injected via `${VAR}` substitution.
-use `$${VAR}` to emit a literal `${VAR}` string in the rendered output.
+use \`$${VAR}\` to emit \`${VAR}\` in the rendered output (Flux translates \`$$\` → \`$\`).
 
 **remote git-directory kustomize bases must be vendored** — flux does not
 fetch remote `?ref=` bases at apply time. if a base points to an external git

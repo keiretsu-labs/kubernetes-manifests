@@ -1,5 +1,7 @@
 # domain, ingress, and repo restructure — design
 
+> **STATUS: PARTIALLY SUPERSEDED** — Phases 1-2 fully implemented. Phase 3 (OIDC) overtaken by Tinyauth shift. Phase 4 in progress. Phase 5 not started.
+
 2026-06-10. Status: approved direction, pending implementation plan.
 
 ## why

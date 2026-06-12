@@ -116,8 +116,8 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 ## Directory Structure
 
 The app tree is [`kubernetes/`](kubernetes/README.md): config lives once in `base/`,
-clusters opt in with thin pointer files. The old `clusters/*/apps` trees are drained
-(any stragglers are mid-migration; see issue #1553). `clusters/` still owns cluster
+clusters opt in with thin pointer files. The old `clusters/*/apps` trees have been
+fully migrated (completed June 2026) and removed. `clusters/` now only holds cluster
 bootstrap, Talos config, and the Flux entrypoints/vars.
 
 ```

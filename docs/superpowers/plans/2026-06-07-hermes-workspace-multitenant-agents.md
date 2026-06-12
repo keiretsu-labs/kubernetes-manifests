@@ -1,5 +1,7 @@
 # hermes-workspace multi-tenant agents — Implementation Plan
 
+> **STATUS: RETIRED** — Multi-tenant OIDC approach abandoned. Agents moved to Tinyauth per-user auth.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a reusable "group-served Hermes" app shape to the `agents` namespace whose front door is the public `*.agents.${COMMON_DOMAIN}` Envoy Gateway with Pocket ID OIDC, so each tenant group (single-person or multi-user) is one `kustomize build`-clean overlay.

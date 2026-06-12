@@ -1,5 +1,7 @@
 # hermes-workspace multi-tenant agents — design
 
+> **STATUS: SUPERSEDED** — Pocket ID OIDC multi-tenant approach was retired in favor of Tinyauth per-user auth.
+
 date: 2026-06-07
 status: approved (design), pending implementation plan
 scope: `clusters/${CLUSTER_NAME}/apps/agents` (talos-ottawa today)

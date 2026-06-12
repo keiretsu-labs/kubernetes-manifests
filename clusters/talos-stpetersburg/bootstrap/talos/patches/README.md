@@ -1,37 +1,42 @@
 # Talos Patches
 
-This directory contains machine configuration patches for the Talos cluster.
+This directory contains machine configuration patches for the St. Petersburg cluster.
 
 ## Directory Structure
 
 ```
 patches/
-├── global/           # Applied to all nodes
-├── controller/       # Applied to control plane nodes only
-└── node/            # Node-specific patches
+├── global/       # Applied to all nodes
+├── controller/   # Applied to control plane nodes only
+└── node/         # Node-specific patches
 ```
 
-## Global Patches
+## Global Patches (8 files)
 
-- `cluster-discovery.yaml` - Cluster discovery settings
-- `containerd.yaml` - Container runtime configuration
-- `cpu-performance.yaml` - CPU performance optimization
-- `disable-search-domain.yaml` - DNS search domain configuration
-- `hostdns.yaml` - Host DNS settings
-- `kubelet.yaml` - Kubelet configuration (max-pods, node IP)
-- `local-path-provisioner.yaml` - Local storage mounts
-- `metrics-server.yaml` - Metrics server deployment
-- `nvidia.yaml` - NVIDIA GPU driver and runtime configuration
-- `sysctls.yaml` - Kernel sysctl tuning
-- `udev.yaml` - Device permission rules
+Applied to every node in the cluster:
 
-## Controller Patches
+- `cluster-discovery.yaml` — Cluster discovery settings
+- `disable-search-domain.yaml` — DNS search domain configuration
+- `hostdns.yaml` — Host DNS settings
+- `kubelet.yaml` — Kubelet configuration (max-pods, node IP)
+- `local-path-provisioner.yaml` — Local storage mounts
+- `machine-logging.yaml` — Machine log forwarding
+- `metrics-server.yaml` — Metrics server deployment
+- `sysctls.yaml` — Kernel sysctl tuning
 
-- `api-access.yaml` - KubePrism and Talos API access
-- `disable-proxy.yaml` - Disable kube-proxy (using Cilium)
-- `etcd-metrics-patch.yaml` - Etcd/scheduler/controller-manager metrics
-- `kubelet-certs.yaml` - Kubelet certificate approver
+## Controller Patches (4 files)
 
-## Node Patches
+Applied to control plane nodes only:
 
-- `spark-0.yaml` - DGX Spark specific configuration
+- `api-access.yaml` — KubePrism and Talos API access
+- `disable-proxy.yaml` — Disable kube-proxy (using Cilium)
+- `etcd-metrics-patch.yaml` — Etcd/scheduler/controller-manager metrics
+- `kubelet-certs.yaml` — Kubelet certificate approver
+
+## Node Patches (3 files)
+
+Node-specific overrides:
+
+- `spark-0.yaml` — NVIDIA GB10 specific configuration
+- `spark-1.yaml` — NVIDIA GB10 specific configuration
+- `orin-0.yaml` — Jetson Orin specific configuration
