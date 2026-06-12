@@ -18,7 +18,6 @@ resources:
   - ./gvisor
   - ./home
   - ./home-assistant
-  - ./homer-operator
   - ./jellyswarrm
   - ./kro-system
   - ./kube-system
