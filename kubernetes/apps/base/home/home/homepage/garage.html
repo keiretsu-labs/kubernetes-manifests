@@ -118,7 +118,7 @@ body {
     <span class="legend-item"><span class="swatch" style="background:#fb923c;"></span> Tailscale VPN</span>
   </div>
 
-  <svg viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg" style="margin-top:0.5rem;">
+  <svg viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg" style="margin-top:0.5rem;">
     <defs>
       <marker id="arrow-amber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#fbbf24"/></marker>
       <marker id="arrow-rose"  markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#fb7185"/></marker>
@@ -126,7 +126,7 @@ body {
       <pattern id="grid-bg" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2e2621" stroke-width="0.5"/></pattern>
     </defs>
 
-    <rect x="0" y="0" width="1000" height="700" fill="url(#grid-bg)" rx="8"/>
+    <rect x="0" y="0" width="1000" height="750" fill="url(#grid-bg)" rx="8"/>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- TOP LAYER: Envoy Gateway (public S3 CDN path, bypasses TS)  -->
@@ -150,24 +150,24 @@ body {
     <rect x="60" y="88" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="97" y="103" text-anchor="middle" fill="#fb7185" font-size="8">ingress-0</text>
     <rect x="60" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="97" y="131" text-anchor="middle" fill="#fb7185" font-size="8">ingress-1</text>
     <rect x="142" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="0.5" opacity="0.6"/><text x="179" y="131" text-anchor="middle" fill="#fb7185" font-size="7">ingress-2</text>
-    <text x="97" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.5">9 TS services</text>
+    <text x="97" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">9 TS services</text>
 
     <!-- Robbinsdale ingress -->
     <rect x="462" y="88" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="499" y="103" text-anchor="middle" fill="#fb7185" font-size="8">ingress-0</text>
     <rect x="462" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="499" y="131" text-anchor="middle" fill="#fb7185" font-size="8">ingress-1</text>
     <rect x="544" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="0.5" opacity="0.6"/><text x="581" y="131" text-anchor="middle" fill="#fb7185" font-size="7">ingress-2</text>
-    <text x="499" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.5">8 TS services</text>
+    <text x="499" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">8 TS services</text>
 
     <!-- StPete ingress -->
-    <rect x="830" y="88" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="867" y="103" text-anchor="middle" fill="#fb7185" font-size="8">ingress-0</text>
-    <rect x="830" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="867" y="131" text-anchor="middle" fill="#fb7185" font-size="8">ingress-1</text>
-    <rect x="912" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="0.5" opacity="0.6"/><text x="949" y="131" text-anchor="middle" fill="#fb7185" font-size="7">ingress-2</text>
-    <text x="867" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.5">8 TS services</text>
+    <rect x="815" y="88" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="852" y="103" text-anchor="middle" fill="#fb7185" font-size="8">ingress-0</text>
+    <rect x="815" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="852" y="131" text-anchor="middle" fill="#fb7185" font-size="8">ingress-1</text>
+    <rect x="897" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="0.5" opacity="0.6"/><text x="934" y="131" text-anchor="middle" fill="#fb7185" font-size="7">ingress-2</text>
+    <text x="852" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">8 TS services</text>
 
     <!-- VPN → ingress arrows -->
     <path d="M97,56 L97,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
     <path d="M499,56 L499,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
-    <path d="M867,56 L867,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
+    <path d="M852,56 L852,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- LAYER 3: common-egress Proxy Group (outbound)               -->
@@ -179,17 +179,17 @@ body {
     <rect x="60" y="185" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="97" y="200" text-anchor="middle" fill="#c084fc" font-size="8">egress-0</text>
     <rect x="60" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="97" y="228" text-anchor="middle" fill="#c084fc" font-size="8">egress-1</text>
     <rect x="142" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="0.5" opacity="0.6"/><text x="179" y="228" text-anchor="middle" fill="#c084fc" font-size="7">egress-2</text>
-    <text x="97" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.7">13 egress TS services</text>
+    <text x="97" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.9">13 egress TS services</text>
 
     <rect x="462" y="185" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="499" y="200" text-anchor="middle" fill="#c084fc" font-size="8">egress-0</text>
     <rect x="462" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="499" y="228" text-anchor="middle" fill="#c084fc" font-size="8">egress-1</text>
     <rect x="544" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="0.5" opacity="0.6"/><text x="581" y="228" text-anchor="middle" fill="#c084fc" font-size="7">egress-2</text>
-    <text x="499" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.7">13 egress TS services</text>
+    <text x="499" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.9">13 egress TS services</text>
 
-    <rect x="830" y="185" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="867" y="200" text-anchor="middle" fill="#c084fc" font-size="8">egress-0</text>
-    <rect x="830" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="867" y="228" text-anchor="middle" fill="#c084fc" font-size="8">egress-1</text>
-    <rect x="912" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="0.5" opacity="0.6"/><text x="949" y="228" text-anchor="middle" fill="#c084fc" font-size="7">egress-2</text>
-    <text x="867" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.7">13 egress TS services</text>
+    <rect x="815" y="185" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="852" y="200" text-anchor="middle" fill="#c084fc" font-size="8">egress-0</text>
+    <rect x="815" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="852" y="228" text-anchor="middle" fill="#c084fc" font-size="8">egress-1</text>
+    <rect x="897" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="0.5" opacity="0.6"/><text x="934" y="228" text-anchor="middle" fill="#c084fc" font-size="7">egress-2</text>
+    <text x="852" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.9">13 egress TS services</text>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- CROSS-REGION RPC FLOW via BOTH proxy groups                  -->
@@ -281,47 +281,48 @@ body {
     <!-- St. Petersburg -->
     <rect x="680" y="265" width="280" height="405" rx="12" fill="rgba(251,146,60,0.08)" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="8,4" class="region-box"/>
     <text x="820" y="293" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="600">🚀 St. Petersburg</text>
-    <text x="820" y="308" text-anchor="middle" fill="#a09080" font-size="9">2 Nodes (K3s, arm64+GPU) · AI/ML</text>
+    <text x="820" y="308" text-anchor="middle" fill="#a09080" font-size="9">3 Nodes (arm64+GPU) · AI/ML</text>
 
-    <path d="M867,235 L867,265" stroke="#c084fc" stroke-width="1" marker-end="url(#arrow-purple)" opacity="0.4"/>
-    <path d="M867,148 L867,265" stroke="#fb7185" stroke-width="1" marker-end="url(#arrow-rose)" opacity="0.4"/>
+    <path d="M852,235 L852,265" stroke="#c084fc" stroke-width="1" marker-end="url(#arrow-purple)" opacity="0.4"/>
+    <path d="M852,148 L852,265" stroke="#fb7185" stroke-width="1" marker-end="url(#arrow-rose)" opacity="0.4"/>
 
     <text x="760" y="335" text-anchor="middle" fill="#34d399" font-size="9">Storage (manual layout)</text>
     <rect x="715" y="345" width="85" height="22" rx="5" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1.2"/><text x="757" y="362" text-anchor="middle" fill="#34d399" font-size="8">spark-0</text>
     <rect x="715" y="375" width="85" height="22" rx="5" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1.2"/><text x="757" y="392" text-anchor="middle" fill="#34d399" font-size="8">spark-1</text>
+    <rect x="715" y="405" width="85" height="22" rx="5" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1.2"/><text x="757" y="422" text-anchor="middle" fill="#34d399" font-size="8">orin-0 (cp)</text>
 
     <text x="870" y="335" text-anchor="middle" fill="#22d3ee" font-size="9">Gateway</text>
     <rect x="830" y="345" width="80" height="22" rx="5" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.2"/><text x="870" y="362" text-anchor="middle" fill="#22d3ee" font-size="8">gateway-0</text>
     <rect x="830" y="375" width="80" height="22" rx="5" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.2"/><text x="870" y="392" text-anchor="middle" fill="#22d3ee" font-size="8">gateway-1</text>
 
-    <text x="870" y="460" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (common-egress)</text>
-    <rect x="830" y="470" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="484" text-anchor="middle" fill="#c084fc" font-size="7">ottawa-gw-{ordinal}</text>
-    <rect x="830" y="494" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="508" text-anchor="middle" fill="#c084fc" font-size="7">robbinsdale-gw-{ordinal}</text>
-    <rect x="830" y="518" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="532" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
+    <text x="870" y="465" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (common-egress)</text>
+    <rect x="830" y="475" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="489" text-anchor="middle" fill="#c084fc" font-size="7">ottawa-gw-{ordinal}</text>
+    <rect x="830" y="499" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="513" text-anchor="middle" fill="#c084fc" font-size="7">robbinsdale-gw-{ordinal}</text>
+    <rect x="830" y="523" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="537" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
 
-    <rect x="745" y="555" width="150" height="22" rx="4" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="0.8"/>
-    <text x="820" y="569" text-anchor="middle" fill="#fbbf24" font-size="7">via s3.cdn.keiretsu.top (34%)</text>
+    <rect x="745" y="565" width="150" height="22" rx="4" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="0.8"/>
+    <text x="820" y="579" text-anchor="middle" fill="#fbbf24" font-size="7">via s3.cdn.keiretsu.top (34%)</text>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- FLOW ANNOTATIONS                                            -->
     <!-- ══════════════════════════════════════════════════════════════ -->
 
     <!-- GSLB arc -->
-    <path d="M180,560 C300,620 700,620 820,560" stroke="#22d3ee" stroke-width="1" marker-end="url(#arrow-amber)" stroke-dasharray="3,3" opacity="0.4"/>
-    <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" path="M180,560 C300,620 700,620 820,560"/></circle>
-    <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" begin="1.67s" path="M180,560 C300,620 700,620 820,560"/></circle>
-    <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" begin="3.33s" path="M180,560 C300,620 700,620 820,560"/></circle>
-    <text x="500" y="625" text-anchor="middle" fill="#22d3ee" font-size="8" opacity="0.6">GSLB Round-Robin · s3.cdn.keiretsu.top → ottawa:33  robbinsdale:33  stpetersburg:34</text>
+    <path d="M180,590 C300,640 700,640 820,590" stroke="#22d3ee" stroke-width="1" marker-end="url(#arrow-amber)" stroke-dasharray="3,3" opacity="0.4"/>
+    <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" path="M180,590 C300,640 700,640 820,590"/></circle>
+    <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" begin="1.67s" path="M180,590 C300,640 700,640 820,590"/></circle>
+    <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" begin="3.33s" path="M180,590 C300,640 700,640 820,590"/></circle>
+    <text x="500" y="650" text-anchor="middle" fill="#22d3ee" font-size="8" opacity="0.6">GSLB Round-Robin · s3.cdn.keiretsu.top → ottawa:33  robbinsdale:33  stpetersburg:34</text>
 
     <!-- Callout: replication flow -->
-    <rect x="40" y="645" width="920" height="50" rx="6" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="0.8" stroke-dasharray="3,2"/>
-    <text x="500" y="658" text-anchor="middle" fill="#fb7185" font-size="7.5" opacity="0.8">
+    <rect x="40" y="675" width="920" height="50" rx="6" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="0.8" stroke-dasharray="3,2"/>
+    <text x="500" y="688" text-anchor="middle" fill="#fb7185" font-size="7.5" opacity="0.8">
       🡺 Public S3: Client → s3.cdn.keiretsu.top (GSLB) → Envoy Gateway public → Gateway pod
     </text>
-    <text x="500" y="674" text-anchor="middle" fill="#c084fc" font-size="7.5" opacity="0.8">
+    <text x="500" y="704" text-anchor="middle" fill="#c084fc" font-size="7.5" opacity="0.8">
       🡺 Replication: Gateway → common-egress → Tailscale VPN → other region's common-ingress → Storage pod
     </text>
-    <text x="500" y="688" text-anchor="middle" fill="#a09080" font-size="7">
+    <text x="500" y="718" text-anchor="middle" fill="#a09080" font-size="7">
       Each cluster runs all 3 regions' gateway RPC endpoints as local egress services (13 via common-egress) · Tailscale VPN inbound via common-ingress
     </text>
   </svg>
@@ -368,8 +369,8 @@ body {
   </div>
   <div class="cluster-card">
     <h3>🚀 St. Petersburg — <span style="color:#a78bfa;font-size:0.85rem;">AI/ML GPU Cluster</span></h3>
-    <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">2 <span style="color:#34d399" id="health-stpetersburg">...</span></span></div>
-    <div class="stat"><span class="stat-label">Storage</span><span class="stat-value">Per-spark arrays (manual layout)</span></div>
+    <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">3 <span style="color:#34d399" id="health-stpetersburg">...</span></span></div>
+    <div class="stat"><span class="stat-label">Storage</span><span class="stat-value">3 localpath (spark-0, spark-1, orin-0)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-stpetersburg">...</span> replicas · 8 TS svcs</span></div>
     <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value"><span id="egress-stpetersburg">...</span> replicas · 13 TS svcs (all regions)</span></div>
@@ -380,7 +381,7 @@ body {
     </div>
     <div class="stat"><span class="stat-label">Note</span><span class="stat-value">arm64 GPU — timeouts expected</span></div>
     <div class="nodes">
-      <span class="node-tag storage">spark-0</span><span class="node-tag storage">spark-1</span>
+      <span class="node-tag storage">spark-0</span><span class="node-tag storage">spark-1</span><span class="node-tag" style="border-left:2px solid #fb923c;">orin-0</span>
       <span class="node-tag gateway">gw-0</span><span class="node-tag gateway">gw-1</span>
       <span class="node-tag ingress">ingress×3</span><span class="node-tag egress">egress×3</span>
     </div>
@@ -461,7 +462,8 @@ count(kube_pod_status_phase{phase="Running",namespace="tailscale",pod=~"common-e
 const m = METRICS_DATA;
 
 function fmtBytes(b) {
-  if (!b && b !== 0) return '—';
+  if (typeof b !== 'number' || !isFinite(b) || b < 0) return '\u2014';
+  if (!b && b !== 0) return '\u2014';
   const tb = b / (1024*1024*1024*1024);
   if (tb >= 1) return tb.toFixed(1) + ' TiB';
   const gb = b / (1024*1024*1024);
@@ -472,7 +474,8 @@ function setVal(id, val, cls) {
   if (el) { el.textContent = val; el.className = cls ? 'value ' + cls : 'value'; }
 }
 function fmtQ(v) {
-  if (v === null || v === undefined) return '—';
+  if (v === null || v === undefined) return '\u2014';
+  if (typeof v !== 'number' || !isFinite(v)) return '\u2014';
   if (v >= 1000000) return (v/1000000).toFixed(1)+'M';
   if (v >= 1000) return (v/1000).toFixed(1)+'K';
   return v.toString();
@@ -492,7 +495,8 @@ setVal('val-errors', fmtQ(m.block_errors));
 const ts = document.getElementById('val-timestamp');
 if (ts) {
   const now = new Date();
-  const allNull = Object.values(m).every(v => v === null || v === undefined);
+  const metricKeys = ['bucket_bytes','bucket_objects','nodes_ottawa','nodes_robbinsdale','nodes_stpetersburg','queue_length','block_errors','disk_total_ottawa','disk_avail_ottawa'];
+  const allNull = metricKeys.every(k => m[k] === null || m[k] === undefined);
   if (allNull) {
     ts.textContent = '\u26a0\ufe0f Mimir unreachable \u2014 metrics may be stale';
     ts.style.color = '#ef4444';
@@ -506,9 +510,12 @@ if (ts) {
 function setHealth(id, total, healthy) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (healthy === null || healthy === undefined) {
+  if (healthy === null || healthy === undefined || total === null || total === undefined) {
     el.textContent = '\u26a0\ufe0f ?/??';
     el.style.color = '#ef4444';
+  } else if (total === 0 && healthy === 0) {
+    el.textContent = '\u26a0\ufe0f no data';
+    el.style.color = '#fbbf24';
   } else {
     const h = Math.round(healthy);
     const t = Math.round(total);
@@ -532,7 +539,7 @@ setHealth('health-stpetersburg', m.nodes_stpetersburg, m.healthy_stpetersburg);
 function setProxyCount(id, count) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (count === null || count === undefined) {
+  if (count === null || count === undefined || !isFinite(count)) {
     el.textContent = '?';
     el.style.color = '#ef4444';
   } else {
@@ -551,7 +558,7 @@ setProxyCount('egress-stpetersburg', m.egress_stpetersburg);
 function renderDiskBar(prefix, totalKey, availKey) {
   const total = m[totalKey];
   const avail = m[availKey];
-  if (!total || !avail) {
+  if (!total || !avail || !isFinite(total) || !isFinite(avail)) {
     document.getElementById('disk-fill-' + prefix).style.width = '0%';
     document.getElementById('disk-used-' + prefix).textContent = '\u2014';
     document.getElementById('disk-total-' + prefix).textContent = '\u2014';
@@ -572,7 +579,7 @@ renderDiskBar('stpetersburg', 'disk_total_stpetersburg', 'disk_avail_stpetersbur
 // Global disk totals
 const totalDisk = (m.disk_total_ottawa||0)+(m.disk_total_robbinsdale||0)+(m.disk_total_stpetersburg||0);
 const totalAvail = (m.disk_avail_ottawa||0)+(m.disk_avail_robbinsdale||0)+(m.disk_avail_stpetersburg||0);
-const totalUsed = totalDisk - totalAvail;
+const totalUsed = Math.max(0, totalDisk - totalAvail);
 setVal('val-disk-used', fmtBytes(totalUsed));
 setVal('val-disk-total', fmtBytes(totalDisk));
 </script>
