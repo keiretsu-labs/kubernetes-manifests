@@ -220,8 +220,8 @@ spec:
           - { name: infiniband, mountPath: /dev/infiniband }
           - { name: sys-ib, mountPath: /sys/class/infiniband }
           resources:
-            requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-            limits: { memory: "95Gi", nvidia.com/gpu: "1" }
+            requests: { memory: "93Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "93Gi", nvidia.com/gpu: "1" }
           livenessProbe:
             httpGet:
               path: /health
@@ -354,8 +354,8 @@ spec:
           - { name: infiniband, mountPath: /dev/infiniband }
           - { name: sys-ib, mountPath: /sys/class/infiniband }
           resources:
-            requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-            limits: { memory: "95Gi", nvidia.com/gpu: "1" }
+            requests: { memory: "93Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "93Gi", nvidia.com/gpu: "1" }
         volumes:
         - name: shm
           emptyDir:
