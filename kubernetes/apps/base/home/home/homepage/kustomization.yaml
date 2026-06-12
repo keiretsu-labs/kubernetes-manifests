@@ -6,11 +6,12 @@ resources:
   - ./service.yaml
   - ./httproute.yaml
   - ./securitypolicy.yaml
+  - ./serviceaccount.yaml
+  - ./rbac.yaml
 configMapGenerator:
   - name: homepage-app
     files:
       - server.py
   - name: homepage-config
     files:
-      - users.json
       - style.css
