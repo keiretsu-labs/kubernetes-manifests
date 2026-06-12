@@ -164,7 +164,7 @@ spec:
             # Drop page cache immediately before weight load (belt + suspenders
             # with the drop-caches init container above).
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
-            exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
+            /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
               --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
@@ -181,7 +181,8 @@ spec:
               --reasoning-parser deepseek_v4 \
               --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
               --nnodes 2 --node-rank 0 \
-              --master-addr 192.168.74.1 --master-port 25000
+              --master-addr 192.168.74.1 --master-port 25000 \
+              >> /tmp/vllm-crash.log 2>&1; rc=$?; echo "=== EXIT CODE: $rc ===" >> /tmp/vllm-crash.log; sleep 3600
           ports:
           - { containerPort: 8000, name: http, protocol: TCP }
           env:
