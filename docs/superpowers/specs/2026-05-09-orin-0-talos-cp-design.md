@@ -1,5 +1,7 @@
 # Add Jetson Orin Nano (orin-0) as 2nd Control Plane to stpetersburg
 
+> **STATUS: SUPERSEDED** — orin-0 became the sole control plane; spark-0/spark-1 are GPU workers.
+
 **Date:** 2026-05-09
 **Status:** Approved, ready for implementation plan
 

@@ -1,5 +1,7 @@
 # Network Storage Layer — Replacing Local-Path Provisioner
 
+> **STATUS: NO DECISION REACHED** — local-path-provisioner remains in use on stpetersburg. No storage layer replacement was implemented.
+
 ## Problem
 
 Losing a single node (spark-0 in stpetersburg, 2026-06-08) caused data-inaccessibility for workloads using local-path PVs:

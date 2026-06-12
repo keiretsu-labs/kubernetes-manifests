@@ -1,5 +1,7 @@
 # Dual-Spark MiniMax M2.7 AWQ Inference Implementation Plan
 
+> **STATUS: SUPERSEDED** — Architecture redesign (orin-0 as single CP, sparks as GPU workers) invalidated this plan.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add spark-1 to the K3s cluster and replace the single-Spark Qwen3.6-35B-A3B deployment with MiniMax M2.7 AWQ running across both Sparks via Ray TP=2 (~38 tok/s, 196K context).

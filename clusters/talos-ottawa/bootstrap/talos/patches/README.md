@@ -6,7 +6,7 @@ This directory contains configuration patches that are applied to the Talos clus
 
 - `global/` - Patches applied to all nodes (control plane and workers)
 - `controller/` - Patches applied only to control plane nodes
-- `worker/` - Patches applied only to worker nodes (when added)
+- \`node/\` - Patches applied only to worker nodes (when added)
 
 ## Global Patches
 
