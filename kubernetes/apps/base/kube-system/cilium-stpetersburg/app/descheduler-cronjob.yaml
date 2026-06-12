@@ -131,10 +131,10 @@ data:
             enabled:
               - "LowNodeUtilization"
               - "RemoveDuplicates"
+              - "RemovePodsViolatingTopologySpreadConstraint"
           deschedule:
             enabled:
               - "RemovePodsViolatingInterPodAntiAffinity"
-              - "RemovePodsViolatingTopologySpreadConstraint"
 kind: ConfigMap
 metadata:
   name: descheduler-policy-configmap
