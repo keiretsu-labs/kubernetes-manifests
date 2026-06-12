@@ -99,7 +99,6 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: envoy-gateway-system-install
-    - name: home-homer
   path: ./kubernetes/apps/base/home/home/homepage
   prune: true
   sourceRef:
