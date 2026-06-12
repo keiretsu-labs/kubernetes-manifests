@@ -16,6 +16,7 @@ resources:
   - ./gatus
   - ./gvisor
   - ./home
+  - ./homer-operator
   - ./immich
   - ./kro-system
   - ./kube-system
