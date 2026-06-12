@@ -32,3 +32,9 @@ spec:
       storageClassName: local-path
   nodeSelector:
     node.kubernetes.io/instance-type: jetson-orin-nano-super
+  # orin-0 is the dedicated (tainted) control-plane node. This small storage
+  # replica is explicitly tolerated back onto it; general workloads are not.
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
