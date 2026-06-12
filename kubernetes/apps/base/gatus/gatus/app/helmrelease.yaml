@@ -31,6 +31,10 @@ spec:
       fwmark-workaround: v1
     podAnnotations:
       checksum/webhook: "${DISCORD_WEBHOOK_URL}"
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
     envFrom:
       - secretRef:
           name: gatus

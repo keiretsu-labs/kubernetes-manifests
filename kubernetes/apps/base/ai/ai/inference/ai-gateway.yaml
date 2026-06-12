@@ -28,6 +28,11 @@ spec:
     kubernetes:
       envoyDeployment:
         replicas: 1
+        pod:
+          topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: ScheduleAnyway
       envoyService:
         annotations:
           tailscale.com/hostname: ${LOCATION}-ai-gateway
