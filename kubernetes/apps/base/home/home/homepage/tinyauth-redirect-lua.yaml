@@ -3,6 +3,14 @@
 # passes the 401 straight to the client instead of redirecting. This Lua
 # response script catches that pattern and converts it to a proper 302 redirect
 # that the browser follows to the Google OAuth login page.
+#
+# IMPORTANT: This MUST target the HTTPRoute (not Gateway). In EG v1.8.1,
+# Gateway-level Lua runs before per-route ext_authz in the filter chain, so
+# it never sees the ext_authz local reply. Route-level Lua runs after and
+# can intercept and convert the 401.
+#
+# Routes in other namespaces (e.g. agents/*-hermes-web) need their own
+# per-route EnvoyExtensionPolicy replicating this logic.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyExtensionPolicy
 metadata:
