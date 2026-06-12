@@ -50,6 +50,14 @@ rules:
   verbs:
   - create
 - apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
   - scheduling.k8s.io
   resources:
   - priorityclasses
