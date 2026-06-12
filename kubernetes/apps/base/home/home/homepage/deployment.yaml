@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homepage
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: homepage
+  template:
+    metadata:
+      labels:
+        app: homepage
+    spec:
+      containers:
+        - name: homepage
+          image: python:3.13-alpine
+          command:
+            - python3
+            - /app/server.py
+          env:
+            - name: PORT
+              value: "8080"
+          ports:
+            - containerPort: 8080
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: app-code
+              mountPath: /app
+            - name: homepage-config
+              mountPath: /etc/homepage
+      volumes:
+        - name: app-code
+          configMap:
+            name: homepage-app
+            defaultMode: 0555
+        - name: homepage-config
+          configMap:
+            name: homepage-config
+      restartPolicy: Always
