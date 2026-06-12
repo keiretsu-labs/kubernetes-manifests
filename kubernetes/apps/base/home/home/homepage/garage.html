@@ -322,8 +322,8 @@ body {
     <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">4 <span style="color:#34d399" id="health-ottawa">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage Pods</span><span class="stat-value">5 (4 NVMe localpath + 1 SMB)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
-    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value">3 replicas · 9 TS svcs</span></div>
-    <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value">3 replicas · 13 TS svcs (all regions)</span></div>
+    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-ottawa">...</span> replicas · 9 TS svcs</span></div>
+    <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value"><span id="egress-ottawa">...</span> replicas · 13 TS svcs (all regions)</span></div>
     <div class="storage-bar" id="disk-ottawa">
       <div class="bar-track"><div class="bar-fill green" id="disk-fill-ottawa" style="width:0%"></div></div>
       <div class="bar-labels"><span><span class="value-used" id="disk-used-ottawa">...</span> used</span><span id="disk-total-ottawa">...</span></div>
@@ -340,8 +340,8 @@ body {
     <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">3 <span style="color:#34d399" id="health-robbinsdale">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage Pods</span><span class="stat-value">4 (3 localpath + 1 SMB)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
-    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value">3 replicas · 8 TS svcs</span></div>
-    <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value">3 replicas · 13 TS svcs (all regions)</span></div>
+    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-robbinsdale">...</span> replicas · 8 TS svcs</span></div>
+    <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value"><span id="egress-robbinsdale">...</span> replicas · 13 TS svcs (all regions)</span></div>
     <div class="storage-bar" id="disk-robbinsdale">
       <div class="bar-track"><div class="bar-fill green" id="disk-fill-robbinsdale" style="width:0%"></div></div>
       <div class="bar-labels"><span><span class="value-used" id="disk-used-robbinsdale">...</span> used</span><span id="disk-total-robbinsdale">...</span></div>
@@ -358,8 +358,8 @@ body {
     <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">2 <span style="color:#34d399" id="health-stpetersburg">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage</span><span class="stat-value">Per-spark arrays (manual layout)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">1</span></div>
-    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value">3 replicas</span></div>
-    <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value">3 replicas · 13 TS svcs (all regions)</span></div>
+    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-stpetersburg">...</span> replicas</span></div>
+    <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value"><span id="egress-stpetersburg">...</span> replicas · 13 TS svcs (all regions)</span></div>
     <div class="stat"><span class="stat-label">Federation</span><span class="stat-value">Rejoined 2026-06-04</span></div>
     <div class="storage-bar" id="disk-stpetersburg">
       <div class="bar-track"><div class="bar-fill green" id="disk-fill-stpetersburg" style="width:0%"></div></div>
@@ -481,6 +481,25 @@ function setHealth(id, total, healthy) {
 setHealth('health-ottawa', m.nodes_ottawa, m.healthy_ottawa);
 setHealth('health-robbinsdale', m.nodes_robbinsdale, m.healthy_robbinsdale);
 setHealth('health-stpetersburg', m.nodes_stpetersburg, m.healthy_stpetersburg);
+
+// Proxy group replica counts from Mimir
+function setProxyCount(id, count) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (count === null || count === undefined) {
+    el.textContent = '?';
+    el.style.color = '#ef4444';
+  } else {
+    el.textContent = Math.round(count);
+    el.style.color = count >= 3 ? '#fb7185' : count > 0 ? '#fbbf24' : '#ef4444';
+  }
+}
+setProxyCount('ingress-ottawa', m.ingress_ottawa);
+setProxyCount('egress-ottawa', m.egress_ottawa);
+setProxyCount('ingress-robbinsdale', m.ingress_robbinsdale);
+setProxyCount('egress-robbinsdale', m.egress_robbinsdale);
+setProxyCount('ingress-stpetersburg', m.ingress_stpetersburg);
+setProxyCount('egress-stpetersburg', m.egress_stpetersburg);
 
 // Per-cluster disk utilization bars
 function renderDiskBar(prefix, totalKey, availKey) {
