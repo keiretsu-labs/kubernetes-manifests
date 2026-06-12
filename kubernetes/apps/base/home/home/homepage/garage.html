@@ -315,7 +315,7 @@ body {
 <div class="cluster-grid fade-in">
   <div class="cluster-card">
     <h3>🇨🇦 Ottawa — <span style="color:#22d3ee;font-size:0.85rem;">Services & Media</span></h3>
-    <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">4 (asuka, kaji, rei, shiro)</span></div>
+    <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">4 <span style="color:#34d399" id="health-ottawa">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage Pods</span><span class="stat-value">5 (4 NVMe localpath + 1 SMB)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value">3 replicas · 9 TS svcs</span></div>
@@ -333,7 +333,7 @@ body {
   </div>
   <div class="cluster-card">
     <h3>🏠 Robbinsdale — <span style="color:#34d399;font-size:0.85rem;">Home Lab</span></h3>
-    <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">3 (stone, tank, titan)</span></div>
+    <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">3 <span style="color:#34d399" id="health-robbinsdale">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage Pods</span><span class="stat-value">4 (3 localpath + 1 SMB)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value">3 replicas · 8 TS svcs</span></div>
@@ -351,7 +351,7 @@ body {
   </div>
   <div class="cluster-card">
     <h3>🚀 St. Petersburg — <span style="color:#a78bfa;font-size:0.85rem;">AI/ML GPU Cluster</span></h3>
-    <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">2 (Spark DGX, arm64+GPU)</span></div>
+    <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">2 <span style="color:#34d399" id="health-stpetersburg">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage</span><span class="stat-value">Per-spark arrays (manual layout)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">1</span></div>
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value">3 replicas</span></div>
@@ -451,6 +451,32 @@ if (ts) {
     ts.style.color = '#a09080';
   }
 }
+
+// Node health
+function setHealth(id, total, healthy) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (healthy === null || healthy === undefined) {
+    el.textContent = '\u26a0\ufe0f ?/??';
+    el.style.color = '#ef4444';
+  } else {
+    const h = Math.round(healthy);
+    const t = Math.round(total);
+    if (h >= t) {
+      el.textContent = '\u2705 ' + t + '/' + t + ' ready';
+      el.style.color = '#34d399';
+    } else if (h > 0) {
+      el.textContent = '\u26a0\ufe0f ' + h + '/' + t + ' ready';
+      el.style.color = '#fbbf24';
+    } else {
+      el.textContent = '\ud83d\udd34 0/' + t + ' ready';
+      el.style.color = '#ef4444';
+    }
+  }
+}
+setHealth('health-ottawa', m.nodes_ottawa, m.healthy_ottawa);
+setHealth('health-robbinsdale', m.nodes_robbinsdale, m.healthy_robbinsdale);
+setHealth('health-stpetersburg', m.nodes_stpetersburg, m.healthy_stpetersburg);
 
 // Per-cluster disk utilization bars
 function renderDiskBar(prefix, totalKey, availKey) {

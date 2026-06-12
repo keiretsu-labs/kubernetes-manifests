@@ -106,6 +106,15 @@ def fetch_garage_metrics():
          "sum(garage_local_disk_total{volume='data'})", "talos-stpetersburg"),
         ("disk_avail_stpetersburg",
          "sum(garage_local_disk_avail{volume='data'})", "talos-stpetersburg"),
+        ("healthy_ottawa",
+         "count(kube_node_status_condition{condition='Ready',status='true'})",
+         "talos-ottawa"),
+        ("healthy_robbinsdale",
+         "count(kube_node_status_condition{condition='Ready',status='true'})",
+         "talos-robbinsdale"),
+        ("healthy_stpetersburg",
+         "count(kube_node_status_condition{condition='Ready',status='true'})",
+         "talos-stpetersburg"),
     ]
     for key, query, tenant in queries:
         result = mimir_query(query, tenant)
