@@ -1,0 +1,69 @@
+/* home.keiretsu.top — personalized homepage */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1a1612;
+  color: #f5e6d3;
+  padding: 2rem 1rem;
+  max-width: 960px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.card {
+  background: #2e2621;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.card h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.3rem; }
+.card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f5deb3;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #3d3028;
+}
+
+.greeting { text-align: center; padding: 2rem; }
+.greeting h1 { font-size: 2rem; }
+.subtitle { color: #d2b48c; font-size: 0.9rem; margin-top: 0.25rem; }
+.note { color: #a09080; font-size: 0.85rem; margin-top: 1rem; }
+
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: #3d3028;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #f5e6d3;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.link-card:hover {
+  background: #4d3d33;
+  transform: translateY(-1px);
+}
+
+.link-icon { font-size: 1.3rem; line-height: 1; }
+.link-label { font-size: 0.9rem; font-weight: 500; }
+
+@media (max-width: 600px) {
+  body { padding: 1rem 0.75rem; }
+  .link-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .greeting h1 { font-size: 1.5rem; }
+}
