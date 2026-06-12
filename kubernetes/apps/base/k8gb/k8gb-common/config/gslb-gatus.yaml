@@ -15,6 +15,7 @@ spec:
   rules:
     - backendRefs:
         - name: gatus
+          namespace: gatus
           port: 80
       matches:
         - path:
