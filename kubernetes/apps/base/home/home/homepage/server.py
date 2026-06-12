@@ -7,6 +7,7 @@ import json
 import os
 import ssl
 import time
+import urllib.parse
 import urllib.request
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
@@ -17,7 +18,16 @@ K8S_TOKEN_PATH = Path("/var/run/secrets/kubernetes.io/serviceaccount/token")
 K8S_CA_PATH = Path("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
 K8S_HOST = "https://kubernetes.default.svc"
 STYLE_PATH = Path("/etc/homepage/style.css")
+GARAGE_PAGE_PATH = Path("/etc/homepage/garage.html")
 CACHE_TTL = 300  # seconds — re-list SecurityPolicies every 5 minutes
+
+# ── Mimir / Prometheus client (stdlib only) ──────────────────────────────────
+
+MIMIR_HOST = os.environ.get(
+    "MIMIR_HOST",
+    "http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus",
+)
+MIMIR_TENANTS = ["talos-ottawa", "talos-robbinsdale", "talos-stpetersburg"]
 
 DISCOVERY_CACHE = {"data": None, "expires_at": 0}
 
@@ -37,6 +47,70 @@ def load_style():
     if STYLE_PATH.exists():
         return STYLE_PATH.read_text()
     return ""
+
+
+def load_garage_page():
+    if GARAGE_PAGE_PATH.exists():
+        return GARAGE_PAGE_PATH.read_text()
+    return None
+
+
+# ── Mimir query helper ───────────────────────────────────────────────────────
+
+
+def mimir_query(query, tenant):
+    """Query Mimir (Prometheus) and return the result vector, or None on error."""
+    url = f"{MIMIR_HOST}/api/v1/query?query={urllib.parse.quote(query)}"
+    req = urllib.request.Request(url)
+    req.add_header("X-Scope-OrgID", tenant)
+    req.add_header("Accept", "application/json")
+    try:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        with urllib.request.urlopen(req, context=ctx, timeout=5) as resp:
+            data = json.loads(resp.read().decode())
+            return data.get("data", {}).get("result", [])
+    except Exception:
+        return None
+
+
+def fetch_garage_metrics():
+    """Fetch all Garage metrics needed for the /garage page as a JSON dict."""
+    metrics = {}
+    queries = [
+        ("bucket_bytes", "sum(garage_bucket_bytes)", "talos-ottawa"),
+        ("bucket_objects", "sum(garage_bucket_objects)", "talos-ottawa"),
+        ("layout_version", "garage_layout_current_version", "talos-ottawa"),
+        ("queue_length", "max(garage_worker_queue_length)", "talos-ottawa"),
+        ("block_errors", "sum(garage_node_block_errors)", "talos-ottawa"),
+        ("replication_factor", "garage_replication_factor", "talos-ottawa"),
+        ("nodes_ottawa", "count(kube_node_info)", "talos-ottawa"),
+        ("nodes_robbinsdale", "count(kube_node_info)", "talos-robbinsdale"),
+        ("nodes_stpetersburg", "count(kube_node_info)", "talos-stpetersburg"),
+        ("garage_nodes_ottawa",
+         "count(garage_local_disk_avail{volume='data'})", "talos-ottawa"),
+        ("garage_nodes_robbinsdale",
+         "count(garage_local_disk_avail{volume='data'})", "talos-robbinsdale"),
+        ("garage_nodes_stpetersburg",
+         "count(garage_local_disk_avail{volume='data'})", "talos-stpetersburg"),
+    ]
+    for key, query, tenant in queries:
+        result = mimir_query(query, tenant)
+        if result is None:
+            metrics[key] = None
+        elif key == "layout_version":
+            metrics[key] = result[0]["value"][1] if result else None
+        else:
+            metrics[key] = float(result[0]["value"][1]) if result else 0.0
+    return metrics
+
+
+def render_garage_page(template, metrics):
+    """Replace METRICS_PLACEHOLDER in the garage template with live metric data."""
+    json_str = json.dumps(metrics)
+    replacement = f"const METRICS_DATA = {json_str};"
+    return template.replace("/* METRICS_PLACEHOLDER */", replacement, 1)
 
 
 # ── App discovery from K8s API ────────────────────────────────────────────────
@@ -289,25 +363,46 @@ def render_page(user_email, display_name, groups_data, style):
 
 class HomepageHandler(BaseHTTPRequestHandler):
     style = ""
+    garage_template = None
 
     def do_GET(self):
-        if self.path != "/":
+        if self.path == "/garage":
+            self.handle_garage()
+        elif self.path != "/":
             self.send_response(302)
             self.send_header("Location", "/")
             self.end_headers()
-            return
+        else:
+            self.handle_home()
 
+    def handle_home(self):
         email = self.headers.get("Remote-Email", "").strip().lower()
         name = self.headers.get("Remote-Name", "").strip()
 
         # Skip discovery for probes or unauthenticated requests
-        # (liveness/readiness probes don't send Remote-Email).
-        # This prevents them from polluting the cache with empty results.
         if not email:
             groups_data = {"groups": []}
         else:
             groups_data = discover_user_apps(email)
         html = render_page(email, name, groups_data, self.style)
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(html.encode("utf-8"))
+
+    def handle_garage(self):
+        template = self.garage_template
+        if template is None:
+            self.send_response(404)
+            self.send_header("Content-Type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"Garage page not available")
+            return
+
+        metrics = fetch_garage_metrics()
+        html = render_garage_page(template, metrics)
 
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -321,6 +416,7 @@ class HomepageHandler(BaseHTTPRequestHandler):
 
 def main():
     HomepageHandler.style = load_style()
+    HomepageHandler.garage_template = load_garage_page()
     port = int(os.environ.get("PORT", "8080"))
     server = HTTPServer(("0.0.0.0", port), HomepageHandler)
     print(f"homepage server listening on :{port}", flush=True)
