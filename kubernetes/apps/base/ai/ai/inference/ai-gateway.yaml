@@ -33,6 +33,9 @@ spec:
             - maxSkew: 1
               topologyKey: kubernetes.io/hostname
               whenUnsatisfiable: DoNotSchedule
+              labelSelector:
+                matchLabels:
+                  gateway.envoyproxy.io/owning-gateway-name: ai-gateway
       envoyService:
         annotations:
           tailscale.com/hostname: ${LOCATION}-ai-gateway
