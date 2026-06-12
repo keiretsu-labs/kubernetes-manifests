@@ -201,11 +201,7 @@ spec:
           - { name: NCCL_IB_DISABLE, value: "0" }
           - { name: NCCL_NET_GDR_LEVEL, value: "5" }
           - { name: NCCL_IB_TIMEOUT, value: "22" }
-          - { name: NCCL_CROSS_NIC, value: "1" }
-          - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
-          - { name: NCCL_NET, value: "IB" }
-          - { name: NCCL_CUMEM_ENABLE, value: "0" }
-          - { name: NCCL_DEBUG, value: "WARN" }
+          - { name: NCCL_DEBUG, value: "INFO" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
@@ -337,11 +333,7 @@ spec:
           - { name: NCCL_IB_DISABLE, value: "0" }
           - { name: NCCL_NET_GDR_LEVEL, value: "5" }
           - { name: NCCL_IB_TIMEOUT, value: "22" }
-          - { name: NCCL_CROSS_NIC, value: "1" }
-          - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
-          - { name: NCCL_NET, value: "IB" }
-          - { name: NCCL_CUMEM_ENABLE, value: "0" }
-          - { name: NCCL_DEBUG, value: "WARN" }
+          - { name: NCCL_DEBUG, value: "INFO" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
