@@ -35,10 +35,12 @@ body {
 @keyframes dot-flow-rev { 0% { offset-distance: 100%; } 100% { offset-distance: 0%; } }
 @keyframes fade-in-up   { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .fade-in { animation: fade-in-up 0.5s ease-out; }
-.flow-dot    { animation: dot-flow 3s linear infinite; }
+.flow-dot{ animation: dot-flow 3s linear infinite; }
 .flow-dot-a  { animation: dot-flow 2.5s linear infinite; }
 .flow-dot-b  { animation: dot-flow 3.5s linear infinite; }
 .flow-dot-rev{ animation: dot-flow-rev 3s linear infinite; }
+.region-box { transition: fill 0.25s, stroke-width 0.25s; cursor: pointer; }
+.region-box:hover { fill: rgba(251,146,60,0.15); stroke-width: 2.2; }
 .cluster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
 .cluster-card { background: #3d3028; border-radius: 10px; padding: 1.2rem; }
 .cluster-card h3 { font-size: 1rem; margin-bottom: 0.8rem; }
@@ -204,7 +206,7 @@ body {
     <!-- ══════════════════════════════════════════════════════════════ -->
 
     <!-- Ottawa -->
-    <rect x="40" y="265" width="280" height="405" rx="12" fill="rgba(251,146,60,0.08)" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="8,4"/>
+    <rect x="40" y="265" width="280" height="405" rx="12" fill="rgba(251,146,60,0.08)" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="8,4" class="region-box"/>
     <text x="180" y="293" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="600">🇨🇦 Ottawa</text>
     <text x="180" y="308" text-anchor="middle" fill="#a09080" font-size="9">4 Nodes (Talos) · Services & Media</text>
 
@@ -239,7 +241,7 @@ body {
     <path d="M225,375 L225,405 L90,405 L90,375" stroke="#fbbf24" stroke-width="0.8" marker-end="url(#arrow-amber)" stroke-dasharray="2,2" opacity="0.4" transform="translate(0,0)"/>
 
     <!-- Robbinsdale -->
-    <rect x="360" y="265" width="280" height="405" rx="12" fill="rgba(251,146,60,0.08)" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="8,4"/>
+    <rect x="360" y="265" width="280" height="405" rx="12" fill="rgba(251,146,60,0.08)" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="8,4" class="region-box"/>
     <text x="500" y="293" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="600">🏠 Robbinsdale</text>
     <text x="500" y="308" text-anchor="middle" fill="#a09080" font-size="9">3 Nodes (Talos) · Production Home Lab</text>
 
@@ -266,7 +268,7 @@ body {
     <text x="500" y="541" text-anchor="middle" fill="#fbbf24" font-size="9">s3.robbinsdale.keiretsu.top</text>
 
     <!-- St. Petersburg -->
-    <rect x="680" y="265" width="280" height="405" rx="12" fill="rgba(251,146,60,0.08)" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="8,4"/>
+    <rect x="680" y="265" width="280" height="405" rx="12" fill="rgba(251,146,60,0.08)" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="8,4" class="region-box"/>
     <text x="820" y="293" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="600">🚀 St. Petersburg</text>
     <text x="820" y="308" text-anchor="middle" fill="#a09080" font-size="9">2 Nodes (K3s, arm64+GPU) · AI/ML</text>
 
