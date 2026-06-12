@@ -9,6 +9,7 @@ import ssl
 import time
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
@@ -30,6 +31,8 @@ MIMIR_HOST = os.environ.get(
 MIMIR_TENANTS = ["talos-ottawa", "talos-robbinsdale", "talos-stpetersburg"]
 
 DISCOVERY_CACHE = {"data": None, "expires_at": 0}
+GARAGE_METRICS_CACHE = {"data": None, "expires_at": 0}
+GARAGE_METRICS_CACHE_TTL = 8  # seconds — brief cache to reduce Mimir QPS
 
 
 def k8s_api(path):
@@ -76,8 +79,18 @@ def mimir_query(query, tenant):
 
 
 def fetch_garage_metrics():
-    """Fetch all Garage metrics needed for the /garage page as a JSON dict."""
-    metrics = {}
+    """Fetch all Garage metrics needed for the /garage page as a JSON dict.
+
+    All 22 Mimir queries are run in parallel via ThreadPoolExecutor (stdlib).
+    Results are cached briefly (GARAGE_METRICS_CACHE_TTL seconds) to reduce
+    Mimir QPS on rapid page refreshes.
+    """
+    now = time.time()
+
+    # Return stale cache if still fresh — cheap reduction in Mimir QPS
+    if GARAGE_METRICS_CACHE["data"] and now < GARAGE_METRICS_CACHE["expires_at"]:
+        return GARAGE_METRICS_CACHE["data"]
+
     queries = [
         ("bucket_bytes", "sum(garage_bucket_bytes)", "talos-ottawa"),
         ("bucket_objects", "sum(garage_bucket_objects)", "talos-ottawa"),
@@ -134,20 +147,37 @@ def fetch_garage_metrics():
          "count(kube_pod_status_phase{phase='Running',namespace='tailscale',pod=~'common-egress.*'})",
          "talos-stpetersburg"),
     ]
-    for key, query, tenant in queries:
-        result = mimir_query(query, tenant)
-        if result is None:
-            metrics[key] = None
-        elif key == "layout_version":
+
+    metrics = {}
+
+    with ThreadPoolExecutor(max_workers=min(len(queries), 22)) as pool:
+        future_map = {
+            pool.submit(mimir_query, query, tenant): key
+            for key, query, tenant in queries
+        }
+        for future in as_completed(future_map):
+            key = future_map[future]
             try:
-                metrics[key] = str(result[0]["value"][1]) if result else None
-            except (KeyError, IndexError, TypeError):
-                metrics[key] = None
-        else:
-            try:
-                metrics[key] = float(result[0]["value"][1]) if result else 0.0
-            except (ValueError, KeyError, IndexError, TypeError):
-                metrics[key] = 0.0
+                result = future.result()
+            except Exception:
+                result = None
+
+            if result is None:
+                metrics[key] = None if key == "layout_version" else 0.0
+            elif key == "layout_version":
+                try:
+                    metrics[key] = str(result[0]["value"][1]) if result else None
+                except (KeyError, IndexError, TypeError):
+                    metrics[key] = None
+            else:
+                try:
+                    metrics[key] = float(result[0]["value"][1]) if result else 0.0
+                except (ValueError, KeyError, IndexError, TypeError):
+                    metrics[key] = 0.0
+
+    # Cache the result (even if partial) so rapid page refreshes hit the cache
+    GARAGE_METRICS_CACHE["data"] = metrics
+    GARAGE_METRICS_CACHE["expires_at"] = now + GARAGE_METRICS_CACHE_TTL
     return metrics
 
 
@@ -446,7 +476,12 @@ class HomepageHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Garage page not available")
             return
 
-        metrics = fetch_garage_metrics()
+        try:
+            metrics = fetch_garage_metrics()
+        except Exception:
+            # Graceful fallback — empty data prevents a 500 crash
+            metrics = {}
+
         html = render_garage_page(template, metrics)
 
         self.send_response(200)
