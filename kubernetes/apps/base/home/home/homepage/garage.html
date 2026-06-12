@@ -235,9 +235,9 @@ body {
     <rect x="180" y="464" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="225" y="478" text-anchor="middle" fill="#c084fc" font-size="7">robbinsdale-gw-{ordinal}</text>
     <rect x="180" y="488" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="225" y="502" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
 
-    <!-- S3 endpoint -->
+    <!-- S3 endpoint → GSLB routes s3.cdn.keiretsu.top to this cluster -->
     <rect x="95" y="525" width="170" height="22" rx="4" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="0.8"/>
-    <text x="180" y="541" text-anchor="middle" fill="#fbbf24" font-size="9">s3.ottawa.keiretsu.top</text>
+    <text x="180" y="539" text-anchor="middle" fill="#fbbf24" font-size="7">via s3.cdn.keiretsu.top (33%)</text>
 
     <!-- Internal flow arrows within region -->
     <path d="M90,345 L90,340 L225,340 L225,345" stroke="#fb7185" stroke-width="0.8" marker-end="url(#arrow-rose)" stroke-dasharray="2,2" opacity="0.4"/>
@@ -268,7 +268,7 @@ body {
     <rect x="500" y="488" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="545" y="502" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
 
     <rect x="415" y="525" width="170" height="22" rx="4" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="0.8"/>
-    <text x="500" y="541" text-anchor="middle" fill="#fbbf24" font-size="9">s3.robbinsdale.keiretsu.top</text>
+    <text x="500" y="539" text-anchor="middle" fill="#fbbf24" font-size="7">via s3.cdn.keiretsu.top (33%)</text>
 
     <!-- St. Petersburg -->
     <rect x="680" y="265" width="280" height="405" rx="12" fill="rgba(251,146,60,0.08)" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="8,4" class="region-box"/>
@@ -292,7 +292,7 @@ body {
     <rect x="830" y="518" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="532" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
 
     <rect x="745" y="555" width="150" height="22" rx="4" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="0.8"/>
-    <text x="820" y="571" text-anchor="middle" fill="#fbbf24" font-size="9">s3.stpetersburg.keiretsu.top</text>
+    <text x="820" y="569" text-anchor="middle" fill="#fbbf24" font-size="7">via s3.cdn.keiretsu.top (34%)</text>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- FLOW ANNOTATIONS                                            -->
@@ -303,12 +303,12 @@ body {
     <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" path="M180,560 C300,620 700,620 820,560"/></circle>
     <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" begin="1.67s" path="M180,560 C300,620 700,620 820,560"/></circle>
     <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" begin="3.33s" path="M180,560 C300,620 700,620 820,560"/></circle>
-    <text x="500" y="625" text-anchor="middle" fill="#22d3ee" font-size="8" opacity="0.6">GSLB Round-Robin · ottawa:33  robbinsdale:33  stpetersburg:34</text>
+    <text x="500" y="625" text-anchor="middle" fill="#22d3ee" font-size="8" opacity="0.6">GSLB Round-Robin · s3.cdn.keiretsu.top → ottawa:33  robbinsdale:33  stpetersburg:34</text>
 
     <!-- Callout: replication flow -->
     <rect x="40" y="645" width="920" height="40" rx="6" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="0.8" stroke-dasharray="3,2"/>
     <text x="500" y="660" text-anchor="middle" fill="#fbbf24" font-size="8" opacity="0.8">
-      🡺 S3 Client → GSLB → common-ingress → Gateway → common-egress → Tailscale VPN → other region's common-ingress → Storage pod
+      🡺 S3 Client → s3.cdn.keiretsu.top (GSLB) → common-ingress → Gateway → common-egress → Tailscale VPN → other region's common-ingress → Storage pod
     </text>
     <text x="500" y="676" text-anchor="middle" fill="#a09080" font-size="7">
       Each cluster runs all 3 regions' gateway RPC endpoints as local egress services (13 total via common-egress)
@@ -403,6 +403,15 @@ body {
         <li>• Each cluster runs <strong>all 3 regions'</strong> gateway RPC services (13 total)</li>
         <li>• Template: <code style="font-size:0.75rem; background:#2e2621; padding:0.1rem 0.3rem; border-radius:3px;">{zone}-gw-{ordinal}.keiretsu.ts.net:3901</code></li>
         <li>• Cross-region RPC flow: Garage → common-egress → VPN → common-ingress → peer</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="color:#22d3ee; font-size:0.9rem; margin-bottom:0.5rem;">🌐 GSLB — s3.cdn.keiretsu.top</h3>
+      <ul style="font-size:0.85rem; color:#d2b48c; line-height:1.6; list-style:none;">
+        <li>• K8GB round-robin DNS: <strong>s3.cdn.keiretsu.top</strong> → 3 A records</li>
+        <li>• Weights: ottawa <strong>33%</strong>, robbinsdale <strong>33%</strong>, stpetersburg <strong>34%</strong></li>
+        <li>• Per-cluster ingress routes via <strong>s3.cdn.keiretsu.top</strong> to gateway pods</li>
+        <li>• All 3 clusters healthy — GSLB CRs: <code style="font-size:0.75rem; background:#2e2621; padding:0.1rem 0.3rem; border-radius:3px;">garage-s3-cdn</code></li>
       </ul>
     </div>
   </div>
