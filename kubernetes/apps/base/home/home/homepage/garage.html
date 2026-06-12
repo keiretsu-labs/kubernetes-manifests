@@ -408,6 +408,27 @@ body {
 
 <div class="footer">
   <p>Data sourced from Mimir (Prometheus) · Garage operator v0.6.11+ · Garage v2.3.0 · Tailscale operator v1.98</p>
+  <details style="margin-top:0.5rem; text-align:left; max-width:700px; margin-left:auto; margin-right:auto;">
+    <summary style="cursor:pointer; font-size:0.75rem; color:#5a5048;">📜 PromQL queries (12 tenants × 3 clusters)</summary>
+    <pre style="margin-top:0.5rem; font-size:0.65rem; color:#5a5048; background:#2e2621; padding:0.5rem; border-radius:6px; overflow-x:auto; white-space:pre-wrap;">
+# Aggregates (talos-ottawa)
+sum(garage_bucket_bytes)
+sum(garage_bucket_objects)
+garage_layout_current_version
+max(garage_worker_queue_length)
+sum(garage_node_block_errors)
+garage_replication_factor
+
+# Per-cluster queries (each tenant)
+count(kube_node_info)
+count(kube_node_status_condition{condition="Ready",status="true"})
+count(garage_local_disk_avail{volume="data"})
+sum(garage_local_disk_total{volume="data"})
+sum(garage_local_disk_avail{volume="data"})
+count(kube_pod_status_phase{phase="Running",namespace="tailscale",pod=~"common-ingress.*"})
+count(kube_pod_status_phase{phase="Running",namespace="tailscale",pod=~"common-egress.*"})
+    </pre>
+  </details>
 </div>
 
 <script>
