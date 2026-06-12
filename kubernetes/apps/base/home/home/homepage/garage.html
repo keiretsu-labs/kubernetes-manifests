@@ -56,6 +56,16 @@ body {
 .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: #a09080; }
 .legend-item .swatch { width: 12px; height: 12px; border-radius: 3px; }
 .footer { text-align: center; color: #5a5048; font-size: 0.8rem; padding: 2rem 0; }
+.storage-bar { margin: 0.5rem 0 0.25rem; }
+.storage-bar .bar-track { height: 6px; background: #2e2621; border-radius: 3px; overflow: hidden; }
+.storage-bar .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; min-width: 2%; }
+.storage-bar .bar-fill.green { background: #34d399; }
+.storage-bar .bar-fill.yellow { background: #fbbf24; }
+.storage-bar .bar-fill.red { background: #ef4444; }
+.storage-bar .bar-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: #a09080; margin-top: 0.15rem; }
+.storage-bar .value-used { color: #f5e6d3; }
+@keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
+.skeleton { background: linear-gradient(90deg, #2e2621 25%, #3d3028 50%, #2e2621 75%); background-size: 200px 100%; animation: shimmer 1.5s infinite; border-radius: 4px; color: transparent !important; }
 @media (max-width: 700px) { body { padding: 1rem 0.75rem; } .hero h1 { font-size: 1.6rem; } .metric-grid { grid-template-columns: repeat(2, 1fr); } .cluster-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -82,7 +92,9 @@ body {
   <div class="metric-card"><div class="value" id="val-garage-nodes">...</div><div class="label">Garage Nodes</div></div>
   <div class="metric-card"><div class="value" id="val-queue">...</div><div class="label">Max Queue Depth</div></div>
   <div class="metric-card"><div class="value" id="val-errors">...</div><div class="label">Block Errors</div></div>
-  <div class="metric-card"><div class="value">mimir</div><div class="label">Data Source</div><div class="trend">prometheus · server-side</div></div>
+  <div class="metric-card"><div class="value" id="val-disk-used">...</div><div class="label">Total Disk Used</div><div class="trend">across all regions</div></div>
+    <div class="metric-card"><div class="value" id="val-disk-total">...</div><div class="label">Total Disk Capacity</div><div class="trend">across all regions</div></div>
+    <div class="metric-card"><div class="value">mimir</div><div class="label">Data Source</div><div class="trend">prometheus · server-side</div></div>
 </div>
 
 <!-- Topology Diagram -->
@@ -300,7 +312,10 @@ body {
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value">3 replicas · 9 TS svcs</span></div>
     <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value">3 replicas · 13 TS svcs (all regions)</span></div>
-    <div class="stat"><span class="stat-label">SMB Pool</span><span class="stat-value">~72.5 TiB</span></div>
+    <div class="storage-bar" id="disk-ottawa">
+      <div class="bar-track"><div class="bar-fill green" id="disk-fill-ottawa" style="width:0%"></div></div>
+      <div class="bar-labels"><span><span class="value-used" id="disk-used-ottawa">...</span> used</span><span id="disk-total-ottawa">...</span></div>
+    </div>
     <div class="nodes">
       <span class="node-tag storage">asuka</span><span class="node-tag storage">kaji</span><span class="node-tag storage">rei</span>
       <span class="node-tag storage">shiro</span><span class="node-tag storage">smb</span>
@@ -315,7 +330,10 @@ body {
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value">3 replicas · 8 TS svcs</span></div>
     <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value">3 replicas · 13 TS svcs (all regions)</span></div>
-    <div class="stat"><span class="stat-label">Replication</span><span class="stat-value">RF=2 · 12 disks</span></div>
+    <div class="storage-bar" id="disk-robbinsdale">
+      <div class="bar-track"><div class="bar-fill green" id="disk-fill-robbinsdale" style="width:0%"></div></div>
+      <div class="bar-labels"><span><span class="value-used" id="disk-used-robbinsdale">...</span> used</span><span id="disk-total-robbinsdale">...</span></div>
+    </div>
     <div class="nodes">
       <span class="node-tag storage">stone</span><span class="node-tag storage">tank</span><span class="node-tag storage">titan</span>
       <span class="node-tag storage">smb</span>
@@ -331,6 +349,10 @@ body {
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value">3 replicas</span></div>
     <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value">3 replicas · 13 TS svcs (all regions)</span></div>
     <div class="stat"><span class="stat-label">Federation</span><span class="stat-value">Rejoined 2026-06-04</span></div>
+    <div class="storage-bar" id="disk-stpetersburg">
+      <div class="bar-track"><div class="bar-fill green" id="disk-fill-stpetersburg" style="width:0%"></div></div>
+      <div class="bar-labels"><span><span class="value-used" id="disk-used-stpetersburg">...</span> used</span><span id="disk-total-stpetersburg">...</span></div>
+    </div>
     <div class="stat"><span class="stat-label">Note</span><span class="stat-value">arm64 GPU — timeouts expected</span></div>
     <div class="nodes">
       <span class="node-tag storage">spark-0</span><span class="node-tag storage">spark-1</span>
@@ -407,6 +429,35 @@ const gn = (m.garage_nodes_ottawa||0)+(m.garage_nodes_robbinsdale||0)+(m.garage_
 setVal('val-garage-nodes', gn);
 setVal('val-queue', fmtQ(m.queue_length));
 setVal('val-errors', fmtQ(m.block_errors));
+
+// Per-cluster disk utilization bars
+function renderDiskBar(prefix, totalKey, availKey) {
+  const total = m[totalKey];
+  const avail = m[availKey];
+  if (!total || !avail) {
+    document.getElementById('disk-fill-' + prefix).style.width = '0%';
+    document.getElementById('disk-used-' + prefix).textContent = '\u2014';
+    document.getElementById('disk-total-' + prefix).textContent = '\u2014';
+    return;
+  }
+  const used = total - avail;
+  const pct = Math.min(100, Math.max(0, used / total * 100));
+  const fill = document.getElementById('disk-fill-' + prefix);
+  fill.style.width = pct.toFixed(1) + '%';
+  fill.className = 'bar-fill ' + (pct > 85 ? 'red' : pct > 60 ? 'yellow' : 'green');
+  document.getElementById('disk-used-' + prefix).textContent = fmtBytes(used);
+  document.getElementById('disk-total-' + prefix).textContent = fmtBytes(total);
+}
+renderDiskBar('ottawa', 'disk_total_ottawa', 'disk_avail_ottawa');
+renderDiskBar('robbinsdale', 'disk_total_robbinsdale', 'disk_avail_robbinsdale');
+renderDiskBar('stpetersburg', 'disk_total_stpetersburg', 'disk_avail_stpetersburg');
+
+// Global disk totals
+const totalDisk = (m.disk_total_ottawa||0)+(m.disk_total_robbinsdale||0)+(m.disk_total_stpetersburg||0);
+const totalAvail = (m.disk_avail_ottawa||0)+(m.disk_avail_robbinsdale||0)+(m.disk_avail_stpetersburg||0);
+const totalUsed = totalDisk - totalAvail;
+setVal('val-disk-used', fmtBytes(totalUsed));
+setVal('val-disk-total', fmtBytes(totalDisk));
 </script>
 
 </body>
