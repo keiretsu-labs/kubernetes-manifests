@@ -34,10 +34,10 @@
 #                 evictionHard 6Gi.
 #                 Guaranteed QoS at 85Gi (request==limit) to ensure predictable
 #                 accounting.
-#   Current: 0.75 util (with VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0 +
-#   PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True). Without these the
-#   B12X cudagraph profiler over-estimates (~71 GiB vs ~1 GiB), causing init
-#   to OOM. Step up ctx: 32K → 64K → 128K → 256K as KV cache allows.
+#   Current: 0.75 util (original stable config — Aiden recipe uses 0.82,
+#   but our env setup needs investigation to match). No extra env vars
+#   beyond the base — PYTORCH_CUDA_ALLOC_CONF and
+#   VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS caused crashes even at 0.75.
 #   terminationGracePeriodSeconds=180
 #   NOTE: B12X kernel (VLLM_USE_B12X_MOE=1) does NOT support
 #   --enable-expert-parallel; the two are mutually exclusive on this build.
@@ -192,8 +192,6 @@ spec:
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
-          - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-          # RoCEv2 over the ConnectX-7 rail.
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: NCCL_IB_HCA, value: "mlx5_1" }
@@ -203,8 +201,6 @@ spec:
           - { name: NCCL_IB_TIMEOUT, value: "22" }
           - { name: NCCL_DEBUG, value: "INFO" }
           - { name: VLLM_PORT, value: "25001" }
-          - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
@@ -326,8 +322,6 @@ spec:
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
-          - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-          # RoCEv2 over the ConnectX-7 rail.
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: NCCL_IB_HCA, value: "mlx5_1" }
@@ -337,8 +331,6 @@ spec:
           - { name: NCCL_IB_TIMEOUT, value: "22" }
           - { name: NCCL_DEBUG, value: "INFO" }
           - { name: VLLM_PORT, value: "25001" }
-          - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
