@@ -300,7 +300,13 @@ class HomepageHandler(BaseHTTPRequestHandler):
         email = self.headers.get("Remote-Email", "").strip().lower()
         name = self.headers.get("Remote-Name", "").strip()
 
-        groups_data = discover_user_apps(email)
+        # Skip discovery for probes or unauthenticated requests
+        # (liveness/readiness probes don't send Remote-Email).
+        # This prevents them from polluting the cache with empty results.
+        if not email:
+            groups_data = {"groups": []}
+        else:
+            groups_data = discover_user_apps(email)
         html = render_page(email, name, groups_data, self.style)
 
         self.send_response(200)
