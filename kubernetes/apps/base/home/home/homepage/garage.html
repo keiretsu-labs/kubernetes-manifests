@@ -156,6 +156,7 @@ body {
     <rect x="830" y="82" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="867" y="97" text-anchor="middle" fill="#fb7185" font-size="8">ingress-0</text>
     <rect x="830" y="110" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="867" y="125" text-anchor="middle" fill="#fb7185" font-size="8">ingress-1</text>
     <rect x="912" y="110" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="0.5" opacity="0.6"/><text x="949" y="125" text-anchor="middle" fill="#fb7185" font-size="7">ingress-2</text>
+    <text x="867" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.5">8 TS services</text>
 
     <path d="M97,48 L97,82" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
     <path d="M499,48 L499,82" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
@@ -283,14 +284,15 @@ body {
 
     <text x="870" y="335" text-anchor="middle" fill="#22d3ee" font-size="9">Gateway</text>
     <rect x="830" y="345" width="80" height="22" rx="5" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.2"/><text x="870" y="362" text-anchor="middle" fill="#22d3ee" font-size="8">gateway-0</text>
+    <rect x="830" y="375" width="80" height="22" rx="5" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.2"/><text x="870" y="392" text-anchor="middle" fill="#22d3ee" font-size="8">gateway-1</text>
 
-    <text x="870" y="430" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (common-egress)</text>
-    <rect x="830" y="440" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="454" text-anchor="middle" fill="#c084fc" font-size="7">ottawa-gw-{ordinal}</text>
-    <rect x="830" y="464" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="478" text-anchor="middle" fill="#c084fc" font-size="7">robbinsdale-gw-{ordinal}</text>
-    <rect x="830" y="488" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="502" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
+    <text x="870" y="460" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (common-egress)</text>
+    <rect x="830" y="470" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="484" text-anchor="middle" fill="#c084fc" font-size="7">ottawa-gw-{ordinal}</text>
+    <rect x="830" y="494" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="508" text-anchor="middle" fill="#c084fc" font-size="7">robbinsdale-gw-{ordinal}</text>
+    <rect x="830" y="518" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="532" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
 
-    <rect x="745" y="525" width="150" height="22" rx="4" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="0.8"/>
-    <text x="820" y="541" text-anchor="middle" fill="#fbbf24" font-size="9">s3.stpetersburg.keiretsu.top</text>
+    <rect x="745" y="555" width="150" height="22" rx="4" fill="rgba(251,191,36,0.1)" stroke="#fbbf24" stroke-width="0.8"/>
+    <text x="820" y="571" text-anchor="middle" fill="#fbbf24" font-size="9">s3.stpetersburg.keiretsu.top</text>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- FLOW ANNOTATIONS                                            -->
@@ -357,8 +359,8 @@ body {
     <h3>🚀 St. Petersburg — <span style="color:#a78bfa;font-size:0.85rem;">AI/ML GPU Cluster</span></h3>
     <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">2 <span style="color:#34d399" id="health-stpetersburg">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage</span><span class="stat-value">Per-spark arrays (manual layout)</span></div>
-    <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">1</span></div>
-    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-stpetersburg">...</span> replicas</span></div>
+    <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
+    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-stpetersburg">...</span> replicas · 8 TS svcs</span></div>
     <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value"><span id="egress-stpetersburg">...</span> replicas · 13 TS svcs (all regions)</span></div>
     <div class="stat"><span class="stat-label">Federation</span><span class="stat-value">Rejoined 2026-06-04</span></div>
     <div class="storage-bar" id="disk-stpetersburg">
@@ -368,7 +370,7 @@ body {
     <div class="stat"><span class="stat-label">Note</span><span class="stat-value">arm64 GPU — timeouts expected</span></div>
     <div class="nodes">
       <span class="node-tag storage">spark-0</span><span class="node-tag storage">spark-1</span>
-      <span class="node-tag gateway">gw-0</span>
+      <span class="node-tag gateway">gw-0</span><span class="node-tag gateway">gw-1</span>
       <span class="node-tag ingress">ingress×3</span><span class="node-tag egress">egress×3</span>
     </div>
   </div>
@@ -409,7 +411,7 @@ body {
 <div class="footer">
   <p>Data sourced from Mimir (Prometheus) · Garage operator v0.6.11+ · Garage v2.3.0 · Tailscale operator v1.98</p>
   <details style="margin-top:0.5rem; text-align:left; max-width:700px; margin-left:auto; margin-right:auto;">
-    <summary style="cursor:pointer; font-size:0.75rem; color:#5a5048;">📜 PromQL queries (12 tenants × 3 clusters)</summary>
+    <summary style="cursor:pointer; font-size:0.75rem; color:#5a5048;">📜 PromQL queries (27 queries across 3 Mimir tenants)</summary>
     <pre style="margin-top:0.5rem; font-size:0.65rem; color:#5a5048; background:#2e2621; padding:0.5rem; border-radius:6px; overflow-x:auto; white-space:pre-wrap;">
 # Aggregates (talos-ottawa)
 sum(garage_bucket_bytes)
