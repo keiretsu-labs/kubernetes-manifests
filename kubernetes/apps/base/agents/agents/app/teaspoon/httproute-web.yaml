@@ -3,6 +3,7 @@
 # OIDC-gated through the public/private gateways (same pattern as grafana).
 # Garage resolves buckets by stripping the root_domain suffix from the Host
 # header, so we rewrite hostname → teaspooon-web.keiretsu.top (bucket name).
+# Also proxies /api/mimir/ → Mimir gateway for the live dashboard.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -26,6 +27,25 @@ spec:
   hostnames:
     - "teaspoon.agents.${COMMON_DOMAIN}"
   rules:
+    # Mimir API proxy — JS on the dashboard queries Mimir through this
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/mimir
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: mimir-gateway
+          namespace: mimir
+          port: 80
+          weight: 1
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+    # Garage S3 static site serving (original rule)
     - filters:
         - type: URLRewrite
           urlRewrite:
