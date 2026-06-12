@@ -94,6 +94,18 @@ def fetch_garage_metrics():
          "count(garage_local_disk_avail{volume='data'})", "talos-robbinsdale"),
         ("garage_nodes_stpetersburg",
          "count(garage_local_disk_avail{volume='data'})", "talos-stpetersburg"),
+        ("disk_total_ottawa",
+         "sum(garage_local_disk_total{volume='data'})", "talos-ottawa"),
+        ("disk_avail_ottawa",
+         "sum(garage_local_disk_avail{volume='data'})", "talos-ottawa"),
+        ("disk_total_robbinsdale",
+         "sum(garage_local_disk_total{volume='data'})", "talos-robbinsdale"),
+        ("disk_avail_robbinsdale",
+         "sum(garage_local_disk_avail{volume='data'})", "talos-robbinsdale"),
+        ("disk_total_stpetersburg",
+         "sum(garage_local_disk_total{volume='data'})", "talos-stpetersburg"),
+        ("disk_avail_stpetersburg",
+         "sum(garage_local_disk_avail{volume='data'})", "talos-stpetersburg"),
     ]
     for key, query, tenant in queries:
         result = mimir_query(query, tenant)
