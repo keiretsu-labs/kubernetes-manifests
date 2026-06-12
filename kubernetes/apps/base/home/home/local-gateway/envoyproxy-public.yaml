@@ -18,6 +18,6 @@ spec:
           topologySpreadConstraints:
             - maxSkew: 1
               topologyKey: kubernetes.io/hostname
-              whenUnsatisfiable: ScheduleAnyway
+              whenUnsatisfiable: DoNotSchedule
       envoyService:
         loadBalancerIP: ${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.10.15
