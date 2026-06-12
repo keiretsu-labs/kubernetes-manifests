@@ -6,8 +6,11 @@ talosVersion: v1.13.3
 kubernetesVersion: v1.36.1
 clusterName: "k8s.stpetersburg.internal"
 endpoint: https://k8s.stpetersburg.internal:6443
-allowSchedulingOnMasters: true
-allowSchedulingOnControlPlanes: true
+# orin-0 is the sole control plane and is dedicated to it — taint it so workloads
+# reschedule onto the GPU workers (spark-0/spark-1). Setting these false adds
+# node-role.kubernetes.io/control-plane:NoSchedule to every control-plane node.
+allowSchedulingOnMasters: false
+allowSchedulingOnControlPlanes: false
 clusterPodNets:
   - "10.5.0.0/16"
 clusterSvcNets:
@@ -50,14 +53,14 @@ nodes:
       serial: "S8C2NG0Y733052"
     # Pinned to NVIDIA-flavored arm64 schematic (GB10 GPU)
     talosImageURL: "factory.talos.dev/installer/fa4bd9762d62e94cf3de1d8f7dbfb4cfe11647c205ba673d831a2fa1ae055113"
-    controlPlane: true
+    # Worker — GPU compute. Control plane lives solely on orin-0 (no HA).
+    controlPlane: false
     networkInterfaces:
         # Pinned by MAC — net.ifnames=0 + 5 NICs means bare "eth0" can reorder on reboot/firmware update
+        # No VIP: the API-server VIP (192.168.73.25) belongs to the control plane (orin-0) only.
       - deviceSelector:
           hardwareAddr: "4c:bb:47:2d:95:33"  # onboard mgmt NIC
         dhcp: true
-        vip:
-          ip: "192.168.73.25"
     patches:
       - "@./patches/node/spark-0.yaml"
 
@@ -87,14 +90,14 @@ nodes:
       type: "nvme"
     # Same NVIDIA-flavored arm64 schematic as spark-0 (paired GB10 GPU box)
     talosImageURL: "factory.talos.dev/installer/fa4bd9762d62e94cf3de1d8f7dbfb4cfe11647c205ba673d831a2fa1ae055113"
-    controlPlane: true
+    # Worker — GPU compute. Control plane lives solely on orin-0 (no HA).
+    controlPlane: false
     networkInterfaces:
         # Pinned by MAC — net.ifnames=0 + 5 NICs means bare "eth0" can reorder on reboot/firmware update
+        # No VIP: the API-server VIP (192.168.73.25) belongs to the control plane (orin-0) only.
       - deviceSelector:
           hardwareAddr: "4c:bb:47:2b:90:4c"  # onboard mgmt NIC
         dhcp: true
-        vip:
-          ip: "192.168.73.25"
     patches:
       - "@./patches/node/spark-1.yaml"
 
@@ -140,3 +143,29 @@ controlPlane:
     - "@./patches/controller/disable-proxy.yaml"
     - "@./patches/controller/kubelet-certs.yaml"
     - "@./patches/controller/etcd-metrics-patch.yaml"
+
+# Worker nodes config — spark-0 / spark-1 (GB10 GPU boxes).
+# Mirrors the control-plane schematic so worker configs carry the same NVIDIA system
+# extensions and kernel args. Each spark also pins its own NVIDIA factory talosImageURL,
+# so the install image is correct regardless; this keeps talhelper's generation aligned.
+worker:
+  schematic:
+    customization:
+      systemExtensions:
+        officialExtensions:
+          - siderolabs/gvisor
+          # NVIDIA GPU — proprietary nonfree driver (open-kernel-modules crashes the GB10).
+          - siderolabs/nonfree-kmod-nvidia-lts
+          - siderolabs/nvidia-container-toolkit-lts
+          - siderolabs/util-linux-tools
+      extraKernelArgs:
+        - apparmor=0
+        - init_on_alloc=0
+        - init_on_free=0
+        - mitigations=off
+        - security=none
+        - talos.auditd.disabled=1
+        - net.ifnames=0
+        - nvidia_drm.modeset=1
+        - nvidia_drm.fbdev=1
+        - talos.logging.kernel=tcp://10.73.69.51:5170/
