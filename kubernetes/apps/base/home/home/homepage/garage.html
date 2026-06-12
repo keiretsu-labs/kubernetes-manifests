@@ -31,7 +31,7 @@ body {
 .metric-card .trend { font-size: 0.7rem; margin-top: 0.3rem; color: #34d399; }
 .topology { position: relative; overflow: hidden; }
 .topology svg { width: 100%; height: auto; max-width: 1000px; display: block; }
-.topology { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.topology { overflow-x: auto; }
 @media (max-width: 500px) { .topology { margin: 0 -0.75rem; border-radius: 0; } }
 @keyframes dot-flow     { 0% { offset-distance: 0%; } 100% { offset-distance: 100%; } }
 @keyframes dot-flow-rev { 0% { offset-distance: 100%; } 100% { offset-distance: 0%; } }
@@ -41,7 +41,7 @@ body {
 .flow-dot-a  { animation: dot-flow 2.5s linear infinite; }
 .flow-dot-b  { animation: dot-flow 3.5s linear infinite; }
 .flow-dot-rev{ animation: dot-flow-rev 3s linear infinite; }
-.region-box { transition: fill 0.25s, stroke-width 0.25s; cursor: pointer; }
+.region-box { transition: fill 0.25s, stroke-width 0.25s; }
 .region-box:hover { fill: rgba(251,146,60,0.15); stroke-width: 2.2; }
 .cluster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
 .cluster-card { background: #3d3028; border-radius: 10px; padding: 1.2rem; }
@@ -110,15 +110,17 @@ body {
 <section class="card topology fade-in">
   <h2>🌐 Multi-Region Topology with Tailscale Proxy Groups</h2>
   <div class="legend">
-    <span class="legend-item"><span class="swatch" style="background:#34d399;"></span> Storage Node</span>
-    <span class="legend-item"><span class="swatch" style="background:#22d3ee;"></span> Gateway Node</span>
-    <span class="legend-item"><span class="swatch" style="background:#fb7185;"></span> common-ingress (inbound)</span>
-    <span class="legend-item"><span class="swatch" style="background:#c084fc;"></span> common-egress (outbound)</span>
-    <span class="legend-item"><span class="swatch" style="background:#fbbf24;"></span> Cross-Region RPC</span>
-    <span class="legend-item"><span class="swatch" style="background:#fb923c;"></span> Tailscale VPN</span>
+    <span class="legend-item"><span class="swatch" style="background:#34d399;" aria-hidden="true"></span> Storage Node</span>
+    <span class="legend-item"><span class="swatch" style="background:#22d3ee;" aria-hidden="true"></span> Gateway Node</span>
+    <span class="legend-item"><span class="swatch" style="background:#fb7185;" aria-hidden="true"></span> common-ingress (inbound)</span>
+    <span class="legend-item"><span class="swatch" style="background:#c084fc;" aria-hidden="true"></span> common-egress (outbound)</span>
+    <span class="legend-item"><span class="swatch" style="background:#fbbf24;" aria-hidden="true"></span> Cross-Region RPC</span>
+    <span class="legend-item"><span class="swatch" style="background:#fb923c;" aria-hidden="true"></span> Tailscale VPN</span>
   </div>
 
-  <svg viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg" style="margin-top:0.5rem;">
+  <svg viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Multi-region Garage topology diagram showing Ottawa, Robbinsdale, and St. Petersburg with Tailscale VPN backbone, common-ingress and common-egress proxy groups, storage and gateway tiers, and cross-region RPC flows" style="margin-top:0.5rem;">
+    <title>Garage Multi-Region Topology — 3 datacenters with Tailscale VPN and GSLB round-robin</title>
+    <desc>Diagram showing three datacenter regions (Ottawa with 4 Talos nodes, Robbinsdale with 3 Talos nodes, St. Petersburg with 3 arm64+GPU nodes) connected via a Tailscale VPN backbone and common-ingress/common-egress Tailscale proxy groups. Each region contains storage pods and gateway pods. Cross-region RPC flows are shown as animated amber lines between regions. A GSLB round-robin DNS (s3.cdn.keiretsu.top) routes public S3 traffic via an Envoy Gateway. Traffic weights: Ottawa 33%, Robbinsdale 33%, St. Petersburg 34%. Replication factor is 2 with consistent mode.</desc>
     <defs>
       <marker id="arrow-amber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#fbbf24"/></marker>
       <marker id="arrow-rose"  markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#fb7185"/></marker>
@@ -198,19 +200,19 @@ body {
     <!-- Ottawa → Robbinsdale (egress → VPN → ingress) -->
     <path d="M140,175 C250,130 350,130 462,175" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.7"/>
     <text x="300" y="138" text-anchor="middle" fill="#fbbf24" font-size="7" opacity="0.7">Ottawa → Robbinsdale RPC</text>
-    <circle r="4" fill="#fbbf24" opacity="0.9"><animateMotion dur="3s" repeatCount="indefinite" path="M140,175 C250,130 350,130 462,175"/></circle>
+    <circle r="4" fill="#fbbf24" opacity="0.9" aria-hidden="true"><animateMotion dur="3s" repeatCount="indefinite" path="M140,175 C250,130 350,130 462,175"/></circle>
 
     <!-- Robbinsdale → Ottawa (egress → VPN → ingress) -->
     <path d="M462,185 C350,230 250,230 140,185" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.7"/>
-    <circle r="4" fill="#fbbf24" opacity="0.9"><animateMotion dur="3s" repeatCount="indefinite" path="M462,185 C350,230 250,230 140,185"/></circle>
+    <circle r="4" fill="#fbbf24" opacity="0.9" aria-hidden="true"><animateMotion dur="3s" repeatCount="indefinite" path="M462,185 C350,230 250,230 140,185"/></circle>
 
     <!-- Robbinsdale → StPete -->
     <path d="M540,175 C640,130 740,130 830,175" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.7"/>
-    <circle r="4" fill="#fbbf24" opacity="0.9"><animateMotion dur="3s" repeatCount="indefinite" path="M540,175 C640,130 740,130 830,175"/></circle>
+    <circle r="4" fill="#fbbf24" opacity="0.9" aria-hidden="true"><animateMotion dur="3s" repeatCount="indefinite" path="M540,175 C640,130 740,130 830,175"/></circle>
 
     <!-- StPete → Robbinsdale -->
     <path d="M830,185 C740,230 640,230 540,185" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.7"/>
-    <circle r="4" fill="#fbbf24" opacity="0.9"><animateMotion dur="3s" repeatCount="indefinite" path="M830,185 C740,230 640,230 540,185"/></circle>
+    <circle r="4" fill="#fbbf24" opacity="0.9" aria-hidden="true"><animateMotion dur="3s" repeatCount="indefinite" path="M830,185 C740,230 640,230 540,185"/></circle>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- LAYER 4: Region boxes with storage + gateway                 -->
@@ -309,9 +311,9 @@ body {
 
     <!-- GSLB arc -->
     <path d="M180,590 C300,640 700,640 820,590" stroke="#22d3ee" stroke-width="1" marker-end="url(#arrow-amber)" stroke-dasharray="3,3" opacity="0.4"/>
-    <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" path="M180,590 C300,640 700,640 820,590"/></circle>
-    <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" begin="1.67s" path="M180,590 C300,640 700,640 820,590"/></circle>
-    <circle r="3.5" fill="#22d3ee" opacity="0.7"><animateMotion dur="5s" repeatCount="indefinite" begin="3.33s" path="M180,590 C300,640 700,640 820,590"/></circle>
+    <circle r="3.5" fill="#22d3ee" opacity="0.7" aria-hidden="true"><animateMotion dur="5s" repeatCount="indefinite" path="M180,590 C300,640 700,640 820,590"/></circle>
+    <circle r="3.5" fill="#22d3ee" opacity="0.7" aria-hidden="true"><animateMotion dur="5s" repeatCount="indefinite" begin="1.67s" path="M180,590 C300,640 700,640 820,590"/></circle>
+    <circle r="3.5" fill="#22d3ee" opacity="0.7" aria-hidden="true"><animateMotion dur="5s" repeatCount="indefinite" begin="3.33s" path="M180,590 C300,640 700,640 820,590"/></circle>
     <text x="500" y="650" text-anchor="middle" fill="#22d3ee" font-size="8" opacity="0.6">GSLB Round-Robin · s3.cdn.keiretsu.top → ottawa:33  robbinsdale:33  stpetersburg:34</text>
 
     <!-- Callout: replication flow -->
