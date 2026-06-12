@@ -34,10 +34,11 @@
 #                 evictionHard 6Gi.
 #                 Guaranteed QoS at 85Gi (request==limit) to ensure predictable
 #                 accounting.
-#   Current: 0.73 util (reduced from 0.75 due to ~31 GiB of leaked CUDA
-#   contexts from crash-loop restarts — vLLM sees only 88.1 GiB free at
-#   startup instead of 119.67 GiB). Fixes the "Free memory on device
-#   cuda:0 is less than desired GPU memory utilization" ValueError.
+#   Current: 0.75 util with nvidia-smi --gpu-reset at startup to clear
+#   leaked CUDA contexts from crash-loop restarts. Without the reset,
+#   vLLM sees only ~88/119 GiB free (31 GiB leaked) and the ValueError
+#   in vllm/v1/worker/utils.py:request_memory() kills init. The reset
+#   brings free memory back to full capacity.
 #   terminationGracePeriodSeconds=180
 #   NOTE: B12X kernel (VLLM_USE_B12X_MOE=1) does NOT support
 #   --enable-expert-parallel; the two are mutually exclusive on this build.
@@ -164,6 +165,7 @@ spec:
             # Drop page cache immediately before weight load (belt + suspenders
             # with the drop-caches init container above).
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
               --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
@@ -172,7 +174,7 @@ spec:
               --kv-cache-dtype fp8 --block-size 256 \
               --max-model-len 262144 \
               --max-num-seqs 2 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.73 \
+              --gpu-memory-utilization 0.75 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
@@ -294,6 +296,7 @@ spec:
           args:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
               --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
@@ -302,7 +305,7 @@ spec:
               --kv-cache-dtype fp8 --block-size 256 \
               --max-model-len 262144 \
               --max-num-seqs 2 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.73 \
+              --gpu-memory-utilization 0.75 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \

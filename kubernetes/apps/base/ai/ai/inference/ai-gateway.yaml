@@ -32,7 +32,7 @@ spec:
           topologySpreadConstraints:
             - maxSkew: 1
               topologyKey: kubernetes.io/hostname
-              whenUnsatisfiable: ScheduleAnyway
+              whenUnsatisfiable: DoNotSchedule
       envoyService:
         annotations:
           tailscale.com/hostname: ${LOCATION}-ai-gateway
