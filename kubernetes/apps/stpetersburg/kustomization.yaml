@@ -22,6 +22,7 @@ resources:
   - ./jellyswarrm
   - ./kro-system
   - ./kube-system
+  - ./lws-system
   - ./loki
   - ./mimir
   - ./spegel
