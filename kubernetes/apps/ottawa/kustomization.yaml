@@ -23,7 +23,6 @@ resources:
   - ./gvisor
   - ./hermes
   - ./home
-  - ./homer-operator
   - ./hubble-ui
   - ./immich
   - ./k8gb
