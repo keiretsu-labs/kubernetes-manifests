@@ -157,10 +157,11 @@ spec:
             --gpu-memory-utilization 0.75 \
             --enable-prefix-caching \
             --enable-flashinfer-autotune \
+            --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
-            --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
+            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --nnodes 2 --node-rank 0 \
             --master-addr 192.168.74.1 --master-port 25000
         ports:
@@ -298,10 +299,11 @@ spec:
             --gpu-memory-utilization 0.75 \
             --enable-prefix-caching \
             --enable-flashinfer-autotune \
+            --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
             --tokenizer-mode deepseek_v4 \
             --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
             --reasoning-parser deepseek_v4 \
-            --speculative-config '{"method":"mtp","num_speculative_tokens":1}' \
+            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --nnodes 2 --node-rank 1 \
             --master-addr 192.168.74.1 --master-port 25000 \
             --headless
