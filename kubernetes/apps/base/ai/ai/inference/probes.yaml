@@ -1,5 +1,5 @@
 ---
-# vLLM OpenAI-compatible inference server.
+# DSv4 (DeepSeek V4) OpenAI-compatible inference server.
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
@@ -12,8 +12,8 @@ spec:
   targets:
     staticConfig:
       static:
-        - http://vllm.ai:8000/health
-        - http://vllm.ai:8000/v1/models
+        - http://dsv4.ai:8000/health
+        - http://dsv4.ai:8000/v1/models
       labels:
         service: ai-inference
         target: vllm

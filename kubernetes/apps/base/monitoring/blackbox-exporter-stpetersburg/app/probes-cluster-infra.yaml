@@ -29,6 +29,6 @@ spec:
     staticConfig:
       static:
         - http://kube-dns.kube-system:9153/metrics
-        - http://source-controller.flux-system:8080/metrics
+        - http://source-controller.flux-system:80/
       labels:
         service: cluster-infra
