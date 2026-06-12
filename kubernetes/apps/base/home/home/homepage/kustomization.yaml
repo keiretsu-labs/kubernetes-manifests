@@ -8,6 +8,7 @@ resources:
   - ./securitypolicy.yaml
   - ./serviceaccount.yaml
   - ./rbac.yaml
+  - ./tinyauth-redirect-lua.yaml
 configMapGenerator:
   - name: homepage-app
     files:
