@@ -25,7 +25,6 @@ resources:
   - ./spegel
   - ./speedtest
   - ./tailgate-operator-system
-  - ./volsync
   - ./zot
   - ./external-secrets
   - ./hubble-ui

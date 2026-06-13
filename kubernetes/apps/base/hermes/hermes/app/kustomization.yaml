@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: hermes
 resources:
   - app.yaml
-  - storagestack.yaml
   - httproute.yaml
   - egress.yaml
   - garagekey.yaml

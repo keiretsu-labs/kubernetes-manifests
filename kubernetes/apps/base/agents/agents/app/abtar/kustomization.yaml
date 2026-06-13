@@ -6,7 +6,6 @@ resources:
   - deployment.yaml
   - service.yaml
   - service-tailscale.yaml
-  - storagestack.yaml
   - garagekey.yaml
   - configmap.yaml
   - secret.yaml

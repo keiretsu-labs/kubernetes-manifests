@@ -5,5 +5,4 @@ namespace: home
 resources:
   - app.yaml
   - pvc.yaml
-  - storagestack.yaml
   - httproute.yaml
