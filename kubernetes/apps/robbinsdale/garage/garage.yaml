@@ -134,7 +134,6 @@ metadata:
 spec:
   dependsOn:
     - name: garage-bucket
-  targetNamespace: garage
   commonMetadata:
     labels:
       app.kubernetes.io/name: garage-velero-bucket
