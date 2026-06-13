@@ -33,7 +33,7 @@ spec:
             name: plugins
 
     credentials:
-      useSecret: true
+      useExistingSecret: true
       existingSecret: velero-credentials
 
     configuration:
