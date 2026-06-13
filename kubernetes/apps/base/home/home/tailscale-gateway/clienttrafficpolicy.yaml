@@ -18,7 +18,11 @@ spec:
       idleTimeout: 3600s  # 1 hour idle timeout
       streamIdleTimeout: 900s  # 15 minutes for idle streams
   headers:
-    requestID: PreserveOrGenerate  
+    requestID: PreserveOrGenerate
+    lateResponseHeaders:
+      addIfAbsent:
+        - name: Cache-Control
+          value: "public, max-age=3600"
   http2:
     initialStreamWindowSize: 64Ki 
     initialConnectionWindowSize: 1Mi 
