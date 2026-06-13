@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -22,50 +21,6 @@ spec:
           [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
     spec:
       priorityClassName: "infra-high"
-      initContainers:
-        - name: restic-restore
-          image: restic/restic:0.19.0
-          command:
-            - /bin/sh
-            - -c
-            - |
-              set -e
-              if restic snapshots --json --last 1 2>/dev/null | grep -q '"id"'; then
-                echo "Restoring latest snapshot into /config"
-                restic restore latest --target /config
-                echo "Restore complete"
-              else
-                echo "No snapshots in repo (first boot or empty), starting fresh"
-              fi
-              if [ ! -f /config/configuration.yaml ]; then
-                echo "Seeding default configuration.yaml"
-                cat > /config/configuration.yaml <<EOF
-              default_config:
-              http:
-                use_x_forwarded_for: true
-                trusted_proxies:
-                  - 10.0.0.0/8
-                  - 192.168.0.0/16
-                  - 172.16.0.0/12
-                  - 100.64.0.0/10
-              google_assistant: !include google_assistant.yaml
-              light: !include lights.yaml
-              EOF
-              fi
-              if ! grep -q "^google_assistant:" /config/configuration.yaml; then
-                echo "Appending google_assistant include to configuration.yaml"
-                printf "\ngoogle_assistant: !include google_assistant.yaml\n" >> /config/configuration.yaml
-              fi
-              if ! grep -q "^light:" /config/configuration.yaml; then
-                echo "Appending light include to configuration.yaml"
-                printf "\nlight: !include lights.yaml\n" >> /config/configuration.yaml
-              fi
-          envFrom:
-            - secretRef:
-                name: restic-homeassistant-config
-          volumeMounts:
-            - name: config
-              mountPath: /config
       containers:
         - name: homeassistant
           image: homeassistant/home-assistant:2026.6
