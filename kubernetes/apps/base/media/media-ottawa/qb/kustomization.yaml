@@ -5,7 +5,6 @@ namespace: media
 resources:
   - app.yaml
   - httproute.yaml
-  - storagestack.yaml
   - secret.yaml
   - pvc-downloads.yaml
   - referencegrant.yaml

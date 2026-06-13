@@ -6,7 +6,6 @@ resources:
   - app.yaml
   - resourceclaimtemplate.yaml
   - httproute.yaml
-  - storagestack.yaml
   - prom-plex-exporter.yaml
   - servicemonitor.yaml
   - secret.yaml
