@@ -1,0 +1,19 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: velero
+  labels:
+    app.kubernetes.io/name: velero
+spec:
+  allowCrossNamespaceImport: true
+  configMapRef:
+    key: dashboard.json
+    name: velero-grafana-dashboard
+  datasources:
+    - datasourceName: Mimir-Ottawa
+      inputName: DS_MIMIR
+  folder: Velero
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: 10m
