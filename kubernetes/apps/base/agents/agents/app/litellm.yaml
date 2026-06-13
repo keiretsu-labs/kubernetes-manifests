@@ -18,7 +18,7 @@ data:
       - model_name: deepseek-v4-flash
         litellm_params:
           model: hosted_vllm/deepseek-v4-flash
-          api_base: http://stpetersburg-ai-gateway.keiretsu.ts.net/v1
+          api_base: http://stpetersburg-ai-gateway/v1
           api_key: ""
           rpm: 60
         model_info:
