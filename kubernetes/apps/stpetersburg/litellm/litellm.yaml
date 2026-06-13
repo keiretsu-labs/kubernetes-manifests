@@ -116,3 +116,29 @@ spec:
       port: 80
       protocol: TCP
       targetPort: http
+---
+# ── ServiceMonitor ──────────────────────────────────────────────────────
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: litellm
+  namespace: agents
+  labels:
+    app: litellm
+    release: kube-prometheus-stack
+spec:
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      metricRelabelings:
+        - action: replace
+          replacement: talos-stpetersburg
+          targetLabel: cluster
+  selector:
+    matchLabels:
+      app: litellm
+  namespaceSelector:
+    matchNames:
+      - agents

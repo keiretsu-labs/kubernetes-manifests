@@ -45,3 +45,12 @@ data:
       # Master key for admin endpoints (set via env LITELLM_MASTER_KEY)
       # Salt key for credential encryption (set via env LITELLM_SALT_KEY)
       database_url: ""  # in-memory mode (no persistence)
+
+    # ── Observability ──────────────────────────────────────────────────
+    litellm_settings:
+      callbacks: ["prometheus"]
+    # Exposes /metrics with per-deployment token/request counters.
+    # Labels: model_id, api_base, api_provider differentiate primary vs fallback.
+    #   litellm_total_tokens_metric{model_id="hosted_vllm/deepseek-v4-flash"} — primary (StPete)
+    #   litellm_total_tokens_metric{model_id="openai/deepseek-v4-flash"}      — fallback (Corp)
+    #   litellm_proxy_total_requests_metric{model_id="..."}                   — request counts
