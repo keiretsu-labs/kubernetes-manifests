@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bhaiya
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: bhaiya
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bhaiya
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bhaiya
+    spec:
+      serviceAccountName: bhaiya
+      automountServiceAccountToken: true
+      containers:
+        - name: bhaiya
+          image: oci.cdn.keiretsu.top/corp/bhaiya:latest
+          imagePullPolicy: Always
+          ports:
+            - name: grpc-web
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: BHAIYA_ADDR
+              value: ":8080"
+            - name: BHAIYA_DB_PATH
+              value: /data/bhaiya.db
+            - name: BHAIYA_FORGEJO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: bhaiya-forgejo-token
+                  key: BHAIYA_FORGEJO_TOKEN
+            - name: BHAIYA_FORGEJO_API_URL
+              value: "https://forgejo.keiretsu.top/api/v1"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: bhaiya-data

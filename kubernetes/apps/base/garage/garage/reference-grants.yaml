@@ -44,4 +44,8 @@ spec:
     - kind: GarageBucket
       namespace: agents
     - kind: GarageKey
+      namespace: bhaiya
+    - kind: GarageBucket
+      namespace: bhaiya
+    - kind: GarageKey
       namespace: velero-system
