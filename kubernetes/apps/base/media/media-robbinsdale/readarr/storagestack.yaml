@@ -9,7 +9,7 @@ spec:
   name: readarr-config
   size: 5Gi
   storageClass: ceph-block-replicated-nvme
-  s3Path: media/readarr-config
+  s3Path: media/readarr-config-v2
   schedule: 0 4 * * *
   restorePaused: false
   copyMethod: Snapshot
