@@ -2,8 +2,66 @@
 # SPDX-License-Identifier: MIT
 #
 # LiteLLM proxy deployment — fronts StPete DSV4 Sparks with Corp AI overflow.
+# Runs on Ottawa (agents ns) since StPete has tight memory and LiteLLM
+# needs ~2Gi RAM for its proxy logic + Prometheus metrics.
 ---
-# ── Deployment ───────────────────────────────────────────────────────────
+# ── ConfigMap ──────────────────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+  namespace: agents
+data:
+  config.yaml: |
+    model_list:
+      # ── Primary: StPete DGX Sparks via Envoy AI Gateway ────────────
+      - model_name: deepseek-v4-flash
+        litellm_params:
+          model: hosted_vllm/deepseek-v4-flash
+          # stpetersburg-ai-gateway.keiretsu.ts.net resolves from Ottawa
+          # via Tailscale MagicDNS and routes to dsv4.ai:8000
+          api_base: http://stpetersburg-ai-gateway.keiretsu.ts.net/v1
+          api_key: ""
+          rpm: 60
+        model_info:
+          mode: primary
+
+      # ── Fallback: Corp AI endpoint ───────────────────────────────────
+      - model_name: deepseek-v4-flash
+        litellm_params:
+          model: hosted_vllm/deepseek-v4-flash
+          # ai.keiretsu.ts.net resolves from Ottawa via Tailscale MagicDNS
+          api_base: http://ai/v1
+          api_key: ""
+        model_info:
+          mode: fallback
+
+    router_settings:
+      fallbacks: [{ "deepseek-v4-flash": ["deepseek-v4-flash"] }]
+      num_retries: 2
+      retry_after: 5
+      timeout: 30
+      routing_strategy: usage-based-routing
+      enable_pre_call_checks: true
+      allowed_fails: 3
+
+    general_settings:
+      database_url: ""
+
+    litellm_settings:
+      callbacks: ["prometheus"]
+---
+# ── Secret ────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: litellm-secret
+  namespace: agents
+stringData:
+  master_key: DEFAULT_PASSWORD
+  salt_key: DEFAULT_PASSWORD
+---
+# ── Deployment ───────────────────────────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -82,7 +140,7 @@ spec:
         - name: prometheus-multiproc
           emptyDir: {}
 ---
-# ── ClusterIP Service ────────────────────────────────────────────────────
+# ── ClusterIP Service ────────────────────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
@@ -100,7 +158,7 @@ spec:
       protocol: TCP
       targetPort: http
 ---
-# ── Tailscale LoadBalancer ──────────────────────────────────────────────
+# ── Tailscale LoadBalancer ──────────────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
@@ -109,7 +167,7 @@ metadata:
   annotations:
     tailscale.com/hostname: litellm
     tailscale.com/proxy-group: common-ingress
-    tailscale.com/tags: tag:singh360,tag:k8s,tag:stpetersburg
+    tailscale.com/tags: tag:singh360,tag:k8s,tag:ottawa
   labels:
     app: litellm
 spec:
@@ -123,7 +181,7 @@ spec:
       protocol: TCP
       targetPort: http
 ---
-# ── ServiceMonitor ──────────────────────────────────────────────────────
+# ── ServiceMonitor ──────────────────────────────────────────────────
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -140,7 +198,7 @@ spec:
       scrapeTimeout: 10s
       metricRelabelings:
         - action: replace
-          replacement: talos-stpetersburg
+          replacement: talos-ottawa
           targetLabel: cluster
   selector:
     matchLabels:

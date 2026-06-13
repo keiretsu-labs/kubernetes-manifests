@@ -1,0 +1,93 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hermes-placeholder
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hermes-placeholder
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hermes-placeholder
+    spec:
+      containers:
+        - name: gateway
+          image: nousresearch/hermes-agent:v2026.6.5
+          args: ["gateway", "run"]
+          envFrom:
+            - configMapRef:
+                name: hermes-placeholder-config
+            - secretRef:
+                name: hermes-placeholder-secrets
+          env:
+            - name: HERMES_DASHBOARD
+              value: "1"
+            - name: HERMES_DASHBOARD_HOST
+              value: "127.0.0.1"
+            - name: HERMES_DASHBOARD_PORT
+              value: "9119"
+            - name: HERMES_DASHBOARD_INSECURE
+              value: "1"
+          ports:
+            - name: gateway
+              containerPort: 8642
+            - name: dashboard
+              containerPort: 9119
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              memory: 6Gi
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+            - name: shm
+              mountPath: /dev/shm
+        - name: workspace
+          image: ghcr.io/outsourc-e/hermes-workspace@sha256:2d2ba9aa5b1230766267322817e8e51113541780a5797802a582a47cc34a3df3
+          env:
+            - name: HERMES_API_URL
+              value: "http://127.0.0.1:8642"
+            - name: HERMES_DASHBOARD_URL
+              value: "http://127.0.0.1:9119"
+            - name: HERMES_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hermes-placeholder-secrets
+                  key: API_SERVER_KEY
+            # Autologin: no HERMES_PASSWORD so the workspace's own gate stays off
+            # (isAuthRequired = getConfiguredPassword().length>0). Binding 0.0.0.0
+            # without a password trips the workspace's safety refusal, so we set
+            # HERMES_ALLOW_INSECURE_REMOTE=1 to bypass it. Safe here: the Service is
+            # ClusterIP and the only external path is Envoy's Pocket ID OIDC gate,
+            # so every reachable caller is already authenticated. HERMES_API_TOKEN
+            # above still secures the workspace->gateway loopback call.
+            - name: HERMES_ALLOW_INSECURE_REMOTE
+              value: "1"
+            - name: PORT
+              value: "3000"
+          ports:
+            - name: workspace
+              containerPort: 3000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: hermes-placeholder-data
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi
+      terminationGracePeriodSeconds: 30
