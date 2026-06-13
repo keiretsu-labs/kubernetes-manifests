@@ -1,16 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: garage
 resources:
   - bucket.yaml
   - key.yaml
   - velero-credentials.yaml
   - velero-system-namespace.yaml
-
-patchesStrategicMerge:
-  - |-
-    apiVersion: v1
-    kind: Secret
-    metadata:
-      name: velero-credentials
-      namespace: velero-system
