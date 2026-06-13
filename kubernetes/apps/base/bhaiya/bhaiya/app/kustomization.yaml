@@ -13,3 +13,5 @@ resources:
   - pvc.yaml
   - limitrange.yaml
   - resourcequota.yaml
+  - image-repository.yaml
+  - image-policy.yaml

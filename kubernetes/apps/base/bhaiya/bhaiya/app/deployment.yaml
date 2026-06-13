@@ -23,7 +23,7 @@ spec:
       automountServiceAccountToken: true
       containers:
         - name: bhaiya
-          image: oci.cdn.keiretsu.top/corp/bhaiya:latest
+          image: oci.cdn.keiretsu.top/corp/bhaiya:latest # {"$imagepolicy": "flux-system:bhaiya"}
           imagePullPolicy: Always
           ports:
             - name: grpc-web
