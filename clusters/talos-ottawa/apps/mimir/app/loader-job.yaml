@@ -1,0 +1,82 @@
+---
+# Syncs the native rule groups into the Mimir ruler, once per tenant (each
+# cluster is a tenant). Recreated by Flux whenever the rules ConfigMap changes,
+# because the configMapGenerator hash suffix changes the Job's volume reference
+# and the force annotation lets Flux replace the otherwise-immutable Job.
+#
+# grafana/mimirtool is distroless (no /bin/sh), so each tenant sync runs the
+# mimirtool entrypoint directly instead of a shell loop. Alertmanager config is
+# NOT managed here — the ruler notifies the kube-prometheus-stack Alertmanager
+# (the bundled Mimir AM is disabled, mimir#2910).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mimir-config-loader
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
+spec:
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: rules-ottawa
+          image: &mt docker.io/grafana/mimirtool:3.1.0
+          args:
+            - rules
+            - sync
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-ottawa
+            - /rules/blackbox.yaml
+            - /rules/flux.yaml
+            - /rules/garage.yaml
+            - /rules/k8gb.yaml
+            - /rules/monitoring.yaml
+            - /rules/smartctl.yaml
+          volumeMounts: &rulesmount
+            - { name: rules, mountPath: /rules }
+          securityContext: &sc
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+        - name: rules-robbinsdale
+          image: *mt
+          args:
+            - rules
+            - sync
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-robbinsdale
+            - /rules/blackbox.yaml
+            - /rules/flux.yaml
+            - /rules/garage.yaml
+            - /rules/k8gb.yaml
+            - /rules/monitoring.yaml
+            - /rules/smartctl.yaml
+          volumeMounts: *rulesmount
+          securityContext: *sc
+      containers:
+        - name: rules-stpetersburg
+          image: *mt
+          args:
+            - rules
+            - sync
+            - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
+            - --id=talos-stpetersburg
+            - /rules/blackbox.yaml
+            - /rules/flux.yaml
+            - /rules/garage.yaml
+            - /rules/k8gb.yaml
+            - /rules/monitoring.yaml
+            - /rules/smartctl.yaml
+          volumeMounts: *rulesmount
+          securityContext: *sc
+      volumes:
+        - name: rules
+          configMap:
+            name: mimir-rules

@@ -1,0 +1,33 @@
+---
+# Shiro storage node — 2nd storage node for Ottawa, adding LocalPath capacity
+# alongside the existing SMB-backed node.
+#
+# Backend = local-path, pinned to shiro (worker node, ~500GB NVMe).
+# Dynamic PVCs via spec.storage.{metadata,data}.size — no existingClaim needed
+# since this is a fresh node with no prior data to migrate.
+#
+# NodeSelector pins directly to shiro. The operator auto-discovers the nodeId
+# from the pod's Garage admin API on first connect, so nodeId is omitted here.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageNode
+metadata:
+  name: ottawa-garage-localpath-shiro
+spec:
+  clusterRef:
+    name: garage
+  zone: "${LOCATION}"
+  capacity: 200Gi
+  tags:
+    - cluster:garage/garage
+    - tier:storage
+  network:
+    rpcPublicAddr: "ottawa-garage-shiro.keiretsu.ts.net:3901"
+  storage:
+    metadata:
+      size: 1Gi
+      storageClassName: local-path
+    data:
+      size: 200Gi
+      storageClassName: local-path
+  nodeSelector:
+    kubernetes.io/hostname: shiro
