@@ -50,6 +50,11 @@ spec:
         - type: URLRewrite
           urlRewrite:
             hostname: "teaspoon-web.${COMMON_DOMAIN}"
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            add:
+              - name: Cache-Control
+                value: "public, max-age=3600"
       backendRefs:
         - group: ""
           kind: Service
