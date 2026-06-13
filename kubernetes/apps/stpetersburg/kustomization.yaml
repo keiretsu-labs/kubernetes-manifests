@@ -48,3 +48,4 @@ resources:
   - ./rdma-shared-dp
   - ./spiderpool
   - ./gpu-operator
+  - ./velero

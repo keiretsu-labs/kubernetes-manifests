@@ -1,0 +1,22 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: velero-key
+spec:
+  clusterRef:
+    name: garage
+  name: "Velero Backup Key"
+  secretTemplate:
+    name: velero-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    additionalData:
+      endpoint: "http://${COMMON_S3_ENDPOINT}"
+      region: garage
+  bucketPermissions:
+    - bucketRef:
+        name: velero
+      read: true
+      write: true
+      owner: true

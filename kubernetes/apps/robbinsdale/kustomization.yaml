@@ -48,3 +48,4 @@ resources:
   - ./csi-driver-smb
   - ./tuppr
   - ./rook-ceph
+  - ./velero
