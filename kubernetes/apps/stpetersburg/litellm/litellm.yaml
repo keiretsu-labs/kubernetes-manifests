@@ -44,6 +44,8 @@ spec:
                 secretKeyRef:
                   name: litellm-secret
                   key: salt_key
+            - name: PROMETHEUS_MULTIPROC_DIR
+              value: /prometheus_multiproc
           ports:
             - containerPort: 4000
               name: http
@@ -52,29 +54,33 @@ spec:
             - name: config
               mountPath: /app/config.yaml
               subPath: config.yaml
+            - name: prometheus-multiproc
+              mountPath: /prometheus_multiproc
           resources:
             requests:
-              memory: "512Mi"
+              memory: "1Gi"
               cpu: "500m"
             limits:
-              memory: "1Gi"
+              memory: "2Gi"
               cpu: "1000m"
           livenessProbe:
             httpGet:
-              path: /health/liveliness
+              path: /health/liveness
               port: http
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 30
           readinessProbe:
             httpGet:
-              path: /health/ready
+              path: /health/readiness
               port: http
-            initialDelaySeconds: 5
+            initialDelaySeconds: 15
             periodSeconds: 15
       volumes:
         - name: config
           configMap:
             name: litellm-config
+        - name: prometheus-multiproc
+          emptyDir: {}
 ---
 # ── ClusterIP Service ────────────────────────────────────────────────────
 apiVersion: v1
