@@ -3,4 +3,4 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./velero.yaml
-  - ./bsl-ottawa.yaml
+  - ./velero-bsl-ottawa.yaml
