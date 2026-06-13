@@ -16,6 +16,10 @@ spec:
     additionalData:
       endpoint: "http://${COMMON_S3_ENDPOINT}"
       region: garage
+      cloud: |
+        [default]
+        aws_access_key_id=GK92298b3a23ac1e55f0a6dd23
+        aws_secret_access_key=eccd15f344b40bc5acb1a22ca70531ac2e54f47acb46c4821e925e8019a00421
   bucketPermissions:
     - bucketRef:
         name: velero
