@@ -7,12 +7,10 @@ resources:
   - velero-credentials.yaml
   - velero-system-namespace.yaml
 
-patches:
-  # Move velero-credentials to velero-system namespace (where Velero reads it)
-  - patch: |-
-      - op: replace
-        path: /metadata/namespace
-        value: velero-system
-    target:
-      kind: Secret
+patchesStrategicMerge:
+  - |-
+    apiVersion: v1
+    kind: Secret
+    metadata:
       name: velero-credentials
+      namespace: velero-system
