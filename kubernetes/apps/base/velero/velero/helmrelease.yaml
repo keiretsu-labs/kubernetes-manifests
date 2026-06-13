@@ -41,6 +41,7 @@ spec:
         - name: garage
           provider: aws
           bucket: velero
+          default: true
           config:
             region: garage
             s3Url: "http://${COMMON_S3_ENDPOINT}"
