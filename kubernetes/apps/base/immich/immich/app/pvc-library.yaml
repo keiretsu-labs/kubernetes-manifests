@@ -11,38 +11,6 @@ spec:
       storage: 1Ti
   storageClassName: ceph-block-replicated
 ---
-apiVersion: volsync.backube/v1alpha1
-kind: ReplicationSource
-metadata:
-  name: immich-library
-spec:
-  sourcePVC: immich-library
-  trigger:
-    schedule: "0 3 * * *"
-  restic:
-    pruneIntervalDays: 14
-    repository: restic-immich-library
-    retain:
-      hourly: 1
-      daily: 3
-      weekly: 4
-      monthly: 2
-      yearly: 1
-    copyMethod: Direct
-    cacheAccessModes: [ReadWriteOnce]
----
-apiVersion: volsync.backube/v1alpha1
-kind: ReplicationDestination
-metadata:
-  name: immich-library
-spec:
-  trigger:
-    manual: first
-  restic:
-    repository: restic-immich-library
-    destinationPVC: immich-library
-    copyMethod: Direct
----
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:

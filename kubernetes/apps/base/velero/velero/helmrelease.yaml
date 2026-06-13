@@ -84,14 +84,6 @@ spec:
             - hermes
             - agents
           defaultVolumesToFsBackup: true
-      immutable-backup:
-        schedule: "0 8 * * *"
-        useOwnerReferencesInBackup: true
-        template:
-          ttl: "720h"
-          includedNamespaces:
-            - immich
-          defaultVolumesToFsBackup: true
       home-backup:
         schedule: "0 9 * * *"
         useOwnerReferencesInBackup: true
