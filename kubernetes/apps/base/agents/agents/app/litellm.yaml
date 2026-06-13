@@ -46,7 +46,7 @@ data:
       allowed_fails: 3
 
     general_settings:
-      database_url: "sqlite:///./litellm_proxy.db"
+      database_url: ""
 
     litellm_settings:
       callbacks: ["prometheus"]
@@ -91,6 +91,7 @@ spec:
             - "/app/config.yaml"
             - "--port"
             - "4000"
+            - "--no-db"
           env:
             - name: LITELLM_MASTER_KEY
               valueFrom:
