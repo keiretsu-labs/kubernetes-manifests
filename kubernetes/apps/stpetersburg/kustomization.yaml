@@ -22,6 +22,7 @@ resources:
   - ./jellyswarrm
   - ./kro-system
   - ./kube-system
+  - ./litellm
   - ./lws-system
   - ./loki
   - ./mimir

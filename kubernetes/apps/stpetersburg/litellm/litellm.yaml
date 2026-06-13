@@ -1,0 +1,118 @@
+# SPDX-FileCopyrightText: © 2025 Raj Singh <raj@keiretsu.cloud>
+# SPDX-License-Identifier: MIT
+#
+# LiteLLM proxy deployment — fronts StPete DSV4 Sparks with Corp AI overflow.
+---
+# ── Deployment ───────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm
+  namespace: agents
+  labels:
+    app: litellm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: litellm
+  template:
+    metadata:
+      labels:
+        app: litellm
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: litellm
+          image: ghcr.io/berriai/litellm:main-latest
+          imagePullPolicy: Always
+          args:
+            - "--config"
+            - "/app/config.yaml"
+            - "--port"
+            - "4000"
+          env:
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secret
+                  key: master_key
+            - name: LITELLM_SALT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secret
+                  key: salt_key
+          ports:
+            - containerPort: 4000
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health/liveliness
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 15
+      volumes:
+        - name: config
+          configMap:
+            name: litellm-config
+---
+# ── ClusterIP Service ────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm
+  namespace: agents
+  labels:
+    app: litellm
+spec:
+  type: ClusterIP
+  selector:
+    app: litellm
+  ports:
+    - name: http
+      port: 4000
+      protocol: TCP
+      targetPort: http
+---
+# ── Tailscale LoadBalancer ──────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm-ts
+  namespace: agents
+  annotations:
+    tailscale.com/hostname: litellm
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: tag:singh360,tag:k8s,tag:stpetersburg
+  labels:
+    app: litellm
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app: litellm
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
