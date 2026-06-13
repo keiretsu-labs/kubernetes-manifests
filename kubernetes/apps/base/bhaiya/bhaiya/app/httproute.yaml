@@ -1,0 +1,35 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bhaiya
+  namespace: bhaiya
+  annotations:
+    item.homer.rajsingh.info/name: "Bhaiya"
+    item.homer.rajsingh.info/subtitle: "Sandbox Control Plane"
+    item.homer.rajsingh.info/logo: "https://forgejo.keiretsu.top/corp/bhaiya"
+    item.homer.rajsingh.info/keywords: "sandbox, workspace, control-plane"
+spec:
+  hostnames:
+    - bhaiya.${CLUSTER_DOMAIN}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  rules:
+    - backendRefs:
+        - name: bhaiya
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
