@@ -10,7 +10,7 @@ spec:
   name: transmission-music-config
   size: 5Gi
   storageClass: ceph-block-replicated-nvme
-  s3Path: media/transmission-music-config-v2
+  s3Path: media/transmission-music-config-v3
   schedule: "0 4 * * *"
   restorePaused: false
   restorePrevious: 4

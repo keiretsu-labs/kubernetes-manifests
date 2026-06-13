@@ -9,7 +9,7 @@ spec:
   name: radarr-config
   size: 5Gi
   storageClass: ceph-block-replicated-nvme
-  s3Path: media/radarr-config-v2
+  s3Path: media/radarr-config-v3
   schedule: 0 4 * * *
   restorePaused: false
   copyMethod: Snapshot
