@@ -20,6 +20,10 @@ spec:
       namespace: home
     - group: gateway.networking.k8s.io
       kind: Gateway
+      name: public
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
       name: ts
       namespace: home
   hostnames:
@@ -31,6 +35,24 @@ spec:
           name: plex
           port: 32400
           weight: 1
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: "X-Forwarded-Proto"
+                value: "https"
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            remove:
+              - "Server"
+              - "X-XSS-Protection"
+            set:
+              - name: "X-Content-Type-Options"
+                value: "nosniff"
+              - name: "X-Frame-Options"
+                value: "SAMEORIGIN"
+              - name: "Cache-Control"
+                value: "no-transform"
       matches:
         - path:
             type: PathPrefix
