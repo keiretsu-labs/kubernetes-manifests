@@ -43,3 +43,5 @@ spec:
       namespace: agents
     - kind: GarageBucket
       namespace: agents
+    - kind: GarageKey
+      namespace: velero-system

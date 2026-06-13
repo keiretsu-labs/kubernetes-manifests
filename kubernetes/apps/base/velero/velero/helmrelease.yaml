@@ -32,9 +32,17 @@ spec:
           - mountPath: /target
             name: plugins
 
-    credentials:
-      useExistingSecret: true
-      existingSecret: velero-credentials
+    extraEnvVars:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: velero-credentials
+            key: AWS_ACCESS_KEY_ID
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: velero-credentials
+            key: AWS_SECRET_ACCESS_KEY
 
     configuration:
       backupStorageLocation:
@@ -46,9 +54,6 @@ spec:
             region: garage
             s3Url: "http://${COMMON_S3_ENDPOINT}"
             s3ForcePathStyle: "true"
-          credential:
-            name: velero-credentials
-            key: cloud
       volumeSnapshotLocation: []
 
     deployNodeAgent: true
