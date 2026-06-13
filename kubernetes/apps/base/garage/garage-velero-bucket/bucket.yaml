@@ -9,5 +9,5 @@ spec:
     name: garage
   globalAlias: velero
   quotas:
-    maxSize: 200Gi
+    maxSize: 1Ti
     maxObjects: 5000000
