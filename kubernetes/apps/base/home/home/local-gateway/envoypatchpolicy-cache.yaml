@@ -22,7 +22,6 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: public
-    namespace: home
   jsonPatches:
     # Insert the HTTP cache filter before every envoy.filters.http.router
     # across all filter chains in the consolidated HTTPS listener.
