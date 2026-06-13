@@ -3,14 +3,17 @@
 # gateway. Caches responses in Envoy's in-memory SimpleHttpCache so subsequent
 # cache-key hits skip garage-gateway entirely.
 #
-# Garage's web handler on port 3902 is slow (~400ms per 180KB file), so this
-# turns repeat requests into ~1ms cache hits. Combined with the Cache-Control
-# headers we add via ResponseHeaderModifier, browsers also cache locally.
+# Garage's web handler on port 3902 is slow (~40ms base overhead + ~300ms to
+# serve a 180KB file). Combined with the Cache-Control headers we add via
+# ResponseHeaderModifier:
+#   First cache miss:  ~400ms (Garage serves, Envoy caches)
+#   Subsequent hits:   ~1ms  (Envoy serves from in-memory cache)
+#   Browser revisit:   instant (browser local cache)
 #
-# The cache uses jsonPath to find all HTTP connection managers across all
-# filter chains in the HTTPS listener and inserts the cache filter before the
-# router filter — works regardless of how many filter chains exist or what
-# their indices are.
+# Targets specific filter chain indices in the consolidated HTTPS listener.
+# Each chain corresponds to a hostname match from the Gateway's listeners.
+# Chain indices are stable — determined by the Gateway spec's listener order,
+# not by the number of HTTPRoutes.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyPatchPolicy
 metadata:
@@ -22,24 +25,114 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: public
+    namespace: home
   jsonPatches:
-    # Insert the HTTP cache filter before every envoy.filters.http.router
-    # across all filter chains in the consolidated HTTPS listener.
-    # The jsonPath produces a JSONPointer for each router filter's position,
-    # then the add op inserts the cache filter right before it.
+    # Chain 0: *.killinit.cc — header_mutation + oauth2 + router
+    # Insert cache before router at index 2
     - type: type.googleapis.com/envoy.config.listener.v3.Listener
       name: home/public/wildcard-killinit-cc-https
       operation:
         op: add
-        jsonPath: $.filter_chains..filters[?(@.name == 'envoy.filters.network.http_connection_manager')].typed_config.http_filters[?(@.name == 'envoy.filters.http.router')]
+        path: /filter_chains/0/filters/0/typed_config/http_filters/2
         value:
           name: envoy.filters.http.cache
           typed_config:
             "@type": type.googleapis.com/envoy.extensions.filters.http.cache.v3.CacheConfig
-            # 1MB max — covers all our static sites (index.html ~180KB)
             max_payload_size_bytes: 1048576
             allowed_vary_headers: []
             cache_service:
               typed_config:
                 "@type": type.googleapis.com/envoy.extensions.cache.simple_http_cache.v3.SimpleHttpCacheConfig
                 max_entries: 500
+
+    # Chain 2: *.rajsingh.info — header_mutation + router
+    # Insert cache before router at index 1
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: home/public/wildcard-killinit-cc-https
+      operation:
+        op: add
+        path: /filter_chains/2/filters/0/typed_config/http_filters/1
+        value:
+          name: envoy.filters.http.cache
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.cache.v3.CacheConfig
+            max_payload_size_bytes: 1048576
+            allowed_vary_headers: []
+            cache_service:
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.cache.simple_http_cache.v3.SimpleHttpCacheConfig
+                max_entries: 500
+
+    # Chain 3: *.keiretsu.top — header_mutation + ext_authz×8 + lua + rbac + router
+    # Insert cache before router at index 11
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: home/public/wildcard-killinit-cc-https
+      operation:
+        op: add
+        path: /filter_chains/3/filters/0/typed_config/http_filters/11
+        value:
+          name: envoy.filters.http.cache
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.cache.v3.CacheConfig
+            max_payload_size_bytes: 1048576
+            allowed_vary_headers: []
+            cache_service:
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.cache.simple_http_cache.v3.SimpleHttpCacheConfig
+                max_entries: 500
+
+    # Chain 4: keiretsu.top (bare) — header_mutation + router
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: home/public/wildcard-killinit-cc-https
+      operation:
+        op: add
+        path: /filter_chains/4/filters/0/typed_config/http_filters/1
+        value:
+          name: envoy.filters.http.cache
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.cache.v3.CacheConfig
+            max_payload_size_bytes: 1048576
+            allowed_vary_headers: []
+            cache_service:
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.cache.simple_http_cache.v3.SimpleHttpCacheConfig
+                max_entries: 500
+
+    # Chain 5: *.agents.keiretsu.top — header_mutation + ext_authz×2 + lua + rbac + router
+    # Insert cache before router at index 5
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: home/public/wildcard-killinit-cc-https
+      operation:
+        op: add
+        path: /filter_chains/5/filters/0/typed_config/http_filters/5
+        value:
+          name: envoy.filters.http.cache
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.cache.v3.CacheConfig
+            max_payload_size_bytes: 1048576
+            allowed_vary_headers: []
+            cache_service:
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.cache.simple_http_cache.v3.SimpleHttpCacheConfig
+                max_entries: 500
+
+    # Chain 7: *.cdn.keiretsu.top — header_mutation + router
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: home/public/wildcard-killinit-cc-https
+      operation:
+        op: add
+        path: /filter_chains/7/filters/0/typed_config/http_filters/1
+        value:
+          name: envoy.filters.http.cache
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.cache.v3.CacheConfig
+            max_payload_size_bytes: 1048576
+            allowed_vary_headers: []
+            cache_service:
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.cache.simple_http_cache.v3.SimpleHttpCacheConfig
+                max_entries: 500
+
+    # Chain 8: *.s3.keiretsu.top — header_mutation + router
+    # S3 API — do NOT cache S3 responses
+    # (intentionally omitted)
