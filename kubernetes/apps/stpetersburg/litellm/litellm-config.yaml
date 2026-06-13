@@ -23,10 +23,9 @@ data:
       # ── Fallback: Corp AI endpoint ───────────────────────────────────
       - model_name: deepseek-v4-flash
         litellm_params:
-          model: openai/deepseek-v4-flash
+          model: hosted_vllm/deepseek-v4-flash
           api_base: http://ai/v1
-          # Corp API key from K8s secret (set via envFrom)
-          api_key: os.environ/CORP_API_KEY
+          api_key: ""
         model_info:
           mode: fallback
 
