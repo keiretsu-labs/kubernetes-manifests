@@ -125,3 +125,25 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: garage-velero-bucket
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: garage-bucket
+  targetNamespace: garage
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: garage-velero-bucket
+  path: ./kubernetes/apps/base/garage/garage-velero-bucket
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
