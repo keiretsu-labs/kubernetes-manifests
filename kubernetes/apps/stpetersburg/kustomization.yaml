@@ -27,7 +27,6 @@ resources:
   - ./mimir
   - ./spegel
   - ./tailbench
-  - ./volsync
   - ./zot
   - ./external-secrets
   - ./hubble-ui

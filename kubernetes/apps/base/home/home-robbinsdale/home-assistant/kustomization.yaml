@@ -6,4 +6,3 @@ resources:
   - app.yaml
   - pvc.yaml
   - httproute.yaml
-  - storagestack.yaml

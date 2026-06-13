@@ -9,4 +9,3 @@ resources:
 - s3-backup.yaml
 - dragonfly.yaml
 - secret.yaml
-- storagestack.yaml

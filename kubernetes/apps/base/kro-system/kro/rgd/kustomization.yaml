@@ -6,4 +6,3 @@ resources:
   - ./service-egress.yaml
   - ./app-route.yaml
   - ./gslb-endpoint.yaml
-  - ./storage-stack.yaml

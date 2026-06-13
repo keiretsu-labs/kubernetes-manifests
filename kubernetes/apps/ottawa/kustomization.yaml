@@ -42,7 +42,6 @@ resources:
   - ./snapshot-controller
   - ./spegel
   - ./tailscale-examples
-  - ./volsync
   - ./zot
   - ./external-secrets
   - ./tailscale-system
