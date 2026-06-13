@@ -3,6 +3,7 @@ apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
   name: velero
+  namespace: garage
 spec:
   clusterRef:
     name: garage
