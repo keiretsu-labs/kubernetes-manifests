@@ -1,0 +1,101 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: velero
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: velero
+      version: 12.0.2
+      sourceRef:
+        kind: HelmRepository
+        name: vmware-tanzu
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    image:
+      repository: docker.io/velero/velero
+      tag: v1.18.1
+
+    initContainers:
+      - name: velero-plugin-for-aws
+        image: velero/velero-plugin-for-aws:v1.13.1
+        volumeMounts:
+          - mountPath: /target
+            name: plugins
+
+    credentials:
+      useSecret: true
+      existingSecret: velero-credentials
+
+    configuration:
+      backupStorageLocation:
+        - name: garage
+          provider: aws
+          bucket: velero
+          config:
+            region: garage
+            s3Url: "http://${COMMON_S3_ENDPOINT}"
+            s3ForcePathStyle: "true"
+          credential:
+            name: velero-credentials
+            key: cloud
+      volumeSnapshotLocation: []
+
+    deployNodeAgent: true
+    nodeAgent:
+      uploaderType: kopia
+      podVolumePath: /var/lib/kubelet/pods
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 1
+          memory: 1Gi
+
+    metrics:
+      enabled: true
+
+    schedules:
+      media-backup:
+        schedule: "0 6 * * *"
+        useOwnerReferencesInBackup: true
+        template:
+          ttl: "720h"
+          includedNamespaces:
+            - media
+          defaultVolumesToFsBackup: true
+      hermes-backup:
+        schedule: "0 7 * * *"
+        useOwnerReferencesInBackup: true
+        template:
+          ttl: "720h"
+          includedNamespaces:
+            - hermes
+            - agents
+          defaultVolumesToFsBackup: true
+      immutable-backup:
+        schedule: "0 8 * * *"
+        useOwnerReferencesInBackup: true
+        template:
+          ttl: "720h"
+          includedNamespaces:
+            - immich
+          defaultVolumesToFsBackup: true
+      home-backup:
+        schedule: "0 9 * * *"
+        useOwnerReferencesInBackup: true
+        template:
+          ttl: "720h"
+          includedNamespaces:
+            - home
+          defaultVolumesToFsBackup: true

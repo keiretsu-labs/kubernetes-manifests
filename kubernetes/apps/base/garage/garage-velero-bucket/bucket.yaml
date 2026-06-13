@@ -1,0 +1,12 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: velero
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: velero
+  quotas:
+    maxSize: 200Gi
+    maxObjects: 5000000
