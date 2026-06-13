@@ -520,6 +520,16 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        - name: Garage Gateway
+          group: Storage
+          url: tcp://garage-gateway.garage:3900
+          interval: 60s
+          conditions:
+            - "[CONNECTED] == true"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
         - name: Garage WebUI
           group: Storage
           url: http://garage-webui.garage:80
