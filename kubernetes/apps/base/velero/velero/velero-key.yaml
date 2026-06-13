@@ -3,13 +3,14 @@ apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: velero-key
-  namespace: garage
+  namespace: velero-system
 spec:
   clusterRef:
     name: garage
+    namespace: garage
   name: "Velero Backup Key"
   secretTemplate:
-    name: velero-s3
+    name: velero-credentials
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
     additionalData:
@@ -18,6 +19,7 @@ spec:
   bucketPermissions:
     - bucketRef:
         name: velero
+        namespace: garage
       read: true
       write: true
       owner: true
