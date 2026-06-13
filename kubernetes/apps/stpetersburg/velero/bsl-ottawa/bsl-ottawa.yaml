@@ -1,0 +1,24 @@
+---
+# Secondary Velero BackupStorageLocation pointing at Ottawa's Garage.
+# The `velero` bucket has globalAlias set, so it and its S3 credentials are
+# accessible from ANY Garage gateway in the federation. This BSL provides an
+# off-site backup target: if StPetersburg is fully lost, backups survive in
+# Ottawa's Ceph-backed Garage.
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: garage-ottawa
+  namespace: velero-system
+spec:
+  accessMode: ReadWrite
+  config:
+    region: garage
+    s3ForcePathStyle: "true"
+    s3Url: http://ottawa-garage.keiretsu.ts.net:3900
+  credential:
+    key: cloud
+    name: velero-credentials
+  default: false
+  objectStorage:
+    bucket: velero
+  provider: aws
