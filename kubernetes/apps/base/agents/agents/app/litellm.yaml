@@ -46,7 +46,7 @@ data:
       allowed_fails: 3
 
     general_settings:
-      database_url: ""
+      database_url: "sqlite:///./litellm_proxy.db"
 
     litellm_settings:
       callbacks: ["prometheus"]
