@@ -15,4 +15,3 @@ resources:
   - certificate-s3.yaml
   - certificate-agents.yaml
   - certificate-hermes.yaml
-  - envoypatchpolicy-cache.yaml
