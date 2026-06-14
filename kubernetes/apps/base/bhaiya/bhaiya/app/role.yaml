@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/name: bhaiya
 rules:
   # Sandbox CRD (agent-sandbox)
-  - apiGroups: [agents.keiretsu.ts.net]
+  - apiGroups: [agents.x-k8s.io]
     resources: [sandboxes]
     verbs: [create, get, list, watch, update, patch, delete]
   # Garage CRDs
