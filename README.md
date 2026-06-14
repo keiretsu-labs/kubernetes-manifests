@@ -12,21 +12,21 @@ _Managed with Flux, Tailscale, and GitHub Actions_
 
 #### Ottawa
 
-[![Talos](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Ftalos_version&style=for-the-badge&logo=talos&logoColor=white&color=blue&label=%20)](https://talos.dev)&nbsp;&nbsp;
-[![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fkubernetes_version&style=for-the-badge&logo=kubernetes&logoColor=white&color=blue&label=%20)](https://kubernetes.io)&nbsp;&nbsp;
-[![Flux Version](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fflux_version&style=for-the-badge&logo=flux&logoColor=white&color=blue&label=%20)](https://fluxcd.io)&nbsp;&nbsp;
-[![Tailscale](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Ftailscale_operator_version&style=for-the-badge&logo=tailscale&logoColor=white&color=black&label=%20)](https://tailscale.com/kb/1236/kubernetes-operator)
+[![Talos](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Ftalos_version%3Fformat%3Dshields&style=for-the-badge&logo=talos&logoColor=white&color=blue&label=%20)](https://talos.dev)&nbsp;&nbsp;
+[![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Fkubernetes_version%3Fformat%3Dshields&style=for-the-badge&logo=kubernetes&logoColor=white&color=blue&label=%20)](https://kubernetes.io)&nbsp;&nbsp;
+[![Flux Version](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Fflux_version%3Fformat%3Dshields&style=for-the-badge&logo=flux&logoColor=white&color=blue&label=%20)](https://fluxcd.io)&nbsp;&nbsp;
+[![Tailscale](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Ftailscale_operator_version%3Fformat%3Dshields&style=for-the-badge&logo=tailscale&logoColor=white&color=black&label=%20)](https://tailscale.com/kb/1236/kubernetes-operator)
 
 [![Kubernetes API](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.killinit.cc%2Fapi%2Fv1%2Fendpoints%2Fkubernetes_kubernetes-api%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=kubernetes&logoColor=white&label=Kubernetes+API)](https://status.killinit.cc)&nbsp;&nbsp;
 [![Garage](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.killinit.cc%2Fapi%2Fv1%2Fendpoints%2Fstorage_garage%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=amazons3&logoColor=white&label=Garage)](https://status.killinit.cc)&nbsp;&nbsp;
 
-[![Age](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fcluster_age_days&style=flat-square&label=Age)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fcluster_uptime_days&style=flat-square&label=Uptime)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Nodes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fcluster_node_count&style=flat-square&label=Nodes)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Pods](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fcluster_pod_count&style=flat-square&label=Pods)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![CPU](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fcluster_cpu_usage&style=flat-square&label=CPU)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Memory](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fcluster_memory_usage&style=flat-square&label=Memory)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Alerts](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fcluster_alert_count&style=flat-square&label=Alerts)](https://github.com/kashalls/kromgo)
+[![Age](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Fcluster_age_days%3Fformat%3Dshields&style=flat-square&label=Age)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Fcluster_uptime_days%3Fformat%3Dshields&style=flat-square&label=Uptime)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Nodes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Fcluster_node_count%3Fformat%3Dshields&style=flat-square&label=Nodes)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Pods](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Fcluster_pod_count%3Fformat%3Dshields&style=flat-square&label=Pods)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![CPU](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Fcluster_cpu_usage%3Fformat%3Dshields&style=flat-square&label=CPU)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Memory](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Fcluster_memory_usage%3Fformat%3Dshields&style=flat-square&label=Memory)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Alerts](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.killinit.cc%2Fbadges%2Fcluster_alert_count%3Fformat%3Dshields&style=flat-square&label=Alerts)](https://github.com/home-operations/kromgo)
 
 </div>
 
@@ -34,21 +34,21 @@ _Managed with Flux, Tailscale, and GitHub Actions_
 
 #### Robbinsdale
 
-[![Talos](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Ftalos_version&style=for-the-badge&logo=talos&logoColor=white&color=blue&label=%20)](https://talos.dev)&nbsp;&nbsp;
-[![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fkubernetes_version&style=for-the-badge&logo=kubernetes&logoColor=white&color=blue&label=%20)](https://kubernetes.io)&nbsp;&nbsp;
-[![Flux Version](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fflux_version&style=for-the-badge&logo=flux&logoColor=white&color=blue&label=%20)](https://fluxcd.io)&nbsp;&nbsp;
-[![Tailscale](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Ftailscale_operator_version&style=for-the-badge&logo=tailscale&logoColor=white&color=black&label=%20)](https://tailscale.com/kb/1236/kubernetes-operator)
+[![Talos](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Ftalos_version%3Fformat%3Dshields&style=for-the-badge&logo=talos&logoColor=white&color=blue&label=%20)](https://talos.dev)&nbsp;&nbsp;
+[![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Fkubernetes_version%3Fformat%3Dshields&style=for-the-badge&logo=kubernetes&logoColor=white&color=blue&label=%20)](https://kubernetes.io)&nbsp;&nbsp;
+[![Flux Version](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Fflux_version%3Fformat%3Dshields&style=for-the-badge&logo=flux&logoColor=white&color=blue&label=%20)](https://fluxcd.io)&nbsp;&nbsp;
+[![Tailscale](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Ftailscale_operator_version%3Fformat%3Dshields&style=for-the-badge&logo=tailscale&logoColor=white&color=black&label=%20)](https://tailscale.com/kb/1236/kubernetes-operator)
 
 [![Kubernetes API](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.lukehouge.com%2Fapi%2Fv1%2Fendpoints%2Fkubernetes_kubernetes-api%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=kubernetes&logoColor=white&label=Kubernetes+API)](https://status.lukehouge.com)&nbsp;&nbsp;
 [![Garage](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.lukehouge.com%2Fapi%2Fv1%2Fendpoints%2Fstorage_garage-local-%28robbinsdale%29%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=amazons3&logoColor=white&label=Garage)](https://status.lukehouge.com)&nbsp;&nbsp;
 
-[![Age](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fcluster_age_days&style=flat-square&label=Age)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fcluster_uptime_days&style=flat-square&label=Uptime)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Nodes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fcluster_node_count&style=flat-square&label=Nodes)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Pods](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fcluster_pod_count&style=flat-square&label=Pods)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![CPU](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fcluster_cpu_usage&style=flat-square&label=CPU)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Memory](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fcluster_memory_usage&style=flat-square&label=Memory)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Alerts](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fcluster_alert_count&style=flat-square&label=Alerts)](https://github.com/kashalls/kromgo)
+[![Age](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Fcluster_age_days%3Fformat%3Dshields&style=flat-square&label=Age)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Fcluster_uptime_days%3Fformat%3Dshields&style=flat-square&label=Uptime)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Nodes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Fcluster_node_count%3Fformat%3Dshields&style=flat-square&label=Nodes)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Pods](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Fcluster_pod_count%3Fformat%3Dshields&style=flat-square&label=Pods)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![CPU](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Fcluster_cpu_usage%3Fformat%3Dshields&style=flat-square&label=CPU)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Memory](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Fcluster_memory_usage%3Fformat%3Dshields&style=flat-square&label=Memory)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Alerts](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.lukehouge.com%2Fbadges%2Fcluster_alert_count%3Fformat%3Dshields&style=flat-square&label=Alerts)](https://github.com/home-operations/kromgo)
 
 </div>
 
@@ -56,21 +56,21 @@ _Managed with Flux, Tailscale, and GitHub Actions_
 
 #### St. Petersburg
 
-[![Talos](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Ftalos_version&style=for-the-badge&logo=talos&logoColor=white&color=blue&label=%20)](https://talos.dev)&nbsp;&nbsp;
-[![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fkubernetes_version&style=for-the-badge&logo=kubernetes&logoColor=white&color=blue&label=%20)](https://kubernetes.io)&nbsp;&nbsp;
-[![Flux Version](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fflux_version&style=for-the-badge&logo=flux&logoColor=white&color=blue&label=%20)](https://fluxcd.io)&nbsp;&nbsp;
-[![Tailscale](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Ftailscale_operator_version&style=for-the-badge&logo=tailscale&logoColor=white&color=black&label=%20)](https://tailscale.com/kb/1236/kubernetes-operator)
+[![Talos](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Ftalos_version%3Fformat%3Dshields&style=for-the-badge&logo=talos&logoColor=white&color=blue&label=%20)](https://talos.dev)&nbsp;&nbsp;
+[![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Fkubernetes_version%3Fformat%3Dshields&style=for-the-badge&logo=kubernetes&logoColor=white&color=blue&label=%20)](https://kubernetes.io)&nbsp;&nbsp;
+[![Flux Version](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Fflux_version%3Fformat%3Dshields&style=for-the-badge&logo=flux&logoColor=white&color=blue&label=%20)](https://fluxcd.io)&nbsp;&nbsp;
+[![Tailscale](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Ftailscale_operator_version%3Fformat%3Dshields&style=for-the-badge&logo=tailscale&logoColor=white&color=black&label=%20)](https://tailscale.com/kb/1236/kubernetes-operator)
 
 [![Kubernetes API](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.rajsingh.info%2Fapi%2Fv1%2Fendpoints%2Fkubernetes_kubernetes-api%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=kubernetes&logoColor=white&label=Kubernetes+API)](https://status.rajsingh.info)&nbsp;&nbsp;
 [![Garage](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.rajsingh.info%2Fapi%2Fv1%2Fendpoints%2Fstorage_garage-local-%28stpetersburg%29%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=amazons3&logoColor=white&label=Garage)](https://status.rajsingh.info)&nbsp;&nbsp;
 
-[![Age](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fcluster_age_days&style=flat-square&label=Age)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fcluster_uptime_days&style=flat-square&label=Uptime)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Nodes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fcluster_node_count&style=flat-square&label=Nodes)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Pods](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fcluster_pod_count&style=flat-square&label=Pods)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![CPU](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fcluster_cpu_usage&style=flat-square&label=CPU)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Memory](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fcluster_memory_usage&style=flat-square&label=Memory)](https://github.com/kashalls/kromgo)&nbsp;&nbsp;
-[![Alerts](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fcluster_alert_count&style=flat-square&label=Alerts)](https://github.com/kashalls/kromgo)
+[![Age](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Fcluster_age_days%3Fformat%3Dshields&style=flat-square&label=Age)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Fcluster_uptime_days%3Fformat%3Dshields&style=flat-square&label=Uptime)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Nodes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Fcluster_node_count%3Fformat%3Dshields&style=flat-square&label=Nodes)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Pods](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Fcluster_pod_count%3Fformat%3Dshields&style=flat-square&label=Pods)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![CPU](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Fcluster_cpu_usage%3Fformat%3Dshields&style=flat-square&label=CPU)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Memory](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Fcluster_memory_usage%3Fformat%3Dshields&style=flat-square&label=Memory)](https://github.com/home-operations/kromgo)&nbsp;&nbsp;
+[![Alerts](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.rajsingh.info%2Fbadges%2Fcluster_alert_count%3Fformat%3Dshields&style=flat-square&label=Alerts)](https://github.com/home-operations/kromgo)
 
 </div>
 

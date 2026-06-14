@@ -17,13 +17,13 @@
   "ignorePaths": ["**/*.sops.*", "**/clusterplex.yaml"],
   "ignoreDeps": ["go.temporal.io/api", "code.forgejo.org/forgejo-helm/forgejo"],
   "flux": {
-    "managerFilePatterns": ["/clusters/.+\\.ya?ml$/"]
+    "managerFilePatterns": ["/clusters/.+\\.ya?ml$/", "/kubernetes/.+\\.ya?ml$/"]
   },
   "helm-values": {
-    "managerFilePatterns": ["/clusters/.+\\.ya?ml$/"]
+    "managerFilePatterns": ["/clusters/.+\\.ya?ml$/", "/kubernetes/.+\\.ya?ml$/"]
   },
   "kubernetes": {
-    "managerFilePatterns": ["/clusters/.+\\.ya?ml$/"]
+    "managerFilePatterns": ["/clusters/.+\\.ya?ml$/", "/kubernetes/.+\\.ya?ml$/"]
   },
   "packageRules": [
     {
@@ -61,7 +61,8 @@
       "description": "Auto merge non-critical-infrastructure cluster updates",
       "matchManagers": ["flux", "helm-values", "kubernetes", "kustomize","custom.regex"],
       "matchFileNames": [
-        "clusters/**"
+        "clusters/**",
+        "kubernetes/**"
       ],
       "automerge": true
     },
@@ -75,7 +76,15 @@
         "clusters/**/apps/multus/**",
         "clusters/**/apps/rook-ceph/**",
         "clusters/**/apps/tuppr/**",
-        "clusters/**/apps/cert-manager/**"
+        "clusters/**/apps/cert-manager/**",
+        "kubernetes/**/bootstrap/**",
+        "kubernetes/apps/**/flux-system*/**",
+        "kubernetes/apps/**/cilium-*/**",
+        "kubernetes/apps/**/spiderpool*/**",
+        "kubernetes/apps/**/multus*/**",
+        "kubernetes/apps/**/rook-ceph*/**",
+        "kubernetes/apps/**/tuppr*/**",
+        "kubernetes/apps/**/cert-manager*/**"
       ],
       "automerge": false
     },
