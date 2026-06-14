@@ -21,10 +21,10 @@ spec:
       streamIdleTimeout: 900s
   headers:
     requestID: PreserveOrGenerate
-    lateResponseHeaders:
-      addIfAbsent:
-        - name: Cache-Control
-          value: "public, max-age=3600"
+    # Do NOT blanket-set Cache-Control here. addIfAbsent caches every response
+    # whose backend doesn't send its own — which silently cached tinyauth's
+    # OAuth init and broke login. Routes that want caching set it per-route
+    # (garage-web, cdn-site, agent web UIs, plex).
   http2:
     initialStreamWindowSize: 64Ki 
     initialConnectionWindowSize: 1Mi 
