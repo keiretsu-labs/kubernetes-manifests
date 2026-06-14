@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: media
 resources:
 - app.yaml
+- pvc.yaml
 - httproute.yaml
 - postgres.yaml
 - s3-backup.yaml
