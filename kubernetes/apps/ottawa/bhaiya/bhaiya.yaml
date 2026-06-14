@@ -12,7 +12,7 @@ spec:
   dependsOn:
     - name: garage
     - name: cnpg-system
-    - name: agent-sandbox-system
+    - name: agent-sandbox
     - name: cert-manager
   path: ./kubernetes/apps/base/bhaiya/bhaiya/app
   prune: true
