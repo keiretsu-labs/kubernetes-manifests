@@ -9,6 +9,8 @@ spec:
   url: "https://github.com/keiretsu-labs/kubernetes-manifests.git"
   ref:
     branch: "main"
+  secretRef:
+    name: kubernetes-manifests-github-token
   ignore: |
     # exclude all
     /*
