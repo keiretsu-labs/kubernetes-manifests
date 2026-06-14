@@ -69,6 +69,16 @@ spec:
           env:
             - name: DOCKER_TLS_CERTDIR
               value: ""
+          # Heavy Go builds (e.g. bhaiya's k8s-deps compile) crash dind under
+          # node memory pressure (lastTerminated=Unknown). Reserve memory so the
+          # scheduler doesn't overcommit, with generous headroom for the build.
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "4"
+              memory: 8Gi
           volumeMounts:
             - name: docker-storage
               mountPath: /var/lib/docker
