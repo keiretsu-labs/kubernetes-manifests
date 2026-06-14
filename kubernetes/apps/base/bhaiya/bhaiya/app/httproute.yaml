@@ -11,7 +11,7 @@ metadata:
     item.homer.rajsingh.info/keywords: "sandbox, workspace, control-plane"
 spec:
   hostnames:
-    - bhaiya.${CLUSTER_DOMAIN}
+    - bhaiya.${COMMON_DOMAIN}
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
