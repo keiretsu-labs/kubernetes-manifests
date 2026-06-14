@@ -87,3 +87,4 @@ resources:
   - ./ocm.yaml
   - ./border0.yaml
   - ./vmware-tanzu.yaml
+  - ./otwld.yaml
