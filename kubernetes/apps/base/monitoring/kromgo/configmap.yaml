@@ -43,7 +43,7 @@ data:
 
       - id: cluster_node_count
         title: Nodes
-        query: count(count by (node) (kube_node_labels))
+        query: count(kube_node_info)
         valueExpr: string(int(result))
         colorExpr: '"green"'
 
