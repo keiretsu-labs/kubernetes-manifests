@@ -19,7 +19,7 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
       containers:
         - name: homepage
-          image: python:3.13-alpine
+          image: python:3.14-alpine
           command:
             - python3
             - /app/server.py
