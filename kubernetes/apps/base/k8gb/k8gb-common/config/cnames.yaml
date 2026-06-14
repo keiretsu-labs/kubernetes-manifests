@@ -71,6 +71,13 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    - dnsName: "velero.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "velero.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: "oci.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:

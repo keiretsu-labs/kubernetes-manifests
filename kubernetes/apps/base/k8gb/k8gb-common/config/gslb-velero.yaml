@@ -1,0 +1,109 @@
+---
+# velero-ui — public DNS via k8gb GSLB (cdn.keiretsu.top is the k8gb-delegated
+# zone; velero.${COMMON_DOMAIN} is a CNAME to it in cnames.yaml). The route
+# lives here (not velero-system) so the Gslb can reference it same-namespace.
+# MUST be on *.keiretsu.top — tinyauth's session cookie is scoped to
+# keiretsu.top, so an app on any other domain (e.g. killinit.cc) never receives
+# the cookie and loops forever between the app and /login. Access gated by
+# tinyauth to raj + kartik only.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: velero-cdn
+  namespace: keiretsu-top
+  annotations:
+    item.homer.rajsingh.info/name: "Velero"
+    item.homer.rajsingh.info/subtitle: "Backups"
+    item.homer.rajsingh.info/keywords: "backup, restore, velero, dr"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-life-ring"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+  hostnames:
+    - "velero.cdn.${COMMON_DOMAIN}"
+    - "velero.${COMMON_DOMAIN}"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: velero-ui
+          namespace: velero-system
+          port: 3000
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+apiVersion: k8gb.absa.oss/v1beta1
+kind: Gslb
+metadata:
+  name: velero
+  namespace: keiretsu-top
+  annotations:
+    k8gb.io/exposed-hostnames: "${LOCATION}.${COMMON_DOMAIN}"
+spec:
+  resourceRef:
+    apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    name: velero-cdn
+  strategy:
+    type: roundRobin
+    dnsTtlSeconds: 30
+    weight:
+      ottawa: 100
+      robbinsdale: 0
+      stpetersburg: 0
+---
+# velero-ui access control via tinyauth — raj + kartik only.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: velero-tinyauth
+  namespace: keiretsu-top
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: velero-cdn
+  extAuth:
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-proto
+      - x-forwarded-for
+      - user-agent
+    http:
+      backendRefs:
+        - name: tinyauth
+          namespace: tinyauth
+          port: 3000
+      path: "/api/auth/envoy?path="
+      headersToBackend:
+        - remote-user
+        - remote-email
+        - remote-name
+        - remote-groups
+  authorization:
+    defaultAction: Deny
+    rules:
+      - name: allow-admins
+        action: Allow
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com
