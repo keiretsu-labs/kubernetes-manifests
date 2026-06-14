@@ -15,6 +15,7 @@ spec:
   hostnames:
     - "auth.${COMMON_DOMAIN}"
   rules:
+    # Catch-all: forward everything to tinyauth transparently
     - backendRefs:
         - group: ""
           kind: Service
@@ -25,3 +26,24 @@ spec:
         - path:
             type: PathPrefix
             value: /
+    # tinyauth v5.0.7 moved OAuth callback from /api/auth/callback/google
+    # (v4 path) to /api/oauth/callback/google. Rewrite the old path so
+    # that Google Cloud Console (which has the old redirect URI registered)
+    # can still complete the OAuth flow without needing a GCP console update.
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: tinyauth
+          port: 3000
+          weight: 1
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: "auth.${COMMON_DOMAIN}"
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /api/oauth/callback/google
+      matches:
+        - path:
+            type: Exact
+            value: /api/auth/callback/google
