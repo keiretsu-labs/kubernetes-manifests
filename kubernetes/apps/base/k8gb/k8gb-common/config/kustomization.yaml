@@ -18,3 +18,4 @@ resources:
   - ./gslb-dashboard-cdn.yaml
   - ./gslb-forgejo.yaml
   - ./gslb-pocket-id.yaml
+  - ./gslb-bhaiya.yaml

@@ -14,7 +14,7 @@ spec:
       namespace: home
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
-      namespace: bhaiya
+      namespace: keiretsu-top
   to:
     - group: ""
       kind: Service

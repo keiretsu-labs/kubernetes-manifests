@@ -9,11 +9,9 @@ resources:
   - secret.yaml
   - deployment.yaml
   - service.yaml
-  - httproute.yaml
-  - securitypolicy.yaml
+  - referencegrant.yaml
   - pvc.yaml
   - limitrange.yaml
   - resourcequota.yaml
   - image-repository.yaml
   - image-policy.yaml
-  - certificate.yaml
