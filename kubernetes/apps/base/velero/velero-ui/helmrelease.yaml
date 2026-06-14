@@ -28,11 +28,11 @@ spec:
       tag: ""
 
     # Point at the velero namespace (same cluster, in-cluster auth via service account)
-    veleroNamespace: velero-system
-
-    # Use default password from cluster-secrets
-    secretPassPhrase:
-      value: "${DEFAULT_PASSWORD}"
+    configuration:
+      general:
+        veleroNamespace: velero-system
+        secretPassPhrase:
+          value: "${DEFAULT_PASSWORD}"
 
     # Override basic auth password (admin/${DEFAULT_PASSWORD}) from cluster-secrets
     env:
