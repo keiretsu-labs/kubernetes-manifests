@@ -109,18 +109,4 @@ spec:
         - kind: TCPRoute
         namespaces:
           from: All
-    - name: neo4j-bolt
-      protocol: TLS
-      port: 7687
-      hostname: "cartography.${CLUSTER_DOMAIN}"
-      tls:
-        mode: Terminate
-        certificateRefs:
-        - group: ''
-          kind: Secret
-          name: wildcard-${CLUSTER_DOMAIN//./-}
-      allowedRoutes:
-        kinds:
-        - kind: TCPRoute
-        namespaces:
-          from: All
+    
