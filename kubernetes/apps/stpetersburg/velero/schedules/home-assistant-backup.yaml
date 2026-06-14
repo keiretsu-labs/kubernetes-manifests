@@ -1,0 +1,13 @@
+---
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: home-assistant-backup
+  namespace: velero-system
+spec:
+  schedule: "0 9 * * *"
+  template:
+    ttl: 720h
+    includedNamespaces:
+      - home-assistant
+    defaultVolumesToFsBackup: true
