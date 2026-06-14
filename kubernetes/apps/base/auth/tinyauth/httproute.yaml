@@ -15,6 +15,31 @@ spec:
   hostnames:
     - "auth.${COMMON_DOMAIN}"
   rules:
+    # tinyauth v5.0.7 serves GET /api/oauth/url/<provider> with
+    # `Cache-Control: public, max-age=3600`. That response both sets the
+    # per-attempt `tinyauth-oauth-*` session cookie and embeds the OAuth
+    # `state`. The browser caches it for an hour, so every login after the
+    # first replays the cached body WITHOUT re-applying Set-Cookie — the
+    # callback then arrives with no session cookie and tinyauth fails with
+    # "OAuth session cookie missing" -> /error. Force no-store on this path
+    # so the cookie is minted fresh on every attempt. (More specific than the
+    # catch-all rule below, so these requests route here.)
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: tinyauth
+          port: 3000
+          weight: 1
+      filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            set:
+              - name: Cache-Control
+                value: "no-store"
+      matches:
+        - path:
+            type: PathPrefix
+            value: /api/oauth/url
     # Catch-all: forward everything to tinyauth transparently
     - backendRefs:
         - group: ""
