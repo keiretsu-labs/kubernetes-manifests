@@ -30,7 +30,7 @@ spec:
         fsGroup: 65532
       containers:
         - name: bhaiya
-          image: oci.cdn.keiretsu.top/corp/bhaiya:latest # {"$imagepolicy": "bhaiya:bhaiya"}
+          image: oci.cdn.keiretsu.top/corp/bhaiya@sha256:ce4a1fc982c7d7e9b3926f11314b53136f04abdf02758894a8fdf731d5eb8b20 # {"$imagepolicy": "bhaiya:bhaiya"}
           imagePullPolicy: Always
           ports:
             - name: grpc-web
