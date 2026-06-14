@@ -1,0 +1,42 @@
+---
+# bhaiya is a namespaced Role, not a ClusterRole. It only ever mutates objects
+# in its own bhaiya namespace. See design spec §4 for rationale.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bhaiya
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: bhaiya
+rules:
+  # Sandbox CRD (agent-sandbox)
+  - apiGroups: [agents.keiretsu.ts.net]
+    resources: [sandboxes]
+    verbs: [create, get, list, watch, update, patch, delete]
+  # Garage CRDs
+  - apiGroups: [garage.rajsingh.info]
+    resources: [garagebuckets, garagekeys]
+    verbs: [create, get, list, watch, update, patch, delete]
+  # Gateway API
+  - apiGroups: [gateway.networking.k8s.io]
+    resources: [httproutes, tcproutes, referencegrants]
+    verbs: [create, get, list, watch, update, patch, delete]
+  # Cilium network policies
+  - apiGroups: [cilium.io]
+    resources: [ciliumnetworkpolicies]
+    verbs: [create, get, list, watch, update, patch, delete]
+  # SecurityPolicy (tinyauth)
+  - apiGroups: [tinyauth.otter.sh]
+    resources: [securitypolicies]
+    verbs: [create, get, list, watch, update, patch, delete]
+  # Owner ConfigMap + workspace objects
+  - apiGroups: [""]
+    resources: [configmaps, secrets, services, pods/exec, events]
+    verbs: [create, get, list, watch, update, patch, delete]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list, watch]
+  # Read cluster state for DB rebuild
+  - apiGroups: [""]
+    resources: [namespaces]
+    verbs: [get, list, watch]
