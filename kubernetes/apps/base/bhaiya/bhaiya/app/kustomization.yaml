@@ -10,6 +10,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - httproute.yaml
+  - securitypolicy.yaml
   - pvc.yaml
   - limitrange.yaml
   - resourcequota.yaml
