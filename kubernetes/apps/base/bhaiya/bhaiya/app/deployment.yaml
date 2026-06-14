@@ -21,6 +21,13 @@ spec:
     spec:
       serviceAccountName: bhaiya
       automountServiceAccountToken: true
+      # distroless:nonroot runs as uid/gid 65532. fsGroup makes the (root-owned)
+      # ceph-block PV writable so SQLite can create /data/bhaiya.db.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
       containers:
         - name: bhaiya
           image: oci.cdn.keiretsu.top/corp/bhaiya:latest # {"$imagepolicy": "flux-system:bhaiya"}
