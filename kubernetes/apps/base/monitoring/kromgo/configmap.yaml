@@ -34,7 +34,7 @@ data:
         title: Age
 
       - name: cluster_node_count
-        query: count(count by (node) (kube_node_labels))
+        query: count(kube_node_info)
         colors:
           - {color: "green", min: 0, max: 9999}
         title: Nodes
