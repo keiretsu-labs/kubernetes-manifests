@@ -1,0 +1,96 @@
+---
+# bhaiya admin console — public DNS via k8gb GSLB (cdn.keiretsu.top is the
+# k8gb-delegated zone; bhaiya.${COMMON_DOMAIN} is a CNAME to it in cnames.yaml).
+# The route lives here (not the bhaiya namespace) so the Gslb can reference it
+# same-namespace. Access is gated by tinyauth to raj + kartik only.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bhaiya-cdn
+  namespace: keiretsu-top
+  annotations:
+    item.homer.rajsingh.info/name: "Bhaiya"
+    item.homer.rajsingh.info/subtitle: "Sandbox Control Plane"
+    item.homer.rajsingh.info/keywords: "sandbox, workspace, control-plane"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-cubes"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - "bhaiya.cdn.${COMMON_DOMAIN}"
+    - "bhaiya.${COMMON_DOMAIN}"
+  rules:
+    - backendRefs:
+        - name: bhaiya
+          namespace: bhaiya
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+apiVersion: k8gb.absa.oss/v1beta1
+kind: Gslb
+metadata:
+  name: bhaiya
+  namespace: keiretsu-top
+  annotations:
+    k8gb.io/exposed-hostnames: "${LOCATION}.${COMMON_DOMAIN}"
+spec:
+  resourceRef:
+    apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    name: bhaiya-cdn
+  strategy:
+    type: roundRobin
+    dnsTtlSeconds: 30
+    weight:
+      ottawa: 100
+      robbinsdale: 0
+      stpetersburg: 0
+---
+# admin console access control via tinyauth — raj + kartik only.
+# tinyauth does authN (Google login, injects Remote-Email); this policy's
+# authorization block is the per-user authZ gate.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: bhaiya-tinyauth
+  namespace: keiretsu-top
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: bhaiya-cdn
+  extAuth:
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-proto
+      - x-forwarded-for
+      - user-agent
+    http:
+      backendRefs:
+        - name: tinyauth
+          namespace: tinyauth
+          port: 3000
+      path: "/api/auth/envoy?path="
+      headersToBackend:
+        - remote-user
+        - remote-email
+        - remote-name
+        - remote-groups
+  authorization:
+    defaultAction: Deny
+    rules:
+      - name: allow-admins
+        action: Allow
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com
