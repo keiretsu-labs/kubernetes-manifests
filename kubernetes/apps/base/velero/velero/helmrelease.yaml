@@ -65,30 +65,3 @@ spec:
 
     metrics:
       enabled: true
-
-    schedules:
-      media-backup:
-        schedule: "0 6 * * *"
-        useOwnerReferencesInBackup: true
-        template:
-          ttl: "720h"
-          includedNamespaces:
-            - media
-          defaultVolumesToFsBackup: true
-      hermes-backup:
-        schedule: "0 7 * * *"
-        useOwnerReferencesInBackup: true
-        template:
-          ttl: "720h"
-          includedNamespaces:
-            - hermes
-            - agents
-          defaultVolumesToFsBackup: true
-      home-backup:
-        schedule: "0 9 * * *"
-        useOwnerReferencesInBackup: true
-        template:
-          ttl: "720h"
-          includedNamespaces:
-            - home
-          defaultVolumesToFsBackup: true

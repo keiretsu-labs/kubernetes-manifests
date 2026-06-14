@@ -15,6 +15,8 @@ spec:
       app: plex
   template:
     metadata:
+      annotations:
+        backup.velero.io/backup-volumes-excludes: media-volume
       labels:
         app: plex
     spec:

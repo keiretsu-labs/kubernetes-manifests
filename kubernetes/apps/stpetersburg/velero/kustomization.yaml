@@ -4,3 +4,4 @@ resources:
   - ./namespace.yaml
   - ./velero.yaml
   - ./garage-ottawa-bsl.yaml
+  - ./schedules
