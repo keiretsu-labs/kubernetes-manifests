@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: kromgo
-          image: ghcr.io/kashalls/kromgo:v0.10.0
+          image: ghcr.io/home-operations/kromgo:0.14.7
           env:
             - name: PROMETHEUS_URL
               value: http://127.0.0.1:9090/prometheus
@@ -46,7 +46,7 @@ spec:
             failureThreshold: 3
           volumeMounts:
             - name: config
-              mountPath: /kromgo/config.yaml
+              mountPath: /config/config.yaml
               subPath: config.yaml
           securityContext:
             allowPrivilegeEscalation: false

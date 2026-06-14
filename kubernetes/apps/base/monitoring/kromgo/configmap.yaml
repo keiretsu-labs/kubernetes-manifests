@@ -1,85 +1,78 @@
 ---
-# yaml-language-server: $schema=https://raw.githubusercontent.com/kashalls/kromgo/main/config.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/home-operations/kromgo/0.14.7/config.schema.json
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kromgo-config
 data:
   config.yaml: |
-    badge:
-      font: Verdana.ttf
-      size: 12
+    cache:
+      enabled: true
+      maxAge: 300
 
-    metrics:
-      - name: talos_version
-        query: label_replace(node_os_info{name="Talos"}, "version_id", "$1", "version_id", "v(.+)")
-        label: version_id
+    defaults:
+      badge:
+        style: flat-square
+
+    badges:
+      - id: talos_version
         title: Talos
+        query: label_replace(node_os_info{name="Talos"}, "version_id", "$1", "version_id", "v(.+)")
+        valueExpr: labels[?"version_id"].orValue("unknown")
 
-      - name: kubernetes_version
-        query: label_replace(kubernetes_build_info{service="kubernetes"}, "git_version", "$1", "git_version", "v(.+)")
-        label: git_version
+      - id: kubernetes_version
         title: Kubernetes
+        query: label_replace(kubernetes_build_info{service="kubernetes"}, "git_version", "$1", "git_version", "v(.+)")
+        valueExpr: labels[?"git_version"].orValue("unknown")
 
-      - name: tailscale_operator_version
-        query: label_replace(gotk_resource_info{name="tailscale-operator"}, "chart_app_version", "$1", "chart_app_version", "[vV](.*)")
-        label: chart_app_version
+      - id: tailscale_operator_version
         title: Tailscale
+        query: label_replace(gotk_resource_info{name="tailscale-operator"}, "chart_app_version", "$1", "chart_app_version", "[vV](.*)")
+        valueExpr: labels[?"chart_app_version"].orValue("unknown")
 
-      - name: cluster_age_days
-        query: round((time() - min(kube_node_created)) / 86400)
-        suffix: "d"
-        colors:
-          - {color: "green", min: 0, max: 9999}
-        title: Age
-
-      - name: cluster_node_count
-        query: count(count by (node) (kube_node_labels))
-        colors:
-          - {color: "green", min: 0, max: 9999}
-        title: Nodes
-
-      - name: cluster_pod_count
-        query: sum(kubelet_running_pods)
-        colors:
-          - {color: "green", min: 0, max: 9999}
-        title: Pods
-
-      - name: cluster_cpu_usage
-        query: round(100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100), 0.1)
-        suffix: "%"
-        colors:
-          - {color: "green", min: 0, max: 35}
-          - {color: "orange", min: 36, max: 75}
-          - {color: "red", min: 76, max: 9999}
-        title: CPU
-
-      - name: cluster_memory_usage
-        query: round(sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes) * 100, 0.1)
-        suffix: "%"
-        colors:
-          - {color: "green", min: 0, max: 35}
-          - {color: "orange", min: 36, max: 75}
-          - {color: "red", min: 76, max: 9999}
-        title: Memory
-
-      - name: cluster_uptime_days
-        query: round((time() - min(node_boot_time_seconds)) / 86400)
-        suffix: "d"
-        colors:
-          - {color: "green", min: 0, max: 180}
-          - {color: "orange", min: 181, max: 360}
-          - {color: "red", min: 361, max: 9999}
-        title: Uptime
-
-      - name: flux_version
-        query: label_replace(flux_instance_info{exported_namespace="flux-system",name="flux"}, "version", "$1", "revision", "v([^@]+)@.*")
-        label: version
+      - id: flux_version
         title: Flux
+        query: label_replace(flux_instance_info{exported_namespace="flux-system",name="flux"}, "version", "$1", "revision", "v([^@]+)@.*")
+        valueExpr: labels[?"version"].orValue("unknown")
 
-      - name: cluster_alert_count
-        query: clamp_min(alertmanager_alerts{state="active"} - 1, 0)
-        colors:
-          - {color: "green", min: 0, max: 0}
-          - {color: "red", min: 1, max: 9999}
+      - id: cluster_age_days
+        title: Age
+        query: round((time() - min(kube_node_created)) / 86400)
+        valueExpr: string(int(result)) + "d"
+        colorExpr: '"green"'
+
+      - id: cluster_node_count
+        title: Nodes
+        query: count(count by (node) (kube_node_labels))
+        valueExpr: string(int(result))
+        colorExpr: '"green"'
+
+      - id: cluster_pod_count
+        title: Pods
+        query: sum(kubelet_running_pods)
+        valueExpr: string(int(result))
+        colorExpr: '"green"'
+
+      - id: cluster_cpu_usage
+        title: CPU
+        query: round(100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100), 0.1)
+        valueExpr: string(result) + "%"
+        colorExpr: 'colorScale(result, [36.0, 76.0], ["green", "orange", "red"])'
+
+      - id: cluster_memory_usage
+        title: Memory
+        query: round(sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes) * 100, 0.1)
+        valueExpr: string(result) + "%"
+        colorExpr: 'colorScale(result, [36.0, 76.0], ["green", "orange", "red"])'
+
+      - id: cluster_uptime_days
+        title: Uptime
+        query: round((time() - min(node_boot_time_seconds)) / 86400)
+        valueExpr: string(int(result)) + "d"
+        colorExpr: 'colorScale(result, [181.0, 361.0], ["green", "orange", "red"])'
+
+      - id: cluster_alert_count
         title: Alerts
+        query: clamp_min(alertmanager_alerts{state="active"} - 1, 0)
+        valueExpr: string(int(result))
+        colorExpr: 'colorScale(result, [1.0], ["green", "red"])'
