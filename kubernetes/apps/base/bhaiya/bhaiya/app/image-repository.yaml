@@ -5,4 +5,4 @@ metadata:
   namespace: flux-system
 spec:
   image: oci.cdn.keiretsu.top/corp/bhaiya
-  interval: 5m
+  interval: 1m

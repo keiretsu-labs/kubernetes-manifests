@@ -15,3 +15,5 @@ resources:
   - resourcequota.yaml
   - image-repository.yaml
   - image-policy.yaml
+  - receiver.yaml
+  - webhook-secret.yaml

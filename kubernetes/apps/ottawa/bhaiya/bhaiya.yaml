@@ -19,7 +19,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
-  interval: 30m
+  interval: 3m
   retryInterval: 1m
   timeout: 5m
   decryption:
