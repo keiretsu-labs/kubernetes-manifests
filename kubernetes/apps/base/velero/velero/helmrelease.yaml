@@ -91,5 +91,4 @@ spec:
           ttl: "720h"
           includedNamespaces:
             - home
-            - home-assistant
           defaultVolumesToFsBackup: true
