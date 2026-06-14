@@ -30,7 +30,7 @@ spec:
         fsGroup: 65532
       containers:
         - name: bhaiya
-          image: oci.cdn.keiretsu.top/corp/bhaiya:latest # {"$imagepolicy": "flux-system:bhaiya"}
+          image: oci.cdn.keiretsu.top/corp/bhaiya:latest # {"$imagepolicy": "bhaiya:bhaiya"}
           imagePullPolicy: Always
           ports:
             - name: grpc-web
