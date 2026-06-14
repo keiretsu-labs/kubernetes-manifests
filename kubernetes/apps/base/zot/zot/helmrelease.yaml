@@ -86,13 +86,6 @@ spec:
               "multipartcopymaxconcurrency": 8
             }
           },
-          "cluster": {
-            "members": [
-              "robbinsdale-zot:5000",
-              "ottawa-zot:5000"
-            ],
-            "hashKey": "${ZOT_CLUSTER_HASHKEY}"
-          },
           "http": {
             "address": "0.0.0.0",
             "port": "5000",
@@ -135,21 +128,3 @@ spec:
         }
     secretFiles:
       htpasswd: "${COMMON_OCI}"
-  postRenderers:
-    # Inject a hostAlias so the local zot pod's lookup of its own peer name
-    # (e.g. ottawa-zot in the Ottawa cluster) returns 127.0.0.1, satisfying
-    # zot's GetLocalMemberClusterSocket self-identification check at startup.
-    # Without this, zot panics because the ExternalName Service for its own
-    # location resolves to the common-egress proxy IP, not the pod IP.
-    - kustomize:
-        patches:
-          - target:
-              kind: Deployment
-              name: zot
-            patch: |
-              - op: add
-                path: /spec/template/spec/hostAliases
-                value:
-                  - ip: 127.0.0.1
-                    hostnames:
-                      - ${LOCATION}-zot
