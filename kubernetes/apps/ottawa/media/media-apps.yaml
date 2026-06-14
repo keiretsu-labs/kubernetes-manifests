@@ -11,7 +11,6 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: rook-ceph-cluster-config
-    - name: volsync
     - name: cnpg-system
     - name: dragonfly-operator-system
   path: ./kubernetes/apps/base/media/media-ottawa

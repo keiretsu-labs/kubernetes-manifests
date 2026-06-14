@@ -12,7 +12,6 @@ spec:
   dependsOn:
     - name: dragonfly-operator-system
     - name: rook-ceph-cluster-config
-    - name: volsync
   path: ./kubernetes/apps/base/home/home-robbinsdale
   prune: true
   sourceRef:
