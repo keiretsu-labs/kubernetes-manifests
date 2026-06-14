@@ -15,6 +15,9 @@ spec:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
       namespace: bhaiya
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: velero-system
   to:
     - group: ""
       kind: Service
