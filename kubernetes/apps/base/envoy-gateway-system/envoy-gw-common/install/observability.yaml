@@ -30,6 +30,13 @@ spec:
     - port: metrics
       path: /stats/prometheus
       honorLabels: true
+      # Drop unused envoy histogram/internal families that bloat the agent WAL.
+      # KEPT (used by the envoy dashboards): envoy_cluster_upstream_rq_time_bucket,
+      # envoy_http_downstream_rq_time_bucket, envoy_cluster_membership_*, *_rq_xx.
+      metricRelabelings:
+        - action: drop
+          sourceLabels: [__name__]
+          regex: envoy_(cluster_update_duration|sds_update_duration|http_rds_update_duration|cluster_upstream_rq_per_cx|cluster_upstream_cx_length_ms|cluster_upstream_cx_connect_ms|listener_downstream_cx_length_ms|http_downstream_cx_length_ms|cluster_external_upstream_rq_time|listener_connections_accepted_per_socket_event)_bucket|envoy_cluster_circuit_breakers_.*|envoy_listener_worker_downstream_cx_.*|envoy_cluster_warming_state
   selector:
     matchLabels:
       app.kubernetes.io/component: proxy

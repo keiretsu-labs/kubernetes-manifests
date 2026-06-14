@@ -22,3 +22,10 @@ spec:
   podMetricsEndpoints:
     - honorLabels: true
       port: http-prom
+      # gotk_reconcile_duration_seconds_bucket (~3.2k series) is unused by the
+      # flux dashboards — they use gotk_reconcile_duration_seconds_count, which
+      # (and gotk_resource_info, a kromgo badge) are deliberately kept.
+      metricRelabelings:
+        - action: drop
+          sourceLabels: [__name__]
+          regex: gotk_reconcile_duration_seconds_bucket

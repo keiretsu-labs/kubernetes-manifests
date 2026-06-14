@@ -129,6 +129,14 @@ spec:
           - action: drop
             sourceLabels: [__name__]
             regex: (apiserver_request_duration_seconds|apiserver_request_sli_duration_seconds|apiserver_request_body_size_bytes|apiserver_response_sizes|apiserver_watch_cache_read_wait_seconds|apiserver_watch_list_duration_seconds|apiserver_watch_events_sizes|etcd_request_duration_seconds|rpc_duration_seconds|rpc_duration)_bucket
+          # Second pass: the _sum/_count of those histograms plus apiserver/etcd
+          # internal bookkeeping series — verified referenced by zero dashboards,
+          # alerts, or badges. apiserver_request_total and
+          # apiserver_request_duration_seconds_{sum,count} are deliberately NOT
+          # matched here (the API dashboards use them).
+          - action: drop
+            sourceLabels: [__name__]
+            regex: (apiserver_request_sli_duration_seconds|apiserver_response_sizes|apiserver_watch_events_sizes|etcd_request_duration_seconds|apiserver_admission_controller_admission_duration_seconds|apiserver_admission_step_admission_duration_seconds|apiserver_admission_webhook_admission_duration_seconds)_(sum|count)|apiserver_watch_events_total|apiserver_watch_cache_.*|apiserver_storage_list_.*|apiserver_cache_list_.*|apiserver_longrunning_requests|apiextensions_openapi_v3?_regeneration_count|etcd_requests_total|etcd_bookmark_total|watch_cache_capacity
 
     kubelet:
       serviceMonitor:
@@ -142,6 +150,10 @@ spec:
         metricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
+          # kubelet /metrics latency histograms no dashboard/alert reads.
+          - action: drop
+            sourceLabels: [__name__]
+            regex: (prober_probe_duration_seconds|storage_operation_duration_seconds)_(bucket|sum|count)
         cAdvisorMetricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
@@ -155,6 +167,12 @@ spec:
           - action: drop
             sourceLabels: [__name__]
             regex: container_(fs|blkio|spec|tasks_state|memory_failures_total|file_descriptors|sockets|threads|threads_max|ulimits_soft|processes|start_time_seconds|last_seen).*
+          # Redundant cadvisor container variants no dashboard uses. Kept:
+          # container_cpu_usage_seconds_total, container_cpu_cfs_throttled_seconds_total,
+          # container_memory_working_set_bytes/rss/cache/swap, container_network_*.
+          - action: drop
+            sourceLabels: [__name__]
+            regex: container_pressure_.*|container_health_state|container_memory_(usage_bytes|max_usage_bytes|mapped_file|kernel_usage|failcnt|total_inactive_file_bytes|total_active_file_bytes)|container_cpu_(user_seconds_total|system_seconds_total|load_average_10s|load_d_average_10s|cfs_periods_total|cfs_burst_periods_total|cfs_burst_seconds_total|cfs_throttled_periods_total)
         probesMetricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
