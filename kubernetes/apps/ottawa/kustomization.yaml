@@ -9,7 +9,6 @@ resources:
   - ./argocd
   - ./bhaiya
   - ./border0
-  - ./cartography
   - ./clickhouse-operator-system
   - ./clickhouse
   - ./cloudflare
