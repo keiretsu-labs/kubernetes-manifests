@@ -68,14 +68,14 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 2Gi
+            memory: 1Gi
           limits:
-            # Agent WAL + remote_write series cache scales with active series.
-            # At 2Gi the agent OOMKilled (exit 137) in a crashloop, replaying its
-            # WAL each restart and leaving the single-replica Mimir tenant without
-            # fresh data — every kromgo badge flapped to "no data". Raised to 4Gi;
-            # the cAdvisorMetricRelabelings drops below cut the series load too.
-            memory: 4Gi
+            # Agent WAL memory scales with active series. The OOM crashloop (exit
+            # 137) at 2Gi was driven by ~470k of 936k series being apiserver/etcd
+            # latency-histogram buckets — dropped via the kubeApiServer
+            # metricRelabelings below. That roughly halves active series, so the
+            # agent fits back under 2Gi without flapping the Mimir tenant.
+            memory: 2Gi
         storageSpec:
           emptyDir: {}
 
@@ -120,6 +120,15 @@ spec:
         metricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
+          # Drop the apiserver/etcd latency-histogram buckets — ~470k of the
+          # agent's ~936k active series (half its WAL memory, and the OOM cause).
+          # These per-verb/-resource/-le _bucket families back only apiserver SLO
+          # latency panels; request rates/errors (_count, _sum, codes) are kept,
+          # as is everything kromgo and the standard dashboards use. Re-add a
+          # specific bucket here if a latency panel needs it.
+          - action: drop
+            sourceLabels: [__name__]
+            regex: (apiserver_request_duration_seconds|apiserver_request_sli_duration_seconds|apiserver_request_body_size_bytes|apiserver_response_sizes|apiserver_watch_cache_read_wait_seconds|apiserver_watch_list_duration_seconds|apiserver_watch_events_sizes|etcd_request_duration_seconds|rpc_duration_seconds|rpc_duration)_bucket
 
     kubelet:
       serviceMonitor:
