@@ -1,0 +1,16 @@
+---
+# tinyauth keeps sessions (and users/oauth-clients) in a SQLite DB at
+# /data/tinyauth.db. This MUST be durable — an emptyDir is wiped on every pod
+# restart/reschedule, which logs everyone out mid-flow and bounces the OAuth
+# login between /continue and /login forever.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tinyauth-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ceph-block-replicated
+  resources:
+    requests:
+      storage: 1Gi
