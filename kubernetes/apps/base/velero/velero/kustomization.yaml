@@ -7,3 +7,4 @@ resources:
   - ./servicemonitor.yaml
   - ./dashboard-configmap.yaml
   - ./grafana-dashboard.yaml
+  - ./referencegrant.yaml
