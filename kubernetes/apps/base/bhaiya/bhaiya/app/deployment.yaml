@@ -41,13 +41,6 @@ spec:
               value: ":8080"
             - name: BHAIYA_DB_PATH
               value: /data/bhaiya.db
-            - name: BHAIYA_FORGEJO_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: bhaiya-forgejo-token
-                  key: BHAIYA_FORGEJO_TOKEN
-            - name: BHAIYA_FORGEJO_API_URL
-              value: "https://forgejo.keiretsu.top/api/v1"
           volumeMounts:
             - name: data
               mountPath: /data
