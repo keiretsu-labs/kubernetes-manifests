@@ -6,6 +6,7 @@ resources:
   - httproute.yaml
   - secret.yaml
   - referencegrant.yaml
+  - pvc.yaml
 # tinyauth-config is generated (not a static manifest) so its name carries a
 # content hash. the deployment's envFrom ref (name: tinyauth-config) is
 # auto-rewritten to the hashed name, so any edit to tinyauth.env rolls the pod.
@@ -13,3 +14,7 @@ configMapGenerator:
   - name: tinyauth-config
     envs:
       - tinyauth.env
+  # custom login-page background, served from /resources (see UI_* env)
+  - name: tinyauth-resources
+    files:
+      - background.svg
