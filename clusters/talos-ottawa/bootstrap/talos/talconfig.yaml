@@ -46,8 +46,8 @@ nodes:
       - interface: bond0
         bond:
           deviceSelectors:
-            - hardwareAddr: "38:05:25:36:56:39"  # enp5s0f0np0 - X710 SFP+ port 0
-            - hardwareAddr: "38:05:25:36:56:3a"  # enp5s0f1np1 - X710 SFP+ port 1
+            - permanentAddr: "38:05:25:36:56:39"  # enp5s0f0np0 - X710 SFP+ port 0
+            - permanentAddr: "38:05:25:36:56:3a"  # enp5s0f1np1 - X710 SFP+ port 1
           mode: 802.3ad
           xmitHashPolicy: layer3+4
           lacpRate: fast
@@ -67,8 +67,8 @@ nodes:
       - interface: bond0
         bond:
           deviceSelectors:
-            - hardwareAddr: "38:05:25:36:56:05"  # enp5s0f0np0 - X710 SFP+ port 0
-            - hardwareAddr: "38:05:25:36:56:06"  # enp5s0f1np1 - X710 SFP+ port 1
+            - permanentAddr: "38:05:25:36:56:05"  # enp5s0f0np0 - X710 SFP+ port 0
+            - permanentAddr: "38:05:25:36:56:06"  # enp5s0f1np1 - X710 SFP+ port 1
           mode: 802.3ad
           xmitHashPolicy: layer3+4
           lacpRate: fast
@@ -88,8 +88,8 @@ nodes:
       - interface: bond0
         bond:
           deviceSelectors:
-            - hardwareAddr: "38:05:25:36:49:ad"  # enp5s0f0np0 - X710 SFP+ port 0
-            - hardwareAddr: "38:05:25:36:49:ae"  # enp5s0f1np1 - X710 SFP+ port 1
+            - permanentAddr: "38:05:25:36:49:ad"  # enp5s0f0np0 - X710 SFP+ port 0
+            - permanentAddr: "38:05:25:36:49:ae"  # enp5s0f1np1 - X710 SFP+ port 1
           mode: 802.3ad
           xmitHashPolicy: layer3+4
           lacpRate: fast
@@ -133,8 +133,8 @@ nodes:
       - interface: bond0
         bond:
           deviceSelectors:
-            - hardwareAddr: "58:47:ca:77:73:22"  # eth2 - X710 SFP+ port 0
-            - hardwareAddr: "58:47:ca:77:73:23"  # eth3 - X710 SFP+ port 1
+            - permanentAddr: "58:47:ca:77:73:22"  # eth2 - X710 SFP+ port 0
+            - permanentAddr: "58:47:ca:77:73:23"  # eth3 - X710 SFP+ port 1
           mode: 802.3ad
           xmitHashPolicy: layer3+4
           lacpRate: fast
