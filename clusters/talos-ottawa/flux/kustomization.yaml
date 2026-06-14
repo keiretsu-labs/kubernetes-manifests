@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./config
   - ./vars
+  - image-update-automation-bhaiya.yaml
