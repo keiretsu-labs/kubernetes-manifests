@@ -150,10 +150,12 @@ spec:
         metricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
-          # kubelet /metrics latency histograms no dashboard/alert reads.
+          # storage_operation latency histogram (kubelet /metrics) — unused.
+          # NOTE: prober_probe_* is on the /metrics/probes endpoint, so its drop
+          # lives under probesMetricRelabelings below, not here.
           - action: drop
             sourceLabels: [__name__]
-            regex: (prober_probe_duration_seconds|storage_operation_duration_seconds)_(bucket|sum|count)
+            regex: storage_operation_duration_seconds_(bucket|sum|count)
         cAdvisorMetricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
@@ -176,6 +178,10 @@ spec:
         probesMetricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
+          # prober_probe_* latency histogram (kubelet /metrics/probes) — unused.
+          - action: drop
+            sourceLabels: [__name__]
+            regex: prober_probe_duration_seconds_(bucket|sum|count)
 
     kubeControllerManager:
       enabled: true
