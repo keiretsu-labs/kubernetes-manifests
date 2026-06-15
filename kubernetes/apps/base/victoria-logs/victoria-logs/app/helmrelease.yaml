@@ -35,8 +35,8 @@ spec:
           memory: 512Mi
       serviceMonitor:
         enabled: true
-    service:
-      clusterIP: ""
+      service:
+        clusterIP: ""
     dashboards:
       enabled: true
       annotations:
