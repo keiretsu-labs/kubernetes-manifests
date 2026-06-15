@@ -1,316 +1,317 @@
-# SPDX-FileCopyrightText: © 2025 Raj Singh <raj@keiretsu.cloud>
-# SPDX-License-Identifier: MIT
-#
-# LiteLLM proxy deployment — fronts StPete DSV4 Sparks with Corp AI overflow,
-# plus load-balanced Claude API keys (Raj + Kartik) with TinyAuth UI.
-# Runs on Ottawa (agents ns) since StPete has tight memory and LiteLLM
-# needs ~2Gi RAM for its proxy logic + Prometheus metrics.
----
-# ── ConfigMap ──────────────────────────────────────────────────────────
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: litellm-config
-  namespace: agents
-data:
-  config.yaml: |
-    model_list:
-      # ── Primary: StPete DGX Sparks via Envoy AI Gateway ────────────
-      - model_name: deepseek-v4-flash
-        litellm_params:
-          model: hosted_vllm/deepseek-v4-flash
-          api_base: http://stpetersburg-ai-gateway/v1
-          api_key: ""
-          rpm: 60
-        model_info:
-          mode: primary
-
-      # ── Fallback: Corp AI endpoint ───────────────────────────────────
-      - model_name: deepseek-v4-flash
-        litellm_params:
-          model: hosted_vllm/deepseek-v4-flash
-          api_base: http://ai/v1
-          api_key: ""
-        model_info:
-          mode: fallback
-
-      # ── Claude Sonnet 4 (Raj's key + Kartik's key, load-balanced) ──
-      - model_name: claude-sonnet-4
-        litellm_params:
-          model: anthropic/claude-sonnet-4-20250514
-          api_key: os.environ/ANTHROPIC_API_KEY_RAJ
-        model_info:
-          mode: default
-      - model_name: claude-sonnet-4
-        litellm_params:
-          model: anthropic/claude-sonnet-4-20250514
-          api_key: os.environ/ANTHROPIC_API_KEY_KARTIK
-        model_info:
-          mode: default
-
-      # ── Claude Haiku 3.5 (Raj's key + Kartik's key, load-balanced) ──
-      - model_name: claude-haiku-3-5
-        litellm_params:
-          model: anthropic/claude-3-5-haiku-20241022
-          api_key: os.environ/ANTHROPIC_API_KEY_RAJ
-        model_info:
-          mode: default
-      - model_name: claude-haiku-3-5
-        litellm_params:
-          model: anthropic/claude-3-5-haiku-20241022
-          api_key: os.environ/ANTHROPIC_API_KEY_KARTIK
-        model_info:
-          mode: default
-
-    router_settings:
-      fallbacks: [{ "deepseek-v4-flash": ["deepseek-v4-flash"] }]
-      num_retries: 2
-      retry_after: 5
-      timeout: 30
-      routing_strategy: usage-based-routing
-      enable_pre_call_checks: true
-      allowed_fails: 3
-
-    general_settings:
-      database_url: "postgresql://litellm:litellm@litellm-db:5432/litellm"
-      forward_client_headers_to_llm_api: true
-
-    litellm_settings:
-      callbacks: ["prometheus"]
----
-# ── Secret ────────────────────────────────────────────────────────────
-apiVersion: v1
-kind: Secret
-metadata:
-  name: litellm-secret
-  namespace: agents
-stringData:
-  # LiteLLM master/salt keys
-  master_key: DEFAULT_PASSWORD
-  salt_key: DEFAULT_PASSWORD
-  # TinyAuth UI credentials (shared with LITELLM_SALT_KEY)
-  ui_username: admin
-  ui_password: ${DEFAULT_PASSWORD}
-  # Anthropic API keys (load-balanced between Raj & Kartik)
-  anthropic_api_key_raj: "sk-ant-REPLACE_ME_RAJS_KEY"
-  anthropic_api_key_kartik: "sk-ant-REPLACE_ME_KARTIKS_KEY"
----
-# ── Deployment ───────────────────────────────────────────────────────
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: litellm
-  namespace: agents
-  labels:
-    app: litellm
-spec:
-  replicas: 1
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app: litellm
-  template:
-    metadata:
-      labels:
-        app: litellm
-    spec:
-      terminationGracePeriodSeconds: 30
-      containers:
-        - name: litellm
-          image: ghcr.io/berriai/litellm:main-latest
-          imagePullPolicy: Always
-          args:
-            - "--config"
-            - "/app/config.yaml"
-            - "--port"
-            - "4000"
-          env:
-            - name: LITELLM_MASTER_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: litellm-secret
-                  key: master_key
-            - name: LITELLM_SALT_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: litellm-secret
-                  key: salt_key
-            - name: UI_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: litellm-secret
-                  key: ui_username
-            - name: UI_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: litellm-secret
-                  key: ui_password
-            - name: ANTHROPIC_API_KEY_RAJ
-              valueFrom:
-                secretKeyRef:
-                  name: litellm-secret
-                  key: anthropic_api_key_raj
-            - name: ANTHROPIC_API_KEY_KARTIK
-              valueFrom:
-                secretKeyRef:
-                  name: litellm-secret
-                  key: anthropic_api_key_kartik
-            - name: PROMETHEUS_MULTIPROC_DIR
-              value: /prometheus_multiproc
-          ports:
-            - containerPort: 4000
-              name: http
-              protocol: TCP
-          volumeMounts:
-            - name: config
-              mountPath: /app/config.yaml
-              subPath: config.yaml
-            - name: prometheus-multiproc
-              mountPath: /prometheus_multiproc
-          resources:
-            requests:
-              memory: "1Gi"
-              cpu: "500m"
-            limits:
-              memory: "2Gi"
-              cpu: "1000m"
-          livenessProbe:
-            httpGet:
-              path: /health/liveness
-              port: http
-            initialDelaySeconds: 30
-            periodSeconds: 30
-          readinessProbe:
-            httpGet:
-              path: /health/readiness
-              port: http
-            initialDelaySeconds: 15
-            periodSeconds: 15
-      volumes:
-        - name: config
-          configMap:
-            name: litellm-config
-        - name: prometheus-multiproc
-          emptyDir: {}
----
-# ── ClusterIP Service ────────────────────────────────────────────────
-apiVersion: v1
-kind: Service
-metadata:
-  name: litellm
-  namespace: agents
-  labels:
-    app: litellm
-spec:
-  type: ClusterIP
-  selector:
-    app: litellm
-  ports:
-    - name: http
-      port: 4000
-      protocol: TCP
-      targetPort: http
----
-# ── Tailscale LoadBalancer ──────────────────────────────────────────
-apiVersion: v1
-kind: Service
-metadata:
-  name: litellm-ts
-  namespace: agents
-  annotations:
-    tailscale.com/hostname: litellm
-    tailscale.com/proxy-group: common-ingress
-    tailscale.com/tags: tag:singh360,tag:k8s,tag:ottawa
-  labels:
-    app: litellm
-spec:
-  type: LoadBalancer
-  loadBalancerClass: tailscale
-  selector:
-    app: litellm
-  ports:
-    - name: http
-      port: 80
-      protocol: TCP
-      targetPort: http
----
-# ── ServiceMonitor ──────────────────────────────────────────────────
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: litellm
-  namespace: agents
-  labels:
-    app: litellm
-    release: kube-prometheus-stack
-spec:
-  endpoints:
-    - port: http
-      path: /metrics
-      interval: 15s
-      scrapeTimeout: 10s
-      metricRelabelings:
-        - action: replace
-          replacement: talos-ottawa
-          targetLabel: cluster
-  selector:
-    matchLabels:
-      app: litellm
-  namespaceSelector:
-    matchNames:
-      - agents
----
-# ── PostgreSQL (ephemeral, for LiteLLM Prisma) ─────────────────────
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: litellm-db
-  namespace: agents
-  labels:
-    app: litellm-db
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: litellm-db
-  template:
-    metadata:
-      labels:
-        app: litellm-db
-    spec:
-      containers:
-        - name: postgres
-          image: postgres:16-alpine
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: POSTGRES_USER
-              value: litellm
-            - name: POSTGRES_PASSWORD
-              value: litellm
-            - name: POSTGRES_DB
-              value: litellm
-          ports:
-            - containerPort: 5432
-              name: postgres
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "256Mi"
-              cpu: "500m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: litellm-db
-  namespace: agents
-spec:
-  type: ClusterIP
-  selector:
-    app: litellm-db
-  ports:
-    - name: postgres
-      port: 5432
-      protocol: TCP
+1|# SPDX-FileCopyrightText: © 2025 Raj Singh <raj@keiretsu.cloud>
+2|# SPDX-License-Identifier: MIT
+3|#
+4|# LiteLLM proxy deployment — fronts StPete DSV4 Sparks with Corp AI overflow,
+5|# plus load-balanced Claude API keys (Raj + Kartik) with TinyAuth UI.
+6|# Runs on Ottawa (agents ns) since StPete has tight memory and LiteLLM
+7|# needs ~2Gi RAM for its proxy logic + Prometheus metrics.
+8|---
+9|# ── ConfigMap ──────────────────────────────────────────────────────────
+10|apiVersion: v1
+11|kind: ConfigMap
+12|metadata:
+13|  name: litellm-config
+14|  namespace: agents
+15|data:
+16|  config.yaml: |
+17|    model_list:
+18|      # ── Primary: StPete DGX Sparks via Envoy AI Gateway ────────────
+19|      - model_name: deepseek-v4-flash
+20|        litellm_params:
+21|          model: hosted_vllm/deepseek-v4-flash
+22|          api_base: http://stpetersburg-ai-gateway/v1
+23|          api_key: ""
+24|          rpm: 60
+25|        model_info:
+26|          mode: primary
+27|
+28|      # ── Fallback: Corp AI endpoint ───────────────────────────────────
+29|      - model_name: deepseek-v4-flash
+30|        litellm_params:
+31|          model: hosted_vllm/deepseek-v4-flash
+32|          api_base: http://ai/v1
+33|          api_key: ""
+34|        model_info:
+35|          mode: fallback
+36|
+37|      # ── Claude Sonnet 4 (Raj's key + Kartik's key, load-balanced) ──
+38|      - model_name: claude-sonnet-4
+39|        litellm_params:
+40|          model: anthropic/claude-sonnet-4-20250514
+41|          api_key: os.environ/ANTHROPIC_API_KEY_RAJ
+42|        model_info:
+43|          mode: default
+44|      - model_name: claude-sonnet-4
+45|        litellm_params:
+46|          model: anthropic/claude-sonnet-4-20250514
+47|          api_key: os.environ/ANTHROPIC_API_KEY_KARTIK
+48|        model_info:
+49|          mode: default
+50|
+51|      # ── Claude Haiku 3.5 (Raj's key + Kartik's key, load-balanced) ──
+52|      - model_name: claude-haiku-3-5
+53|        litellm_params:
+54|          model: anthropic/claude-3-5-haiku-20241022
+55|          api_key: os.environ/ANTHROPIC_API_KEY_RAJ
+56|        model_info:
+57|          mode: default
+58|      - model_name: claude-haiku-3-5
+59|        litellm_params:
+60|          model: anthropic/claude-3-5-haiku-20241022
+61|          api_key: os.environ/ANTHROPIC_API_KEY_KARTIK
+62|        model_info:
+63|          mode: default
+64|
+65|    router_settings:
+66|      fallbacks: [{ "deepseek-v4-flash": ["deepseek-v4-flash"] }]
+67|      num_retries: 2
+68|      retry_after: 5
+69|      timeout: 30
+70|      routing_strategy: usage-based-routing
+71|      enable_pre_call_checks: true
+72|      allowed_fails: 3
+73|
+74|    general_settings:
+75|      database_url: "postgresql://litellm:litellm@litellm-db:5432/litellm"
+76|      forward_client_headers_to_llm_api: true
+77|
+78|    litellm_settings:
+79|      callbacks: ["prometheus"]
+80|---
+81|# ── Secret ────────────────────────────────────────────────────────────
+82|apiVersion: v1
+83|kind: Secret
+84|metadata:
+85|  name: litellm-secret
+86|  namespace: agents
+87|stringData:
+88|  # LiteLLM master/salt keys
+89|  master_key: DEFAULT_PASSWORD
+90|  salt_key: DEFAULT_PASSWORD
+91|  # TinyAuth UI credentials (shared with LITELLM_SALT_KEY)
+92|  ui_username: admin
+93|  ui_password: ${DEFAULT_PASSWORD}
+94|  # Anthropic API keys (load-balanced between Raj & Kartik)
+95|  anthropic_api_key_raj: "sk-ant..._KEY"
+96|  anthropic_api_key_kartik: "sk-ant..._KEY"
+97|---
+98|# ── Deployment ───────────────────────────────────────────────────────
+99|apiVersion: apps/v1
+100|kind: Deployment
+101|metadata:
+102|  name: litellm
+103|  namespace: agents
+104|  labels:
+105|    app: litellm
+106|spec:
+107|  replicas: 1
+108|  strategy:
+109|    type: Recreate
+110|  selector:
+111|    matchLabels:
+112|      app: litellm
+113|  template:
+114|    metadata:
+115|      labels:
+116|        app: litellm
+117|    spec:
+118|      terminationGracePeriodSeconds: 30
+119|      containers:
+120|        - name: litellm
+121|          image: ghcr.io/berriai/litellm:main-latest
+122|          imagePullPolicy: Always
+123|          args:
+124|            - "--config"
+125|            - "/app/config.yaml"
+126|            - "--port"
+127|            - "4000"
+128|          env:
+129|            - name: LITELLM_MASTER_KEY
+130|              valueFrom:
+131|                secretKeyRef:
+132|                  name: litellm-secret
+133|                  key: master_key
+134|            - name: LITELLM_SALT_KEY
+135|              valueFrom:
+136|                secretKeyRef:
+137|                  name: litellm-secret
+138|                  key: salt_key
+139|            - name: UI_USERNAME
+140|              valueFrom:
+141|                secretKeyRef:
+142|                  name: litellm-secret
+143|                  key: ui_username
+144|            - name: UI_PASSWORD
+145|              valueFrom:
+146|                secretKeyRef:
+147|                  name: litellm-secret
+148|                  key: ui_password
+149|            - name: ANTHROPIC_API_KEY_RAJ
+150|              valueFrom:
+151|                secretKeyRef:
+152|                  name: litellm-secret
+153|                  key: anthropic_api_key_raj
+154|            - name: ANTHROPIC_API_KEY_KARTIK
+155|              valueFrom:
+156|                secretKeyRef:
+157|                  name: litellm-secret
+158|                  key: anthropic_api_key_kartik
+159|            - name: PROMETHEUS_MULTIPROC_DIR
+160|              value: /prometheus_multiproc
+161|          ports:
+162|            - containerPort: 4000
+163|              name: http
+164|              protocol: TCP
+165|          volumeMounts:
+166|            - name: config
+167|              mountPath: /app/config.yaml
+168|              subPath: config.yaml
+169|            - name: prometheus-multiproc
+170|              mountPath: /prometheus_multiproc
+171|          resources:
+172|            requests:
+173|              memory: "1Gi"
+174|              cpu: "500m"
+175|            limits:
+176|              memory: "2Gi"
+177|              cpu: "1000m"
+178|          livenessProbe:
+179|            httpGet:
+180|              path: /health/liveness
+181|              port: http
+182|            initialDelaySeconds: 30
+183|            periodSeconds: 30
+184|          readinessProbe:
+185|            httpGet:
+186|              path: /health/readiness
+187|              port: http
+188|            initialDelaySeconds: 15
+189|            periodSeconds: 15
+190|      volumes:
+191|        - name: config
+192|          configMap:
+193|            name: litellm-config
+194|        - name: prometheus-multiproc
+195|          emptyDir: {}
+196|---
+197|# ── ClusterIP Service ────────────────────────────────────────────────
+198|apiVersion: v1
+199|kind: Service
+200|metadata:
+201|  name: litellm
+202|  namespace: agents
+203|  labels:
+204|    app: litellm
+205|spec:
+206|  type: ClusterIP
+207|  selector:
+208|    app: litellm
+209|  ports:
+210|    - name: http
+211|      port: 4000
+212|      protocol: TCP
+213|      targetPort: http
+214|---
+215|# ── Tailscale LoadBalancer ──────────────────────────────────────────
+216|apiVersion: v1
+217|kind: Service
+218|metadata:
+219|  name: litellm-ts
+220|  namespace: agents
+221|  annotations:
+222|    tailscale.com/hostname: litellm
+223|    tailscale.com/proxy-group: common-ingress
+224|    tailscale.com/tags: tag:singh360,tag:k8s,tag:ottawa
+225|  labels:
+226|    app: litellm
+227|spec:
+228|  type: LoadBalancer
+229|  loadBalancerClass: tailscale
+230|  selector:
+231|    app: litellm
+232|  ports:
+233|    - name: http
+234|      port: 80
+235|      protocol: TCP
+236|      targetPort: http
+237|---
+238|# ── ServiceMonitor ──────────────────────────────────────────────────
+239|apiVersion: monitoring.coreos.com/v1
+240|kind: ServiceMonitor
+241|metadata:
+242|  name: litellm
+243|  namespace: agents
+244|  labels:
+245|    app: litellm
+246|    release: kube-prometheus-stack
+247|spec:
+248|  endpoints:
+249|    - port: http
+250|      path: /metrics
+251|      interval: 15s
+252|      scrapeTimeout: 10s
+253|      metricRelabelings:
+254|        - action: replace
+255|          replacement: talos-ottawa
+256|          targetLabel: cluster
+257|  selector:
+258|    matchLabels:
+259|      app: litellm
+260|  namespaceSelector:
+261|    matchNames:
+262|      - agents
+263|---
+264|# ── PostgreSQL (ephemeral, for LiteLLM Prisma) ─────────────────────
+265|apiVersion: apps/v1
+266|kind: Deployment
+267|metadata:
+268|  name: litellm-db
+269|  namespace: agents
+270|  labels:
+271|    app: litellm-db
+272|spec:
+273|  replicas: 1
+274|  selector:
+275|    matchLabels:
+276|      app: litellm-db
+277|  template:
+278|    metadata:
+279|      labels:
+280|        app: litellm-db
+281|    spec:
+282|      containers:
+283|        - name: postgres
+284|          image: postgres:16-alpine
+285|          imagePullPolicy: IfNotPresent
+286|          env:
+287|            - name: POSTGRES_USER
+288|              value: litellm
+289|            - name: POSTGRES_PASSWORD
+290|              value: litellm
+291|            - name: POSTGRES_DB
+292|              value: litellm
+293|          ports:
+294|            - containerPort: 5432
+295|              name: postgres
+296|          resources:
+297|            requests:
+298|              memory: "128Mi"
+299|              cpu: "100m"
+300|            limits:
+301|              memory: "256Mi"
+302|              cpu: "500m"
+303|---
+304|apiVersion: v1
+305|kind: Service
+306|metadata:
+307|  name: litellm-db
+308|  namespace: agents
+309|spec:
+310|  type: ClusterIP
+311|  selector:
+312|    app: litellm-db
+313|  ports:
+314|    - name: postgres
+315|      port: 5432
+316|      protocol: TCP
+317|
