@@ -34,30 +34,16 @@ data:
         model_info:
           mode: fallback
 
-      # ── Claude Sonnet 4 (Raj's key + Kartik's key, load-balanced) ──
-      - model_name: claude-sonnet-4
+      # ── Claude models (wildcard — auto-discovers all available models) ──
+      - model_name: "anthropic/*"
         litellm_params:
-          model: anthropic/claude-sonnet-4-20250514
+          model: "anthropic/*"
           api_key: os.environ/ANTHROPIC_API_KEY_RAJ
         model_info:
           mode: default
-      - model_name: claude-sonnet-4
+      - model_name: "anthropic/*"
         litellm_params:
-          model: anthropic/claude-sonnet-4-20250514
-          api_key: os.environ/ANTHROPIC_API_KEY_KARTIK
-        model_info:
-          mode: default
-
-      # ── Claude Haiku 3.5 (Raj's key + Kartik's key, load-balanced) ──
-      - model_name: claude-haiku-3-5
-        litellm_params:
-          model: anthropic/claude-3-5-haiku-20241022
-          api_key: os.environ/ANTHROPIC_API_KEY_RAJ
-        model_info:
-          mode: default
-      - model_name: claude-haiku-3-5
-        litellm_params:
-          model: anthropic/claude-3-5-haiku-20241022
+          model: "anthropic/*"
           api_key: os.environ/ANTHROPIC_API_KEY_KARTIK
         model_info:
           mode: default
@@ -77,6 +63,7 @@ data:
 
     litellm_settings:
       callbacks: ["prometheus"]
+      check_provider_endpoint: true
 ---
 # ── Secret ────────────────────────────────────────────────────────────
 apiVersion: v1
@@ -90,9 +77,6 @@ stringData:
   # TinyAuth UI credentials
   ui_username: admin
   ui_password: ${DEFAULT_PASSWORD}
-  # Anthropic API keys (load-balanced between Raj & Kartik)
-  anthropic_api_key_raj: "sk-ant-REPLACE_ME_RAJ_KEY"
-  anthropic_api_key_kartik: "sk-ant-REPLACE_ME_KARTIK_KEY"
 ---
 # ── Deployment ───────────────────────────────────────────────────────
 apiVersion: apps/v1
@@ -148,12 +132,12 @@ spec:
             - name: ANTHROPIC_API_KEY_RAJ
               valueFrom:
                 secretKeyRef:
-                  name: litellm-secret
+                  name: litellm-anthropic
                   key: anthropic_api_key_raj
             - name: ANTHROPIC_API_KEY_KARTIK
               valueFrom:
                 secretKeyRef:
-                  name: litellm-secret
+                  name: litellm-anthropic
                   key: anthropic_api_key_kartik
             - name: PROMETHEUS_MULTIPROC_DIR
               value: /prometheus_multiproc
