@@ -3,16 +3,3 @@ kind: Kustomization
 resources:
   - ./egress.yaml
   - ./victoria-logs.yaml
-patches:
-  - patch: |-
-      - op: add
-        path: /metadata/namespace
-        value: monitoring
-    target:
-      kind: Service
-  - patch: |-
-      - op: add
-        path: /metadata/namespace
-        value: monitoring
-    target:
-      kind: HelmRelease
