@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
   - internal-issuer.yaml
   - keiretsu-clusterissuer.yaml
-  - keiretsu-direct-clusterissuer.yaml
   - raj-clusterissuer.yaml
   - killinit-clusterissuer.yaml
   - luke-clusterissuer.yaml
