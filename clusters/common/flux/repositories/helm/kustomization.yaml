@@ -88,3 +88,4 @@ resources:
   - ./border0.yaml
   - ./vmware-tanzu.yaml
   - ./otwld.yaml
+  - ./victoriametrics.yaml

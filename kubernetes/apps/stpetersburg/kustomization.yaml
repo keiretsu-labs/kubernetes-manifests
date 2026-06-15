@@ -23,7 +23,6 @@ resources:
   - ./kro-system
   - ./kube-system
   - ./lws-system
-  - ./loki
   - ./mimir
   - ./spegel
   - ./tailbench
@@ -48,3 +47,4 @@ resources:
   - ./spiderpool
   - ./gpu-operator
   - ./velero
+  - ./victoria-logs
