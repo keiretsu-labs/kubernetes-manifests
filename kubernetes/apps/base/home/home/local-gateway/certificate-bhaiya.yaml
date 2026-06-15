@@ -7,15 +7,13 @@ kind: Certificate
 metadata:
   name: wildcard-bhaiya-${COMMON_DOMAIN//./-}
 spec:
-  # Both the apex and the wildcard (spec §5). Adding the apex SAN also changes the
-  # "exact identifier set", which sidesteps LE's duplicate-certificate rate limit
-  # that our earlier failed-DNS retries tripped on the wildcard-only set. Both SANs
-  # validate through the same _acme-challenge.bhaiya delegation CNAME.
+  # Both the apex and the wildcard. Adding the apex SAN changes the "exact
+  # identifier set", sidestepping LE's duplicate-certificate rate limit.
+  # DNS-01 validation: cert-manager follows the wildcard CNAME
+  # *.bhaiya.keiretsu.top → ottawa.keiretsu.top and places the TXT there.
   dnsNames:
     - 'bhaiya.${COMMON_DOMAIN}'
     - '*.bhaiya.${COMMON_DOMAIN}'
-  # Shared Follow issuer — it follows the explicit _acme-challenge.bhaiya
-  # delegation CNAME (see cnames.yaml) to a clean apex name and validates there.
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
