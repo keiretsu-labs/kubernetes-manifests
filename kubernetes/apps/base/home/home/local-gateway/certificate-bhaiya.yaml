@@ -1,0 +1,19 @@
+---
+# Wildcard cert for per-workspace opencode instances: <slug>.bhaiya.keiretsu.top.
+# bhaiya's ExposeRoute creates an HTTPRoute per workspace under this domain; the
+# *.bhaiya listener on the public gateway terminates TLS with this secret.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-bhaiya-${COMMON_DOMAIN//./-}
+spec:
+  dnsNames:
+    - '*.bhaiya.${COMMON_DOMAIN}'
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: keiretsu-top
+  secretName: wildcard-bhaiya-${COMMON_DOMAIN//./-}
+  usages:
+    - digital signature
+    - key encipherment
