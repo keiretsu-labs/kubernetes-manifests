@@ -13,7 +13,6 @@ spec:
       valueFrom:
         secretKeyRef:
           name: teslamate-postgres-app
-          namespace: teslamate
           key: password
   datasource:
     name: TeslaMate
