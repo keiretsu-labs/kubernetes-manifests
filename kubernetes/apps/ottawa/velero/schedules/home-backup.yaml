@@ -10,4 +10,5 @@ spec:
     ttl: 720h
     includedNamespaces:
       - home
+      - tinyauth
     defaultVolumesToFsBackup: true
