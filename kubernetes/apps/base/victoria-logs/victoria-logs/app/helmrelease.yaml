@@ -56,13 +56,3 @@ spec:
               - op: add
                 path: /spec/folder
                 value: VictoriaMetrics
-          - target:
-              kind: Service
-              name: victoria-logs-victoria-logs-single-server
-            patch: |
-              - op: add
-                path: /metadata/annotations/tailscale.com~1proxy-group
-                value: common-egress
-              - op: add
-                path: /metadata/annotations/tailscale.com~1tailnet-fqdn
-                value: victoria-logs.keiretsu.ts.net

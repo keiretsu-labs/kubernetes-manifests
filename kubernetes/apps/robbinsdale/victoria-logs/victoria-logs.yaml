@@ -1,4 +1,3 @@
----
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -11,7 +10,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: monitoring
-  path: ./kubernetes/apps/base/victoria-logs/victoria-logs-forwarder
+  path: ./kubernetes/apps/robbinsdale/victoria-logs
   prune: true
   sourceRef:
     kind: GitRepository
