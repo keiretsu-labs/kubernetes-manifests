@@ -2,7 +2,7 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
   name: teslamate-postgres
-  namespace: monitoring
+  namespace: teslamate
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
@@ -20,6 +20,8 @@ spec:
     access: proxy
     url: teslamate-postgres-rw.teslamate.svc.cluster.local:5432
     user: teslamate
+    secureJsonData:
+      password: "${password}"
     jsonData:
       database: teslamate
       postgresVersion: 1600

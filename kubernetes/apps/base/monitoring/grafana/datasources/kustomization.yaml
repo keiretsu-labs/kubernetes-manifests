@@ -9,4 +9,3 @@ resources:
   - ./mimir-robbinsdale.yaml
   - ./mimir-ottawa.yaml
   - ./mimir-stpetersburg.yaml
-  - ./teslamate.yaml
