@@ -11,6 +11,8 @@ spec:
       database: teslamate
       owner: teslamate
       dataChecksums: true
+      postInitApplicationSQL:
+        - ALTER USER teslamate WITH SUPERUSER;
   monitoring:
     enablePodMonitor: true
   storage:
