@@ -30,7 +30,7 @@ spec:
         fsGroup: 65532
       containers:
         - name: bhaiya
-          image: oci.cdn.keiretsu.top/corp/bhaiya:0.5.4 # {"$imagepolicy": "bhaiya:bhaiya"}
+          image: oci.cdn.keiretsu.top/corp/bhaiya:0.5.5 # {"$imagepolicy": "bhaiya:bhaiya"}
           imagePullPolicy: Always
           ports:
             - name: grpc-web
@@ -53,6 +53,10 @@ spec:
             # avoids docker.io. Used by the sandbox S3 sync init/sidecar.
             - name: BHAIYA_GARAGE_SYNC_IMAGE
               value: "public.ecr.aws/aws-cli/aws-cli:latest"
+            - name: BHAIYA_MIMIR_URL
+              value: "http://mimir-gateway.mimir.svc.cluster.local:8080"
+            - name: BHAIYA_MIMIR_TENANT
+              value: "talos-ottawa"
           volumeMounts:
             - name: data
               mountPath: /data
