@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./media-config-backup.yaml
   - ./home-backup.yaml
+  - ./bhaiya-backup.yaml

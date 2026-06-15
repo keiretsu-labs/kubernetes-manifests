@@ -5,3 +5,4 @@ resources:
   - ./media-config-backup.yaml
   - ./hermes-backup.yaml
   - ./home-backup.yaml
+  - ./bhaiya-backup.yaml
