@@ -64,10 +64,22 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    # bhaiya admin console + per-workspace opencode instances live ONLY in
+    # ottawa, so point straight at the ottawa edge (one healthy WAN IP) instead
+    # of the k8gb cdn GSLB — the GSLB hands back a second, broken WAN edge that
+    # 404s ~50% of requests. The *.bhaiya wildcard backs <slug>.bhaiya.keiretsu.top
+    # workspace URLs (ExposeRoute creates the per-workspace HTTPRoutes).
     - dnsName: "bhaiya.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
-        - "bhaiya.cdn.${COMMON_DOMAIN}"
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "*.bhaiya.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"

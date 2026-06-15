@@ -1,8 +1,10 @@
 ---
-# bhaiya admin console — public DNS via k8gb GSLB (cdn.keiretsu.top is the
-# k8gb-delegated zone; bhaiya.${COMMON_DOMAIN} is a CNAME to it in cnames.yaml).
-# The route lives here (not the bhaiya namespace) so the Gslb can reference it
-# same-namespace. Access is gated by tinyauth to raj + kartik only.
+# bhaiya admin console. bhaiya is ottawa-only, so DNS points straight at the
+# ottawa edge (CNAME in cnames.yaml) — no k8gb GSLB, which handed back a broken
+# second WAN edge that 404'd ~50% of requests. Access is gated by tinyauth to
+# raj + kartik only. The route lives in keiretsu-top (where the apex hostnames
+# and tinyauth ReferenceGrant already are); per-workspace routes are created in
+# the bhaiya namespace by ExposeRoute.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -21,7 +23,6 @@ spec:
       name: public
       namespace: home
   hostnames:
-    - "bhaiya.cdn.${COMMON_DOMAIN}"
     - "bhaiya.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
@@ -32,26 +33,6 @@ spec:
         - path:
             type: PathPrefix
             value: /
----
-apiVersion: k8gb.absa.oss/v1beta1
-kind: Gslb
-metadata:
-  name: bhaiya
-  namespace: keiretsu-top
-  annotations:
-    k8gb.io/exposed-hostnames: "${LOCATION}.${COMMON_DOMAIN}"
-spec:
-  resourceRef:
-    apiVersion: gateway.networking.k8s.io/v1
-    kind: HTTPRoute
-    name: bhaiya-cdn
-  strategy:
-    type: roundRobin
-    dnsTtlSeconds: 30
-    weight:
-      ottawa: 100
-      robbinsdale: 0
-      stpetersburg: 0
 ---
 # admin console access control via tinyauth — raj + kartik only.
 # tinyauth does authN (Google login, injects Remote-Email); this policy's
