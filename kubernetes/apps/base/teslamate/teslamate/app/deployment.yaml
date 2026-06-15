@@ -54,10 +54,8 @@ spec:
             capabilities:
               drop: ["ALL"]
           livenessProbe:
-            httpGet:
-              path: /health
+            tcpSocket:
               port: 4000
           readinessProbe:
-            httpGet:
-              path: /health
+            tcpSocket:
               port: 4000
