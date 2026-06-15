@@ -4,7 +4,7 @@ kind: StatefulSet
 metadata:
   name: forgejo-runner
 spec:
-  replicas: 6
+  replicas: 3
   serviceName: forgejo-runner
   selector:
     matchLabels:
@@ -82,6 +82,13 @@ spec:
           volumeMounts:
             - name: docker-storage
               mountPath: /var/lib/docker
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - docker system prune -af --volumes 2>/dev/null || true
       volumes:
         - name: token
           secret:
@@ -105,4 +112,4 @@ spec:
         storageClassName: ${STORAGECLASS_DEFAULT}
         resources:
           requests:
-            storage: 10Gi
+            storage: 20Gi
