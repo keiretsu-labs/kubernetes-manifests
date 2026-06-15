@@ -78,6 +78,36 @@ def mimir_query(query, tenant):
         return None
 
 
+def mimir_query_range(query, tenant, duration="1h", step="5m"):
+    """Query Mimir range vector and return list of (timestamp, value) pairs."""
+    now = time.time()
+    start = now - _parse_duration(duration)
+    url = (
+        f"{MIMIR_HOST}/api/v1/query_range"
+        f"?query={urllib.parse.quote(query)}"
+        f"&start={start}&end={now}&step={step}"
+    )
+    req = urllib.request.Request(url)
+    req.add_header("X-Scope-OrgID", tenant)
+    req.add_header("Accept", "application/json")
+    try:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        with urllib.request.urlopen(req, context=ctx, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+            return data.get("data", {}).get("result", [])
+    except Exception:
+        return None
+
+
+def _parse_duration(d):
+    unit = d[-1]
+    val = int(d[:-1])
+    multipliers = {"h": 3600, "m": 60, "s": 1, "d": 86400}
+    return val * multipliers.get(unit, 3600)
+
+
 def fetch_garage_metrics():
     """Fetch all Garage metrics needed for the /garage page as a JSON dict.
 
@@ -179,6 +209,95 @@ def fetch_garage_metrics():
     GARAGE_METRICS_CACHE["data"] = metrics
     GARAGE_METRICS_CACHE["expires_at"] = now + GARAGE_METRICS_CACHE_TTL
     return metrics
+
+
+# ── Time-series garage metrics ─────────────────────────────────────────────
+
+GARAGE_TS_CACHE = {"data": None, "expires_at": 0}
+GARAGE_TS_CACHE_TTL = 60  # seconds — time-series data is larger, cache longer
+
+
+def fetch_garage_ts_metrics():
+    """Fetch time-series garage metrics for live graphs.
+
+    Runs ~10 PromQL range queries in parallel across the ottawa tenant.
+    Cached for 60s.
+    Returns a dict of key -> [[timestamp, value], ...].
+    """
+    now = time.time()
+    if GARAGE_TS_CACHE["data"] and now < GARAGE_TS_CACHE["expires_at"]:
+        return GARAGE_TS_CACHE["data"]
+
+    queries = [
+        ("s3_requests",
+         "sum by (api_endpoint) (rate(api_s3_request_counter[5m]))",
+         "talos-ottawa"),
+        ("block_bytes_read",
+         "sum(rate(block_bytes_read[5m]))",
+         "talos-ottawa"),
+        ("block_bytes_written",
+         "sum(rate(block_bytes_written[5m]))",
+         "talos-ottawa"),
+        ("resync_queue",
+         "max(block_resync_queue_length)",
+         "talos-ottawa"),
+        ("resync_errored",
+         "max(block_resync_errored_blocks)",
+         "talos-ottawa"),
+        ("resync_recv_rate",
+         "sum(rate(block_resync_recv_counter[5m]))",
+         "talos-ottawa"),
+        ("resync_send_rate",
+         "sum(rate(block_resync_send_counter[5m]))",
+         "talos-ottawa"),
+        ("block_errors",
+         "sum(garage_node_block_errors)",
+         "talos-ottawa"),
+        ("worker_queue",
+         "max(garage_worker_queue_length)",
+         "talos-ottawa"),
+        ("disk_usage_pct",
+         "(1 - sum(garage_local_disk_avail{volume='data'}) / sum(garage_local_disk_total{volume='data'})) * 100",
+         "talos-ottawa"),
+    ]
+
+    ts_data = {}
+
+    with ThreadPoolExecutor(max_workers=min(len(queries), 12)) as pool:
+        future_map = {
+            pool.submit(mimir_query_range, q, tenant): key
+            for key, q, tenant in queries
+        }
+        for future in as_completed(future_map):
+            key = future_map[future]
+            try:
+                result = future.result()
+            except Exception:
+                result = None
+
+            if not result:
+                ts_data[key] = []
+                continue
+
+            # Merge all series for the same key into one timeline
+            merged = {}
+            for series in result:
+                for ts, val in series.get("values", []):
+                    try:
+                        v = float(val)
+                    except (ValueError, TypeError):
+                        continue
+                    if ts not in merged:
+                        merged[ts] = 0.0
+                    merged[ts] += v
+
+            # Sort by timestamp and produce [[ts, val], ...] arrays
+            sorted_ts = sorted(merged.keys())
+            ts_data[key] = [[t, merged[t]] for t in sorted_ts]
+
+    GARAGE_TS_CACHE["data"] = ts_data
+    GARAGE_TS_CACHE["expires_at"] = now + GARAGE_TS_CACHE_TTL
+    return ts_data
 
 
 def render_garage_page(template, metrics):
@@ -443,6 +562,8 @@ class HomepageHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/garage":
             self.handle_garage()
+        elif self.path == "/garage/api/metrics/timeseries":
+            self.handle_garage_timeseries()
         elif self.path != "/":
             self.send_response(302)
             self.send_header("Location", "/")
@@ -479,7 +600,6 @@ class HomepageHandler(BaseHTTPRequestHandler):
         try:
             metrics = fetch_garage_metrics()
         except Exception:
-            # Graceful fallback — empty data prevents a 500 crash
             metrics = {}
 
         html = render_garage_page(template, metrics)
@@ -489,6 +609,20 @@ class HomepageHandler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(html.encode("utf-8"))
+
+    def handle_garage_timeseries(self):
+        try:
+            ts_data = fetch_garage_ts_metrics()
+        except Exception:
+            ts_data = {}
+
+        body = json.dumps(ts_data).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(body)
 
     def log_message(self, format, *args):
         pass

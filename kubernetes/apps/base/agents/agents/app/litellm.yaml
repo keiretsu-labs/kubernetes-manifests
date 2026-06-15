@@ -72,7 +72,7 @@ data:
       allowed_fails: 3
 
     general_settings:
-      database_url: "postgresql://litellm:***@litellm-db:5432/litellm"
+      database_url: "postgresql://litellm:litellm@litellm-db:5432/litellm"
       forward_client_headers_to_llm_api: true
 
     litellm_settings:
