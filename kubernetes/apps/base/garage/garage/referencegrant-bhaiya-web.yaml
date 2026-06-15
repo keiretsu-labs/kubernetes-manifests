@@ -1,0 +1,17 @@
+---
+# Lets bhaiya's per-workspace static-site HTTPRoutes (in the bhaiya namespace)
+# backend to garage-gateway's web port (3902) so a workspace's Garage bucket can
+# be served at <slug>.bhaiya.keiretsu.top without exposing the sandbox itself.
+apiVersion: gateway.networking.k8s.io/v1
+kind: ReferenceGrant
+metadata:
+  name: bhaiya-garage-gateway
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: bhaiya
+  to:
+    - group: ""
+      kind: Service
+      name: garage-gateway
