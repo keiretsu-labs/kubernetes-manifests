@@ -11,3 +11,4 @@ resources:
   - ./cnpg
   - ./k6
   - ./vllm
+  - ./teslamate
