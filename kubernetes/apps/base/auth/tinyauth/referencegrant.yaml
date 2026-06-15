@@ -21,6 +21,9 @@ spec:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
       namespace: velero-system
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: teslamate
   to:
     - group: ""
       kind: Service

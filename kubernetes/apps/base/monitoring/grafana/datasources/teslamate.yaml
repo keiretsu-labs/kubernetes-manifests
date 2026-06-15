@@ -1,0 +1,34 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: teslamate-postgres
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  valuesFrom:
+    - targetPath: "secureJsonData.password"
+      valueFrom:
+        secretKeyRef:
+          name: teslamate-postgres-app
+          namespace: teslamate
+          key: password
+  datasource:
+    name: TeslaMate
+    type: postgres
+    access: proxy
+    url: teslamate-postgres-rw.teslamate.svc.cluster.local:5432
+    user: teslamate
+    secureJsonData:
+      password: "${password}"
+    jsonData:
+      database: teslamate
+      postgresVersion: 1600
+      sslmode: disable
+      connMaxLifetime: 14400
+      maxIdleConns: 2
+      maxOpenConns: 0
+    isDefault: false
+    editable: false

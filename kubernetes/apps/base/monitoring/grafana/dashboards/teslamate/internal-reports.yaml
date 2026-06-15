@@ -1,0 +1,67 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-internal-charge-details
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/internal/charge-details.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-internal-drive-details
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/internal/drive-details.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-internal-home
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/internal/home.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-reports-dutch-tax
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/reports/dutch-tax.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
