@@ -35,7 +35,6 @@ spec:
   hostnamePrefix: ${LOCATION}-egress
   tags:
     - tag:k8s
-    - tag:${LOCATION}
   proxyClass: common-accept-routes
   type: egress
   tailnet: rajtsjustworks
@@ -49,7 +48,6 @@ spec:
   hostnamePrefix: ${LOCATION}-ingress
   tags:
     - tag:k8s
-    - tag:${LOCATION}
   proxyClass: common
   type: ingress
   tailnet: rajtsjustworks
@@ -63,7 +61,6 @@ spec:
   hostnamePrefix: ${LOCATION}-egress
   tags:
     - tag:k8s
-    - tag:${LOCATION}
   proxyClass: common-accept-routes
   type: egress
   tailnet: kartiktsjustworks
@@ -77,7 +74,6 @@ spec:
   hostnamePrefix: ${LOCATION}-ingress
   tags:
     - tag:k8s
-    - tag:${LOCATION}
   proxyClass: common
   type: ingress
   tailnet: kartiktsjustworks
