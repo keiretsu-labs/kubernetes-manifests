@@ -3,6 +3,9 @@ kind: Service
 metadata:
   name: victoria-logs-victoria-logs-single-server
   namespace: monitoring
+  annotations:
+    tailscale.com/proxy-group: common-egress
+    tailscale.com/tailnet-fqdn: victoria-logs.keiretsu.ts.net
 spec:
   type: ExternalName
   externalName: victoria-logs.keiretsu.ts.net
