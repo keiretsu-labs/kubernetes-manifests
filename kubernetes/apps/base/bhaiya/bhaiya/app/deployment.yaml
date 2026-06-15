@@ -48,6 +48,11 @@ spec:
                   key: BHAIYA_FORGEJO_TOKEN
             - name: BHAIYA_FORGEJO_API_URL
               value: "https://forgejo.keiretsu.top/api/v1"
+            # The app default (amazon/aws-cli:2) isn't resolvable from this
+            # cluster's registry path; AWS public ECR is anonymous-pullable and
+            # avoids docker.io. Used by the sandbox S3 sync init/sidecar.
+            - name: BHAIYA_GARAGE_SYNC_IMAGE
+              value: "public.ecr.aws/aws-cli/aws-cli:latest"
           volumeMounts:
             - name: data
               mountPath: /data
