@@ -9,5 +9,3 @@ resources:
   - ./mimir-robbinsdale.yaml
   - ./mimir-ottawa.yaml
   - ./mimir-stpetersburg.yaml
-  - ./loki-robbinsdale.yaml
-  - ./loki-stpetersburg.yaml
