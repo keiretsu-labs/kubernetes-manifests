@@ -4,3 +4,4 @@ namespace: monitoring
 resources:
   - ../../base/victoria-logs/victoria-logs/app
   - ingress-ts.yaml
+  - victoria-logs.yaml
