@@ -26,3 +26,59 @@ spec:
   type: ingress
   tailnet: tsjustworks
   replicas: 2
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: rajtsjustworks-egress
+spec:
+  hostnamePrefix: ${LOCATION}-egress
+  tags:
+    - tag:k8s
+    - tag:${LOCATION}
+  proxyClass: common-accept-routes
+  type: egress
+  tailnet: rajtsjustworks
+  replicas: 2
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: rajtsjustworks-ingress
+spec:
+  hostnamePrefix: ${LOCATION}-ingress
+  tags:
+    - tag:k8s
+    - tag:${LOCATION}
+  proxyClass: common
+  type: ingress
+  tailnet: rajtsjustworks
+  replicas: 2
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: kartiktsjustworks-egress
+spec:
+  hostnamePrefix: ${LOCATION}-egress
+  tags:
+    - tag:k8s
+    - tag:${LOCATION}
+  proxyClass: common-accept-routes
+  type: egress
+  tailnet: kartiktsjustworks
+  replicas: 2
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: kartiktsjustworks-ingress
+spec:
+  hostnamePrefix: ${LOCATION}-ingress
+  tags:
+    - tag:k8s
+    - tag:${LOCATION}
+  proxyClass: common
+  type: ingress
+  tailnet: kartiktsjustworks
+  replicas: 2

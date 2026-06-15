@@ -16,3 +16,39 @@ metadata:
 spec:
   credentials:
     secretName: tsjustworks-oauth
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rajtsjustworks-oauth
+  namespace: tailscale
+type: Opaque
+stringData:
+  client_id: ${RAJTSJUSTWORKS_TS_OAUTH_CLIENT_ID:-}
+  client_secret: ${RAJTSJUSTWORKS_TS_OAUTH_CLIENT_SECRET:-}
+---
+apiVersion: tailscale.com/v1alpha1
+kind: Tailnet
+metadata:
+  name: rajtsjustworks
+spec:
+  credentials:
+    secretName: rajtsjustworks-oauth
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kartiktsjustworks-oauth
+  namespace: tailscale
+type: Opaque
+stringData:
+  client_id: ${KARTIKTSJUSTWORKS_TS_OAUTH_CLIENT_ID:-}
+  client_secret: ${KARTIKTSJUSTWORKS_TS_OAUTH_CLIENT_SECRET:-}
+---
+apiVersion: tailscale.com/v1alpha1
+kind: Tailnet
+metadata:
+  name: kartiktsjustworks
+spec:
+  credentials:
+    secretName: kartiktsjustworks-oauth
