@@ -39,6 +39,7 @@ data:
   # whereas the storage service has NO endpoints if local storage is destroyed. Swap this
   # one value to repoint every app — all S3 clients use ${COMMON_S3_ENDPOINT}.
   COMMON_S3_ENDPOINT: "garage-gateway.garage.svc.cluster.local:3900"
+  VICTORIA_LOGS_HOST: "victoria-logs-victoria-logs-single-server.monitoring"
 
   # Garage: STORAGE layout is hand-managed per Spark node via GarageNode CRs in
   # clusters/talos-stpetersburg/apps/garage (decoupled from clusters/common so
