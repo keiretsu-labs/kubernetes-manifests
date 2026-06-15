@@ -6,7 +6,7 @@ metadata:
 data:
   config.yaml: |
     log:
-      level: info
+      level: debug
     runner:
       file: /data/.runner
       capacity: 4
