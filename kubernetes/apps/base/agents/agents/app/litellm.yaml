@@ -88,9 +88,9 @@ stringData:
   # LiteLLM master/salt keys
   master_key: DEFAULT_PASSWORD
   salt_key: DEFAULT_PASSWORD
-  # TinyAuth UI credentials
+  # TinyAuth UI credentials (shared with LITELLM_SALT_KEY)
   ui_username: admin
-  ui_password: DEFAULT_PASSWORD
+  ui_password: ${DEFAULT_PASSWORD}
   # Anthropic API keys (load-balanced between Raj & Kartik)
   anthropic_api_key_raj: "sk-ant-REPLACE_ME_RAJS_KEY"
   anthropic_api_key_kartik: "sk-ant-REPLACE_ME_KARTIKS_KEY"
