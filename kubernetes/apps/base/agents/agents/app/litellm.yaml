@@ -129,6 +129,11 @@ spec:
                 secretKeyRef:
                   name: litellm-secret
                   key: ui_password
+            - name: ANTHROPIC_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-auth
+                  key: anthropic_auth_token_raj
             - name: PROMETHEUS_MULTIPROC_DIR
               value: /prometheus_multiproc
           ports:
