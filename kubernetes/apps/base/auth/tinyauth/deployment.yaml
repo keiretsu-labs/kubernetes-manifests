@@ -48,6 +48,21 @@ spec:
                   name: tinyauth-secret
                   key: tinyauth-secret
                   optional: true
+            # forgejo OIDC client — registered via `tinyauth oidc create forgejo`
+            - name: TINYAUTH_OIDC_CLIENTS_FORGEJO_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: forgejo-oidc-client-id
+            - name: TINYAUTH_OIDC_CLIENTS_FORGEJO_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: forgejo-oidc-client-secret
+            - name: TINYAUTH_OIDC_CLIENTS_FORGEJO_TRUSTEDREDIRECTURIS
+              value: https://forgejo.keiretsu.top/user/oauth2/Tinyauth/callback
+            - name: TINYAUTH_OIDC_CLIENTS_FORGEJO_NAME
+              value: Forgejo
             - name: TINYAUTH_DATABASE_PATH
               value: /data/tinyauth.db
           volumeMounts:
