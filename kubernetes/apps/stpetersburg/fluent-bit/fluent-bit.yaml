@@ -10,7 +10,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: loki
+    - name: victoria-logs
   path: ./kubernetes/apps/base/fluent-bit/fluent-bit
   prune: true
   sourceRef:

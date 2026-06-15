@@ -31,9 +31,8 @@ resources:
   - ./kro-system
   - ./kube-system
   - ./lan
-  - ./loki
-  - ./media
   - ./mimir
+  - ./media
   - ./open-cluster-management
   - ./open-cluster-management-agent
   - ./opencost
@@ -59,3 +58,4 @@ resources:
   - ./k8s-gpu-dra-driver
   - ./rook-ceph
   - ./velero
+  - ./victoria-logs
