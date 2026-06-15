@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ../../base/victoria-logs/victoria-logs/app
   - ingress-ts.yaml
+  - egress-svc.yaml
   - victoria-logs.yaml
 patches:
   - patch: |-
@@ -12,6 +13,13 @@ patches:
     target:
       kind: Service
       name: victoria-logs-ts
+  - patch: |-
+      - op: add
+        path: /metadata/namespace
+        value: monitoring
+    target:
+      kind: Service
+      name: victoria-logs-victoria-logs-single-server-egress
   - patch: |-
       - op: add
         path: /metadata/namespace
