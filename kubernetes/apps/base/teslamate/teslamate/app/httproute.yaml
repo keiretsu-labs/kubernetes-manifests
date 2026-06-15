@@ -1,0 +1,30 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: teslamate
+  namespace: teslamate
+spec:
+  parentRefs:
+    - name: private
+      namespace: home
+    - name: ts
+      namespace: home
+  hostnames:
+    - teslamate.keiretsu.top
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: teslamate
+          port: 4000
+          weight: 1
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: "X-Forwarded-Proto"
+                value: "https"
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

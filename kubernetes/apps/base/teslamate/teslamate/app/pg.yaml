@@ -1,0 +1,51 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: teslamate-postgres
+  namespace: teslamate
+spec:
+  instances: 2
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  postgresql:
+    shared_preload_libraries: []
+  bootstrap:
+    initdb:
+      database: teslamate
+      owner: teslamate
+      dataChecksums: true
+  monitoring:
+    enablePodMonitor: true
+  storage:
+    size: 8Gi
+  # Enable Barman Cloud plugin for S3 backups
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: teslamate-s3-store
+        serverName: teslamate-postgres
+
+  backup:
+    retentionPolicy: "30d"
+  externalClusters:
+    - name: keiretsu
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: teslamate-s3-store
+          serverName: teslamate-postgres
+---
+# S3 backup schedule using Barman Cloud
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: teslamate-postgres-s3
+  namespace: teslamate
+spec:
+  schedule: "0 0 23 * * *"  # Daily at 11 PM
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: teslamate-postgres

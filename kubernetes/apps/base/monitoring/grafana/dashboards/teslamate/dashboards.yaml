@@ -1,0 +1,322 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-overview
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/overview.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-charge-level
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/charge-level.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-charges
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/charges.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-charging-stats
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/charging-stats.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-drives
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/drives.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-drive-stats
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/drive-stats.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-efficiency
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/efficiency.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-trip
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/trip.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-battery-health
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/battery-health.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-projected-range
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/projected-range.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-locations
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/locations.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-visited
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/visited.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-mileage
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/mileage.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-states
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/states.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-timeline
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/timeline.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-updates
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/updates.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-vampire-drain
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/vampire-drain.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-statistics
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/statistics.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: teslamate-database-info
+  namespace: monitoring
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: "168h"
+  folder: TeslaMate
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/database-info.json
+  datasources:
+    - inputName: DS_POSTGRES_TSLM
+      datasourceName: TeslaMate

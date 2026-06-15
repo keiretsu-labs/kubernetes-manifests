@@ -1,0 +1,16 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: teslamate-tinyauth
+  namespace: teslamate
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: teslamate
+  extAuth:
+    grpcService:
+      authority: tinyauth.home.svc.cluster.local
+      tinyauth.home.svc.cluster.local:
+        - name: tinyauth
+          port: 9000

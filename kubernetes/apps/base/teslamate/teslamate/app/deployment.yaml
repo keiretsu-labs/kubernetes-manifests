@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teslamate
+  namespace: teslamate
+  labels:
+    app: teslamate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: teslamate
+  template:
+    metadata:
+      labels:
+        app: teslamate
+    spec:
+      containers:
+        - name: teslamate
+          image: teslamate/teslamate:4.0.1
+          ports:
+            - containerPort: 4000
+              name: http
+          env:
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: teslamate-secret
+                  key: ENCRYPTION_KEY
+            - name: DATABASE_USER
+              value: teslamate
+            - name: DATABASE_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: teslamate-postgres-app
+                  key: password
+            - name: DATABASE_NAME
+              value: teslamate
+            - name: DATABASE_HOST
+              value: teslamate-postgres-rw.teslamate.svc.cluster.local
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_SSL
+              value: "false"
+            - name: DISABLE_MQTT
+              value: "true"
+            - name: VIRTUAL_HOST
+              value: teslamate.keiretsu.top
+            - name: CHECK_ORIGIN
+              value: "true"
+            - name: TZ
+              value: America/Chicago
+          securityContext:
+            capabilities:
+              drop: ["ALL"]
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4000
