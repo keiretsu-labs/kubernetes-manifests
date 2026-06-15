@@ -11,6 +11,6 @@ resources:
   - ./egress.yaml
   - ./priorityclasses.yaml
   - ./tailnet.yaml
-  # - ./tsjustworks-proxygroup.yaml
+  - ./tsjustworks-proxygroup.yaml
   # Dashboards
   - ./network-metrics.yaml
