@@ -83,23 +83,6 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
-    # ACME challenge delegation for the *.bhaiya wildcard cert. PROBLEM: the
-    # _acme-challenge.bhaiya record falls UNDER the *.bhaiya wildcard above, so a
-    # bare DNS-01 challenge name resolves to a (wildcard) CNAME → cert-manager's
-    # Cloudflare zone-detection chokes ("Found no Zones"; a clean non-wildcarded
-    # name issues in 40s — verified). FIX: an EXPLICIT CNAME at the challenge name
-    # (explicit beats wildcard) delegating to a clean apex-level name. The issuer's
-    # cnameStrategy:Follow then follows this to _acme-challenge-bhaiya (in the
-    # keiretsu.top zone, no wildcard) and writes the TXT there; LE follows the same
-    # CNAME to read it. _acme-challenge-bhaiya itself needs no record — cert-manager
-    # creates the TXT on it at solve time.
-    - dnsName: "_acme-challenge.bhaiya.${COMMON_DOMAIN}"
-      recordType: CNAME
-      targets:
-        - "_acme-challenge-bhaiya.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "velero.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
