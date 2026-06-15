@@ -9,12 +9,12 @@ metadata:
 spec:
   dnsNames:
     - '*.bhaiya.${COMMON_DOMAIN}'
-  # keiretsu-top-direct = no cnameStrategy:Follow — the shared issuer's Follow
-  # chases the *.bhaiya serving CNAME and fails DNS-01 zone detection.
+  # Shared Follow issuer — it follows the explicit _acme-challenge.bhaiya
+  # delegation CNAME (see cnames.yaml) to a clean apex name and validates there.
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
-    name: keiretsu-top-direct
+    name: keiretsu-top
   secretName: wildcard-bhaiya-${COMMON_DOMAIN//./-}
   usages:
     - digital signature
