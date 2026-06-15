@@ -35,6 +35,8 @@ spec:
           memory: 512Mi
       serviceMonitor:
         enabled: true
+    service:
+      clusterIP: ""
     dashboards:
       enabled: true
       annotations:
@@ -56,3 +58,12 @@ spec:
               - op: add
                 path: /spec/folder
                 value: VictoriaMetrics
+          - target:
+              kind: Service
+            patch: |
+              - op: add
+                path: /metadata/annotations/tailscale.com~1proxy-group
+                value: common-egress
+              - op: add
+                path: /metadata/annotations/tailscale.com~1tailnet-fqdn
+                value: victoria-logs.keiretsu.ts.net
