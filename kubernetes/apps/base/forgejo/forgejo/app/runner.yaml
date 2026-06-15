@@ -112,4 +112,4 @@ spec:
         storageClassName: ${STORAGECLASS_DEFAULT}
         resources:
           requests:
-            storage: 20Gi
+            storage: 10Gi
