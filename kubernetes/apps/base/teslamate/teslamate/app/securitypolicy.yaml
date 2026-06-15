@@ -2,15 +2,46 @@ apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
   name: teslamate-tinyauth
-  namespace: teslamate
 spec:
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: teslamate
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: teslamate
   extAuth:
-    grpcService:
-      authority: tinyauth.home.svc.cluster.local
-      tinyauth.home.svc.cluster.local:
-        - name: tinyauth
-          port: 9000
+    failOpen: false
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-proto
+      - x-forwarded-for
+      - user-agent
+    http:
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: tinyauth
+          namespace: tinyauth
+          port: 3000
+          weight: 1
+      headersToBackend:
+        - remote-user
+        - remote-email
+        - remote-name
+        - remote-groups
+      path: /api/auth/envoy?path=
+  authorization:
+    defaultAction: Deny
+    rules:
+      - action: Allow
+        name: allow-raj
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - rajsinghcpre@gmail.com
+      - action: Allow
+        name: allow-kartik
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - kartikbharath@gmail.com
