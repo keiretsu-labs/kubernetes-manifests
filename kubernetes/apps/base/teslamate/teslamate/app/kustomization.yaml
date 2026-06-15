@@ -9,4 +9,4 @@ resources:
   - httproute.yaml
   - securitypolicy.yaml
   - secret.yaml
-  - referencegrant.yaml
+  - grafanadatasource.yaml
