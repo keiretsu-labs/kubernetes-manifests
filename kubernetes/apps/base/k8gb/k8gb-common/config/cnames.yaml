@@ -76,17 +76,18 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
-    # A record, NOT a CNAME, on purpose. A wildcard CNAME here shadows
-    # _acme-challenge.bhaiya.${COMMON_DOMAIN} and breaks DNS-01 issuance of the
-    # *.bhaiya wildcard cert: cert-manager (cnameStrategy: Follow) chases the
-    # wildcard CNAME and fails to locate the zone for the challenge. A wildcard A
-    # record does not answer CNAME queries, so cert-manager writes the TXT
-    # directly at _acme-challenge.bhaiya, and that explicit record shadows the
-    # wildcard for just that name. Target is the ottawa edge (== ottawa.${COMMON_DOMAIN}).
+    # CNAME → ottawa, matching the proven *.agents / *.hermes recipe. The
+    # keiretsu-top ClusterIssuer uses Cloudflare DNS-01 with cnameStrategy: Follow,
+    # which DELEGATES the _acme-challenge to the CNAME target (ottawa.${COMMON_DOMAIN},
+    # a cleanly-resolvable name in the keiretsu.top zone) and writes the TXT there.
+    # An A record breaks this: with no CNAME to follow, cert-manager's direct
+    # zone-walk on _acme-challenge.bhaiya fails ("Found no Zones"). The earlier
+    # CNAME failures were just the stale Order created before this record existed —
+    # clear the Order after this propagates and DNS-01 validates.
     - dnsName: "*.bhaiya.${COMMON_DOMAIN}"
-      recordType: A
+      recordType: CNAME
       targets:
-        - "76.71.101.187"
+        - "ottawa.${COMMON_DOMAIN}"
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
