@@ -5,6 +5,6 @@ resources:
   - deployment-hello-world.yaml
   - configmap-nginx.yaml
   - service-hello-world.yaml
-  - service-bridge-multitailnet.yaml
+  # - service-bridge-multitailnet.yaml
   - deployment-curl-hello-world.yaml
   - egress.yaml 
