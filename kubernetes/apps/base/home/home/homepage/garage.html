@@ -121,6 +121,17 @@ body {
 </div>
 
 <!-- Topology Diagram -->
+
+<!-- Live Time-Series Graphs -->
+<h2 style="margin-bottom:0.75rem; font-size:1rem; color:#f5deb3; text-transform:uppercase; letter-spacing:0.05em">📈 Live Traffic &amp; Health (Last 1 Hour)</h2>
+<div class="chart-grid">
+  <div class="chart-box"><h3>🚦 S3 Request Rate</h3><canvas id="tsTraffic"></canvas><div style="text-align:center;font-size:11px;color:#5a5048;margin-top:6px" id="tsTrafficStatus">loading...</div></div>
+  <div class="chart-box"><h3>📤 Data Throughput</h3><canvas id="tsThroughput"></canvas><div style="text-align:center;font-size:11px;color:#5a5048;margin-top:6px" id="tsThroughputStatus">loading...</div></div>
+  <div class="chart-box"><h3>🔄 Block Sync Catch-Up</h3><canvas id="tsSync"></canvas><div style="text-align:center;font-size:11px;color:#5a5048;margin-top:6px" id="tsSyncStatus">loading...</div></div>
+  <div class="chart-box"><h3>⚠️ Block Errors &amp; Queue</h3><canvas id="tsErrors"></canvas><div style="text-align:center;font-size:11px;color:#5a5048;margin-top:6px" id="tsErrorsStatus">loading...</div></div>
+</div>
+
+<!-- Topology Diagram -->
 <section class="card topology fade-in">
   <h2>🌐 Multi-Region Topology with Tailscale Proxy Groups</h2>
   <div class="legend">
@@ -638,8 +649,96 @@ const ZONES = ['ottawa', 'robbinsdale', 'stpetersburg'];
   const pcts = ZONES.map(z=>{const t=m['disk_total_'+z]||0; const a=m['disk_avail_'+z]||0; return t?Math.round((t-a)/t*100):0;});
   const labels = ZONES.map(z=>z.charAt(0).toUpperCase()+z.slice(1));
   const bg = ZONES.map(z=>{const t=m['disk_total_'+z]||0; const a=m['disk_avail_'+z]||0; const p=t?(t-a)/t:0; return p>0.8?'#ef4444':p>0.6?'#fbbf24':ZONE_COLORS[z];});
+  
   new Chart(document.getElementById('chartUtil'), { type: 'bar', data: { labels, datasets: [{ label: 'Utilization %', data: pcts, backgroundColor: bg, borderRadius: 3 }] }, options: { responsive: true, scales: { y: { beginAtZero: true, max: 100, ticks: { color: '#a09080', callback: v => v+'%' } }, x: { ticks: { color: '#a09080' } } }, plugins: { legend: { display: false } } } });
 }
+
+// ═══════════════════════════════════
+// Time-Series Live Charts (load from API)
+// ═══════════════════════════════════
+
+async function loadTimeSeries() {
+  try {
+    const resp = await fetch('/garage/api/metrics/timeseries');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const d = await resp.json();
+
+    function toXY(arr) {
+      if (!arr || !arr.length) return [];
+      return arr.map(p => ({ x: parseFloat(p[0]) * 1000, y: p[1] }));
+    }
+
+    function fmtBytes(v) {
+      if (v >= 1073741824) return (v/1073741824).toFixed(1)+' GiB/s';
+      if (v >= 1048576) return (v/1048576).toFixed(1)+' MiB/s';
+      if (v >= 1024) return (v/1024).toFixed(1)+' KiB/s';
+      return v.toFixed(1)+' B/s';
+    }
+
+    const base = {
+      responsive: true, animation: false,
+      scales: {
+        x: { type: 'time', time: { tooltipFormat: 'HH:mm', unit: 'minute', displayFormats: { minute: 'HH:mm' } }, ticks: { color: '#a09080', maxTicksLimit: 6 }, grid: { color: '#2e2621' } },
+        y: { beginAtZero: true, ticks: { color: '#a09080' }, grid: { color: '#2e2621' } }
+      },
+      plugins: { legend: { position: 'top', labels: { color: '#a09080', boxWidth: 10 } }, tooltip: { mode: 'nearest', intersect: false } }
+    };
+
+    // 1. S3 Traffic Rate
+    const s3d = toXY(d.s3_requests);
+    if (s3d.length) {
+      new Chart(document.getElementById('tsTraffic'), { type: 'line', data: { datasets: [{ label: 'S3 req/s', data: s3d, borderColor: '#22d3ee', backgroundColor: 'rgba(34,211,238,0.1)', fill: true, tension: 0.3, pointRadius: 0 }] }, options: base });
+      document.getElementById('tsTrafficStatus').textContent = s3d[s3d.length-1].y.toFixed(2) + ' req/s now';
+    } else document.getElementById('tsTrafficStatus').textContent = 'No recent S3 traffic';
+
+    // 2. Data Throughput
+    const rd = toXY(d.block_bytes_read), wd = toXY(d.block_bytes_written);
+    if (rd.length || wd.length) {
+      new Chart(document.getElementById('tsThroughput'), { type: 'line', data: { datasets: [
+        { label: 'Read', data: rd, borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.1)', fill: true, tension: 0.3, pointRadius: 0 },
+        { label: 'Write', data: wd, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', fill: true, tension: 0.3, pointRadius: 0 }
+      ]}, options: { ...base, scales: { ...base.scales, y: { ...base.scales.y, ticks: { ...base.scales.y.ticks, callback: v => fmtBytes(v) } } } } });
+      document.getElementById('tsThroughputStatus').textContent = 'Read: ' + fmtBytes(rd.length ? rd[rd.length-1].y : 0) + ' · Write: ' + fmtBytes(wd.length ? wd[wd.length-1].y : 0);
+    }
+
+    // 3. Block Sync Catch-Up
+    const sq = toXY(d.resync_queue), sr = toXY(d.resync_recv_rate), ss = toXY(d.resync_send_rate);
+    const ds = [];
+    if (sq.length) ds.push({ label: 'Queue Depth', data: sq, borderColor: '#fb923c', backgroundColor: 'rgba(251,146,60,0.1)', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' });
+    if (sr.length) ds.push({ label: 'Recv/s', data: sr, borderColor: '#34d399', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, borderDash: [3,2], yAxisID: 'y' });
+    if (ss.length) ds.push({ label: 'Send/s', data: ss, borderColor: '#c084fc', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, borderDash: [3,2], yAxisID: 'y' });
+    if (ds.length) {
+      new Chart(document.getElementById('tsSync'), { type: 'line', data: { datasets: ds }, options: { ...base, plugins: { ...base.plugins, legend: { ...base.plugins.legend, labels: { ...base.plugins.legend.labels, boxWidth: 8, fontSize: 9 } } } } });
+      const lastQ = sq.length ? sq[sq.length-1].y : 0;
+      document.getElementById('tsSyncStatus').textContent = 'Queue: ' + lastQ.toFixed(0) + ' blocks, Recv: ' + (sr.length ? sr[sr.length-1].y.toFixed(1) : '0') + '/s';
+    }
+
+    // 4. Block Errors & Worker Queue
+    const be = toXY(d.block_errors), wq = toXY(d.worker_queue);
+    if (be.length || wq.length) {
+      new Chart(document.getElementById('tsErrors'), { type: 'line', data: { datasets: [
+        { label: 'Block Errors', data: be, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
+        { label: 'Worker Queue', data: wq, borderColor: '#fbbf24', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y2' }
+      ]}, options: {
+        responsive: true, animation: false,
+        scales: {
+          x: { type: 'time', time: { tooltipFormat: 'HH:mm', unit: 'minute', displayFormats: { minute: 'HH:mm' } }, ticks: { color: '#a09080', maxTicksLimit: 6 }, grid: { color: '#2e2621' } },
+          y1: { position: 'left', beginAtZero: true, ticks: { color: '#ef4444' }, grid: { color: '#2e2621' }, title: { display: true, text: 'Errors', color: '#ef4444', font: { size: 10 } } },
+          y2: { position: 'right', beginAtZero: true, ticks: { color: '#fbbf24' }, grid: { display: false }, title: { display: true, text: 'Queue', color: '#fbbf24', font: { size: 10 } } }
+        },
+        plugins: { legend: { position: 'top', labels: { color: '#a09080', boxWidth: 10 } } }
+      } });
+      document.getElementById('tsErrorsStatus').textContent = 'Errors: ' + (be.length ? be[be.length-1].y.toFixed(0) : '0') + ' · Worker queue: ' + (wq.length ? wq[wq.length-1].y.toFixed(0) : '0');
+    }
+  } catch(e) {
+    ['tsTraffic','tsThroughput','tsSync','tsErrors'].forEach(id => {
+      const el = document.getElementById(id + 'Status');
+      if (el) el.textContent = '⚠️ ' + e.message;
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => setTimeout(loadTimeSeries, 200));
 </script>
 
 </body>
