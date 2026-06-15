@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>keiretsu · garage infrastructure</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏗️</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -44,6 +45,10 @@ body {
 .region-box { transition: fill 0.25s, stroke-width 0.25s; }
 .region-box:hover { fill: rgba(251,146,60,0.15); stroke-width: 2.2; }
 .cluster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
+.chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+.chart-box { background: #3d3028; border-radius: 10px; padding: 1.2rem; }
+.chart-box h3 { font-size: 0.85rem; color: #f5deb3; font-weight: 500; margin-bottom: 0.8rem; }
+.chart-box canvas { max-height: 220px; }
 .cluster-card { background: #3d3028; border-radius: 10px; padding: 1.2rem; }
 .cluster-card h3 { font-size: 1rem; margin-bottom: 0.8rem; }
 .cluster-card .stat { display: flex; justify-content: space-between; padding: 0.3rem 0; font-size: 0.85rem; border-bottom: 1px solid #2e2621; }
@@ -104,6 +109,15 @@ body {
   <div class="metric-card"><div class="value skeleton" id="val-disk-used">...</div><div class="label">Total Disk Used</div><div class="trend">across all regions</div></div>
     <div class="metric-card"><div class="value skeleton" id="val-disk-total">...</div><div class="label">Total Disk Capacity</div><div class="trend">across all regions</div></div>
     <div class="metric-card"><div class="value">mimir</div><div class="label">Data Source</div><div class="trend">prometheus · server-side</div></div>
+</div>
+
+<!-- Charts Section -->
+<h2 style="margin-bottom:0.75rem; font-size:1rem; color:#f5deb3; text-transform:uppercase; letter-spacing:0.05em">📈 Cluster Charts</h2>
+<div class="chart-grid">
+  <div class="chart-box"><h3>🟢 Storage Usage by Zone</h3><canvas id="chartZone"></canvas></div>
+  <div class="chart-box"><h3>🔵 Node Distribution</h3><canvas id="chartNodes"></canvas></div>
+  <div class="chart-box"><h3>🟣 Capacity Distribution</h3><canvas id="chartCap"></canvas></div>
+  <div class="chart-box"><h3>🟠 Disk Utilization %</h3><canvas id="chartUtil"></canvas></div>
 </div>
 
 <!-- Topology Diagram -->
@@ -584,6 +598,48 @@ const totalAvail = (m.disk_avail_ottawa||0)+(m.disk_avail_robbinsdale||0)+(m.dis
 const totalUsed = Math.max(0, totalDisk - totalAvail);
 setVal('val-disk-used', fmtBytes(totalUsed));
 setVal('val-disk-total', fmtBytes(totalDisk));
+
+// ═══════════════════════════════════
+// Chart.js Graphs (4 charts)
+// ═══════════════════════════════════
+
+const ZONE_COLORS = { ottawa: '#34d399', robbinsdale: '#fbbf24', stpetersburg: '#fb923c' };
+const ZONES = ['ottawa', 'robbinsdale', 'stpetersburg'];
+
+// 1. Storage Usage by Zone (stacked bar)
+{
+  const used = ZONES.map(z => { const t = m['disk_total_'+z]||0; const a = m['disk_avail_'+z]||0; return (t-a)/(1024*1024*1024*1024); });
+  const free = ZONES.map(z => { const a = m['disk_avail_'+z]||0; return a/(1024*1024*1024*1024); });
+  const labels = ZONES.map(z => z.charAt(0).toUpperCase()+z.slice(1));
+  new Chart(document.getElementById('chartZone'), { type: 'bar', data: { labels, datasets: [
+    { label: 'Used (TiB)', data: used, backgroundColor: ZONES.map(z=>ZONE_COLORS[z]), borderRadius: 3 },
+    { label: 'Free (TiB)', data: free, backgroundColor: '#2e2621', borderRadius: 3 }
+  ]}, options: { responsive: true, scales: { x: { stacked: true, ticks: { color: '#a09080' } }, y: { stacked: true, beginAtZero: true, ticks: { color: '#a09080' } } }, plugins: { legend: { position: 'bottom', labels: { color: '#a09080', boxWidth: 10 } } } } });
+}
+
+// 2. Node Distribution (doughnut)
+{
+  const s = ZONES.map(z=>Math.round(m['garage_nodes_'+z]||0)).reduce((a,b)=>a+b,0);
+  const k = ZONES.map(z=>Math.round(m['nodes_'+z]||0)).reduce((a,b)=>a+b,0);
+  const ig = ZONES.map(z=>Math.round(m['ingress_'+z]||0)).reduce((a,b)=>a+b,0);
+  const eg = ZONES.map(z=>Math.round(m['egress_'+z]||0)).reduce((a,b)=>a+b,0);
+  new Chart(document.getElementById('chartNodes'), { type: 'doughnut', data: { labels: ['Storage','Gateway/Other','Ingress','Egress'], datasets: [{ data: [s, Math.max(0,k-s), ig, eg], backgroundColor: ['#34d399','#22d3ee','#fb7185','#c084fc'], borderWidth: 0 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#a09080', boxWidth: 10 } } } } });
+}
+
+// 3. Capacity Distribution (horizontal bar)
+{
+  const ct = ZONES.map(z=>{const t=m['disk_total_'+z]||0; return t/(1024*1024*1024*1024);});
+  const labels = ZONES.map(z=>z.charAt(0).toUpperCase()+z.slice(1));
+  new Chart(document.getElementById('chartCap'), { type: 'bar', data: { labels, datasets: [{ label: 'Total Capacity (TiB)', data: ct, backgroundColor: ZONES.map(z=>ZONE_COLORS[z]), borderRadius: 3 }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { color: '#a09080' } }, y: { ticks: { color: '#a09080' } } }, plugins: { legend: { display: false } } } });
+}
+
+// 4. Disk Utilization % (bar)
+{
+  const pcts = ZONES.map(z=>{const t=m['disk_total_'+z]||0; const a=m['disk_avail_'+z]||0; return t?Math.round((t-a)/t*100):0;});
+  const labels = ZONES.map(z=>z.charAt(0).toUpperCase()+z.slice(1));
+  const bg = ZONES.map(z=>{const t=m['disk_total_'+z]||0; const a=m['disk_avail_'+z]||0; const p=t?(t-a)/t:0; return p>0.8?'#ef4444':p>0.6?'#fbbf24':ZONE_COLORS[z];});
+  new Chart(document.getElementById('chartUtil'), { type: 'bar', data: { labels, datasets: [{ label: 'Utilization %', data: pcts, backgroundColor: bg, borderRadius: 3 }] }, options: { responsive: true, scales: { y: { beginAtZero: true, max: 100, ticks: { color: '#a09080', callback: v => v+'%' } }, x: { ticks: { color: '#a09080' } } }, plugins: { legend: { display: false } } } });
+}
 </script>
 
 </body>
