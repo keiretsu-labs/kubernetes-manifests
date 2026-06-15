@@ -8,4 +8,9 @@ metadata:
     tailscale.com/tailnet-fqdn: victoria-logs.keiretsu.ts.net
 spec:
   type: ExternalName
-  externalName: victoria-logs.keiretsu.ts.net
+  externalName: ts-victoria-logs-victoria-logs-single-server-egress-v2rr5.tailscale.svc.cluster.local
+  ports:
+    - name: http
+      port: 9428
+      targetPort: 9428
+      protocol: TCP
