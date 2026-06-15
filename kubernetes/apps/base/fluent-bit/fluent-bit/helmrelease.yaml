@@ -67,9 +67,8 @@ spec:
         [OUTPUT]
             Name                   loki
             Match                  kube.*
-            Host                   loki-gateway.loki.svc.cluster.local
-            Port                   80
-            Uri                    /loki/api/v1/push
+            Host                   victoria-logs-victoria-logs-single-server.monitoring
+            Port                   9428
             tenant_id              ${CLUSTER_NAME}
             labels                 cluster=${CLUSTER_NAME}, job=fluent-bit
             label_keys             $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name'],$stream
@@ -81,9 +80,8 @@ spec:
         [OUTPUT]
             Name                   loki
             Match                  talos.*
-            Host                   loki-gateway.loki.svc.cluster.local
-            Port                   80
-            Uri                    /loki/api/v1/push
+            Host                   victoria-logs-victoria-logs-single-server.monitoring
+            Port                   9428
             tenant_id              ${CLUSTER_NAME}
             labels                 cluster=${CLUSTER_NAME}, job=talos
             label_keys             $talos-service

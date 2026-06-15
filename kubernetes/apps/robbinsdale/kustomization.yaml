@@ -20,7 +20,6 @@ resources:
   - ./immich
   - ./kro-system
   - ./kube-system
-  - ./loki
   - ./mimir
   - ./spegel
   - ./speedtest
@@ -49,3 +48,4 @@ resources:
   - ./tinyauth-egress
   - ./rook-ceph
   - ./velero
+  - ./victoria-logs
