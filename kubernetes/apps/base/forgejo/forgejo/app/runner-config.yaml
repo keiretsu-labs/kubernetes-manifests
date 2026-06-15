@@ -9,7 +9,7 @@ data:
       level: debug
     runner:
       file: /data/.runner
-      capacity: 4
+      capacity: 2
       labels:
         - "ubuntu-latest:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:latest"
         - "ubuntu-22.04:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:latest"
