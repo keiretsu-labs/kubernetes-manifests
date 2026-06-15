@@ -20,8 +20,6 @@ spec:
     access: proxy
     url: teslamate-postgres-rw.teslamate.svc.cluster.local:5432
     user: teslamate
-    secureJsonData:
-      password: "${password}"
     jsonData:
       database: teslamate
       postgresVersion: 1600
