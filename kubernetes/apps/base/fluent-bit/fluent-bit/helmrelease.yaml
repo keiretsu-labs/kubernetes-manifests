@@ -69,6 +69,7 @@ spec:
             Match                  kube.*
             Host                   victoria-logs-victoria-logs-single-server.monitoring
             Port                   9428
+            Uri                    /insert/loki/api/v1/push
             tenant_id              ${CLUSTER_NAME}
             labels                 cluster=${CLUSTER_NAME}, job=fluent-bit
             label_keys             $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name'],$stream
@@ -82,6 +83,7 @@ spec:
             Match                  talos.*
             Host                   victoria-logs-victoria-logs-single-server.monitoring
             Port                   9428
+            Uri                    /insert/loki/api/v1/push
             tenant_id              ${CLUSTER_NAME}
             labels                 cluster=${CLUSTER_NAME}, job=talos
             label_keys             $talos-service
