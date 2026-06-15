@@ -6,10 +6,8 @@ metadata:
     tailscale.com/proxy-group: common-egress
     tailscale.com/tailnet-fqdn: victoria-logs.keiretsu.ts.net
 spec:
-  selector:
-    app.kubernetes.io/name: victoria-logs-single
-    app.kubernetes.io/instance: victoria-logs
-  type: ClusterIP
+  type: ExternalName
+  externalName: victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local
   ports:
     - name: http
       port: 9428
