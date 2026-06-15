@@ -60,3 +60,4 @@ resources:
   - ./rook-ceph
   - ./velero
   - ./victoria-logs
+  - ./victoria-logs/victoria-logs.yaml
