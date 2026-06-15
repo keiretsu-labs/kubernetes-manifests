@@ -34,7 +34,7 @@ rules:
     resources: [configmaps, secrets, services, pods/exec, events]
     verbs: [create, get, list, watch, update, patch, delete]
   - apiGroups: [""]
-    resources: [pods]
+    resources: [pods, pods/log]
     verbs: [get, list, watch]
   # Read cluster state for DB rebuild
   - apiGroups: [""]
