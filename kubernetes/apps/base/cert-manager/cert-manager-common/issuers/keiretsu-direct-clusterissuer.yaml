@@ -1,0 +1,26 @@
+---
+# Identical to keiretsu-top but WITHOUT cnameStrategy: Follow. The shared issuer
+# follows the _acme-challenge CNAME (needed for the k8gb-delegated cdn zone), but
+# that breaks DNS-01 for names that have a *serving* wildcard CNAME — e.g.
+# *.bhaiya.keiretsu.top → ottawa: Follow chases that serving CNAME and fails zone
+# detection ("Found no Zones for _acme-challenge.bhaiya.keiretsu.top"). With the
+# default (None) strategy cert-manager writes the TXT directly in the keiretsu.top
+# Cloudflare zone, ignoring the wildcard. Use this issuer for wildcard certs whose
+# subdomain also has a serving wildcard CNAME.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: keiretsu-top-direct
+spec:
+  acme:
+    email: ${RAJSINGH_INFO_CLOUDFLARE_EMAIL}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-keiretsu-direct-key
+    solvers:
+    - dns01:
+        cloudflare:
+          email: ${RAJSINGH_INFO_CLOUDFLARE_EMAIL}
+          apiTokenSecretRef:
+            name: cloudflare-keiretsu
+            key: cert-manager-api-token
