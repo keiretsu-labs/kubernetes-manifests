@@ -32,3 +32,20 @@ spec:
         - http://source-controller.flux-system:80/
       labels:
         service: cluster-infra
+|---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-mimir-gateway
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - http://mimir-gateway.mimir:8080/ready
+      labels:
+        service: mimir-gateway
+        target: external-tailscale

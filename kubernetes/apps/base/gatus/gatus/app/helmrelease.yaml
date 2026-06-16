@@ -105,3 +105,34 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        # === Monitoring Stack ===
+        - name: Prometheus Agent
+          group: Monitoring
+          url: http://kube-prometheus-stack-prometheus.monitoring:9090/-/healthy
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Alertmanager
+          group: Monitoring
+          url: http://kube-prometheus-stack-alertmanager.monitoring:9093
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 1000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Mimir Gateway (Ottawa)
+          group: Monitoring
+          url: http://mimir-gateway.mimir:8080/ready
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
