@@ -69,6 +69,11 @@ spec:
               value: "velero-system"
             - name: BHAIYA_VELERO_STORAGE_LOCATION
               value: "garage"
+            # Default opencode model: the LiteLLM proxy serves deepseek-v4-flash
+            # (+ anthropic/*). Without this the autoconfig picks the first discovered
+            # id alphabetically (anthropic/*), which is a glob, not a usable default.
+            - name: BHAIYA_LITELLM_MODEL
+              value: "deepseek-v4-flash"
           volumeMounts:
             - name: data
               mountPath: /data
