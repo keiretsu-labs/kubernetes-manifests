@@ -6,6 +6,7 @@ resources:
   - serviceaccount.yaml
   - role.yaml
   - rolebinding.yaml
+  - velero-role.yaml
   - secret.yaml
   - deployment.yaml
   - service.yaml
