@@ -17,7 +17,7 @@ spec:
   image: dxflrs/garage:v2.3.0
 
   replication:
-    factor: 2
+    factor: 3
     consistencyMode: "consistent" # Read-after-write consistency (read quorum=2) prevents restic AEAD corruption
 
   s3Api:
@@ -102,7 +102,7 @@ spec:
     # storage nodes; Manual->Auto is rejected by the webhook).
     layoutPolicy: "${GARAGE_STORAGE_LAYOUT_POLICY:=Auto}"
     metadata:
-      size: 3Gi
+      size: 10Gi
       storageClassName: "${STORAGECLASS_METADATA}"
     data:
       size: 2Ti
