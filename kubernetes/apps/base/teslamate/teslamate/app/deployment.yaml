@@ -45,7 +45,7 @@ spec:
             - name: DISABLE_MQTT
               value: "true"
             - name: VIRTUAL_HOST
-              value: teslamate.rajsingh.info
+              value: teslamate.keiretsu.top
             - name: CHECK_ORIGIN
               value: "true"
             - name: TZ

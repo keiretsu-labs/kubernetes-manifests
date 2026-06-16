@@ -7,5 +7,6 @@ resources:
   - deployment.yaml
   - service.yaml
   - httproute.yaml
+  - securitypolicy.yaml
   - secret.yaml
   - grafanadatasource.yaml

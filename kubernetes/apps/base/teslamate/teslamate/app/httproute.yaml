@@ -18,7 +18,7 @@ spec:
       name: ts
       namespace: home
   hostnames:
-    - teslamate.rajsingh.info
+    - teslamate.keiretsu.top
   rules:
     - backendRefs:
         - group: ""
