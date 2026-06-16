@@ -37,6 +37,8 @@ spec:
       existingSecret: velero-credentials
 
     configuration:
+      clientQPS: 100
+      clientBurst: 200
       backupStorageLocation:
         - name: garage
           provider: aws

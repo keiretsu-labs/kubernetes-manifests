@@ -16,7 +16,7 @@ spec:
     spec:
       initContainers:
         - name: chown-data
-          image: busybox:latest
+          image: busybox:1.37
           command: [sh, -c, chown -R 1000:1000 /data]
           volumeMounts:
             - name: data
@@ -33,7 +33,7 @@ spec:
                   --instance http://forgejo-http:3000 \
                   --token "$(cat /secrets/token)" \
                   --name "$(hostname)" \
-                  --labels ubuntu-latest:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:latest,ubuntu-22.04:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:latest,ubuntu-20.04:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:latest \
+                  --labels ubuntu-latest:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:slim,ubuntu-22.04:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:slim,ubuntu-20.04:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:slim \
                   --no-interactive
               fi
           volumeMounts:
@@ -50,7 +50,11 @@ spec:
             - /bin/sh
             - -c
             - |
+              deadline=$(($(date +%s) + 120))
               until nc -z 127.0.0.1 2375 2>/dev/null; do
+                if [ "$(date +%s)" -ge "$deadline" ]; then
+                  echo "timed out waiting for docker"; exit 1
+                fi
                 echo "waiting for docker..."; sleep 2
               done
               forgejo-runner daemon --config /config/config.yaml
@@ -63,7 +67,7 @@ spec:
             - name: config
               mountPath: /config
         - name: dind
-          image: docker:dind
+          image: docker:27-dind
           securityContext:
             privileged: true
           env:
