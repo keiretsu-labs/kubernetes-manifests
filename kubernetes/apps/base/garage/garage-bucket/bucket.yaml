@@ -2,28 +2,6 @@
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
-  name: keiretsu
-spec:
-  clusterRef:
-    name: garage
-  globalAlias: keiretsu
-  quotas:
-    maxSize: 1Ti
-    maxObjects: 10000000
-  website:
-    enabled: true
-    indexDocument: index.html
-    errorDocument: error.html
-  keyPermissions:
-    - keyRef:
-        name: keiretsu-key
-        namespace: flux-system
-      read: true
-      write: true
----
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageBucket
-metadata:
   name: rajsingh
 spec:
   clusterRef:
