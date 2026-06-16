@@ -56,10 +56,10 @@ spec:
         frontend:
           parallelize_shardable_queries: false
         ingester:
-          out_of_order_time_window: 10m
           push_grpc_method_enabled: true
           ring:
             replication_factor: 1
+          out_of_order_time_window: 10m
         store_gateway:
           sharding_ring:
             replication_factor: 1
