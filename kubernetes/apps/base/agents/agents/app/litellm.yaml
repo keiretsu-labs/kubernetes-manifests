@@ -35,18 +35,16 @@ data:
           mode: fallback
 
       # ── Claude models (wildcard — OAuth passthrough only) ──
-      # No static api_key — forward_client_headers_to_llm_api forwards
-      # each authenticated user's OAuth token to Anthropic.
+      # No api_key — rely on ANTHROPIC_API_KEY env var (dummy fallback)
+      # and forward_client_headers_to_llm_api for each user's OAuth token.
       - model_name: "anthropic/*"
         litellm_params:
           model: "anthropic/*"
-          api_key: "placeholder"
         model_info:
           mode: default
       - model_name: "anthropic/*"
         litellm_params:
           model: "anthropic/*"
-          api_key: "placeholder"
         model_info:
           mode: default
 
@@ -131,6 +129,8 @@ spec:
                 secretKeyRef:
                   name: litellm-secret
                   key: ui_password
+            - name: ANTHROPIC_API_KEY
+              value: "sk-ant-placeholder"
             - name: PROMETHEUS_MULTIPROC_DIR
               value: /prometheus_multiproc
           ports:
