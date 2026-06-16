@@ -125,6 +125,14 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    # teslamate behind tinyauth on the public envoy gateway — same domain family
+    - dnsName: "teslamate.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     # multi-tenant hermes agents: every <group>.agents.${COMMON_DOMAIN} lands on
     # the ottawa public gateway (per-group HTTPRoute + OIDC). one wildcard covers
     # all groups; DNS-only (proxied=false) so the *.agents wildcard cert is served
