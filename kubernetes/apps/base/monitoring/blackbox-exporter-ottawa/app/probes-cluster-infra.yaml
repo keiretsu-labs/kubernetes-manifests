@@ -53,7 +53,7 @@ spec:
         - http://source-controller.flux-system:80/
       labels:
         service: cluster-infra
-|---
+---
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
