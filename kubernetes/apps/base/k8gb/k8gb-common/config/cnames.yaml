@@ -137,6 +137,13 @@ spec:
     # the ottawa public gateway (per-group HTTPRoute + OIDC). one wildcard covers
     # all groups; DNS-only (proxied=false) so the *.agents wildcard cert is served
     # at origin (cloudflare universal TLS does not cover the second-level wildcard).
+    - dnsName: "litellm.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: "*.agents.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
