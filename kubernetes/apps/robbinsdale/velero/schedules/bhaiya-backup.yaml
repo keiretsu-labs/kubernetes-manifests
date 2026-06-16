@@ -6,8 +6,9 @@ metadata:
   namespace: velero-system
 spec:
   schedule: "0 8 * * *"
+  skipImmediately: true
   template:
-    ttl: 720h
+    ttl: 168h
     includedNamespaces:
       - bhaiya
     defaultVolumesToFsBackup: true
