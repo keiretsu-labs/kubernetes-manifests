@@ -87,7 +87,7 @@ spec:
           max_global_series_per_user: 10000000
           max_label_names_per_series: 300
           query_sharding_total_shards: 16
-          max_outstanding_per_tenant: 100
+          out_of_order_time_window: 10m
 
     ingester:
       replicas: 1
