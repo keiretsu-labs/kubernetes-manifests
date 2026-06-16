@@ -10,4 +10,4 @@ spec:
     ttl: 720h
     includedNamespaces:
       - media
-    defaultVolumesToFsBackup: true
+    defaultVolumesToFsBackup: false
