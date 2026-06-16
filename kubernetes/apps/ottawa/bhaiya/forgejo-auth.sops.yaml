@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: forgejo-bhaiya
+    namespace: flux-system
+type: Opaque
+stringData:
+    username: ENC[AES256_GCM,data:xrfP,iv:JkBYRcItSOMBDwoBPdh+1LY9CliQ1WEz+muqZA5r9mk=,tag:k+RmnTH1Fwvy8RYdFkf1UQ==,type:str]
+    password: ENC[AES256_GCM,data:beugqPPlL+M1TXrIVwoGhSKUsA==,iv:U6LGRkYbQQV5BFLl57BzMDNfk4ySmTNIU7aiThGldtU=,tag:wZg/MJRNf/t3ErhbfpFkyQ==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-06-16T04:14:53Z"
+    mac: ENC[AES256_GCM,data:TszWfgTbK6TBNiKc8pCb21/dEQuKQD4w72MtpId3j7h5Zw49Mx2MDscVT4iKGIEkZKoTkhf8KeZ0SJiXlTPacovrPFeRK23b7xkpHG4ILWOfqwHjPDWJJBeTKyzRipbeAEAHg8Hw+P4OYnbIUKeuasPb5i0nY0+FkMm3t+IeEcY=,iv:gwcHWjO16/Boo+BQ+rL/jLErz+R8u2o32iqtptAtRUE=,tag:FV5QbIex9ztrCxEtVoC/Ng==,type:str]
+    pgp:
+        - created_at: "2026-06-16T04:14:53Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveAQ//W6sjEwCMc07BAXrrO18WXPwB9Tag+uxoSX/df+Ak29pe
+            HOmujYDEtFg2kSg5Hwo+J++7NmjzG529d7Q0dKjVHFZoOlE/eDGRUjusMhNrZ0fE
+            VfkiZfmpoEouYYxqRSC1X13fksDJiodaIsRtJXa0yoIas9+U/CbxocoKmEzS469J
+            0I/BBN4iNfSt1Qn+QjxHS94m9L0TkmYJblA5bztkyF9JO6XVYyoTzgoqliBPR745
+            UAhcAdpux5Ufit2bxYADRBR4aftuH7lcnRc68fGOGOP0WhGCu0gom3YSlYIbVynJ
+            eB+d1Mv9rtb92Ipn2/FLvPvinusYAjwrSqxQTbxFGnJVlG44OWoMU1GMWwDlJp36
+            PZTgoGfA+a5qMzSLtRG6ovUVIJy6eooF7i9nuFkKJffUMZ4ulrjlaCQpygHzveZf
+            GMDTJBJq8vu2xZD+YH6LNajsQ+fv6SHMj/QNENTyYkTzsx2Smz+QhdNLM3m3vv9z
+            1Jtwtp2bpd/z3J/8C1EUvlhw0GbfYDWrQJALq//3nPm8vBSicSOs0S8XJCe+Ia6S
+            /6w+Pq3v3+wL/VsA3d2cWqBW6nxguur3mMKpDCfeAU5Nh6xJJ9P4ar3NvGUIefWd
+            8LlynWDKG6m8uRavj4/1stfudgx4jI/SrELuuxzvNNSRKx6Jazkaq5zm+sMPPIHU
+            ZgEJAhA6Y3iw3xfv635CzIKQC6K31c4ZVAgKdXUmyroEJMDxnSBsYD0DYpvvifPU
+            8XoTcRQj2pjZYDudV+E6EebKeWZfvnkA5UtMpEuar9Qx4PLkGC6isz5L/hu4TBNF
+            7ul71CkCRQ==
+            =IMEw
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.1

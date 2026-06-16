@@ -1,0 +1,13 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: bhaiya
+  namespace: flux-system
+spec:
+  interval: 10m
+  url: https://forgejo.keiretsu.top/corp/bhaiya.git
+  ref:
+    branch: main
+  secretRef:
+    name: forgejo-bhaiya
