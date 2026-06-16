@@ -35,16 +35,16 @@ data:
           mode: fallback
 
       # ── Claude models (wildcard — auto-discovers all available models) ──
-      # Auth: forward_client_headers_to_llm_api forwards the client's OAuth
-      # token (from Claude Max subscription) — no static API key needed.
       - model_name: "anthropic/*"
         litellm_params:
           model: "anthropic/*"
+          api_key: os.environ/ANTHROPIC_API_KEY_RAJ
         model_info:
           mode: default
       - model_name: "anthropic/*"
         litellm_params:
           model: "anthropic/*"
+          api_key: os.environ/ANTHROPIC_API_KEY_KARTIK
         model_info:
           mode: default
 
@@ -129,11 +129,16 @@ spec:
                 secretKeyRef:
                   name: litellm-secret
                   key: ui_password
-            - name: ANTHROPIC_AUTH_TOKEN
+            - name: ANTHROPIC_API_KEY_RAJ
               valueFrom:
                 secretKeyRef:
                   name: litellm-auth
-                  key: anthropic_auth_token_raj
+                  key: anthropic_api_key_raj
+            - name: ANTHROPIC_API_KEY_KARTIK
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-auth
+                  key: anthropic_api_key_kartik
             - name: PROMETHEUS_MULTIPROC_DIR
               value: /prometheus_multiproc
           ports:
