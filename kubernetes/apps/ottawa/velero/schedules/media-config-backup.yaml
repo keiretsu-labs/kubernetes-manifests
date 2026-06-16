@@ -6,8 +6,9 @@ metadata:
   namespace: velero-system
 spec:
   schedule: "0 6 * * *"
+  skipImmediately: true
   template:
-    ttl: 720h
+    ttl: 168h
     includedNamespaces:
       - media
     defaultVolumesToFsBackup: false

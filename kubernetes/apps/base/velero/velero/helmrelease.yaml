@@ -48,6 +48,7 @@ spec:
             region: garage
             s3Url: "http://${COMMON_S3_ENDPOINT}"
             s3ForcePathStyle: "true"
+            prefix: "${LOCATION}"
           credential:
             name: velero-credentials
             key: cloud

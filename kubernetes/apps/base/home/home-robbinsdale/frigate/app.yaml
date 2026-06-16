@@ -16,6 +16,8 @@ spec:
     metadata:
       labels:
         app: frigate
+      annotations:
+        backup.velero.io/backup-volumes-excludes: storage
     spec:
       containers:
         - name: frigate
