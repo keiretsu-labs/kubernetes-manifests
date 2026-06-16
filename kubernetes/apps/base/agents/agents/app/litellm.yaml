@@ -15,7 +15,28 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      # ── Primary: StPete DGX Sparks via Envoy AI Gateway ────────────
+      # ── StPete DGX vLLM (explicit) ──────────────────────────────────
+      - model_name: deepseek-v4-flash-vllm
+        litellm_params:
+          model: hosted_vllm/deepseek-v4-flash
+          api_base: http://stpetersburg-ai-gateway/v1
+          api_key: ""
+          rpm: 60
+        model_info:
+          input_cost_per_token: 0.0000001   # $0.10 / 1M tokens
+          output_cost_per_token: 0.0000002  # $0.20 / 1M tokens
+
+      # ── Corp AI gateway (explicit) ──────────────────────────────────
+      - model_name: deepseek-v4-flash-corp
+        litellm_params:
+          model: hosted_vllm/deepseek-v4-flash
+          api_base: http://ai/v1
+          api_key: ""
+        model_info:
+          input_cost_per_token: 0.0000001
+          output_cost_per_token: 0.0000002
+
+      # ── Default: prefers vLLM, falls back to corp on error ──────────
       - model_name: deepseek-v4-flash
         litellm_params:
           model: hosted_vllm/deepseek-v4-flash
@@ -23,33 +44,19 @@ data:
           api_key: ""
           rpm: 60
         model_info:
-          mode: primary
+          input_cost_per_token: 0.0000001
+          output_cost_per_token: 0.0000002
 
-      # ── Fallback: Corp AI endpoint ───────────────────────────────────
-      - model_name: deepseek-v4-flash
-        litellm_params:
-          model: hosted_vllm/deepseek-v4-flash
-          api_base: http://ai/v1
-          api_key: ""
-        model_info:
-          mode: fallback
-
-      # ── Claude models (wildcard — OAuth passthrough only) ──
-      # No api_key — rely on ANTHROPIC_API_KEY env var (dummy fallback)
-      # and forward_client_headers_to_llm_api for each user's OAuth token.
+      # ── Claude models (wildcard — OAuth passthrough only) ───────────
       - model_name: "anthropic/*"
         litellm_params:
           model: "anthropic/*"
-        model_info:
-          mode: default
       - model_name: "anthropic/*"
         litellm_params:
           model: "anthropic/*"
-        model_info:
-          mode: default
 
     router_settings:
-      fallbacks: [{ "deepseek-v4-flash": ["deepseek-v4-flash"] }]
+      fallbacks: [{ "deepseek-v4-flash": ["deepseek-v4-flash-corp"] }]
       num_retries: 2
       retry_after: 5
       timeout: 30
