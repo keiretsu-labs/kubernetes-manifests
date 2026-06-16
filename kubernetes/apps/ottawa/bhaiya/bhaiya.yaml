@@ -14,27 +14,15 @@ spec:
     - name: cnpg-system
     - name: agent-sandbox
     - name: cert-manager
-  path: ./kubernetes/apps/base/bhaiya/bhaiya/app
+  path: ./deploy
   prune: true
   sourceRef:
     kind: GitRepository
-    name: kubernetes-manifests
-  interval: 3m
+    name: bhaiya
+  interval: 10m
   retryInterval: 1m
   timeout: 5m
   decryption:
     provider: sops
     secretRef:
       name: sops-gpg
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: common-settings
-      - kind: Secret
-        name: common-secrets
-      - kind: ConfigMap
-        name: cluster-settings
-        optional: true
-      - kind: Secret
-        name: cluster-secrets
-        optional: true

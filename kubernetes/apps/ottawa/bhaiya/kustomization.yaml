@@ -2,4 +2,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - ./gitrepository.yaml
+  - ./forgejo-auth.sops.yaml
+  - ./receiver.yaml
+  - ./webhook-secret.yaml
   - ./bhaiya.yaml
