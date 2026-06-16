@@ -2,6 +2,63 @@
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
+  name: jellystat-postgres
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: jellystat-postgres
+  quotas:
+    maxSize: 50Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef:
+        name: jellystat-postgres-key
+        namespace: media
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: tracearr-postgres
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: tracearr-postgres
+  quotas:
+    maxSize: 20Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef:
+        name: tracearr-postgres-key
+        namespace: media
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: immich-postgres
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: immich-postgres
+  quotas:
+    maxSize: 50Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef:
+        name: immich-postgres-key
+        namespace: immich
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
   name: rajsingh
 spec:
   clusterRef:

@@ -1,15 +1,4 @@
-# S3 credentials secret for Immich backups
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: immich-s3-backup
-  namespace: immich
-stringData:
-  AWS_ACCESS_KEY_ID: ${KEIRETSU_S3_ACCESS_KEY}
-  AWS_SECRET_ACCESS_KEY: ${KEIRETSU_S3_SECRET_KEY}
----
-# ObjectStore for Barman Cloud backups
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:
@@ -17,7 +6,7 @@ metadata:
   namespace: immich
 spec:
   configuration:
-    destinationPath: s3://keiretsu/${LOCATION}/immich/postgres/
+    destinationPath: s3://immich-postgres/${LOCATION}/
     endpointURL: http://${COMMON_S3_ENDPOINT}
     s3Credentials:
       accessKeyId:
