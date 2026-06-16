@@ -593,6 +593,26 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        - name: Mimir Gateway
+          group: Monitoring
+          url: http://mimir-gateway.mimir:80/ready
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
+        - name: Mimir (Tailscale)
+          group: Monitoring
+          url: http://mimir.keiretsu.ts.net:8080/ready
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
         # === NEW: Applications ===
         - name: Immich Server
           group: Applications
