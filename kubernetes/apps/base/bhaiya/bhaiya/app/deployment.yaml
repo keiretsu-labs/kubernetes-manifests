@@ -62,6 +62,13 @@ spec:
                 secretKeyRef:
                   name: bhaiya-litellm
                   key: master_key
+            # Velero lives in velero-system with a BSL named "garage" (not the app
+            # defaults velero/default) — without these, all backup ops hit a
+            # nonexistent namespace/BSL and silently fail.
+            - name: BHAIYA_VELERO_NAMESPACE
+              value: "velero-system"
+            - name: BHAIYA_VELERO_STORAGE_LOCATION
+              value: "garage"
           volumeMounts:
             - name: data
               mountPath: /data
