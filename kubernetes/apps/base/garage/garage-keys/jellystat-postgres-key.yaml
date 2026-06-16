@@ -1,0 +1,22 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: jellystat-postgres-key
+  namespace: media
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Jellystat Postgres Backup Key"
+  secretTemplate:
+    name: jellystat-s3-backup
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: jellystat-postgres
+        namespace: garage
+      read: true
+      write: true
+      owner: true

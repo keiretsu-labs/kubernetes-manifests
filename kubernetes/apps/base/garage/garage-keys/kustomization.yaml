@@ -4,5 +4,8 @@ kind: Kustomization
 resources:
   - tailscale-recorder-key.yaml
   - rajsingh-key.yaml
+  - jellystat-postgres-key.yaml
+  - tracearr-postgres-key.yaml
+  - immich-postgres-key.yaml
   - tailscale-logs-key.yaml
   - mimir-key.yaml
