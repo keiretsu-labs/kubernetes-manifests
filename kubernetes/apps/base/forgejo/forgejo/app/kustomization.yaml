@@ -10,5 +10,6 @@ resources:
   - tcproute.yaml
   - referencegrant.yaml
   - runner-config.yaml
+  - runner-docker-config.yaml
   - runner-secret.yaml
   - runner.yaml
