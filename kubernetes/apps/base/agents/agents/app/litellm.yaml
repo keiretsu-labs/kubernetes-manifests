@@ -50,7 +50,7 @@ data:
       # ── Aperture ─────────────────────────────────────────────────────
       - model_name: aperture/deepseek-v4-flash
         litellm_params:
-          model: openai/deepseek/deepseek-v4-flash
+          model: openai/deepseek-v4-flash
           api_base: http://aperture/v1
           api_key: "no-auth"
 
