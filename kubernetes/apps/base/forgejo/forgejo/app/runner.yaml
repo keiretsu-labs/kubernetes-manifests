@@ -21,7 +21,7 @@ spec:
         - ip: "${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.10.15"
           hostnames:
             - oci.cdn.keiretsu.top
-            - oci.killinit.cc
+            - oci.keiretsu.top
       initContainers:
         - name: chown-data
           image: busybox:1.37

@@ -9,7 +9,6 @@ resources:
   - egress.yaml
   - grafana-dashboard.yaml
   - helmrelease.yaml
-  - httproute-internal.yaml
   - httproute-public.yaml
   - ingress-internal.yaml
   - service-ts.yaml
