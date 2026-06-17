@@ -46,6 +46,7 @@ data:
           model: hosted_vllm/gpt-5.5
           api_base: http://ai/v1
           api_key: ""
+          drop_params: true
 
       # ── Aperture ─────────────────────────────────────────────────────
       - model_name: aperture/deepseek-v4-flash
@@ -60,7 +61,9 @@ data:
           model: "anthropic/*"
 
     router_settings:
-      fallbacks: [{ "failover/deepseek-v4-flash": ["corp/deepseek-v4-flash"] }]
+      fallbacks:
+        - "failover/deepseek-v4-flash": ["corp/deepseek-v4-flash"]
+        - "corp/gpt-5.5": ["corp/deepseek-v4-flash"]
       num_retries: 2
       retry_after: 5
       timeout: 30
