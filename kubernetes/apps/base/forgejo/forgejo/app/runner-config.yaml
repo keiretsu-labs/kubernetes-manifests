@@ -11,9 +11,9 @@ data:
       file: /data/.runner
       capacity: 2
       labels:
-        - "ubuntu-latest:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:slim"
-        - "ubuntu-22.04:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:slim"
-        - "ubuntu-20.04:docker://oci.cdn.keiretsu.top/keiretsu/ci-runner:slim"
+        - "ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-latest"
+        - "ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:go-22.04"
+        - "ubuntu-20.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04"
     cache:
       enabled: true
       dir: /data/cache
