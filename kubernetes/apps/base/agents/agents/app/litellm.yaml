@@ -15,8 +15,16 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      # ── StPete DGX vLLM ─────────────────────────────────────────────
-      - model_name: stpetersburg-vllm/deepseek-v4-flash
+      # ── Local/StPete DGX vLLM (direct, no fallback) ─────────────────
+      - model_name: "local/*"
+        litellm_params:
+          model: "hosted_vllm/*"
+          api_base: http://stpetersburg-ai-gateway/v1
+          api_key: ""
+          rpm: 60
+
+      # ── Failover (tries local first, falls back to corp) ─────────────
+      - model_name: failover/deepseek-v4-flash
         litellm_params:
           model: hosted_vllm/deepseek-v4-flash
           api_base: http://stpetersburg-ai-gateway/v1
@@ -25,16 +33,6 @@ data:
         model_info:
           input_cost_per_token: 0.0000001   # $0.10 / 1M tokens
           output_cost_per_token: 0.0000002  # $0.20 / 1M tokens
-
-      # ── Failover (corp AI gateway) ───────────────────────────────────
-      - model_name: failover/deepseek-v4-flash
-        litellm_params:
-          model: hosted_vllm/deepseek-v4-flash
-          api_base: http://ai/v1
-          api_key: ""
-        model_info:
-          input_cost_per_token: 0.0000001
-          output_cost_per_token: 0.0000002
 
       # ── Corp AI gateway (wildcard — OpenAI + Anthropic) ─────────────
       - model_name: "corp/*"
@@ -59,7 +57,7 @@ data:
           model: "anthropic/*"
 
     router_settings:
-      fallbacks: [{ "stpetersburg-vllm/deepseek-v4-flash": ["failover/deepseek-v4-flash"] }]
+      fallbacks: [{ "failover/deepseek-v4-flash": ["corp/deepseek-v4-flash"] }]
       num_retries: 2
       retry_after: 5
       timeout: 30
