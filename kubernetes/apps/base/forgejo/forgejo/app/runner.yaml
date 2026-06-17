@@ -86,6 +86,9 @@ spec:
           volumeMounts:
             - name: docker-storage
               mountPath: /var/lib/docker
+            - name: docker-config
+              mountPath: /root/.docker
+              readOnly: true
           lifecycle:
             preStop:
               exec:
@@ -100,6 +103,9 @@ spec:
         - name: config
           configMap:
             name: forgejo-runner-config
+        - name: docker-config
+          secret:
+            secretName: forgejo-runner-docker-config
   volumeClaimTemplates:
     - metadata:
         name: data
