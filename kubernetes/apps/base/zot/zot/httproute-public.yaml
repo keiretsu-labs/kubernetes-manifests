@@ -18,9 +18,8 @@ spec:
       name: public
       namespace: home
   hostnames:
-    - "oci.${CLUSTER_DOMAIN}"
+    - "oci.${COMMON_DOMAIN}"
     - "oci.cdn.${COMMON_DOMAIN}"
-    - "zot.cdn.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
