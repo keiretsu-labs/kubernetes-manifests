@@ -37,14 +37,14 @@ data:
       # ── Corp AI gateway (wildcard — OpenAI + Anthropic) ─────────────
       - model_name: "corp/*"
         litellm_params:
-          model: "openai/*"
+          model: "hosted_vllm/*"
           api_base: http://ai/v1
           api_key: ""
 
       # ── Aperture (wildcard — OpenAI + Anthropic) ─────────────────────
       - model_name: "aperture/*"
         litellm_params:
-          model: "openai/*"
+          model: "hosted_vllm/*"
           api_base: http://aperture/v1
           api_key: ""
 
