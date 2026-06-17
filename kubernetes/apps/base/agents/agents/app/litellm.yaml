@@ -39,20 +39,20 @@ data:
         litellm_params:
           model: openai/deepseek/deepseek-v4-flash
           api_base: http://ai/v1
-          api_key: ""
+          api_key: "no-auth"
 
       - model_name: corp/gpt-5.5
         litellm_params:
           model: openai/gpt-5.5
           api_base: http://ai/v1
-          api_key: ""
+          api_key: "no-auth"
 
       # ── Aperture ─────────────────────────────────────────────────────
       - model_name: aperture/deepseek-v4-flash
         litellm_params:
           model: openai/deepseek/deepseek-v4-flash
           api_base: http://aperture/v1
-          api_key: ""
+          api_key: "no-auth"
 
     router_settings:
       fallbacks: [{ "failover/deepseek-v4-flash": ["corp/deepseek-v4-flash"] }]
