@@ -55,11 +55,6 @@ data:
           api_base: http://aperture/v1
           api_key: ""
 
-      # ── Claude models (direct Anthropic API) ─────────────────────────
-      - model_name: "anthropic/*"
-        litellm_params:
-          model: "anthropic/*"
-
     router_settings:
       fallbacks: [{ "failover/deepseek-v4-flash": ["corp/deepseek-v4-flash"] }]
       num_retries: 2
