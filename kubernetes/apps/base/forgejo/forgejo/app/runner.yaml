@@ -14,6 +14,14 @@ spec:
       labels:
         app: forgejo-runner
     spec:
+      # Route OCI registry hostnames to the internal public gateway (10.169.10.15)
+      # instead of the external CDN IPs, which are unreachable from within the
+      # cluster due to hairpin NAT. Ottawa public gateway = 10.169.10.15.
+      hostAliases:
+        - ip: "${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.10.15"
+          hostnames:
+            - oci.cdn.keiretsu.top
+            - oci.killinit.cc
       initContainers:
         - name: chown-data
           image: busybox:1.37
