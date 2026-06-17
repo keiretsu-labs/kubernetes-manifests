@@ -15,8 +15,8 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      # ── StPete DGX vLLM (explicit) ──────────────────────────────────
-      - model_name: deepseek-v4-flash-vllm
+      # ── StPete DGX vLLM ─────────────────────────────────────────────
+      - model_name: stpetersburg-vllm/deepseek-v4-flash
         litellm_params:
           model: hosted_vllm/deepseek-v4-flash
           api_base: http://stpetersburg-ai-gateway/v1
@@ -26,8 +26,16 @@ data:
           input_cost_per_token: 0.0000001   # $0.10 / 1M tokens
           output_cost_per_token: 0.0000002  # $0.20 / 1M tokens
 
-      # ── Corp AI gateway (explicit) ──────────────────────────────────
-      - model_name: deepseek-v4-flash-corp
+      # ── Local-only (no fallback — guaranteed off-internet) ──────────
+      - model_name: "local/*"
+        litellm_params:
+          model: "hosted_vllm/*"
+          api_base: http://stpetersburg-ai-gateway/v1
+          api_key: ""
+          rpm: 60
+
+      # ── Failover (corp AI gateway) ───────────────────────────────────
+      - model_name: failover/deepseek-v4-flash
         litellm_params:
           model: hosted_vllm/deepseek-v4-flash
           api_base: http://ai/v1
@@ -36,18 +44,21 @@ data:
           input_cost_per_token: 0.0000001
           output_cost_per_token: 0.0000002
 
-      # ── Default: prefers vLLM, falls back to corp on error ──────────
-      - model_name: deepseek-v4-flash
+      # ── Corp AI gateway (wildcard — OpenAI + Anthropic) ─────────────
+      - model_name: "corp/*"
         litellm_params:
-          model: hosted_vllm/deepseek-v4-flash
-          api_base: http://stpetersburg-ai-gateway/v1
+          model: "openai/*"
+          api_base: http://ai/v1
           api_key: ""
-          rpm: 60
-        model_info:
-          input_cost_per_token: 0.0000001
-          output_cost_per_token: 0.0000002
 
-      # ── Claude models (wildcard — OAuth passthrough only) ───────────
+      # ── Aperture (wildcard — OpenAI + Anthropic) ─────────────────────
+      - model_name: "aperture/*"
+        litellm_params:
+          model: "openai/*"
+          api_base: http://aperture/v1
+          api_key: ""
+
+      # ── Claude models (direct Anthropic API) ─────────────────────────
       - model_name: "anthropic/*"
         litellm_params:
           model: "anthropic/*"
@@ -56,7 +67,7 @@ data:
           model: "anthropic/*"
 
     router_settings:
-      fallbacks: [{ "deepseek-v4-flash": ["deepseek-v4-flash-corp"] }]
+      fallbacks: [{ "stpetersburg-vllm/deepseek-v4-flash": ["failover/deepseek-v4-flash"] }]
       num_retries: 2
       retry_after: 5
       timeout: 30
