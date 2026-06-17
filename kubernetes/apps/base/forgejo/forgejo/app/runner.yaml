@@ -61,11 +61,16 @@ spec:
           env:
             - name: DOCKER_HOST
               value: tcp://127.0.0.1:2375
+            - name: DOCKER_CONFIG
+              value: /run/docker-config
           volumeMounts:
             - name: data
               mountPath: /data
             - name: config
               mountPath: /config
+            - name: docker-config
+              mountPath: /run/docker-config
+              readOnly: true
         - name: dind
           image: docker:27-dind
           securityContext:
