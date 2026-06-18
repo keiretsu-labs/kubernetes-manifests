@@ -27,7 +27,10 @@ spec:
         imagePullPolicy: Always
         name: sysctler
         securityContext:
-          privileged: true
+          privileged: false
+          capabilities:
+            add:
+            - NET_ADMIN
       containers:
       - name: netshoot
         image: nicolaka/netshoot:latest
@@ -36,7 +39,14 @@ spec:
         imagePullPolicy: Always
         image: "ghcr.io/tailscale/tailscale:latest"
         securityContext:
-          privileged: true
+          privileged: false
+          capabilities:
+            add:
+            - NET_ADMIN
+            - NET_RAW
+        volumeMounts:
+        - name: dev-net-tun
+          mountPath: /dev/net/tun
         env:
         - name: TS_KUBE_SECRET
           value: "${LOCATION}-sidecar"
@@ -64,3 +74,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.uid
+      volumes:
+      - name: dev-net-tun
+        hostPath:
+          path: /dev/net/tun
+          type: CharDevice
