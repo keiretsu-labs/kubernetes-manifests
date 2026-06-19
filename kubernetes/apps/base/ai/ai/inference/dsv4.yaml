@@ -183,7 +183,7 @@ spec:
               --reasoning-parser deepseek_v4 \
               --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
               --nnodes 2 --node-rank 0 \
-              --master-addr 192.168.74.1 --master-port 25000
+              --master-addr 192.168.74.1 --master-port 25002
           ports:
           - { containerPort: 8000, name: http, protocol: TCP }
           env:
@@ -317,7 +317,7 @@ spec:
               --reasoning-parser deepseek_v4 \
               --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
               --nnodes 2 --node-rank 1 \
-              --master-addr 192.168.74.1 --master-port 25000 \
+              --master-addr 192.168.74.1 --master-port 25002 \
               --headless
           env:
           - { name: NODE_RANK, value: "1" }
