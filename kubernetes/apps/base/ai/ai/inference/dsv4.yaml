@@ -165,6 +165,7 @@ spec:
             # Drop page cache immediately before weight load (belt + suspenders
             # with the drop-caches init container above).
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            ulimit -l unlimited
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
               --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
@@ -201,10 +202,11 @@ spec:
           - { name: NCCL_IB_DISABLE, value: "0" }
           - { name: NCCL_NET_GDR_LEVEL, value: "5" }
           - { name: NCCL_IB_TIMEOUT, value: "22" }
-          - { name: NCCL_DEBUG, value: "INFO" }
+          - { name: NCCL_DEBUG, value: "WARN" }
           - { name: NCCL_CROSS_NIC, value: "1" }
           - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
           - { name: NCCL_CUMEM_ENABLE, value: "0" }
+          - { name: TP_SOCKET_IFNAME, value: "eth2" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
@@ -299,6 +301,7 @@ spec:
           args:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            ulimit -l unlimited
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
               --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
@@ -335,10 +338,11 @@ spec:
           - { name: NCCL_IB_DISABLE, value: "0" }
           - { name: NCCL_NET_GDR_LEVEL, value: "5" }
           - { name: NCCL_IB_TIMEOUT, value: "22" }
-          - { name: NCCL_DEBUG, value: "INFO" }
+          - { name: NCCL_DEBUG, value: "WARN" }
           - { name: NCCL_CROSS_NIC, value: "1" }
           - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
           - { name: NCCL_CUMEM_ENABLE, value: "0" }
+          - { name: TP_SOCKET_IFNAME, value: "eth2" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
