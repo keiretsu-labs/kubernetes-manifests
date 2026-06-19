@@ -1,10 +1,11 @@
 ---
 # bhaiya admin console. bhaiya is ottawa-only, so DNS points straight at the
 # ottawa edge (CNAME in cnames.yaml) — no k8gb GSLB, which handed back a broken
-# second WAN edge that 404'd ~50% of requests. Access is gated by tinyauth to
-# raj + kartik only. The route lives in keiretsu-top (where the apex hostnames
-# and tinyauth ReferenceGrant already are); per-workspace routes are created in
-# the bhaiya namespace by ExposeRoute.
+# second WAN edge that 404'd ~50% of requests. Access is gated by tinyauth
+# (authN only); bhaiya's in-process users table handles authZ (admin/member
+# roles, managed via the bhaiya admin UI). The route lives in keiretsu-top
+# (where the apex hostnames and tinyauth ReferenceGrant already are);
+# per-workspace routes are created in the bhaiya namespace by ExposeRoute.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -34,9 +35,12 @@ spec:
             type: PathPrefix
             value: /
 ---
-# admin console access control via tinyauth — raj + kartik only.
-# tinyauth does authN (Google login, injects Remote-Email); this policy's
-# authorization block is the per-user authZ gate.
+# admin console access control via tinyauth. tinyauth does authN (Google login,
+# injects Remote-Email); bhaiya does its own authZ in-process against its users
+# table (admin/member roles, per-owner workspace caps). No EG authorization
+# block here — bhaiya returns 403 itself for unregistered users. Per-workspace
+# routes (created by ExposeRoute) keep their own SecurityPolicy with owner +
+# AllowedEmails + admin email authorization.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
@@ -64,14 +68,3 @@ spec:
         - remote-email
         - remote-name
         - remote-groups
-  authorization:
-    defaultAction: Deny
-    rules:
-      - name: allow-admins
-        action: Allow
-        principal:
-          headers:
-            - name: Remote-Email
-              values:
-                - rajsinghcpre@gmail.com
-                - kartikbharath@gmail.com
