@@ -52,6 +52,9 @@ data:
           model: openai/z-ai/glm-5.2
           api_base: http://ai/v1
           api_key: "no-auth"
+        model_info:
+          input_cost_per_token: 0.00000098   # $0.98 / 1M tokens
+          output_cost_per_token: 0.00000308  # $3.08 / 1M tokens
 
       # ── Aperture ─────────────────────────────────────────────────────
       - model_name: aperture/deepseek-v4-flash
