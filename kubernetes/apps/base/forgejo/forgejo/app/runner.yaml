@@ -24,7 +24,7 @@ spec:
             - oci.keiretsu.top
       initContainers:
         - name: chown-data
-          image: busybox:1.37
+          image: busybox:1.38
           command: [sh, -c, chown -R 1000:1000 /data]
           volumeMounts:
             - name: data
