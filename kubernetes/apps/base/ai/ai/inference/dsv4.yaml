@@ -174,7 +174,7 @@ spec:
               --kv-cache-dtype fp8 --block-size 256 \
               --max-model-len 1000000 \
               --max-num-seqs 2 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.75 \
+              --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
@@ -308,7 +308,7 @@ spec:
               --kv-cache-dtype fp8 --block-size 256 \
               --max-model-len 1000000 \
               --max-num-seqs 2 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.75 \
+              --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
