@@ -47,6 +47,12 @@ data:
           api_base: http://ai/v1
           api_key: "no-auth"
 
+      - model_name: corp/glm-5.2
+        litellm_params:
+          model: openai/glm-5.2
+          api_base: http://ai/v1
+          api_key: "no-auth"
+
       # ── Aperture ─────────────────────────────────────────────────────
       - model_name: aperture/deepseek-v4-flash
         litellm_params:
