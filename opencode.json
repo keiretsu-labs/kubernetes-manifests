@@ -17,6 +17,14 @@
           "tool_call": true,
           "temperature": true,
           "limit": { "context": 200000, "output": 16384 }
+        },
+        "glm-5.2": {
+          "name": "GLM 5.2 (corp)",
+          "attachment": false,
+          "reasoning": true,
+          "tool_call": true,
+          "temperature": true,
+          "limit": { "context": 200000, "output": 16384 }
         }
       }
     }
