@@ -165,7 +165,6 @@ spec:
             # Drop page cache immediately before weight load (belt + suspenders
             # with the drop-caches init container above).
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
-            ulimit -l unlimited
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
               --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
@@ -301,7 +300,6 @@ spec:
           args:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
-            ulimit -l unlimited
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
               --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
