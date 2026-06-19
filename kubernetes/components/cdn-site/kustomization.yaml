@@ -14,16 +14,23 @@
 # Generates:
 #   - HTTPRoute on the `public` gateway: matches both CDN_HOST and PUBLIC_HOST,
 #     URLRewrite Host -> <BUCKET>.${COMMON_DOMAIN} so Garage resolves the bucket,
-#     backend garage-gateway:3902. Carries the external-dns target annotation so
-#     the zone's gateway-watching external-dns publishes PUBLIC_HOST -> CDN_HOST.
-#   - Gslb (k8gb): health-checks garage-gateway per cluster and publishes CDN_HOST
-#     in the delegated cdn.${COMMON_DOMAIN} zone, weighted roundRobin.
+#     backend garage-gateway:3902. Excluded from gateway-source external-dns
+#     (external-dns.alpha.kubernetes.io/exclude) so it never publishes
+#     PUBLIC_HOST itself — the DNSEndpoint below owns the public CNAME.
+#   - DNSEndpoint (label dns-target=cloudflare): publishes PUBLIC_HOST ->
+#     CDN_HOST for a CRD-source external-dns. This is the gateway-owned-zone
+#     safe path (rajsingh.info): a per-route target annotation is ignored under
+#     --force-default-targets, but a CRD DNSEndpoint is not. The zone must be
+#     listed in a CRD external-dns domainFilter (external-dns-cloudflare-
+#     keiretsu-top covers keiretsu.top + rajsingh.info).
+#   - Gslb (k8gb): health-checks garage-gateway per cluster and publishes
+#     CDN_HOST in the delegated cdn.${COMMON_DOMAIN} zone, weighted roundRobin.
 #
 # Deploy in the `garage` namespace (same as garage-gateway) to avoid a
-# cross-namespace ReferenceGrant. For the public CNAME to land, the zone's
-# external-dns must honor per-route targets (no --force-default-targets).
+# cross-namespace ReferenceGrant.
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 resources:
   - httproute.yaml
   - gslb.yaml
+  - dnsendpoint.yaml

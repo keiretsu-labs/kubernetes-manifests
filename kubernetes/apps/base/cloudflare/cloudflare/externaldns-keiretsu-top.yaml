@@ -38,7 +38,14 @@ spec:
     policy: sync
     sources:
       - crd
+    # Also publish rajsingh.info DNSEndpoints (label dns-target=cloudflare) from
+    # this CRD-source instance — it already uses the rajsingh Cloudflare token.
+    # This is the gateway-owned-zone-safe publisher for cdn-site public CNAMEs:
+    # the rajsingh-info gateway-source external-dns runs --force-default-targets
+    # and cannot honor a per-route GSLB CNAME, so cdn-site emits a DNSEndpoint
+    # instead and excludes its route from the gateway-source (see #1651).
     domainFilters:
       - keiretsu.top
+      - rajsingh.info
     txtOwnerId: keiretsu-top
     txtPrefix: k8s.keiretsu.top.

@@ -1,0 +1,27 @@
+---
+# Publish PUBLIC_HOST -> CDN_HOST as a DNSEndpoint for a CRD-source
+# external-dns (label dns-target=cloudflare). This is the gateway-owned-zone
+# safe path: unlike a per-route external-dns target annotation, a CRD
+# DNSEndpoint is not overridden by --force-default-targets on a gateway-source
+# external-dns, so the GSLB CNAME lands and stays stable across clusters.
+#
+# The inherited namespace is the consumer's (e.g. garage) — the CRD
+# external-dns reads DNSEndpoints by label across all namespaces, so this does
+# not need to live in cloudflare. The zone must be in a CRD external-dns
+# domainFilter (external-dns-cloudflare-keiretsu-top covers keiretsu.top and
+# rajsingh.info).
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: ${SITE}-cdn-dns
+  labels:
+    dns-target: cloudflare
+spec:
+  endpoints:
+    - dnsName: "${PUBLIC_HOST}"
+      recordType: CNAME
+      targets:
+        - "${CDN_HOST}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"

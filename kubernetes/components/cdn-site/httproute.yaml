@@ -4,15 +4,14 @@ kind: HTTPRoute
 metadata:
   name: ${SITE}-cdn
   annotations:
-    # Publish PUBLIC_HOST -> CDN_HOST via the zone's gateway-watching external-dns.
-    # CDN_HOST is the k8gb-delegated GSLB name, so this inherits health-checked,
-    # multi-cluster resolution. DNS-only (grey) — the GSLB is the health-check /
-    # failover layer; a Cloudflare-proxied edge would be a per-site override.
-    # NB: "false" is a literal (kustomize keeps it quoted as a string). Do not
-    # turn this into a ${VAR}: kustomize strips the quotes and Flux substitution
-    # then yields a YAML boolean, which annotation values reject.
-    external-dns.alpha.kubernetes.io/target: "${CDN_HOST}"
-    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+    # Exclude from gateway-source external-dns so it does not publish
+    # PUBLIC_HOST itself. The public CNAME (PUBLIC_HOST -> CDN_HOST) is owned by
+    # the cdn-site DNSEndpoint, read by a CRD-source external-dns. This avoids
+    # the flap on gateway-owned zones (e.g. rajsingh.info) where a gateway-source
+    # external-dns runs --force-default-targets and would override any per-route
+    # target with ${LOCATION}.<zone>, fighting the CRD DNSEndpoint. The route
+    # still matches both hostnames so Envoy routes PUBLIC_HOST traffic.
+    external-dns.alpha.kubernetes.io/exclude: "true"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io
