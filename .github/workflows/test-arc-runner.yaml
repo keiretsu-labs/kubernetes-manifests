@@ -9,7 +9,7 @@ jobs:
     runs-on: arc-runner
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Test runner
         run: |

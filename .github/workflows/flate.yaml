@@ -22,7 +22,7 @@ jobs:
       matrix:
         cluster: [talos-ottawa, talos-robbinsdale, talos-stpetersburg]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: home-operations/flate/action@v0.4.7
         with:
           cache: true
@@ -47,7 +47,7 @@ jobs:
       matrix:
         cluster: [talos-ottawa, talos-robbinsdale, talos-stpetersburg]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: home-operations/flate/action@v0.4.7
