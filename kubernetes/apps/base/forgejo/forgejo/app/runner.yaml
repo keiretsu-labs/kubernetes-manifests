@@ -145,7 +145,7 @@ spec:
         # deletes the pod so the StatefulSet recreates it with a fresh
         # emptyDir. curl is installed at startup (Alpine has no curl baked in).
         - name: pod-reaper
-          image: alpine:3.21
+          image: alpine:3.24
           command:
             - /bin/sh
             - -c
