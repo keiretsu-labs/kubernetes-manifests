@@ -1,4 +1,11 @@
 ---
+# hermes-group front-door access control via tinyauth.
+# tinyauth does authN only (google login, injects remote-email); the per-user
+# authorization decision lives in this policy's authorization block.
+# EG's RBAC filter runs after extAuth, so it matches on the header tinyauth
+# injects. This component is shared by all hermes groups (demo, team-a, ...);
+# per-group isolation now lives in tinyauth user management. Allowed users:
+# raj + kartik.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
@@ -8,12 +15,31 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: hermes-placeholder
-  oidc:
-    provider:
-      issuer: "https://pocket-id.${COMMON_DOMAIN}"
-    clientID: "placeholder-client-id"
-    clientSecret:
-      name: hermes-placeholder-oidc
-    redirectURL: "https://placeholder/oauth2/callback"
-    logoutPath: "/logout"
-    cookieDomain: "agents.${COMMON_DOMAIN}"
+  extAuth:
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-proto
+      - x-forwarded-for
+      - user-agent
+    http:
+      backendRefs:
+        - name: tinyauth
+          namespace: tinyauth
+          port: 3000
+      path: "/api/auth/envoy?path="
+      headersToBackend:
+        - remote-user
+        - remote-email
+        - remote-name
+        - remote-groups
+  authorization:
+    defaultAction: Deny
+    rules:
+      - name: allow-shared
+        action: Allow
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com

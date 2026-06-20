@@ -39,7 +39,6 @@ replacements:
         fieldPaths:
           - metadata.name
           - spec.targetRefs.0.name
-          - spec.oidc.clientSecret.name
         options: { delimiter: "-", index: 1 }
       - select: { kind: StorageStack, name: hermes-placeholder-data }
         fieldPaths:
@@ -72,13 +71,6 @@ replacements:
     targets:
       - select: { kind: HTTPRoute }
         fieldPaths: [ spec.hostnames.0 ]
-      - select: { group: gateway.envoyproxy.io, kind: SecurityPolicy }
-        fieldPaths: [ spec.oidc.redirectURL ]
-        options: { delimiter: "/", index: 2 }
-  - source: { kind: ConfigMap, name: group-meta, fieldPath: data.clientID }
-    targets:
-      - select: { group: gateway.envoyproxy.io, kind: SecurityPolicy }
-        fieldPaths: [ spec.oidc.clientID ]
   - source: { kind: ConfigMap, name: group-meta, fieldPath: data.size }
     targets:
       - select: { kind: StorageStack }

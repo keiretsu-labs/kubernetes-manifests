@@ -1,5 +1,5 @@
 ---
-# raj-assistant-web access control via tinyauth (pocket-id OIDC retired here).
+# raj-assistant-web access control via tinyauth.
 # tinyauth does authN only (google login, injects remote-email); the per-user
 # authorization decision lives in this policy's authorization block. EG's RBAC
 # filter runs after extAuth, so it matches on the header tinyauth injects.
