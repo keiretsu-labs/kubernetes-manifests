@@ -57,13 +57,6 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
-    - dnsName: "pocket-id.${COMMON_DOMAIN}"
-      recordType: CNAME
-      targets:
-        - "pocket-id.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     # bhaiya admin console + per-workspace opencode instances live ONLY in
     # ottawa, so point straight at the ottawa edge (one healthy WAN IP) instead
     # of the k8gb cdn GSLB — the GSLB hands back a second, broken WAN edge that

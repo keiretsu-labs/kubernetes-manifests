@@ -1,7 +1,7 @@
 # auth: route-level access control
 
-tinyauth is the single auth solution for `*.keiretsu.top` web apps (pocket-id is
-retired for these). it does **authN only** — google login, gated by a global
+tinyauth is the single auth solution for `*.keiretsu.top` web apps (pocket-id has
+been fully retired). it does **authN only** — google login, gated by a global
 whitelist — and injects identity headers (`Remote-Email`, `Remote-Groups`). the
 **authZ** decision (who may reach a given app) lives on each route's
 SecurityPolicy, because Envoy Gateway's `authorization` block matches on

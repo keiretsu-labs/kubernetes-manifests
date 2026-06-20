@@ -36,6 +36,8 @@ spec:
             type: PathPrefix
             value: /
 ---
+# code-server access control via tinyauth.
+# raj + kartik.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
@@ -45,11 +47,31 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: code
-  oidc:
-    provider:
-      issuer: "https://pocket-id.keiretsu.top"
-    clientID: "6e0ae47f-0ebe-4044-9aae-28e9da38ac3e"
-    clientSecret:
-      name: "code-server-secret"
-    redirectURL: "https://code.${CLUSTER_DOMAIN}/oauth2/callback"
-    logoutPath: "/logout"
+  extAuth:
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-proto
+      - x-forwarded-for
+      - user-agent
+    http:
+      backendRefs:
+        - name: tinyauth
+          namespace: tinyauth
+          port: 3000
+      path: "/api/auth/envoy?path="
+      headersToBackend:
+        - remote-user
+        - remote-email
+        - remote-name
+        - remote-groups
+  authorization:
+    defaultAction: Deny
+    rules:
+      - name: allow-shared
+        action: Allow
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com
