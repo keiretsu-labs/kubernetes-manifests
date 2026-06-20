@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="${0:a:h}"
-REGISTRY="oci.killinit.cc"
+REGISTRY="oci.cdn.keiretsu.top"
 IMAGE="garage-webadmin"
 BUILD_DIR="/tmp/garage-webadmin-build"
 TAR_FILE="/tmp/garage-webadmin-amd64.tar"
