@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: garage-exporter
-          image: oci.${CLUSTER_DOMAIN}/kbpersonal/garage-exporter:v0.0.2
+          image: oci.cdn.${COMMON_DOMAIN}/kbpersonal/garage-exporter:v0.0.2
           imagePullPolicy: Always
           args:
             - -garage.admin-endpoint=http://garage:3903
