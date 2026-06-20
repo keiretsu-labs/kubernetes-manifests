@@ -21,3 +21,12 @@ data:
       network: bridge
       privileged: true
       docker_host: tcp://127.0.0.1:2375
+      # Env vars passed through to every job container. The S3 creds are
+      # written to /data/nix-cache.env by the runner entrypoint (sourced
+      # from the nix-cache-s3 secret); env_file merges them with these.
+      envs:
+        AWS_ENDPOINT_URL_S3: http://garage-gateway.garage.svc.cluster.local:3900
+        AWS_REGION: garage
+        NIX_SUBSTITUTERS: https://cache.nixos.org s3://nix-cache?endpoint=http://garage-gateway.garage.svc.cluster.local:3900&region=garage&scheme=http
+        NIX_TRUSTED_PUBLIC_KEYS: cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+      env_file: /data/nix-cache.env
