@@ -34,6 +34,50 @@ spec:
   bucketPermissions:
     - bucketRef:
         name: forgejo
+        namespace: garage
       read: true
       write: true
       owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: nix-cache
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: nix-cache
+  quotas:
+    maxSize: 200Gi
+    maxObjects: 5000000
+  keyPermissions:
+    - keyRef:
+        name: nix-cache-key
+        namespace: forgejo
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: nix-cache-key
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Nix Binary Cache Key"
+  secretTemplate:
+    name: nix-cache-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    additionalData:
+      endpoint: "http://${COMMON_S3_ENDPOINT}"
+      region: "garage"
+  bucketPermissions:
+    - bucketRef:
+        name: nix-cache
+        namespace: garage
+      read: true
+      write: true

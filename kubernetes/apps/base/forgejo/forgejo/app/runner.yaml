@@ -96,6 +96,9 @@ spec:
                 fi
                 echo "waiting for docker..."; sleep 2
               done
+              printf 'AWS_ACCESS_KEY_ID=%s\nAWS_SECRET_ACCESS_KEY=%s\n' \
+                "$(cat /s3-creds/AWS_ACCESS_KEY_ID)" \
+                "$(cat /s3-creds/AWS_SECRET_ACCESS_KEY)" > /data/nix-cache.env
               forgejo-runner one-job --config /config/config.yaml --wait
               echo "one-job exited with code $?, signaling pod-reaper"
               touch /shared/job-done
@@ -115,6 +118,9 @@ spec:
               readOnly: true
             - name: shared
               mountPath: /shared
+            - name: nix-cache-s3
+              mountPath: /s3-creds
+              readOnly: true
         - name: dind
           image: docker:29-dind
           securityContext:
@@ -183,6 +189,9 @@ spec:
             sizeLimit: 60Gi
         - name: shared
           emptyDir: {}
+        - name: nix-cache-s3
+          secret:
+            secretName: nix-cache-s3
   volumeClaimTemplates:
     - metadata:
         name: data
