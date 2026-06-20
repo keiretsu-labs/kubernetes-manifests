@@ -137,16 +137,22 @@ spec:
               readOnly: true
         # Watches for the job-done sentinel from the runner container, then
         # deletes the pod so the StatefulSet recreates it with a fresh
-        # emptyDir. kubectl uses the pod's service account token for auth.
+        # emptyDir. curl is installed at startup (Alpine has no curl baked in).
         - name: pod-reaper
-          image: bitnami/kubectl:1.33
+          image: alpine:3.21
           command:
             - /bin/sh
             - -c
             - |
+              apk add --no-cache curl > /dev/null 2>&1
               while [ ! -f /shared/job-done ]; do sleep 5; done
               echo "sentinel detected, deleting pod $POD_NAME"
-              kubectl delete pod "$POD_NAME" -n forgejo
+              for i in 1 2 3 4 5; do
+                curl -s -k -X DELETE \
+                  -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+                  "https://kubernetes.default.svc/api/v1/namespaces/forgejo/pods/$POD_NAME" && break
+                echo "delete attempt $i failed"; sleep 5
+              done
               sleep 3600
           env:
             - name: POD_NAME
