@@ -3,7 +3,7 @@
 # tinyauth does authN only (google login, injects remote-email); the per-user
 # authorization decision lives in this policy's authorization block. EG's RBAC
 # filter runs after extAuth, so it matches on the header tinyauth injects.
-# raj.agents is raj-only.
+# raj + kartik.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
@@ -33,10 +33,11 @@ spec:
   authorization:
     defaultAction: Deny
     rules:
-      - name: allow-raj
+      - name: allow-shared
         action: Allow
         principal:
           headers:
             - name: Remote-Email
               values:
                 - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com

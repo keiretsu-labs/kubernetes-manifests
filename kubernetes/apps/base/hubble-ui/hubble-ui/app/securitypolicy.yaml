@@ -1,6 +1,6 @@
 ---
 # hubble-ui access control via tinyauth.
-# raj-only (admin network observability).
+# raj + kartik (admin network observability).
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
@@ -31,10 +31,11 @@ spec:
   authorization:
     defaultAction: Deny
     rules:
-      - name: allow-raj
+      - name: allow-shared
         action: Allow
         principal:
           headers:
             - name: Remote-Email
               values:
                 - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com
