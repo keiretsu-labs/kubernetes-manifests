@@ -21,9 +21,9 @@ Kustomization CR) under each location tree that should run it. see
 
 two options, applied per fqdn:
 
-1. **tinyauth** — per-fqdn config, tracked in issue #1547; lightweight, no sidecar
-2. **oidc-protect component** — add `components/oidc-protect` to the app's
-   kustomization; installs the envoy gateway securitypolicy + pocket-id secret
+1. **tinyauth** — per-fqdn config, tracked in issue #1547; lightweight, no sidecar.
+   This is the single auth solution for `*.keiretsu.top` web apps; the pocket-id
+   `oidc-protect` component has been retired.
 
 both are opt-in. internal tools reachable only via tailscale need neither.
 

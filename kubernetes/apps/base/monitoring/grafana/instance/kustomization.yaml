@@ -5,6 +5,5 @@ resources:
   - ./grafana.yaml
   - ./httproute.yaml
   - ./servicemonitor.yaml
-  - ./secret.yaml
   - ../plugins/image-renderer/deployment.yaml
   - ../plugins/image-renderer/service.yaml

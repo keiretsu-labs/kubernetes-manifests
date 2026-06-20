@@ -20,7 +20,7 @@ spec:
       # oidc:
       #   clientID: "05c250fc-4dc0-4f53-9381-ab0b704c918e"
       #   clientSecret: "eLHTrBgsWJZhtgWSGwmOppseSRkUDCie"
-      #   issuerURL: "https://pocket-id.keiretsu.top"
+      #   issuerURL: "https://tinyauth.keiretsu.top"
       #   scopes: "openid profile email"
       inCluster: false
 

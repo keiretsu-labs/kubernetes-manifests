@@ -66,7 +66,7 @@ spec:
             # (isAuthRequired = getConfiguredPassword().length>0). Binding 0.0.0.0
             # without a password trips the workspace's safety refusal, so we set
             # HERMES_ALLOW_INSECURE_REMOTE=1 to bypass it. Safe here: the Service is
-            # ClusterIP and the only external path is Envoy's Pocket ID OIDC gate,
+            # ClusterIP and the only external path is Envoy's tinyauth gate,
             # so every reachable caller is already authenticated. HERMES_API_TOKEN
             # above still secures the workspace->gateway loopback call.
             - name: HERMES_ALLOW_INSECURE_REMOTE

@@ -1,19 +1,16 @@
 ---
-# frigate (ottawa) access control via tinyauth.
-# tinyauth does authN only (google login, injects remote-email); the per-user
-# authorization decision lives in this policy's authorization block. EG's RBAC
-# filter runs after extAuth, so it matches on the header tinyauth injects.
-# frigate is shared — raj + kartik.
+# hubble-ui access control via tinyauth.
+# raj + kartik (admin network observability).
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
-  name: frigate-tinyauth
-  namespace: home
+  name: hubble-tinyauth
+  namespace: hubble-ui
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      name: frigate
+      name: hubble
   extAuth:
     headersToExtAuth:
       - cookie

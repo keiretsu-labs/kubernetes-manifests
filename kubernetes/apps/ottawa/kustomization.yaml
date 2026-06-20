@@ -37,7 +37,6 @@ resources:
   - ./open-cluster-management
   - ./open-cluster-management-agent
   - ./opencost
-  - ./pocket-id
   - ./searxng
   - ./snapshot-controller
   - ./spegel
