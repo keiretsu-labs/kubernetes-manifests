@@ -17,6 +17,5 @@ resources:
   - ./gslb-garage-s3.yaml
   - ./gslb-dashboard-cdn.yaml
   - ./gslb-forgejo.yaml
-  - ./gslb-pocket-id.yaml
   - ./gslb-bhaiya.yaml
   - ./gslb-velero.yaml
