@@ -109,6 +109,31 @@ spec:
                   - sh
                   - -c
                   - docker system prune -af --volumes 2>/dev/null || true
+        # Continuously reclaim docker-storage. dind's socket is loopback-only,
+        # so prune runs in-pod rather than via an exec CronJob. until=2h keeps
+        # objects from in-flight jobs; everything older is fair game.
+        - name: docker-prune
+          image: docker:29-cli
+          env:
+            - name: DOCKER_HOST
+              value: tcp://127.0.0.1:2375
+          command:
+            - /bin/sh
+            - -c
+            - |
+              while true; do
+                sleep 1800
+                docker container prune -f --filter "until=2h" 2>/dev/null || true
+                docker image prune -af --filter "until=2h" 2>/dev/null || true
+                docker builder prune -af --filter "until=2h" 2>/dev/null || true
+                docker volume prune -f 2>/dev/null || true
+              done
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
       volumes:
         - name: token
           secret:
@@ -135,4 +160,4 @@ spec:
         storageClassName: ${STORAGECLASS_DEFAULT}
         resources:
           requests:
-            storage: 10Gi
+            storage: 60Gi
