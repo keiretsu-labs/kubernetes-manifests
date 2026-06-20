@@ -14,6 +14,9 @@ spec:
     - name: cnpg-system
   path: ./kubernetes/apps/base/forgejo/forgejo/app
   prune: true
+  # Runner StatefulSet volumeClaimTemplates is immutable; allow Flux to
+  # recreate it on size changes (PVCs are Retain, so data survives).
+  force: true
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
