@@ -5,8 +5,6 @@ namespace: agents
 resources:
   - bucket.yaml
   - egress.yaml
-  - litellm.yaml
-  - litellm-expose.yaml
   - assistant-raj
   - abtar
   - kartik
