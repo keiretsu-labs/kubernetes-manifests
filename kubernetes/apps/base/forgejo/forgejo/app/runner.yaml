@@ -41,8 +41,6 @@ spec:
         app: forgejo-runner
     spec:
       serviceAccountName: forgejo-runner
-      securityContext:
-        runAsUser: 0
       # Route OCI registry hostnames to the internal public gateway
       # instead of the external CDN IPs (hairpin NAT issue).
       # Ottawa public gateway = 10.169.10.15.
@@ -58,17 +56,22 @@ spec:
             - /bin/sh
             - -c
             - |
-              apk add --no-cache buildah skopeo git curl ca-certificates 2>&1
+              cp /bin/forgejo-runner /tools/forgejo-runner
+              apk add --no-cache --root /tools buildah skopeo git curl ca-certificates 2>&1
               # System-wide containers config
-              mkdir -p /etc/containers
-              printf '[storage]\ndriver = "vfs"\n' > /etc/containers/storage.conf
-              printf 'unqualified-search-registries = ["docker.io"]\n' > /etc/containers/registries.conf
+              mkdir -p /tools/etc/containers
+              printf '[storage]\ndriver = "vfs"\n' > /tools/etc/containers/storage.conf
+              printf 'unqualified-search-registries = ["docker.io"]\n' > /tools/etc/containers/registries.conf
+          volumeMounts:
+            - name: tools
+              mountPath: /tools
         - name: register
           image: code.forgejo.org/forgejo/runner:12.12.0
           command:
             - /bin/sh
             - -c
             - |
+              cp /tools/forgejo-runner /usr/local/bin/forgejo-runner || true
               rm -f /data/.runner
               forgejo-runner register \
                 --config /config/config.yaml \
@@ -84,6 +87,8 @@ spec:
               mountPath: /secrets
             - name: config
               mountPath: /config
+            - name: tools
+              mountPath: /tools
       containers:
         - name: runner
           image: code.forgejo.org/forgejo/runner:12.12.0
@@ -91,6 +96,8 @@ spec:
             - /bin/sh
             - -c
             - |
+              # Symlink tools installed in /tools to /usr/local/bin
+              ln -sf /tools/usr/bin/* /usr/local/bin/ 2>/dev/null || true
               # Per-user config for HOME=/data
               mkdir -p /data/.config/containers
               printf '[storage]\ndriver = "vfs"\n' > /data/.config/containers/storage.conf
@@ -101,6 +108,8 @@ spec:
               mountPath: /data
             - name: config
               mountPath: /config
+            - name: tools
+              mountPath: /tools
       volumes:
         - name: token
           secret:
@@ -108,6 +117,8 @@ spec:
         - name: config
           configMap:
             name: forgejo-runner-config
+        - name: tools
+          emptyDir: {}
   volumeClaimTemplates:
     - metadata:
         name: data
