@@ -41,6 +41,9 @@ spec:
         app: forgejo-runner
     spec:
       serviceAccountName: forgejo-runner
+      securityContext:
+        seccompProfile:
+          type: Unconfined
       # Route OCI registry hostnames to the internal public gateway
       # instead of the external CDN IPs (hairpin NAT issue).
       # Ottawa public gateway = 10.169.10.15.
