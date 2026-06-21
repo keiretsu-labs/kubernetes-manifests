@@ -41,6 +41,8 @@ spec:
         app: forgejo-runner
     spec:
       serviceAccountName: forgejo-runner
+      securityContext:
+        runAsUser: 0
       # Route OCI registry hostnames to the internal public gateway
       # instead of the external CDN IPs (hairpin NAT issue).
       # Ottawa public gateway = 10.169.10.15.
@@ -52,14 +54,12 @@ spec:
       initContainers:
         - name: install-tools
           image: code.forgejo.org/forgejo/runner:12.12.0
-          securityContext:
-            runAsUser: 0
           command:
             - /bin/sh
             - -c
             - |
               apk add --no-cache buildah skopeo git curl ca-certificates 2>&1
-              # System-wide containers config (readable by all users)
+              # System-wide containers config
               mkdir -p /etc/containers
               printf '[storage]\ndriver = "vfs"\n' > /etc/containers/storage.conf
               printf 'unqualified-search-registries = ["docker.io"]\n' > /etc/containers/registries.conf
@@ -91,7 +91,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              # Per-user config for HOME=/data (user 1000)
+              # Per-user config for HOME=/data
               mkdir -p /data/.config/containers
               printf '[storage]\ndriver = "vfs"\n' > /data/.config/containers/storage.conf
               printf 'unqualified-search-registries = ["docker.io"]\n' > /data/.config/containers/registries.conf
