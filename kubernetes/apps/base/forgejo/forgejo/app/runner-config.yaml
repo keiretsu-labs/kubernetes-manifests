@@ -19,8 +19,6 @@ data:
       dir: /data/cache
     container:
       network: bridge
-      privileged: true
-      docker_host: tcp://127.0.0.1:2375
       # Env vars passed through to every job container. The S3 creds are
       # written to /data/nix-cache.env by the runner entrypoint (sourced
       # from the nix-cache-s3 secret); env_file merges them with these.
