@@ -104,43 +104,18 @@ spec:
               touch /shared/job-done
               sleep 3600
           env:
-            - name: DOCKER_HOST
-              value: tcp://127.0.0.1:2375
-            - name: DOCKER_CONFIG
-              value: /run/docker-config
           volumeMounts:
             - name: data
               mountPath: /data
             - name: config
               mountPath: /config
-            - name: docker-config
-              mountPath: /run/docker-config
-              readOnly: true
+
             - name: shared
               mountPath: /shared
             - name: nix-cache-s3
               mountPath: /s3-creds
               readOnly: true
-        - name: dind
-          image: docker:29-dind
-          securityContext:
-            privileged: true
-          env:
-            - name: DOCKER_TLS_CERTDIR
-              value: ""
-          resources:
-            requests:
-              cpu: 500m
-              memory: 2Gi
-            limits:
-              cpu: "4"
-              memory: 8Gi
-          volumeMounts:
-            - name: docker-storage
-              mountPath: /var/lib/docker
-            - name: docker-config
-              mountPath: /root/.docker
-              readOnly: true
+
         # Watches for the job-done sentinel from the runner container, then
         # deletes the pod so the StatefulSet recreates it with a fresh
         # emptyDir. curl is installed at startup (Alpine has no curl baked in).
@@ -181,17 +156,8 @@ spec:
         - name: config
           configMap:
             name: forgejo-runner-config
-        - name: docker-config
-          secret:
-            secretName: forgejo-runner-docker-config
-        - name: docker-storage
-          emptyDir:
-            sizeLimit: 60Gi
         - name: shared
           emptyDir: {}
-        - name: nix-cache-s3
-          secret:
-            secretName: nix-cache-s3
   volumeClaimTemplates:
     - metadata:
         name: data
