@@ -86,8 +86,7 @@ spec:
               mkdir -p /data/.config/containers
               printf '[storage]\ndriver = "vfs"\n' > /data/.config/containers/storage.conf
               printf 'unqualified-search-registries = ["docker.io"]\n' > /data/.config/containers/registries.conf
-              # Drop privileges to user 1000 and start the daemon
-              exec su 1000 -c "forgejo-runner daemon --config /config/config.yaml"
+              forgejo-runner daemon --config /config/config.yaml
           volumeMounts:
             - name: data
               mountPath: /data
