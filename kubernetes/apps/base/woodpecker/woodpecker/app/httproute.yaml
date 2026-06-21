@@ -1,0 +1,36 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: woodpecker
+  annotations:
+    item.homer.rajsingh.info/name: "Woodpecker CI"
+    item.homer.rajsingh.info/subtitle: "CI/CD"
+    item.homer.rajsingh.info/logo: "https://woodpecker-ci.org/media/logo.svg"
+    item.homer.rajsingh.info/keywords: "ci, cd, pipeline, build, automation"
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-microchip"
+spec:
+  hostnames:
+    - woodpecker.${COMMON_DOMAIN}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  rules:
+    - backendRefs:
+        - name: woodpecker-server
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

@@ -80,7 +80,7 @@ resources:
   # - ./temporal.yaml
   # - ./temporal-worker-controller.yaml
   - ./zot.yaml
-  # - ./woodpecker.yaml
+  - ./woodpecker.yaml
   - ./forgejo.yaml
   - ./k8gb.yaml
   - ./kro.yaml
