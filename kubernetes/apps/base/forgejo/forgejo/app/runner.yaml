@@ -79,14 +79,18 @@ spec:
             - /bin/sh
             - -c
             - |
-              # Install tools (we're root)
               apk add --no-cache buildah skopeo git curl ca-certificates 2>&1 | tail -3
-              # Configure buildah VFS storage — overlay doesn't work on overlayfs
-              # in containers, VFS is the safe fallback.
-              mkdir -p /data/.config/containers /etc/containers
+              # Configure buildah VFS storage
+              mkdir -p /etc/containers
               printf '[storage]\ndriver = "vfs"\nrunroot = "/var/run/containers/storage"\ngraphroot = "/var/lib/containers/storage"\n' > /etc/containers/storage.conf
               printf 'unqualified-search-registries = ["docker.io"]\n' > /etc/containers/registries.conf
+              export STORAGE_DRIVER=vfs BUILDAH_ISOLATION=chroot
               forgejo-runner daemon --config /config/config.yaml
+          env:
+            - name: STORAGE_DRIVER
+              value: vfs
+            - name: BUILDAH_ISOLATION
+              value: chroot
           volumeMounts:
             - name: data
               mountPath: /data
