@@ -79,7 +79,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              apk add --no-cache buildah skopeo git curl ca-certificates netavark 2>&1 | tail -3
+              apk add --no-cache buildah skopeo git curl ca-certificates netavark xz 2>&1 | tail -3
               # Configure buildah VFS storage
               mkdir -p /etc/containers
               printf '[storage]\ndriver = "vfs"\nrunroot = "/var/run/containers/storage"\ngraphroot = "/var/lib/containers/storage"\n' > /etc/containers/storage.conf
