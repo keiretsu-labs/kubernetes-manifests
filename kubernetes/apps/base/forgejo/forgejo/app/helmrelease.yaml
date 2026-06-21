@@ -82,3 +82,5 @@ spec:
           REVERSE_PROXY_TRUSTED_PROXIES: "127.0.0.0/8,::1/128,10.2.0.0/16,10.3.0.0/16"
         actions:
           ENABLED: "false"
+        webhook:
+          ALLOWED_HOST_LIST: "external,loopback,private"
