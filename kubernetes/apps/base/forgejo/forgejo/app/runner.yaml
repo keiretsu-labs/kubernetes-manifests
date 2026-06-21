@@ -68,7 +68,7 @@ spec:
                 --instance http://forgejo-http:3000 \
                 --token "$(cat /secrets/token)" \
                 --name "$(hostname)" \
-                --labels ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:go-22.04,ubuntu-20.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04 \
+                --labels ubuntu-latest:host,ubuntu-22.04:host,ubuntu-20.04:host \
                 --no-interactive
           volumeMounts:
             - name: data
@@ -84,54 +84,20 @@ spec:
             - /bin/sh
             - -c
             - |
-              deadline=$(($(date +%s) + 120))
-              until nc -z 127.0.0.1 2375 2>/dev/null; do
-                if [ "$(date +%s)" -ge "$deadline" ]; then
-                  echo "timed out waiting for docker"; exit 1
-                fi
-                echo "waiting for docker..."; sleep 2
-              done
+              # Install tools needed by workflows that run with host labels
+              apk add --no-cache buildah skopeo git curl ca-certificates 2>&1 | tail -3 || true
+
+              # Configure buildah VFS storage (no overlay/CAP_SYS_ADMIN needed)
+              mkdir -p /root/.config/containers /etc/containers
+              printf '[storage]\ndriver = "vfs"\n' > /root/.config/containers/storage.conf
+              printf 'unqualified-search-registries = ["docker.io"]\n' > /etc/containers/registries.conf
+
               forgejo-runner daemon --config /config/config.yaml
-          env:
-            - name: DOCKER_HOST
-              value: tcp://127.0.0.1:2375
-            - name: DOCKER_CONFIG
-              value: /run/docker-config
           volumeMounts:
             - name: data
               mountPath: /data
             - name: config
               mountPath: /config
-            - name: docker-config
-              mountPath: /run/docker-config
-              readOnly: true
-        - name: dind
-          image: docker:27-dind
-          securityContext:
-            privileged: true
-          env:
-            - name: DOCKER_TLS_CERTDIR
-              value: ""
-          resources:
-            requests:
-              cpu: 500m
-              memory: 2Gi
-            limits:
-              cpu: "4"
-              memory: 8Gi
-          volumeMounts:
-            - name: docker-storage
-              mountPath: /var/lib/docker
-            - name: docker-config
-              mountPath: /root/.docker
-              readOnly: true
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - sh
-                  - -c
-                  - docker system prune -af --volumes 2>/dev/null || true
       volumes:
         - name: token
           secret:
@@ -139,12 +105,6 @@ spec:
         - name: config
           configMap:
             name: forgejo-runner-config
-        - name: docker-config
-          secret:
-            secretName: forgejo-runner-docker-config
-        - name: docker-storage
-          emptyDir:
-            sizeLimit: 60Gi
   volumeClaimTemplates:
     - metadata:
         name: data
