@@ -25,7 +25,7 @@ spec:
         args: ["--foreground", "--journal"]
         env:
         - name: IRQBALANCE_BANNED_CPULIST
-          value: "12-19"
+          value: "0-7"
         resources:
           requests:
             cpu: 25m
@@ -40,9 +40,10 @@ spec:
       volumes:
       - name: run
         emptyDir: {}
-      tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-        effect: NoSchedule
-      nodeSelector:
-        node-role.kubernetes.io/control-plane: ""
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: extensions.talos.dev/intel-ucode
+                operator: Exists
