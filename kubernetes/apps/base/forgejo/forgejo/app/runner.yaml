@@ -69,7 +69,6 @@ spec:
                 --token "$(cat /secrets/token)" \
                 --name "$(hostname)" \
                 --labels ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:go-22.04,ubuntu-20.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04 \
-                --ephemeral \
                 --no-interactive
           volumeMounts:
             - name: data
