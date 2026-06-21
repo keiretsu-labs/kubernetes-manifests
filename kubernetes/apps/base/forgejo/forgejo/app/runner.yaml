@@ -52,6 +52,8 @@ spec:
       initContainers:
         - name: install-tools
           image: code.forgejo.org/forgejo/runner:12.12.0
+          securityContext:
+            runAsUser: 0
           command:
             - /bin/sh
             - -c
@@ -89,8 +91,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              # System-wide configs installed by init container at /etc/containers/
-              # Also set per-user config for HOME=/data
+              # Per-user config for HOME=/data (user 1000)
               mkdir -p /data/.config/containers
               printf '[storage]\ndriver = "vfs"\n' > /data/.config/containers/storage.conf
               printf 'unqualified-search-registries = ["docker.io"]\n' > /data/.config/containers/registries.conf
