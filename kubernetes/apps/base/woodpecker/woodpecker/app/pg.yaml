@@ -13,7 +13,7 @@ spec:
       database: woodpecker
       owner: woodpecker
       dataChecksums: true
-      postInitApplicationSQL:
+      postInitSQL:
         - ALTER USER woodpecker WITH PASSWORD '${WOODPECKER_DB_PASSWORD}';
   storage:
     size: 10Gi
