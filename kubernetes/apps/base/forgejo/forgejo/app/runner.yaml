@@ -41,9 +41,9 @@ spec:
         app: forgejo-runner
     spec:
       serviceAccountName: forgejo-runner
-      # Route OCI registry hostnames to the internal public gateway (10.169.10.15)
-      # instead of the external CDN IPs, which are unreachable from within the
-      # cluster due to hairpin NAT. Ottawa public gateway = 10.169.10.15.
+      # Route OCI registry hostnames to the internal public gateway
+      # instead of the external CDN IPs (hairpin NAT issue).
+      # Ottawa public gateway = 10.169.10.15.
       hostAliases:
         - ip: "${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.10.15"
           hostnames:
@@ -85,70 +85,12 @@ spec:
             - /bin/sh
             - -c
             - |
-              if [ -f /shared/job-done ]; then
-                echo "previous job sentinel present, waiting for pod reaper"
-                sleep 3600; exit 0
-              fi
-              deadline=$(($(date +%s) + 120))
-              until nc -z 127.0.0.1 2375 2>/dev/null; do
-                if [ "$(date +%s)" -ge "$deadline" ]; then
-                  echo "timed out waiting for docker"; exit 1
-                fi
-                echo "waiting for docker..."; sleep 2
-              done
-              printf 'AWS_ACCESS_KEY_ID=%s\nAWS_SECRET_ACCESS_KEY=%s\n' \
-                "$(cat /s3-creds/AWS_ACCESS_KEY_ID)" \
-                "$(cat /s3-creds/AWS_SECRET_ACCESS_KEY)" > /data/nix-cache.env
-              forgejo-runner one-job --config /config/config.yaml --wait
-              echo "one-job exited with code $?, signaling pod-reaper"
-              touch /shared/job-done
-              sleep 3600
-          env:
+              forgejo-runner daemon --config /config/config.yaml
           volumeMounts:
             - name: data
               mountPath: /data
             - name: config
               mountPath: /config
-
-            - name: shared
-              mountPath: /shared
-            - name: nix-cache-s3
-              mountPath: /s3-creds
-              readOnly: true
-
-        # Watches for the job-done sentinel from the runner container, then
-        # deletes the pod so the StatefulSet recreates it with a fresh
-        # emptyDir. curl is installed at startup (Alpine has no curl baked in).
-        - name: pod-reaper
-          image: alpine:3.21
-          command:
-            - /bin/sh
-            - -c
-            - |
-              apk add --no-cache curl > /dev/null 2>&1
-              while [ ! -f /shared/job-done ]; do sleep 5; done
-              echo "sentinel detected, deleting pod $POD_NAME"
-              for i in 1 2 3 4 5; do
-                curl -s -k -X DELETE \
-                  -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
-                  "https://kubernetes.default.svc/api/v1/namespaces/forgejo/pods/$POD_NAME" && break
-                echo "delete attempt $i failed"; sleep 5
-              done
-              sleep 3600
-          env:
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-          volumeMounts:
-            - name: shared
-              mountPath: /shared
-          resources:
-            requests:
-              cpu: 10m
-              memory: 32Mi
-            limits:
-              memory: 64Mi
       volumes:
         - name: token
           secret:
@@ -156,8 +98,6 @@ spec:
         - name: config
           configMap:
             name: forgejo-runner-config
-        - name: shared
-          emptyDir: {}
   volumeClaimTemplates:
     - metadata:
         name: data
