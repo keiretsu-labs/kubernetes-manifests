@@ -395,7 +395,7 @@ KNOWN_SERVICES = {
     "hubble": {
         "name": "Hubble UI",
         "subtitle": "Network Observability",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/hubble.svg",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/cilium.svg",
         "group": "Monitoring",
     },
     "woodpecker": {
@@ -407,7 +407,7 @@ KNOWN_SERVICES = {
     "zot": {
         "name": "Zot Registry",
         "subtitle": "OCI Container Registry",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zot.svg",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/harbor.svg",
         "group": "Infrastructure",
     },
     "velero": {
@@ -434,6 +434,13 @@ KNOWN_SERVICES = {
         "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/kubernetes.svg",
         "group": "Monitoring",
     },
+    "kener": {
+        "name": "Kener",
+        "subtitle": "Public Status Page",
+        "logo": "",
+        "icon": "📊",
+        "group": "Monitoring",
+    },
     "tinyauth": {
         "name": "TinyAuth",
         "subtitle": "Authentication Gateway",
@@ -455,13 +462,15 @@ KNOWN_SERVICES = {
     "keiretsu": {
         "name": "Keiretsu Web",
         "subtitle": "Static Website",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/web.svg",
+        "logo": "",
+        "icon": "🌐",
         "group": "Other",
     },
     "trades": {
         "name": "Trades",
         "subtitle": "Trading Dashboard",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/chart.svg",
+        "logo": "",
+        "icon": "📈",
         "group": "Other",
     },
     "status": {
@@ -471,37 +480,37 @@ KNOWN_SERVICES = {
         "group": "Monitoring",
     },
     "home": {
-        "_hide": True,  # the homepage itself — don't show as a card
+        "_hide": True,
     },
-    # Agent web UIs
+    # Agent web UIs — use openai.svg as a generic AI icon
     "raj": {
         "name": "Raj Assistant",
         "subtitle": "AI Assistant Web",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/openai.svg",
         "group": "Agents",
     },
     "abtar": {
         "name": "Abtar",
         "subtitle": "AI Assistant Web",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/openai.svg",
         "group": "Agents",
     },
     "teaspoon": {
         "name": "Teaspoon",
         "subtitle": "AI Assistant Web",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/openai.svg",
         "group": "Agents",
     },
     "bhaiya": {
         "name": "Bhaiya",
         "subtitle": "Sandbox Control Plane",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/openai.svg",
         "group": "Agents",
     },
     "kartik": {
         "name": "Kartik Assistant",
         "subtitle": "AI Assistant Web",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/openai.svg",
         "group": "Agents",
     },
 }
@@ -668,9 +677,9 @@ def build_app_item(route_info):
     if not display_name and hostname:
         display_name = prettify_hostname(hostname)
 
-    # Determine icon
+    # Determine icon: curated emoji > gateway-based emoji
     if not logo:
-        icon = GATEWAY_ICONS.get(
+        icon = curated.get("icon") or GATEWAY_ICONS.get(
             next(
                 (gw for gw in parent_gateways if gw in GATEWAY_ICONS),
                 "",
@@ -766,6 +775,7 @@ HEAD = """<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>keiretsu home</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>\U0001F3E0</text></svg>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
   <style>{style}</style>
 </head>
 <body>
@@ -783,16 +793,25 @@ def render_greeting(name):
     )
 
 
+def render_icon(icon_value, logo_url=None, css_class="link-icon"):
+    """Render an icon as either an <img> (logo URL), <i> (FontAwesome classes),
+    or <span> (emoji)."""
+    if logo_url:
+        return f'<img class="link-logo" src="{logo_url}" alt="" loading="lazy">'
+    if not icon_value:
+        return f'<span class="{css_class}">\U0001F517</span>'
+    # FontAwesome classes: "fas fa-home", "fab fa-github", etc.
+    if icon_value.startswith(("fas ", "far ", "fab ", "fa-")):
+        return f'<i class="{icon_value} {css_class}"></i>'
+    # Emoji or text
+    return f'<span class="{css_class}">{icon_value}</span>'
+
+
 def render_group_section(group):
     items = group.get("items", [])
     items_html = ""
     for item in items:
-        if item["logo"]:
-            logo_html = f'<img class="link-logo" src="{item["logo"]}" alt="" loading="lazy">'
-        elif item["icon"]:
-            logo_html = f'<span class="link-icon">{item["icon"]}</span>'
-        else:
-            logo_html = '<span class="link-icon">\U0001F517</span>'
+        logo_html = render_icon(item.get("icon"), item.get("logo"))
 
         subtitle_html = (
             f'<span class="link-subtitle">{item["subtitle"]}</span>'
@@ -812,9 +831,10 @@ def render_group_section(group):
 
     icon = group.get("icon", "\U0001F4CC")
     count = len(items)
+    icon_html = render_icon(icon, css_class="group-emoji")
     return (
         f'<section class="card">'
-        f'<h2><span class="group-emoji">{icon}</span> {group["name"]} '
+        f'<h2>{icon_html} {group["name"]} '
         f'<span class="group-count">{count}</span></h2>'
         f'<div class="link-grid">{items_html}</div>'
         f'</section>'
