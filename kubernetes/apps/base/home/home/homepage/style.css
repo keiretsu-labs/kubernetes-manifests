@@ -132,7 +132,19 @@ body {
   gap: 0.5rem;
 }
 
-.card h2 .group-emoji { font-size: 1rem; filter: saturate(1.2); }
+.group-emoji {
+  font-size: 1rem;
+  filter: saturate(1.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+}
+
+i.group-emoji {
+  color: var(--gold);
+  font-size: 0.85rem;
+}
 
 .group-count {
   margin-left: auto;
@@ -206,6 +218,14 @@ body {
   width: 28px;
   text-align: center;
   filter: saturate(1.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+i.link-icon {
+  font-size: 1rem;
+  color: var(--gold);
 }
 
 .link-logo {
