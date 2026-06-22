@@ -153,7 +153,7 @@ metadata:
   annotations:
     tailscale.com/hostname: "${LOCATION}-searxng"
     tailscale.com/proxy-group: common-ingress
-    tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
+    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
 spec:
   type: LoadBalancer
   loadBalancerClass: tailscale
