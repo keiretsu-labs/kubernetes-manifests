@@ -126,6 +126,7 @@ controlPlane:
           - siderolabs/nonfree-kmod-nvidia-lts
           - siderolabs/nvidia-container-toolkit-lts
           # Utilities
+          - siderolabs/binfmt-misc
           - siderolabs/util-linux-tools
       extraKernelArgs:
         - apparmor=0
@@ -157,6 +158,7 @@ worker:
           # NVIDIA GPU — proprietary nonfree driver (open-kernel-modules crashes the GB10).
           - siderolabs/nonfree-kmod-nvidia-lts
           - siderolabs/nvidia-container-toolkit-lts
+          - siderolabs/binfmt-misc
           - siderolabs/util-linux-tools
       extraKernelArgs:
         - apparmor=0

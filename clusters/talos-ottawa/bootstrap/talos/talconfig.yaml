@@ -115,6 +115,7 @@ nodes:
             - siderolabs/i915
             - siderolabs/intel-ucode
             - siderolabs/nut-client
+            - siderolabs/binfmt-misc
             - siderolabs/util-linux-tools
         extraKernelArgs:
           - apparmor=0
@@ -185,6 +186,7 @@ controlPlane:
           - siderolabs/amdgpu
           - siderolabs/gvisor
           - siderolabs/nut-client
+          - siderolabs/binfmt-misc
           - siderolabs/util-linux-tools
       extraKernelArgs:
         - apparmor=0
