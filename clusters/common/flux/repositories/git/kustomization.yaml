@@ -5,5 +5,4 @@ resources:
   - tailscale-examples.yaml
   - garage.yaml
   - csi-addons.yaml
-  - firecrawl.yaml
   - valkey-helm.yaml
