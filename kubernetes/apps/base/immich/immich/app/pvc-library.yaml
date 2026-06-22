@@ -10,26 +10,3 @@ spec:
     requests:
       storage: 1Ti
   storageClassName: ceph-block-replicated
----
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageKey
-metadata:
-  name: volsync-immich-library-key
-spec:
-  clusterRef:
-    name: garage
-    namespace: garage
-  name: "Immich Library Volsync Key"
-  secretTemplate:
-    name: restic-immich-library
-    accessKeyIdKey: AWS_ACCESS_KEY_ID
-    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
-    includeEndpoint: false
-    includeRegion: false
-    additionalData:
-      RESTIC_REPOSITORY: "s3:http://${COMMON_S3_ENDPOINT}/keiretsu/${LOCATION}/immich/library"
-      RESTIC_PASSWORD: "${COMMON_RESTIC_SECRET}"
-  bucketPermissions:
-    - globalAlias: keiretsu
-      read: true
-      write: true
