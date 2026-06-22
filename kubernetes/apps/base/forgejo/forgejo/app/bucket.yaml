@@ -34,7 +34,7 @@ spec:
   bucketPermissions:
     - bucketRef:
         name: forgejo
-        namespace: garage
+        namespace: forgejo
       read: true
       write: true
       owner: true
@@ -78,6 +78,6 @@ spec:
   bucketPermissions:
     - bucketRef:
         name: nix-cache
-        namespace: garage
+        namespace: forgejo
       read: true
       write: true
