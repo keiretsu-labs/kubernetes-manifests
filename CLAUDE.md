@@ -11,8 +11,8 @@ This is a **production GitOps repository** managing multi-cluster Kubernetes inf
 .
 ├── clusters/           # Multi-cluster GitOps configurations
 │   ├── common/        # Shared applications across all clusters
-│   ├── talos-robbinsdale/  # Primary production home lab cluster
-│   ├── talos-ottawa/       # Media and services cluster
+│   ├── talos-robbinsdale/  # Production home lab cluster
+│   ├── talos-ottawa/       # Primary production cluster (media, services, databases)
 │   ├── talos-stpetersburg/   # AI/ML GPU-accelerated cluster
 │   └── template/           # Reusable application templates
 ├── tailscale/         # Tailscale VPN configuration and automation
@@ -109,7 +109,7 @@ This is a **production GitOps repository** managing multi-cluster Kubernetes inf
 
 **5 Nodes with Individual Patches:**
 - silver.patch, stone.patch, tank.patch, titan.patch, vault.patch
-- base.patch - Shared configuration with Mayastor labels
+- base.patch - Shared configuration
 
 **Applications:**
 
@@ -729,8 +729,8 @@ postBuild:
 4. **Ephemeral keys:** Use short-lived auth keys for testing
 
 ### Clusters
-1. **Robbinsdale:** Primary production (5 nodes, Rook-Ceph, home automation)
-2. **Ottawa:** Media-focused (30+ *arr stack apps, Rook-Ceph)
+1. **Ottawa:** Primary production cluster (media, services, databases, Rook-Ceph)
+2. **Robbinsdale:** Production home lab (home automation, Rook-Ceph)
 3. **St. Petersburg:** AI/ML only (GPU operator, KServe, Ray)
 
 ### Adding a New Helm App to Common
@@ -807,6 +807,97 @@ sops --decrypt <file>.sops.yaml
 # Edit encrypted file
 sops <file>.sops.yaml
 ```
+
+---
+
+## Talos Template Structure (`bootstrap/talos/`)
+
+Each Talos cluster uses **talhelper** (`talconfig.yaml`) + per-node patches to generate machine configs. Managed via `mise run <task>` (Taskfile.yaml).
+
+### Directory Layout
+```
+bootstrap/talos/
+├── talconfig.yaml            # Central cluster config (nodes, patches, schematics)
+├── talsecret.sops.yaml       # Encrypted secrets (SOPS)
+├── Taskfile.yaml             # Task runner (init, genconfig, apply, upgrade, etc.)
+├── metal-amd64.iso           # Boot ISO (or metal-arm64.iso for arm64)
+├── patches/
+│   ├── global/               # Applied to ALL nodes
+│   │   ├── cluster-discovery.yaml
+│   │   ├── containerd.yaml
+│   │   ├── disable-search-domain.yaml
+│   │   ├── hostdns.yaml
+│   │   ├── kubelet.yaml
+│   │   ├── local-path-provisioner.yaml
+│   │   ├── machine-logging.yaml   # IP differs per cluster (10.x.69.51:5170)
+│   │   ├── metrics-server.yaml
+│   │   └── sysctls.yaml
+│   ├── controller/           # Applied to control plane nodes only
+│   │   ├── api-access.yaml
+│   │   ├── disable-proxy.yaml
+│   │   ├── etcd-metrics-patch.yaml
+│   │   └── kubelet-certs.yaml
+│   └── node/                 # Per-node overrides (cluster-specific)
+│       ├── shiro-intel.yaml  # Ottawa
+│       ├── orin-0.yaml       # St. Petersburg
+│       ├── spark-0.yaml      # St. Petersburg (NVIDIA + RDMA)
+│       └── spark-1.yaml      # St. Petersburg (NVIDIA + RDMA)
+└── clusterconfig/            # Generated per-node machine configs (gitignored)
+```
+
+### `talconfig.yaml` Structure
+```yaml
+talosVersion: v1.13.3
+kubernetesVersion: v1.36.1
+clusterName: "k8s.<domain>"
+endpoint: https://k8s.<domain>:6443
+clusterPodNets: ["10.x.0.0/16"]
+clusterSvcNets: ["10.y.0.0/16"]
+cniConfig: { name: none }           # Cilium installed separately
+
+nodes:
+  - hostname: "<name>"
+    ipAddress: "<ip>"
+    installDiskSelector: { serial: "<disk-serial>" }
+    controlPlane: true|false
+    networkInterfaces: [...]         # Bond/VIP/dhcp/static per node
+
+patches:                             # Global — applies to all nodes
+  - "@./patches/global/<name>.yaml"
+
+controlPlane:
+  schematic:
+    customization:
+      systemExtensions:
+        officialExtensions:
+          - siderolabs/<extension>   # e.g. gvisor, binfmt-misc, amd-ucode, nvidia-*
+      extraKernelArgs: [...]
+  patches:
+    - "@./patches/controller/<name>.yaml"
+
+worker:
+  schematic: { ... }                 # Same structure for worker-only extensions
+  patches: []
+```
+
+### Key Architecture Decisions
+- **CNI:** `none` — Cilium replaces Flannel, kube-proxy disabled
+- **VIP:** Single VIP per cluster for API server HA (192.168.X.25)
+- **Logging:** Kernel logs via UDP to `10.<location>.69.51:5170`
+- **Networking:** `net.ifnames=0`, `mitigations=off`, `apparmor=0` kernel args
+- **Performance:** `cpufreq.default_governor=performance`, hugepages, eBPF JIT
+- **Cross-cluster differences:**
+  - Robbinsdale: 3 CP nodes (no workers)
+  - Ottawa: Bonded X710 SFP+ NICs, AMD P-State, NUT client, i915/Intel GPU
+  - St. Petersburg: arm64 (Jetson Orin + DGX Spark GB10), NVIDIA GPU extensions, RDMA
+
+### Adding a System Extension
+Add `- siderolabs/<extension>` to the `officialExtensions` list in:
+1. `controlPlane.schematic` — for control plane nodes
+2. `worker.schematic` — for worker nodes (if any)
+3. Per-node `.schematic` — for node-specific extensions (e.g. shiro in Ottawa)
+
+Then upgrade nodes via `talosctl upgrade` — each node pulls a new image from the Talos factory with the updated extensions baked in.
 
 ---
 
