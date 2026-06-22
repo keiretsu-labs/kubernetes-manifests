@@ -23,7 +23,8 @@ spec:
       name: private
       namespace: home
   hostnames:
-    - "s3.${CLUSTER_DOMAIN}"
+    - "s3.${COMMON_DOMAIN}"
+    - "*.s3.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
