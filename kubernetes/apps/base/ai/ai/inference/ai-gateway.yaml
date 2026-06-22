@@ -40,7 +40,7 @@ spec:
         annotations:
           tailscale.com/hostname: ${LOCATION}-ai-gateway
           tailscale.com/proxy-class: common
-          tailscale.com/tags: "tag:singh360,tag:k8s,tag:${LOCATION}"
+          tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
         loadBalancerClass: tailscale
 ---
 apiVersion: gateway.networking.k8s.io/v1

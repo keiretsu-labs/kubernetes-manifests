@@ -272,7 +272,7 @@ Reusable Kustomize templates for new application deployment:
 - `tag:k8s-recorder` - SSH session recording
 - `tag:robbinsdale`, `tag:ottawa`, `tag:stpetersburg` - Location tags
 - `tag:ci` - CI/CD workloads
-- `tag:singh360` - Specific access patterns
+
 
 **Auto-Approvers:**
 - Exit node capabilities for tag:k8s
@@ -903,7 +903,6 @@ Then upgrade nodes via `talosctl upgrade` — each node pulls a new image from t
 
 ## Recent Changes (from git history)
 
-- Added tag:singh360 with self-access grant
 - Added tag:ci for CI/CD workloads
 - Tested infra tag capabilities
 - Standardized tailnet creation workflow
