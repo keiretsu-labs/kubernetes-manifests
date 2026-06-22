@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: frigate
-          image: ghcr.io/blakeblackshear/frigate:0.15.0-beta5
+          image: ghcr.io/blakeblackshear/frigate:0.17.1
           ports:
             - name: web
               containerPort: 8971
