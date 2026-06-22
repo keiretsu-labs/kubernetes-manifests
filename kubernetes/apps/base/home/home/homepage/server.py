@@ -337,8 +337,10 @@ KNOWN_GROUP_ICONS = {
 }
 
 
-def discover_user_apps(email):
-    """Query K8s API for all SecurityPolicies + HTTPRoutes the user can reach."""
+def discover_routes():
+    """List all SecurityPolicies and HTTPRoutes once and return structured
+    data for per-user filtering. Cached globally (CACHE_TTL) since the K8s
+    state is identical for all users — only the email filter differs."""
     now = time.time()
     if DISCOVERY_CACHE["data"] and now < DISCOVERY_CACHE["expires_at"]:
         return DISCOVERY_CACHE["data"]
@@ -351,48 +353,55 @@ def discover_user_apps(email):
             return DISCOVERY_CACHE["data"]  # stale cache better than nothing
         return {"error": f"cannot list SecurityPolicies: {e}"}
 
-    email_lower = email.lower()
-
-    # 2. Filter SecurityPolicies that match the user's email
-    matching = {}
+    # Build:
+    #   auth_map:    (ns, route_name) -> set of lowercased emails authorized
+    #   restricted:  set of (ns, route_name) gated by a Deny-by-default policy
+    auth_map = {}
+    restricted = set()
     for sp in sp_list.get("items", []):
         sp_ns = sp.get("metadata", {}).get("namespace", "")
-        rules = (
-            sp.get("spec", {})
-            .get("authorization", {})
-            .get("rules", [])
-        )
-        user_emails = set()
+        authz = sp.get("spec", {}).get("authorization", {})
+        default_action = authz.get("defaultAction", "")
+        rules = authz.get("rules", [])
+
+        authorized_emails = set()
         for rule in rules:
             if rule.get("action") != "Allow":
                 continue
             for header in rule.get("principal", {}).get("headers", []):
                 if header.get("name", "").lower() == "remote-email":
-                    user_emails.update(v.lower() for v in header.get("values", []))
+                    authorized_emails.update(
+                        v.lower() for v in header.get("values", [])
+                    )
 
-        if email_lower in user_emails:
-            for ref in sp.get("spec", {}).get("targetRefs", []):
-                route_name = ref.get("name", "")
-                if route_name:
-                    # Key by namespace + name to handle same-named routes
-                    matching[(sp_ns, route_name)] = sp_ns
+        for ref in sp.get("spec", {}).get("targetRefs", []):
+            route_name = ref.get("name", "")
+            if not route_name:
+                continue
+            ref_ns = ref.get("namespace", sp_ns)
+            key = (ref_ns, route_name)
+            if authorized_emails:
+                auth_map.setdefault(key, set()).update(authorized_emails)
+            if default_action == "Deny":
+                restricted.add(key)
 
-    # 3. Fetch each matching HTTPRoute and extract display info
-    apps = {}
-    for (ns, name), sp_ns in matching.items():
-        try:
-            route = k8s_api(
-                f"/apis/gateway.networking.k8s.io/v1/namespaces/{ns}/httproutes/{name}"
-            )
-        except Exception:
-            # Route might be in a different namespace or not exist
-            continue
+    # 2. List ALL HTTPRoutes across all namespaces (one call, not N)
+    try:
+        route_list = k8s_api("/apis/gateway.networking.k8s.io/v1/httproutes")
+    except Exception as e:
+        if DISCOVERY_CACHE["data"]:
+            return DISCOVERY_CACHE["data"]
+        return {"error": f"cannot list HTTPRoutes: {e}"}
 
+    all_routes = {}
+    public_keys = []
+    for route in route_list.get("items", []):
         meta = route.get("metadata", {})
-        annotations = meta.get("annotations", {})
+        ns = meta.get("namespace", "")
+        name = meta.get("name", "")
+        annotations = meta.get("annotations", {}) or {}
         spec = route.get("spec", {})
 
-        # Skip routes explicitly hidden from dashboards
         if annotations.get(HIDE_ANNOTATION, "").lower() == "true":
             continue
 
@@ -401,64 +410,115 @@ def discover_user_apps(email):
             hostname = host
             break
 
-        display_name = annotations.get(ANNOTATION_PREFIX + "name", "")
-        subtitle = annotations.get(ANNOTATION_PREFIX + "subtitle", "")
-        logo = annotations.get(ANNOTATION_PREFIX + "logo", "")
-        keywords = annotations.get(ANNOTATION_PREFIX + "keywords", "")
+        parent_gateways = [
+            ref.get("name", "") for ref in spec.get("parentRefs", [])
+        ]
 
-        # Service group categorization
-        group = annotations.get(SERVICE_ANNOTATION_PREFIX + "name", "")
-        group_icon = annotations.get(SERVICE_ANNOTATION_PREFIX + "icon", "")
-
-        # Fallback: derive group from gateway name
-        if not group:
-            gateway_names = [
-                ref.get("name", "") for ref in spec.get("parentRefs", [])
-            ]
-            for gw in gateway_names:
-                if gw in GATEWAY_NAMES:
-                    group = GATEWAY_NAMES[gw]
-                    break
-            if not group:
-                group = "Other"
-
-        # Fallback group icon
-        if not group_icon:
-            group_icon = KNOWN_GROUP_ICONS.get(group, "📌")
-
-        # If no display name, derive from hostname
-        if not display_name and hostname:
-            display_name = hostname.split(".")[0].capitalize()
-
-        # Determine icon
-        if not logo:
-            icon = GATEWAY_ICONS.get(
-                next(
-                    (
-                        ref.get("name", "")
-                        for ref in spec.get("parentRefs", [])
-                        if ref.get("name", "") in GATEWAY_ICONS
-                    ),
-                    "",
-                ),
-                "🔗",
-            )
-        else:
-            icon = None  # logo present, will render with <img>
-
-        item = {
-            "name": display_name or hostname or name,
-            "url": f"https://{hostname}/" if hostname else "",
-            "subtitle": subtitle,
-            "logo": logo,
-            "icon": icon,
-            "keywords": keywords,
-            "group": group,
-            "group_icon": group_icon,
+        key = (ns, name)
+        all_routes[key] = {
+            "name": name,
+            "hostname": hostname,
+            "annotations": annotations,
+            "parent_gateways": parent_gateways,
         }
-        apps[f"{ns}/{name}"] = item
 
-    # 4. Organize by service group
+        # A route is "public" (available to everyone) if it attaches to the
+        # public gateway and is NOT gated by a Deny-by-default SecurityPolicy.
+        if "public" in parent_gateways and key not in restricted:
+            public_keys.append(key)
+
+    result = {
+        "all_routes": all_routes,
+        "auth_map": auth_map,
+        "public_keys": public_keys,
+    }
+    DISCOVERY_CACHE["data"] = result
+    DISCOVERY_CACHE["expires_at"] = now + CACHE_TTL
+    return result
+
+
+def build_app_item(route_info):
+    """Convert a raw route info dict into a display item."""
+    annotations = route_info["annotations"]
+    hostname = route_info["hostname"]
+    name = route_info["name"]
+    parent_gateways = route_info["parent_gateways"]
+
+    display_name = annotations.get(ANNOTATION_PREFIX + "name", "")
+    subtitle = annotations.get(ANNOTATION_PREFIX + "subtitle", "")
+    logo = annotations.get(ANNOTATION_PREFIX + "logo", "")
+    keywords = annotations.get(ANNOTATION_PREFIX + "keywords", "")
+
+    group = annotations.get(SERVICE_ANNOTATION_PREFIX + "name", "")
+    group_icon = annotations.get(SERVICE_ANNOTATION_PREFIX + "icon", "")
+
+    # Fallback: derive group from gateway name
+    if not group:
+        for gw in parent_gateways:
+            if gw in GATEWAY_NAMES:
+                group = GATEWAY_NAMES[gw]
+                break
+        if not group:
+            group = "Other"
+
+    # Fallback group icon
+    if not group_icon:
+        group_icon = KNOWN_GROUP_ICONS.get(group, "\U0001F4CC")
+
+    # If no display name, derive from hostname
+    if not display_name and hostname:
+        display_name = hostname.split(".")[0].capitalize()
+
+    # Determine icon
+    if not logo:
+        icon = GATEWAY_ICONS.get(
+            next(
+                (gw for gw in parent_gateways if gw in GATEWAY_ICONS),
+                "",
+            ),
+            "\U0001F517",
+        )
+    else:
+        icon = None  # logo present, will render with <img>
+
+    return {
+        "name": display_name or hostname or name,
+        "url": f"https://{hostname}/" if hostname else "",
+        "subtitle": subtitle,
+        "logo": logo,
+        "icon": icon,
+        "keywords": keywords,
+        "group": group,
+        "group_icon": group_icon,
+    }
+
+
+def discover_user_apps(email):
+    """Build the list of apps visible to this user: all public routes (no
+    auth required) plus any routes the user is specifically authorized for."""
+    data = discover_routes()
+    if "error" in data:
+        return data
+
+    email_lower = email.lower()
+    auth_map = data["auth_map"]
+    all_routes = data["all_routes"]
+
+    # Visible routes = public (everyone) + authorized (this user)
+    visible_keys = set(data["public_keys"])
+    for key, emails in auth_map.items():
+        if email_lower in emails:
+            visible_keys.add(key)
+
+    # Build display items
+    apps = {}
+    for key in visible_keys:
+        route_info = all_routes.get(key)
+        if route_info is None:
+            continue
+        apps[f"{key[0]}/{key[1]}"] = build_app_item(route_info)
+
+    # Organize by service group
     grouped = {}
     for key, item in sorted(apps.items()):
         g = item["group"]
@@ -470,12 +530,7 @@ def discover_user_apps(email):
             }
         grouped[g]["items"].append(item)
 
-    result = {
-        "groups": [grouped[g] for g in sorted(grouped.keys())],
-    }
-    DISCOVERY_CACHE["data"] = result
-    DISCOVERY_CACHE["expires_at"] = now + CACHE_TTL
-    return result
+    return {"groups": [grouped[g] for g in sorted(grouped.keys())]}
 
 
 # ── HTML rendering ────────────────────────────────────────────────────────────
@@ -499,16 +554,17 @@ def render_greeting(name):
     return (
         f'<section class="card greeting">'
         f'<h1>\U0001F44B hey {name}</h1>'
-        f'<p class="subtitle">keiretsu cloud \u00b7 home</p>'
+        f'<p class="subtitle">keiretsu cloud</p>'
         f'</section>'
     )
 
 
 def render_group_section(group):
+    items = group.get("items", [])
     items_html = ""
-    for item in group.get("items", []):
+    for item in items:
         if item["logo"]:
-            logo_html = f'<img class="link-logo" src="{item["logo"]}" alt="">'
+            logo_html = f'<img class="link-logo" src="{item["logo"]}" alt="" loading="lazy">'
         elif item["icon"]:
             logo_html = f'<span class="link-icon">{item["icon"]}</span>'
         else:
@@ -521,7 +577,7 @@ def render_group_section(group):
         )
 
         items_html += (
-            f'<a href="{item["url"]}" class="link-card" target="_blank">'
+            f'<a href="{item["url"]}" class="link-card" target="_blank" rel="noopener">'
             f'{logo_html}'
             f'<span class="link-text">'
             f'<span class="link-label">{item["name"]}</span>'
@@ -531,9 +587,11 @@ def render_group_section(group):
         )
 
     icon = group.get("icon", "\U0001F4CC")
+    count = len(items)
     return (
         f'<section class="card">'
-        f'<h2>{icon} {group["name"]}</h2>'
+        f'<h2><span class="group-emoji">{icon}</span> {group["name"]} '
+        f'<span class="group-count">{count}</span></h2>'
         f'<div class="link-grid">{items_html}</div>'
         f'</section>'
     )

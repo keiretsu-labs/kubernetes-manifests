@@ -1,70 +1,270 @@
 /* home.keiretsu.top — personalized homepage */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+:root {
+  --bg: #15110d;
+  --bg-grad-1: #1a1612;
+  --bg-grad-2: #0f0c09;
+  --surface: #221c17;
+  --surface-2: #2a221c;
+  --surface-3: #332921;
+  --border: rgba(212, 165, 116, 0.12);
+  --border-strong: rgba(212, 165, 116, 0.25);
+  --text: #f5e6d3;
+  --text-dim: #b8a890;
+  --text-muted: #8a7a68;
+  --gold: #d4a574;
+  --gold-bright: #e8b886;
+  --gold-deep: #b87333;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --shadow-gold: 0 4px 20px rgba(212, 165, 116, 0.15);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { scroll-behavior: smooth; }
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #1a1612;
-  color: #f5e6d3;
-  padding: 2rem 1rem;
-  max-width: 960px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 165, 116, 0.08), transparent),
+    linear-gradient(180deg, var(--bg-grad-1), var(--bg-grad-2));
+  background-attachment: fixed;
+  color: var(--text);
+  padding: 2.5rem 1.25rem 4rem;
+  max-width: 1040px;
   margin: 0 auto;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
+
+/* ── Greeting ─────────────────────────────────────────────────────────────── */
+
+.greeting {
+  text-align: center;
+  padding: 2.75rem 2rem 2.25rem;
+  background:
+    radial-gradient(ellipse 60% 80% at 50% 0%, rgba(212, 165, 116, 0.10), transparent),
+    var(--surface);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.greeting::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.5;
+}
+
+.greeting h1 {
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.4rem;
+}
+
+.subtitle {
+  color: var(--text-dim);
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+
+.subtitle::before, .subtitle::after {
+  content: '—';
+  margin: 0 0.5rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────────── */
 
 .card {
-  background: #2e2621;
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1.5rem;
   margin-bottom: 1.25rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-md);
+  animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
-.card h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.3rem; }
+.card:nth-child(1) { animation-delay: 0s; }
+.card:nth-child(2) { animation-delay: 0.06s; }
+.card:nth-child(3) { animation-delay: 0.12s; }
+.card:nth-child(4) { animation-delay: 0.18s; }
+.card:nth-child(5) { animation-delay: 0.24s; }
+.card:nth-child(6) { animation-delay: 0.30s; }
+.card:nth-child(n+7) { animation-delay: 0.36s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .card h2 {
-  font-size: 1rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #f5deb3;
+  color: var(--gold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #3d3028;
+  letter-spacing: 0.12em;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.greeting { text-align: center; padding: 2rem; }
-.greeting h1 { font-size: 2rem; }
-.subtitle { color: #d2b48c; font-size: 0.9rem; margin-top: 0.25rem; }
-.note { color: #a09080; font-size: 0.85rem; margin-top: 1rem; }
+.card h2 .group-emoji { font-size: 1rem; filter: saturate(1.2); }
+
+.group-count {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--surface-3);
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.error {
+  color: #e57373;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+}
+
+/* ── Link grid ─────────────────────────────────────────────────────────────── */
 
 .link-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.6rem;
 }
 
 .link-card {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.75rem 1rem;
-  background: #3d3028;
-  border-radius: 8px;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   text-decoration: none;
-  color: #f5e6d3;
-  transition: background 0.15s, transform 0.1s;
+  color: var(--text);
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    transform var(--transition),
+    box-shadow var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.link-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(212, 165, 116, 0.08), transparent 60%);
+  opacity: 0;
+  transition: opacity var(--transition);
+  pointer-events: none;
 }
 
 .link-card:hover {
-  background: #4d3d33;
-  transform: translateY(-1px);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-gold);
 }
 
-.link-icon { font-size: 1.3rem; line-height: 1; }
-.link-logo { width: 24px; height: 24px; object-fit: contain; border-radius: 4px; flex: none; }
-.link-label { font-size: 0.9rem; font-weight: 500; }
+.link-card:hover::after { opacity: 1; }
 
-@media (max-width: 600px) {
-  body { padding: 1rem 0.75rem; }
-  .link-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
-  .greeting h1 { font-size: 1.5rem; }
+.link-card:active { transform: translateY(0); }
+
+.link-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  flex: none;
+  width: 28px;
+  text-align: center;
+  filter: saturate(1.15);
+}
+
+.link-logo {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 6px;
+  flex: none;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px;
+}
+
+.link-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.link-label {
+  font-size: 0.9rem;
+  font-weight: 550;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link-subtitle {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-grad-2); }
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 5px;
+  border: 2px solid var(--bg-grad-2);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--gold-deep); }
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  body { padding: 1.5rem 0.85rem 3rem; }
+  .link-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; }
+  .greeting { padding: 2rem 1rem 1.75rem; }
+  .greeting h1 { font-size: 1.6rem; }
+  .card { padding: 1.15rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
