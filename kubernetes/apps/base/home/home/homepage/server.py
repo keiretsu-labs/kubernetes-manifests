@@ -313,7 +313,6 @@ ANNOTATION_PREFIX = "item.homer.rajsingh.info/"
 SERVICE_ANNOTATION_PREFIX = "service.homer.rajsingh.info/"
 HIDE_ANNOTATION = ANNOTATION_PREFIX + "hide"
 
-# Icon mapping by gateway name for fallback when no Homer annotations exist
 GATEWAY_ICONS = {
     "public": "🌐",
     "private": "🔒",
@@ -333,7 +332,178 @@ KNOWN_GROUP_ICONS = {
     "Home": "🏠",
     "Utilities": "🛠️",
     "Monitoring": "📊",
+    "Development": "💻",
+    "Security": "🔐",
+    "Storage": "💾",
+    "Sandbox": "🧪",
     "Other": "📌",
+}
+
+# Group ordering — lower number = higher on the page
+GROUP_ORDER = {
+    "Home": 0,
+    "Media": 1,
+    "Infrastructure": 2,
+    "Development": 3,
+    "Monitoring": 4,
+    "Security": 5,
+    "Storage": 6,
+    "Utilities": 7,
+    "Agents": 8,
+    "Sandbox": 9,
+    "Public": 10,
+    "Other": 11,
+}
+
+# Hostname prefixes that are test/dev routes — hidden entirely
+HIDE_HOSTNAME_PATTERNS = (
+    "-hello",
+    "workspace-test",
+    "opencode",
+    "kubernetes-manifests-hello",
+    "kubernetes-manifests-opencode",
+)
+
+# Curated metadata for services that lack Homer annotations.
+# Keyed by the hostname prefix (first label of the hostname).
+# Values override the fallback derivation.
+KNOWN_SERVICES = {
+    "forgejo": {
+        "name": "Forgejo",
+        "subtitle": "Git Forge",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/forgejo.svg",
+        "group": "Development",
+    },
+    "gatus": {
+        "name": "Gatus",
+        "subtitle": "Status & Monitoring",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gatus.svg",
+        "group": "Monitoring",
+    },
+    "grafana": {
+        "name": "Grafana",
+        "subtitle": "Analytics & Monitoring",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/grafana.svg",
+        "group": "Monitoring",
+    },
+    "kener": {
+        "name": "Kener",
+        "subtitle": "Public Status Page",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/kener.svg",
+        "group": "Monitoring",
+    },
+    "hubble": {
+        "name": "Hubble UI",
+        "subtitle": "Network Observability",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/hubble.svg",
+        "group": "Monitoring",
+    },
+    "woodpecker": {
+        "name": "Woodpecker CI",
+        "subtitle": "CI/CD",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/woodpecker-ci.svg",
+        "group": "Development",
+    },
+    "zot": {
+        "name": "Zot Registry",
+        "subtitle": "OCI Container Registry",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zot.svg",
+        "group": "Infrastructure",
+    },
+    "velero": {
+        "name": "Velero",
+        "subtitle": "Backups & Recovery",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/velero.svg",
+        "group": "Infrastructure",
+    },
+    "teslamate": {
+        "name": "TeslaMate",
+        "subtitle": "Tesla Data Logger",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/teslamate.svg",
+        "group": "Other",
+    },
+    "qbittorrent": {
+        "name": "qBittorrent",
+        "subtitle": "Download Client",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/qbittorrent.svg",
+        "group": "Media",
+    },
+    "kromgo": {
+        "name": "Kromgo",
+        "subtitle": "Public Status Badges",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/kubernetes.svg",
+        "group": "Monitoring",
+    },
+    "tinyauth": {
+        "name": "TinyAuth",
+        "subtitle": "Authentication Gateway",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/tinyauth.svg",
+        "group": "Security",
+    },
+    "auth": {
+        "name": "TinyAuth",
+        "subtitle": "Authentication Gateway",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/tinyauth.svg",
+        "group": "Security",
+    },
+    "s3": {
+        "name": "Garage S3",
+        "subtitle": "Object Storage",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/garage.svg",
+        "group": "Storage",
+    },
+    "keiretsu": {
+        "name": "Keiretsu Web",
+        "subtitle": "Static Website",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/web.svg",
+        "group": "Other",
+    },
+    "trades": {
+        "name": "Trades",
+        "subtitle": "Trading Dashboard",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/chart.svg",
+        "group": "Other",
+    },
+    "status": {
+        "name": "Status",
+        "subtitle": "Service Status",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gatus.svg",
+        "group": "Monitoring",
+    },
+    "home": {
+        "_hide": True,  # the homepage itself — don't show as a card
+    },
+    # Agent web UIs
+    "raj": {
+        "name": "Raj Assistant",
+        "subtitle": "AI Assistant Web",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "group": "Agents",
+    },
+    "abtar": {
+        "name": "Abtar",
+        "subtitle": "AI Assistant Web",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "group": "Agents",
+    },
+    "teaspoon": {
+        "name": "Teaspoon",
+        "subtitle": "AI Assistant Web",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "group": "Agents",
+    },
+    "bhaiya": {
+        "name": "Bhaiya",
+        "subtitle": "Sandbox Control Plane",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "group": "Agents",
+    },
+    "kartik": {
+        "name": "Kartik Assistant",
+        "subtitle": "AI Assistant Web",
+        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/agent.svg",
+        "group": "Agents",
+    },
 }
 
 
@@ -410,6 +580,17 @@ def discover_routes():
             hostname = host
             break
 
+        # Hide test/dev routes by hostname pattern
+        hostname_lower = hostname.lower()
+        if any(p in hostname_lower for p in HIDE_HOSTNAME_PATTERNS):
+            continue
+
+        # Hide routes flagged in the curated registry
+        host_prefix = hostname.split(".")[0].lower() if hostname else ""
+        curated = KNOWN_SERVICES.get(host_prefix, {})
+        if curated.get("_hide"):
+            continue
+
         parent_gateways = [
             ref.get("name", "") for ref in spec.get("parentRefs", [])
         ]
@@ -438,21 +619,40 @@ def discover_routes():
 
 
 def build_app_item(route_info):
-    """Convert a raw route info dict into a display item."""
+    """Convert a raw route info dict into a display item.
+
+    Priority: Homer annotations > curated KNOWN_SERVICES registry > heuristics.
+    """
     annotations = route_info["annotations"]
     hostname = route_info["hostname"]
     name = route_info["name"]
     parent_gateways = route_info["parent_gateways"]
 
-    display_name = annotations.get(ANNOTATION_PREFIX + "name", "")
-    subtitle = annotations.get(ANNOTATION_PREFIX + "subtitle", "")
-    logo = annotations.get(ANNOTATION_PREFIX + "logo", "")
+    host_prefix = hostname.split(".")[0].lower() if hostname else ""
+    curated = KNOWN_SERVICES.get(host_prefix, {})
+
+    # Display name: annotation > curated > hostname-derived
+    display_name = (
+        annotations.get(ANNOTATION_PREFIX + "name", "")
+        or curated.get("name", "")
+    )
+    subtitle = (
+        annotations.get(ANNOTATION_PREFIX + "subtitle", "")
+        or curated.get("subtitle", "")
+    )
+    logo = (
+        annotations.get(ANNOTATION_PREFIX + "logo", "")
+        or curated.get("logo", "")
+    )
     keywords = annotations.get(ANNOTATION_PREFIX + "keywords", "")
 
-    group = annotations.get(SERVICE_ANNOTATION_PREFIX + "name", "")
+    # Group: annotation > curated > gateway-name fallback
+    group = (
+        annotations.get(SERVICE_ANNOTATION_PREFIX + "name", "")
+        or curated.get("group", "")
+    )
     group_icon = annotations.get(SERVICE_ANNOTATION_PREFIX + "icon", "")
 
-    # Fallback: derive group from gateway name
     if not group:
         for gw in parent_gateways:
             if gw in GATEWAY_NAMES:
@@ -461,13 +661,12 @@ def build_app_item(route_info):
         if not group:
             group = "Other"
 
-    # Fallback group icon
     if not group_icon:
         group_icon = KNOWN_GROUP_ICONS.get(group, "\U0001F4CC")
 
-    # If no display name, derive from hostname
+    # Derive display name from hostname if still empty
     if not display_name and hostname:
-        display_name = hostname.split(".")[0].capitalize()
+        display_name = prettify_hostname(hostname)
 
     # Determine icon
     if not logo:
@@ -479,7 +678,7 @@ def build_app_item(route_info):
             "\U0001F517",
         )
     else:
-        icon = None  # logo present, will render with <img>
+        icon = None
 
     return {
         "name": display_name or hostname or name,
@@ -491,6 +690,23 @@ def build_app_item(route_info):
         "group": group,
         "group_icon": group_icon,
     }
+
+
+def prettify_hostname(hostname):
+    """Convert a hostname like 'qbittorrent.ottawa.keiretsu.top' → 'Qbittorrent'.
+    Handles hyphens and common acronyms."""
+    prefix = hostname.split(".")[0]
+    # Title-case each hyphen-separated word
+    parts = prefix.split("-")
+    # Known acronyms to uppercase
+    acronyms = {"ai", "ui", "api", "cdn", "s3", "ts", "k8s", "qa", "ci", "id"}
+    pretty_parts = []
+    for part in parts:
+        if part.lower() in acronyms:
+            pretty_parts.append(part.upper())
+        else:
+            pretty_parts.append(part.capitalize())
+    return " ".join(pretty_parts)
 
 
 def discover_user_apps(email):
@@ -520,7 +736,7 @@ def discover_user_apps(email):
 
     # Organize by service group
     grouped = {}
-    for key, item in sorted(apps.items()):
+    for key, item in apps.items():
         g = item["group"]
         if g not in grouped:
             grouped[g] = {
@@ -530,7 +746,15 @@ def discover_user_apps(email):
             }
         grouped[g]["items"].append(item)
 
-    return {"groups": [grouped[g] for g in sorted(grouped.keys())]}
+    # Sort items within each group alphabetically by display name
+    for g in grouped:
+        grouped[g]["items"].sort(key=lambda i: i["name"].lower())
+
+    # Sort groups by defined order, then alphabetically for unknowns
+    def group_sort_key(name):
+        return (GROUP_ORDER.get(name, 99), name)
+
+    return {"groups": [grouped[g] for g in sorted(grouped.keys(), key=group_sort_key)]}
 
 
 # ── HTML rendering ────────────────────────────────────────────────────────────
