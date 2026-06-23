@@ -32,6 +32,7 @@ spec:
         mountPath: /var/lib/woodpecker
       env:
         WOODPECKER_ADMIN: raj
+        WOODPECKER_OPEN: "true"
         WOODPECKER_HOST: https://woodpecker.${COMMON_DOMAIN}
         WOODPECKER_FORGEJO: "true"
         WOODPECKER_FORGEJO_URL: https://forgejo.${COMMON_DOMAIN}
