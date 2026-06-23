@@ -19,6 +19,7 @@ spec:
       namespace: home
   hostnames:
     - "frigate.${COMMON_DOMAIN}"
+    - "frigate.${LOCATION}.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
@@ -49,7 +50,7 @@ spec:
       name: ts
       namespace: home
   hostnames:
-    - "frigate.${LOCATION}.${CLUSTER_DOMAIN}"
+    - "frigate.${CLUSTER_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
