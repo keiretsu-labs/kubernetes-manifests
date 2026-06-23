@@ -52,7 +52,7 @@ spec:
       name: private
       namespace: home
   hostnames:
-    - "grafana.${CLUSTER_DOMAIN}"
+    - "grafana.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
