@@ -47,32 +47,6 @@ spec:
         - group: ''
           kind: Secret
           name: wildcard-rajsingh-info
-    - name: wildcard-keiretsu-top-https
-      protocol: HTTPS
-      port: 443
-      hostname: "*.keiretsu.top"
-      allowedRoutes:
-        namespaces:
-          from: All
-      tls:
-        mode: Terminate
-        certificateRefs:
-        - group: ''
-          kind: Secret
-          name: wildcard-keiretsu-top
-    - name: keiretsu-top-https
-      protocol: HTTPS
-      port: 443
-      hostname: "keiretsu.top"
-      allowedRoutes:
-        namespaces:
-          from: All
-      tls:
-        mode: Terminate
-        certificateRefs:
-        - group: ''
-          kind: Secret
-          name: wildcard-keiretsu-top
     - name: wildcard-ts-keiretsu-top-https
       protocol: HTTPS
       port: 443
