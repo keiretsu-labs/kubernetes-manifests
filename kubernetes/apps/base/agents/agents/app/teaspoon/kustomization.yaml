@@ -3,6 +3,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: agents
 resources:
+  - bucket.yaml
   - deployment.yaml
   - service.yaml
   # egress.yaml removed — aperture consolidated to agents/app/egress.yaml
