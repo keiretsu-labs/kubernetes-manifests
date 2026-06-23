@@ -74,6 +74,13 @@ spec:
       - --gateway-label-filter=external-dns==private
       - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
       - --crd-source-kind=DNSEndpoint
+      # UniFi's static-DNS API rejects wildcard hostnames (400 Invalid Hostname),
+      # which fails the entire ApplyChanges batch. Wildcard CNAMEs live in a
+      # dedicated DNSEndpoint tagged dns-scope=public-only (Cloudflare-only).
+      # This label filter skips that object broadly — any future wildcard added
+      # there is auto-excluded without touching this file. Services/gateways
+      # without the label pass through (k8s selector != matches absent labels).
+      - --label-filter=dns-scope!=public-only
     policy: sync
     sources:
       - crd
