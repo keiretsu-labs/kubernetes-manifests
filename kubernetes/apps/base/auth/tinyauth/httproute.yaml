@@ -8,9 +8,6 @@ spec:
     - { group: gateway.networking.k8s.io, kind: Gateway, name: ts, namespace: home }
   hostnames:
     - "auth.${COMMON_DOMAIN}"
-    - "auth.${CLUSTER_DOMAIN}"
-    - "auth.lukehouge.com"
-    - "auth.rajsingh.info"
   rules:
     # Forward everything to tinyauth, and force no-store on every response.
     # tinyauth v5.0.7 sends `Cache-Control: public, max-age=3600` on its OAuth
