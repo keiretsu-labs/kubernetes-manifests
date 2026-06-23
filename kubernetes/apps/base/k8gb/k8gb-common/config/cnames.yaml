@@ -60,16 +60,9 @@ spec:
     # bhaiya admin console + per-workspace opencode instances live ONLY in
     # ottawa, so point straight at the ottawa edge (one healthy WAN IP) instead
     # of the k8gb cdn GSLB — the GSLB hands back a second, broken WAN edge that
-    # 404s ~50% of requests. The *.bhaiya wildcard backs <slug>.bhaiya.keiretsu.top
-    # workspace URLs (ExposeRoute creates the per-workspace HTTPRoutes).
+    # 404s ~50% of requests. The *.bhaiya wildcard lives in keiretsu-top-wildcards
+    # (below) because UniFi's static-DNS API rejects wildcard hostnames.
     - dnsName: "bhaiya.${COMMON_DOMAIN}"
-      recordType: CNAME
-      targets:
-        - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
-    - dnsName: "*.bhaiya.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
@@ -130,6 +123,37 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    - dnsName: "woodpecker.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+---
+# Wildcard CNAMEs that only Cloudflare can serve. UniFi's static-DNS API rejects
+# wildcard hostnames (400 Invalid Hostname), so these are isolated under a
+# dedicated DNSEndpoint tagged dns-scope=public-only. external-dns-unifi uses
+# --label-filter=dns-scope!=public-only to skip this object entirely, while
+# external-dns-cloudflare (--label-filter=dns-target==cloudflare) still picks
+# it up. Add any future wildcard CNAMEs here — no other changes needed.
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: keiretsu-top-wildcards
+  namespace: cloudflare
+  labels:
+    dns-target: cloudflare
+    dns-scope: public-only
+spec:
+  endpoints:
+    - dnsName: "*.bhaiya.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: "*.agents.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
@@ -138,13 +162,6 @@ spec:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
     - dnsName: "*.hermes.${COMMON_DOMAIN}"
-      recordType: CNAME
-      targets:
-        - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
-    - dnsName: "woodpecker.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
