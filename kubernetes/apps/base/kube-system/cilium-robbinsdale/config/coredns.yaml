@@ -40,6 +40,11 @@ data:
       cache 30
       forward . 10.50.69.51
     }
+    keiretsu.top:53 {
+      errors
+      cache 30
+      forward . 1.1.1.1
+    }
     ts.net {
       errors
       cache 30

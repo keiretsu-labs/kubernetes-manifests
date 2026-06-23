@@ -70,6 +70,15 @@ data:
         }
         prometheus :9253
         }
+    keiretsu.top:53 {
+      errors
+      cache 30
+      reload
+      loop
+      bind 0.0.0.0
+      forward . 1.1.1.1
+      prometheus :9253
+    }
     .:53 {
         errors
         cache 30
