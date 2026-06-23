@@ -7,7 +7,6 @@ spec:
   clusterRef:
     name: garage
     namespace: garage
-  globalAlias: teaspoon-web
   quotas:
     maxSize: 1Gi
     maxObjects: 10000
