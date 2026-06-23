@@ -49,7 +49,7 @@ spec:
     - filters:
         - type: URLRewrite
           urlRewrite:
-            hostname: "teaspoon-web.${COMMON_DOMAIN}"
+            hostname: "teaspoon-web-v2.${COMMON_DOMAIN}"
         - type: ResponseHeaderModifier
           responseHeaderModifier:
             add:
