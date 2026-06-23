@@ -35,6 +35,11 @@ data:
             response set ra
         }
     }
+    keiretsu.top:53 {
+      errors
+      cache 30
+      forward . 1.1.1.1
+    }
     ts.net {
       errors
       cache 30
