@@ -49,6 +49,7 @@ spec:
       namespace: home
   hostnames:
     - "grafana.${COMMON_DOMAIN}"
+    - "grafana.${LOCATION}.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""

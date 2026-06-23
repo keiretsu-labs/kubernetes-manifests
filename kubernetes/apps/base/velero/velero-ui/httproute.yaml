@@ -6,6 +6,7 @@ metadata:
 spec:
   hostnames:
     - "velero.${COMMON_DOMAIN}"
+    - "velero.${LOCATION}.${COMMON_DOMAIN}"
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
@@ -47,7 +48,7 @@ metadata:
   name: velero-ui-ts
 spec:
   hostnames:
-    - "velero.${LOCATION}.${CLUSTER_DOMAIN}"
+    - "velero.${CLUSTER_DOMAIN}"
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway

@@ -20,6 +20,7 @@ spec:
       namespace: home
   hostnames:
     - "code.${COMMON_DOMAIN}"
+    - "code.${LOCATION}.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
@@ -51,7 +52,7 @@ spec:
       name: ts
       namespace: home
   hostnames:
-    - "code.${LOCATION}.${CLUSTER_DOMAIN}"
+    - "code.${CLUSTER_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
