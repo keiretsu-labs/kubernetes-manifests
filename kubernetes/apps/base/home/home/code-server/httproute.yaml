@@ -16,7 +16,7 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: private
+      name: public
       namespace: home
   hostnames:
     - "code.${COMMON_DOMAIN}"
