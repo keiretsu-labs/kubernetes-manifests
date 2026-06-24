@@ -125,3 +125,23 @@ spec:
       read: true
       write: true
       owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: tempo
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: tempo
+  quotas:
+    maxSize: 200Gi
+    maxObjects: 10000000
+  keyPermissions:
+    - keyRef:
+        name: tempo-key
+        namespace: tempo
+      read: true
+      write: true
+      owner: true
