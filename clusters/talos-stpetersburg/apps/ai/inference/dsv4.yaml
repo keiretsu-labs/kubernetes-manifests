@@ -1,23 +1,11 @@
-# DeepSeek-V4-Flash on the DGX Sparks — multi-node TP=2 over the 200G RDMA rail.
-#
-# Model: deepseek-ai/DeepSeek-V4-Flash (official, 256 experts, FP8, ~160GB → ~80GB/node).
-#   The recipe image's MoE kernels only support the official 256-expert layout, so the
-#   smaller 0xSero 180B (160 experts) was rejected ("Unsupported expert number: 160").
-#   At ~80GB/node weights, full 1M KV would need util ~0.82 (the recipe's razor's edge);
-#   for OOM-safety on these shared nodes we run util 0.78 + 512K context (still 2.5x Qwen).
-# Image: vllm/vllm-openai:nightly-aarch64 (recipe image — vLLM 0.21.1,
-#   deepseek_v4 tokenizer/tool/reasoning parsers, multi-node entrypoint).
-#
-# Topology: dsv4-head (spark-0, rank 0, serves :8000) + dsv4-worker (spark-1, rank 1,
-#   headless). NCCL collectives run over the ConnectX-7 rail (mlx5_1 / eth2, RoCEv2 GID 3,
-#   192.168.74.1 <-> .2). hostNetwork + privileged + /dev/infiniband mounts because the k8s
-#   RDMA device-plugin reports "0 devices" here. GDR is disabled — the GB10's unified LPDDR5X
-#   hangs GPUDirect RDMA, so NCCL stages through host buffers. (Spiderpool/SR-IOV migration
-#   to follow for proper GPUDirect.)
-#
-# OOM-safety: util 0.78 (~97GB GPU view) + Guaranteed QoS limit 100Gi (request==limit) so the
-#   kernel evicts co-tenants before vLLM. ~80GB weights + ~15GB KV. ClickHouse is descheduled
-#   (clusters/common/apps/clickhouse) to clear the ~16Gi burst that caused OOMs on spark-1.
+# DeepSeek-V4-Flash on 2× DGX Spark — Production Kubernetes Deployment
+# 
+# Architecture: TP=2 across 2 nodes via PyTorch mp backend (no Ray).
+# RDMA: RoCEv2 over ConnectX-7, direct QSFP cable, hostNetwork + /dev/infiniband mounts.
+# Memory: Drop-caches belt + suspenders for control-plane OOM prevention.
+# Image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2 (fixes block_pool hash leak)
+# Tunings: FULL_AND_PIECEWISE cudagraph + all custom ops compiled, NCCL_DEBUG=WARN
+# MTP: 2 tokens (optimal per Raj's benchmark), B12X MoE enabled
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -25,37 +13,37 @@ metadata:
   name: dsv4-download-script
   namespace: ai
 data:
-  download.py: |
-    import glob, os, shutil
-    from huggingface_hub import snapshot_download, hf_hub_download
-    token = os.environ.get('HUGGING_FACE_HUB_TOKEN')
-    # The 0xSero 180B variant has 160 experts, which the recipe image's MoE kernels
-    # reject ("Unsupported expert number: 160"). Use the official 256-expert FP8 model
-    # the image was built for. Remove the old weights first to free PVC space.
-    old = '/models/dsv4-180b'
-    if os.path.exists(old):
-        print('Removing old 180B weights...', flush=True); shutil.rmtree(old, ignore_errors=True)
-    repo, path = 'deepseek-ai/DeepSeek-V4-Flash', '/models/dsv4'
-    has_config = os.path.exists(os.path.join(path, 'config.json'))
-    has_weights = bool(glob.glob(os.path.join(path, '*.safetensors')))
-    if not (has_config and has_weights):
-        print(f'Downloading {repo} (config={has_config}, weights={has_weights})...', flush=True)
-        snapshot_download(repo_id=repo, local_dir=path, token=token, max_workers=4)
-        print(f'Done: {repo}', flush=True)
-    else:
-        print(f'Already cached: {repo}', flush=True)
-    # The repo's snapshot sometimes lands without the (tiny) HF tokenizer files,
-    # which vLLM needs — DSV4-Flash otherwise only ships the raw encoding_dsv4.py.
-    # Ensure them explicitly (idempotent, no weight re-pull).
-    for f in ('tokenizer.json', 'tokenizer_config.json'):
-        dst = os.path.join(path, f)
-        if not os.path.exists(dst):
-            print(f'Fetching missing {f}...', flush=True)
-            import shutil
-            shutil.copy(hf_hub_download(repo, f, token=token), dst)
-    print('Tokenizer files present.', flush=True)
+  download-and-validate.sh: |
+    #!/bin/bash
+    set -euo pipefail
+    MODEL_DIR="${MODEL_DIR:-/models/dsv4}"
+    HF_REPO="${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash}"
+    EXPECTED=46
+
+    mkdir -p "$MODEL_DIR"
+    cd "$MODEL_DIR"
+
+    echo "[download] Starting model download with hf CLI…"
+    hf download "$HF_REPO" --local-dir "$MODEL_DIR" 2>&1
+
+    echo "[validate] Checking for ${EXPECTED} shards…"
+    COUNT="$(find . -name '*.safetensors' | wc -l)"
+    echo "[validate] Found ${COUNT} shard(s)"
+
+    if [ "$COUNT" -lt "$EXPECTED" ]; then
+      echo "[ERROR] Expected ${EXPECTED} shards, got ${COUNT}. Redownloading…"
+      rm -rf "$MODEL_DIR"/*
+      hf download "$HF_REPO" --local-dir "$MODEL_DIR" 2>&1
+      COUNT="$(find . -name '*.safetensors' | wc -l)"
+      if [ "$COUNT" -lt "$EXPECTED" ]; then
+        echo "[FATAL] Still only ${COUNT} shards after retry. Aborting."
+        exit 1
+      fi
+    fi
+
+    echo "[validate] Shard validation OK (${COUNT}/${EXPECTED})"
+    echo "[download] Done."
 ---
-# Per-node weight PVCs (each node loads its TP shard from a full local copy of the checkpoint).
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -78,7 +66,6 @@ spec:
     requests:
       storage: 200Gi
 ---
-# ─────────────────────────── HEAD (rank 0, spark-0, serves :8000) ───────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -86,7 +73,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: head }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: head }
@@ -98,18 +85,23 @@ spec:
       hostIPC: true
       dnsPolicy: ClusterFirstWithHostNet
       enableServiceLinks: false
-      nodeSelector:
-        kubernetes.io/hostname: spark-0
       terminationGracePeriodSeconds: 120
+      nodeSelector: { kubernetes.io/hostname: spark-0 }
       initContainers:
+      - name: drop-caches
+        image: busybox:1.38
+        command: [sh, -c, "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"]
+        securityContext: { privileged: true }
+        resources:
+          requests: { memory: "64Mi", cpu: "100m" }
+          limits: { memory: "256Mi", cpu: "500m" }
       - name: download-models
-        image: vllm/vllm-openai:nightly-aarch64
-        command: [python3, /scripts/download.py]
+        image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+        command: [/bin/bash, /scripts/download-and-validate.sh]
         env:
+        - { name: MODEL_DIR, value: "/models/dsv4" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
-        # The recipe image bakes HF_HUB_OFFLINE=1 (self-contained/offline by default).
-        # Override here so the init container can actually fetch the checkpoint.
         - { name: HF_HUB_OFFLINE, value: "0" }
         - { name: TRANSFORMERS_OFFLINE, value: "0" }
         volumeMounts:
@@ -117,33 +109,40 @@ spec:
         - { name: download-script, mountPath: /scripts }
         resources:
           requests: { memory: "4Gi", cpu: "2000m" }
-          limits: { memory: "8Gi" }
-      - name: drop-caches
+          limits: { memory: "8Gi", cpu: "4000m" }
+      containers:
+      - name: drop-caches-loop
         image: busybox:1.38
-        command: [sh, -c, "sync && echo 3 > /proc/sys/vm/drop_caches && echo dropped"]
+        command: [sh, -c, "while true; do sleep 15; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true; done"]
         securityContext: { privileged: true }
         resources:
-          requests: { memory: "16Mi", cpu: "100m" }
-          limits: { memory: "32Mi" }
-      containers:
+          requests: { memory: "64Mi", cpu: "100m" }
+          limits: { memory: "256Mi", cpu: "500m" }
       - name: vllm
-        image: vllm/vllm-openai:nightly-aarch64
+        image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
         command: [bash, -c]
         args:
         - |
-          # Upstream nightly has no `ray`; use mp/--nnodes multi-node (executor doesn't
-          # affect coherence — the gibberish was the broken sm_121 Marlin cubin, now
-          # fixed natively by PR #40923 in this build). Minimal flags to test coherence.
-          exec vllm serve /models/dsv4 \
-            --served-model-name DeepSeek-V4-Flash deepseek-v4-flash \
+          # Drop cache immediately before weight load (belt + suspenders)
+          echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+          nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+          exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
+            --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --distributed-executor-backend mp \
-            --moe-backend marlin --enforce-eager \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 4096 --max-num-seqs 2 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.70 \
-            --enable-prefix-caching --tokenizer-mode auto \
+            --max-model-len 1000000 \
+            --max-num-seqs 2 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.75 \
+            --mtp 2 \
+            --compilation-config '{"cudagraph_mode":"FULL_AND_PIECEWISE","custom_ops":["all"]}' \
+            --enable-prefix-caching \
+            --enable-flashinfer-autotune \
+            --tokenizer-mode deepseek_v4 \
+            --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
+            --reasoning-parser deepseek_v4 \
+            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --nnodes 2 --node-rank 0 \
             --master-addr 192.168.74.1 --master-port 25000
         ports:
@@ -152,28 +151,23 @@ spec:
         - { name: NODE_RANK, value: "0" }
         - { name: VLLM_HOST_IP, value: "192.168.74.1" }
         - { name: MASTER_ADDR, value: "192.168.74.1" }
-        # b12x fused-MoE kernel — required for correct + fast MoE on the official
-        # 256-expert DSV4. (It was briefly disabled for the 160-expert 180B variant,
-        # which produced gibberish with the fallback kernel.)
-        - { name: TRANSFORMERS_OFFLINE, value: "1" }
-        - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
-        - { name: RAY_memory_usage_threshold, value: "0.99" }
-        - { name: RAY_memory_monitor_refresh_ms, value: "0" }
+        - { name: VLLM_USE_B12X_MOE, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
+        - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+        - { name: TRANSFORMERS_OFFLINE, value: "1" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
-        # verified from the device GID table. This NCCL build is IB-only (socket NET
-        # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
-        # the GB10's unified LPDDR5X confuses GPUDirect RDMA, which hung the collective
-        # — force host-buffer staging instead.
-        - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
-        - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
+        - { name: NCCL_SOCKET_IFNAME, value: "eth0" }
+        - { name: GLOO_SOCKET_IFNAME, value: "eth0" }
         - { name: NCCL_IB_HCA, value: "mlx5_1" }
         - { name: NCCL_IB_GID_INDEX, value: "3" }
         - { name: NCCL_IB_DISABLE, value: "0" }
         - { name: NCCL_NET_GDR_LEVEL, value: "5" }
         - { name: NCCL_IB_TIMEOUT, value: "22" }
-        - { name: NCCL_DEBUG, value: "INFO" }
+        - { name: NCCL_DEBUG, value: "WARN" }
+        - { name: NCCL_CROSS_NIC, value: "1" }
+        - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
+        - { name: NCCL_CUMEM_ENABLE, value: "0" }
+        - { name: VLLM_PORT, value: "25001" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
         - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
@@ -182,34 +176,44 @@ spec:
           privileged: true
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
-        resources:
-          requests: { memory: "90Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "90Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
         - { name: infiniband, mountPath: /dev/infiniband }
         - { name: sys-ib, mountPath: /sys/class/infiniband }
-        startupProbe:
-          httpGet: { path: /health, port: http }
-          initialDelaySeconds: 120
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 120
+        resources:
+          requests: { memory: "93Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "93Gi", nvidia.com/gpu: "1" }
+        # ⏱️ 900s initial delay = warmup takes ~11 min
         livenessProbe:
-          httpGet: { path: /health, port: http }
-          initialDelaySeconds: 600
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 900
           periodSeconds: 30
           timeoutSeconds: 10
-          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 900
+          periodSeconds: 15
+          timeoutSeconds: 10
       volumes:
-      - { name: models, persistentVolumeClaim: { claimName: dsv4-head-models } }
-      - { name: download-script, configMap: { name: dsv4-download-script } }
-      - { name: shm, emptyDir: { medium: Memory, sizeLimit: 16Gi } }
-      - { name: infiniband, hostPath: { path: /dev/infiniband } }
-      - { name: sys-ib, hostPath: { path: /sys/class/infiniband } }
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "128Gi"
+      - name: infiniband
+        hostPath: { path: /dev/infiniband, type: "" }
+      - name: sys-ib
+        hostPath: { path: /sys/class/infiniband, type: "" }
+      - name: models
+        persistentVolumeClaim: { claimName: dsv4-head-models }
+      - name: download-script
+        configMap:
+          name: dsv4-download-script
 ---
-# ─────────────────────────── WORKER (rank 1, spark-1, headless) ───────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -217,7 +221,7 @@ metadata:
   namespace: ai
   labels: { app: dsv4, role: worker }
 spec:
-  replicas: 0
+  replicas: 1
   strategy: { type: Recreate }
   selector:
     matchLabels: { app: dsv4, role: worker }
@@ -229,18 +233,23 @@ spec:
       hostIPC: true
       dnsPolicy: ClusterFirstWithHostNet
       enableServiceLinks: false
-      nodeSelector:
-        kubernetes.io/hostname: spark-1
       terminationGracePeriodSeconds: 120
+      nodeSelector: { kubernetes.io/hostname: spark-1 }
       initContainers:
+      - name: drop-caches
+        image: busybox:1.38
+        command: [sh, -c, "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"]
+        securityContext: { privileged: true }
+        resources:
+          requests: { memory: "64Mi", cpu: "100m" }
+          limits: { memory: "256Mi", cpu: "500m" }
       - name: download-models
-        image: vllm/vllm-openai:nightly-aarch64
-        command: [python3, /scripts/download.py]
+        image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+        command: [/bin/bash, /scripts/download-and-validate.sh]
         env:
+        - { name: MODEL_DIR, value: "/models/dsv4" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
-        # The recipe image bakes HF_HUB_OFFLINE=1 (self-contained/offline by default).
-        # Override here so the init container can actually fetch the checkpoint.
         - { name: HF_HUB_OFFLINE, value: "0" }
         - { name: TRANSFORMERS_OFFLINE, value: "0" }
         volumeMounts:
@@ -248,31 +257,39 @@ spec:
         - { name: download-script, mountPath: /scripts }
         resources:
           requests: { memory: "4Gi", cpu: "2000m" }
-          limits: { memory: "8Gi" }
-      - name: drop-caches
+          limits: { memory: "8Gi", cpu: "4000m" }
+      containers:
+      - name: drop-caches-loop
         image: busybox:1.38
-        command: [sh, -c, "sync && echo 3 > /proc/sys/vm/drop_caches && echo dropped"]
+        command: [sh, -c, "while true; do sleep 15; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true; done"]
         securityContext: { privileged: true }
         resources:
-          requests: { memory: "16Mi", cpu: "100m" }
-          limits: { memory: "32Mi" }
-      containers:
+          requests: { memory: "64Mi", cpu: "100m" }
+          limits: { memory: "256Mi", cpu: "500m" }
       - name: vllm
-        image: vllm/vllm-openai:nightly-aarch64
+        image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
         command: [bash, -c]
         args:
         - |
-          # Worker rank 1 (headless) for mp/--nnodes multi-node TP=2 over the rail.
-          exec vllm serve /models/dsv4 \
-            --served-model-name DeepSeek-V4-Flash deepseek-v4-flash \
+          echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+          nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+          exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
+            --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
             --host 0.0.0.0 --port 8000 --trust-remote-code \
             --tensor-parallel-size 2 --pipeline-parallel-size 1 \
             --distributed-executor-backend mp \
-            --moe-backend marlin --enforce-eager \
             --kv-cache-dtype fp8 --block-size 256 \
-            --max-model-len 4096 --max-num-seqs 2 --max-num-batched-tokens 8192 \
-            --gpu-memory-utilization 0.70 \
-            --enable-prefix-caching --tokenizer-mode auto \
+            --max-model-len 1000000 \
+            --max-num-seqs 2 --max-num-batched-tokens 8192 \
+            --gpu-memory-utilization 0.75 \
+            --mtp 2 \
+            --compilation-config '{"cudagraph_mode":"FULL_AND_PIECEWISE","custom_ops":["all"]}' \
+            --enable-prefix-caching \
+            --enable-flashinfer-autotune \
+            --tokenizer-mode deepseek_v4 \
+            --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
+            --reasoning-parser deepseek_v4 \
+            --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
             --nnodes 2 --node-rank 1 \
             --master-addr 192.168.74.1 --master-port 25000 \
             --headless
@@ -281,28 +298,23 @@ spec:
         - { name: VLLM_HOST_IP, value: "192.168.74.2" }
         - { name: MASTER_ADDR, value: "192.168.74.1" }
         - { name: HEADLESS, value: "1" }
-        # b12x fused-MoE kernel — required for correct + fast MoE on the official
-        # 256-expert DSV4. (It was briefly disabled for the 160-expert 180B variant,
-        # which produced gibberish with the fallback kernel.)
-        - { name: TRANSFORMERS_OFFLINE, value: "1" }
-        - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
-        - { name: RAY_memory_usage_threshold, value: "0.99" }
-        - { name: RAY_memory_monitor_refresh_ms, value: "0" }
+        - { name: VLLM_USE_B12X_MOE, value: "1" }
         - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
+        - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+        - { name: TRANSFORMERS_OFFLINE, value: "1" }
         - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-        # RoCEv2 over the rail. GID index 3 = RoCE v2 with the rail IPv4 (192.168.74.x),
-        # verified from the device GID table. This NCCL build is IB-only (socket NET
-        # plugin won't init), so IB must work. GDR disabled (NCCL_NET_GDR_LEVEL=0):
-        # the GB10's unified LPDDR5X confuses GPUDirect RDMA, which hung the collective
-        # — force host-buffer staging instead.
-        - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
-        - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
+        - { name: NCCL_SOCKET_IFNAME, value: "eth0" }
+        - { name: GLOO_SOCKET_IFNAME, value: "eth0" }
         - { name: NCCL_IB_HCA, value: "mlx5_1" }
         - { name: NCCL_IB_GID_INDEX, value: "3" }
         - { name: NCCL_IB_DISABLE, value: "0" }
         - { name: NCCL_NET_GDR_LEVEL, value: "5" }
         - { name: NCCL_IB_TIMEOUT, value: "22" }
-        - { name: NCCL_DEBUG, value: "INFO" }
+        - { name: NCCL_DEBUG, value: "WARN" }
+        - { name: NCCL_CROSS_NIC, value: "1" }
+        - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
+        - { name: NCCL_CUMEM_ENABLE, value: "0" }
+        - { name: VLLM_PORT, value: "25001" }
         - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
         - { name: HF_HOME, value: "/models/huggingface" }
         - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
@@ -311,23 +323,30 @@ spec:
           privileged: true
           capabilities:
             add: ["IPC_LOCK", "SYS_RESOURCE"]
-        resources:
-          requests: { memory: "90Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-          limits: { memory: "90Gi", nvidia.com/gpu: "1" }
         volumeMounts:
         - { name: models, mountPath: /models }
         - { name: shm, mountPath: /dev/shm }
         - { name: infiniband, mountPath: /dev/infiniband }
         - { name: sys-ib, mountPath: /sys/class/infiniband }
+        resources:
+          requests: { memory: "93Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+          limits: { memory: "93Gi", nvidia.com/gpu: "1" }
+        # ❌ NO probes — worker has no HTTP server (headless mode)
       volumes:
-      - { name: models, persistentVolumeClaim: { claimName: dsv4-worker-models } }
-      - { name: download-script, configMap: { name: dsv4-download-script } }
-      - { name: shm, emptyDir: { medium: Memory, sizeLimit: 16Gi } }
-      - { name: infiniband, hostPath: { path: /dev/infiniband } }
-      - { name: sys-ib, hostPath: { path: /sys/class/infiniband } }
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "128Gi"
+      - name: infiniband
+        hostPath: { path: /dev/infiniband, type: "" }
+      - name: sys-ib
+        hostPath: { path: /sys/class/infiniband, type: "" }
+      - name: models
+        persistentVolumeClaim: { claimName: dsv4-worker-models }
+      - name: download-script
+        configMap:
+          name: dsv4-download-script
 ---
-# Cluster-internal Service → head pod (serves the OpenAI API). hostNetwork pods are still
-# selectable by a Service. The ai-gateway Backend is repointed here (vllm-route.yaml).
 apiVersion: v1
 kind: Service
 metadata:
@@ -339,3 +358,28 @@ spec:
   selector: { app: dsv4, role: head }
   ports:
   - { name: http, port: 8000, protocol: TCP, targetPort: 8000 }
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dsv4
+  namespace: ai
+  labels:
+    app: dsv4
+    release: kube-prometheus-stack
+spec:
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+    metricRelabelings:
+    - action: replace
+      replacement: stpetersburg
+      targetLabel: cluster
+  selector:
+    matchLabels:
+      app: dsv4
+  namespaceSelector:
+    matchNames:
+    - ai
