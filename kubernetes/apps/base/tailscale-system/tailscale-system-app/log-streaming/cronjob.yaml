@@ -27,7 +27,7 @@ spec:
               type: RuntimeDefault
           containers:
             - name: sync
-              image: curlimages/curl:8.20.0
+              image: curlimages/curl:8.21.0
               imagePullPolicy: IfNotPresent
               command: ["/bin/sh", "/scripts/sync.sh"]
               env:
