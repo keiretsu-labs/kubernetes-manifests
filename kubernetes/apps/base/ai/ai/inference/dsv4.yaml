@@ -132,7 +132,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command:
           - /bin/bash
           args:
@@ -158,7 +158,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
@@ -177,7 +177,7 @@ spec:
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
-              --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
+              --compilation-config '{"cudagraph_mode":"FULL_AND_PIECEWISE","custom_ops":["all"]}' \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
@@ -268,7 +268,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command:
           - /bin/bash
           args:
@@ -294,7 +294,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-ready
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
@@ -311,7 +311,7 @@ spec:
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
-              --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
+              --compilation-config '{"cudagraph_mode":"FULL_AND_PIECEWISE","custom_ops":["all"]}' \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
