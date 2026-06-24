@@ -1,0 +1,26 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: tempo-key
+  namespace: tempo
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Tempo Tracing Key"
+  secretTemplate:
+    name: tempo-storage
+    includeBucketName: true
+    bucketNameKey: bucket
+    accessKeyIdKey: access_key_id
+    secretAccessKeyKey: access_key_secret
+    additionalData:
+      endpoint: "http://${COMMON_S3_ENDPOINT}"
+  bucketPermissions:
+    - bucketRef:
+        name: tempo
+        namespace: garage
+      read: true
+      write: true
+      owner: true

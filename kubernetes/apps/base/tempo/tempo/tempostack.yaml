@@ -1,0 +1,35 @@
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: tempo
+spec:
+  storage:
+    secret:
+      name: tempo-storage
+    type: s3
+  storageSize: 10Gi
+  retention:
+    global:
+      traces: 7d
+  resources:
+    total:
+      limits:
+        memory: 4Gi
+        cpu: 2000m
+  observability:
+    metrics:
+      createServiceMonitors: true
+      createPrometheusRules: true
+  template:
+    queryFrontend:
+      jaegerQuery:
+        enabled: true
+      replicas: 1
+    distributor:
+      replicas: 1
+    ingester:
+      replicas: 1
+    compactor:
+      replicas: 1
+    querier:
+      replicas: 1
