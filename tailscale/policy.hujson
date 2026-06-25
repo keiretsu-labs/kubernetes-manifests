@@ -155,6 +155,7 @@
 		"posture:jitSsh":   ["custom:jitSsh == true"],
 		"posture:jitAdmin": ["custom:jitAdmin == true"],
 		"posture:jitDebug": ["custom:jitDebug == true"],
+		"posture:sourceIp": ["ip:publicAddress is set"],
 	},
 	"grants": [
     {
