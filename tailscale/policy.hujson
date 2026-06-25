@@ -180,9 +180,10 @@
 			"ip":  ["*"],
 		},
 		{
-			"src": ["rajsinghtech@github"],
-			"dst": ["tag:raj-workspace"],
-			"ip":  ["*"],
+			"src":        ["rajsinghtech@github"],
+			"dst":        ["tag:raj-workspace"],
+			"ip":         ["*"],
+			"srcPosture": ["posture:sourceIp"],
 		},
 		{
 			"src": ["rajsinghtech@github", "tag:raj"],
