@@ -570,18 +570,6 @@
 			"svc:tcp:5432",
 		],
 	},
-		{
-			"src":             "kbpersonal@github",
-			"srcPostureAttrs": {"ip:publicAddress": "76.71.102.41"},
-			"proto":           "tcp",
-			"deny":            ["8.8.8.8:443"],
-		},
-		{
-			"src":             "kbpersonal@github",
-			"srcPostureAttrs": {"ip:publicAddress": "9.9.9.9"},
-			"proto":           "tcp",
-			"accept":          ["8.8.8.8:443"],
-		},
 	],
   "attrConfig": {
     "custom:potato":      {"type": "string", "allowSetByNode": true, "broadcastToPeers": ["*"]},
