@@ -90,8 +90,9 @@
       "10.244.0.0/16",
       "10.96.0.0/12",
 		],
-		"ipset:home-bell": [
+		"ipset:home-public-ips": [
 			"76.71.102.41/32",
+			"73.176.223.238/32",
 		],
 	},
 	"autoApprovers": {
@@ -159,7 +160,7 @@
 		"posture:jitAdmin": ["custom:jitAdmin == true"],
 		"posture:jitDebug": ["custom:jitDebug == true"],
 		"posture:sourceIp": ["ip:publicAddress is set"],
-		"posture:notHome":  ["ip:publicAddress NOT IN ['ipset:home-bell']"],
+		"posture:notHome":  ["ip:publicAddress NOT IN ['ipset:home-public-ips']"],
 	},
 	"grants": [
     {
@@ -243,13 +244,13 @@
 			"ip":  ["*"],
 		},
 		{
-			"src": ["rajsinghtech@github", "LukeHouge@github", "abtars@gmail.com", "tag:k8s", "tag:ci"],
+			"src": ["LukeHouge@github", "abtars@gmail.com", "tag:k8s", "tag:ci"],
 			"dst": ["autogroup:internet"],
 			"ip":  ["*"],
 			"via": ["tag:robbinsdale", "tag:ottawa", "tag:stpetersburg", "tag:ci"],
 		},
 		{
-			"src":        ["kbpersonal@github"],
+			"src":        ["kbpersonal@github", "rajsinghtech@github"],
 			"dst":        ["autogroup:internet"],
 			"ip":         ["*"],
 			"via":        ["tag:robbinsdale", "tag:ottawa", "tag:stpetersburg", "tag:ci"],
