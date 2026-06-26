@@ -90,6 +90,9 @@
       "10.244.0.0/16",
       "10.96.0.0/12",
 		],
+		"ipset:home-bell": [
+			"76.71.102.41/32",
+		],
 	},
 	"autoApprovers": {
 		"exitNode": ["tag:k8s"],
@@ -156,6 +159,7 @@
 		"posture:jitAdmin": ["custom:jitAdmin == true"],
 		"posture:jitDebug": ["custom:jitDebug == true"],
 		"posture:sourceIp": ["ip:publicAddress is set"],
+		"posture:notHome":  ["ip:publicAddress NOT IN ['ipset:home-bell']"],
 	},
 	"grants": [
     {
@@ -239,10 +243,17 @@
 			"ip":  ["*"],
 		},
 		{
-			"src": ["autogroup:member", "tag:k8s", "tag:ci"],
+			"src": ["rajsinghtech@github", "LukeHouge@github", "abtars@gmail.com", "tag:k8s", "tag:ci"],
 			"dst": ["autogroup:internet"],
 			"ip":  ["*"],
 			"via": ["tag:robbinsdale", "tag:ottawa", "tag:stpetersburg", "tag:ci"],
+		},
+		{
+			"src":        ["kbpersonal@github"],
+			"dst":        ["autogroup:internet"],
+			"ip":         ["*"],
+			"via":        ["tag:robbinsdale", "tag:ottawa", "tag:stpetersburg", "tag:ci"],
+			"srcPosture": ["posture:notHome"],
 		},
 		{
 			"src": ["group:superuser", "tag:ottawa", "tag:stpetersburg", "tag:ci"],
@@ -559,6 +570,18 @@
 			"svc:tcp:5432",
 		],
 	},
+		{
+			"src":             "kbpersonal@github",
+			"srcPostureAttrs": {"ip:publicAddress": "76.71.102.41"},
+			"proto":           "tcp",
+			"deny":            ["8.8.8.8:443"],
+		},
+		{
+			"src":             "kbpersonal@github",
+			"srcPostureAttrs": {"ip:publicAddress": "9.9.9.9"},
+			"proto":           "tcp",
+			"accept":          ["8.8.8.8:443"],
+		},
 	],
   "attrConfig": {
     "custom:potato":      {"type": "string", "allowSetByNode": true, "broadcastToPeers": ["*"]},
