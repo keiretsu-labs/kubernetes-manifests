@@ -6,3 +6,4 @@ resources:
   - ./csi-secrets-store.yaml
   - ./headlamp.yaml
   - ./cilium.yaml
+  - ./irqbalance.yaml
