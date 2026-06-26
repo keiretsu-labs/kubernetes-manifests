@@ -90,6 +90,22 @@ spec:
 
 ---
 
+kind: Service
+apiVersion: v1
+metadata:
+  name: agent-sandbox-webhook-service
+  namespace: agent-sandbox-system
+spec:
+  selector:
+    app: agent-sandbox-controller
+  ports:
+  - name: webhook
+    port: 443
+    targetPort: 9443
+    protocol: TCP
+
+---
+
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -119,6 +135,9 @@ spec:
           protocol: TCP
         - name: healthz
           containerPort: 8081
+          protocol: TCP
+        - name: webhook
+          containerPort: 9443
           protocol: TCP
 ---
 ---
@@ -4182,6 +4201,19 @@ rules:
   resources:
   - sandboxes/finalizers
   - sandboxes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apiextensions.k8s.io
+  resourceNames:
+  - sandboxclaims.extensions.agents.x-k8s.io
+  - sandboxes.agents.x-k8s.io
+  - sandboxtemplates.extensions.agents.x-k8s.io
+  - sandboxwarmpools.extensions.agents.x-k8s.io
+  resources:
+  - customresourcedefinitions
   verbs:
   - get
   - patch
