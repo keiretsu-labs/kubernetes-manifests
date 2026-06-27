@@ -26,7 +26,7 @@ jobs:
 
       - uses: docker/setup-buildx-action@v4
 
-      - uses: imjasonh/setup-crane@v0.6
+      - uses: imjasonh/setup-crane@v0.7
 
       - name: Clone garage-webadmin source
         run: git clone --depth=1 https://git.deuxfleurs.fr/Deuxfleurs/garage-webadmin.git /tmp/garage-webadmin
