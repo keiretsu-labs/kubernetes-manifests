@@ -1,0 +1,59 @@
+---
+# CNPG-managed PostgreSQL for Infisical
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: infisical-postgres
+  annotations:
+    cnpg.io/skipEmptyWalArchiveCheck: "enabled"
+spec:
+  instances: 2
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  bootstrap:
+    initdb:
+      database: infisicalDB
+      owner: infisical
+      dataChecksums: true
+      postInitApplicationSQL:
+        - ALTER USER infisical WITH SUPERUSER;
+  monitoring:
+    enablePodMonitor: true
+  storage:
+    size: 10Gi
+    storageClass: ceph-block-replicated
+
+  # Barman Cloud plugin for automated WAL archiving to Garage S3
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: infisical-s3-store
+        serverName: infisical-postgres
+
+  backup:
+    retentionPolicy: "30d"
+  externalClusters:
+    - name: keiretsu
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: infisical-s3-store
+          serverName: infisical-postgres
+
+  # Node maintenance window to keep PVCs on node drains
+  nodeMaintenanceWindow:
+    reusePVC: false
+---
+# Daily scheduled S3 backup
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: infisical-postgres-s3
+spec:
+  schedule: "0 0 23 * * *"  # Daily at 11 PM
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: infisical-postgres

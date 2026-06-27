@@ -53,3 +53,5 @@ spec:
       namespace: tempo
     - kind: GarageBucket
       namespace: tempo
+    - kind: GarageKey
+      namespace: infisical
