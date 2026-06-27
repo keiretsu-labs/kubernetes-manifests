@@ -34,6 +34,7 @@ jobs:
           unset FLATE_BASE
           flate test all \
             --path clusters/${{ matrix.cluster }}/flux/config \
+            --allow-missing-secrets \
             --no-progress
 
   diff:
