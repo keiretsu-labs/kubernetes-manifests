@@ -6,6 +6,7 @@ spec:
   storage:
     secret:
       name: tempo-storage
+      type: s3
   storageSize: 10Gi
   retention:
     global:
