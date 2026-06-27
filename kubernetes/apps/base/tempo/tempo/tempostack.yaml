@@ -6,11 +6,10 @@ spec:
   storage:
     secret:
       name: tempo-storage
-    type: s3
   storageSize: 10Gi
   retention:
     global:
-      traces: 7d
+      traces: 168h
   resources:
     total:
       limits:
@@ -24,9 +23,11 @@ spec:
     queryFrontend:
       jaegerQuery:
         enabled: true
-      replicas: 1
+      component:
+        replicas: 1
     distributor:
-      replicas: 1
+      component:
+        replicas: 1
     ingester:
       replicas: 1
     compactor:
