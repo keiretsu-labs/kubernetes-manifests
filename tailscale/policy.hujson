@@ -35,12 +35,7 @@
 		"tag:aurora":       ["tag:k8s-operator", "tag:infra", "group:superuser", "group:aurora",],
 		"tag:uscentral1":   ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:kind":         ["tag:k8s-operator", "tag:infra", "group:superuser", "group:kind",],
-		"tag:taillet":      ["tag:k8s-operator", "tag:infra", "group:superuser", "group:kind",],
-		"tag:udm":          ["tag:infra", "group:superuser"],
 		"tag:ci":           ["tag:k8s-operator", "tag:infra", "group:superuser",],
-		"tag:bird-ha-test":     ["group:superuser",],
-		"tag:site-a-sr":        ["group:superuser",],
-		"tag:site-b-sr":        ["group:superuser",],
 		"tag:swarm":            ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:tailgrant-worker": ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:ssh-granted":      ["tag:tailgrant-worker", "group:superuser",],
@@ -83,13 +78,6 @@
 			"10.68.0.0/16",
 			"fd7a:115c:a1e0:b1a:0:4::/96",
 		],
-		"ipset:taillet": [
-			"192.168.169.210/31",
-			"192.168.169.212/30",
-			"192.168.169.216/30",
-      "10.244.0.0/16",
-      "10.96.0.0/12",
-		],
 		"ipset:home-public-ips": [
 			"76.71.102.41/32",
 			"73.176.223.238/32",
@@ -98,14 +86,12 @@
 	"autoApprovers": {
 		"exitNode": ["tag:k8s"],
 		"routes": {
-			"0.0.0.0/0":        ["tag:k8s", "tag:taillet"],
+			"0.0.0.0/0":        ["tag:k8s"],
 			"::/0":             ["tag:k8s"],
 			"192.168.50.0/24":  ["tag:robbinsdale"],
 			"192.168.169.0/24": ["tag:ottawa"],
 			"192.168.73.0/24":  ["tag:stpetersburg"],
 			"192.168.68.0/24":  ["tag:aurora"],
-			"10.100.0.0/16":    ["tag:site-a-sr"],
-			"10.200.0.0/16":    ["tag:site-b-sr"],
 		},
 		"services": {
 			"tag:k8s": ["tag:k8s"],
@@ -163,22 +149,6 @@
 		"posture:notHome":  ["ip:publicAddress NOT IN ['ipset:home-public-ips']"],
 	},
 	"grants": [
-    {
-      "src": ["tag:taillet"],
-      "dst": ["tag:taillet"],
-      "ip":  ["*"],
-    },
-    {
-      "src": ["ipset:taillet"],
-      "dst": ["ipset:taillet", "tag:taillet"],
-      "ip":  ["*"],
-    },
-    {
-      "src": ["tag:taillet"],
-      "dst": ["ipset:taillet"],
-      "ip":  ["*"],
-      "via": ["tag:taillet"],
-    },
 		{
 			"src": ["autogroup:member"],
 			"dst": ["autogroup:self"],
@@ -199,12 +169,6 @@
 			"src": ["kbpersonal@github", "tag:kartik"],
 			"dst": ["tag:kartik"],
 			"ip":  ["*"],
-		},
-		{
-			"src": ["group:superuser"],
-			"dst": ["10.200.0.0/16"],
-			"ip":  ["*"],
-			"via": ["tag:site-b-sr"],
 		},
 		{
 			"src": ["group:superuser", "tag:ottawa", "tag:robbinsdale", "tag:stpetersburg"],
