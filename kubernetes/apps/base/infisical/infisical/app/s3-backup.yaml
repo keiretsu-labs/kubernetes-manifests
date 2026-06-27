@@ -1,0 +1,22 @@
+---
+# Barman Cloud ObjectStore — defines S3 destination for CNPG WAL backups
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: infisical-s3-store
+spec:
+  configuration:
+    destinationPath: s3://infisical-postgres/${LOCATION}/
+    endpointURL: http://${COMMON_S3_ENDPOINT}
+    s3Credentials:
+      accessKeyId:
+        name: infisical-s3-backup
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: infisical-s3-backup
+        key: AWS_SECRET_ACCESS_KEY
+  instanceSidecarConfiguration:
+    env:
+      - name: AWS_DEFAULT_REGION
+        value: garage
+  retentionPolicy: "30d"

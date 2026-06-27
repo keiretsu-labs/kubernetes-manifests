@@ -49,3 +49,9 @@ spec:
       namespace: bhaiya
     - kind: GarageKey
       namespace: velero-system
+    - kind: GarageKey
+      namespace: tempo
+    - kind: GarageBucket
+      namespace: tempo
+    - kind: GarageKey
+      namespace: infisical

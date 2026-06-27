@@ -125,3 +125,42 @@ spec:
       read: true
       write: true
       owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: tempo
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: tempo
+  quotas:
+    maxSize: 200Gi
+    maxObjects: 10000000
+  keyPermissions:
+    - keyRef:
+        name: tempo-key
+        namespace: tempo
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: infisical-postgres
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: infisical-postgres
+  quotas:
+    maxSize: 50Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef:
+        name: infisical-postgres-key
+        namespace: infisical
+      read: true
+      write: true
+      owner: true

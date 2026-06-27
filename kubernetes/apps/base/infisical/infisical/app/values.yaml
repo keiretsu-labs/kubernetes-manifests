@@ -1,0 +1,53 @@
+# Infisical Helm values — production configuration for Ottawa cluster
+# External Postgres via CNPG, Redis via Dragonfly, Envoy Gateway for ingress
+nameOverride: ""
+
+infisical:
+  enabled: true
+  name: infisical
+  fullnameOverride: "infisical"
+  replicaCount: 2
+
+  # No built-in postgres — we use CNPG
+  # No built-in redis — we use Dragonfly
+  # No built-in nginx ingress — we use Envoy Gateway HTTPRoutes
+
+  image:
+    repository: infisical/infisical
+    pullPolicy: IfNotPresent
+    imagePullSecrets: []
+
+  kubeSecretRef: "infisical-secrets"
+
+  service:
+    type: ClusterIP
+    annotations: {}
+
+  resources:
+    limits:
+      memory: 1000Mi
+    requests:
+      cpu: 350m
+
+  podAnnotations: {}
+  deploymentAnnotations: {}
+  affinity: {}
+  tolerations: []
+  nodeSelector: {}
+  topologySpreadConstraints: []
+
+postgresql:
+  enabled: false
+  useExistingPostgresSecret:
+    enabled: true
+    existingConnectionStringSecret:
+      name: infisical-postgres-app
+      key: uri
+
+redis:
+  enabled: false
+
+ingress:
+  enabled: false
+  nginx:
+    enabled: false
