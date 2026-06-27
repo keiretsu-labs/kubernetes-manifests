@@ -4,7 +4,6 @@ metadata:
   name: tempo-operator-system-install
   namespace: flux-system
 spec:
-  targetNamespace: tempo-operator-system
   commonMetadata:
     labels:
       app.kubernetes.io/name: tempo-operator-system-install
