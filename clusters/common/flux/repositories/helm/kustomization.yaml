@@ -89,3 +89,4 @@ resources:
   - ./vmware-tanzu.yaml
   - ./otwld.yaml
   - ./victoriametrics.yaml
+  - ./infisical.yaml
