@@ -37,7 +37,7 @@ jobs:
       - name: Compute tags
         id: tags
         run: |
-          SHA=$(echo "$GITHUB_SHA" | cut -c1:7)
+          SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
           echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Build amd64
