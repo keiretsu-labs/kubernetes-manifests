@@ -7,6 +7,7 @@ spec:
     secret:
       name: tempo-storage
       type: s3
+      credentialMode: static
   storageSize: 10Gi
   retention:
     global:
@@ -16,10 +17,6 @@ spec:
       limits:
         memory: 4Gi
         cpu: 2000m
-  observability:
-    metrics:
-      createServiceMonitors: true
-      createPrometheusRules: true
   template:
     queryFrontend:
       jaegerQuery:
