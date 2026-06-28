@@ -749,8 +749,18 @@ postBuild:
 **Gateway/HTTPRoute gotchas:**
 - Check what hostnames the target gateway accepts before creating an HTTPRoute: `kubectl get gateway <name> -n home -o jsonpath='{.spec.listeners[*].hostname}'`
 - Common gateways (`ts`, `private`, `public`) are in the `home` namespace and accept `*.${CLUSTER_DOMAIN}` (e.g. `*.killinit.cc` for Ottawa)
-- `${COMMON_DOMAIN}` (rajsingh.info) is NOT routable through cluster gateways — use `${CLUSTER_DOMAIN}` for HTTPRoutes
+- The `private` gateway now also accepts `*.${COMMON_DOMAIN}` (e.g. `*.keiretsu.top`) — but the `public` gateway is the one with the full set of `*.keiretsu.top` listeners
+- `${COMMON_DOMAIN}` (keiretsu.top) IS routable through the `public` and `private` gateways (has `*.keiretsu.top` listeners with the `wildcard-keiretsu-top` TLS secret)
 - If HTTPRoute shows `NoMatchingListenerHostname` in status, the hostname doesn't match any gateway listener
+
+**DNS gotchas — CRITICAL:**
+- `${CLUSTER_DOMAIN}` hostnames (e.g. `*.killinit.cc`) get DNS automatically via external-dns watching HTTPRoutes/Gateway annotations
+- `${COMMON_DOMAIN}` hostnames (e.g. `*.keiretsu.top`) do NOT get DNS automatically. The `keiretsu.top` external-dns only sources from DNSEndpoint CRDs with label `dns-target=cloudflare` — it does NOT watch HTTPRoutes
+- **When adding an HTTPRoute with a `${COMMON_DOMAIN}` hostname, you MUST also add a CNAME entry** in `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml`:
+  - For Ottawa-only apps: target `"ottawa.${COMMON_DOMAIN}"` with `cloudflare-proxied: "false"`
+  - For multi-cluster/k8gb apps: target `"<name>.cdn.${COMMON_DOMAIN}"` with `cloudflare-proxied: "false"`
+  - Wildcard CNAMEs go in the separate `keiretsu-top-wildcards` DNSEndpoint in the same file
+- Without the CNAME, the HTTPRoute will show Accepted=True but DNS won't resolve and the app will be unreachable
 
 **kubectl contexts:**
 - Ottawa: `kubernetes-ottawa.keiretsu.ts.net`
