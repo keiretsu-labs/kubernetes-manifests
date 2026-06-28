@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="${0:a:h}"
-REGISTRY="oci.cdn.keiretsu.top"
+REGISTRY="ghcr.io/keiretsu-labs/kubernetes-manifests"
 IMAGE="garage-webadmin"
 BUILD_DIR="/tmp/garage-webadmin-build"
 TAR_FILE="/tmp/garage-webadmin-amd64.tar"
@@ -58,7 +58,7 @@ skopeo copy \
   "docker://$REGISTRY/garage-webadmin-sidecar:latest"
 
 echo "==> Restarting deployment..."
-kubectl --context admin@k8s.killinit.internal rollout restart deployment/garage-webui -n garage
-kubectl --context admin@k8s.killinit.internal rollout status deployment/garage-webui -n garage
+kubectl --context admin@kubernetes-ottawa.keiretsu.ts.net rollout restart deployment/garage-webui -n garage
+kubectl --context admin@kubernetes-ottawa.keiretsu.ts.net rollout status deployment/garage-webui -n garage
 
 echo "==> Done. https://garage.killinit.cc/"

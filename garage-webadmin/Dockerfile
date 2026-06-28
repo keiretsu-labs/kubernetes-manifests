@@ -2,11 +2,12 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+RUN npm install @phosphor-icons/vue@^2.2.0
 COPY . .
 COPY overlay/src/auto-login.ts src/auto-login.ts
 COPY overlay/src/pages/ src/pages/
 RUN sed -i '/import "\.\/polyfills\.js"/a import ".\/auto-login.ts"' src/main.ts
-RUN npm run build
+RUN npm run build-only
 
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
