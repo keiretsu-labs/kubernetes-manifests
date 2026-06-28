@@ -12,12 +12,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
+  packages: write
 
 env:
-  REGISTRY: oci.killinit.cc
-  IMAGE: swarm/swarm
+  IMAGE: ghcr.io/${{ github.repository }}/swarm
 
 jobs:
   build:
@@ -31,10 +30,12 @@ jobs:
 
       - uses: imjasonh/setup-crane@v0.7
 
-      - name: Login to registry
-        run: |
-          echo "${{ secrets.ZOT_PASSWORD }}" | docker login "${{ env.REGISTRY }}" -u "${{ secrets.ZOT_USERNAME }}" --password-stdin
-          crane auth login "${{ env.REGISTRY }}" -u "${{ secrets.ZOT_USERNAME }}" -p "${{ secrets.ZOT_PASSWORD }}"
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compute tags
         id: tags
@@ -67,12 +68,10 @@ jobs:
       - name: Push per-arch images with skopeo
         run: |
           set -e
-          CREDS="${{ secrets.ZOT_USERNAME }}:${{ secrets.ZOT_PASSWORD }}"
           for ARCH in amd64 arm64; do
             skopeo copy \
               "docker-archive:${ARCH}.tar" \
-              "docker://${{ env.REGISTRY }}/${{ env.IMAGE }}:build-${ARCH}" \
-              --dest-creds "$CREDS"
+              "docker://${{ env.IMAGE }}:build-${ARCH}"
           done
 
       - name: Create and push multi-arch manifest
@@ -80,7 +79,7 @@ jobs:
           set -e
           for TAG in "${{ steps.tags.outputs.sha }}" "latest"; do
             crane index append \
-              --manifest "${{ env.REGISTRY }}/${{ env.IMAGE }}:build-amd64" \
-              --manifest "${{ env.REGISTRY }}/${{ env.IMAGE }}:build-arm64" \
-              --tag "${{ env.REGISTRY }}/${{ env.IMAGE }}:${TAG}"
+              --manifest "${{ env.IMAGE }}:build-amd64" \
+              --manifest "${{ env.IMAGE }}:build-arm64" \
+              --tag "${{ env.IMAGE }}:${TAG}"
           done

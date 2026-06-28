@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: garage-webui
-          image: oci.cdn.${COMMON_DOMAIN}/garage-webadmin:latest
+          image: ghcr.io/keiretsu-labs/kubernetes-manifests/garage-webadmin:latest
           ports:
             - containerPort: 80
               name: http
@@ -36,7 +36,7 @@ spec:
             limits:
               memory: 256Mi
         - name: garage-webadmin-sidecar
-          image: oci.cdn.${COMMON_DOMAIN}/garage-webadmin-sidecar:latest
+          image: ghcr.io/keiretsu-labs/kubernetes-manifests/garage-webadmin-sidecar:latest
           ports:
             - containerPort: 8080
               name: sidecar
