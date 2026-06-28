@@ -18,6 +18,7 @@ spec:
       retries: 3
   upgrade:
     cleanupOnFail: true
+    force: true
     remediation:
       retries: 3
   values:
@@ -40,7 +41,11 @@ spec:
         WOODPECKER_FORGEJO_SECRET: ${WOODPECKER_FORGEJO_SECRET}
         WOODPECKER_LOG_LEVEL: info
         WOODPECKER_DATABASE_DRIVER: postgres
-        WOODPECKER_DATABASE_DATASOURCE: postgres://woodpecker:${WOODPECKER_DB_PASSWORD}@woodpecker-postgres-rw:5432/woodpecker?sslmode=disable
+        WOODPECKER_DATABASE_DATASOURCE:
+          valueFrom:
+            secretKeyRef:
+              name: woodpecker-postgres-app
+              key: uri
       createAgentSecret: true
       service:
         type: ClusterIP
