@@ -122,6 +122,10 @@ spec:
         terminationGracePeriodSeconds: 180
         hostNetwork: true
         hostIPC: true
+        # Give the dying leader time to release GPU VRAM before LWS recreates the
+        # group; otherwise the replacement races the old process and fails the
+        # gpu-memory-utilization free-memory check on startup.
+        terminationGracePeriodSeconds: 60
         nodeSelector: { kubernetes.io/hostname: spark-0 }
         initContainers:
         - name: drop-caches
@@ -258,6 +262,7 @@ spec:
         terminationGracePeriodSeconds: 180
         hostNetwork: true
         hostIPC: true
+        terminationGracePeriodSeconds: 60
         nodeSelector: { kubernetes.io/hostname: spark-1 }
         initContainers:
         - name: drop-caches
