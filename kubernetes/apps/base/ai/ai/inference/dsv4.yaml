@@ -7,15 +7,23 @@
 #                 DSpark speculative decoding heads) across 2× DGX Spark nodes,
 #                 each with a single Jetson Thor Blackwell GPU (120 GiB usable).
 #
-#                 Migrated from MTP to DSpark speculative decoding based on
-#                 tonyd2wild's validated recipe:
-#                 https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-60-tok-s--2x-DGX-Spark
+#                 Upgraded to tonyd2wild's NVFP4 KV cache recipe:
+#                 https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark
 #
-#                 Base image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
-#                 (Rafael Caricio's DSpark vLLM fork, compiled for SM12.1a/GB10)
+#                 Image: NVFP4 Stage C overlay on bjk110's DSpark vLLM fork.
+#                 Built via Kaniko on Spark-0: 3-stage Dockerfile chain adds
+#                 nvfp4_ds_mla dtype plumbing, DSV4 probe, and the validated
+#                 584-byte padded cache envelope (Stage C).
 #
-#                 Benchmark (2x DGX Spark, single-stream): 62.48 tok/s mean,
-#                 0.673 draft acceptance, 3.36 accepted/draft
+#                 Benchmark (2x DGX Spark, single-stream, 1M ctx):
+#                 p256/g64:  54.46 tok/s, 0.667 acceptance, 3.33 accepted/draft
+#                 p256/g256: 65.38 tok/s, 0.718 acceptance, 3.59 accepted/draft
+#                 KV pool:   2,044,166 tokens (14.48 GiB)
+#                 Concurrency at 1M: 1.95x
+#
+#                 Concurrency patch (Keys/drowzeys):
+#                 C16 aggregate: 315.1 tok/s (static), 205.0 tok/s (staggered)
+#                 Repo: drowzeys/Keys-Concurrency-Patch-for-DSpark-DeepSeek-V4-Flash
 #
 # Architecture  : TP=2 across 2 nodes via PyTorch mp backend (no Ray).
 #                 Modeled as a LeaderWorkerSet (kubernetes-sigs/lws): the
@@ -29,12 +37,12 @@
 #                 kubelet memory guard: systemReserved 4Gi, kubeReserved 4Gi,
 #                 evictionHard 6Gi.
 #
-# Profile       : 0.80 util / 262K ctx / 1 seq
-# DSpark        : method="dspark", 5 tokens (replaces MTP with 2)
-# Entrypoint    : /opt/env/bin/vllm serve (new base image, different from
-#                 production-v2 which used /usr/local/bin/dsv4-vllm-entrypoint)
-# NOTE          : B12X kernel (VLLM_USE_B12X_MOE=1) does NOT support
-#                 --enable-expert-parallel; the two are mutually exclusive.
+# Profile       : 0.80 util / 1M ctx / 1 seq (single-stream)
+# KV cache      : nvfp4_ds_mla (NVFP4, replaces fp8)
+# DSpark        : method="dspark", 5 tokens
+# Entrypoint    : /opt/env/bin/vllm serve
+# Concurrency   : Keys patch enables C4-C16 for batch throughput
+# NOTE          : B12X kernel does NOT support --enable-expert-parallel
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -125,7 +133,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
+          image: ghcr.io/keiretsu-labs/vllm-dspark-nvfp4:stage-c-20260629
           command:
           - /bin/bash
           args:
@@ -153,7 +161,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
+          image: ghcr.io/keiretsu-labs/vllm-dspark-nvfp4:stage-c-20260629
           command: [bash, -c]
           args:
           - |
@@ -166,8 +174,8 @@ spec:
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
-              --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 262144 \
+              --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
+              --max-model-len 1048576 \
               --max-num-seqs 1 --max-num-batched-tokens 8192 \
               --gpu-memory-utilization 0.80 \
               --enable-prefix-caching \
@@ -176,6 +184,8 @@ spec:
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
+              --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"\u003cthinking\u003e","reasoning_end_str":"\u003c/thinking\u003e"}' \
+              --default-chat-template-kwargs '{"thinking":true}' \
               --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 25002
           ports:
@@ -207,6 +217,24 @@ spec:
           - { name: HF_HUB_DISABLE_XET, value: "1" }
           - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
           - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
+          # DSpark/B12X runtime tuning (NVFP4 1M profile)
+          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
+          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
+          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
+          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
+          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
+          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
+          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
+          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
+          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
+          - { name: NCCL_NVLS_ENABLE, value: "0" }
           securityContext:
             privileged: true
             capabilities:
@@ -265,7 +293,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
+          image: ghcr.io/keiretsu-labs/vllm-dspark-nvfp4:stage-c-20260629
           command:
           - /bin/bash
           args:
@@ -293,7 +321,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
+          image: ghcr.io/keiretsu-labs/vllm-dspark-nvfp4:stage-c-20260629
           command: [bash, -c]
           args:
           - |
@@ -306,8 +334,8 @@ spec:
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
-              --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 262144 \
+              --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
+              --max-model-len 1048576 \
               --max-num-seqs 1 --max-num-batched-tokens 8192 \
               --gpu-memory-utilization 0.80 \
               --enable-prefix-caching \
@@ -316,6 +344,8 @@ spec:
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
+              --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"<thinking>","reasoning_end_str":"</thinking>"}' \
+              --default-chat-template-kwargs '{"thinking":true}' \
               --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 25002 \
               --headless
@@ -347,6 +377,24 @@ spec:
           - { name: HF_HUB_DISABLE_XET, value: "1" }
           - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
           - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
+          # DSpark/B12X runtime tuning (NVFP4 1M profile)
+          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
+          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
+          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
+          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
+          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
+          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
+          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
+          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
+          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
+          - { name: NCCL_NVLS_ENABLE, value: "0" }
           securityContext:
             privileged: true
             capabilities:
