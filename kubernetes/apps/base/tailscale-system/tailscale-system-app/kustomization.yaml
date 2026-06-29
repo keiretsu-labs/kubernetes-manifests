@@ -6,7 +6,7 @@ resources:
   - ./rbac.yaml
   - ./peer-relay
   - ./testing
-  - ./ds
+  # - ./ds
   - ./tsddns
   - ./derp-client
   - ./log-streaming
