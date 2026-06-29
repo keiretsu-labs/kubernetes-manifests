@@ -39,6 +39,7 @@ spec:
     configuration:
       clientQPS: 100
       clientBurst: 200
+      podVolumeOperationTimeout: 720m
       backupStorageLocation:
         - name: garage
           provider: aws
