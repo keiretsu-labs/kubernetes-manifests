@@ -4,6 +4,6 @@ kind: Kustomization
 namespace: external-secrets
 resources:
   - ./cluster-secret-stores.yaml
-  - ./cluster-secret-store-infisical.yaml
+  # - ./cluster-secret-store-infisical.yaml
   - ./rbac.yaml
   - ./remote-tokens-secret.yaml
