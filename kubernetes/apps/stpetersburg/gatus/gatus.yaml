@@ -9,7 +9,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/base/gatus/gatus-sidecar-stpete/app
+  path: ./kubernetes/apps/base/gatus/gatus/app
   prune: true
   sourceRef:
     kind: GitRepository
