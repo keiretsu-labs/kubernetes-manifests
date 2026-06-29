@@ -22,13 +22,6 @@ data:
         - name: "GitOps Repository"
           link: "https://github.com/keiretsu-labs/kubernetes-manifests"
 
-    storage:
-      type: postgres
-      config:
-        address: postgres://gatus-postgres.gatus:5432
-        user: gatus
-        password: "${gatus-pg-password}"
-
     # Static endpoints — everything else is auto-discovered by the sidecar via HTTPRoutes
     endpoints:
       # === External ═══════════════════════════
