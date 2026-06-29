@@ -1,6 +1,8 @@
 # Kubernetes Manifests Repository - Claude Knowledge Base
 instead of applying helm or kustomize or yamls use gitops fluxcd
-YOU HAVE ACCESS TO POD AND SERVICE IP'S LCOALLY
+YOU HAVE ACCESS TO POD AND SERVICE IP'S LOCALLY
+
+**kubeconfig:** `/workspace/kubernetes-manifests/.kube/config` is a working kubeconfig for all three clusters (ottawa, robbinsdale, stpetersburg). Use `KUBECONFIG=/workspace/kubernetes-manifests/.kube/config kubectl` to interact with the live clusters over Tailscale. Always check this file before assuming no cluster access.
 
 ## Repository Overview
 
