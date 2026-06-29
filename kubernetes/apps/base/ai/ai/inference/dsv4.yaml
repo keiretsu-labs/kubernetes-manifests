@@ -7,23 +7,17 @@
 #                 DSpark speculative decoding heads) across 2× DGX Spark nodes,
 #                 each with a single Jetson Thor Blackwell GPU (120 GiB usable).
 #
-#                 Upgraded to tonyd2wild's NVFP4 KV cache recipe:
+#                 Based on tonyd2wild's DSpark recipe:
 #                 https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark
 #
-#                 Image: NVFP4 Stage C overlay on bjk110's DSpark vLLM fork.
-#                 Built via Kaniko on Spark-0: 3-stage Dockerfile chain adds
-#                 nvfp4_ds_mla dtype plumbing, DSV4 probe, and the validated
-#                 584-byte padded cache envelope (Stage C).
+#                 Image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
+#                 (Rafael Caricio's DSpark vLLM fork, compiled for SM12.1a/GB10)
+#                 fp8 KV cache (NVFP4 requires image overlay build)
+#                 DSpark 5-token speculative decoding replaces MTP
 #
-#                 Benchmark (2x DGX Spark, single-stream, 1M ctx):
+#                 Benchmark (2x DGX Spark, single-stream): 54-65 tok/s mean
 #                 p256/g64:  54.46 tok/s, 0.667 acceptance, 3.33 accepted/draft
 #                 p256/g256: 65.38 tok/s, 0.718 acceptance, 3.59 accepted/draft
-#                 KV pool:   2,044,166 tokens (14.48 GiB)
-#                 Concurrency at 1M: 1.95x
-#
-#                 Concurrency patch (Keys/drowzeys):
-#                 C16 aggregate: 315.1 tok/s (static), 205.0 tok/s (staggered)
-#                 Repo: drowzeys/Keys-Concurrency-Patch-for-DSpark-DeepSeek-V4-Flash
 #
 # Architecture  : TP=2 across 2 nodes via PyTorch mp backend (no Ray).
 #                 Modeled as a LeaderWorkerSet (kubernetes-sigs/lws): the
@@ -37,11 +31,10 @@
 #                 kubelet memory guard: systemReserved 4Gi, kubeReserved 4Gi,
 #                 evictionHard 6Gi.
 #
-# Profile       : 0.80 util / 1M ctx / 1 seq (single-stream)
-# KV cache      : nvfp4_ds_mla (NVFP4, replaces fp8)
+# Profile       : 0.76 util / 1M ctx / 1 seq (single-stream)
+# KV cache      : fp8
 # DSpark        : method="dspark", 5 tokens
 # Entrypoint    : /opt/env/bin/vllm serve
-# Concurrency   : Keys patch enables C4-C16 for batch throughput
 # NOTE          : B12X kernel does NOT support --enable-expert-parallel
 ---
 apiVersion: v1
@@ -133,7 +126,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/keiretsu-labs/vllm-dspark-nvfp4:stage-c-20260629
+          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
           command:
           - /bin/bash
           args:
@@ -161,7 +154,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/keiretsu-labs/vllm-dspark-nvfp4:stage-c-20260629
+          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
           command: [bash, -c]
           args:
           - |
@@ -174,10 +167,10 @@ spec:
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
-              --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 1048576 \
+              --kv-cache-dtype fp8 --block-size 256 \
+              --max-model-len 1000000 \
               --max-num-seqs 1 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.80 \
+              --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --speculative-config '{"method":"dspark","num_speculative_tokens":5}' \
@@ -293,7 +286,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/keiretsu-labs/vllm-dspark-nvfp4:stage-c-20260629
+          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
           command:
           - /bin/bash
           args:
@@ -321,7 +314,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/keiretsu-labs/vllm-dspark-nvfp4:stage-c-20260629
+          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
           command: [bash, -c]
           args:
           - |
@@ -334,10 +327,10 @@ spec:
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
-              --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 1048576 \
+              --kv-cache-dtype fp8 --block-size 256 \
+              --max-model-len 1000000 \
               --max-num-seqs 1 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.80 \
+              --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --speculative-config '{"method":"dspark","num_speculative_tokens":5}' \
