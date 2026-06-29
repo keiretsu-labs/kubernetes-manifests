@@ -7,51 +7,34 @@
 #                 DSpark speculative decoding heads) across 2× DGX Spark nodes,
 #                 each with a single Jetson Thor Blackwell GPU (120 GiB usable).
 #
-#                 Migrated from MTP speculative decoding to DSpark (NVIDIA's
-#                 Draft-Spark speculative decoding) based on tonyd2wild's
-#                 validated recipe achieving 62.48 tok/s mean throughput
-#                 (66.78/62.36/58.30 across 3 runs), 0.673 draft acceptance,
-#                 3.36 accepted tokens per draft.
+#                 Migrated from MTP to DSpark speculative decoding based on
+#                 tonyd2wild's validated recipe:
+#                 https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-60-tok-s--2x-DGX-Spark
 #
-# Recipe        : github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-60-tok-s--2x-DGX-Spark
-# Base image    : ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready (Rafael Caricio's
-#                 DSpark vLLM fork + bjk110 build for SM12.1a/GB10)
-# Overlay       : Tony DeAngelo's validated DSpark overlay patches (vendored at
-#                 dspark-overlay/ in this repo)
+#                 Base image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
+#                 (Rafael Caricio's DSpark vLLM fork, compiled for SM12.1a/GB10)
+#
+#                 Benchmark (2x DGX Spark, single-stream): 62.48 tok/s mean,
+#                 0.673 draft acceptance, 3.36 accepted/draft
 #
 # Architecture  : TP=2 across 2 nodes via PyTorch mp backend (no Ray).
-#                 Each pod gets a single GPU; NCCL-RoCEv2 over CX-7 for
-#                 the cross-node tensor-parallel shard.
-#
 #                 Modeled as a LeaderWorkerSet (kubernetes-sigs/lws): the
 #                 leader (rank 0, API server) and worker (rank 1, headless)
 #                 form one gang-scheduled group with
-#                 restartPolicy=RecreateGroupOnPodRestart — so a crash of
-#                 either rank recreates BOTH pods together and the NCCL
-#                 rendezvous always re-forms cleanly.
-#                 startupPolicy=LeaderCreated: the worker must come up
-#                 alongside the leader, since rank 0 blocks at distributed
-#                 init waiting for rank 1.
+#                 restartPolicy=RecreateGroupOnPodRestart.
+#                 startupPolicy=LeaderCreated.
 #
-# Memory guard  : Control-plane shares the GPU node (spark-0). Without
-#                 drop-caches, the OS page cache from weight load pushes
-#                 kubelet past the evictionThreshold. Init + sidecar
-#                 echo 3 > /proc/sys/vm/drop_caches pre- and during weight
-#                 load to keep host memory under the evictionHard (6 GiB)
-#                 thresholds.
+# Memory guard  : Control-plane shares spark-0. Drop-caches init + sidecar
+#                 for control-plane OOM prevention. Guaranteed QoS 93Gi.
 #                 kubelet memory guard: systemReserved 4Gi, kubeReserved 4Gi,
 #                 evictionHard 6Gi.
-#                 Guaranteed QoS at 93Gi (request==limit).
 #
-#   DSpark profile: 0.80 util / 262K ctx / 1 seq — validated by tonyd2wild
-#   GPU reset at startup. NCCL tuning: CROSS_NIC=1, CUMEM_ENABLE=0,
-#   IGNORE_CPU_AFFINITY=1 over RoCE via ConnectX-7.
-#   DSpark-specific: VLLM_USE_B12X_WO_PROJECTION=1, VLLM_TRITON_MLA_SPARSE=1,
-#   VLLM_DSPARK_LOCAL_ARGMAX=1, VLLM_DSPARK_CONFIDENCE_SCHEDULER=off
-#   terminationGracePeriodSeconds=180
-#   NOTE: B12X kernel (VLLM_USE_B12X_MOE=1) does NOT support
-#   --enable-expert-parallel; the two are mutually exclusive.
-#   DSpark speculative decoding (method "dspark", 5 tokens) replaces MTP.
+# Profile       : 0.80 util / 262K ctx / 1 seq
+# DSpark        : method="dspark", 5 tokens (replaces MTP with 2)
+# Entrypoint    : /opt/env/bin/vllm serve (new base image, different from
+#                 production-v2 which used /usr/local/bin/dsv4-vllm-entrypoint)
+# NOTE          : B12X kernel (VLLM_USE_B12X_MOE=1) does NOT support
+#                 --enable-expert-parallel; the two are mutually exclusive.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -119,11 +102,11 @@ metadata:
   namespace: ai
   labels: { app: dsv4 }
 spec:
-  replicas: 1                    # one TP=2 group
-  startupPolicy: LeaderCreated   # worker starts alongside leader (rank 0 blocks on rank 1 at init)
+  replicas: 1
+  startupPolicy: LeaderCreated
   leaderWorkerTemplate:
-    size: 2                       # 1 leader (rank 0) + 1 worker (rank 1)
-    restartPolicy: RecreateGroupOnPodRestart   # crash of either rank recreates the whole group
+    size: 2
+    restartPolicy: RecreateGroupOnPodRestart
     # ---------- LEADER (rank 0 / API server) ----------
     leaderTemplate:
       metadata:
@@ -142,7 +125,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:dspark
+          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
           command:
           - /bin/bash
           args:
@@ -154,6 +137,7 @@ spec:
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "0" }
           - { name: TRANSFORMERS_OFFLINE, value: "0" }
+          - { name: HF_HUB_DISABLE_XET, value: "1" }
           volumeMounts:
           - { name: models, mountPath: /models }
           - { name: download-script, mountPath: /scripts }
@@ -169,18 +153,13 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:dspark
+          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
           command: [bash, -c]
           args:
           - |
-            # Drop page cache immediately before weight load (belt + suspenders
-            # with the drop-caches init container above).
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             export PATH="/opt/env/bin:/opt/env/nvvm/bin:/opt/env/targets/sbsa-linux/nvvm/bin:${PATH:-}"
-            export CUDA_HOME="${CUDA_HOME:-/opt/env/targets/sbsa-linux}"
-            export CUDA_PATH="${CUDA_PATH:-${CUDA_HOME}}"
-            export CUDAToolkit_ROOT="${CUDAToolkit_ROOT:-${CUDA_HOME}}"
             export LD_LIBRARY_PATH="/opt/env/lib:/opt/env/targets/sbsa-linux/lib:${LD_LIBRARY_PATH:-}"
             exec /opt/env/bin/vllm serve /models/dsv4 \
               --served-model-name deepseek-v4-flash-dspark DeepSeek-V4-Flash-DSpark \
@@ -197,8 +176,6 @@ spec:
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
-              --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"<think>","reasoning_end_str":"</think>"}' \
-              --default-chat-template-kwargs '{"thinking":true}' \
               --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 25002
           ports:
@@ -207,32 +184,11 @@ spec:
           - { name: NODE_RANK, value: "0" }
           - { name: VLLM_HOST_IP, value: "192.168.74.1" }
           - { name: MASTER_ADDR, value: "192.168.74.1" }
-          - { name: MASTER_PORT, value: "25002" }
-          # DSpark / B12X MoE
           - { name: VLLM_USE_B12X_MOE, value: "1" }
-          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
-          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
-          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
-          - { name: B12X_W4A16_TC_DECODE, value: "0" }
-          # DSpark speculative decoding tuning
-          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
-          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
-          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
-          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
-          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
-          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
-          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
-          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
-          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
-          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
-          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
-          # Runtime optimizations
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: VLLM_TRITON_MLA_SPARSE, value: "1" }
-          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
-          - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
-          # NCCL / RDMA
+          - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: NCCL_IB_HCA, value: "mlx5_1" }
@@ -244,21 +200,13 @@ spec:
           - { name: NCCL_CROSS_NIC, value: "1" }
           - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
           - { name: NCCL_CUMEM_ENABLE, value: "0" }
-          - { name: NCCL_NVLS_ENABLE, value: "0" }
-          # CUDA / compiler
-          - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-          - { name: TORCH_CUDA_ARCH_LIST, value: "12.1a" }
-          - { name: FLASHINFER_CUDA_ARCH_LIST, value: "12.1a" }
-          - { name: FLASHINFER_DISABLE_VERSION_CHECK, value: "1" }
-          - { name: TILELANG_CLEANUP_TEMP_FILES, value: "1" }
-          # HuggingFace / model
           - { name: VLLM_PORT, value: "25001" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "1" }
-          - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: HF_HUB_DISABLE_XET, value: "1" }
           - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
+          - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
           securityContext:
             privileged: true
             capabilities:
@@ -317,7 +265,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:dspark
+          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
           command:
           - /bin/bash
           args:
@@ -329,6 +277,7 @@ spec:
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "0" }
           - { name: TRANSFORMERS_OFFLINE, value: "0" }
+          - { name: HF_HUB_DISABLE_XET, value: "1" }
           volumeMounts:
           - { name: models, mountPath: /models }
           - { name: download-script, mountPath: /scripts }
@@ -344,16 +293,13 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:dspark
+          image: ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready
           command: [bash, -c]
           args:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             export PATH="/opt/env/bin:/opt/env/nvvm/bin:/opt/env/targets/sbsa-linux/nvvm/bin:${PATH:-}"
-            export CUDA_HOME="${CUDA_HOME:-/opt/env/targets/sbsa-linux}"
-            export CUDA_PATH="${CUDA_PATH:-${CUDA_HOME}}"
-            export CUDAToolkit_ROOT="${CUDAToolkit_ROOT:-${CUDA_HOME}}"
             export LD_LIBRARY_PATH="/opt/env/lib:/opt/env/targets/sbsa-linux/lib:${LD_LIBRARY_PATH:-}"
             exec /opt/env/bin/vllm serve /models/dsv4 \
               --served-model-name deepseek-v4-flash-dspark DeepSeek-V4-Flash-DSpark \
@@ -370,8 +316,6 @@ spec:
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
-              --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"<think>","reasoning_end_str":"</think>"}' \
-              --default-chat-template-kwargs '{"thinking":true}' \
               --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 25002 \
               --headless
@@ -379,33 +323,12 @@ spec:
           - { name: NODE_RANK, value: "1" }
           - { name: VLLM_HOST_IP, value: "192.168.74.2" }
           - { name: MASTER_ADDR, value: "192.168.74.1" }
-          - { name: MASTER_PORT, value: "25002" }
           - { name: HEADLESS, value: "1" }
-          # DSpark / B12X MoE
           - { name: VLLM_USE_B12X_MOE, value: "1" }
-          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
-          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
-          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
-          - { name: B12X_W4A16_TC_DECODE, value: "0" }
-          # DSpark speculative decoding tuning
-          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
-          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
-          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
-          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
-          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
-          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
-          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
-          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
-          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
-          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
-          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
-          # Runtime optimizations
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: VLLM_TRITON_MLA_SPARSE, value: "1" }
-          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
-          - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
-          # NCCL / RDMA
+          - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: NCCL_IB_HCA, value: "mlx5_1" }
@@ -417,21 +340,13 @@ spec:
           - { name: NCCL_CROSS_NIC, value: "1" }
           - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
           - { name: NCCL_CUMEM_ENABLE, value: "0" }
-          - { name: NCCL_NVLS_ENABLE, value: "0" }
-          # CUDA / compiler
-          - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-          - { name: TORCH_CUDA_ARCH_LIST, value: "12.1a" }
-          - { name: FLASHINFER_CUDA_ARCH_LIST, value: "12.1a" }
-          - { name: FLASHINFER_DISABLE_VERSION_CHECK, value: "1" }
-          - { name: TILELANG_CLEANUP_TEMP_FILES, value: "1" }
-          # HuggingFace / model
           - { name: VLLM_PORT, value: "25001" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "1" }
-          - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: HF_HUB_DISABLE_XET, value: "1" }
           - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
+          - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
           securityContext:
             privileged: true
             capabilities:
