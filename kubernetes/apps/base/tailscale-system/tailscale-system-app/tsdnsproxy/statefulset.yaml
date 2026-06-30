@@ -1,0 +1,84 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tsdnsproxy
+spec:
+  replicas: 1
+  serviceName: tsdnsproxy
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: tsdnsproxy
+  template:
+    metadata:
+      labels:
+        app: tsdnsproxy
+    spec:
+      serviceAccountName: "tailscale"
+      containers:
+      - name: tsdnsproxy
+        image: ghcr.io/rajsinghtech/tsdnsproxy:latest
+        imagePullPolicy: Always
+        ports:
+        - name: dns-udp
+          containerPort: 53
+          protocol: UDP
+        - name: dns-tcp
+          containerPort: 53
+          protocol: TCP
+        - name: health
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: TSDNSPROXY_HOSTNAME
+          value: "$(POD_NAME)"
+        - name: TSDNSPROXY_VERBOSE
+          value: "true"
+        - name: TSDNSPROXY_LISTEN_ADDRS
+          value: "tailscale,svc:tsdnsproxy"
+        - name: TSDNSPROXY_ADVERTISE_TAGS
+          value: "tag:k8s,tag:${LOCATION}"
+        - name: TSDNSPROXY_ACCEPT_ROUTES
+          value: "true"
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: ts-oauth
+              key: TS_AUTHKEY
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: health
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: health
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE

@@ -10,3 +10,4 @@ resources:
   - ./tsddns
   - ./derp-client
   - ./log-streaming
+  - ./tsdnsproxy
