@@ -13,6 +13,10 @@
 # tailnet, so member pods (matched by the label below) reach ALL clusters'
 # LAN/pod/service/LB ranges subject to those grants. The canary probe in
 # probe.yaml is labelled with the local ${LOCATION} and exercises the path.
+#
+# dns.enabled: true makes the operator's webhook inject MagicDNS into matched
+# member pods (resolv.conf -> gateway's 100.100.100.100 + cluster DNS for
+# cluster.local), so they can resolve *.ts.net names directly.
 apiVersion: tailscale.rajsingh.info/v1alpha1
 kind: EgressGroup
 metadata:
@@ -26,3 +30,5 @@ spec:
     - "tag:k8s"
     - "tag:${LOCATION}"
   acceptRoutes: true
+  dns:
+    enabled: true
