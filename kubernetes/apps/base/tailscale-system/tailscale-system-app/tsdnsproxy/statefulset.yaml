@@ -20,7 +20,7 @@ spec:
       serviceAccountName: "tailscale"
       containers:
       - name: tsdnsproxy
-        image: ghcr.io/rajsinghtech/tsdnsproxy:latest
+        image: ghcr.io/rajsinghtech/tsdnsproxy:v1.1.2
         imagePullPolicy: Always
         ports:
         - name: dns-udp
@@ -51,7 +51,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: ts-oauth
-              key: TS_AUTHKEY
+              key: TS_AUTHKEY_EPHEMERAL
         resources:
           requests:
             memory: "128Mi"
