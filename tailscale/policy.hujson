@@ -383,6 +383,11 @@
 			},
 		},
 		{
+			"src": ["tag:k8s"],
+			"dst": ["svc:robbinsdale-coredns", "svc:ottawa-coredns", "svc:stpetersburg-coredns"],
+			"ip":  ["53"],
+		},
+		{
 			"src": ["tag:swarm"],
 			"dst": ["tag:k8s-operator", "tag:k8s"],
 			"ip":  ["*"],
