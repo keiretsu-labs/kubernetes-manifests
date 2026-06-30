@@ -1,4 +1,7 @@
 {
+    "k8s": [
+      "svc:tsdnsproxy"
+    ],
     "ts.keiretsu.top": [
       "svc:ottawa-k8gb-coredns"
     ],
