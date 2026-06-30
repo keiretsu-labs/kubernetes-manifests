@@ -262,7 +262,7 @@
     },
 		{
 			"src": ["group:superuser",],
-			"dst": ["tag:k8s-operator", "tag:k8s"],
+			"dst": ["tag:k8s-operator", "tag:k8s", "svc:tsdnsproxy"],
 			"ip":  ["*"],
 			"app": {
 				"tailscale.com/cap/relay": [],
@@ -291,17 +291,17 @@
 				"rajsingh.info/cap/tsdnsproxy": [
 					{
 						"robbinsdale.k8s": {
-							"dns":     ["robbinsdale.keiretsu.ts.net"],
+							"dns":     ["10.0.0.10:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"ottawa.k8s": {
-							"dns":     ["ottawa-coredns.keiretsu.ts.net"],
+							"dns":     ["10.2.0.10:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"stpetersburg.k8s": {
-							"dns":     ["stpetersburg-coredns.keiretsu.ts.net"],
+							"dns":     ["10.4.0.10:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						}
@@ -311,7 +311,7 @@
 		},
 		{
 			"src": ["tag:k8s"],
-			"dst": ["tag:k8s-operator", "tag:k8s"],
+			"dst": ["tag:k8s-operator", "tag:k8s", "svc:tsdnsproxy"],
 			"ip":  ["*"],
 			"app": {
 				"tailscale.com/cap/relay": [],
@@ -328,6 +328,8 @@
 						"impersonate": {
 							"groups": ["system:masters"],
 						},
+						"recorder":        ["tag:k8s-recorder"],
+						"enforceRecorder": true,
 					},
 				],
 				"tailscale.com/cap/tsidp": [
@@ -338,17 +340,17 @@
 				"rajsingh.info/cap/tsdnsproxy": [
 					{
 						"robbinsdale.k8s": {
-							"dns":     ["robbinsdale-coredns.keiretsu.ts.net"],
+							"dns":     ["10.0.0.10:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"ottawa.k8s": {
-							"dns":     ["ottawa-coredns.keiretsu.ts.net"],
+							"dns":     ["10.2.0.10:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"stpetersburg.k8s": {
-							"dns":     ["stpetersburg-coredns.keiretsu.ts.net"],
+							"dns":     ["10.4.0.10:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						}
