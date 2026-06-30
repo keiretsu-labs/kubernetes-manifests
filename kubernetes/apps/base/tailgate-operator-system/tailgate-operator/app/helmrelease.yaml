@@ -33,9 +33,10 @@ spec:
       secretName: tailgate-tailnet-creds
     agent:
       enabled: true
-      # robbinsdale pod CIDR,service CIDR — kept on the primary CNI for exit-node
-      # members so kube-dns / the API server never blackhole through the tunnel.
-      clusterCIDRs: "10.1.0.0/16,10.0.0.0/16"
+      # Local pod + service CIDRs (substituted per-cluster from cluster-settings).
+      # Kept on the primary CNI for exit-node members so kube-dns / the API server
+      # never blackhole through the tunnel.
+      clusterCIDRs: "${CLUSTER_POD_CIDR},${CLUSTER_SERVICE_CIDR}"
       image:
         tag: v0.0.4
     operator:

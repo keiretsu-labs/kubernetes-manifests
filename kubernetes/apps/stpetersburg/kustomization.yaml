@@ -39,6 +39,7 @@ resources:
   - ./k8gb
   - ./node-feature-discovery
   - ./tailscale-examples
+  - ./tailgate-operator-system
   - ./tailscale-system
   - ./tailscale
   - ./local-path-storage
