@@ -291,17 +291,17 @@
 				"rajsingh.info/cap/tsdnsproxy": [
 					{
 						"robbinsdale.k8s": {
-							"dns":     ["robbinsdale-sidecar-coredns-0.keiretsu.ts.net:53"],
+							"dns":     ["robbinsdale-sidecar-coredns-0:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"ottawa.k8s": {
-							"dns":     ["ottawa-sidecar-coredns-0.keiretsu.ts.net:53"],
+							"dns":     ["ottawa-sidecar-coredns-0:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"stpetersburg.k8s": {
-							"dns":     ["stpetersburg-sidecar-coredns-0.keiretsu.ts.net:53"],
+							"dns":     ["stpetersburg-sidecar-coredns-0:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						}
@@ -338,17 +338,17 @@
 				"rajsingh.info/cap/tsdnsproxy": [
 					{
 						"robbinsdale.k8s": {
-							"dns":     ["robbinsdale-sidecar-coredns-0.keiretsu.ts.net:53"],
+							"dns":     ["robbinsdale-sidecar-coredns-0:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"ottawa.k8s": {
-							"dns":     ["ottawa-sidecar-coredns-0.keiretsu.ts.net:53"],
+							"dns":     ["ottawa-sidecar-coredns-0:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"stpetersburg.k8s": {
-							"dns":     ["stpetersburg-sidecar-coredns-0.keiretsu.ts.net:53"],
+							"dns":     ["stpetersburg-sidecar-coredns-0:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						}
@@ -364,17 +364,17 @@
 				"rajsingh.info/cap/tsdnsproxy": [
 					{
 						"robbinsdale.k8s": {
-							"dns":     ["robbinsdale-sidecar-coredns-0.keiretsu.ts.net:53"],
+							"dns":     ["robbinsdale-sidecar-coredns-0:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"ottawa.k8s": {
-							"dns":     ["ottawa-sidecar-coredns-0.keiretsu.ts.net:53"],
+							"dns":     ["ottawa-sidecar-coredns-0:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						},
 						"stpetersburg.k8s": {
-							"dns":     ["stpetersburg-sidecar-coredns-0.keiretsu.ts.net:53"],
+							"dns":     ["stpetersburg-sidecar-coredns-0:53"],
 							"rewrite": "svc.cluster.local",
 							"translateid": -1
 						}
