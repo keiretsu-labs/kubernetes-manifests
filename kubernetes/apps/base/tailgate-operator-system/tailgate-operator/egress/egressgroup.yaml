@@ -1,22 +1,28 @@
 ---
-# Canary group (cluster-scoped). The operator stands up one shared gateway tagged
-# tag:k8s + tag:robbinsdale (both owned by tag:k8s-operator in tailscale/policy.hujson).
-# Cross-site test: members reach the ottawa LAN (192.168.169.0/24) through the gateway —
-# policy grants tag:robbinsdale -> ipset:ottawa via tag:ottawa, and the ottawa subnet
-# router advertises 192.168.169.0/24 (autoApprover). Ping 192.168.169.1 (ottawa router)
-# from a selected pod to confirm the full path.
+# One EgressGroup per cluster. The gateway is a Tailscale CLIENT tagged
+# tag:k8s + tag:${LOCATION}; it never advertises routes (it dials, not serves).
+#
+# Cross-cluster reach is granted by the tailnet policy (tailscale/policy.hujson)
+# — for every location pair, a grant allows the peer location's tag to reach the
+# local ipset (LAN + pod + service + LB CIDRs) via the local subnet router, e.g.:
+#
+#   { src: ["group:superuser","tag:robbinsdale","tag:stpetersburg","tag:ci"],
+#     dst: ["ipset:ottawa"], via: ["tag:ottawa"] }
+#
+# acceptRoutes: true makes each gateway install every route advertised on the
+# tailnet, so member pods (matched by the label below) reach ALL clusters'
+# LAN/pod/service/LB ranges subject to those grants. The canary probe in
+# probe.yaml is labelled with the local ${LOCATION} and exercises the path.
 apiVersion: tailscale.rajsingh.info/v1alpha1
 kind: EgressGroup
 metadata:
-  name: robbinsdale-egress
+  name: ${LOCATION}-egress
 spec:
   selector:
     podSelector:
       matchLabels:
-        tailgate.rajsingh.info/egress: robbinsdale
+        tailgate.rajsingh.info/egress: ${LOCATION}
   tags:
     - "tag:k8s"
-    - "tag:robbinsdale"
-  routes:
-    - 192.168.169.0/24    # ottawa LAN (advertised by tag:ottawa subnet router)
-  acceptRoutes: true      # gateway accepts the ottawa advertised route (default)
+    - "tag:${LOCATION}"
+  acceptRoutes: true

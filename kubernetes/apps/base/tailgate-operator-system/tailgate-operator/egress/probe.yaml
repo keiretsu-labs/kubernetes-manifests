@@ -1,8 +1,12 @@
 ---
-# Connectivity probe for the canary: a busybox the EgressGroup selects (label
-# tailgate.rajsingh.info/egress=robbinsdale). Lives in default (NOT the gateway namespace —
-# the agent skips its own namespace). Verify the cross-site path with:
-#   kubectl exec deploy/tailgate-canary-probe -- ping -c3 192.168.169.1
+# Connectivity probe for the local EgressGroup: a busybox the EgressGroup selects
+# (label tailgate.rajsingh.info/egress=${LOCATION}). Lives in default (NOT the gateway
+# namespace — the agent skips its own namespace).
+#
+# Verify the cross-site path to any peer cluster's LAN from this probe, e.g.
+# from robbinsdale:   kubectl exec deploy/tailgate-canary-probe -- ping -c3 192.168.169.1
+# from ottawa:        kubectl exec deploy/tailgate-canary-probe -- ping -c3 192.168.50.1
+# from stpetersburg:  kubectl exec deploy/tailgate-canary-probe -- ping -c3 192.168.169.1
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +23,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: tailgate-canary-probe
-        tailgate.rajsingh.info/egress: robbinsdale
+        tailgate.rajsingh.info/egress: ${LOCATION}
     spec:
       containers:
         - name: probe
