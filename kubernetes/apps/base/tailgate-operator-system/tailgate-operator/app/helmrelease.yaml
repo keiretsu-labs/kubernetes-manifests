@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: tailgate-operator
-      version: "0.0.5"
+      version: "0.0.6"
       sourceRef:
         kind: HelmRepository
         name: tailgate-operator
@@ -38,10 +38,10 @@ spec:
       # never blackhole through the tunnel.
       clusterCIDRs: "${CLUSTER_POD_CIDR},${CLUSTER_SERVICE_CIDR}"
       image:
-        tag: v0.0.5
+        tag: v0.0.6
     operator:
       image:
-        tag: v0.0.5
+        tag: v0.0.6
     gateway:
       image:
-        tag: v0.0.5
+        tag: v0.0.6
