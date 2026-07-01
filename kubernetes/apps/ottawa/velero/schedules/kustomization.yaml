@@ -6,4 +6,3 @@ resources:
   - ./hermes-backup.yaml
   - ./home-backup.yaml
   - ./bhaiya-backup.yaml
-  # - ./infisical-backup.yaml
