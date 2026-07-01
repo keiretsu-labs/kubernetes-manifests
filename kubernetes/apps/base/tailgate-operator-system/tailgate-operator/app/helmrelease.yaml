@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: tailgate-operator
-      version: "0.0.9"
+      version: "0.0.10"
       sourceRef:
         kind: HelmRepository
         name: tailgate-operator
@@ -33,15 +33,16 @@ spec:
       secretName: tailgate-tailnet-creds
     agent:
       enabled: true
+      cniMode: binary
       # Local pod + service CIDRs (substituted per-cluster from cluster-settings).
       # Kept on the primary CNI for exit-node members so kube-dns / the API server
       # never blackhole through the tunnel.
       clusterCIDRs: "${CLUSTER_POD_CIDR},${CLUSTER_SERVICE_CIDR}"
       image:
-        tag: v0.0.9
+        tag: v0.0.10
     operator:
       image:
-        tag: v0.0.9
+        tag: v0.0.10
     gateway:
       image:
-        tag: v0.0.9
+        tag: v0.0.10
