@@ -26,7 +26,6 @@ resources:
   - ./homer-operator
   - ./hubble-ui
   - ./immich
-  # - ./infisical
   - ./k8gb
   - ./kener
   - ./kro-system
