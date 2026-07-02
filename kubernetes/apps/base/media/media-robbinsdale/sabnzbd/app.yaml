@@ -22,7 +22,7 @@ spec:
         image: lscr.io/linuxserver/sabnzbd:5.0.4
         ports:
         - name: http
-          containerPort: 8080
+          containerPort: 80
           protocol: TCP
         env:
         - name: PUID
@@ -53,6 +53,6 @@ spec:
     app: sabnzbd
   ports:
   - name: http
-    port: 8080
+    port: 80
     protocol: TCP
-    targetPort: 8080
+    targetPort: 80
