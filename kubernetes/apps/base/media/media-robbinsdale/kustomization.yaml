@@ -3,28 +3,35 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: media
 resources:
-  - secret.yaml
   - pvc-media.yaml
+  - probes.yaml
   - ./jellyfin
-  - ./prowlarr
-  - ./sonarr
-  - ./radarr
-  - ./bazarr
-  - ./transmission-books
-  - ./transmission-movies
-  - ./transmission-music
-  - ./transmission-tv
   - ./autobrr
+  - ./prowlarr
+  - ./radarr-4k
+  - ./radarr-1080p
+  - ./radarr-4kremux
+  - ./radarr-anime
+  - ./sabnzbd
+  - ./bazarr-4k
+  - ./bazarr-4kremux
+  - ./bazarr-1080p
+  - ./bazarr-anime
+  - ./sonarr-4k
+  - ./sonarr-anime
+  - ./sonarr-1080p
+  - ./plex
   - ./tautulli
-  - ./jellyseerr
   - ./overseerr
+  - ./jellyseerr
+  - ./jellystat
+  - ./lidarr
   - ./wizarr
+  - ./configarr
+  - ./kometa
+  - ./qb
+  - ./qb-pvt
+  - ./feedcord
   - ./flaresolverr
   - ./maintainerr
-  - ./lidarr
-  - ./sabnzbd
-  - ./plex
-  - ./jellystat
-  - ./readarr
-  - ./audioarr
-  - probes.yaml
+  - ./tracearr
