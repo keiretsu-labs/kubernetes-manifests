@@ -1,0 +1,23 @@
+collections:
+  Popular:
+    tmdb_popular: 30
+    collection_order: custom
+    sync_mode: sync
+    summary: Popular TV shows on TMDB
+  Top Rated:
+    tmdb_top_rated: 50
+    collection_order: custom
+    sync_mode: sync
+    summary: Top rated TV shows on TMDB
+  Trending:
+    tmdb_trending_daily: 20
+    collection_order: custom
+    sync_mode: sync
+    summary: TV shows trending today on TMDB
+  Most Watched (Plex):
+    tautulli_popular:
+      list_days: 90
+      list_size: 20
+    collection_order: custom
+    sync_mode: sync
+    summary: Most watched TV shows by Plex users in the last 90 days

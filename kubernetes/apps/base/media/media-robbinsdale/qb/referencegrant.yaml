@@ -1,0 +1,15 @@
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: qbittorrent-cdn
+  namespace: media
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: keiretsu-top
+  to:
+    - group: ""
+      kind: Service
+      name: qbittorrent
