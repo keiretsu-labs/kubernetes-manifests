@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: tracearr
-        image: ghcr.io/connorgallopo/tracearr:1.4.28
+        image: ghcr.io/connorgallopo/tracearr:1.4.29
         ports:
         - name: http
           containerPort: 3000
