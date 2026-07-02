@@ -11,241 +11,133 @@ This is a **production GitOps repository** managing multi-cluster Kubernetes inf
 **Repository Structure:**
 ```
 .
-├── clusters/           # Multi-cluster GitOps configurations
-│   ├── common/        # Shared applications across all clusters
-│   ├── talos-robbinsdale/  # Production home lab cluster
-│   ├── talos-ottawa/       # Primary production cluster (media, services, databases)
-│   ├── talos-stpetersburg/   # AI/ML GPU-accelerated cluster
-│   └── template/           # Reusable application templates
-├── tailscale/         # Tailscale VPN configuration and automation
-├── .github/           # CI/CD workflows and automation scripts
+├── kubernetes/         # PRIMARY app tree (base + per-location overlays) — see below
+│   ├── apps/
+│   │   ├── base/<ns>/<app>/     # ALL real manifests, exactly once
+│   │   ├── ottawa/<ns>/         # thin pointer files (Flux Kustomization CRs → base)
+│   │   ├── robbinsdale/<ns>/
+│   │   └── stpetersburg/<ns>/
+│   └── components/     # kustomize components shared across apps
+├── clusters/           # Bootstrap + shared config layer (NOT app manifests)
+│   ├── common/        # Flux sources (repositories), shared vars (common-settings/secrets)
+│   ├── talos-robbinsdale/  # per-cluster flux config + talos bootstrap
+│   ├── talos-ottawa/       # per-cluster flux config + talos bootstrap
+│   └── talos-stpetersburg/
+├── tailscale/         # Tailscale VPN policy + automation scripts
+├── docs/              # Operational runbooks
+├── garage-webadmin/   # Custom Garage S3 web admin image
+├── .github/           # CI/CD workflows
 ├── .devcontainer/     # Devcontainer configuration
-├── .vscode/           # VS Code settings
-├── .kuberlr/          # kubectl version manager binaries
 └── venv/              # Python virtual environment
 ```
 
+> **Layout note (migration completed June 2026):** apps used to live under
+> `clusters/*/apps/<ns>/<app>/`. They were all re-parented into the
+> `kubernetes/` tree. `clusters/` no longer holds workloads — only the Flux
+> bootstrap chain, shared Helm/OCI/Git `repositories`, and the
+> `common-settings`/`cluster-settings` substitution vars. See
+> `kubernetes/README.md` for the authoritative description and the historical
+> two-PR move process.
+
 ---
 
-## Clusters Directory (`/clusters`)
+## The `kubernetes/` Tree — App Layout (PRIMARY)
 
-### 1. `common/` - Shared Configuration Layer
+All application manifests live under `kubernetes/apps/`. Read
+`kubernetes/README.md` for the canonical description.
 
-**Purpose:** Central repository for applications deployed across all clusters
-
-**Key Applications (34 total):**
-
-#### Infrastructure & Platform
-- **flux-system** - GitOps engine with monitoring dashboards
-- **argocd** - Alternative GitOps tool (runs alongside Flux)
-- **cert-manager** - TLS certificate management
-- **headlamp** - Kubernetes UI dashboard
-- **harbor** - Container registry
-- **spegel** - P2P container image distribution
-
-#### Monitoring & Observability
-- **monitoring** - Kube-prometheus-stack with Grafana
-- **opencost** - Kubernetes cost monitoring
-- **hubble-ui** - Cilium network observability (via CNI)
-
-#### Networking & Service Mesh
-- **cilium** - CNI with advanced networking features
-- **istio-system** - Service mesh
-- **envoy-gateway-system** - API gateway
-- **envoy-ai-gateway-system** - AI-specific API gateway
-- **istio-multicluster-test** - Multi-cluster mesh testing
-
-#### Storage & Databases
-- **local-path-storage** - Local volume provisioner
-- **cnpg-system** - CloudNativePG operator for PostgreSQL
-- **dragonfly-operator-system** - DragonflyDB operator (Redis alternative)
-- **snapshot-controller** - Volume snapshot controller
-- **volsync** - Volume replication
-- **mountpoint-s3-csi** - AWS S3 CSI driver
-- **csi-secrets-store** - Secrets Store CSI driver
-
-#### Tailscale Integration (Heavy Focus)
-- **tailscale-system** - Operator with DS deployment, peer-relay, testing
-- **tailscale-examples** - Sandbox environments (egress, derper, golink, tsdnsproxy, tsddns, tsflow)
-- **tailscale** - Additional configurations
-- **tailcar** - Custom Tailscale service
-
-#### AI/ML Infrastructure
-- **ai** - AI services
-- **node-feature-discovery** - Hardware feature detection
-- **keda** - Event-driven autoscaling
-
-#### Utilities
-- **home** - Homer dashboard, tailscale-gateway, code-server, local-gateway
-- **speedtest** - Network speed testing
-- **cloudflare** - DNS/CDN management
-- **cdn** - Content delivery
-- **homer-operator** - Dashboard operator
-
-**Bootstrap Configuration:**
-- `/bootstrap/flux/` - Flux installation manifests
-- `/flux/` - Repository definitions (Git, Helm, OCI sources)
-- `.sops.yaml` - SOPS encryption config (PGP key: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5)
-
-**Flux Structure Pattern:**
-```yaml
-# Variable substitution from:
-- common-settings (ConfigMap)
-- common-secrets (Secret)
-- cluster-settings (ConfigMap)
-- cluster-secrets (Secret)
-- cluster-user-settings (ConfigMap, optional)
-- cluster-user-secrets (Secret, optional)
+```
+kubernetes/apps/
+├── base/<namespace>/<app>/     # real manifests, exactly once (verbatim)
+│                               # often split into <app>-<location> variants
+│                               # (e.g. media/media-ottawa, media/media-robbinsdale)
+├── ottawa/<namespace>/         # per-location overlay = thin pointers
+├── robbinsdale/<namespace>/
+└── stpetersburg/<namespace>/
+    ├── kustomization.yaml      # lists the pointer files (+ namespace.yaml when owned here)
+    └── <app>.yaml              # a Flux Kustomization CR whose spec.path → base
 ```
 
----
+**How it reconciles (bootstrap chain lives in `clusters/`):**
+- `clusters/talos-<location>/flux/config/cluster.yaml` defines:
+  - `GitRepository/kubernetes-manifests` — the single Git source (only paths
+    `/clusters/common`, `/clusters/talos-<location>`, `/kubernetes` are included)
+  - `cluster` Kustomization → `./clusters/talos-<location>/flux` (loads
+    `cluster-settings` ConfigMap + `cluster-secrets` Secret)
+  - `common-cluster` Kustomization → `./clusters/common/flux` (Helm/OCI/Git
+    `repositories` + `common-settings`/`common-secrets`)
+  - **`kubernetes-apps` Kustomization → `./kubernetes/apps/<location>`** — the
+    app root. It injects SOPS decryption + the `substituteFrom`
+    common-settings/common-secrets stack into every child pointer (this replaced
+    the old `common-apps` parent).
+- Each pointer `<app>.yaml` is a `kustomize.toolkit.fluxcd.io/v1` Kustomization
+  with `spec.path: ./kubernetes/apps/base/<ns>/<app>[-<location>]`,
+  `sourceRef: kubernetes-manifests`, optional `dependsOn`, and per-app
+  `postBuild.substitute` overrides.
 
-### 2. `talos-robbinsdale/` - Primary Production Cluster
-
-**Type:** Talos Linux Cluster
-**Endpoint:** https://k8s.robbinsdale.local:6443
-**Network:**
-- Pod CIDR: 10.1.0.0/16
-- Service CIDR: 10.0.0.0/16
-- CNI: Cilium (kube-proxy disabled)
-
-**5 Nodes with Individual Patches:**
-- silver.patch, stone.patch, tank.patch, titan.patch, vault.patch
-- base.patch - Shared configuration
-
-**Applications:**
-
-#### Home Automation
-- **frigate** - NVR with camera monitoring
-- **home-assistant** - Home automation platform
-- **mqtt** - Mosquitto broker
-
-#### Media Stack
-- **jellyfin** - Media streaming server
-- **jellyseerr** - Media request management
-- **jellystat** - Jellyfin statistics
-- **plex** - Alternative media server
-- **prowlarr** - Indexer manager
-- **radarr** - Movie management
-- **readarr** - Book management
-- **sonarr** - TV show management
-- **bazarr** - Subtitle management
-- **audioarr** - Audio content management
-- **lidarr** - Music management
-- **transmission-*** - Multiple download clients (books, movies, music, tv)
-- **immich** - Photo management with Redis
-- **homarr** - Homepage dashboard
-
-#### Infrastructure
-- **rook-ceph** - Distributed storage cluster
-- **cilium** - CNI with generic-device-plugin
-- **cert-manager** - TLS certificates
-- **csi-driver-smb** - SMB storage integration
-- **strimzi** - Kafka operator
-
-#### Operations
-- **gatus** - Uptime monitoring with S3 backend
-- **speedtest** - Network testing
-- **cloudflare** - DNS management
-- **tailscale** - VPN integration
-- **code-server** - VS Code in browser
-- **typeo** - Custom application
-- **test** - Testing namespace
-
-**Configuration Files:**
-- `/talos/Makefile` - Cluster management commands
-- `/talos/patch/schematic.yaml` - Talos image customization
-- `/init.sh` - Cluster initialization
-- `/jobs/diskspeedtest/` - Performance testing jobs
+**Deploy-to-some-clusters** = the pointer file exists only in those location
+overlay trees. An app in `base/` with no pointer anywhere is not deployed.
 
 ---
 
-### 3. `talos-ottawa/` - Media & Services Cluster
+## Clusters Directory (`/clusters`) — Bootstrap & Shared Config
 
-**Type:** Talos Linux Cluster
+`clusters/` no longer contains workloads. It holds:
 
-**Applications (30+ services):**
+### `common/`
+- `flux/repositories/` — Helm, OCI, and Git sources referenced by HelmReleases
+- `flux/vars/` — `common-settings` ConfigMap, `common-secrets` (SOPS)
+- `bootstrap/flux/` — Flux install kustomization + bootstrap secret
+- `scripts/` — helper scripts
+- `.sops.yaml` — SOPS config (PGP key FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5)
+- (a couple of apps — `home`, `searxng` — may still linger here; new apps go in `kubernetes/`)
 
-#### Complete Media Stack
-- **Streaming:** jellyfin, plex
-- **Request Management:** jellyseerr, overseerr, wizarr
-- **Statistics:** jellystat, tautulli
-- **TV Shows:** sonarr-1080p, sonarr-4k, sonarr-anime
-- **Movies:** radarr-1080p, radarr-4k, radarr-4kremux, radarr-anime
-- **Music:** lidarr
-- **Subtitles:** bazarr-1080p, bazarr-4k, bazarr-4kremux, bazarr-anime
-- **Download Clients:** qb (qBittorrent), qb-pvt (private), sabnzbd
-- **Indexers:** prowlarr, autobrr
-- **Utilities:** unmanic (transcoding), tunarr (channel creation), configarr (configuration), feedcord (notifications)
-
-#### Infrastructure
-- **rook-ceph** - Ceph storage cluster
-- **cilium** - CNI networking
-- **csi-driver-smb** - SMB storage
-- **gatus** - Uptime monitoring
-- **pocket-id** - Identity/authentication
-- **dockur** - Container service
-
-**Configuration Files:**
-- `/talos/talosconfig` - Cluster configuration
-- `/talos/metal-amd64.iso` - Installation ISO
-- `/scripts/` - Utility scripts (verify-disks, cluster-health-check, ceph-osd-slow-ops-diag)
-- `/opnsense/frr.conf` - OPNsense routing
-- `/unifi/frr.conf` - UniFi routing
-- `/jobs/diskspeedtest/` - Performance testing
+### `talos-<location>/` (ottawa, robbinsdale, stpetersburg)
+- `flux/config/cluster.yaml` — GitRepository + the `cluster`/`common-cluster`/`kubernetes-apps` parent Kustomizations
+- `flux/vars/` — `cluster-settings` ConfigMap, `cluster-secrets` (SOPS)
+- `bootstrap/` — Talos (talhelper `talconfig.yaml`, patches, ISO) — see Talos section below
+- `unifi/`, `opnsense/` (Ottawa) — FRR routing configs
+- `jobs/` — one-off jobs (e.g. diskspeedtest)
 
 ---
 
-### 4. `talos-stpetersburg/` - AI/ML Cluster
+## Application Inventory (by namespace under `kubernetes/apps/base/`)
 
-**Type:** K3s Cluster
-**Purpose:** GPU-accelerated AI/ML workloads
+Not every app runs on every cluster — deployment is controlled by which
+location overlay carries the pointer. Notable namespaces/apps:
 
-**Network Configuration:**
-- Pod CIDR: 10.5.0.0/16
-- Service CIDR: 10.4.0.0/16
-- Max pods: 250
-- Disabled: servicelb, traefik, CNI (Cilium installed separately)
+**Platform & GitOps:** flux-system, argocd, open-cluster-management (+ agent —
+OCM hub/spoke replaced Karmada), kro-system, external-secrets, cert-manager,
+spegel, tuppr (Talos upgrades), homer-operator, tailgate-operator-system
 
-**AI/ML Stack:**
-- **ai/inference** - Ollama for LLM inference
-- **kserve** - Model serving platform (depends on monitoring)
-- **kuberay** - Ray cluster for distributed computing
-- **pipelines** - ML pipeline orchestration
+**Networking / mesh / gateway:** kube-system (Cilium), hubble-ui,
+envoy-gateway-system, envoy-ai-gateway-system, k8gb (GSLB DNS), spiderpool,
+lan, border0, cloudflare
 
-**GPU Infrastructure:**
-- **gpu-operator** - NVIDIA GPU operator with time-slicing config
-- **node-feature-discovery** - GPU detection (from common)
+**Storage & DB:** rook-ceph, garage + garage-operator-system (S3),
+local-path-storage, snapshot-controller, csi-addons, csi-driver-smb,
+cnpg-system (Postgres), dragonfly-operator-system, clickhouse (+ operator),
+velero (backups)
 
-**Supporting Services:**
-- **cilium** - CNI with advanced features
-- **cloudflare** - DNS management
+**Observability:** monitoring (kube-prometheus-stack), mimir, tempo (+ operator),
+victoria-logs, fluent-bit, gatus, kener, opencost
 
-**Bootstrap Files:**
-- `/bootstrap/k3s-config.yaml` - K3s server configuration
-- `/bootstrap/k3s-install/` - Installation scripts
-- `/unifi/frr.conf` - FRR routing configuration
+**Registry / CI:** zot (OCI registry — replaced Harbor), forgejo, woodpecker,
+arc-systems (GitHub Actions runners), k6-operator-system
 
-**Flux Configuration:**
-- `.sops.yaml` - SOPS encryption (same PGP key as common)
-- `flux/apps.yaml` - Main Flux Kustomization
+**Media (base/media/media-<location>):** jellyfin, plex, sonarr/radarr/lidarr/
+readarr/bazarr/prowlarr, transmission-*, sabnzbd, qb, overseerr, jellyseerr,
+tautulli, jellystat, autobrr, wizarr, maintainerr, jellyswarrm, etc.
 
----
+**Home / apps:** home (Homer, gateways, code-server), home-assistant, immich,
+teslamate, hermes, firecrawl, searxng, tinyauth-egress, auth, speedtest
 
-### 5. `template/` - Application Templates
+**AI/ML (mostly stpetersburg):** ai, agents, agent-sandbox, gpu-operator,
+node-feature-discovery, k8s-gpu-dra-driver, rdma-shared-dp, lws-system,
+tailbench, bhaiya (ottawa)
 
-Reusable Kustomize templates for new application deployment:
-
-1. **app-httproute/** - HTTP application with Gateway API
-   - backend.yaml, httproute.yaml, kustomization.yaml
-
-2. **app-tcproute/** - TCP application
-   - backend.yaml, tcproute.yaml, kustomization.yaml
-
-3. **app-udproute/** - UDP application
-   - backend.yaml, udproute.yaml, kustomization.yaml
-
-4. **app-pg/** - PostgreSQL database template (placeholder)
+**Tailscale:** tailscale-system (operator), tailscale, tailscale-examples,
+gvisor, strimzi
 
 ---
 
@@ -351,7 +243,7 @@ Reusable Kustomize templates for new application deployment:
 
 ### Kubernetes Integration
 
-**Operator Deployment (clusters/common/apps/tailscale/):**
+**Operator Deployment (`kubernetes/apps/base/tailscale-system/tailscale-system-app/`):**
 - Version: 1.90.8
 - API Server Proxy: Enabled with impersonation
 - Location-aware naming: `${LOCATION}-k8s-operator`
@@ -526,14 +418,11 @@ Reusable Kustomize templates for new application deployment:
 
 ### `Makefile`
 
-**Targets:**
-- `help` - Show available commands
-- `validate-kustomize` - Validate all Kustomize builds
-  - Iterates through `clusters/talos-robbinsdale/apps/*`
-  - Uses `KUBERNETES_VERSION=1.29.0`
-  - Enables Helm with `--enable-helm`
-  - Exits on validation failure
-- `install-deps` - (referenced but not defined)
+**Targets** (render-test with [`flate`], per-cluster from `clusters/<cluster>/flux/config`):
+- `help` - Show available commands (default target)
+- `test` - Render-test all three clusters (`flate test all`); exits on failure
+- `test-<cluster>` - Render-test one cluster, e.g. `make test-talos-ottawa`
+- `diff` - Show rendered diff vs `origin/main` for all clusters (`flate diff all`)
 
 ---
 
@@ -664,18 +553,21 @@ Reusable Kustomize templates for new application deployment:
 
 ## Common Patterns
 
-### Flux Application Structure
+### Flux Application Structure (base + overlay)
 ```
-app-name/
-├── kustomization.yaml     # App-level Kustomize config
-├── ks.yaml               # Flux Kustomization spec
-├── namespace.yaml        # Namespace definition
-├── app/                  # Application manifests
-│   ├── helmrelease.yaml  # Helm chart deployment
-│   └── kustomization.yaml
-└── config/               # ConfigMaps, Secrets
-    └── kustomization.yaml
+kubernetes/apps/base/<ns>/<app>/     # real manifests, exactly once
+├── kustomization.yaml               # sets namespace, lists resources
+├── helmrelease.yaml                 # Helm chart (or raw manifests)
+├── httproute.yaml                   # optional, Gateway API
+└── namespace.yaml                   # only if this app owns the namespace
+
+kubernetes/apps/<location>/<ns>/      # per-cluster overlay (pointers)
+├── kustomization.yaml               # lists <app>.yaml (+ namespace.yaml if owned here)
+└── <app>.yaml                       # Flux Kustomization CR, spec.path → base/<ns>/<app>
 ```
+The `<app>.yaml` pointer is what carries `dependsOn`, per-app
+`postBuild.substitute`, and `targetNamespace`. The `kubernetes-apps` parent
+injects the shared `substituteFrom` stack + SOPS decryption into every pointer.
 
 ### Variable Substitution in Flux
 ```yaml
@@ -721,7 +613,7 @@ postBuild:
 ### Operations
 1. **GitOps-first:** All changes should be committed to Git, not applied directly
 2. **Testing:** Use ephemeral tailnets for integration testing
-3. **Validation:** Run `make validate-kustomize` before committing
+3. **Validation:** Run `make test` (flate render) before committing; `make diff` to preview rendered changes vs `origin/main`
 4. **ACL changes:** Test in PR before merging (auto-tested by GitHub Actions)
 
 ### Tailscale
@@ -735,18 +627,31 @@ postBuild:
 2. **Robbinsdale:** Production home lab (home automation, Rook-Ceph)
 3. **St. Petersburg:** AI/ML only (GPU operator, KServe, Ray)
 
-### Adding a New Helm App to Common
+### Adding a New App (base + overlay model)
+
+New apps are created directly in `kubernetes/apps/` — no migration, no
+`clusters/*/apps/` anymore. See `kubernetes/README.md`.
 
 **Checklist:**
-1. Create `clusters/common/flux/repositories/helm/<name>.yaml` (HelmRepository)
-2. Add it to `clusters/common/flux/repositories/helm/kustomization.yaml`
-3. Create app directory: `clusters/common/apps/<name>/`
-   - `namespace.yaml` — with `kustomize.toolkit.fluxcd.io/prune: disabled`
-   - `ks.yaml` — Flux Kustomization pointing to `./app` path
-   - `kustomization.yaml` — references `namespace.yaml` and `ks.yaml`
-   - `app/helmrelease.yaml` — HelmRelease with chart spec
-   - `app/httproute.yaml` — if exposing via Gateway API
-   - `app/kustomization.yaml` — sets namespace, lists resources
+1. If it needs a new Helm chart source, add the HelmRepository under
+   `clusters/common/flux/repositories/helm/<name>.yaml` and list it in that
+   dir's `kustomization.yaml` (sources still live in `clusters/common`).
+2. Create the base: `kubernetes/apps/base/<ns>/<app>/` (often
+   `<app>/<app>-<location>/` if config differs per cluster)
+   - `helmrelease.yaml` (or raw manifests) — the real workload
+   - `httproute.yaml` — if exposing via Gateway API
+   - `kustomization.yaml` — sets namespace, lists resources
+   - `namespace.yaml` — only if this app owns the namespace; keep
+     `kustomize.toolkit.fluxcd.io/prune: disabled`
+3. Add the pointer per target location: `kubernetes/apps/<location>/<ns>/<app>.yaml`
+   — a Flux `kustomize.toolkit.fluxcd.io/v1` Kustomization with
+   `spec.path: ./kubernetes/apps/base/<ns>/<app>[-<location>]`,
+   `sourceRef.name: kubernetes-manifests`, and any `postBuild.substitute` /
+   `dependsOn` it needs. The CR `metadata.name` is the app's identity.
+4. List the pointer (and `namespace.yaml` if owned here) in
+   `kubernetes/apps/<location>/<ns>/kustomization.yaml`.
+5. Deploying to only some clusters = only create the pointer in those location
+   trees. Validate with `make test` / the flate render before merging.
 
 **Gateway/HTTPRoute gotchas:**
 - Check what hostnames the target gateway accepts before creating an HTTPRoute: `kubectl get gateway <name> -n home -o jsonpath='{.spec.listeners[*].hostname}'`
@@ -801,11 +706,12 @@ flux suspend kustomization <app-name> -n flux-system
 
 ### Kubernetes
 ```bash
-# Validate Kustomize builds
-make validate-kustomize
-
-# Apply specific app (don't do this, use GitOps!)
-kubectl apply -k clusters/talos-robbinsdale/apps/<app-name>/
+# Render-test all clusters (uses flate against clusters/<c>/flux/config)
+make test
+# Render-test one cluster
+make test-talos-ottawa
+# Show rendered diff vs origin/main
+make diff
 ```
 
 ### SOPS
@@ -948,8 +854,13 @@ Then upgrade nodes via `talosctl upgrade` — each node pulls a new image from t
 
 ## tsdb Database Connector (Tailscale)
 
-### Deployment
-- **Ottawa:** `clusters/talos-ottawa/apps/media/app/tsdb/` (in media namespace)
+> **Note:** tsdb has been removed from the live tree (no longer deployed). The
+> Tailscale ACL/capability knowledge below is retained as reference; if
+> redeployed, it belongs under `kubernetes/apps/base/media/media-ottawa/tsdb/`
+> with an Ottawa pointer.
+
+### Deployment (historical)
+- **Ottawa:** was `clusters/talos-ottawa/apps/media/app/tsdb/` (in media namespace)
 - Deployed as StatefulSet with PVC for tsnet state (`/data/tsdb`)
 - Image: `ghcr.io/tailscale/tsdb:latest`
 - Runs as root (`runAsUser: 0`) - required for tsnet state directory creation
