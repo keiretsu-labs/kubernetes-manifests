@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: music-assistant
-          image: ghcr.io/music-assistant/server:2.9.4
+          image: ghcr.io/music-assistant/server:2.9.5
           securityContext:
             capabilities:
               add:
