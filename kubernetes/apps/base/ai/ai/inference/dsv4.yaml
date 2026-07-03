@@ -35,40 +35,40 @@ data:
   download-and-validate.sh: |
     #!/bin/bash
     set -euo pipefail
-    MODEL_DIR="${MODEL_DIR:-/models/dsv4}"
-    HF_REPO="${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-DSpark}"
+    MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
+    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-DSpark}"
     EXPECTED=46
-    MARKER_FILE="${MODEL_DIR}/.hf_repo_marker"
+    MARKER_FILE="$${MODEL_DIR}/.hf_repo_marker"
 
-    mkdir -p "$MODEL_DIR"
-    cd "$MODEL_DIR"
+    mkdir -p "$${MODEL_DIR}"
+    cd "$${MODEL_DIR}"
 
     # Check if we need to redownload (repo change detect)
-    if [ -f "$MARKER_FILE" ] && [ "$(cat "$MARKER_FILE")" != "$HF_REPO" ]; then
-      echo "[cleanup] HF repo changed from $(cat "$MARKER_FILE") to $HF_REPO — wiping old model + cache"
-      rm -rf "$MODEL_DIR"/* "$MODEL_DIR"/../compile-cache/* "$MODEL_DIR"/../vllm-cache/*
+    if [ -f "$${MARKER_FILE}" ] && [ "$(cat "$${MARKER_FILE}")" != "$${HF_REPO}" ]; then
+      echo "[cleanup] HF repo changed from $(cat "$${MARKER_FILE}") to $${HF_REPO} — wiping old model + cache"
+      rm -rf "$${MODEL_DIR}"/* "$${MODEL_DIR}"/../compile-cache/* "$${MODEL_DIR}"/../vllm-cache/*
     fi
 
-    echo "[download] Starting model download with hf CLI ($HF_REPO)…"
-    hf download "$HF_REPO" --local-dir "$MODEL_DIR" 2>&1
+    echo "[download] Starting model download with hf CLI ($${HF_REPO})…"
+    hf download "$${HF_REPO}" --local-dir "$${MODEL_DIR}" 2>&1
 
     echo "[validate] Checking for $${EXPECTED} shards…"
-    COUNT="$(find . -name '*.safetensors' | wc -l)"
+    COUNT="$$(find . -name '*.safetensors' | wc -l)"
     echo "[validate] Found $${COUNT} shard(s)"
 
-    if [ "$COUNT" -lt "$EXPECTED" ]; then
+    if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
       echo "[ERROR] Expected $${EXPECTED} shards, got $${COUNT}. Redownloading…"
-      rm -rf "$MODEL_DIR"/*
-      hf download "$HF_REPO" --local-dir "$MODEL_DIR" 2>&1
-      COUNT="$(find . -name '*.safetensors' | wc -l)"
-      if [ "$COUNT" -lt "$EXPECTED" ]; then
+      rm -rf "$${MODEL_DIR}"/*
+      hf download "$${HF_REPO}" --local-dir "$${MODEL_DIR}" 2>&1
+      COUNT="$$(find . -name '*.safetensors' | wc -l)"
+      if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
         echo "[FATAL] Still only $${COUNT} shards after retry. Aborting."
         exit 1
       fi
     fi
 
     echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
-    echo "$HF_REPO" > "$MARKER_FILE"
+    echo "$${HF_REPO}" > "$${MARKER_FILE}"
     echo "[download] Done."
 ---
 apiVersion: v1
