@@ -23,12 +23,8 @@ data:
         type: cpu
 
     go2rtc:
-      log:
-        webrtc: trace
-        exec: debug
       webrtc:
         candidates:
-          - "frigate.${LOCATION}.${COMMON_DOMAIN}:8555"
           - "stun:8555"
       streams:
         basement_cam:
