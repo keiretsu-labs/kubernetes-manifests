@@ -18,27 +18,3 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 10m
----
-# Secondary Velero BackupStorageLocation pointing at Ottawa's Garage.
-# Provides an off-site backup target: if StPetersburg is fully lost,
-# backups survive in Ottawa's Ceph-backed Garage.
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: velero-bsl-ottawa
-  namespace: flux-system
-spec:
-  targetNamespace: velero-system
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: velero-bsl-ottawa
-  path: ./kubernetes/apps/stpetersburg/velero/bsl-ottawa
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: kubernetes-manifests
-  dependsOn:
-    - name: velero
-  interval: 30m
-  retryInterval: 1m
-  timeout: 5m
