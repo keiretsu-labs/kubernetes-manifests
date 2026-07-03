@@ -1,0 +1,33 @@
+# tinyauth returns 401 with x-tinyauth-location for unauthenticated requests
+# (NGINX-compatible pattern using error_page 401). Envoy Gateway's ext_authz
+# passes the 401 straight to the client instead of redirecting. This Lua
+# response script catches that pattern and converts it to a proper 302 redirect
+# that the browser follows to the Google OAuth login page.
+#
+# IMPORTANT: This MUST target the HTTPRoute (not Gateway). In EG v1.8.1,
+# Gateway-level Lua runs before per-route ext_authz in the filter chain, so
+# it never sees the ext_authz local reply. Route-level Lua runs after and
+# can intercept and convert the 401.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: frigate-tinyauth-redirect
+  namespace: home
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: frigate
+  lua:
+    - inline: |
+        function envoy_on_response(response_handle)
+          local headers = response_handle:headers()
+          if headers:get(":status") == "401" then
+            local location = headers:get("x-tinyauth-location")
+            if location then
+              headers:replace(":status", "302")
+              headers:add("Location", location)
+              headers:remove("x-tinyauth-location")
+            end
+          end
+        end
