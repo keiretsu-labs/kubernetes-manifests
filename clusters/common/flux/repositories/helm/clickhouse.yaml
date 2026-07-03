@@ -1,9 +1,0 @@
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: clickhouse
-  namespace: flux-system
-spec:
-  interval: 1h
-  url: https://altinity.github.io/clickhouse-operator

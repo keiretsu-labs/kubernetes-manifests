@@ -5,8 +5,6 @@ resources:
   - ./agent-sandbox-system
   - ./arc-systems
   - ./border0
-  - ./clickhouse-operator-system
-  - ./clickhouse
   - ./cloudflare
   - ./cnpg-system
   - ./dragonfly-operator-system

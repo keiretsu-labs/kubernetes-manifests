@@ -9,8 +9,6 @@ resources:
   - ./argocd
   - ./bhaiya
   - ./border0
-  - ./clickhouse-operator-system
-  - ./clickhouse
   - ./cloudflare
   - ./cnpg-system
   - ./dragonfly-operator-system
