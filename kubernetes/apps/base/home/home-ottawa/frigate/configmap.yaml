@@ -25,7 +25,6 @@ data:
     go2rtc:
       webrtc:
         candidates:
-          - "frigate.${CLUSTER_DOMAIN}:8555"
           - "frigate.${LOCATION}.${COMMON_DOMAIN}:8555"
           - "stun:8555"
       streams:
