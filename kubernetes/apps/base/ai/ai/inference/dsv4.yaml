@@ -33,6 +33,15 @@ data:
     mkdir -p "$${MODEL_DIR}"
     cd "$${MODEL_DIR}"
 
+    # Check if model is already cached on PVC — skip download if complete
+    COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
+    if [ "$${COUNT}" -ge "$${EXPECTED}" ]; then
+      echo "[download] All $${EXPECTED} shards already present — skipping download."
+      echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
+      echo "[download] Done."
+      exit 0
+    fi
+
     # Clean stale lock files from previous force-killed downloads
     echo "[download] Cleaning stale lock files…"
     rm -rf "$${MODEL_DIR}"/.cache/huggingface/download/*.lock 2>/dev/null || true
