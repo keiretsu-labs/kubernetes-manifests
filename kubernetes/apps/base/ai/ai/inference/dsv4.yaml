@@ -181,6 +181,9 @@ spec:
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
+              --async-scheduling \
+              --enable-chunked-prefill \
+              --max-cudagraph-capture-size 3 \
               --compilation-config '{"cudagraph_mode":"FULL_AND_PIECEWISE","custom_ops":["all"]}' \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
@@ -195,6 +198,7 @@ spec:
           - { name: VLLM_HOST_IP, value: "192.168.74.1" }
           - { name: MASTER_ADDR, value: "192.168.74.1" }
           - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
@@ -316,6 +320,9 @@ spec:
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
+              --async-scheduling \
+              --enable-chunked-prefill \
+              --max-cudagraph-capture-size 3 \
               --compilation-config '{"cudagraph_mode":"FULL_AND_PIECEWISE","custom_ops":["all"]}' \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
@@ -330,6 +337,7 @@ spec:
           - { name: MASTER_ADDR, value: "192.168.74.1" }
           - { name: HEADLESS, value: "1" }
           - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
