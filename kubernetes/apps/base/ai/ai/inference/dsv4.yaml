@@ -27,8 +27,8 @@ data:
     #!/bin/bash
     set -euo pipefail
     MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
-    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash}"
-    EXPECTED=46
+    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-DSpark}"
+    EXPECTED=48
 
     mkdir -p "$${MODEL_DIR}"
     cd "$${MODEL_DIR}"
@@ -125,6 +125,26 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
+        - name: dspark-overlay
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          command: [bash, -c]
+          args:
+          - |
+            set -e
+            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
+            /opt/env/bin/git clone --depth 1 \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+              /tmp/dspark-repo 2>&1
+            echo "[dspark-overlay] Installing overlay files (17 files)…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Done. Files:"
+            find /overlay/vllm -type f | wc -l
+          volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
+          resources:
+            requests: { memory: "2Gi", cpu: "1000m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
         containers:
         - name: drop-caches-loop
           image: busybox:1.38
@@ -141,8 +161,12 @@ spec:
             # Drop page cache immediately before weight load
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            # Apply DSpark overlay to vllm site-packages
+            echo "[dspark] Applying DSpark overlay (17 files)…"
+            cp -r /overlay/vllm/* /opt/env/lib/python3.12/site-packages/vllm/
+            echo "[dspark] Overlay applied. Starting vLLM with DSpark…"
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
-              --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
+              --served-model-name deepseek-v4-flash DeepSeek-V4-Flash-DSpark \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
@@ -158,7 +182,7 @@ spec:
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
-              --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":5}' \
               --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 25002
           ports:
@@ -193,6 +217,7 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -215,6 +240,8 @@ spec:
             periodSeconds: 15
             timeoutSeconds: 10
         volumes:
+        - name: overlay-files
+          emptyDir: {}
         - name: shm
           emptyDir:
             medium: Memory
@@ -265,6 +292,26 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
+        - name: dspark-overlay
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          command: [bash, -c]
+          args:
+          - |
+            set -e
+            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
+            /opt/env/bin/git clone --depth 1 \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+              /tmp/dspark-repo 2>&1
+            echo "[dspark-overlay] Installing overlay files (17 files)…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Done. Files:"
+            find /overlay/vllm -type f | wc -l
+          volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
+          resources:
+            requests: { memory: "2Gi", cpu: "1000m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
         containers:
         - name: drop-caches-loop
           image: busybox:1.38
@@ -280,8 +327,12 @@ spec:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            # Apply DSpark overlay to vllm site-packages
+            echo "[dspark] Applying DSpark overlay (17 files)…"
+            cp -r /overlay/vllm/* /opt/env/lib/python3.12/site-packages/vllm/
+            echo "[dspark] Overlay applied. Starting vLLM with DSpark…"
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
-              --served-model-name deepseek-v4-flash DeepSeek-V4-Flash \
+              --served-model-name deepseek-v4-flash DeepSeek-V4-Flash-DSpark \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
@@ -297,7 +348,7 @@ spec:
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
-              --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":5}' \
               --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 25002 \
               --headless
@@ -332,6 +383,7 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -340,6 +392,8 @@ spec:
             requests: { memory: "93Gi", cpu: "8000m", nvidia.com/gpu: "1" }
             limits: { memory: "93Gi", nvidia.com/gpu: "1" }
         volumes:
+        - name: overlay-files
+          emptyDir: {}
         - name: shm
           emptyDir:
             medium: Memory
