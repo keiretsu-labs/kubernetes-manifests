@@ -26,9 +26,10 @@ data:
       webrtc:
         candidates:
           - "frigate.${CLUSTER_DOMAIN}:8555"
+          - "frigate.${LOCATION}.${COMMON_DOMAIN}:8555"
           - "stun:8555"
       streams:
-        ottawa_cam:
+        basement_cam:
           - rtspx://192.168.169.1:7441/YgigQ2PzZ1QwPCHW#backchannel=0
           - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f alaw -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.66:7004#backchannel=1#audio=pcma/8000
           - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f mulaw -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.66:7004#backchannel=1#audio=pcmu/8000
@@ -42,10 +43,11 @@ data:
           - exec:/usr/lib/ffmpeg/7.0/bin/ffmpeg -re -fflags nobuffer -f s16be -ar 8000 -i - -vn -acodec libopus -b:a 32k -f rtp rtp://192.168.169.64:7004#backchannel=1#audio=pcm/8000
 
     cameras:
-      ottawa_cam:
+      basement_cam:
+        friendly_name: Basement
         ffmpeg:
           inputs:
-            - path: rtsp://127.0.0.1:8554/ottawa_cam
+            - path: rtsp://127.0.0.1:8554/basement_cam
               input_args: preset-rtsp-restream
               roles:
                 - detect
@@ -58,6 +60,7 @@ data:
         snapshots:
           enabled: false
       kitchen_cam:
+        friendly_name: Kitchen
         ffmpeg:
           inputs:
             - path: rtsp://127.0.0.1:8554/kitchen_cam
