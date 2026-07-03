@@ -190,3 +190,12 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    # per-location wildcard: *.ottawa.keiretsu.top → ottawa.keiretsu.top, etc.
+    # each cluster manages its own entry via ${LOCATION} substitution
+    - dnsName: "*.${LOCATION}.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "${LOCATION}.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
