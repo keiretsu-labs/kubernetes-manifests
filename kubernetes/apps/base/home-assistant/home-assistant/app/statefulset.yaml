@@ -20,6 +20,12 @@ spec:
         k8s.v1.cni.cncf.io/networks: |
           [{"name":"lan","namespace":"home-assistant","default-route":["192.168.73.1"]}]
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: orin-0
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
       priorityClassName: "infra-high"
       containers:
         - name: homeassistant
