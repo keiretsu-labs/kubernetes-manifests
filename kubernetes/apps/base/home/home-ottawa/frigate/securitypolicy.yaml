@@ -3,7 +3,7 @@
 # tinyauth does authN only (google login, injects remote-email); the per-user
 # authorization decision lives in this policy's authorization block. EG's RBAC
 # filter runs after extAuth, so it matches on the header tinyauth injects.
-# frigate is shared — raj + kartik.
+# frigate is shared — raj, kartik, ypb141163, bharathgk, suchitra95.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
@@ -42,3 +42,6 @@ spec:
               values:
                 - rajsinghcpre@gmail.com
                 - kartikbharath@gmail.com
+                - ypb141163@gmail.com
+                - bharathgk@gmail.com
+                - suchitra95@gmail.com
