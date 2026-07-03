@@ -130,6 +130,28 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    - dnsName: "infisical.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    # frigate NVR behind tinyauth on the public envoy gateway
+    - dnsName: "frigate.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "frigate.${LOCATION}.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
 ---
 # Wildcard CNAMEs that only Cloudflare can serve. UniFi's static-DNS API rejects
 # wildcard hostnames (400 Invalid Hostname), so these are isolated under a
