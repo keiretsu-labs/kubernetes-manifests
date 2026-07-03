@@ -23,7 +23,7 @@ spec:
       priorityClassName: "infra-high"
       containers:
         - name: homeassistant
-          image: homeassistant/home-assistant:2026.6
+          image: homeassistant/home-assistant:2026.7
           env:
             - name: TZ
               value: ${TIMEZONE}
