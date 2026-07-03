@@ -36,17 +36,12 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    # home.keiretsu.top is a Python server behind the Envoy Gateway,
+    # NOT a Garage/CDN site — point at the ottawa edge (envoy gateway IP).
     - dnsName: "home.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
-        - "home.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
-    - dnsName: "home.${COMMON_DOMAIN}"
-      recordType: CNAME
-      targets:
-        - "home.cdn.${COMMON_DOMAIN}"
+        - "ottawa.${COMMON_DOMAIN}"
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
