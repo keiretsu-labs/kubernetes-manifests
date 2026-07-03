@@ -23,7 +23,7 @@ spec:
           resourceClaimTemplateName: frigate-gpu
       initContainers:
         - name: seed-config
-          image: ghcr.io/blakeblackshear/frigate:stable-rocm
+          image: ghcr.io/blakeblackshear/frigate:0.17.2-rocm
           command:
             - sh
             - -c
@@ -38,7 +38,7 @@ spec:
               mountPath: /config-template
       containers:
         - name: frigate
-          image: ghcr.io/blakeblackshear/frigate:stable-rocm
+          image: ghcr.io/blakeblackshear/frigate:0.17.2-rocm
           resources:
             claims:
               - name: gpu
@@ -75,7 +75,7 @@ spec:
             - name: cache
               mountPath: /tmp/cache
         - name: talkback-keepalive
-          image: ghcr.io/blakeblackshear/frigate:stable-rocm
+          image: ghcr.io/blakeblackshear/frigate:0.17.2-rocm
           command:
             - /bin/sh
             - -c
