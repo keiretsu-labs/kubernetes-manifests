@@ -17,6 +17,8 @@ spec:
     metadata:
       labels:
         app: frigate
+      annotations:
+        reload-trigger: "2026-07-03-reseed-basement"
     spec:
       resourceClaims:
         - name: gpu
