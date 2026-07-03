@@ -9,7 +9,6 @@ resources:
   - ./backube-charts.yaml
   - ./bjw-s.yaml
   - ./cilium.yaml
-  - ./clickhouse.yaml
   - ./spegel.yaml
   - ./spiderpool.yaml
   - ./clabernetes.yaml
