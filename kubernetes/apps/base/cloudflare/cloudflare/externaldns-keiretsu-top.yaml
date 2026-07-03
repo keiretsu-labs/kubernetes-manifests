@@ -40,5 +40,5 @@ spec:
       - crd
     domainFilters:
       - keiretsu.top
-    txtOwnerId: keiretsu-top
+    txtOwnerId: keiretsu-top-${LOCATION}
     txtPrefix: k8s.keiretsu.top.
