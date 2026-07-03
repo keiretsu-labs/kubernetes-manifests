@@ -5,7 +5,7 @@ resources:
   - ./secret.yaml
   - ./rbac.yaml
   - ./peer-relay
-  - ./testing
+  # - ./testing
   # - ./ds
   - ./tsddns
   - ./log-streaming
