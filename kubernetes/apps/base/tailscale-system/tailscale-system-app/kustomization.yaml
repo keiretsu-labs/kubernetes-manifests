@@ -8,6 +8,5 @@ resources:
   - ./testing
   # - ./ds
   - ./tsddns
-  - ./derp-client
   - ./log-streaming
   - ./tsdnsproxy
