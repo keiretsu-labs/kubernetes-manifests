@@ -16,3 +16,4 @@ resources:
   - certificate-agents.yaml
   - certificate-hermes.yaml
   - certificate-bhaiya.yaml
+  - certificate-location.yaml

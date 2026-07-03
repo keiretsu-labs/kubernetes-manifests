@@ -107,6 +107,19 @@ spec:
         - group: ''
           kind: Secret
           name: wildcard-hermes-keiretsu-top
+    - name: wildcard-location-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.${LOCATION}.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-ottawa-keiretsu-top
     - name: wildcard-bhaiya-keiretsu-top-https
       protocol: HTTPS
       port: 443
