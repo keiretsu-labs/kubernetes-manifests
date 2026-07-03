@@ -33,18 +33,22 @@ data:
     mkdir -p "$${MODEL_DIR}"
     cd "$${MODEL_DIR}"
 
+    # Clean out any old shards first to avoid mixed checkpoints
+    echo "[download] Clearing old model files…"
+    rm -rf "$${MODEL_DIR}"/*.safetensors "$${MODEL_DIR}"/*.safetensors.index.json 2>/dev/null || true
+
     echo "[download] Starting model download with hf CLI ($${HF_REPO})…"
     hf download "$${HF_REPO}" --local-dir "$${MODEL_DIR}" 2>&1
 
     echo "[validate] Checking for $${EXPECTED} shards…"
-    COUNT="$$(find . -name '*.safetensors' | wc -l)"
+    COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
     echo "[validate] Found $${COUNT} shard(s)"
 
     if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
       echo "[ERROR] Expected $${EXPECTED} shards, got $${COUNT}. Redownloading…"
       rm -rf "$${MODEL_DIR}"/*
       hf download "$${HF_REPO}" --local-dir "$${MODEL_DIR}" 2>&1
-      COUNT="$$(find . -name '*.safetensors' | wc -l)"
+      COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
       if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
         echo "[FATAL] Still only $${COUNT} shards after retry. Aborting."
         exit 1
