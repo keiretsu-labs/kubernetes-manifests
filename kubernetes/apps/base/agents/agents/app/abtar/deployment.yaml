@@ -49,7 +49,7 @@ spec:
               mountPath: /opt/data
       containers:
         - name: gateway
-          image: nousresearch/hermes-agent:v2026.6.19
+          image: nousresearch/hermes-agent:v2026.7.1
           args: ["gateway", "run"]
           envFrom:
             - configMapRef:
