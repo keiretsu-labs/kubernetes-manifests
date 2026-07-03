@@ -27,12 +27,15 @@ spec:
   hostnames:
     - "tailbench.${CLUSTER_DOMAIN}"
   rules:
-    - backendRefs:
-        - group: ""
-          kind: Service
-          name: tailbench
-          port: 80
-          weight: 1
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: rajsinghtech.github.io
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /tailbench
+            port: 443
       matches:
         - path:
             type: PathPrefix
