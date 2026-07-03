@@ -42,6 +42,7 @@ data:
 
     cameras:
       basement_cam:
+        enabled: false
         friendly_name: Basement
         ffmpeg:
           inputs:
