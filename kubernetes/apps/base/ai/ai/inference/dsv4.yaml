@@ -37,7 +37,7 @@ data:
     set -euo pipefail
     MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
     HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-DSpark}"
-    EXPECTED=46
+    EXPECTED=48
     MARKER_FILE="$${MODEL_DIR}/.hf_repo_marker"
 
     mkdir -p "$${MODEL_DIR}"
