@@ -8,7 +8,6 @@ resources:
   - ./border0
   - ./cloudflare
   - ./cnpg-system
-  - ./dragonfly-operator-system
   - ./fluent-bit
   - ./garage-operator-system
   - ./garage
@@ -17,7 +16,6 @@ resources:
   - ./home
   - ./home-assistant
   - ./homer-operator
-  - ./jellyswarrm
   - ./kro-system
   - ./kube-system
   - ./lws-system
