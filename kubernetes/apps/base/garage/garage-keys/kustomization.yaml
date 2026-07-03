@@ -9,4 +9,3 @@ resources:
   - immich-postgres-key.yaml
   - tailscale-logs-key.yaml
   - mimir-key.yaml
-  - tempo-key.yaml
