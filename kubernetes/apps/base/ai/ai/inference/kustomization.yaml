@@ -6,7 +6,7 @@ namespace: ai
 resources:
   - namespace.yaml
   - vllm.yaml
-  # - dsv4.yaml
+  - dsv4.yaml
   - ai-gateway.yaml
   - vllm-route.yaml
   - vllm-dnsrecord.yaml
