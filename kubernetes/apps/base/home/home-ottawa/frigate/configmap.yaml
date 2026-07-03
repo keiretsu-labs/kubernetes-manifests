@@ -23,6 +23,9 @@ data:
         type: cpu
 
     go2rtc:
+      log:
+        webrtc: trace
+        exec: debug
       webrtc:
         candidates:
           - "frigate.${LOCATION}.${COMMON_DOMAIN}:8555"
