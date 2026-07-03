@@ -12,4 +12,3 @@ resources:
   - ./securitypolicy.yaml
   - ./unifi-talkback-secret.yaml
   - ./webrtc-routes.yaml
-  - ./tinyauth-redirect-lua.yaml
