@@ -57,6 +57,10 @@ spec:
 
     deployNodeAgent: true
     nodeAgent:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
       uploaderType: kopia
       podVolumePath: /var/lib/kubelet/pods
       resources:
