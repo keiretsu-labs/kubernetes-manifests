@@ -33,7 +33,11 @@ data:
     mkdir -p "$${MODEL_DIR}"
     cd "$${MODEL_DIR}"
 
-    # Clean out any old shards first to avoid mixed checkpoints
+    # Clean stale lock files from previous downloads
+    echo "[download] Cleaning stale lock files…"
+    rm -rf "$${MODEL_DIR}"/.cache/huggingface/download/*.lock 2>/dev/null || true
+
+    # Clean out any old shards from different model versions
     echo "[download] Clearing old model files…"
     rm -rf "$${MODEL_DIR}"/*.safetensors "$${MODEL_DIR}"/*.safetensors.index.json 2>/dev/null || true
 
