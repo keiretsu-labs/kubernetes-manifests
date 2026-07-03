@@ -187,7 +187,7 @@ spec:
               --max-model-len 1000000 \
               --max-num-seqs 3 --max-num-batched-tokens 8192 \
               --max-cudagraph-capture-size 3 \
-              --gpu-memory-utilization 0.77 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
@@ -353,7 +353,7 @@ spec:
               --max-model-len 1000000 \
               --max-num-seqs 3 --max-num-batched-tokens 8192 \
               --max-cudagraph-capture-size 3 \
-              --gpu-memory-utilization 0.77 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
