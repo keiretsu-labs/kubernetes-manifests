@@ -65,52 +65,26 @@ spec:
               value: /opt/data/.aws/config
             # v2026.5.29 introduced s6 supervision — dashboard runs in the same
             # container as the gateway. HERMES_DASHBOARD=1 spawns it; TUI=1
-            # enables the embedded chat tab.
-            #
-            # v2026.7.1 removed HERMES_DASHBOARD_INSECURE — a non-loopback
-            # dashboard bind now hard-fails without an auth provider. Bind to
-            # 127.0.0.1:9120 (loopback → no auth gate) and proxy 0.0.0.0:9119
-            # → 127.0.0.1:9120 via a postStart Python TCP proxy. The dashboard
-            # route is gated by tinyauth SecurityPolicy + Tailscale tag:raj
-            # ACL, so no second auth prompt is needed.
+            # enables the embedded chat tab; HOST=0.0.0.0 exposes it.
             - name: HERMES_DASHBOARD
               value: "1"
             - name: HERMES_DASHBOARD_TUI
               value: "1"
             - name: HERMES_DASHBOARD_HOST
-              value: "127.0.0.1"
+              value: "0.0.0.0"
             - name: HERMES_DASHBOARD_PORT
-              value: "9120"
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                  - /bin/sh
-                  - -c
-                  - |
-                    cat > /tmp/dashboard-proxy.py <<'PYEOF'
-                    import socket, threading
-                    def fwd(s, d):
-                        try:
-                            while True:
-                                b = s.recv(8192)
-                                if not b: break
-                                d.sendall(b)
-                        except: pass
-                        finally:
-                            s.close(); d.close()
-                    l = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    l.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    l.bind(("0.0.0.0", 9119)); l.listen(128)
-                    while True:
-                        c, _ = l.accept()
-                        try:
-                            u = socket.create_connection(("127.0.0.1", 9120), timeout=5)
-                            threading.Thread(target=fwd, args=(c, u), daemon=True).start()
-                            threading.Thread(target=fwd, args=(u, c), daemon=True).start()
-                        except: c.close()
-                    PYEOF
-                    (while true; do python3 /tmp/dashboard-proxy.py 2>/dev/null; sleep 1; done) &
+              value: "9119"
+            # v2026.7.1 removed HERMES_DASHBOARD_INSECURE — a non-loopback
+            # dashboard bind now requires an auth provider. bhaiya serves a
+            # minimal OIDC provider that bridges tinyauth auth; the dashboard
+            # route is also gated by tinyauth SecurityPolicy + Tailscale
+            # tag:raj ACL. No double login — tinyauth SSO is the sole auth.
+            - name: HERMES_DASHBOARD_OIDC_ISSUER
+              value: "https://bhaiya.keiretsu.top"
+            - name: HERMES_DASHBOARD_OIDC_CLIENT_ID
+              value: "assistant-raj"
+            - name: HERMES_DASHBOARD_PUBLIC_URL
+              value: "https://raj.hermes.keiretsu.top"
           ports:
             - name: gateway
               containerPort: 8642
