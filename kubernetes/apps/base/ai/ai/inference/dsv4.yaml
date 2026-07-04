@@ -179,7 +179,7 @@ spec:
             cp -r /overlay/vllm/* /opt/env/lib/python3.12/site-packages/vllm/
             echo "[dspark] Overlay applied. Starting vLLM with DSpark…"
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
-              --served-model-name deepseek-v4-flash DeepSeek-V4-Flash-DSpark \
+              --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
@@ -350,7 +350,7 @@ spec:
             cp -r /overlay/vllm/* /opt/env/lib/python3.12/site-packages/vllm/
             echo "[dspark] Overlay applied. Starting vLLM with DSpark…"
             exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
-              --served-model-name deepseek-v4-flash DeepSeek-V4-Flash-DSpark \
+              --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
