@@ -29,6 +29,7 @@ spec:
       envoyDeployment:
         replicas: 1
         pod:
+          priorityClassName: infra-high
           topologySpreadConstraints:
             - maxSkew: 1
               topologyKey: kubernetes.io/hostname
