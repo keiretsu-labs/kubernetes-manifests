@@ -1,0 +1,69 @@
+---
+# Cluster-wide memory request FLOOR, applied natively at admission.
+#
+# Problem it solves (fleet audit, 2026-07): ~60% of running pods declare no
+# memory request and land as BestEffort. That (1) lets the scheduler overcommit
+# node memory limits to 95-117% of allocatable off phantom "~30% used" numbers,
+# and (2) makes those pods the kernel OOM-killer's first victims — it scores by
+# (usage - request), so a zero request scores worst, regardless of which pod
+# actually caused the pressure. A small request floor makes scheduler
+# reservations honest and reshapes OOM-victim ordering.
+#
+# Why a MutatingAdmissionPolicy instead of a per-namespace LimitRange:
+#   - ONE cluster-scoped object covers every namespace, including future ones.
+#     No per-app wiring to remember, no drift, no multi-owner conflicts.
+#   - Native (GA in k8s 1.36), no controller/CRDs to run, upgrade, or monitor.
+#   - failurePolicy: Ignore -> a CEL error can NEVER block pod creation; worst
+#     case it silently no-ops, exactly like not having the policy.
+#
+# Behaviour: for each container that has NO memory request, inject memory=64Mi.
+# It is memory-only ON PURPOSE. The requests map is granularly server-side
+# merged, so a container that already sets cpu (but not memory) keeps its cpu
+# and only gains the memory floor — do NOT add cpu here or you will CLOBBER
+# existing cpu requests (verified live). Containers that already set a memory
+# request are emitted name-only => untouched. VPA-managed pods (which carry
+# requests) are therefore never overridden.
+#
+# Scope note: only spec.containers are floored, not initContainers/
+# ephemeralContainers. Control-plane static/mirror pods bypass admission and
+# are unaffected.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: memory-request-floor
+spec:
+  failurePolicy: Ignore
+  reinvocationPolicy: IfNeeded
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >
+          Object{
+            spec: Object.spec{
+              containers: object.spec.containers.map(c,
+                (has(c.resources) && has(c.resources.requests) && "memory" in c.resources.requests)
+                  ? Object.spec.containers{name: c.name}
+                  : Object.spec.containers{
+                      name: c.name,
+                      resources: Object.spec.containers.resources{
+                        requests: {"memory": "64Mi"}
+                      }
+                    }
+              )
+            }
+          }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: memory-request-floor
+spec:
+  policyName: memory-request-floor
+  matchResources:
+    namespaceSelector: {}   # all namespaces
