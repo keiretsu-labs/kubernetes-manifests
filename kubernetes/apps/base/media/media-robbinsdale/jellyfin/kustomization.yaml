@@ -6,3 +6,4 @@ resources:
   - app.yaml
   - pvc.yaml
   - httproute.yaml
+  - backendtrafficpolicy.yaml

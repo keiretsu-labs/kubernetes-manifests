@@ -6,4 +6,5 @@ resources:
   - app.yaml
   - resourceclaimtemplate.yaml
   - httproute.yaml
+  - backendtrafficpolicy.yaml
   - dashboard-jellyfin.yaml

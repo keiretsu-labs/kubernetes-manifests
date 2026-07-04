@@ -2,12 +2,12 @@
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: BackendTrafficPolicy
 metadata:
-  name: plex-upgrade-policy
+  name: jellyfin-streaming
 spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: HTTPRoute
-    name: plex
+    name: jellyfin
   httpUpgrade:
     - type: websocket
   connection:
@@ -15,6 +15,5 @@ spec:
   timeout:
     http:
       connectionIdleTimeout: 900s
-      maxConnectionDuration: 0s  # unlimited
-      requestTimeout: 0s  # unlimited for streaming
-# clusterplex-upgrade-policy removed - clusterplex disabled due to kernel RCU stall (2026-01-12)
+      maxConnectionDuration: 0s
+      requestTimeout: 0s
