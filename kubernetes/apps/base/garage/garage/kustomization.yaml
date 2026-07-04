@@ -12,6 +12,7 @@ resources:
   - rpc-secret.yaml
   - httproute-s3.yaml
   - httproute-web.yaml
+  - web-cache.yaml
   - referencegrant-agent-web.yaml
   - referencegrant-bhaiya-web.yaml
   - probes.yaml
@@ -26,5 +27,10 @@ configMapGenerator:
         grafana_dashboard: "1"
       annotations:
         grafana_folder: garage
+  - name: garage-web-cache-nginx
+    files:
+      - default.conf=web-cache.conf
+    options:
+      disableNameSuffixHash: false
 generatorOptions:
   disableNameSuffixHash: true

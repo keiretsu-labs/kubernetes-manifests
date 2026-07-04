@@ -1,0 +1,82 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: garage-web-cache
+  labels:
+    app.kubernetes.io/name: garage-web-cache
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: garage-web-cache
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: garage-web-cache
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101            # make the emptyDir group-writable by the nginx uid
+      containers:
+        - name: nginx
+          image: nginxinc/nginx-unprivileged:1.27-alpine
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+            - name: cache
+              mountPath: /var/cache/nginx
+            - name: tmp
+              mountPath: /tmp          # nginx-unprivileged writes its pid here; needed under readOnlyRootFilesystem
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+      volumes:
+        - name: config
+          configMap:
+            name: garage-web-cache-nginx
+        - name: cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: garage-web-cache
+  labels:
+    app.kubernetes.io/name: garage-web-cache
+spec:
+  selector:
+    app.kubernetes.io/name: garage-web-cache
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
