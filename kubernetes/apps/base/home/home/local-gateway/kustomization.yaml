@@ -12,7 +12,6 @@ resources:
   - external-dns-unifi.yaml
   - secret.yaml
   - clienttrafficpolicy.yaml
-  - securitypolicy-public.yaml
   - certificate-s3.yaml
   - certificate-agents.yaml
   - certificate-hermes.yaml
