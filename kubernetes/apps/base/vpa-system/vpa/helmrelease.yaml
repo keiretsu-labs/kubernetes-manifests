@@ -1,0 +1,51 @@
+---
+# Vertical Pod Autoscaler — RECOMMENDER ONLY.
+#
+# The updater and admission-controller are disabled, so VPA physically cannot
+# evict or mutate any pod: it only computes recommendations you read with
+#   kubectl get vpa -A
+#   kubectl describe vpa <name>            # target / lowerBound / upperBound
+# Create VerticalPodAutoscaler CRs with updateMode: "Off" for the workloads you
+# want sized; the recommender fills in .status.recommendation from usage history
+# (metrics-server backed). Nothing changes on the cluster until a human copies a
+# recommendation into a request. This is the data source that replaces guessing
+# at the 64Mi memory-request floor.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: vpa
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: vpa
+      version: 4.12.3
+      sourceRef:
+        kind: HelmRepository
+        name: fairwinds
+        namespace: flux-system
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    recommender:
+      enabled: true
+      replicaCount: 1
+      priorityClassName: infra-default
+      extraArgs:
+        pod-recommendation-min-cpu-millicores: 15
+        pod-recommendation-min-memory-mb: 100
+      resources:
+        requests:
+          cpu: 25m
+          memory: 128Mi
+        limits:
+          memory: 512Mi
+    # recommend-only: no eviction, no pod mutation
+    updater:
+      enabled: false
+    admissionController:
+      enabled: false

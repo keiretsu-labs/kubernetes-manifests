@@ -46,5 +46,6 @@ resources:
   - ./tinyauth-egress
   - ./rook-ceph
   - ./velero
+  - ./vpa-system
   - ./victoria-logs
   - ./victoria-logs/victoria-logs.yaml

@@ -59,6 +59,7 @@ resources:
   - ./k8s-gpu-dra-driver
   - ./rook-ceph
   - ./velero
+  - ./vpa-system
   - ./victoria-logs
   - ./victoria-logs/victoria-logs.yaml
   - ./woodpecker
