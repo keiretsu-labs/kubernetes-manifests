@@ -7,3 +7,4 @@ resources:
   - ./headlamp.yaml
   - ./cilium.yaml
   - ./irqbalance.yaml
+  - ./memory-request-floor.yaml
