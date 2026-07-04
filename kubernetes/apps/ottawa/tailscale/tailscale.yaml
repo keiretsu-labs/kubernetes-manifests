@@ -31,6 +31,7 @@ spec:
   path: ./kubernetes/apps/base/tailscale/resources
   dependsOn:
     - name: tailscale-operator
+    - name: priority-classes
   prune: true
   sourceRef:
     kind: GitRepository

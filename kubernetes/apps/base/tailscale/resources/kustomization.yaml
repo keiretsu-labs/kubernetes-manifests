@@ -9,7 +9,6 @@ resources:
   - ./proxygroup.yaml
   - ./recorder.yaml
   - ./egress.yaml
-  - ./priorityclasses.yaml
   - ./tailnet.yaml
   # - ./tsjustworks-proxygroup.yaml
   # Dashboards

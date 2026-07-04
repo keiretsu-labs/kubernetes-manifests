@@ -6,3 +6,4 @@ resources:
   - ./csi-secrets-store.yaml
   - ./cilium.yaml
   - ./memory-request-floor.yaml
+  - ./priority-classes.yaml
