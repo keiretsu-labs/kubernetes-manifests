@@ -44,5 +44,6 @@ resources:
   - ./spiderpool
   - ./gpu-operator
   - ./velero
+  - ./vpa-system
   - ./victoria-logs
   - ./victoria-logs/victoria-logs.yaml
