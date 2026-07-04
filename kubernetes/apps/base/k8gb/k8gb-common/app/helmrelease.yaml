@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: k8gb
-      version: "v0.19.0"
+      version: "v0.20.0"
       sourceRef:
         kind: HelmRepository
         name: k8gb
@@ -28,8 +28,6 @@ spec:
                 value: infra-high
   values:
     k8gb:
-      imageRepo: ghcr.io/rajsinghtech/k8gb
-      imageTag: 1fae0311
       clusterGeoTag: "${LOCATION}"
       extGslbClustersGeoTags: "${K8GB_EXT_GEO_TAGS}"
       dnsZones:
