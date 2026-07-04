@@ -74,10 +74,14 @@ spec:
               value: "0.0.0.0"
             - name: HERMES_DASHBOARD_PORT
               value: "9119"
-            # Skip the dashboard's OAuth gate. Safe here because access is
-            # already gated at the network layer by Tailscale `tag:raj` ACL.
-            - name: HERMES_DASHBOARD_INSECURE
-              value: "1"
+            # v2026.7.1 removed HERMES_DASHBOARD_INSECURE — a non-loopback
+            # dashboard bind now requires an auth provider. The dashboard route
+            # is already gated by tinyauth SecurityPolicy + Tailscale tag:raj
+            # ACL, so basic auth just satisfies the bind check.
+            - name: HERMES_DASHBOARD_BASIC_AUTH_USERNAME
+              value: "hermes"
+            - name: HERMES_DASHBOARD_BASIC_AUTH_PASSWORD
+              value: "hermes-dashboard"
           ports:
             - name: gateway
               containerPort: 8642
