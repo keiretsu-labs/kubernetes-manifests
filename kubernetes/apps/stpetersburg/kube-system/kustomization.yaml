@@ -7,3 +7,4 @@ resources:
   - ./cilium.yaml
   - ./irqbalance.yaml
   - ./memory-request-floor.yaml
+  - ./priority-classes.yaml

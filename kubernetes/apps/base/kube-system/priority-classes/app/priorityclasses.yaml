@@ -1,3 +1,10 @@
+# Cluster-foundational PriorityClasses. Referenced by name across the whole
+# fleet (cert-manager, prometheus, garage, rook, tailscale proxies, envoy +
+# ai gateways, k8gb, ...). Kept in a standalone app — NOT inside any workload
+# app — so a single app's failure/suspension can never prune these out from
+# under everything that references them (a missing PriorityClass fails pod
+# admission cluster-wide). Deployed early via the kube-system overlay.
+---
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
