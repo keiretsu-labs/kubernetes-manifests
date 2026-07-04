@@ -208,6 +208,11 @@ spec:
           - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
+          # patch). Without it, batching a rejected-spec decode row with a chunked
+          # prefill chunk raises "uniform effective per-request target context
+          # lengths" and kills EngineCore. Required for --max-num-seqs > 1.
+          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
@@ -374,6 +379,11 @@ spec:
           - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
+          # patch). Without it, batching a rejected-spec decode row with a chunked
+          # prefill chunk raises "uniform effective per-request target context
+          # lengths" and kills EngineCore. Required for --max-num-seqs > 1.
+          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
