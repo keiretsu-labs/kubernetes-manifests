@@ -1,0 +1,20 @@
+# limit-range: give every container in a namespace a memory/CPU request FLOOR
+# it doesn't already set. Fixes the fleet-wide "60% of pods are BestEffort"
+# problem that drives node overcommit + random OOM-kills. See limitrange.yaml
+# for the rationale.
+#
+# Opt in from a base app dir (the kustomization that sets `namespace:` — the
+# LimitRange inherits it and lands in the right namespace on every cluster that
+# carries the app's pointer):
+#
+#   namespace: <ns>
+#   components:
+#     - ../../../../components/limit-range      # adjust relative depth
+#
+# Floor-only by design: it never rejects a pod and adds no limit, so rollout is
+# safe. Bounding runaway pods with default *limits* is a per-namespace phase-2
+# change that should be sized from real p95 usage, not guessed globally.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - limitrange.yaml
