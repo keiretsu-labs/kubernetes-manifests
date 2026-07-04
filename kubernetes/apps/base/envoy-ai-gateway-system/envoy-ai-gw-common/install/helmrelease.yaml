@@ -21,3 +21,15 @@ spec:
   releaseName: aieg
   install:
     createNamespace: false
+  # The ai-gateway-helm chart exposes no priorityClassName for its controller
+  # Deployment, so patch it in post-render (matches the k8gb controller pattern).
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: ai-gateway-controller
+            patch: |
+              - op: add
+                path: /spec/template/spec/priorityClassName
+                value: infra-high
