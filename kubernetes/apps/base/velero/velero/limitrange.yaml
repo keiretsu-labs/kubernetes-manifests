@@ -1,0 +1,28 @@
+---
+# Bound velero's repository-maintenance (kopia) jobs. Velero spawns them with
+# NO memory limit, and they burst to ~1 GiB (measured peak 1040Mi on ottawa,
+# 14d) — an unbounded batch family that can push a node into OOM. A LimitRange
+# is used instead of the velero chart's maintenance-job resource keys because it
+# is chart-version-proof and also catches the ad-hoc UUID-named job pods.
+#
+# Scope: only fills containers that set no memory limit, so velero-server and
+# node-agent (which already declare limits) are untouched. defaultRequest is set
+# explicitly so the default LIMIT does not silently pull the request up to 2Gi
+# (LimitRange sets request=limit when only `default` is given). Memory only —
+# leaving cpu unbounded is fine for restartable batch jobs.
+#
+# Interplay with the cluster-wide memory-request-floor MutatingAdmissionPolicy:
+# both target a missing memory request; whichever admission stage runs first
+# wins (64Mi from the policy or 256Mi here), and the 2Gi limit applies either
+# way. Bounding, not the exact request, is the point.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: velero-maintenance-bounds
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        memory: 256Mi
+      default:
+        memory: 2Gi
