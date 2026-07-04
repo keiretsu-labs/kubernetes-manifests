@@ -40,6 +40,10 @@ spec:
       # tax a full server pays, dropping RSS from multi-GB to a few hundred MB.
       agentMode: true
       prometheusSpec:
+        # Observability agent — keep it above default workloads under memory
+        # pressure so it isn't the first thing evicted (its sibling alertmanager
+        # below already uses infra-high).
+        priorityClassName: infra-high
         externalLabels:
           cluster: ${CLUSTER_NAME}
         externalUrl: https://prometheus.${CLUSTER_DOMAIN}
