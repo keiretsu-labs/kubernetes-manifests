@@ -1,0 +1,9 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - web-cache.yaml
+configMapGenerator:
+  - name: garage-web-cache-nginx
+    files:
+      - default.conf=web-cache.conf
