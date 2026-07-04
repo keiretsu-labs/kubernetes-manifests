@@ -2,14 +2,14 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: agents-demo
+  name: agents-hermes-demo
   namespace: flux-system
 spec:
   targetNamespace: agents
   commonMetadata:
     labels:
-      app.kubernetes.io/name: agents-demo
-  path: ./clusters/${CLUSTER_NAME}/apps/agents/app/groups/demo
+      app.kubernetes.io/name: agents-hermes-demo
+  path: ./kubernetes/apps/base/agents/agents-hermes-demo
   prune: true
   dependsOn:
     - name: agents

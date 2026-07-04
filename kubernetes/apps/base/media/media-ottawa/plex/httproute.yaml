@@ -38,14 +38,7 @@ spec:
                 value: "https"
         - type: ResponseHeaderModifier
           responseHeaderModifier:
-            remove:
-              - "Server"
-              - "X-XSS-Protection"
             set:
-              - name: "X-Content-Type-Options"
-                value: "nosniff"
-              - name: "X-Frame-Options"
-                value: "SAMEORIGIN"
               - name: "Cache-Control"
                 value: "no-transform"
       matches:
