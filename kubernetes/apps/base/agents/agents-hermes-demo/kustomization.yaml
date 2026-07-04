@@ -3,20 +3,17 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: agents
 components:
-  - ../../_component/hermes-group
+  - ../../../../components/hermes-group
 generatorOptions:
-  # group-meta only feeds the component's replacements; local-config keeps it out
-  # of the applied output so this group's Flux Kustomization never tries to own a
-  # ConfigMap/group-meta (which would clash with other groups in the namespace).
   disableNameSuffixHash: true
   annotations:
     config.kubernetes.io/local-config: "true"
 configMapGenerator:
   - name: group-meta
     literals:
-      - name=team-a
-      - host=team-a.agents.${COMMON_DOMAIN}
-      - clientID=372060aa-2754-434c-a46b-d4c5b792c069
+      - name=demo
+      - host=demo.agents.${COMMON_DOMAIN}
+      - clientID=521f2f61-f465-4f06-8c84-eafd501cdf62
       - size=20Gi
 resources:
   - secret.sops.yaml
@@ -28,5 +25,5 @@ patches:
       - op: replace
         path: /data/AGENT_SYSTEM_PROMPT
         value: |
-          You are the team-a group's shared assistant.
+          You are the Demo group's shared assistant.
           Keep answers terse and technical.

@@ -1,0 +1,29 @@
+---
+# Default security headers for all routes on the public and private gateways.
+# Covers X-Content-Type-Options, X-Frame-Options, and removes server-identifying
+# headers. App-specific headers (Cache-Control, X-Forwarded-Proto, etc.) are set
+# per-HTTPRoute and override these defaults.
+#
+# The `ts` gateway is tailnet-only (mTLS + identity-aware) so it doesn't need
+# these — the attack surface is the tailnet itself.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: public-security-headers
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+  responseHeaderModifier:
+    remove:
+      - "Server"
+      - "X-XSS-Protection"
+    set:
+      - name: "X-Content-Type-Options"
+        value: "nosniff"
+      - name: "X-Frame-Options"
+        value: "SAMEORIGIN"
