@@ -4,6 +4,7 @@ resources:
   - ./namespace.yaml
   - ./velero-key.yaml
   - ./helmrelease.yaml
+  - ./limitrange.yaml
   - ./servicemonitor.yaml
   - ./dashboard-configmap.yaml
   - ./grafana-dashboard.yaml
