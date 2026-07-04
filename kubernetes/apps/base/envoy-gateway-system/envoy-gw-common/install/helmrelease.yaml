@@ -21,6 +21,11 @@ spec:
     crds: CreateReplace
   releaseName: envoy-gateway
   values:
+    deployment:
+      # Keep the gateway control plane above default workloads under memory
+      # pressure; the data-plane proxies carry the same class via their
+      # EnvoyProxy CRs (home namespace).
+      priorityClassName: infra-high
     config:
       envoyGateway:
         extensionApis:
