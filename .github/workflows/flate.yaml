@@ -93,7 +93,7 @@ jobs:
           if [ "$FLATE_EXIT" -ne 0 ]; then
             echo "::warning::flate diff exited $FLATE_EXIT for ${{ matrix.cluster }} — see the sticky PR comment"
           fi
-      - uses: marocchino/sticky-pull-request-comment@v3.0.4
+      - uses: marocchino/sticky-pull-request-comment@v3.0.5
         with:
           header: flate-diff-${{ matrix.cluster }}
           path: comment.md
