@@ -22,6 +22,7 @@ resources:
   - ./envoy-gateway.yaml
   - ./external-dns.yaml
   - ./external-secrets.yaml
+  - ./fairwinds.yaml
   - ./nvidia.yaml
   - ./nvidia-device-plugin.yaml
   - ./fluent.yaml
