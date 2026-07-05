@@ -37,13 +37,16 @@ data:
     MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
     HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash}"
     EXPECTED=42
+    # NOTE: shard count check uses -eq (not -ge). If the old DSpark model
+    # (48 shards) is cached from a previous deployment, it won't match 42
+    # and triggers a clean re-download of the standard model.
 
     mkdir -p "$${MODEL_DIR}"
     cd "$${MODEL_DIR}"
 
     # Check if model is already cached on PVC — skip download if complete
     COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
-    if [ "$${COUNT}" -ge "$${EXPECTED}" ]; then
+    if [ "$${COUNT}" -eq "$${EXPECTED}" ]; then
       echo "[download] All $${EXPECTED} shards already present — skipping download."
       echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
       echo "[download] Done."
