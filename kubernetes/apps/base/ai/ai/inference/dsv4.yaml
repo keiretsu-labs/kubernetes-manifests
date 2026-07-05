@@ -9,15 +9,19 @@
 #                 (Aiden's community image, B12X MoE, CUDA 12.1, sm121)
 # Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
 #
-# Incremental improvements from Tony's NVFP4 recipe (2026-07-03 garble fix):
-# - --async-scheduling, --enable-chunked-prefill
-# - --max-cudagraph-capture-size 3 (match max-num-seqs)
-# - VLLM_USE_FLASHINFER_SAMPLER=1
+# Incremental improvements from Tony's C12 NVFP4 recipe + MiaAI-Lab benchmarks:
+# - --enable-chunked-prefill, --async-scheduling
+# - --kv-cache-dtype nvfp4_ds_mla (if supported) → 3.2M token KV pool
+# - --max-num-seqs 6, --max-model-len 1000000
+# - draft_sample_method: probabilistic → ~49 vs ~32 tok/s over greedy
+# - VLLM_USE_B12X_WO_PROJECTION=1 (critical MoE speed lift)
+# - ~20 DSpark garble-fix env vars (confidence_scheduler=off, local_argmax=1, etc.)
+# - --reasoning-config, --default-chat-template-kwargs, --generation-config vllm
 #
 # Memory guard  : 93Gi Guaranteed QoS, drop-caches init + loop sidecar,
 #                 GPU reset at startup. DSpark weights: 79.44 GiB.
-#                 Ceiling: 0.78 util (effective ~0.77 w/ CUDA graph profiling).
-#                 DSpark delta: 800K ctx fits (6.53 GiB KV avail, ~6.1 GiB needed).
+#                 With fp8 KV: 800K ctx fits (6.53 GiB KV avail).
+#                 With nvfp4_ds_mla: ~3.2M tokens, 12 seqs feasible.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -186,18 +190,22 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 800000 \
-              --max-num-seqs 3 --max-num-batched-tokens 8192 \
-              --max-cudagraph-capture-size 3 \
-              --gpu-memory-utilization 0.78 \
+              --max-model-len 1000000 \
+              --max-num-seqs 6 --max-num-batched-tokens 8192 \
+              --max-cudagraph-capture-size 6 \
+              --gpu-memory-utilization 0.80 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
+              --enable-chunked-prefill \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
-              --speculative-config '{"method":"dspark","num_speculative_tokens":5}' \
+              --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
+              --default-chat-template-kwargs '{"thinking":false}' \
+              --generation-config vllm \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
               --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 25002
           ports:
@@ -207,14 +215,36 @@ spec:
           - { name: VLLM_HOST_IP, value: "192.168.74.1" }
           - { name: MASTER_ADDR, value: "192.168.74.1" }
           - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
           - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: VLLM_TRITON_MLA_SPARSE, value: "1" }
+          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
           # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
           # patch). Without it, batching a rejected-spec decode row with a chunked
           # prefill chunk raises "uniform effective per-request target context
           # lengths" and kills EngineCore. Required for --max-num-seqs > 1.
           - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
+          # DSpark agent-stability env vars (from Tony's 2026-07-03 garble-fix profile)
+          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
+          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
+          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
+          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
+          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
+          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
+          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
+          - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
+          - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
+          - { name: NCCL_NVLS_ENABLE, value: "0" }
+          - { name: NCCL_NET, value: "IB" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
@@ -357,18 +387,22 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 800000 \
-              --max-num-seqs 3 --max-num-batched-tokens 8192 \
-              --max-cudagraph-capture-size 3 \
-              --gpu-memory-utilization 0.78 \
+              --max-model-len 1000000 \
+              --max-num-seqs 6 --max-num-batched-tokens 8192 \
+              --max-cudagraph-capture-size 6 \
+              --gpu-memory-utilization 0.80 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
+              --enable-chunked-prefill \
               --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
-              --speculative-config '{"method":"dspark","num_speculative_tokens":5}' \
+              --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
+              --default-chat-template-kwargs '{"thinking":false}' \
+              --generation-config vllm \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
               --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 25002 \
               --headless
@@ -378,14 +412,36 @@ spec:
           - { name: MASTER_ADDR, value: "192.168.74.1" }
           - { name: HEADLESS, value: "1" }
           - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
           - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: VLLM_TRITON_MLA_SPARSE, value: "1" }
+          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
           # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
           # patch). Without it, batching a rejected-spec decode row with a chunked
           # prefill chunk raises "uniform effective per-request target context
           # lengths" and kills EngineCore. Required for --max-num-seqs > 1.
           - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
+          # DSpark agent-stability env vars (from Tony's 2026-07-03 garble-fix profile)
+          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
+          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
+          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
+          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
+          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
+          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
+          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
+          - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
+          - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
+          - { name: NCCL_NVLS_ENABLE, value: "0" }
+          - { name: NCCL_NET, value: "IB" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
