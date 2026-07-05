@@ -227,13 +227,12 @@ spec:
               --kv-cache-dtype nvfp4 --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --max-cudagraph-capture-size 4 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
+              --enforce-eager \
               --enable-chunked-prefill \
-              --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
@@ -456,13 +455,12 @@ spec:
               --kv-cache-dtype nvfp4 --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --max-cudagraph-capture-size 4 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
+              --enforce-eager \
               --enable-chunked-prefill \
-              --compilation-config '{"cudagraph_mode":"PIECEWISE"}' \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
