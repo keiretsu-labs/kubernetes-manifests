@@ -5,7 +5,7 @@
 #
 # Architecture  : TP=2 via PyTorch mp backend, DSpark spec-decode,
 #                 fp8 KV cache, LeaderWorkerSet gang scheduling.
-# Image         : aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+# Image         : aidendle94/sparkrun-vllm-ds4-gb10:production-3.7 (2d old)
 #                 (Aiden's community image, B12X MoE, CUDA 12.1, sm121)
 #                 Built from: https://github.com/local-inference-lab/vllm/tree/dev/unholy-fusion
 # Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
@@ -127,7 +127,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
           command:
           - /bin/bash
           args:
@@ -145,18 +145,50 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: dspark-overlay
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
           command: [bash, -c]
           args:
           - |
             set -e
-            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
-            /opt/env/bin/git clone --depth 1 \
-              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
-              /tmp/dspark-repo 2>&1
-            echo "[dspark-overlay] Installing overlay files (17 files)…"
-            mkdir -p /overlay/vllm
-            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Finding git…"
+            GIT=$(command -v git || true)
+            if [ -z "$GIT" ]; then
+              echo "[dspark-overlay] Git not found at command path, checking common locations…"
+              for p in /usr/bin/git /usr/local/bin/git /bin/git /opt/env/bin/git; do
+                if [ -x "$p" ]; then GIT="$p"; break; fi
+              done
+            fi
+            if [ -z "$GIT" ]; then
+              echo "[dspark-overlay] Git not found anywhere — downloading overlay via Python instead…"
+              python3 -c "
+import urllib.request, tarfile, io, os
+url = 'https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark/archive/main.tar.gz'
+print('Fetching', url)
+resp = urllib.request.urlopen(url)
+tar = tarfile.open(fileobj=io.BytesIO(resp.read()))
+os.makedirs('/overlay/vllm', exist_ok=True)
+base = 'DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark-main'
+prefix = base + '/recipe/overlay/vllm/'
+for m in tar:
+    if m.name.startswith(prefix) and m.isfile():
+        rel = os.path.relpath(m.name, prefix)
+        os.makedirs(os.path.dirname('/overlay/vllm/' + rel), exist_ok=True)
+        with tar.extractfile(m) as src, open('/overlay/vllm/' + rel, 'wb') as dst:
+            dst.write(src.read())
+            print(' ', rel)
+cnt = sum(len(f) for _, _, f in os.walk('/overlay/vllm'))
+print('Done.', cnt, 'files installed.')
+" 2>&1
+            else
+              echo "[dspark-overlay] Using git at: $GIT"
+              echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
+              $GIT clone --depth 1 \
+                https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+                /tmp/dspark-repo 2>&1
+              echo "[dspark-overlay] Installing overlay files…"
+              mkdir -p /overlay/vllm
+              cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            fi
             echo "[dspark-overlay] Done. Files:"
             find /overlay/vllm -type f | wc -l
           volumeMounts:
@@ -173,7 +205,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
           command: [bash, -c]
           args:
           - |
@@ -320,7 +352,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
           command:
           - /bin/bash
           args:
@@ -338,18 +370,50 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: dspark-overlay
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
           command: [bash, -c]
           args:
           - |
             set -e
-            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
-            /opt/env/bin/git clone --depth 1 \
-              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
-              /tmp/dspark-repo 2>&1
-            echo "[dspark-overlay] Installing overlay files (17 files)…"
-            mkdir -p /overlay/vllm
-            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Finding git…"
+            GIT=$(command -v git || true)
+            if [ -z "$GIT" ]; then
+              echo "[dspark-overlay] Git not found at command path, checking common locations…"
+              for p in /usr/bin/git /usr/local/bin/git /bin/git /opt/env/bin/git; do
+                if [ -x "$p" ]; then GIT="$p"; break; fi
+              done
+            fi
+            if [ -z "$GIT" ]; then
+              echo "[dspark-overlay] Git not found anywhere — downloading overlay via Python instead…"
+              python3 -c "
+import urllib.request, tarfile, io, os
+url = 'https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark/archive/main.tar.gz'
+print('Fetching', url)
+resp = urllib.request.urlopen(url)
+tar = tarfile.open(fileobj=io.BytesIO(resp.read()))
+os.makedirs('/overlay/vllm', exist_ok=True)
+base = 'DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark-main'
+prefix = base + '/recipe/overlay/vllm/'
+for m in tar:
+    if m.name.startswith(prefix) and m.isfile():
+        rel = os.path.relpath(m.name, prefix)
+        os.makedirs(os.path.dirname('/overlay/vllm/' + rel), exist_ok=True)
+        with tar.extractfile(m) as src, open('/overlay/vllm/' + rel, 'wb') as dst:
+            dst.write(src.read())
+            print(' ', rel)
+cnt = sum(len(f) for _, _, f in os.walk('/overlay/vllm'))
+print('Done.', cnt, 'files installed.')
+" 2>&1
+            else
+              echo "[dspark-overlay] Using git at: $GIT"
+              echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
+              $GIT clone --depth 1 \
+                https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+                /tmp/dspark-repo 2>&1
+              echo "[dspark-overlay] Installing overlay files…"
+              mkdir -p /overlay/vllm
+              cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            fi
             echo "[dspark-overlay] Done. Files:"
             find /overlay/vllm -type f | wc -l
           volumeMounts:
@@ -366,7 +430,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
           command: [bash, -c]
           args:
           - |
