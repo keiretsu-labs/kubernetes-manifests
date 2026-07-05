@@ -184,10 +184,10 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 1000000 \
+              --max-model-len 720000 \
               --max-num-seqs 3 --max-num-batched-tokens 8192 \
               --max-cudagraph-capture-size 3 \
-              --gpu-memory-utilization 0.78 \
+              --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
@@ -355,10 +355,10 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 1000000 \
+              --max-model-len 720000 \
               --max-num-seqs 3 --max-num-batched-tokens 8192 \
               --max-cudagraph-capture-size 3 \
-              --gpu-memory-utilization 0.78 \
+              --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
