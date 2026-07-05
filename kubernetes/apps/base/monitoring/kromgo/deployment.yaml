@@ -17,21 +17,17 @@ spec:
         - name: kromgo
           image: ghcr.io/home-operations/kromgo:0.15.0
           env:
-            - name: PROMETHEUS_URL
+            - name: KROMGO_PROMETHEUS_URL
               value: http://127.0.0.1:9090/prometheus
-            - name: SERVER_PORT
+            - name: KROMGO_SERVER_PORT
               value: "8080"
-            - name: HEALTH_PORT
-              value: "8888"
           ports:
             - name: http
               containerPort: 8080
-            - name: health
-              containerPort: 8888
           livenessProbe:
             httpGet:
               path: /readyz
-              port: health
+              port: http
             initialDelaySeconds: 0
             periodSeconds: 10
             timeoutSeconds: 1
@@ -39,7 +35,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /readyz
-              port: health
+              port: http
             initialDelaySeconds: 0
             periodSeconds: 10
             timeoutSeconds: 1
