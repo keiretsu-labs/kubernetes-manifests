@@ -271,7 +271,7 @@ spec:
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
           - { name: NCCL_NVLS_ENABLE, value: "0" }
           - { name: NCCL_NET, value: "IB" }
-          - { name: VLLM_PORT, value: "25001" }
+          - { name: VLLM_PORT, value: "25100" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
@@ -491,7 +491,7 @@ spec:
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
           - { name: NCCL_NVLS_ENABLE, value: "0" }
           - { name: NCCL_NET, value: "IB" }
-          - { name: VLLM_PORT, value: "25001" }
+          - { name: VLLM_PORT, value: "25100" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
