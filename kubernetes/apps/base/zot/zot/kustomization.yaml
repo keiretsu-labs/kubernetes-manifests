@@ -11,6 +11,7 @@ resources:
   - helmrelease.yaml
   - httproute-public.yaml
   - ingress-internal.yaml
+  - pdb.yaml
   - service-ts.yaml
   - servicemonitor.yaml
 configMapGenerator:

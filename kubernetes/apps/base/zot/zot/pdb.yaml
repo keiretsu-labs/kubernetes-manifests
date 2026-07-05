@@ -1,0 +1,15 @@
+---
+# Keep at least one zot replica serving during voluntary disruptions (node
+# drains from Talos/tuppr upgrades, evictions). Without this, a drain could
+# evict both replicas simultaneously and — because zot fatally exits and
+# reparses the whole S3 store on boot — leave the registry returning 503 for
+# the minute-plus it takes both pods to come back.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: zot
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zot
