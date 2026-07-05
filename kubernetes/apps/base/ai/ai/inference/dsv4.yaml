@@ -106,6 +106,8 @@ spec:
         labels: { app: dsv4, role: head }
       spec:
         terminationGracePeriodSeconds: 60
+        imagePullSecrets:
+        - name: ghcr-push-secret
         hostNetwork: true
         hostIPC: true
         dnsPolicy: ClusterFirstWithHostNet
@@ -276,6 +278,8 @@ spec:
         labels: { app: dsv4, role: worker }
       spec:
         terminationGracePeriodSeconds: 60
+        imagePullSecrets:
+        - name: ghcr-push-secret
         hostNetwork: true
         hostIPC: true
         dnsPolicy: ClusterFirstWithHostNet
