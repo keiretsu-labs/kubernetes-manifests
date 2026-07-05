@@ -166,6 +166,9 @@ spec:
             $GIT clone --depth 1 \
               https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
               /tmp/dspark-repo 2>&1
+            echo "[dspark-overlay] Installing overlay files…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
             echo "[dspark-overlay] Done. Files:"
             find /overlay/vllm -type f | wc -l
           volumeMounts:
@@ -368,6 +371,9 @@ spec:
             $GIT clone --depth 1 \
               https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
               /tmp/dspark-repo 2>&1
+            echo "[dspark-overlay] Installing overlay files…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
             echo "[dspark-overlay] Done. Files:"
             find /overlay/vllm -type f | wc -l
           volumeMounts:
