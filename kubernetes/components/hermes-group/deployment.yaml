@@ -51,7 +51,7 @@ spec:
             - name: shm
               mountPath: /dev/shm
         - name: workspace
-          image: ghcr.io/outsourc-e/hermes-workspace@sha256:2d2ba9aa5b1230766267322817e8e51113541780a5797802a582a47cc34a3df3
+          image: ghcr.io/outsourc-e/hermes-workspace@sha256:bf0fd5e65c4ec45b7f772630946b60b1b4424b586eeba08ba3afa54da43990fa
           env:
             - name: HERMES_API_URL
               value: "http://127.0.0.1:8642"
