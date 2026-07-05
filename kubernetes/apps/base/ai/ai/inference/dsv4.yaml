@@ -5,7 +5,7 @@
 #
 # Architecture  : TP=2 via PyTorch mp backend, DSpark spec-decode,
 #                 fp8 KV cache, LeaderWorkerSet gang scheduling.
-# Image         : aidendle94/sparkrun-vllm-ds4-gb10:production-3.7 (2d old)
+# Image         : aidendle94/sparkrun-vllm-ds4-gb10:production-v2 (2d old)
 #                 (Aiden's community image, B12X MoE, CUDA 12.1, sm121)
 #                 Built from: https://github.com/local-inference-lab/vllm/tree/dev/unholy-fusion
 # Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
@@ -127,7 +127,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command:
           - /bin/bash
           args:
@@ -145,7 +145,7 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: dspark-overlay
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
@@ -197,7 +197,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
@@ -351,7 +351,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command:
           - /bin/bash
           args:
@@ -369,7 +369,7 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: dspark-overlay
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
@@ -421,7 +421,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-3.7
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
