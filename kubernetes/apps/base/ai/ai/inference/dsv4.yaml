@@ -1,28 +1,26 @@
 # SPDX-FileCopyrightText: © 2025 Raj Singh <raj@keiretsu.cloud>
 # SPDX-License-Identifier: MIT
 #
-# DeepSeek-V4-Flash on 2× DGX Spark — vLLM v1 engine (MTP spec-decode)
+# DeepSeek-V4-Flash on 2× DGX Spark — vLLM v1 engine (DSpark spec-decode)
 #
-# Architecture  : TP=2 via PyTorch mp backend, MTP spec-decode,
+# Architecture  : TP=2 via PyTorch mp backend, DSpark spec-decode,
 #                 fp8 KV cache, LeaderWorkerSet gang scheduling.
-# Image         : eugr/spark-vllm:nightly-YYYYMMDD
-#                 (eugr's community standard image, 1.8k stars, vLLM + jasl fork)
-#                 Pinned for Renovate auto-update — see .renovate/customManagers.json
-# Model         : deepseek-ai/DeepSeek-V4-Flash (42 shards, FP8, 75.86 GiB)
-#                 NOTE: using standard model (not DSpark variant which needs
-#                 custom DSpark speculative decoding overlay). MTP spec-decode
-#                 works natively with standard vLLM.
+# Image         : aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+#                 (Aiden's community image, B12X MoE, CUDA 12.1, sm121)
+#                 Built from: https://github.com/local-inference-lab/vllm/tree/dev/unholy-fusion
+# Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
 #
-# Key settings:
-# - --kv-cache-dtype fp8 (standard fp8, not DSpark-specific nvfp4_ds_mla)
+# Key settings (kept from comprehensive upgrade):
 # - --max-num-seqs 6, --max-model-len 1000000
-# - --speculative-config method=mtp (standard MTP, not DSpark)
-# - --distributed-executor-backend mp (no Ray dependency)
-# - --enable-chunked-prefill, --enable-prefix-caching
-# - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+# - --enable-chunked-prefill, --enable-prefix-caching, --async-scheduling
+# - --reasoning-config, --default-chat-template-kwargs '{"thinking":false}'
+# - --generation-config vllm (no server-side sampling override)
+# - draft_sample_method: probabilistic → ~49 tok/s vs ~32 tok/s greedy
+# - VLLM_USE_B12X_MOE=1, VLLM_USE_B12X_WO_PROJECTION=1 (critical speed lift)
+# - DSpark garble-fix env vars (confidence_scheduler=off, local_argmax=1, etc.)
 #
 # Memory guard  : 93Gi Guaranteed QoS, drop-caches init + loop sidecar,
-#                 GPU reset at startup.
+#                 GPU reset at startup. DSpark weights: 79.44 GiB.
 #                 fp8 KV: ~800K ctx fits (6.53 GiB KV avail).
 ---
 apiVersion: v1
@@ -35,18 +33,15 @@ data:
     #!/bin/bash
     set -euo pipefail
     MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
-    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash}"
-    EXPECTED=42
-    # NOTE: shard count check uses -eq (not -ge). If the old DSpark model
-    # (48 shards) is cached from a previous deployment, it won't match 42
-    # and triggers a clean re-download of the standard model.
+    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-DSpark}"
+    EXPECTED=48
 
     mkdir -p "$${MODEL_DIR}"
     cd "$${MODEL_DIR}"
 
     # Check if model is already cached on PVC — skip download if complete
     COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
-    if [ "$${COUNT}" -eq "$${EXPECTED}" ]; then
+    if [ "$${COUNT}" -ge "$${EXPECTED}" ]; then
       echo "[download] All $${EXPECTED} shards already present — skipping download."
       echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
       echo "[download] Done."
@@ -132,8 +127,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          # renovate: datasource=docker depName=eugr/spark-vllm
-          image: eugr/spark-vllm:nightly-20260704
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command:
           - /bin/bash
           args:
@@ -150,6 +144,26 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
+        - name: dspark-overlay
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          command: [bash, -c]
+          args:
+          - |
+            set -e
+            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
+            /opt/env/bin/git clone --depth 1 \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+              /tmp/dspark-repo 2>&1
+            echo "[dspark-overlay] Installing overlay files (17 files)…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Done. Files:"
+            find /overlay/vllm -type f | wc -l
+          volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
+          resources:
+            requests: { memory: "2Gi", cpu: "1000m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
         containers:
         - name: drop-caches-loop
           image: busybox:1.38
@@ -159,16 +173,18 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          # renovate: datasource=docker depName=eugr/spark-vllm
-          image: eugr/spark-vllm:nightly-20260704
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
             # Drop page cache immediately before weight load
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            echo "[vllm] Starting vLLM (eugr/spark-vllm image)…"
-            exec vllm serve /models/dsv4 \
+            # Apply DSpark overlay to vllm site-packages
+            echo "[dspark] Applying DSpark overlay (17 files)…"
+            cp -r /overlay/vllm/* /opt/env/lib/python3.12/site-packages/vllm/
+            echo "[dspark] Overlay applied. Starting vLLM with DSpark…"
+            exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
@@ -177,7 +193,7 @@ spec:
               --max-model-len 1000000 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
               --max-cudagraph-capture-size 6 \
-              --gpu-memory-utilization 0.75 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
@@ -189,7 +205,7 @@ spec:
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
-              --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
               --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 25002
           ports:
@@ -198,10 +214,32 @@ spec:
           - { name: NODE_RANK, value: "0" }
           - { name: VLLM_HOST_IP, value: "192.168.74.1" }
           - { name: MASTER_ADDR, value: "192.168.74.1" }
-          - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
+          - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
+          - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
+          # patch). Required for --max-num-seqs > 1.
+          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
+          # DSpark agent-stability env vars (from Tony's 2026-07-03 garble-fix profile)
+          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
+          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
+          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
+          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
+          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
+          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
+          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
+          - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
           - { name: NCCL_NVLS_ENABLE, value: "0" }
+          - { name: NCCL_NET, value: "IB" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
@@ -224,6 +262,7 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -246,6 +285,8 @@ spec:
             periodSeconds: 15
             timeoutSeconds: 10
         volumes:
+        - name: overlay-files
+          emptyDir: {}
         - name: shm
           emptyDir:
             medium: Memory
@@ -279,8 +320,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          # renovate: datasource=docker depName=eugr/spark-vllm
-          image: eugr/spark-vllm:nightly-20260704
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command:
           - /bin/bash
           args:
@@ -297,6 +337,26 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
+        - name: dspark-overlay
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          command: [bash, -c]
+          args:
+          - |
+            set -e
+            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
+            /opt/env/bin/git clone --depth 1 \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+              /tmp/dspark-repo 2>&1
+            echo "[dspark-overlay] Installing overlay files (17 files)…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Done. Files:"
+            find /overlay/vllm -type f | wc -l
+          volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
+          resources:
+            requests: { memory: "2Gi", cpu: "1000m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
         containers:
         - name: drop-caches-loop
           image: busybox:1.38
@@ -306,15 +366,17 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          # renovate: datasource=docker depName=eugr/spark-vllm
-          image: eugr/spark-vllm:nightly-20260704
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            echo "[vllm] Starting vLLM (eugr/spark-vllm image)…"
-            exec vllm serve /models/dsv4 \
+            # Apply DSpark overlay to vllm site-packages
+            echo "[dspark] Applying DSpark overlay (17 files)…"
+            cp -r /overlay/vllm/* /opt/env/lib/python3.12/site-packages/vllm/
+            echo "[dspark] Overlay applied. Starting vLLM with DSpark…"
+            exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
@@ -323,7 +385,7 @@ spec:
               --max-model-len 1000000 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
               --max-cudagraph-capture-size 6 \
-              --gpu-memory-utilization 0.75 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
@@ -335,7 +397,7 @@ spec:
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
-              --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
               --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 25002 \
               --headless
@@ -344,10 +406,29 @@ spec:
           - { name: VLLM_HOST_IP, value: "192.168.74.2" }
           - { name: MASTER_ADDR, value: "192.168.74.1" }
           - { name: HEADLESS, value: "1" }
-          - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
+          - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
+          - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
+          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
+          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
+          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
+          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
+          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
+          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
+          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
+          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
+          - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
           - { name: NCCL_NVLS_ENABLE, value: "0" }
+          - { name: NCCL_NET, value: "IB" }
           - { name: VLLM_PORT, value: "25001" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
@@ -370,6 +451,7 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -378,6 +460,8 @@ spec:
             requests: { memory: "93Gi", cpu: "8000m", nvidia.com/gpu: "1" }
             limits: { memory: "93Gi", nvidia.com/gpu: "1" }
         volumes:
+        - name: overlay-files
+          emptyDir: {}
         - name: shm
           emptyDir:
             medium: Memory
