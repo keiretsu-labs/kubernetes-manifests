@@ -216,6 +216,8 @@ spec:
             echo "[dspark] Using entrypoint: $VLLM_ENTRY"
             echo "[dspark] Patching VllmConfig validator for nvfp4+MLA support…"
             python3 -c "p='/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py';t=open(p).read();t=t.replace('if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:','if self.cache_config.cache_dtype == \"nvfp4_ds_mla\" and self.model_config.use_mla:');open(p,'w').write(t);print('[nvfp4] Patched VllmConfig')"
+            # Patch nvidia model assertion: only fp8 -> allow nvfp4 too
+            python3 -c "p='/opt/env/lib/python3.12/site-packages/vllm/models/deepseek_v4/nvidia/model.py';t=open(p).read();t=t.replace('assert self.kv_cache_dtype == \"fp8\", \"DeepseekV4 only supports fp8 kv-cache format for now, got {self.kv_cache_dtype}\"','# patched: allow nvfp4 for DSpark\n        if self.kv_cache_dtype not in (\"fp8\", \"nvfp4\"): raise AssertionError(f\"DeepseekV4 only supports fp8/nvfp4 kv-cache, got {self.kv_cache_dtype}\")');open(p,'w').write(t);print('[nvfp4] Patched NVidia model assertion')"
             echo "[dspark] Overlay applied. Starting vLLM with NVFP4 + DSpark…"
             exec "$VLLM_ENTRY" serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
@@ -443,6 +445,8 @@ spec:
             echo "[dspark] Using entrypoint: $VLLM_ENTRY"
             echo "[dspark] Patching VllmConfig validator for nvfp4+MLA support…"
             python3 -c "p='/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py';t=open(p).read();t=t.replace('if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:','if self.cache_config.cache_dtype == \"nvfp4_ds_mla\" and self.model_config.use_mla:');open(p,'w').write(t);print('[nvfp4] Patched VllmConfig')"
+            # Patch nvidia model assertion: only fp8 -> allow nvfp4 too
+            python3 -c "p='/opt/env/lib/python3.12/site-packages/vllm/models/deepseek_v4/nvidia/model.py';t=open(p).read();t=t.replace('assert self.kv_cache_dtype == \"fp8\", \"DeepseekV4 only supports fp8 kv-cache format for now, got {self.kv_cache_dtype}\"','# patched: allow nvfp4 for DSpark\n        if self.kv_cache_dtype not in (\"fp8\", \"nvfp4\"): raise AssertionError(f\"DeepseekV4 only supports fp8/nvfp4 kv-cache, got {self.kv_cache_dtype}\")');open(p,'w').write(t);print('[nvfp4] Patched NVidia model assertion')"
             echo "[dspark] Overlay applied. Starting vLLM with NVFP4 + DSpark…"
             exec "$VLLM_ENTRY" serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
