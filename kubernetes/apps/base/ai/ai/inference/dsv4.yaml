@@ -5,16 +5,16 @@
 #
 # Architecture  : TP=2 via PyTorch mp backend, DSpark spec-decode,
 #                 NVFP4 KV cache (1M ctx), LeaderWorkerSet gang scheduling.
-# Image         : ghcr.io/rajsinghtechbot/dsv4-nvfp4:v4flash-prod-20260705
-#                 (holy-fusion base + B12X overlay + NVFP4 patches baked in)
+# Image         : aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+#                 (Aiden's community image, patches already baked in)
 # Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
 #
 # Key settings:
 # - --max-num-seqs 6, --max-model-len 1048576 (1M ctx via NVFP4)
 # - --kv-cache-dtype nvfp4 (NVFP4 MLA sparse KV cache)
 # - VLLM_USE_NVFP4_DSPARK=1
+# - VllmConfig patched at startup to auto-convert nvfp4 -> nvfp4_ds_mla
 # - --gpu-memory-utilization 0.85 (NVFP4 KV needs ~5.2 GiB for 1M ctx)
-# - Overlay + NVFP4 patches baked into image
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -106,8 +106,6 @@ spec:
         labels: { app: dsv4, role: head }
       spec:
         terminationGracePeriodSeconds: 60
-        imagePullSecrets:
-        - name: ghcr-push-secret
         hostNetwork: true
         hostIPC: true
         dnsPolicy: ClusterFirstWithHostNet
@@ -148,13 +146,29 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:v4flash-prod-20260705
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
-            # Drop cache immediately before weight load
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            # Patch VllmConfig to auto-convert nvfp4 -> nvfp4_ds_mla for MLA
+            VLLM_CONF="/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py"
+            if grep -q "nvfp4 KV cache is not supported with MLA" "$VLLM_CONF" 2>/dev/null; then
+              python3 -c "
+import re
+p = '$VLLM_CONF'
+with open(p) as f: t = f.read()
+m = re.search(r'if self\.cache_config\.cache_dtype == \"nvfp4\" and self\.model_config\.use_mla:[\s\S]{0,500}?raise ValueError\([\s\S]{0,300}?DeepSeek\.\"\)', t)
+if m:
+    n = 'if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:\n            self.cache_config.cache_dtype = \"nvfp4_ds_mla\"'
+    t = t[:m.start()] + n + t[m.end():]
+    with open(p, 'w') as f: f.write(t)
+    print('[nvfp4] Patched VllmConfig validator')
+else:
+    print('[nvfp4] VllmConfig already patched or pattern not found')
+"
+            fi
             VLLM_ENTRY=$(command -v vllm || echo "/usr/local/bin/vllm")
             echo "[dspark] Starting vLLM with NVFP4 + DSpark…"
             exec "$VLLM_ENTRY" serve /models/dsv4 \
@@ -278,8 +292,6 @@ spec:
         labels: { app: dsv4, role: worker }
       spec:
         terminationGracePeriodSeconds: 60
-        imagePullSecrets:
-        - name: ghcr-push-secret
         hostNetwork: true
         hostIPC: true
         dnsPolicy: ClusterFirstWithHostNet
@@ -320,12 +332,29 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:v4flash-prod-20260705
+          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
           command: [bash, -c]
           args:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            # Patch VllmConfig to auto-convert nvfp4 -> nvfp4_ds_mla for MLA
+            VLLM_CONF="/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py"
+            if grep -q "nvfp4 KV cache is not supported with MLA" "$VLLM_CONF" 2>/dev/null; then
+              python3 -c "
+import re
+p = '$VLLM_CONF'
+with open(p) as f: t = f.read()
+m = re.search(r'if self\.cache_config\.cache_dtype == \"nvfp4\" and self\.model_config\.use_mla:[\s\S]{0,500}?raise ValueError\([\s\S]{0,300}?DeepSeek\.\"\)', t)
+if m:
+    n = 'if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:\n            self.cache_config.cache_dtype = \"nvfp4_ds_mla\"'
+    t = t[:m.start()] + n + t[m.end():]
+    with open(p, 'w') as f: f.write(t)
+    print('[nvfp4] Patched VllmConfig validator')
+else:
+    print('[nvfp4] VllmConfig already patched or pattern not found')
+"
+            fi
             VLLM_ENTRY=$(command -v vllm || echo "/usr/local/bin/vllm")
             echo "[dspark] Starting vLLM worker with NVFP4 + DSpark…"
             exec "$VLLM_ENTRY" serve /models/dsv4 \
