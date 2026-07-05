@@ -8,7 +8,10 @@
 # Image         : eugr/spark-vllm:nightly-YYYYMMDD
 #                 (eugr's community standard image, 1.8k stars, vLLM + jasl fork)
 #                 Pinned for Renovate auto-update — see .renovate/customManagers.json
-# Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
+# Model         : deepseek-ai/DeepSeek-V4-Flash (42 shards, FP8, 75.86 GiB)
+#                 NOTE: using standard model (not DSpark variant which needs
+#                 custom DSpark speculative decoding overlay). MTP spec-decode
+#                 works natively with standard vLLM.
 #
 # Key settings:
 # - --kv-cache-dtype fp8 (standard fp8, not DSpark-specific nvfp4_ds_mla)
@@ -32,8 +35,8 @@ data:
     #!/bin/bash
     set -euo pipefail
     MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
-    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-DSpark}"
-    EXPECTED=48
+    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash}"
+    EXPECTED=42
 
     mkdir -p "$${MODEL_DIR}"
     cd "$${MODEL_DIR}"
@@ -183,7 +186,7 @@ spec:
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
-              --speculative-config '{"method":"mtp","num_speculative_tokens":5}' \
+              --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
               --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 25002
           ports:
@@ -329,7 +332,7 @@ spec:
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
-              --speculative-config '{"method":"mtp","num_speculative_tokens":5}' \
+              --speculative-config '{"method":"mtp","num_speculative_tokens":2}' \
               --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 25002 \
               --headless
