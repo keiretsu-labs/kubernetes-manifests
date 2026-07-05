@@ -169,6 +169,12 @@ spec:
             echo "[dspark-overlay] Installing overlay files…"
             mkdir -p /overlay/vllm
             cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Fetching matching attention.py from unholy-fusion…"
+            $GIT clone --depth 1 --branch dev/unholy-fusion \
+              https://github.com/local-inference-lab/vllm.git \
+              /tmp/vllm-unholy 2>&1
+            cp /tmp/vllm-unholy/vllm/models/deepseek_v4/attention.py \
+              /overlay/vllm/models/deepseek_v4/
             echo "[dspark-overlay] Patching envs.py for production-3.7 compat…"
             # The base image's _aiter_ops.py references VLLM_ROCM_USE_AITER_LINEAR_HIPBMM
             # which isn't in Tony's overlay envs.py — add it
@@ -387,6 +393,12 @@ spec:
             echo "[dspark-overlay] Installing overlay files…"
             mkdir -p /overlay/vllm
             cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Fetching matching attention.py from unholy-fusion…"
+            $GIT clone --depth 1 --branch dev/unholy-fusion \
+              https://github.com/local-inference-lab/vllm.git \
+              /tmp/vllm-unholy 2>&1
+            cp /tmp/vllm-unholy/vllm/models/deepseek_v4/attention.py \
+              /overlay/vllm/models/deepseek_v4/
             echo "[dspark-overlay] Patching envs.py for production-3.7 compat…"
             # The base image's _aiter_ops.py references VLLM_ROCM_USE_AITER_LINEAR_HIPBMM
             # which isn't in Tony's overlay envs.py — add it
