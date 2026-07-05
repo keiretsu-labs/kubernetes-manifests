@@ -17,3 +17,33 @@ spec:
       requestTimeout: 300s
       connectionIdleTimeout: 3600s
       maxConnectionDuration: 0s
+  # Resilience: zot's only data store is the shared cross-cluster Garage S3
+  # backend. A single zot replica that hits a transient backend blip (or is
+  # mid-restart / crashlooping after a Garage quorum wobble) returns 5xx.
+  # Retry lets Envoy re-dispatch that request to the healthy replica instead of
+  # surfacing a 503 to the client; passive outlier detection ejects a
+  # persistently-failing pod from the load-balancing set so new requests skip it.
+  retry:
+    numRetries: 3
+    perRetry:
+      timeout: 30s
+      backOff:
+        baseInterval: 100ms
+        maxInterval: 1s
+    retryOn:
+      httpStatusCodes:
+        - 503
+      triggers:
+        - connect-failure
+        - reset
+        - retriable-status-codes
+  healthCheck:
+    passive:
+      # Eject a replica after 5 consecutive 5xx, keep it out for 30s, re-check
+      # every 5s. Cap ejection at 50% (1 of 2 pods) so a full backend outage
+      # doesn't eject everything and mask that the backend itself is down.
+      consecutive5XxErrors: 5
+      consecutiveGatewayErrors: 5
+      baseEjectionTime: 30s
+      interval: 5s
+      maxEjectionPercent: 50
