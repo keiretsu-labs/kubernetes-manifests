@@ -19,9 +19,20 @@
         "/\\.ya?ml$/"
       ],
       "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*\\w*[Tt]ag:\\s*\"?(?<currentValue>[^\"\\s]+)\"?"
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*\\\\w*[Tt]ag:\\s*\\\"?(?<currentValue>[^\\\"\\\\s]+)\\\"?"
       ],
       "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}docker{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": "eugr/spark-vllm nightly date tags (nightly-YYYYMMDD)",
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=docker depName=eugr/spark-vllm\\n\\s+image: eugr/spark-vllm:nightly-(?<currentValue>\\d{8})\\b"
+      ],
+      "versioningTemplate": "regex:^nightly-(?<major>\\d{4})(?<minor>\\d{2})(?<patch>\\d{2})$"
     }
   ]
 }
