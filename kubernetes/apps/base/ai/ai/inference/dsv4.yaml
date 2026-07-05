@@ -192,11 +192,18 @@ spec:
             # Drop page cache immediately before weight load
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            # Apply DSpark overlay to vllm site-packages
-            echo "[dspark] Applying DSpark overlay (17 files)…"
-            cp -r /overlay/vllm/* /opt/env/lib/python3.12/site-packages/vllm/
+            # Find vllm site-packages path
+            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null || echo "/opt/env/lib/python3.12/site-packages/vllm")
+            echo "[dspark] vLLM site-packages: $VLLM_DIR"
+            # Apply DSpark overlay
+            echo "[dspark] Applying DSpark overlay (17 files) to $VLLM_DIR…"
+            mkdir -p "$VLLM_DIR"
+            cp -r /overlay/vllm/* "$VLLM_DIR/"
+            # Find vllm entrypoint
+            VLLM_ENTRY=$(command -v vllm || echo "/usr/local/bin/vllm")
+            echo "[dspark] Using entrypoint: $VLLM_ENTRY"
             echo "[dspark] Overlay applied. Starting vLLM with DSpark…"
-            exec /usr/local/bin/dsv4-vllm-entrypoint serve /models/dsv4 \
+            exec "$VLLM_ENTRY" serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
