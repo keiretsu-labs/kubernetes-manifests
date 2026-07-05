@@ -7,5 +7,4 @@ metadata:
     pod-security.kubernetes.io/enforce: privileged
     kustomize.toolkit.fluxcd.io/prune: disabled
   annotations:
-    volsync.backube/privileged-movers: "true"
     # argocd.argoproj.io/sync-options: Prune=false
