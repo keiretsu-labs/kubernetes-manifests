@@ -42,11 +42,17 @@ data:
 
     # Check if model is already cached on PVC — skip download if complete
     COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
-    if [ "$${COUNT}" -ge "$${EXPECTED}" ]; then
+    if [ "$${COUNT}" -eq "$${EXPECTED}" ]; then
       echo "[download] All $${EXPECTED} shards already present — skipping download."
       echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
       echo "[download] Done."
       exit 0
+    fi
+
+    # If wrong number of shards (e.g. partial download from model change), clean slate
+    if [ "$${COUNT}" -ne "$${EXPECTED}" ] && [ "$${COUNT}" -gt "0" ]; then
+      echo "[download] Found $${COUNT} shards (expected $${EXPECTED}) — stale/corrupt cache, cleaning…"
+      rm -rf "$${MODEL_DIR}"/*
     fi
 
     # Clean stale lock files from previous force-killed downloads
