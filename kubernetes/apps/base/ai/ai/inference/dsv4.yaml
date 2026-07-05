@@ -156,28 +156,13 @@ spec:
           args:
           - |
             set -e
-            echo "[dspark-overlay] Downloading Tony's DSpark overlay using Python…"
-            python3 -c "
-import urllib.request, tarfile, io, os
-url = 'https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark/archive/main.tar.gz'
-print(f'[dspark-overlay] Fetching {url}…')
-resp = urllib.request.urlopen(url)
-tar = tarfile.open(fileobj=io.BytesIO(resp.read()))
-os.makedirs('/overlay/vllm', exist_ok=True)
-base = 'DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark-main'
-prefix = f'{base}/recipe/overlay/vllm/'
-for m in tar:
-    if m.name.startswith(prefix) and m.isfile():
-        rel = os.path.relpath(m.name, prefix)
-        os.makedirs(os.path.dirname(f'/overlay/vllm/{rel}'), exist_ok=True)
-        with tar.extractfile(m) as src, open(f'/overlay/vllm/{rel}', 'wb') as dst:
-            dst.write(src.read())
-            print(f'  {rel}')
-count = len([f for f in os.listdir('/overlay/vllm') if os.path.isfile(os.path.join('/overlay/vllm', f))])
-# also count recursively
-count = sum(len(files) for _, _, files in os.walk('/overlay/vllm'))
-print(f'[dspark-overlay] Done. {count} files installed.')
-" 2>&1
+            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
+            /opt/env/bin/git clone --depth 1 \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+              /tmp/dspark-repo 2>&1
+            echo "[dspark-overlay] Installing overlay files (17 files)…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
             echo "[dspark-overlay] Done. Files:"
             find /overlay/vllm -type f | wc -l
           volumeMounts:
@@ -364,28 +349,13 @@ print(f'[dspark-overlay] Done. {count} files installed.')
           args:
           - |
             set -e
-            echo "[dspark-overlay] Downloading Tony's DSpark overlay using Python…"
-            python3 -c "
-import urllib.request, tarfile, io, os
-url = 'https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark/archive/main.tar.gz'
-print(f'[dspark-overlay] Fetching {url}…')
-resp = urllib.request.urlopen(url)
-tar = tarfile.open(fileobj=io.BytesIO(resp.read()))
-os.makedirs('/overlay/vllm', exist_ok=True)
-base = 'DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark-main'
-prefix = f'{base}/recipe/overlay/vllm/'
-for m in tar:
-    if m.name.startswith(prefix) and m.isfile():
-        rel = os.path.relpath(m.name, prefix)
-        os.makedirs(os.path.dirname(f'/overlay/vllm/{rel}'), exist_ok=True)
-        with tar.extractfile(m) as src, open(f'/overlay/vllm/{rel}', 'wb') as dst:
-            dst.write(src.read())
-            print(f'  {rel}')
-count = len([f for f in os.listdir('/overlay/vllm') if os.path.isfile(os.path.join('/overlay/vllm', f))])
-# also count recursively
-count = sum(len(files) for _, _, files in os.walk('/overlay/vllm'))
-print(f'[dspark-overlay] Done. {count} files installed.')
-" 2>&1
+            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
+            /opt/env/bin/git clone --depth 1 \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+              /tmp/dspark-repo 2>&1
+            echo "[dspark-overlay] Installing overlay files (17 files)…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
             echo "[dspark-overlay] Done. Files:"
             find /overlay/vllm -type f | wc -l
           volumeMounts:
