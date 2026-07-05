@@ -220,11 +220,11 @@ spec:
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
-              --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 262144 \
+              --kv-cache-dtype nvfp4 --block-size 256 \
+              --max-model-len 1000000 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --max-cudagraph-capture-size 6 \
-              --gpu-memory-utilization 0.78 \
+              --max-cudagraph-capture-size 4 \
+              --gpu-memory-utilization 0.85 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
@@ -252,6 +252,8 @@ spec:
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
           # patch). Required for --max-num-seqs > 1.
+          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_DEEPEPLL_NVFP4_DISPATCH, value: "1" }
           - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
           # DSpark agent-stability env vars (from Tony's 2026-07-03 garble-fix profile)
           - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
@@ -443,11 +445,11 @@ spec:
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
-              --kv-cache-dtype fp8 --block-size 256 \
-              --max-model-len 262144 \
+              --kv-cache-dtype nvfp4 --block-size 256 \
+              --max-model-len 1000000 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --max-cudagraph-capture-size 6 \
-              --gpu-memory-utilization 0.78 \
+              --max-cudagraph-capture-size 4 \
+              --gpu-memory-utilization 0.85 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
@@ -473,6 +475,8 @@ spec:
           - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_DEEPEPLL_NVFP4_DISPATCH, value: "1" }
           - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
           - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
           - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
