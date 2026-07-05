@@ -18,7 +18,15 @@ spec:
 
   replication:
     factor: 3
-    consistencyMode: "consistent" # Read-after-write consistency (read quorum=2) prevents restic AEAD corruption
+    # degraded: reads fall back to a single (local) replica when cross-WAN quorum
+    # is slow/unavailable, instead of returning 503/504. Writes still require
+    # quorum. This fixes the read-path 503s that broke zot (boot-time getAllRepos
+    # list + blob HEAD checks) and CI image pushes. Safe now that restic/volsync
+    # is decommissioned (2026-07-04) — it was the only read-after-write-sensitive
+    # consumer; the rest are content-addressed (OCI/zot, Kopia/velero) or
+    # append-only (logs, barman/CNPG backups), which tolerate eventual-consistent
+    # reads (a stale/absent read is a transient retry, not corruption).
+    consistencyMode: "degraded"
 
   s3Api:
     rootDomain: ".s3.${COMMON_DOMAIN}"
