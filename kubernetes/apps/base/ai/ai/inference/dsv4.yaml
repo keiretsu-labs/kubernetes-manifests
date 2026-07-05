@@ -216,18 +216,18 @@ spec:
             echo "[dspark] Using entrypoint: $VLLM_ENTRY"
             echo "[dspark] Patching VllmConfig validator for nvfp4+MLA support…"
             python3 -c "
-import re
-p = '/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py'
-with open(p) as f: t = f.read()
-m = re.search(r'if self\\.cache_config\\.cache_dtype == \"nvfp4\" and self\\.model_config\\.use_mla:[\\s\\S]{0,500}?raise ValueError\\([\\s\\S]{0,300}?DeepSeek\\.\\\"\\)', t)
-if m:
-    n = 'if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:\\n            self.cache_config.cache_dtype = \"nvfp4_ds_mla\"'
-    t = t[:m.start()] + n + t[m.end():]
-    with open(p, 'w') as f: f.write(t)
-    print('[nvfp4] Patched VllmConfig validator')
-else:
-    print('[nvfp4] VllmConfig already patched or pattern not found')
-"
+            import re
+            p = '/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py'
+            with open(p) as f: t = f.read()
+            m = re.search(r'if self\\.cache_config\\.cache_dtype == \"nvfp4\" and self\\.model_config\\.use_mla:[\\s\\S]{0,500}?raise ValueError\\([\\s\\S]{0,300}?DeepSeek\\.\\\"\\)', t)
+            if m:
+                n = 'if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:\\n            self.cache_config.cache_dtype = \"nvfp4_ds_mla\"'
+                t = t[:m.start()] + n + t[m.end():]
+                with open(p, 'w') as f: f.write(t)
+                print('[nvfp4] Patched VllmConfig validator')
+            else:
+                print('[nvfp4] VllmConfig already patched or pattern not found')
+            "
             echo "[dspark] Overlay applied. Starting vLLM with NVFP4 + DSpark…"
             exec "$VLLM_ENTRY" serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
@@ -455,18 +455,18 @@ else:
             echo "[dspark] Using entrypoint: $VLLM_ENTRY"
             echo "[dspark] Patching VllmConfig validator for nvfp4+MLA support…"
             python3 -c "
-import re
-p = '/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py'
-with open(p) as f: t = f.read()
-m = re.search(r'if self\\.cache_config\\.cache_dtype == \"nvfp4\" and self\\.model_config\\.use_mla:[\\s\\S]{0,500}?raise ValueError\\([\\s\\S]{0,300}?DeepSeek\\.\\\"\\)', t)
-if m:
-    n = 'if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:\\n            self.cache_config.cache_dtype = \"nvfp4_ds_mla\"'
-    t = t[:m.start()] + n + t[m.end():]
-    with open(p, 'w') as f: f.write(t)
-    print('[nvfp4] Patched VllmConfig validator')
-else:
-    print('[nvfp4] VllmConfig already patched or pattern not found')
-"
+            import re
+            p = '/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py'
+            with open(p) as f: t = f.read()
+            m = re.search(r'if self\\.cache_config\\.cache_dtype == \"nvfp4\" and self\\.model_config\\.use_mla:[\\s\\S]{0,500}?raise ValueError\\([\\s\\S]{0,300}?DeepSeek\\.\\\"\\)', t)
+            if m:
+                n = 'if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:\\n            self.cache_config.cache_dtype = \"nvfp4_ds_mla\"'
+                t = t[:m.start()] + n + t[m.end():]
+                with open(p, 'w') as f: f.write(t)
+                print('[nvfp4] Patched VllmConfig validator')
+            else:
+                print('[nvfp4] VllmConfig already patched or pattern not found')
+            "
             echo "[dspark] Overlay applied. Starting vLLM with NVFP4 + DSpark…"
             exec "$VLLM_ENTRY" serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
