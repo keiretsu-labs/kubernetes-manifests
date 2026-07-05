@@ -7,7 +7,7 @@
 #                 fp8 KV cache, LeaderWorkerSet gang scheduling.
 # Image         : aidendle94/sparkrun-vllm-ds4-gb10:production-v2
 #                 (Aiden's community image, B12X MoE, CUDA 12.1, sm121)
-# Model         : deepseek-ai/DeepSeek-V4-Flash (46 shards, FP8)
+# Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
 #
 # Incremental improvements from Tony's NVFP4 recipe (2026-07-03 garble fix):
 # - --async-scheduling, --enable-chunked-prefill
@@ -15,7 +15,9 @@
 # - VLLM_USE_FLASHINFER_SAMPLER=1
 #
 # Memory guard  : 93Gi Guaranteed QoS, drop-caches init + loop sidecar,
-#                 GPU reset at startup. Ceiling: 0.76 util (0.78+ OOMs).
+#                 GPU reset at startup. DSpark weights: 79.44 GiB.
+#                 Ceiling: 0.78 util (effective ~0.77 w/ CUDA graph profiling).
+#                 DSpark delta: 800K ctx fits (6.53 GiB KV avail, ~6.1 GiB needed).
 ---
 apiVersion: v1
 kind: ConfigMap
