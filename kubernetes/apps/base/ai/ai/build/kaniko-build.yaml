@@ -1,0 +1,80 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dsv4-nvfp4-builder
+  namespace: ai
+spec:
+  restartPolicy: Never
+  nodeSelector:
+    kubernetes.io/hostname: orin-0
+  tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  initContainers:
+  - name: clone-repo
+    image: alpine/git:latest
+    command:
+    - /bin/sh
+    - -c
+    - |
+      set -e
+      cd /workspace
+      git clone --depth 1 https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git repo
+      cp /patches/stage_a.py /workspace/
+      cp /patches/stage_b.py /workspace/
+      cp /patches/stage_c.py /workspace/
+      echo "Setup done"
+    volumeMounts:
+    - name: workspace
+      mountPath: /workspace
+    - name: patches
+      mountPath: /patches
+  - name: gen-dockerfile
+    image: alpine/git:latest
+    command:
+    - /bin/sh
+    - -c
+    - |
+      set -e
+      echo 'FROM ghcr.io/bjk110/vllm-spark:unholy-fusion-prod-ready' > /workspace/Dockerfile.combined
+      echo 'LABEL org.keiretsu.dspark.nvfp4="dspark-nvfp4-stage-c"' >> /workspace/Dockerfile.combined
+      for f in envs.py config/speculative.py model_executor/layers/fused_moe/b12x_moe.py model_executor/warmup/kernel_warmup.py model_executor/models/registry.py v1/outputs.py v1/core/sched/scheduler.py models/deepseek_v4/__init__.py models/deepseek_v4/nvidia/model.py models/deepseek_v4/nvidia/sm120.py models/deepseek_v4/nvidia/dspark.py models/deepseek_v4/nvidia/dspark_kernels.py v1/attention/backends/registry.py v1/attention/backends/mla/b12x_mla_sparse.py v1/spec_decode/dspark.py v1/spec_decode/dspark_proposer.py v1/worker/gpu_model_runner.py; do
+        echo "COPY repo/recipe/overlay/vllm/$f /opt/env/lib/python3.12/site-packages/vllm/$f" >> /workspace/Dockerfile.combined
+      done
+      echo 'RUN /opt/env/bin/python -c "import vllm.v1.spec_decode.dspark as d; print(chr(111)+chr(107))"' >> /workspace/Dockerfile.combined
+      echo 'COPY stage_a.py /tmp/stage_a.py' >> /workspace/Dockerfile.combined
+      echo 'RUN /opt/env/bin/python /tmp/stage_a.py' >> /workspace/Dockerfile.combined
+      echo 'COPY stage_b.py /tmp/stage_b.py' >> /workspace/Dockerfile.combined
+      echo 'RUN /opt/env/bin/python /tmp/stage_b.py' >> /workspace/Dockerfile.combined
+      echo 'COPY stage_c.py /tmp/stage_c.py' >> /workspace/Dockerfile.combined
+      echo 'RUN /opt/env/bin/python /tmp/stage_c.py' >> /workspace/Dockerfile.combined
+      echo 'RUN /opt/env/bin/python -c "import vllm.config.cache as c; assert chr(110)+chr(118)+chr(102)+chr(112)+chr(52)+chr(95)+chr(100)+chr(115)+chr(95)+chr(109)+chr(108)+chr(97) in c.CacheDType.__args__; import vllm; print(chr(111)+chr(107))"' >> /workspace/Dockerfile.combined
+      echo "Dockerfile generated"
+      cat /workspace/Dockerfile.combined
+    volumeMounts:
+    - name: workspace
+      mountPath: /workspace
+    - name: patches
+      mountPath: /patches
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:latest
+    args:
+    - --dockerfile=/workspace/Dockerfile.combined
+    - --context=dir:///workspace
+    - --destination=10.4.240.203:5000/dsv4-nvfp4:stage-c-20260705
+    - --cache=false
+    - --skip-tls-verify
+    - --insecure
+    - --verbosity=info
+    volumeMounts:
+    - name: workspace
+      mountPath: /workspace
+  volumes:
+  - name: workspace
+    emptyDir: {}
+  - name: patches
+    configMap:
+      name: dsv4-nvfp4-dockerfile

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dsv4-nvfp4-dockerfile
+  namespace: ai
+data:
+  stage_a.py: |
+    from pathlib import Path
+    root = Path("/opt/env/lib/python3.12/site-packages/vllm")
+    def rep(path, old, new):
+        p = root / path; t = p.read_text()
+        if new in t: return
+        if old not in t: raise SystemExit(f"missing: {p}")
+        p.write_text(t.replace(old, new, 1))
+    rep("config/cache.py", '    "fp8_ds_mla",\n    "turboquant_k8v4",', '    "fp8_ds_mla",\n    "nvfp4_ds_mla",\n    "turboquant_k8v4",')
+    rep("utils/torch_utils.py", '    "fp8_ds_mla": torch.uint8,\n    "turboquant_k8v4": torch.uint8,', '    "fp8_ds_mla": torch.uint8,\n    "nvfp4_ds_mla": torch.uint8,\n    "turboquant_k8v4": torch.uint8,')
+    rep("utils/torch_utils.py", '        or kv_cache_dtype == "nvfp4"\n', '        or kv_cache_dtype == "nvfp4"\n        or kv_cache_dtype == "nvfp4_ds_mla"\n')
+    rep("v1/kv_cache_interface.py", '    if kv_cache_dtype == "nvfp4":\n        return KVQuantMode.NVFP4\n', '    if kv_cache_dtype == "nvfp4":\n        return KVQuantMode.NVFP4\n    if kv_cache_dtype == "nvfp4_ds_mla":\n        return KVQuantMode.NVFP4\n')
+    rep("v1/kv_cache_interface.py", '        if self.cache_dtype_str == "fp8_ds_mla":\n', '        if self.cache_dtype_str == "nvfp4_ds_mla":\n            return self.storage_block_size * 416\n        if self.cache_dtype_str == "fp8_ds_mla":\n')
+    print("Stage A done")
+  stage_b.py: |
+    from pathlib import Path
+    root = Path("/opt/env/lib/python3.12/site-packages/vllm")
+    def rep(path, old, new):
+        p = root / path; t = p.read_text()
+        if new in t: return
+        if old not in t: raise SystemExit(f"missing: {p}")
+        p.write_text(t.replace(old, new, 1))
+    rep("models/deepseek_v4/attention.py", '        # TODO(yifan): currently hardcoded for FP8 sparse, make it more generic\n        head_bytes = (\n            self.nope_head_dim  # 448 fp8 NoPE\n            + self.rope_head_dim * 2  # 64 bf16 RoPE\n            + self.nope_head_dim // 64  # 7B scale factors\n            + 1  # 1B pad\n        )', '        # TODO(yifan): currently hardcoded for FP8 sparse, make it more generic\n        head_bytes = (\n            self.nope_head_dim  # 448 fp8 NoPE\n            + self.rope_head_dim * 2  # 64 bf16 RoPE\n            + self.nope_head_dim // 64  # 7B scale factors\n            + 1  # 1B pad\n        )\n        if (\n            cache_config is not None\n            and cache_config.cache_dtype in ("nvfp4", "nvfp4_ds_mla")\n        ):\n            # Probe layout from the GLM-5.2 NVFP4 sparse-MLA path.\n            head_bytes = 416')
+    rep("models/deepseek_v4/attention.py", '        assert kv_cache_dtype.startswith("fp8"), (\n            f"DeepseekV4 only supports fp8 kv-cache format for now, "\n            f"got {kv_cache_dtype}"\n        )', '        assert (\n            kv_cache_dtype.startswith("fp8")\n            or kv_cache_dtype in ("nvfp4", "nvfp4_ds_mla")\n        ), (\n            f"DeepseekV4 only supports fp8/nvfp4_ds_mla kv-cache format for now, "\n            f"got {kv_cache_dtype}"\n        )')
+    rep("models/deepseek_v4/attention.py", '        # FlashMLA Sparse Attention fp8 backend uses "fp8_ds_mla" kv-cache format\n        # Automatically convert fp8 kv-cache format to "fp8_ds_mla"\n        if (\n            issubclass(self.get_attn_backend(), FlashMLASparseBackend)\n            and kv_cache_dtype.startswith("fp8")\n            and kv_cache_dtype != "fp8_ds_mla"\n        ):', '        if (\n            issubclass(self.get_attn_backend(), FlashMLASparseBackend)\n            and kv_cache_dtype in ("nvfp4", "nvfp4_ds_mla")\n        ):\n            assert cache_config is not None\n            cache_config.cache_dtype = "nvfp4_ds_mla"\n            kv_cache_dtype = "nvfp4_ds_mla"\n            logger.info_once("Using probe DeepSeek V4 nvfp4_ds_mla KV cache format.")\n\n        # FlashMLA Sparse Attention fp8 backend uses "fp8_ds_mla" kv-cache format\n        # Automatically convert fp8 kv-cache format to "fp8_ds_mla"\n        if (\n            issubclass(self.get_attn_backend(), FlashMLASparseBackend)\n            and kv_cache_dtype.startswith("fp8")\n            and kv_cache_dtype != "fp8_ds_mla"\n        ):')
+    rep("models/deepseek_v4/nvidia/flashmla.py", '        if cache_dtype_str == "fp8_ds_mla":\n            # DeepseekV4 main MLA: 584B per token (448 NoPE + 128 RoPE + 8 fp8 scale).\n            # head_size passed in is the semantic head_dim (512).\n            return (num_blocks, block_size, 584)\n        else:\n            return (num_blocks, block_size, head_size)', '        if cache_dtype_str == "nvfp4_ds_mla":\n            # Probe layout from GLM-5.2 NVFP4 sparse MLA. This is expected to\n            # expose whether DeepSeek V4 has compatible store/decode kernels.\n            return (num_blocks, block_size, 416)\n        if cache_dtype_str == "fp8_ds_mla":\n            # DeepseekV4 main MLA: 584B per token (448 NoPE + 128 RoPE + 8 fp8 scale).\n            # head_size passed in is the semantic head_dim (512).\n            return (num_blocks, block_size, 584)\n        else:\n            return (num_blocks, block_size, head_size)')
+    print("Stage B done")
+  stage_c.py: |
+    from pathlib import Path
+    root = Path("/opt/env/lib/python3.12/site-packages/vllm")
+    def rep(path, old, new):
+        p = root / path; t = p.read_text()
+        if new in t: return
+        if old not in t: raise SystemExit(f"missing: {p}")
+        p.write_text(t.replace(old, new, 1))
+    rep("models/deepseek_v4/attention.py",
+        '        if (\n            cache_config is not None\n            and cache_config.cache_dtype in ("nvfp4", "nvfp4_ds_mla")\n        ):\n            # Probe layout from the GLM-5.2 NVFP4 sparse-MLA path.\n            head_bytes = 416',
+        '        if (\n            cache_config is not None\n            and cache_config.cache_dtype in ("nvfp4", "nvfp4_ds_mla")\n        ):\n            # Stage C: keep DeepSeek V4 proven 584-byte cache envelope.\n            head_bytes = 584')
+    rep("models/deepseek_v4/nvidia/flashmla.py",
+        '        if cache_dtype_str == "nvfp4_ds_mla":\n            # Probe layout from GLM-5.2 NVFP4 sparse MLA.\n            return (num_blocks, block_size, 416)',
+        '        if cache_dtype_str == "nvfp4_ds_mla":\n            # Stage C: DeepSeek V4 padded NVFP4 probe (584B).\n            return (num_blocks, block_size, 584)')
+    rep("v1/kv_cache_interface.py",
+        '        if self.cache_dtype_str == "nvfp4_ds_mla":\n            return self.storage_block_size * 416\n        if self.cache_dtype_str == "fp8_ds_mla":',
+        '        if self.cache_dtype_str == "nvfp4_ds_mla":\n            if self.model_version == "deepseek_v4":\n                return self.storage_block_size * 584\n            return self.storage_block_size * 416\n        if self.cache_dtype_str == "fp8_ds_mla":')
+    print("Stage C done")
