@@ -173,7 +173,8 @@ spec:
             # The base image's _aiter_ops.py references VLLM_ROCM_USE_AITER_LINEAR_HIPBMM
             # which isn't in Tony's overlay envs.py — add it
             sed -i '/VLLM_ROCM_USE_AITER_LINEAR: bool = True/a\    VLLM_ROCM_USE_AITER_LINEAR_HIPBMM: bool = False' /overlay/vllm/envs.py
-            sed -i '/"VLLM_ROCM_USE_AITER_LINEAR":/a\    "VLLM_ROCM_USE_AITER_LINEAR_HIPBMM": lambda: bool(int(os.getenv("VLLM_ROCM_USE_AITER_LINEAR_HIPBMM", "0"))),' /overlay/vllm/envs.py
+            # Insert after the full multi-line VLLM_ROCM_USE_AITER_LINEAR lambda closes
+            sed -i '/^    # Whether to use aiter moe ops./i\    "VLLM_ROCM_USE_AITER_LINEAR_HIPBMM": lambda: (\n        bool(int(os.getenv("VLLM_ROCM_USE_AITER_LINEAR_HIPBMM", "0")))\n    ),' /overlay/vllm/envs.py
             echo "[dspark-overlay] Done. Files:"
             find /overlay/vllm -type f | wc -l
           volumeMounts:
@@ -390,7 +391,8 @@ spec:
             # The base image's _aiter_ops.py references VLLM_ROCM_USE_AITER_LINEAR_HIPBMM
             # which isn't in Tony's overlay envs.py — add it
             sed -i '/VLLM_ROCM_USE_AITER_LINEAR: bool = True/a\    VLLM_ROCM_USE_AITER_LINEAR_HIPBMM: bool = False' /overlay/vllm/envs.py
-            sed -i '/"VLLM_ROCM_USE_AITER_LINEAR":/a\    "VLLM_ROCM_USE_AITER_LINEAR_HIPBMM": lambda: bool(int(os.getenv("VLLM_ROCM_USE_AITER_LINEAR_HIPBMM", "0"))),' /overlay/vllm/envs.py
+            # Insert after the full multi-line VLLM_ROCM_USE_AITER_LINEAR lambda closes
+            sed -i '/^    # Whether to use aiter moe ops./i\    "VLLM_ROCM_USE_AITER_LINEAR_HIPBMM": lambda: (\n        bool(int(os.getenv("VLLM_ROCM_USE_AITER_LINEAR_HIPBMM", "0")))\n    ),' /overlay/vllm/envs.py
             echo "[dspark-overlay] Done. Files:"
             find /overlay/vllm -type f | wc -l
           volumeMounts:
