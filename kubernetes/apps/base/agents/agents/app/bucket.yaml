@@ -13,7 +13,7 @@ spec:
     maxObjects: 10000000
   keyPermissions:
     - keyRef:
-        name: raj-trades-s3-key
+        name: assistant-raj-s3-key
       read: true
       write: true
       owner: true
