@@ -226,7 +226,7 @@ spec:
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4 --block-size 256 \
               --max-model-len 1048576 \
-              --max-num-seqs 6 --max-num-batched-tokens 8192 \
+              --max-num-seqs 4 --max-num-batched-tokens 4096 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
@@ -454,7 +454,7 @@ spec:
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4 --block-size 256 \
               --max-model-len 1048576 \
-              --max-num-seqs 6 --max-num-batched-tokens 8192 \
+              --max-num-seqs 4 --max-num-batched-tokens 4096 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
