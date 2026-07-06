@@ -5,7 +5,10 @@ namespace: agents
 resources:
   - bucket.yaml
   - egress.yaml
-  - assistant-raj
+  # assistant-raj: disabled 2026-07-05 — trading + Discord migrated to the
+  # raj-trades bhaiya workspace (sandbox-raj-trades, bhaiya namespace).
+  # Re-enable by uncommenting the line below.
+  # - assistant-raj
   - abtar
   - kartik
   - teaspoon
