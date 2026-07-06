@@ -5,7 +5,7 @@
 #
 # Architecture  : TP=2 via PyTorch mp backend, DSpark spec-decode,
 #                 fp8 KV cache, LeaderWorkerSet gang scheduling.
-# Image         : aidendle94/sparkrun-vllm-ds4-gb10:production-v2 (2d old)
+# Image         : ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
 #                 (Aiden's community image, B12X MoE, CUDA 12.1, sm121)
 #                 Built from: https://github.com/local-inference-lab/vllm/tree/dev/unholy-fusion
 # Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
@@ -127,7 +127,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
           command:
           - /bin/bash
           args:
@@ -144,50 +144,7 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
-        - name: dspark-overlay
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
-          command: [bash, -c]
-          args:
-          - |
-            set -e
-            GIT=$(command -v git || true)
-            if [ -z "$GIT" ]; then
-              echo "[dspark-overlay] ERROR: git not found on this image"
-              echo "[dspark-overlay] Trying pip install git…"
-              pip install git 2>&1 | tail -2
-              GIT=$(command -v git || true)
-            fi
-            if [ -z "$GIT" ]; then
-              echo "[dspark-overlay] FATAL: cannot find or install git"
-              exit 1
-            fi
-            echo "[dspark-overlay] Using git at: $GIT"
-            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
-            $GIT clone --depth 1 \
-              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
-              /tmp/dspark-repo 2>&1
-            echo "[dspark-overlay] Installing overlay files…"
-            mkdir -p /overlay/vllm
-            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
-            echo "[dspark-overlay] Fetching matching attention.py from unholy-fusion…"
-            $GIT clone --depth 1 --branch dev/unholy-fusion \
-              https://github.com/local-inference-lab/vllm.git \
-              /tmp/vllm-unholy 2>&1
-            cp /tmp/vllm-unholy/vllm/models/deepseek_v4/attention.py \
-              /overlay/vllm/models/deepseek_v4/
-            echo "[dspark-overlay] Patching envs.py for production-3.7 compat…"
-            # The base image's _aiter_ops.py references VLLM_ROCM_USE_AITER_LINEAR_HIPBMM
-            # which isn't in Tony's overlay envs.py — add it
-            sed -i '/VLLM_ROCM_USE_AITER_LINEAR: bool = True/a\    VLLM_ROCM_USE_AITER_LINEAR_HIPBMM: bool = False' /overlay/vllm/envs.py
-            # Insert after the full multi-line VLLM_ROCM_USE_AITER_LINEAR lambda closes
-            sed -i '/^    # Whether to use aiter moe ops./i\    "VLLM_ROCM_USE_AITER_LINEAR_HIPBMM": lambda: (\n        bool(int(os.getenv("VLLM_ROCM_USE_AITER_LINEAR_HIPBMM", "0")))\n    ),' /overlay/vllm/envs.py
-            echo "[dspark-overlay] Done. Files:"
-            find /overlay/vllm -type f | wc -l
-          volumeMounts:
-          - { name: overlay-files, mountPath: /overlay }
-          resources:
-            requests: { memory: "2Gi", cpu: "1000m" }
-            limits: { memory: "4Gi", cpu: "2000m" }
+
         containers:
         - name: drop-caches-loop
           image: busybox:1.38
@@ -197,29 +154,14 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
           command: [bash, -c]
           args:
           - |
             # Drop page cache immediately before weight load
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            # Find vllm site-packages path
-            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null || echo "/opt/env/lib/python3.12/site-packages/vllm")
-            echo "[dspark] vLLM site-packages: $VLLM_DIR"
-            # Apply DSpark overlay
-            echo "[dspark] Applying DSpark overlay (17 files) to $VLLM_DIR…"
-            mkdir -p "$VLLM_DIR"
-            cp -r /overlay/vllm/* "$VLLM_DIR/"
-            # Find vllm entrypoint
-            VLLM_ENTRY=$(command -v vllm || echo "/usr/local/bin/vllm")
-            echo "[dspark] Using entrypoint: $VLLM_ENTRY"
-            echo "[dspark] Patching VllmConfig validator for nvfp4+MLA support…"
-            python3 -c "p='/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py';t=open(p).read();t=t.replace('if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:','if self.cache_config.cache_dtype == \"nvfp4_ds_mla\" and self.model_config.use_mla:');open(p,'w').write(t);print('[nvfp4] Patched VllmConfig')"
-            # Patch nvidia model assertion: allow nvfp4 KV cache
-            python3 -c "p='/opt/env/lib/python3.12/site-packages/vllm/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[nvfp4] Patched Attention assertion')"
-            echo "[dspark] Overlay applied. Starting vLLM with NVFP4 + DSpark…"
-            exec "$VLLM_ENTRY" serve /models/dsv4 \
+            exec vllm serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
@@ -298,7 +240,6 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
-          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -321,8 +262,6 @@ spec:
             periodSeconds: 15
             timeoutSeconds: 10
         volumes:
-        - name: overlay-files
-          emptyDir: {}
         - name: shm
           emptyDir:
             medium: Memory
@@ -356,7 +295,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
           command:
           - /bin/bash
           args:
@@ -373,50 +312,7 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
-        - name: dspark-overlay
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
-          command: [bash, -c]
-          args:
-          - |
-            set -e
-            GIT=$(command -v git || true)
-            if [ -z "$GIT" ]; then
-              echo "[dspark-overlay] ERROR: git not found on this image"
-              echo "[dspark-overlay] Trying pip install git…"
-              pip install git 2>&1 | tail -2
-              GIT=$(command -v git || true)
-            fi
-            if [ -z "$GIT" ]; then
-              echo "[dspark-overlay] FATAL: cannot find or install git"
-              exit 1
-            fi
-            echo "[dspark-overlay] Using git at: $GIT"
-            echo "[dspark-overlay] Cloning Tony's DSpark overlay…"
-            $GIT clone --depth 1 \
-              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
-              /tmp/dspark-repo 2>&1
-            echo "[dspark-overlay] Installing overlay files…"
-            mkdir -p /overlay/vllm
-            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
-            echo "[dspark-overlay] Fetching matching attention.py from unholy-fusion…"
-            $GIT clone --depth 1 --branch dev/unholy-fusion \
-              https://github.com/local-inference-lab/vllm.git \
-              /tmp/vllm-unholy 2>&1
-            cp /tmp/vllm-unholy/vllm/models/deepseek_v4/attention.py \
-              /overlay/vllm/models/deepseek_v4/
-            echo "[dspark-overlay] Patching envs.py for production-3.7 compat…"
-            # The base image's _aiter_ops.py references VLLM_ROCM_USE_AITER_LINEAR_HIPBMM
-            # which isn't in Tony's overlay envs.py — add it
-            sed -i '/VLLM_ROCM_USE_AITER_LINEAR: bool = True/a\    VLLM_ROCM_USE_AITER_LINEAR_HIPBMM: bool = False' /overlay/vllm/envs.py
-            # Insert after the full multi-line VLLM_ROCM_USE_AITER_LINEAR lambda closes
-            sed -i '/^    # Whether to use aiter moe ops./i\    "VLLM_ROCM_USE_AITER_LINEAR_HIPBMM": lambda: (\n        bool(int(os.getenv("VLLM_ROCM_USE_AITER_LINEAR_HIPBMM", "0")))\n    ),' /overlay/vllm/envs.py
-            echo "[dspark-overlay] Done. Files:"
-            find /overlay/vllm -type f | wc -l
-          volumeMounts:
-          - { name: overlay-files, mountPath: /overlay }
-          resources:
-            requests: { memory: "2Gi", cpu: "1000m" }
-            limits: { memory: "4Gi", cpu: "2000m" }
+
         containers:
         - name: drop-caches-loop
           image: busybox:1.38
@@ -426,28 +322,13 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: aidendle94/sparkrun-vllm-ds4-gb10:production-v2
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
           command: [bash, -c]
           args:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            # Find vllm site-packages path
-            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null || echo "/opt/env/lib/python3.12/site-packages/vllm")
-            echo "[dspark] vLLM site-packages: $VLLM_DIR"
-            # Apply DSpark overlay
-            echo "[dspark] Applying DSpark overlay (17 files) to $VLLM_DIR…"
-            mkdir -p "$VLLM_DIR"
-            cp -r /overlay/vllm/* "$VLLM_DIR/"
-            # Find vllm entrypoint
-            VLLM_ENTRY=$(command -v vllm || echo "/usr/local/bin/vllm")
-            echo "[dspark] Using entrypoint: $VLLM_ENTRY"
-            echo "[dspark] Patching VllmConfig validator for nvfp4+MLA support…"
-            python3 -c "p='/opt/env/lib/python3.12/site-packages/vllm/config/vllm.py';t=open(p).read();t=t.replace('if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:','if self.cache_config.cache_dtype == \"nvfp4_ds_mla\" and self.model_config.use_mla:');open(p,'w').write(t);print('[nvfp4] Patched VllmConfig')"
-            # Patch nvidia model assertion: allow nvfp4 KV cache
-            python3 -c "p='/opt/env/lib/python3.12/site-packages/vllm/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[nvfp4] Patched Attention assertion')"
-            echo "[dspark] Overlay applied. Starting vLLM with NVFP4 + DSpark…"
-            exec "$VLLM_ENTRY" serve /models/dsv4 \
+            exec vllm serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
@@ -523,7 +404,6 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
-          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -532,8 +412,6 @@ spec:
             requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
             limits: { memory: "95Gi", nvidia.com/gpu: "1" }
         volumes:
-        - name: overlay-files
-          emptyDir: {}
         - name: shm
           emptyDir:
             medium: Memory
