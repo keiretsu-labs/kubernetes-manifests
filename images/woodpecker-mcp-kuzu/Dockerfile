@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # kubectl - required by the Kubernetes topology connector (WP_TOPOLOGY=k8s).
 # In a pod it uses the in-cluster ServiceAccount automatically (empty context).
