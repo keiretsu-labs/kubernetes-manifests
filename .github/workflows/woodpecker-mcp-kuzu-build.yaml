@@ -13,7 +13,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE: ghcr.io/keiretsu-labs/woodpecker-mcp-kuzu
+  IMAGE: ghcr.io/${{ github.repository }}/woodpecker-mcp-kuzu
 
 jobs:
   build:
