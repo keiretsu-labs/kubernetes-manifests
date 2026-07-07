@@ -13,7 +13,7 @@ from fastmcp import FastMCP
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-mcp = FastMCP("holmes-shim", allowed_hosts=["*"])
+mcp = FastMCP("holmes-shim")
 
 HOLMES_URLS: dict[str, str] = json.loads(
     os.environ.get(
@@ -179,4 +179,6 @@ async def gatus_webhook(request: Request) -> JSONResponse:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=8000)
+    import uvicorn
+    app = mcp.http_app(transport="streamable-http", allowed_hosts=["*"], host_origin_protection=False)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
