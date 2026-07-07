@@ -1,0 +1,19 @@
+---
+# Explicit DNSEndpoint so external-dns-unifi (CRD source) creates the DNS
+# record on the Unifi router. The gateway-httproute source is unreliable for
+# this — separate DNS from routing. Points at the private gateway (10.169.10.14)
+# for LAN access; the ts gateway handles tailnet via ts-external-dns→Pi-hole.
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: holmes-mcp
+  namespace: ai-sre
+  labels:
+    external-dns/owner: ottawa-killinit-cc
+spec:
+  endpoints:
+    - dnsName: holmes-mcp.killinit.cc
+      recordType: A
+      recordTTL: 60
+      targets:
+        - 10.169.10.14

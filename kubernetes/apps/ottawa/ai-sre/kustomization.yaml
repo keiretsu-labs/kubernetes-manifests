@@ -11,3 +11,4 @@ resources:
   - ./holmes-checks.yaml
   - ./holmes-httproute.yaml
   - ./holmes-mcp-httproute.yaml
+  - ./holmes-mcp-dnsendpoint.yaml
