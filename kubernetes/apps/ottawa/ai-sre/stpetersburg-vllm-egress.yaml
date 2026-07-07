@@ -1,0 +1,23 @@
+---
+# ExternalName Service routing to stpetersburg's vLLM (dsv4 DeepSeek-V4-Flash)
+# via Tailscale. All Holmes instances use this as their OPENAI_API_BASE so LLM
+# calls route to stpetersburg's local vLLM instead of Bifrost.
+# Port 80 (vllm-ts LoadBalancer maps 80 → pod 8000).
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-vllm
+  namespace: ai-sre
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-vllm.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  labels:
+    app.kubernetes.io/managed-by: ai-sre
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP

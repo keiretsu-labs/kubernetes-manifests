@@ -30,11 +30,11 @@ spec:
 
     additionalEnvVars:
       - name: MODEL
-        value: openai/vllm/deepseek-v4-flash
+        value: deepseek-v4-flash
       - name: CLASSIFIER_MODEL
-        value: openai/vllm/deepseek-v4-flash
+        value: deepseek-v4-flash
       - name: OPENAI_API_BASE
-        value: http://bifrost-egress.ai-sre.svc.cluster.local:80/v1
+        value: http://stpetersburg-vllm.ai-sre.svc.cluster.local:80/v1
       - name: OPENAI_API_KEY
         value: unused
 

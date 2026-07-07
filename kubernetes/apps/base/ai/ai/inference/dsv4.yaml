@@ -438,6 +438,23 @@ spec:
   ports:
   - { name: http, port: 8000, protocol: TCP, targetPort: 8000 }
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-ts
+  namespace: ai
+  annotations:
+    tailscale.com/hostname: stpetersburg-vllm
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: tag:k8s,tag:stpetersburg
+  labels: { app: dsv4 }
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector: { app: dsv4, role: head }
+  ports:
+  - { name: http, port: 80, protocol: TCP, targetPort: 8000 }
+---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
