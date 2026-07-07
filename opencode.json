@@ -32,7 +32,7 @@
   "mcp": {
     "holmes": {
       "type": "remote",
-      "url": "https://holmes-mcp.killinit.cc/mcp",
+      "url": "https://holmes-mcp.ts.keiretsu.top/mcp",
       "enabled": true
     }
   }
