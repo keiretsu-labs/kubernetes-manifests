@@ -1,0 +1,77 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: holmes
+  labels:
+    app.kubernetes.io/name: holmes
+    app.kubernetes.io/managed-by: ai-sre
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: holmes
+      sourceRef:
+        kind: HelmRepository
+        name: robusta-charts
+        namespace: ai-sre
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    image: holmes
+    registry: robustadev
+    createServiceAccount: true
+    k8sRBAC: false
+
+    additionalEnvVars:
+      - name: MODEL
+        value: openai/vllm/deepseek-v4-flash
+      - name: CLASSIFIER_MODEL
+        value: openai/vllm/deepseek-v4-flash
+      - name: OPENAI_API_BASE
+        value: http://bifrost-egress.ai-sre.svc.cluster.local:80/v1
+      - name: OPENAI_API_KEY
+        value: unused
+
+    toolsets:
+      kubernetes/core:
+        enabled: true
+      kubernetes/logs:
+        enabled: true
+      prometheus/metrics:
+        enabled: false
+      robusta:
+        enabled: false
+      internet:
+        enabled: false
+      bash:
+        enabled: false
+      skills:
+        enabled: false
+      connectivity_check:
+        enabled: false
+
+    mcp_servers: {}
+
+    operator:
+      enabled: false
+
+    mcpAddons:
+      kubernetesRemediation:
+        enabled: false
+
+    crdPermissions:
+      flux: true
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi

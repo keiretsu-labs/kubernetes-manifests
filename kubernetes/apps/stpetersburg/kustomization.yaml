@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ./monitoring
   - ./agent-sandbox-system
+  - ./ai-sre
   - ./ai
   - ./arc-systems
   - ./border0

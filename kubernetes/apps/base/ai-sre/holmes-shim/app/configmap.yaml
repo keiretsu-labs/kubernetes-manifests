@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: holmes-shim
+  labels:
+    app.kubernetes.io/name: holmes-shim
+    app.kubernetes.io/managed-by: ai-sre
+data:
+  HOLMES_URLS: |
+    {"central":"http://holmes.ai-sre.svc.cluster.local:80","robbinsdale":"http://robbinsdale-holmes.ai-sre.svc.cluster.local:80","stpetersburg":"http://stpetersburg-holmes.ai-sre.svc.cluster.local:80"}

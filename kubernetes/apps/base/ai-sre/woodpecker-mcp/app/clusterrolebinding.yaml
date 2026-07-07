@@ -1,0 +1,16 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: woodpecker-mcp
+  labels:
+    app.kubernetes.io/name: woodpecker-mcp
+    app.kubernetes.io/managed-by: ai-sre
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: woodpecker-mcp
+subjects:
+  - kind: ServiceAccount
+    name: woodpecker-mcp
+    namespace: ai-sre
