@@ -8,3 +8,4 @@ resources:
   - ./holmes-shim.yaml
   - ./holmes-cross-cluster-egress.yaml
   - ./holmes-checks.yaml
+  - ./holmes-httproute.yaml
