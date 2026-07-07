@@ -30,13 +30,15 @@ spec:
 
     additionalEnvVars:
       - name: MODEL
-        value: deepseek-v4-flash
+        value: openai/deepseek-v4-flash
       - name: CLASSIFIER_MODEL
-        value: deepseek-v4-flash
+        value: openai/deepseek-v4-flash
       - name: OPENAI_API_BASE
         value: http://stpetersburg-vllm.ai-sre.svc.cluster.local:80/v1
       - name: OPENAI_API_KEY
         value: unused
+      - name: HOLMES_CONFIGPATH_DIR
+        value: /tmp/.holmes
       - name: WP_HTTP_TOKEN
         valueFrom:
           secretKeyRef:
@@ -75,8 +77,11 @@ spec:
             Authorization: "Bearer {{ env.WP_HTTP_TOKEN }}"
         llm_instructions: "Use woodpecker_diagnose_root_cause first for any service outage. Use woodpecker_get_blast_radius to understand impact. Use woodpecker_get_topology for the full dependency graph."
 
+    # Operator disabled: AG-UI server (for Headlamp AI Assistant) doesn't expose
+    # /api/checks/execute, so the operator can't drive ScheduledHealthChecks.
+    # The Headlamp AI Assistant plugin replaces scheduled checks for interactive use.
     operator:
-      enabled: true
+      enabled: false
       holmesApiUrl: http://holmes-holmes.ai-sre.svc.cluster.local:80
 
     mcpAddons:
