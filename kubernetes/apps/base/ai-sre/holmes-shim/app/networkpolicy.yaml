@@ -27,3 +27,11 @@ spec:
         - ports:
             - port: "8000"
               protocol: TCP
+    # Gatus (gatus namespace) → shim /gatus webhook
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": gatus
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
