@@ -21,6 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - uses: docker/setup-buildx-action@v4
 
       - name: Login to GHCR
@@ -40,7 +43,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: images/holmes-shim
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.IMAGE }}:0.2.0
