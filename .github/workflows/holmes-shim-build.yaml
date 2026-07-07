@@ -13,7 +13,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE: ghcr.io/keiretsu-labs/holmes-shim
+  IMAGE: ghcr.io/${{ github.repository }}/holmes-shim
 
 jobs:
   build:

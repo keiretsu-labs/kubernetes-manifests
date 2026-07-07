@@ -5,6 +5,7 @@ resources:
   - ./auth
   - ./agent-sandbox-system
   - ./agents
+  - ./ai-sre
   - ./arc-systems
   - ./argocd
   - ./bhaiya

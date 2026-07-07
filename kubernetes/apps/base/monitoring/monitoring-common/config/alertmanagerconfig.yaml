@@ -70,6 +70,13 @@ spec:
         groupInterval: 2m
         groupWait: 0s
         repeatInterval: 2m30s
+      # Critical/error alerts fan out to Holmes SRE investigation + Discord
+      - matchers:
+          - matchType: "=~"
+            name: severity
+            value: critical|error
+        receiver: holmes
+        continue: true
       # All other alerts with severity go to Discord
       - matchers:
           - matchType: "=~"
@@ -78,6 +85,10 @@ spec:
         receiver: discord
   receivers:
     - name: blackhole
+    - name: holmes
+      webhookConfigs:
+        - url: http://holmes-shim.ai-sre.svc.cluster.local:8000/alertmanager
+          sendResolved: false
     - name: gatus-heartbeat
       webhookConfigs:
         - httpConfig:
