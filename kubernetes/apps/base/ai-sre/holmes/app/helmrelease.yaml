@@ -22,6 +22,37 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: holmes-holmes
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/command
+                value:
+                  - python3
+                  - -u
+                  - /app/experimental/ag-ui/server-agui.py
+              - op: replace
+                path: /spec/template/spec/containers/0/livenessProbe
+                value:
+                  tcpSocket:
+                    port: http
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 10
+              - op: replace
+                path: /spec/template/spec/containers/0/readinessProbe
+                value:
+                  tcpSocket:
+                    port: http
+                  initialDelaySeconds: 15
+                  periodSeconds: 5
+                  timeoutSeconds: 3
+                  failureThreshold: 3
   values:
     image: holmes
     registry: robustadev
