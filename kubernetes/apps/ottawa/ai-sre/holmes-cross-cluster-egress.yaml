@@ -1,0 +1,40 @@
+---
+# ExternalName Services pointing at the rbd/stp Holmes read-agents via Tailscale.
+# The holmes-shim uses these to route investigate(cluster=...) calls cross-cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-holmes
+  namespace: ai-sre
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-holmes.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  labels:
+    app.kubernetes.io/managed-by: ai-sre
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-holmes
+  namespace: ai-sre
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-holmes.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  labels:
+    app.kubernetes.io/managed-by: ai-sre
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP

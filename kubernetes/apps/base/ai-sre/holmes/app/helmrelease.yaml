@@ -1,0 +1,97 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: holmes
+  labels:
+    app.kubernetes.io/name: holmes
+    app.kubernetes.io/managed-by: ai-sre
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: holmes
+      sourceRef:
+        kind: HelmRepository
+        name: robusta-charts
+        namespace: ai-sre
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    image: holmes
+    registry: robustadev
+    createServiceAccount: true
+    k8sRBAC: false
+
+    additionalEnvVars:
+      - name: MODEL
+        value: openai/vllm/deepseek-v4-flash
+      - name: CLASSIFIER_MODEL
+        value: openai/vllm/deepseek-v4-flash
+      - name: OPENAI_API_BASE
+        value: http://bifrost.bhaiya.svc.cluster.local:8080/v1
+      - name: OPENAI_API_KEY
+        value: unused
+      - name: WP_HTTP_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: woodpecker-mcp-token
+            key: token
+
+    toolsets:
+      kubernetes/core:
+        enabled: true
+      kubernetes/logs:
+        enabled: true
+      prometheus/metrics:
+        enabled: true
+        config:
+          prometheus_url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
+          additional_headers:
+            X-Scope-OrgID: talos-ottawa
+      robusta:
+        enabled: false
+      internet:
+        enabled: false
+      bash:
+        enabled: false
+      skills:
+        enabled: false
+      connectivity_check:
+        enabled: false
+
+    mcp_servers:
+      woodpecker-graph:
+        description: "Service dependency graph - root cause, blast radius, topology"
+        config:
+          url: http://woodpecker-mcp.ai-sre.svc.cluster.local:8000/mcp
+          mode: streamable-http
+          headers:
+            Authorization: "Bearer {{ env.WP_HTTP_TOKEN }}"
+        llm_instructions: "Use woodpecker_diagnose_root_cause first for any service outage. Use woodpecker_get_blast_radius to understand impact. Use woodpecker_get_topology for the full dependency graph."
+
+    operator:
+      enabled: true
+      holmesApiUrl: http://holmes.ai-sre.svc.cluster.local:80
+
+    mcpAddons:
+      kubernetesRemediation:
+        enabled: false
+
+    crdPermissions:
+      flux: true
+      velero: true
+      gatewayApi: true
+
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1
+        memory: 2Gi

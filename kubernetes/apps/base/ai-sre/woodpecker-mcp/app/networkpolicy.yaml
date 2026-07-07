@@ -1,0 +1,22 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: woodpecker-mcp
+  labels:
+    app.kubernetes.io/name: woodpecker-mcp
+    app.kubernetes.io/managed-by: ai-sre
+spec:
+  podSelector:
+    matchLabels:
+      app: woodpecker-mcp
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ai-sre
+      ports:
+        - protocol: TCP
+          port: 8000

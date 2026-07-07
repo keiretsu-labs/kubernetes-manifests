@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ./monitoring
   - ./agent-sandbox-system
+  - ./ai-sre
   - ./arc-systems
   - ./border0
   - ./cloudflare

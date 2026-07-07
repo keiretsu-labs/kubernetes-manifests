@@ -1,0 +1,29 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: holmes-shim-ingress
+  labels:
+    app.kubernetes.io/name: holmes-shim
+    app.kubernetes.io/managed-by: ai-sre
+spec:
+  endpointSelector:
+    matchLabels:
+      app: holmes-shim
+  ingress:
+    # Bifrost MCP proxy (bhaiya namespace) → shim /mcp
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": bhaiya
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+    # Alertmanager (monitoring namespace) → shim /alertmanager webhook
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": monitoring
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
