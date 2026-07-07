@@ -9,7 +9,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: holmes
-  path: ./kubernetes/apps/base/ai-sre/holmes-read-agent/app
+  path: ./kubernetes/apps/base/ai-sre/holmes-stpetersburg/app
   prune: true
   sourceRef:
     kind: GitRepository
