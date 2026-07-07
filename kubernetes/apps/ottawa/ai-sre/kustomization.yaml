@@ -8,7 +8,6 @@ resources:
   - ./holmes-shim.yaml
   - ./holmes-cross-cluster-egress.yaml
   - ./stpetersburg-vllm-egress.yaml
-  - ./holmes-checks.yaml
   - ./holmes-httproute.yaml
   - ./holmes-mcp-httproute.yaml
   - ./holmes-mcp-dnsendpoint.yaml

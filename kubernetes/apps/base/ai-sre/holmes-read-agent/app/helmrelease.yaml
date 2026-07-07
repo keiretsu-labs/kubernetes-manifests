@@ -30,13 +30,15 @@ spec:
 
     additionalEnvVars:
       - name: MODEL
-        value: deepseek-v4-flash
+        value: openai/deepseek-v4-flash
       - name: CLASSIFIER_MODEL
-        value: deepseek-v4-flash
+        value: openai/deepseek-v4-flash
       - name: OPENAI_API_BASE
         value: http://stpetersburg-vllm.ai-sre.svc.cluster.local:80/v1
       - name: OPENAI_API_KEY
         value: unused
+      - name: HOLMES_CONFIGPATH_DIR
+        value: /tmp/.holmes
 
     toolsets:
       kubernetes/core:
