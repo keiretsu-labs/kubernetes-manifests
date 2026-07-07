@@ -27,7 +27,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: holmes-shim
-          image: ghcr.io/keiretsu-labs/kubernetes-manifests/holmes-shim:0.2.0
+          image: ghcr.io/keiretsu-labs/kubernetes-manifests/holmes-shim:0.2.1
           imagePullPolicy: IfNotPresent
           env:
             - name: HOLMES_URLS

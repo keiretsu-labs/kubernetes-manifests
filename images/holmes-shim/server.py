@@ -13,7 +13,7 @@ from fastmcp import FastMCP
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-mcp = FastMCP("holmes-shim")
+mcp = FastMCP("holmes-shim", allowed_hosts=["*"])
 
 HOLMES_URLS: dict[str, str] = json.loads(
     os.environ.get(
