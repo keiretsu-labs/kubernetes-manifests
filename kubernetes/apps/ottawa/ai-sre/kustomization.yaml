@@ -7,4 +7,5 @@ resources:
   - ./holmes.yaml
   - ./holmes-shim.yaml
   - ./holmes-cross-cluster-egress.yaml
+  - ./stpetersburg-vllm-egress.yaml
   - ./holmes-checks.yaml

@@ -7,3 +7,4 @@ resources:
   - ./holmes.yaml
   - ./holmes-egress.yaml
   - ./bifrost-egress.yaml
+  - ./stpetersburg-vllm-local.yaml
