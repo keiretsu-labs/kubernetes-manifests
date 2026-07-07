@@ -10,3 +10,4 @@ resources:
   - ./stpetersburg-vllm-egress.yaml
   - ./holmes-checks.yaml
   - ./holmes-httproute.yaml
+  - ./holmes-mcp-httproute.yaml

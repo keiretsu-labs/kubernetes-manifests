@@ -28,5 +28,12 @@
         }
       }
     }
+  },
+  "mcp": {
+    "holmes": {
+      "type": "remote",
+      "url": "https://holmes-mcp.killinit.cc/mcp",
+      "enabled": true
+    }
   }
 }

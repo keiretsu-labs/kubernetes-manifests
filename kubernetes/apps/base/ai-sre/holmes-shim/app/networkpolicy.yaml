@@ -35,3 +35,11 @@ spec:
         - ports:
             - port: "8000"
               protocol: TCP
+    # Envoy gateway (ts gateway data plane) → shim /mcp for tailnet MCP access
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": envoy-gateway-system
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
