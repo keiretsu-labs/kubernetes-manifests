@@ -1,7 +1,7 @@
 ---
 description: AI SRE investigator — uses HolmesGPT to investigate cluster incidents, failing pods, and alert root causes.
-mode: subagent
-model: anthropic/claude-sonnet-4-6
+mode: all
+model: ai/glm-5.2
 permission:
   bash: ask
   edit: deny
