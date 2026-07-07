@@ -2,7 +2,7 @@
 set -euo pipefail
 
 IMAGE="ghcr.io/rajsinghtech/holmes-shim"
-TAG="0.2.0"
+TAG="0.2.1"
 
 docker build --platform linux/amd64 --provenance=false --sbom=false \
   -t "${IMAGE}:${TAG}" \
