@@ -77,7 +77,7 @@ spec:
 
     operator:
       enabled: true
-      holmesApiUrl: http://holmes.ai-sre.svc.cluster.local:80
+      holmesApiUrl: http://holmes-holmes.ai-sre.svc.cluster.local:80
 
     mcpAddons:
       kubernetesRemediation:

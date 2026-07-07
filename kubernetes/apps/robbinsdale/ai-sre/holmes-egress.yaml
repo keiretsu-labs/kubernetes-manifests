@@ -16,7 +16,7 @@ spec:
   type: LoadBalancer
   loadBalancerClass: tailscale
   selector:
-    app.kubernetes.io/name: holmes
+    app: holmes
   ports:
     - name: http
       port: 80
