@@ -17,7 +17,7 @@ spec:
       name: private
       namespace: home
   hostnames:
-    - "holmes-mcp.${CLUSTER_DOMAIN}"
+    - "holmes-mcp.ts.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
         - group: ""
