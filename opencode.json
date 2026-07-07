@@ -32,8 +32,7 @@
   "mcp": {
     "holmes": {
       "type": "remote",
-      "url": "https://holmes-mcp.killinit.cc/mcp",
-      "enabled": true
+      "url": "http://ottawa-holmes-mcp.keiretsu.ts.net/mcp",
     }
   }
 }
