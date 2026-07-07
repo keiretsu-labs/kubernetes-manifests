@@ -19,6 +19,8 @@ spec:
         - ports:
             - port: "80"
               protocol: TCP
+            - port: "5050"
+              protocol: TCP
     # Cross-cluster Holmes read-agents via Tailscale egress (ExternalName Services
     # route through proxy-group pods in tailscale-system)
     - toEndpoints:
