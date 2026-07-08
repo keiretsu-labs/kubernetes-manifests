@@ -199,7 +199,7 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 4 --max-num-batched-tokens 4096 \
-              --max-cudagraph-capture-size 16 \
+              --max-cudagraph-capture-size 4 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
@@ -399,7 +399,7 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 4 --max-num-batched-tokens 4096 \
-              --max-cudagraph-capture-size 16 \
+              --max-cudagraph-capture-size 4 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
