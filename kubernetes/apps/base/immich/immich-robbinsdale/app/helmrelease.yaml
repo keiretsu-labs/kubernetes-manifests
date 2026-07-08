@@ -35,12 +35,6 @@ spec:
               limits:
                 cpu: "8"
                 memory: 8Gi
-            probes:
-              startup:
-                enabled: true
-                spec:
-                  failureThreshold: 60
-                  periodSeconds: 10
             env:
               DB_DATABASE_NAME: immich
               DB_USERNAME:
