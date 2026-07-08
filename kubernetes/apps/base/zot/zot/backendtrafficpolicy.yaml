@@ -14,7 +14,7 @@ spec:
       name: zot-public
   timeout:
     http:
-      requestTimeout: 300s
+      requestTimeout: 600s
       connectionIdleTimeout: 3600s
       maxConnectionDuration: 0s
   # Resilience: zot's only data store is the shared cross-cluster Garage S3
@@ -26,10 +26,10 @@ spec:
   retry:
     numRetries: 3
     perRetry:
-      timeout: 30s
+      timeout: 120s
       backOff:
         baseInterval: 100ms
-        maxInterval: 1s
+        maxInterval: 2s
     retryOn:
       httpStatusCodes:
         - 503

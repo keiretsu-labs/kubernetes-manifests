@@ -32,6 +32,13 @@ spec:
     persistence: false
     mountConfig: true
     mountSecret: true
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
     env:
       - name: AWS_ACCESS_KEY_ID
         valueFrom:
@@ -83,7 +90,9 @@ spec:
               "forcepathstyle": true,
               "secure": false,
               "skipverify": false,
-              "multipartcopymaxconcurrency": 8
+              "multipartcopymaxconcurrency": 16,
+              "multipartcopythresholdsize": 33554432,
+              "multipartcopychunksize": 16777216
             }
           },
           "http": {
