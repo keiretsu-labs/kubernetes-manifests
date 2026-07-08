@@ -36,8 +36,8 @@ spec:
                 const fs = require('fs');
                 const path = '/usr/src/app/server/dist/repositories/database.repository.js';
                 let content = fs.readFileSync(path, 'utf8');
-                const old = 'async acquireLock(lock, connection) {\n        await (0, kysely_1.sql) `SELECT pg_advisory_lock(${lock})`.execute(connection);';
-                const newCode = 'async acquireLock(lock, connection) {\n        while(true){const{rows}=await(0,kysely_1.sql)`SELECT pg_try_advisory_lock(${lock})`.execute(connection);if(rows[0].pg_try_advisory_lock)break;await new Promise(r=>setTimeout(r,100))}';
+                const old = 'async acquireLock(lock, connection) {\n        await (0, kysely_1.sql) `SELECT pg_advisory_lock($${lock})`.execute(connection);';
+                const newCode = 'async acquireLock(lock, connection) {\n        while(true){const{rows}=await(0,kysely_1.sql)`SELECT pg_try_advisory_lock($${lock})`.execute(connection);if(rows[0].pg_try_advisory_lock)break;await new Promise(r=>setTimeout(r,100))}';
                 if (content.includes(old)) {
                   content = content.replace(old, newCode);
                   fs.writeFileSync(path, content);
