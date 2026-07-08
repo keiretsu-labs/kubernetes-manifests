@@ -144,6 +144,28 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
+        - name: dspark-overlay
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
+          command: [bash, -c]
+          args:
+          - |
+            set -e
+            echo "[dspark-overlay] Cloning Tony's latest DSpark overlay with concurrency fixes…"
+            git clone --depth 1 \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+              /tmp/dspark-repo 2>&1 | tail -3
+            echo "[dspark-overlay] Applying overlay files…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Copying concurrency crash fix (dspark_proposer.py)…"
+            cp /tmp/dspark-repo/recipe/vllm/v1/spec_decode/dspark_proposer.py /overlay/vllm/v1/spec_decode/dspark_proposer.py
+            echo "[dspark-overlay] Files applied: $(find /overlay/vllm -type f | wc -l)"
+            rm -rf /tmp/dspark-repo
+          volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
+          resources:
+            requests: { memory: "2Gi", cpu: "1000m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
 
         containers:
         - name: drop-caches-loop
@@ -161,6 +183,14 @@ spec:
             # Drop page cache immediately before weight load
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            # Apply Tony's DSpark overlay (Keys concurrency + concurrency crash fix)
+            echo "[dspark] Applying overlay with concurrency fixes…"
+            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null)
+            cp -r /overlay/vllm/* "$VLLM_DIR/"
+            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:','if self.cache_config.cache_dtype == \"nvfp4_ds_mla\" and self.model_config.use_mla:');open(p,'w').write(t);print('[ok] VllmConfig')"
+            python3 -c "p='$VLLM_DIR/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[ok] attention')"
+            python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
+            echo "[dspark] Patches applied. Starting vLLM with MTP3 + cudagraph…"
             exec vllm serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
@@ -169,11 +199,11 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 4 --max-num-batched-tokens 4096 \
+              --max-cudagraph-capture-size 16 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
-              --enforce-eager \
               --enable-chunked-prefill \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
@@ -181,7 +211,7 @@ spec:
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
-              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":3,"draft_sample_method":"probabilistic"}' \
               --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 25002
           ports:
@@ -196,6 +226,7 @@ spec:
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: VLLM_USE_NVFP4_DSPARK, value: "1" }
+          - { name: DSPARK_SLOT_CLAMP, value: "1" }
           # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
           # patch). Required for --max-num-seqs > 1.
           - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
@@ -240,6 +271,7 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -262,6 +294,8 @@ spec:
             periodSeconds: 15
             timeoutSeconds: 10
         volumes:
+        - name: overlay-files
+          emptyDir: {}
         - name: shm
           emptyDir:
             medium: Memory
@@ -312,6 +346,28 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
+        - name: dspark-overlay
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
+          command: [bash, -c]
+          args:
+          - |
+            set -e
+            echo "[dspark-overlay] Cloning Tony's latest DSpark overlay with concurrency fixes…"
+            git clone --depth 1 \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
+              /tmp/dspark-repo 2>&1 | tail -3
+            echo "[dspark-overlay] Applying overlay files…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Copying concurrency crash fix (dspark_proposer.py)…"
+            cp /tmp/dspark-repo/recipe/vllm/v1/spec_decode/dspark_proposer.py /overlay/vllm/v1/spec_decode/dspark_proposer.py
+            echo "[dspark-overlay] Files applied: $(find /overlay/vllm -type f | wc -l)"
+            rm -rf /tmp/dspark-repo
+          volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
+          resources:
+            requests: { memory: "2Gi", cpu: "1000m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
 
         containers:
         - name: drop-caches-loop
@@ -328,6 +384,13 @@ spec:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null)
+            echo "[dspark] Applying overlay with concurrency fixes…"
+            cp -r /overlay/vllm/* "$VLLM_DIR/"
+            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:','if self.cache_config.cache_dtype == \"nvfp4_ds_mla\" and self.model_config.use_mla:');open(p,'w').write(t);print('[ok] VllmConfig')"
+            python3 -c "p='$VLLM_DIR/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[ok] attention')"
+            python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
+            echo "[dspark] Patches applied. Starting vLLM worker…"
             exec vllm serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
@@ -336,11 +399,11 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 4 --max-num-batched-tokens 4096 \
+              --max-cudagraph-capture-size 16 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
-              --enforce-eager \
               --enable-chunked-prefill \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
@@ -348,7 +411,7 @@ spec:
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
-              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":3,"draft_sample_method":"probabilistic"}' \
               --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 25002 \
               --headless
@@ -363,6 +426,7 @@ spec:
           - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: VLLM_USE_NVFP4_DSPARK, value: "1" }
+          - { name: DSPARK_SLOT_CLAMP, value: "1" }
           - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
           - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
           - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
@@ -404,6 +468,7 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
+          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -412,6 +477,8 @@ spec:
             requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
             limits: { memory: "95Gi", nvidia.com/gpu: "1" }
         volumes:
+        - name: overlay-files
+          emptyDir: {}
         - name: shm
           emptyDir:
             medium: Memory
