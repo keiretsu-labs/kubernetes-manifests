@@ -28,6 +28,13 @@ spec:
             image:
               repository: ghcr.io/immich-app/immich-server
               tag: v3.0.1
+            resources:
+              requests:
+                cpu: 500m
+                memory: 2Gi
+              limits:
+                cpu: "4"
+                memory: 6Gi
             env:
               DB_DATABASE_NAME: immich
               DB_USERNAME:
