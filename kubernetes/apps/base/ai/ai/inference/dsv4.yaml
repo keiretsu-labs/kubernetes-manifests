@@ -187,7 +187,7 @@ spec:
             echo "[dspark] Applying overlay with concurrency fixes…"
             VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null)
             cp -r /overlay/vllm/* "$VLLM_DIR/"
-            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:','if self.cache_config.cache_dtype == \"nvfp4_ds_mla\" and self.model_config.use_mla:');open(p,'w').write(t);print('[ok] VllmConfig')"
+            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('def validate_nvfp4_kv_cache_with_mla(self)','def _disabled_validate_nvfp4_kv_cache_with_mla(self)');t=t.replace('if self.cache_dtype == \"nvfp4_ds_mla\" and self.use_mla:','if False:');open(p,'w').write(t);print('[ok] VllmConfig nvfp4_ds_mla validator disabled')"
             python3 -c "p='$VLLM_DIR/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[ok] attention')"
             python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
             echo "[dspark] Patches applied. Starting vLLM with MTP3 + cudagraph…"
@@ -387,7 +387,7 @@ spec:
             VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null)
             echo "[dspark] Applying overlay with concurrency fixes…"
             cp -r /overlay/vllm/* "$VLLM_DIR/"
-            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('if self.cache_config.cache_dtype == \"nvfp4\" and self.model_config.use_mla:','if self.cache_config.cache_dtype == \"nvfp4_ds_mla\" and self.model_config.use_mla:');open(p,'w').write(t);print('[ok] VllmConfig')"
+            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('def validate_nvfp4_kv_cache_with_mla(self)','def _disabled_validate_nvfp4_kv_cache_with_mla(self)');t=t.replace('if self.cache_dtype == \"nvfp4_ds_mla\" and self.use_mla:','if False:');open(p,'w').write(t);print('[ok] VllmConfig nvfp4_ds_mla validator disabled')"
             python3 -c "p='$VLLM_DIR/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[ok] attention')"
             python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
             echo "[dspark] Patches applied. Starting vLLM worker…"
