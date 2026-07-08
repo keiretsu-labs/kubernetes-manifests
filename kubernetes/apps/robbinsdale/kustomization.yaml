@@ -22,7 +22,6 @@ resources:
   - ./spegel
   - ./speedtest
   - ./tailgate-operator-system
-  - ./zot
   - ./external-secrets
   - ./hubble-ui
   - ./open-cluster-management-agent
