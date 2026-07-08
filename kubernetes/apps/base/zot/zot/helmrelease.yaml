@@ -110,6 +110,9 @@ spec:
                   "anonymousPolicy": ["read", "create", "update"],
                   "defaultPolicy": []
                 }
+              },
+              "metrics": {
+                "anonymousPolicy": ["read"]
               }
             }
           },
