@@ -30,11 +30,17 @@ spec:
               tag: v3.0.1
             resources:
               requests:
-                cpu: 500m
-                memory: 2Gi
+                cpu: "2"
+                memory: 4Gi
               limits:
-                cpu: "4"
-                memory: 6Gi
+                cpu: "8"
+                memory: 8Gi
+            probes:
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 60
+                  periodSeconds: 10
             env:
               DB_DATABASE_NAME: immich
               DB_USERNAME:
