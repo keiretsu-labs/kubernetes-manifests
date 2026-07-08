@@ -3,16 +3,15 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: zot
 resources:
-  - backendtrafficpolicy.yaml
   - probes.yaml
   - prometheusrule.yaml
   - bucket.yaml
   - egress.yaml
   - grafana-dashboard.yaml
   - helmrelease.yaml
-  - httproute-public.yaml
   - ingress-internal.yaml
   - pdb.yaml
+  - referencegrant.yaml
   - service-ts.yaml
   - servicemonitor.yaml
 configMapGenerator:

@@ -1,0 +1,21 @@
+---
+# allow the zot-public HTTPRoute (keiretsu-top ns, k8gb GSLB) to backend the
+# zot Service. The route + Gslb + BackendTrafficPolicy live in keiretsu-top
+# so the Gslb can reference them same-namespace (see
+# k8gb-common/config/gslb-zot-public.yaml). Deployed with the zot base, so
+# this only exists on ottawa — which is the only cluster the grant is needed
+# on (the remote clusters have no zot Service to grant access to).
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: zot-public
+  namespace: zot
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: keiretsu-top
+  to:
+    - group: ""
+      kind: Service
+      name: zot

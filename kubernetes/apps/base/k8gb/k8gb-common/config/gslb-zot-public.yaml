@@ -1,4 +1,51 @@
 ---
+# zot public registry — GSLB-fronted, ottawa-only. zot was consolidated to
+# ottawa-only (commit 91f5c7762) but oci.cdn.keiretsu.top kept round-robining
+# across all three clusters: k8gb defaults a Gslb to "Healthy" when the
+# referenced HTTPRoute is absent from a cluster, so robbinsdale/stpetersburg
+# (whose zot base was removed) leaked their WAN IPs and served 404s ~2/3 of
+# the time. Mirror the forgejo-cdn / velero-cdn pattern: the HTTPRoute lives
+# here in keiretsu-top (deployed to every cluster via the common k8gb-config
+# pointer) with a cross-namespace backendRef to the zot Service. k8gb then
+# health-checks the backend on each cluster — Healthy on ottawa (Service
+# exists), Unhealthy on the remote clusters (Service absent) — so only
+# ottawa's IP is published for oci.cdn.keiretsu.top. The ReferenceGrant in
+# the zot base authorises the cross-namespace backendRef.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: zot-public
+  namespace: keiretsu-top
+  annotations:
+    item.homer.rajsingh.info/name: "Zot Registry"
+    item.homer.rajsingh.info/subtitle: "OCI Container Registry"
+    item.homer.rajsingh.info/logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/docker-moby.png"
+    item.homer.rajsingh.info/keywords: "registry, oci, containers"
+
+    service.homer.rajsingh.info/name: "Infrastructure"
+    service.homer.rajsingh.info/icon: "fas fa-server"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - "oci.${COMMON_DOMAIN}"
+    - "oci.cdn.${COMMON_DOMAIN}"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: zot
+          namespace: zot
+          port: 5000
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
 apiVersion: k8gb.absa.oss/v1beta1
 kind: Gslb
 metadata:
@@ -11,7 +58,6 @@ spec:
     apiVersion: gateway.networking.k8s.io/v1
     kind: HTTPRoute
     name: zot-public
-    namespace: zot
   strategy:
     type: roundRobin
     dnsTtlSeconds: 60
@@ -19,3 +65,55 @@ spec:
       ottawa: 100
       robbinsdale: 0
       stpetersburg: 0
+---
+# Timeouts/retry for the public registry path. Kaniko blob uploads of large
+# layers can exceed 300s on a slow Garage quorum; 600s request + 120s per-retry
+# lets Envoy retry transiently slow S3 writes instead of surfacing a 504.
+# Targets the zot-public HTTPRoute (same namespace); on remote clusters the
+# route is inert (backend absent) so this policy is a no-op there.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: zot-public-timeouts
+  namespace: keiretsu-top
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: zot-public
+  timeout:
+    http:
+      requestTimeout: 600s
+      connectionIdleTimeout: 3600s
+      maxConnectionDuration: 0s
+  # Resilience: zot's only data store is the shared cross-cluster Garage S3
+  # backend. A single zot replica that hits a transient backend blip (or is
+  # mid-restart / crashlooping after a Garage quorum wobble) returns 5xx.
+  # Retry lets Envoy re-dispatch that request to the healthy replica instead of
+  # surfacing a 503 to the client; passive outlier detection ejects a
+  # persistently-failing pod from the load-balancing set so new requests skip it.
+  retry:
+    numRetries: 3
+    perRetry:
+      timeout: 120s
+      backOff:
+        baseInterval: 100ms
+        maxInterval: 2s
+    retryOn:
+      httpStatusCodes:
+        - 503
+        - 504
+      triggers:
+        - connect-failure
+        - reset
+        - retriable-status-codes
+  healthCheck:
+    passive:
+      # Eject a replica after 5 consecutive 5xx, keep it out for 30s, re-check
+      # every 5s. Cap ejection at 50% (1 of 2 pods) so a full backend outage
+      # doesn't eject everything and mask that the backend itself is down.
+      consecutive5XxErrors: 5
+      consecutiveGatewayErrors: 5
+      baseEjectionTime: 30s
+      interval: 5s
+      maxEjectionPercent: 50
