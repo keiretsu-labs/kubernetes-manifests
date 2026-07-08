@@ -10,7 +10,6 @@ spec:
   args:
     - --maxmemory=2G
     - --proactor_threads=2
-    - --enable_prometheus=true
   resources:
     requests:
       cpu: 50m
