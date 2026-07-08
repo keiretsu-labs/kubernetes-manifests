@@ -90,9 +90,7 @@ spec:
               "forcepathstyle": true,
               "secure": false,
               "skipverify": false,
-              "multipartcopymaxconcurrency": 16,
-              "multipartcopythresholdsize": 33554432,
-              "multipartcopychunksize": 16777216
+              "multipartcopymaxconcurrency": 16
             }
           },
           "http": {

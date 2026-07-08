@@ -11,6 +11,6 @@ spec:
       app.kubernetes.io/name: zot
       app.kubernetes.io/instance: zot
   endpoints:
-    - port: http
+    - port: zot
       path: /metrics
       interval: 30s
