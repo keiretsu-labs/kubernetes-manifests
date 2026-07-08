@@ -157,8 +157,8 @@ spec:
             echo "[dspark-overlay] Applying overlay files…"
             mkdir -p /overlay/vllm
             cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
-            echo "[dspark-overlay] Copying concurrency crash fix (dspark_proposer.py)…"
-            cp /tmp/dspark-repo/recipe/vllm/v1/spec_decode/dspark_proposer.py /overlay/vllm/v1/spec_decode/dspark_proposer.py
+            echo "[dspark-overlay] Overlay already has concurrency crash fix…"
+            # (overlay version has req_ids support, standalone would overwrite it)
             echo "[dspark-overlay] Files applied: $(find /overlay/vllm -type f | wc -l)"
             rm -rf /tmp/dspark-repo
           volumeMounts:
@@ -183,7 +183,7 @@ spec:
             # Drop page cache immediately before weight load
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            # Apply Tony's DSpark overlay (Keys concurrency + concurrency crash fix)
+            # Apply Tony's DSpark overlay (Keys concurrency patch + req_ids support)
             echo "[dspark] Applying overlay with concurrency fixes…"
             VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null)
             cp -r /overlay/vllm/* "$VLLM_DIR/"
@@ -359,8 +359,8 @@ spec:
             echo "[dspark-overlay] Applying overlay files…"
             mkdir -p /overlay/vllm
             cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
-            echo "[dspark-overlay] Copying concurrency crash fix (dspark_proposer.py)…"
-            cp /tmp/dspark-repo/recipe/vllm/v1/spec_decode/dspark_proposer.py /overlay/vllm/v1/spec_decode/dspark_proposer.py
+            echo "[dspark-overlay] Overlay already has concurrency crash fix…"
+            # (overlay version has req_ids support, standalone would overwrite it)
             echo "[dspark-overlay] Files applied: $(find /overlay/vllm -type f | wc -l)"
             rm -rf /tmp/dspark-repo
           volumeMounts:
