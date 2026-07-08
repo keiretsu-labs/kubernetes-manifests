@@ -22,7 +22,6 @@ resources:
   - ./mimir
   - ./spegel
   - ./tailbench
-  - ./zot
   - ./external-secrets
   - ./hubble-ui
   - ./open-cluster-management-agent
