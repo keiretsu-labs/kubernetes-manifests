@@ -33,6 +33,7 @@ spec:
     retryOn:
       httpStatusCodes:
         - 503
+        - 504
       triggers:
         - connect-failure
         - reset

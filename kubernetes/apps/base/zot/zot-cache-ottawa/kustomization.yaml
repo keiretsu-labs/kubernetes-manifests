@@ -6,3 +6,4 @@ resources:
   - dragonfly.yaml
   - service-local.yaml
   - service-ts.yaml
+  - servicemonitor.yaml

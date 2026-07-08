@@ -1,0 +1,82 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: zot-rules
+  labels:
+    app.kubernetes.io/name: zot
+spec:
+  groups:
+    - name: zot.rules
+      rules:
+        # Zot is the OCI registry for all CI (Woodpecker) image pushes and all
+        # cluster image pulls. A sustained 5xx rate means pushes or pulls are
+        # failing — usually because the Garage S3 backend is slow/unreachable
+        # (cross-WAN write quorum timeout) or a zot replica is crashlooping.
+        - alert: ZotHighErrorRate
+          expr: |
+            sum(rate(zot_http_requests_total{code=~"5.."}[5m]))
+            / sum(rate(zot_http_requests_total[5m])) > 0.05
+          for: 5m
+          annotations:
+            summary: Zot registry error rate above 5% ({{ $value | humanizePercentage }})
+            description: >-
+              More than 5% of Zot requests are returning 5xx for 5m. Check the
+              Garage S3 backend (garage-gateway Service, storage tier health),
+              zot pod logs, and the Zot Grafana dashboard for S3 latency spikes.
+              Common cause: Garage cross-WAN write quorum timeout — the
+              BackendTrafficPolicy retries 503/504 but sustained backend issues
+              will exhaust retries.
+          labels:
+            severity: critical
+
+        # Push latency — OCI manifest PUTs and blob uploads. When the S3 backend
+        # (Garage) is slow, push latency spikes. This is the early warning before
+        # the 504s start.
+        - alert: ZotHighPushLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum by (le) (rate(zot_http_method_latency_seconds_bucket{method=~"POST|PUT|PATCH"}[5m]))
+            ) > 30
+          for: 10m
+          annotations:
+            summary: Zot push latency p95 above 30s ({{ $value }}s)
+            description: >-
+              The 95th percentile latency for push operations (POST/PUT/PATCH)
+              has been above 30s for 10m. This usually means the Garage S3
+              backend is slow — check Garage resync queue length, storage node
+              health, and cross-WAN connectivity. Pushes will start 504-ing if
+              this continues to climb.
+          labels:
+            severity: warning
+
+        # A zot replica is down. With replicaCount=2 and a PDB of minAvailable=1,
+        # losing one pod halves capacity and removes the retry fallback.
+        - alert: ZotReplicasUnavailable
+          expr: |
+            (zot_scheduler_workers{state="idle"} + zot_scheduler_workers{state="running"})
+            < 2
+          for: 5m
+          annotations:
+            summary: Fewer than 2 zot replicas running
+            description: >-
+              At least one zot replica has been down for 5m. With only 2
+              replicas and a PDB of minAvailable=1, this halves capacity and
+              removes Envoy's retry fallback. Check pod status and logs for
+              crashloops or Garage S3 connection failures.
+          labels:
+            severity: warning
+
+        # Blackbox probe — zot is not responding at all (both replicas down,
+        # or Service has no endpoints).
+        - alert: ZotProbeFailing
+          expr: probe_success{service="zot"} == 0
+          for: 3m
+          annotations:
+            summary: Zot registry blackbox probe failing
+            description: >-
+              The blackbox probe to http://zot.zot:5000/ has been failing for
+              3m. The registry is unreachable from inside the cluster — both
+              replicas may be down or the Service has no endpoints.
+          labels:
+            severity: critical

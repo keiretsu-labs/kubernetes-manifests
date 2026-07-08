@@ -5,6 +5,7 @@ namespace: zot
 resources:
   - backendtrafficpolicy.yaml
   - probes.yaml
+  - prometheusrule.yaml
   - bucket.yaml
   - egress.yaml
   - grafana-dashboard.yaml

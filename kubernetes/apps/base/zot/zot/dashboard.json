@@ -42,7 +42,7 @@
     {
       "id": 1,
       "type": "row",
-      "title": "Traffic",
+      "title": "Traffic & Errors",
       "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
       "collapsed": false
     },
@@ -65,7 +65,7 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "Error Rate",
+      "title": "Error Rate (5xx)",
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
@@ -109,6 +109,66 @@
       ]
     },
     {
+      "id": 7,
+      "type": "stat",
+      "title": "Push Rate (POST/PUT/PATCH)",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 } },
+      "targets": [
+        {
+          "expr": "sum(rate(zot_http_requests_total{job=~\"$job\",method=~\"POST|PUT|PATCH\"}[5m]))",
+          "legendFormat": "push",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Pull Rate (GET/HEAD)",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 16, "y": 1, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 } },
+      "targets": [
+        {
+          "expr": "sum(rate(zot_http_requests_total{job=~\"$job\",method=~\"GET|HEAD\"}[5m]))",
+          "legendFormat": "pull",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Blackbox Probe",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 20, "y": 1, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(probe_success{service=\"zot\"})",
+          "legendFormat": "up",
+          "refId": "A"
+        }
+      ]
+    },
+    {
       "id": 5,
       "type": "timeseries",
       "title": "Requests by Method",
@@ -141,10 +201,31 @@
       ]
     },
     {
+      "id": 40,
+      "type": "timeseries",
+      "title": "5xx Error Timeline",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 13, "w": 24, "h": 7 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "fillOpacity": 20, "stacking": { "mode": "normal" } }
+        }
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] } },
+      "targets": [
+        {
+          "expr": "sum by (code) (rate(zot_http_requests_total{job=~\"$job\",code=~\"5..\"}[5m]))",
+          "legendFormat": "HTTP {{code}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
       "id": 10,
       "type": "row",
-      "title": "Latency",
-      "gridPos": { "x": 0, "y": 13, "w": 24, "h": 1 },
+      "title": "Latency (the bottleneck view)",
+      "gridPos": { "x": 0, "y": 21, "w": 24, "h": 1 },
       "collapsed": false
     },
     {
@@ -152,7 +233,7 @@
       "type": "timeseries",
       "title": "Request Latency by Method (p50 / p95 / p99)",
       "datasource": { "type": "prometheus", "uid": "mimir" },
-      "gridPos": { "x": 0, "y": 14, "w": 16, "h": 8 },
+      "gridPos": { "x": 0, "y": 22, "w": 16, "h": 8 },
       "fieldConfig": { "defaults": { "unit": "s" } },
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
       "targets": [
@@ -174,11 +255,44 @@
       ]
     },
     {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Push Latency (POST/PUT/PATCH p95) — the S3 write path",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 16, "y": 22, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 30 }
+            ]
+          }
+        }
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["max"] } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(zot_http_method_latency_seconds_bucket{job=~\"$job\",method=~\"POST|PUT|PATCH\"}[5m])))",
+          "legendFormat": "p95 push",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(zot_http_method_latency_seconds_bucket{job=~\"$job\",method=~\"POST|PUT|PATCH\"}[5m])))",
+          "legendFormat": "p50 push",
+          "refId": "B"
+        }
+      ]
+    },
+    {
       "id": 12,
       "type": "timeseries",
       "title": "Mean Latency by Repo",
       "datasource": { "type": "prometheus", "uid": "mimir" },
-      "gridPos": { "x": 16, "y": 14, "w": 8, "h": 8 },
+      "gridPos": { "x": 0, "y": 30, "w": 12, "h": 8 },
       "fieldConfig": { "defaults": { "unit": "s" } },
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean"] } },
       "targets": [
@@ -190,10 +304,43 @@
       ]
     },
     {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Pull Latency (GET/HEAD p95) — the cache hit path",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 12, "y": 30, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["max"] } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(zot_http_method_latency_seconds_bucket{job=~\"$job\",method=~\"GET|HEAD\"}[5m])))",
+          "legendFormat": "p95 pull",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(zot_http_method_latency_seconds_bucket{job=~\"$job\",method=~\"GET|HEAD\"}[5m])))",
+          "legendFormat": "p50 pull",
+          "refId": "B"
+        }
+      ]
+    },
+    {
       "id": 20,
       "type": "row",
       "title": "Storage & Transfer",
-      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 1 },
+      "gridPos": { "x": 0, "y": 38, "w": 24, "h": 1 },
       "collapsed": false
     },
     {
@@ -201,7 +348,7 @@
       "type": "table",
       "title": "Storage by Repo",
       "datasource": { "type": "prometheus", "uid": "mimir" },
-      "gridPos": { "x": 0, "y": 23, "w": 8, "h": 10 },
+      "gridPos": { "x": 0, "y": 39, "w": 8, "h": 10 },
       "fieldConfig": {
         "defaults": { "unit": "bytes" },
         "overrides": [
@@ -228,7 +375,7 @@
       "type": "timeseries",
       "title": "Downloads / sec (top 10 repos)",
       "datasource": { "type": "prometheus", "uid": "mimir" },
-      "gridPos": { "x": 8, "y": 23, "w": 8, "h": 10 },
+      "gridPos": { "x": 8, "y": 39, "w": 8, "h": 10 },
       "fieldConfig": { "defaults": { "unit": "ops" } },
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
       "targets": [
@@ -244,7 +391,7 @@
       "type": "timeseries",
       "title": "Uploads / sec (top 10 repos)",
       "datasource": { "type": "prometheus", "uid": "mimir" },
-      "gridPos": { "x": 16, "y": 23, "w": 8, "h": 10 },
+      "gridPos": { "x": 16, "y": 39, "w": 8, "h": 10 },
       "fieldConfig": { "defaults": { "unit": "ops" } },
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
       "targets": [
@@ -258,8 +405,8 @@
     {
       "id": 30,
       "type": "row",
-      "title": "Scheduler",
-      "gridPos": { "x": 0, "y": 33, "w": 24, "h": 1 },
+      "title": "Scheduler & GC",
+      "gridPos": { "x": 0, "y": 49, "w": 24, "h": 1 },
       "collapsed": false
     },
     {
@@ -267,7 +414,7 @@
       "type": "timeseries",
       "title": "Task Queue Length",
       "datasource": { "type": "prometheus", "uid": "mimir" },
-      "gridPos": { "x": 0, "y": 34, "w": 12, "h": 7 },
+      "gridPos": { "x": 0, "y": 50, "w": 12, "h": 7 },
       "fieldConfig": { "defaults": { "unit": "short" } },
       "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
       "targets": [
@@ -283,7 +430,7 @@
       "type": "timeseries",
       "title": "Scheduler Workers",
       "datasource": { "type": "prometheus", "uid": "mimir" },
-      "gridPos": { "x": 12, "y": 34, "w": 12, "h": 7 },
+      "gridPos": { "x": 12, "y": 50, "w": 12, "h": 7 },
       "fieldConfig": { "defaults": { "unit": "short" } },
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] } },
       "targets": [
@@ -291,6 +438,250 @@
           "expr": "sum by (job, state) (zot_scheduler_workers{job=~\"$job\"})",
           "legendFormat": "{{job}} {{state}}",
           "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "type": "row",
+      "title": "Garage S3 Backend Health",
+      "gridPos": { "x": 0, "y": 57, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 51,
+      "type": "stat",
+      "title": "Garage Serving Health",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 58, "w": 6, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(probe_success{service=\"garage\", check=\"serving\", target=\"local\"})",
+          "legendFormat": "serving",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "type": "stat",
+      "title": "Garage Gateway Reachable",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 6, "y": 58, "w": 6, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "max(probe_success{service=\"garage\", tier=\"gateway\", check=\"port-open\", target=\"local\"})",
+          "legendFormat": "gateway",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "type": "timeseries",
+      "title": "Garage Resync Queue Length (write backlog)",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 12, "y": 58, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 1000 }
+            ]
+          }
+        }
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["last", "max"] } },
+      "targets": [
+        {
+          "expr": "max by (instance) (garage_block_resync_queue_length)",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "type": "timeseries",
+      "title": "Garage S3 API Errors",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 66, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] } },
+      "targets": [
+        {
+          "expr": "sum by (status) (rate(garage_s3_request_total{status=~\"5..\"}[5m]))",
+          "legendFormat": "S3 {{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "type": "timeseries",
+      "title": "Garage S3 API Latency (p95)",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 12, "y": 66, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["max"] } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(garage_s3_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "p95 S3",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(garage_s3_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "p50 S3",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "type": "row",
+      "title": "Cache (Dragonfly)",
+      "gridPos": { "x": 0, "y": 74, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 61,
+      "type": "stat",
+      "title": "Cache Memory Used",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 75, "w": 6, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "targets": [
+        {
+          "expr": "max(dragonfly_used_memory_bytes)",
+          "legendFormat": "used",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "type": "stat",
+      "title": "Cache Keys",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 6, "y": 75, "w": 6, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "targets": [
+        {
+          "expr": "sum(dragonfly_keys_total)",
+          "legendFormat": "keys",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "type": "timeseries",
+      "title": "Cache Ops / sec",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 12, "y": 75, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "ops" } },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [
+        {
+          "expr": "sum by (type) (rate(dragonfly_commands_total[5m]))",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 64,
+      "type": "timeseries",
+      "title": "Cache Hit Rate",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 0, "y": 83, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.8 }
+            ]
+          }
+        }
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["last"] } },
+      "targets": [
+        {
+          "expr": "sum(rate(dragonfly_keys_total{type=\"hits\"}[5m])) / sum(rate(dragonfly_keys_total{type=~\"hits|misses\"}[5m]))",
+          "legendFormat": "hit rate",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "type": "timeseries",
+      "title": "Cache Memory Usage",
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "gridPos": { "x": 12, "y": 83, "w": 12, "h": 8 },
+      "fieldConfig": { "unit": "bytes" },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["last", "max"] } },
+      "targets": [
+        {
+          "expr": "max(dragonfly_used_memory_bytes)",
+          "legendFormat": "used",
+          "refId": "A"
+        },
+        {
+          "expr": "max(dragonfly_memory_max_bytes)",
+          "legendFormat": "limit",
+          "refId": "B"
         }
       ]
     }
