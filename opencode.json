@@ -29,10 +29,4 @@
       }
     }
   },
-  "mcp": {
-    "holmes": {
-      "type": "remote",
-      "url": "http://ottawa-holmes-mcp.keiretsu.ts.net/mcp",
-    }
-  }
 }

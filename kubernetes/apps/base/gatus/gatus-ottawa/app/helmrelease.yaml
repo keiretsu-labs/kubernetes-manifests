@@ -30,11 +30,6 @@ spec:
           webhook-url: "${DISCORD_WEBHOOK_URL}"
           failure-threshold: 3
           success-threshold: 2
-        webhook:
-          url: "http://holmes-shim.ai-sre.svc.cluster.local:8000/gatus"
-          default-alert:
-            failure-threshold: 3
-            success-threshold: 2
       ui:
         title: "K8s Ottawa Status"
         description: "GitOps-managed Kubernetes cluster monitoring - Single source of truth for infrastructure health"
@@ -60,8 +55,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         # === Tailscale ===
         - name: (K8s Cluster) Ottawa
           group: Tailscale
@@ -74,8 +67,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: (K8s Cluster) Robbinsdale
           group: Tailscale
           url: https://robbinsdale-k8s-operator.keiretsu.ts.net:443/readyz
@@ -86,8 +77,6 @@ spec:
             - "[CERTIFICATE_EXPIRATION] > 168h"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: (K8s Cluster) StPetersburg
           group: Tailscale
@@ -100,8 +89,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Rei (K8s Node)
           group: Servers
           url: tcp://rei.killinit.internal:6443
@@ -111,8 +98,6 @@ spec:
             - "[RESPONSE_TIME] < 1000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Asuka (K8s Node)
           group: Servers
@@ -124,8 +109,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Kaji (K8s Node)
           group: Servers
           url: tcp://kaji.killinit.internal:6443
@@ -135,8 +118,6 @@ spec:
             - "[RESPONSE_TIME] < 1000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Nagato (NAS)
           group: Servers
@@ -150,8 +131,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Jetkvm
           group: Servers
           url: tcp://jetkvm.killinit.internal:80
@@ -164,8 +143,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: etcd (rei)
           group: Kubernetes
           url: http://rei.killinit.internal:2381/metrics
@@ -175,8 +152,6 @@ spec:
             - "[RESPONSE_TIME] < 500"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: etcd (asuka)
           group: Kubernetes
@@ -188,8 +163,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: etcd (kaji)
           group: Kubernetes
           url: http://kaji.killinit.internal:2381/metrics
@@ -199,8 +172,6 @@ spec:
             - "[RESPONSE_TIME] < 500"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Kubernetes API
           group: Kubernetes
@@ -215,8 +186,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Envoy-Public
           group: Networking
           url: https://status.${CLUSTER_DOMAIN}
@@ -229,8 +198,6 @@ spec:
             - "[CERTIFICATE_EXPIRATION] > 168h"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Envoy-Tailscale
           group: Networking
@@ -245,8 +212,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Envoy-Private
           group: Networking
           url: https://status.${CLUSTER_DOMAIN}
@@ -258,8 +223,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Plex
           group: Media
           url: http://plex.media:32400/identity
@@ -269,8 +232,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Jellyfin
           group: Media
@@ -282,8 +243,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Jellystat
           group: Media
           url: http://jellystat.media:3000
@@ -293,8 +252,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Jellyseerr
           group: Media
@@ -306,8 +263,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Radarr 4k Remux
           group: Media
           url: http://radarr-4kremux.media:7878
@@ -317,8 +272,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Radarr 4k
           group: Media
@@ -330,8 +283,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Radarr 1080p
           group: Media
           url: http://radarr-1080p.media:7878
@@ -341,8 +292,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Radarr Anime
           group: Media
@@ -354,8 +303,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Sonarr 4k
           group: Media
           url: http://sonarr-4k.media:8989
@@ -365,8 +312,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Sonarr 1080p
           group: Media
@@ -378,8 +323,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Sonarr Anime
           group: Media
           url: http://sonarr-anime.media:8989
@@ -389,8 +332,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Prowlarr
           group: Media
@@ -402,8 +343,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Bazarr 4k Remux
           group: Media
           url: http://bazarr-4kremux.media:6767
@@ -413,8 +352,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Bazarr 4k
           group: Media
@@ -426,8 +363,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Bazarr 1080p
           group: Media
           url: http://bazarr-1080p.media:6767
@@ -438,8 +373,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Bazarr Anime
           group: Media
           url: http://bazarr-anime.media:6767
@@ -449,8 +382,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         # === Download Clients ===
         - name: QBittorrent
@@ -463,8 +394,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: QBittorrent PVT
           group: Media
           url: http://qbittorrent-pvt.media
@@ -474,8 +403,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Sabnzbd
           group: Media
@@ -487,8 +414,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Autobrr
           group: Media
           url: http://autobrr.media:7474
@@ -499,8 +424,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Flaresolverr
           group: Media
           url: http://flaresolverr.media:8191
@@ -510,8 +433,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         # === Music Management ===
         - name: Lidarr
@@ -524,8 +445,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         # === Plex Utilities ===
         - name: Tautulli
           group: Media
@@ -537,8 +456,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Maintainerr
           group: Media
           url: http://maintainerr.media:6246
@@ -548,8 +465,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         # === Request/Share Management ===
         - name: Overseerr
@@ -562,8 +477,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Wizarr
           group: Media
           url: http://wizarr.media:5690
@@ -573,8 +486,6 @@ spec:
             - "[RESPONSE_TIME] < 3000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         # === NEW: Kubernetes Control Plane ===
         - name: CoreDNS
@@ -586,8 +497,6 @@ spec:
             - "[RESPONSE_TIME] < 1000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         # === NEW: Storage ===
         # Rook Ceph MGR Prometheus exporter - port 9283 provides Ceph cluster metrics
@@ -601,8 +510,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Garage
           group: Storage
           url: tcp://garage.garage:3900
@@ -612,8 +519,6 @@ spec:
             - "[RESPONSE_TIME] < 1000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Garage Gateway
           group: Storage
@@ -625,8 +530,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Garage WebUI
           group: Storage
           url: http://garage-webui.garage:80
@@ -636,8 +539,6 @@ spec:
             - "[RESPONSE_TIME] < 2000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Garage Robbinsdale (Cross-Cluster)
           group: Storage
@@ -650,8 +551,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Garage StPetersburg (Cross-Cluster)
           group: Storage
           url: tcp://stpetersburg-garage.garage:3900
@@ -662,8 +561,6 @@ spec:
             - "[CONNECTED] == true"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         # === NEW: Monitoring Stack ===
         - name: Prometheus
@@ -676,8 +573,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Alertmanager
           group: Monitoring
           url: http://kube-prometheus-stack-alertmanager.monitoring:9093
@@ -687,8 +582,6 @@ spec:
             - "[RESPONSE_TIME] < 1000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         - name: Grafana
           group: Monitoring
@@ -700,8 +593,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Mimir Gateway
           group: Monitoring
           url: http://mimir-gateway.mimir:80/ready
@@ -712,8 +603,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Mimir (Tailscale)
           group: Monitoring
           url: http://mimir.keiretsu.ts.net:8080/ready
@@ -723,8 +612,6 @@ spec:
             - "[RESPONSE_TIME] < 2000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         # === NEW: Applications ===
         - name: Immich Server
@@ -737,8 +624,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-            - type: webhook
-              send-on-resolved: true
         - name: Immich Machine Learning
           group: Applications
           url: http://immich-machine-learning.immich:3003
@@ -748,8 +633,6 @@ spec:
             - "[RESPONSE_TIME] < 5000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
         # === NEW: GitOps ===
         - name: Flux Source Controller
@@ -761,6 +644,4 @@ spec:
             - "[RESPONSE_TIME] < 1000"
           alerts:
             - type: discord
-              send-on-resolved: true
-            - type: webhook
               send-on-resolved: true
