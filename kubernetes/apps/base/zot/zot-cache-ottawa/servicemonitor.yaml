@@ -1,0 +1,15 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dragonfly-zot
+  labels:
+    app.kubernetes.io/name: dragonfly-zot
+spec:
+  selector:
+    matchLabels:
+      app: dragonfly-zot
+  endpoints:
+    - port: redis
+      path: /metrics
+      interval: 30s
