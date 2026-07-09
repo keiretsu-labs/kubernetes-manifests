@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - operator.yaml
   - instances.yaml
-  - chat.yaml
