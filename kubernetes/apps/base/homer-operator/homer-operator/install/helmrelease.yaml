@@ -27,7 +27,7 @@ spec:
         rbacProxy:
           image:
             repository: quay.io/brancz/kube-rbac-proxy
-            tag: v0.22.0
+            tag: v0.22.1
     resources:
       requests:
         cpu: 10m
