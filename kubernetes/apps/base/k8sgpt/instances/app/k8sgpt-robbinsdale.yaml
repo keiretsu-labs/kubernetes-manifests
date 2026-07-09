@@ -23,13 +23,5 @@ spec:
   noCache: false
   filters:
     - Pod
-    - Deployment
-    - StatefulSet
-    - CronJob
     - PersistentVolumeClaim
-    - Ingress
-  sink:
-    type: slack
-    secret:
-      name: k8sgpt-discord
-      key: webhook
+    - CronJob

@@ -14,17 +14,14 @@ spec:
       name: k8sgpt-vllm
       key: password
   noCache: false
-  # High-signal analyzers only — the default set floods on service-mesh CA/headless
-  # service false positives (341 findings on first full scan). Broaden as needed.
+  # Only analyzers that give real signal without false-positiving on this cluster.
+  # StatefulSet/Ingress/Service/ConfigMap are deliberately dropped: they misread
+  # operator-managed resources (Tailscale StatefulSets have an empty serviceName,
+  # Istio CA configmaps, kube-root-ca.crt in every namespace) as broken. The
+  # operator CRD has no label selector, so analyzer selection is the only lever.
   filters:
     - Pod
-    - Deployment
-    - StatefulSet
-    - CronJob
     - PersistentVolumeClaim
-    - Ingress
-  sink:
-    type: slack
-    secret:
-      name: k8sgpt-discord
-      key: webhook
+    - CronJob
+  # sink intentionally omitted until the filtered output is confirmed low-noise;
+  # re-added afterward as a controlled daily digest (analysis.interval: 24h).
