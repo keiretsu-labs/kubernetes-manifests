@@ -1,0 +1,21 @@
+---
+apiVersion: core.k8sgpt.ai/v1alpha1
+kind: K8sGPT
+metadata:
+  name: k8sgpt-ottawa
+  namespace: k8sgpt
+spec:
+  ai:
+    enabled: true
+    backend: localai
+    baseUrl: http://stpetersburg-vllm.keiretsu.ts.net/v1
+    model: deepseek-v4-flash
+    secret:
+      name: k8sgpt-vllm
+      key: password
+  noCache: false
+  sink:
+    type: slack
+    secret:
+      name: k8sgpt-discord
+      key: webhook

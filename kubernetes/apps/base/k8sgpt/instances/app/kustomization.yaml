@@ -1,0 +1,12 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: k8sgpt
+resources:
+  - vllm-key.yaml
+  - discord-webhook.sops.yaml
+  - kubeconfig-robbinsdale.sops.yaml
+  - kubeconfig-stpetersburg.sops.yaml
+  - k8sgpt-ottawa.yaml
+  - k8sgpt-robbinsdale.yaml
+  - k8sgpt-stpetersburg.yaml

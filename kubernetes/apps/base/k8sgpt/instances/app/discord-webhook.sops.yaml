@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: k8sgpt-discord
+    namespace: k8sgpt
+type: Opaque
+stringData:
+    #ENC[AES256_GCM,data:Yy1cinpMRAv8EHAvhueP8ZjIBV1BiXXgwDXzI9OhK3FriC9kgQsDXHIavMTtKaABRw6RaU8JwVniMwybC+cKtMvaLFBDIz/YGL7kiuM3,iv:UQ4IL2iFguT3oxAHrogTSprXsqRf+olPffq7m5+X6kQ=,tag:/nU4tOL/k/aDlk7N9BUVJg==,type:comment]
+    webhook: ENC[AES256_GCM,data:W+mbi0ne3J6evxnUulZRDTervk+cC0Ow2T3J1uqXchcfPU6vTpxNfuHcGln9ZZkMUgMeeMUfJkpw9B0oeY4S/U1g3k7UKu9wfF2g6uqTa1P5t42RG5xcBMfmsprZ8SIeQ/pNF0/PJJOCgBCCEI0nAGeGd9vdnrr2L5tNo/r7TA==,iv:N2GcycuICQicYxc0vU9bOfDVC/6OslM7hozj7eCZEzI=,tag:668ifPzP2VKIG77UR2jpGA==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-07-08T21:30:30Z"
+    mac: ENC[AES256_GCM,data:wt4YtXbzglenRzsbk/JRIkl368fGjW4s98TRNJDPRRRg78nwqif38alrtO6ynbAOuOA4sVwiph0d9NFwHtCwiP1O6qw+WIaGsSIV8hBWXyY+7pkMX/KbvX74ZAP54/7l4qAQxT4lbb54tbz7+LhzMx+sMbMIN1u15YauNIgfaqw=,iv:KLLno4nSpzO7ZWyDnyuH4jrqkAkn0MstPKCGUUzSYf8=,tag:TVd83hYKz8DHZ9W1PK0fWA==,type:str]
+    pgp:
+        - created_at: "2026-07-08T21:30:30Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveAQ//UW5Yn51mcrdst42EuhpM7bUJZzayUFnB9gbbt8hCUZns
+            +oH2kngue6+eNFDVgPXVT/yTjU5F3hEhPuYWzZTGIjoemF8/655WuwNWqWGdXluI
+            nU98qRSEMjOy6hLNHrw65t2z0myfkdhDiM1OYj3j9BIISUFd5WnWYC38+zLyH4dz
+            ahSpXg9kGUrscdLXC3I+wSj5Ubj7gOA1ZTPHqeWm7y+MGrQu4Sn1xbIvsTU+44px
+            ST/O84nlNrvx4E2xuHvilmDBHsJRHwea90OcaMlzYvPB8Ju2PUwh16bu/eJHcLrr
+            oMc67xLX/Dg8LTLw3arI1qWtUpMnfsy1n1sqgi5yNBRdnreM8/VqUWthWErfBnzQ
+            ajL9HZgYFgYa5zWd5ESi1vTvpu7GwRQedhTx4AVPjy6uFgvGKb5+czfPkl2HfEwT
+            vXn7Gsw1lc9Qju+MSnCFcFRZOXf/5A8dXp38zHcA1Wp52+Wf4wRqgQVz592iLaC7
+            1YnOh7MsGbkv7U5vczPxqMDXYYawIn3/BP7MSSIir58hEHhjnd7+EGuECyOD/azP
+            doE1RYPom4DR8Gr8rpSk36QGrW1sja6sV3URlz03L4vi5zvv7l+ZbmyCUzCPyER6
+            W16p+MrQXQS32tCEZMACRDQZzsw0qp6nudqYS/Uo9LmmW6lwAPYLDlKLLi0VZAfU
+            ZgEJAhDjBgqVAlPI0Nka9APkMfORHeszRENS1FZsAkxilrV41wiAXI/XfCQmIXGu
+            QqaRWG2CC6LY2/qvMx8Kvmh48GoMvW+tS+E0VYKrG0fAWlqwI1338Mpkb5dS2EXm
+            y2LK5Li9+g==
+            =mRKC
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.2

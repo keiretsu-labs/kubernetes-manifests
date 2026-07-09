@@ -1,0 +1,21 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app k8sgpt-chat
+  namespace: flux-system
+spec:
+  targetNamespace: k8sgpt
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: k8sgpt-operator
+  path: ./kubernetes/apps/base/k8sgpt/chat/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  interval: 30m
+  retryInterval: 1m
+  timeout: 10m
