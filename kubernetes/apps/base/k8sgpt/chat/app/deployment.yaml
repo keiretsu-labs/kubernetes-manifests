@@ -1,11 +1,10 @@
 ---
-# Long-lived k8sgpt CLI pod for interactive chat. `serve` keeps it alive; you
-# exec in for conversational troubleshooting backed by the stpetersburg vLLM:
+# Long-lived k8sgpt CLI pod for interactive chat, backed by the stpetersburg vLLM
+# DeepSeek. Zero-flag usage (ottawa is the kubeconfig's current-context):
 #
-#   kubectl -n k8sgpt exec -it deploy/k8sgpt-chat -- \
-#     /k8sgpt analyze --explain --interactive --no-cache --kubecontext ottawa
+#   kubectl -n k8sgpt exec -it deploy/k8sgpt-chat -- k8sgpt analyze --explain --interactive
 #
-# Swap --kubecontext to robbinsdale / stpetersburg to chat about those clusters.
+# For the other clusters, add one flag:  --kubecontext robbinsdale  (or stpetersburg)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,6 +22,9 @@ spec:
       labels:
         app.kubernetes.io/name: k8sgpt-chat
     spec:
+      # No in-cluster SA token → k8sgpt uses the mounted kubeconfig (KUBECONFIG env)
+      # instead of the permission-less default ServiceAccount.
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -31,16 +33,10 @@ spec:
       containers:
         - name: k8sgpt
           image: ghcr.io/k8sgpt-ai/k8sgpt:v0.4.23
-          args: ["serve"]
+          # serve reads the localai provider from the config (-b localai) and keeps
+          # the pod alive; exec `analyze` in for chat.
+          args: ["serve", "-b", "localai"]
           env:
-            - name: K8SGPT_BACKEND
-              value: localai
-            - name: K8SGPT_MODEL
-              value: deepseek-v4-flash
-            - name: K8SGPT_BASEURL
-              value: http://stpetersburg-vllm.keiretsu.ts.net/v1
-            - name: K8SGPT_PASSWORD
-              value: no-auth
             - name: XDG_CONFIG_HOME
               value: /config
             - name: XDG_CACHE_HOME
@@ -58,10 +54,9 @@ spec:
               cpu: "1"
               memory: 512Mi
           volumeMounts:
-            # Writable — `serve` resolves the backend from the K8SGPT_* env and
-            # writes the provider config here; `exec ... analyze` then reads it.
             - name: config
-              mountPath: /config
+              mountPath: /config/k8sgpt
+              readOnly: true
             - name: kubeconfig
               mountPath: /kubeconfig
               readOnly: true
@@ -69,7 +64,8 @@ spec:
               mountPath: /tmp
       volumes:
         - name: config
-          emptyDir: {}
+          configMap:
+            name: k8sgpt-chat-config
         - name: kubeconfig
           secret:
             secretName: k8sgpt-chat-kubeconfig
