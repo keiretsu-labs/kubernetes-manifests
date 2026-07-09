@@ -62,7 +62,6 @@ resources:
   - ./twin.yaml
   - ./weave-gitops.yaml
   - ./wger.yaml
-  - ./istio.yaml
   - ./homer-operator.yaml
 
   - ./keda.yaml
