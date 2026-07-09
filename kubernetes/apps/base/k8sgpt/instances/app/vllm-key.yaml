@@ -1,0 +1,11 @@
+---
+# vLLM is keyless (no-auth); k8sgpt still wants an ai.secret, so pass a dummy
+# bearer the vLLM server ignores. Not sensitive — intentionally plaintext.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: k8sgpt-vllm
+  namespace: k8sgpt
+type: Opaque
+stringData:
+  password: "no-auth"
