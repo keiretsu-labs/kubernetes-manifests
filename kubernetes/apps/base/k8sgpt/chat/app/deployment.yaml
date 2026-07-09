@@ -32,7 +32,7 @@ spec:
         fsGroup: 65532
       containers:
         - name: k8sgpt
-          image: ghcr.io/k8sgpt-ai/k8sgpt:v0.4.23
+          image: ghcr.io/k8sgpt-ai/k8sgpt:v0.4.35
           # serve reads the localai provider from the config (-b localai) and keeps
           # the pod alive; exec `analyze` in for chat.
           args: ["serve", "-b", "localai"]
