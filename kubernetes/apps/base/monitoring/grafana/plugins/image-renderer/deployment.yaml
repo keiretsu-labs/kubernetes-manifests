@@ -25,7 +25,7 @@ spec:
         fsGroup: 472
       containers:
         - name: grafana-image-renderer
-          image: docker.io/grafana/grafana-image-renderer:v5.9.1
+          image: docker.io/grafana/grafana-image-renderer:v5.10.0
           imagePullPolicy: IfNotPresent
           args: ["server", "--server.addr=:8081"]
           ports:
