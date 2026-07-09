@@ -30,3 +30,14 @@ spec:
     # to the local (ottawa) cluster without hand-written RBAC.
     dynamicRBAC:
       enabled: true
+    # Chart default manager limit is 128Mi → OOMKilled during analysis of three
+    # clusters. Bump it.
+    controllerManager:
+      manager:
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 50m
+            memory: 256Mi

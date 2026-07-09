@@ -58,9 +58,10 @@ spec:
               cpu: "1"
               memory: 512Mi
           volumeMounts:
+            # Writable — `serve` resolves the backend from the K8SGPT_* env and
+            # writes the provider config here; `exec ... analyze` then reads it.
             - name: config
-              mountPath: /config/k8sgpt
-              readOnly: true
+              mountPath: /config
             - name: kubeconfig
               mountPath: /kubeconfig
               readOnly: true
@@ -68,8 +69,7 @@ spec:
               mountPath: /tmp
       volumes:
         - name: config
-          configMap:
-            name: k8sgpt-chat-config
+          emptyDir: {}
         - name: kubeconfig
           secret:
             secretName: k8sgpt-chat-kubeconfig
