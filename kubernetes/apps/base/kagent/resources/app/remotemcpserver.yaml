@@ -1,0 +1,15 @@
+---
+# Registers the in-cluster k8sgpt MCP server as a tool source for kagent agents.
+# k8sgpt already pulls findings from all three clusters (operator); this exposes its
+# analyze/list/get tools over Streamable-HTTP.
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: k8sgpt
+  namespace: kagent
+spec:
+  description: k8sgpt cluster analysis (analyze, list-events, get-resource, ...)
+  protocol: STREAMABLE_HTTP
+  url: http://k8sgpt-mcp.k8sgpt.svc.cluster.local:8089/mcp
+  timeout: 30s
+  sseReadTimeout: 5m0s

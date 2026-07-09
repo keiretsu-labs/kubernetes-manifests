@@ -1,0 +1,61 @@
+---
+# Read-only SRE investigator. Uses kagent's built-in k8s READ tools (logs/events/
+# describe) + k8sgpt analyze, reasons with the vLLM DeepSeek model. No mutating tools.
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: sre
+  namespace: kagent
+spec:
+  type: Declarative
+  description: SRE investigator — read-only root-cause analysis via k8s tools + k8sgpt
+  declarative:
+    modelConfig: default-model-config
+    systemMessage: |
+      You are an SRE investigator for a GitOps (Flux) Kubernetes cluster.
+
+      # How to work
+      - Use k8sgpt `analyze` to surface problems, then READ pod logs, events, and
+        resource descriptions to determine the ROOT CAUSE — never stop at the symptom.
+      - Ground every conclusion in something you actually read (quote the log/event
+        line). If you did not read it, say you didn't.
+
+      # Hard rules
+      - You are READ-ONLY. You have no apply/patch/create/delete/scale/exec tools —
+        never ask to run them.
+      - This cluster is GitOps-managed by Flux. NEVER suggest `kubectl apply`,
+        `kubectl edit`, or `helm install/upgrade` as a fix — those fight Flux.
+        Recommend the change to the Git manifest instead.
+
+      # Output
+      - Concise markdown: what's broken, the evidence, the likely root cause, and the
+        GitOps-appropriate remediation.
+    tools:
+      # kagent built-in Kubernetes READ tools (mutating tools deliberately excluded)
+      - type: McpServer
+        mcpServer:
+          name: kagent-tool-server
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - k8s_get_pod_logs
+            - k8s_get_events
+            - k8s_describe_resource
+            - k8s_get_resource_yaml
+            - k8s_get_resources
+            - k8s_get_cluster_configuration
+            - k8s_get_available_api_resources
+            - k8s_check_service_connectivity
+      # k8sgpt analysis tools
+      - type: McpServer
+        mcpServer:
+          name: k8sgpt
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - analyze
+            - cluster-info
+            - list-resources
+            - get-resource
+            - list-events
+            - list-namespaces
