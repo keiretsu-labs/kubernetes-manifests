@@ -14,6 +14,15 @@ spec:
       name: k8sgpt-vllm
       key: password
   noCache: false
+  # High-signal analyzers only — the default set floods on service-mesh CA/headless
+  # service false positives (341 findings on first full scan). Broaden as needed.
+  filters:
+    - Pod
+    - Deployment
+    - StatefulSet
+    - CronJob
+    - PersistentVolumeClaim
+    - Ingress
   sink:
     type: slack
     secret:

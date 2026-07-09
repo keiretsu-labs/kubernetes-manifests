@@ -21,6 +21,13 @@ spec:
       name: k8sgpt-vllm
       key: password
   noCache: false
+  filters:
+    - Pod
+    - Deployment
+    - StatefulSet
+    - CronJob
+    - PersistentVolumeClaim
+    - Ingress
   sink:
     type: slack
     secret:
