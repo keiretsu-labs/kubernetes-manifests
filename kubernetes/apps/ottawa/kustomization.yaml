@@ -57,8 +57,6 @@ resources:
   - ./csi-driver-smb
   - ./tuppr
   - ./k8s-gpu-dra-driver
-  - ./k8sgpt
-  - ./kagent
   - ./rook-ceph
   - ./velero
   - ./vpa-system
