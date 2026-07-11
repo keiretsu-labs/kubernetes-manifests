@@ -23,7 +23,6 @@ spec:
           type: RuntimeDefault
       containers:
         - name: unifi-webhook
-          # renovate: datasource=docker depName=ghcr.io/kbpersonal/unifiwebhooktodiscord
           image: ghcr.io/kbpersonal/unifiwebhooktodiscord:0.1.0
           ports:
             - name: http
