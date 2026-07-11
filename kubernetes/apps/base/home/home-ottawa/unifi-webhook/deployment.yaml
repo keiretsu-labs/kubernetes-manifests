@@ -23,12 +23,14 @@ spec:
           type: RuntimeDefault
       containers:
         - name: unifi-webhook
-          # renovate: datasource=docker depName=redzguilt/unifi-webhook-to-discord
-          image: docker.io/redzguilt/unifi-webhook-to-discord:latest@sha256:315e3340a7dc99afc7b9d2e86f52c9bfd8992d61bdd8ae8d481065f8de48f854
+          # renovate: datasource=docker depName=ghcr.io/kbpersonal/unifiwebhooktodiscord
+          image: ghcr.io/kbpersonal/unifiwebhooktodiscord:29c4e60@sha256:c1edc10504b07ab1f10c4726dafda7ca654c9f46df251f8e9bf87f4391aace0f
           ports:
             - name: http
               containerPort: 8080
           env:
+            - name: TZ
+              value: "America/New_York"
             - name: webhook
               valueFrom:
                 secretKeyRef:
