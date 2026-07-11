@@ -24,3 +24,7 @@ configMapGenerator:
 patches:
   - path: patch-multus.yaml
   - path: patch-descheduler-cronjob.yaml
+  - path: patch-descheduler-rbac.yaml
+    target:
+      kind: ClusterRole
+      name: descheduler-cluster-role

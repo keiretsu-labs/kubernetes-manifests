@@ -26,3 +26,17 @@ spec:
         - op: replace
           path: /spec/replicas
           value: 1
+    # Upstream manifests reference a docker-registry-secret that doesn't
+    # exist here; the images are public on ghcr.io, so the ref only spams
+    # FailedToRetrieveImagePullSecret warnings on every kubelet sync.
+    - target:
+        kind: Deployment
+      patch: |-
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: any
+        spec:
+          template:
+            spec:
+              imagePullSecrets: null
