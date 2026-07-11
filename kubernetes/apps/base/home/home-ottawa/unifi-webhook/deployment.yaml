@@ -24,7 +24,7 @@ spec:
       containers:
         - name: unifi-webhook
           # renovate: datasource=docker depName=ghcr.io/kbpersonal/unifiwebhooktodiscord
-          image: ghcr.io/kbpersonal/unifiwebhooktodiscord:0.1.0@sha256:a6686b39a311bb548402d7a2a5b29e13d0933fa2fac6b71675332e8e3cbe6fe7
+          image: ghcr.io/kbpersonal/unifiwebhooktodiscord:0.1.0
           ports:
             - name: http
               containerPort: 8080
