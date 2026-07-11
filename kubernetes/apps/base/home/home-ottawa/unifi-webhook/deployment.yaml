@@ -1,0 +1,71 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi-webhook
+  namespace: home
+  labels:
+    app: unifi-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unifi-webhook
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: unifi-webhook
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: unifi-webhook
+          # renovate: datasource=docker depName=redzguilt/unifi-webhook-to-discord
+          image: docker.io/redzguilt/unifi-webhook-to-discord:latest@sha256:315e3340a7dc99afc7b9d2e86f52c9bfd8992d61bdd8ae8d481065f8de48f854
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: webhook
+              valueFrom:
+                secretKeyRef:
+                  name: unifi-webhook-discord
+                  key: webhook
+            - name: UUID_1
+              value: "942A6FF64B200000000009651F210000000009E7A6DE0000000068AA8B90"
+            - name: UUID_2
+              value: "1006059833"
+            - name: "A8:9C:6C:20:9E:F8"
+              value: "Kitchen"
+            - name: "A8:9C:6C:20:A0:02"
+              value: "Basement"
+          startupProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 24
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 25m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 99
+            runAsGroup: 100
+            capabilities:
+              drop: ["ALL"]
