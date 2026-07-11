@@ -1,0 +1,9 @@
+# descheduler 1.32 lists PVCs at startup (pod-fit checks); the vendored
+# upstream ClusterRole omits the rule, so the informer never syncs and the
+# job hangs forever (observed: 13-day-stuck cronjob job blocking all runs).
+- op: add
+  path: /rules/-
+  value:
+    apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "watch", "list"]
