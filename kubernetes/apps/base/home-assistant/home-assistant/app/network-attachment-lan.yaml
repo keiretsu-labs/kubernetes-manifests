@@ -27,7 +27,19 @@ spec:
           "master": "eth0",
           "mode": "bridge",
           "ipam": {
-            "type": "dhcp"
+            "type": "static",
+            "addresses": [
+              {
+                "address": "192.168.73.140/24",
+                "gateway": "192.168.73.1"
+              }
+            ],
+            "routes": [
+              {
+                "dst": "0.0.0.0/0",
+                "gw": "192.168.73.1"
+              }
+            ]
           }
         },
         {

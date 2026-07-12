@@ -30,6 +30,13 @@ spec:
       containers:
         - name: homeassistant
           image: homeassistant/home-assistant:2026.7
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
           env:
             - name: TZ
               value: ${TIMEZONE}
