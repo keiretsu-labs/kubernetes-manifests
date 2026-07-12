@@ -1,17 +1,8 @@
 ---
-# Multus NetworkAttachmentDefinition: macvlan side-leg on eth0 with DHCP IPAM
-# from the LAN's UDM, chained with Spiderpool's coordinator plugin which
-# reconciles routing against the primary CNI (Cilium). The coordinator:
-#   - pins cluster pod/service CIDRs (10.5.0.0/16 + 10.4.0.0/16) to eth0/Cilium
-#   - makes net1 (macvlan/LAN) the pod's default-route interface so
-#     HA's Zeroconf/HomeKit + mDNS bind to the 192.168.73.x address that
-#     Apple devices on the LAN can actually reach
-#   - sets rp_filter=0 so reverse-path doesn't drop reply traffic on the
-#     "wrong" interface
-#   - reads cluster pod/service CIDRs from the SpiderCoordinator/default CR
-#
-# Replaces the route-fix init container that previously had to hand-patch
-# /16 routes inside every pod.
+# Multus NetworkAttachmentDefinition: macvlan side-leg on eth0 with static IPAM
+# on 192.168.73.x LAN so HomeKit Bridge + HA mobile app mDNS can advertise
+# from a real LAN IP. Routes are managed by a route-fix init container in the
+# StatefulSet (pins cluster pod/service CIDR 10.5.0.0/16 + 10.4.0.0/16 to eth0).
 apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
 metadata:
@@ -41,13 +32,6 @@ spec:
               }
             ]
           }
-        },
-        {
-          "type": "coordinator",
-          "mode": "overlay",
-          "podCIDRType": "cluster",
-          "tunePodRoutes": true,
-          "podDefaultRouteNic": "net1"
         }
       ]
     }

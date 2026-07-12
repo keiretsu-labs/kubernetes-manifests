@@ -27,6 +27,26 @@ spec:
           operator: Exists
           effect: NoSchedule
       priorityClassName: "infra-high"
+      initContainers:
+        - name: route-fix
+          image: alpine:3.21
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # Pin cluster pod/service CIDR routes to eth0 so intra-cluster
+              # traffic doesn't exit via the macvlan/LAN interface.
+              # Wait for the net1 interface to appear (macvlan is slower).
+              for i in $(seq 1 30); do
+                ip link show net1 >/dev/null 2>&1 && break
+                sleep 2
+              done
+              ip route add 10.5.0.0/16 dev eth0 2>/dev/null || true
+              ip route add 10.4.0.0/16 dev eth0 2>/dev/null || true
+              ip route add 169.254.0.0/16 dev eth0 2>/dev/null || true
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
       containers:
         - name: homeassistant
           image: homeassistant/home-assistant:2026.7
