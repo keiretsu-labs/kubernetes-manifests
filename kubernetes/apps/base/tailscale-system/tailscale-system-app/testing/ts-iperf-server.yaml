@@ -25,7 +25,7 @@ spec:
         command:
         - /bin/sh
         - -c
-        image: "ghcr.io/tailscale/tailscale:latest"
+        image: "ghcr.io/tailscale/tailscale:v1.98.8"
         imagePullPolicy: IfNotPresent
         name: sysctler
         securityContext:
@@ -41,7 +41,7 @@ spec:
           protocol: TCP
       - name: tailscale
         imagePullPolicy: IfNotPresent
-        image: "ghcr.io/tailscale/tailscale:latest"
+        image: "ghcr.io/tailscale/tailscale:v1.98.8"
         securityContext:
           privileged: true
         ports:

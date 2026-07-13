@@ -25,7 +25,7 @@ spec:
         command:
         - /bin/sh
         - -c
-        image: "ghcr.io/tailscale/tailscale:latest"
+        image: "ghcr.io/tailscale/tailscale:v1.98.8"
         imagePullPolicy: Always
         name: sysctler
         securityContext:
@@ -36,7 +36,7 @@ spec:
         command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
       - name: tailscale
         imagePullPolicy: Always
-        image: "ghcr.io/tailscale/tailscale:latest"
+        image: "ghcr.io/tailscale/tailscale:v1.98.8"
         securityContext:
           privileged: true
         env:
