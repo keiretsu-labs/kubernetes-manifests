@@ -39,7 +39,6 @@ resources:
   - ./local-path-storage
   - ./tuppr
   - ./rdma-shared-dp
-  - ./spiderpool
   - ./gpu-operator
   - ./velero
   - ./vpa-system
