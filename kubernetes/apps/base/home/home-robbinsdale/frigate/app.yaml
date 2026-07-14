@@ -67,13 +67,15 @@ spec:
               mountPath: /tmp/cache/
       restartPolicy: Always
       terminationGracePeriodSeconds: 120
+      nodeSelector:
+        kubernetes.io/hostname: stone
       volumes:
         - name: storage
           persistentVolumeClaim:
             claimName: frigate-data-unas
         - name: config
           persistentVolumeClaim:
-            claimName: frigate-config-unas
+            claimName: frigate-config-ceph
         - name: dshm
           emptyDir:
             medium: Memory
