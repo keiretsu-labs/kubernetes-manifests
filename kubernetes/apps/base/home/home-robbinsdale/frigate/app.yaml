@@ -35,6 +35,20 @@ spec:
               protocol: UDP
             - name: internal
               containerPort: 5000
+          startupProbe:
+            httpGet:
+              path: /api/version
+              port: internal
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /api/version
+              port: internal
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
           resources:
             limits:
               memory: "16Gi"
@@ -59,14 +73,14 @@ spec:
             claimName: frigate-data-unas
         - name: config
           persistentVolumeClaim:
-            claimName: frigate-config-ceph
+            claimName: frigate-config-unas
         - name: dshm
           emptyDir:
             medium: Memory
             sizeLimit: 1Gi
         - name: cache
           emptyDir:
-            sizeLimit: 50Gi
+            sizeLimit: 150Gi
 ---
 apiVersion: v1
 kind: Service
