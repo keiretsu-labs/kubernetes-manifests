@@ -50,6 +50,57 @@ API-only tailnet → kind + operator → verify → cleanup).
   CSI auth-key mounting
 - Community apps: golink, tclip (hostname `paste`), tsidp
 
+## Pod DNS and common-egress contract
+
+Pods do not query Tailscale MagicDNS directly. CoreDNS forwards `ts.net` to the
+per-cluster Tailscale `DNSConfig` nameserver (`ts-dns` at the site's `.69.50`
+LoadBalancer IP). That nameserver's records are derived from Tailscale egress
+Services, not from every device in the tailnet.
+
+Therefore every tailnet hostname consumed by a pod needs a Service in the
+consumer namespace using this pattern:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-node
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: remote-node.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+```
+
+The operator rewrites `externalName` to an internal
+`*.tailscale.svc.cluster.local` proxy. `DNSConfig` simultaneously publishes the
+original `remote-node.keiretsu.ts.net` name as that proxy's cluster IP. This
+allows applications to keep stable tailnet names while all traffic traverses
+the local `common-egress` ProxyGroup.
+
+Operational rules:
+
+1. Put a shared egress set in a base deployed to **every consuming cluster**.
+2. Never publish `100.64.0.0/10` Tailscale addresses in Cloudflare/public DNS.
+3. Never treat a successful laptop `dig` as pod-side validation; laptops use
+   MagicDNS directly, pods use the DNSConfig-derived record set.
+4. Before configuring a client hostname, verify both:
+   - `Service.status.conditions[type=TailscaleEgressSvcReady].status == True`
+   - a temporary pod resolves the original `.keiretsu.ts.net` name to the
+     generated egress proxy ClusterIP.
+5. For identity-authenticated protocols such as Garage RPC, create one ingress
+   identity and one egress Service per remote node. A shared L4 VIP cannot route
+   an expected cryptographic node ID to the correct backend.
+
+Garage's complete storage/gateway example is under
+`kubernetes/apps/base/garage/garage/{egress.yaml,egress-storage-rpc.yaml}`.
+
 ## CI workflows touching Tailscale
 
 - `tailscale.yml` — ACL sync (gitops-acl-action)
