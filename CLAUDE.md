@@ -8,41 +8,40 @@ what is specific to Claude Code acting as the orchestrator.
 
 ## Development model
 
-Claude Code orchestrates; opencode agents (`aperture/deepseek-v4-flash`) do
+Claude Code orchestrates; pi build agents (`aperture/deepseek-v4-flash`) do
 the implementation (manifests, Flux Kustomizations, HTTPRoutes). Claude plans,
 reviews diffs, verifies with `tools/check.sh`, and commits.
 
-### Calling opencode — use the server harness, NOT `opencode run`
+### Calling the build agent
 
-`opencode run` is synchronous with no timeout; a stalled model blocks forever.
-`tools/agent/opencode-task.sh` drives the persistent server HTTP API instead
-(async prompt admission, allow-all permissions, watchdog deadline, result
-harvesting):
+`tools/agent/pi-task.sh` drives `pi` non-interactively against the
+aperture/deepseek-v4-flash backend: portable watchdog, auto-retry on the
+backend's transient 503s, and it prints the saved session path for transcript
+mining.
 
 ```bash
-tools/agent/opencode-task.sh "phase-title" "<self-contained prompt>" [deadline_secs=2400]
-tools/agent/opencode-task.sh --continue <sessionID> "fix ..." [deadline_secs]
+tools/agent/pi-task.sh "phase-title" "<self-contained prompt>" [deadline_secs=1800]
+tools/agent/pi-task.sh --continue "fix ..." [deadline_secs]   # continue last session
 ```
 
-- Run with Bash `run_in_background: true`; final message lands on stdout.
-- Exit 3 = watchdog abort (prints sessionID — inspect partial work, then
-  `--continue`).
-- Server auto-starts on 127.0.0.1:4096. Override model with
-  OPENCODE_PROVIDER/OPENCODE_MODEL.
-- Sessions: `opencode session list`, `opencode export <id>`.
+- Run with Bash `run_in_background: true`; final assistant text lands on stdout.
+- Exit 124 = watchdog timeout; on any failure it prints the stderr tail.
+- Override model via `PI_MODEL` / `PI_PROVIDER`. The `aperture` provider is
+  defined in `~/.pi/agent/models.json` (openai-completions, `http://aperture/v1`).
 
 ### Prompting build agents
 
 Self-contained prompts: goal, exact file paths, acceptance criteria
-(`tools/check.sh`). One app per run, few files per phase. If a run stalls or
-emits broken YAML, `--continue` the session with the errors. Full pattern log:
+(`tools/check.sh`). One app per run, few files per phase. Point add-app runs at
+`docs/reference/app-template.md` (the copy-paste skeleton). If a run stalls or
+emits broken YAML, `--continue` with the errors. Full pattern log:
 `docs/prompt-notes.md`.
 
 ### Recurring toolsmith pass
 
-After every 3–5 changes, launch an agent to mine session logs for token
-sinks and improve `tools/`: instructions in `docs/toolsmith.md`.
+After every 3–5 changes, launch an agent to mine pi session logs for wasted
+tool calls and improve `tools/` / `docs/`: instructions in `docs/toolsmith.md`.
 
 ```bash
-tools/agent/opencode-task.sh "toolsmith-$(date +%Y%m%d)" "Read docs/toolsmith.md and follow it."
+tools/agent/pi-task.sh "toolsmith-$(date +%Y%m%d)" "Read docs/toolsmith.md and follow it."
 ```

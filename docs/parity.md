@@ -13,14 +13,16 @@ Feature gap analysis vs desired target state. Status: ✅ done · 🔶 partial �
 | Variable substitution (common/cluster settings) | ✅ | `substituteFrom` stack |
 | Multi-cluster app pointers | ✅ | One pointer per location overlay |
 
-## Tier 2: OpenCode agent tooling
+## Tier 2: Build-agent tooling
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| `tools/agent/opencode-task.sh` | ✅ | Server-based agent harness |
+| `tools/agent/pi-task.sh` | ✅ | pi harness: watchdog + 503 retry + session harvest |
 | `tools/check.sh` acceptance gate | ✅ | CI-matching render validation |
 | `tools/where.sh` line locator | ✅ | Avoids re-reading large files |
+| `tools/app.sh` app locator | ✅ | Base dir + clusters that deploy an app |
 | `tools/wait-build.sh` | ✅ | Background process poller |
+| `docs/reference/app-template.md` | ✅ | Copy-paste new-app skeleton |
 | `docs/toolsmith.md` | ✅ | Tools improvement instructions |
 | `docs/prompt-notes.md` | ✅ | Prompt patterns log |
 | `docs/parity.md` (this file) | ✅ | Feature gap tracker |
@@ -47,10 +49,10 @@ Feature gap analysis vs desired target state. Status: ✅ done · 🔶 partial �
 | AI/ML (Ollama, KServe, Ray, GPU Operator) | ✅ | St. Petersburg only |
 | Tailscale (operator, Connector, Recorder, DNSConfig) | ✅ | Full operator integration |
 
-## Tier 5: OpenCode agent workflow maturity
+## Tier 5: Build-agent workflow maturity
 
 - [ ] Regular toolsmith pass after every 3-5 changes
 - [ ] `docs/prompt-notes.md` kept current with each session's lessons
 - [ ] Agent prompts include all known gotchas from prompt-notes
 - [ ] All phases verified with `tools/check.sh` before commit
-- [ ] `.opencode/command/*.md` custom commands for repeated workflows
+- [ ] Copy-paste templates in `docs/reference/` for repeated workflows
