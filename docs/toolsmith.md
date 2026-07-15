@@ -1,18 +1,30 @@
 # Toolsmith agent — standing instructions
 
 You are the toolsmith for the kubernetes-manifests repo. Your job is NOT to write
-product manifests. Your job is to study how previous opencode build agents spent
-tokens and make the next agents cheaper and faster.
+product manifests. Your job is to study how previous pi build agents spent tool
+calls and make the next agents cheaper and faster.
 
 ## Inputs
 
-1. `opencode session list` — recent sessions.
-2. `opencode export <sessionID>` — full transcript JSON. Look for:
-   - repeated tool calls reading the same YAML files
-   - long raw dumps of `make test` output
-   - retries caused by ambiguous instructions
-   - boilerplate re-derived each session (paths, patterns)
-3. `opencode stats` — token/cost per session, to rank what's worth optimizing.
+pi session transcripts (JSONL) under
+`~/.pi/agent/sessions/--Users-rajsingh-Documents-GitHub-kubernetes-manifests--/`.
+`tools/agent/pi-task.sh` prints the exact path it wrote at the end of each run.
+Mine the ordered tool-call sequence (args live under `.arguments`):
+
+```bash
+jq -rc 'select(.message).message.content[]?|select(.type=="toolCall")
+  |(.name+" :: "+((.arguments.command//.arguments.path//(.arguments|tostring))|tostring))' <session>.jsonl
+```
+
+Look for:
+- repeated reads/greps of the same files
+- facts re-derived every run (paths, the `substituteFrom` stack, domain values)
+- long raw dumps of `make test` (agents should use `tools/check.sh` instead)
+- retries caused by ambiguous instructions
+
+**Tool-call count per run is the efficiency metric** (pi reports 0 tokens unless
+`supportsUsageInStreaming` is set true in `~/.pi/agent/models.json`). Fewer calls
+= less waste; measure it before and after a fix on the *same* task.
 
 ## Outputs (all inside this repo)
 
@@ -24,7 +36,9 @@ tokens and make the next agents cheaper and faster.
   variable substitution gotchas, SOPS workflow, etc.) so future agents don't
   re-read large files for facts already established.
 - `docs/prompt-notes.md` — a running list of prompt patterns that worked/failed.
-- `.opencode/command/*.md` — custom opencode commands if a workflow repeats.
+- `docs/reference/*.md` — copy-paste templates (e.g. `app-template.md`) so agents
+  copy a worked example instead of re-deriving it. This is the highest-leverage
+  fix: the app-template cut an add-app run from 44 tool calls to 23.
 
 ## Rules
 
