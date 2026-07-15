@@ -18,6 +18,16 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
+  patches:
+    - target:
+        group: gateway.networking.k8s.io
+        version: v1
+        kind: HTTPRoute
+        name: tsflow
+      patch: |-
+        - op: add
+          path: /spec/hostnames/-
+          value: tsflow.rajsingh.info
   postBuild:
     substituteFrom:
       - kind: ConfigMap
