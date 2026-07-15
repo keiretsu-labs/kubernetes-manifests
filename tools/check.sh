@@ -19,13 +19,24 @@ for a in "$@"; do
   esac
 done
 
-fail() {
+run_capped() {
   local label="$1"; shift
-  echo "=== $label FAILED ===" >&2
   local out
-  out="$("$@" 2>&1 || true)"
-  printf '%s\n' "$out" | head -50 >&2
-  echo "(run '$*' to see full output)" >&2
+  out="$(mktemp)"
+
+  if "$@" >"$out" 2>&1; then
+    rm -f "$out"
+    return 0
+  fi
+
+  echo "=== $label FAILED ===" >&2
+  # Render output is mostly successful objects. Surface failure context first,
+  # then retain the summary tail, without flooding agent context.
+  rg -n -C 2 '✗|⊘|[Ee]rror|[Ff]ailed|blocked by' "$out" | tail -35 >&2 || true
+  echo "--- summary tail ---" >&2
+  tail -15 "$out" >&2
+  echo "(showing focused diagnostics from '$*')" >&2
+  rm -f "$out"
   exit 1
 }
 
@@ -36,7 +47,7 @@ if [ "$QUICK" = 1 ]; then
     ns=$(basename "$dir")
     for app in "$dir"*/; do
       [ -d "$app" ] || continue
-      kustomize build --enable-helm "$app" >/dev/null 2>&1 || fail "syntax: $app" kustomize build --enable-helm "$app"
+      run_capped "syntax: $app" kustomize build --enable-helm "$app"
     done
   done
   echo "ok (quick)"
@@ -44,9 +55,9 @@ if [ "$QUICK" = 1 ]; then
 fi
 
 if [ -n "$TARGET" ]; then
-  make "test-$TARGET" >/dev/null 2>&1 || fail "render" make "test-$TARGET"
+  run_capped "render" make "test-$TARGET"
 else
-  make test >/dev/null 2>&1 || fail "render" make test
+  run_capped "render" make test
 fi
 
 echo "ok"
