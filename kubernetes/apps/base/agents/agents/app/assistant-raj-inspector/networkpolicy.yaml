@@ -1,0 +1,18 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: assistant-raj-migration-ingress
+spec:
+  endpointSelector:
+    matchLabels:
+      migration.bhaiya.corp/source: assistant-raj
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: bhaiya
+            bhaiya.corp/workspace: raj-trades
+      toPorts:
+        - ports:
+            - port: "18080"
+              protocol: TCP
