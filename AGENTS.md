@@ -103,6 +103,15 @@ postBuild:
   (Ottawa-only: target `"ottawa.${COMMON_DOMAIN}"`; multi-cluster/k8gb:
   `"<name>.cdn.${COMMON_DOMAIN}"`; both `cloudflare-proxied: "false"`).
   Without it the route shows Accepted=True but never resolves.
+- **Tailnet DNS from pods:** do not publish Tailscale CGNAT (`100.64.0.0/10`)
+  in public DNS and do not assume a new `*.keiretsu.ts.net` device name is
+  automatically present in pod DNS. For every tailnet target, define an
+  `ExternalName` Service annotated with `tailscale.com/tailnet-fqdn` and
+  `tailscale.com/proxy-group: common-egress`. The Tailscale `DNSConfig`
+  nameserver then publishes that original `.ts.net` name as the egress proxy's
+  cluster IP. Verify the Service condition `TailscaleEgressSvcReady=True` and
+  resolve the `.ts.net` name from a pod before configuring clients. See
+  `docs/reference/tailscale-integration.md`.
 - **SOPS:** run `sops` from the directory whose `.sops.yaml` carries the
   creation rules. Edit with `sops <file>.sops.yaml`.
 
