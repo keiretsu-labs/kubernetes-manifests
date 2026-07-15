@@ -15,6 +15,8 @@ integration for cross-cluster networking and access.
   NOT run raw `make test` or `kustomize build`; they dump thousands of lines.
 - **Find before you read.** Use `tools/where.sh <pattern> <file>` (grep -n)
   to locate sections, then read narrow windows. Don't re-read large files.
+  To locate an app (base dir + which clusters deploy it) in one call, use
+  `tools/app.sh <name>` instead of a manual find + cross-tree grep.
 - **Secrets are SOPS-encrypted** (`*.sops.yaml`, PGP key
   FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5). Never commit plaintext secrets,
   kubeconfigs, `talsecret.yaml`, or decrypted `*.dec` files.
