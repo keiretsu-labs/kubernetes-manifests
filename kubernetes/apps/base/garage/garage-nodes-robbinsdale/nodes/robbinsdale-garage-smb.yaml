@@ -29,6 +29,10 @@ spec:
     - cluster:garage/garage
     - tier:storage
     - garage-storage-0-0
+  # Dedicated identity-specific RPC endpoint, provisioned and verified before
+  # this config change. Never point multiple Garage node IDs at one L4 VIP.
+  network:
+    rpcPublicAddr: "robbinsdale-garage-smb.keiretsu.ts.net:3901"
   storage:
     metadata:
       existingClaim: metadata-garage-ceph
