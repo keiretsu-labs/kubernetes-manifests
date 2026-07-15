@@ -1,3 +1,6 @@
+# One identity-specific L4 endpoint per Garage storage node. Garage authenticates
+# the expected NodeID during its RPC handshake, so a shared regional service
+# cannot safely load-balance these connections across different node keys.
 apiVersion: v1
 kind: Service
 metadata:
@@ -75,5 +78,25 @@ spec:
       targetPort: 3901
   selector:
     statefulset.kubernetes.io/pod-name: ottawa-garage-localpath-rei-0
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-smb
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-storage-smb-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: 3901
+  selector:
+    statefulset.kubernetes.io/pod-name: ottawa-garage-smb-0
   type: LoadBalancer
   loadBalancerClass: tailscale
