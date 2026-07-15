@@ -1,7 +1,7 @@
 .PHONY: help test diff
 
 CLUSTERS := talos-ottawa talos-robbinsdale talos-stpetersburg
-FLATE_FLAGS := --no-progress
+FLATE_FLAGS := --no-progress --allow-missing-secrets
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_%.-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
