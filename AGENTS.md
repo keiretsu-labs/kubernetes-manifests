@@ -54,6 +54,12 @@ trees. An app in `base/` with no pointer anywhere is not deployed.
 
 ## Adding a new app
 
+**Copy the worked example in `docs/reference/app-template.md`** — complete
+base manifests, the pointer Kustomization, and a tailnet HTTPRoute with the
+per-cluster `${CLUSTER_DOMAIN}` values already filled in. Reading it once beats
+grepping the tree for the pointer shape, the `substituteFrom` stack, the domain
+values, and an HTTPRoute example. The checklist below is the summary.
+
 1. New Helm chart source? Add a HelmRepository under
    `clusters/common/flux/repositories/helm/<name>.yaml` and list it in that
    dir's `kustomization.yaml`.
