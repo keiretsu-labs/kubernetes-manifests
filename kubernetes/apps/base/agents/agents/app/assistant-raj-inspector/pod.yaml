@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: assistant-raj-data-inspector
+  labels:
+    app.kubernetes.io/name: assistant-raj-data-inspector
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  containers:
+    - name: inspector
+      image: alpine:3.23
+      command: ["/bin/sh", "-c", "trap : TERM INT; sleep 86400 & wait"]
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+      volumeMounts:
+        - name: data
+          mountPath: /data
+          readOnly: true
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: assistant-raj-data
+        readOnly: true
