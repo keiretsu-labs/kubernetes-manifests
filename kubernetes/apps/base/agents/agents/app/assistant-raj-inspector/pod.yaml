@@ -2,11 +2,12 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: assistant-raj-data-inspector
+  name: assistant-raj-data-inspector-kaji
   labels:
     app.kubernetes.io/name: assistant-raj-data-inspector
 spec:
   restartPolicy: Never
+  nodeName: kaji
   automountServiceAccountToken: false
   containers:
     - name: inspector
