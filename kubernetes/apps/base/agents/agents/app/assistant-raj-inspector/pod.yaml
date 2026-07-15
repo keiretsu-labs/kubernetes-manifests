@@ -5,6 +5,7 @@ metadata:
   name: assistant-raj-data-inspector-kaji
   labels:
     app.kubernetes.io/name: assistant-raj-data-inspector
+    migration.bhaiya.corp/source: assistant-raj
 spec:
   restartPolicy: Never
   nodeName: kaji
