@@ -40,31 +40,3 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: &app cdn-site-trades
-  namespace: flux-system
-spec:
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *app
-  dependsOn:
-    - name: garage
-    - name: k8gb-app
-  path: ./kubernetes/apps/base/k8gb/k8gb-common/trades
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: kubernetes-manifests
-  wait: false
-  interval: 30m
-  retryInterval: 1m
-  timeout: 5m
-  postBuild:
-    substitute:
-      SITE: trades
-      BUCKET: raj-assistant-web
-      PUBLIC_HOST: trades.rajsingh.info
-      CDN_HOST: trades.cdn.keiretsu.top
