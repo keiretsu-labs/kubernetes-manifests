@@ -1,0 +1,197 @@
+# Identity-specific storage RPC egress entries. The Tailscale operator
+# publishes each tailnet FQDN through the cluster DNSConfig nameserver and
+# routes it through common-egress. This lets Garage pods resolve the original
+# *.keiretsu.ts.net names to per-node proxy ClusterIPs without exposing CGNAT
+# addresses in public DNS.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ottawa-garage-asuka
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-garage-asuka.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ottawa-garage-kaji
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-garage-kaji.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ottawa-garage-rei
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-garage-rei.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ottawa-garage-shiro
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-garage-shiro.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ottawa-garage-smb
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-garage-smb.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-stone
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-garage-stone.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-tank
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-garage-tank.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-titan
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-garage-titan.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-smb
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-garage-smb.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-garage-spark-0
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-garage-spark-0.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-garage-spark-1
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-garage-spark-1.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-garage-orin-0
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-garage-orin-0.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
