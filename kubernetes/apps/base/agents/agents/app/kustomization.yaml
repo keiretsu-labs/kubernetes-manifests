@@ -9,7 +9,6 @@ resources:
   # raj-trades bhaiya workspace (sandbox-raj-trades, bhaiya namespace).
   # Re-enable by uncommenting the line below.
   # - assistant-raj
-  - assistant-raj-inspector
   - abtar
   - kartik
   - teaspoon
