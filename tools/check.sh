@@ -50,7 +50,6 @@ if [ "$QUICK" = 1 ]; then
       run_capped "syntax: $app" kustomize build --enable-helm "$app"
     done
   done
-  echo "ok (quick)"
   exit 0
 fi
 
@@ -59,5 +58,3 @@ if [ -n "$TARGET" ]; then
 else
   run_capped "render" make test
 fi
-
-echo "ok"
