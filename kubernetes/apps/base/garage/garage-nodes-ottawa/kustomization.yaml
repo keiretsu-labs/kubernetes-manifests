@@ -8,4 +8,3 @@ resources:
   - ottawa-garage-localpath-asuka.yaml
   - ottawa-garage-localpath-rei.yaml
   - service-ts-storage.yaml
-  - garage-rpc-dns.yaml
