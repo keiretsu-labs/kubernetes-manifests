@@ -7,9 +7,6 @@ resources:
   - namespace.yaml
   - vllm.yaml
   - dsv4.yaml
-  - ai-gateway.yaml
-  - vllm-route.yaml
-  - vllm-dnsrecord.yaml
   - scrapeconfig.yaml
   - secret.yaml
   - probes.yaml
