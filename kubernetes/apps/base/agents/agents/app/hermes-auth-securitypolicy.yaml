@@ -5,38 +5,9 @@
 # EG's RBAC filter runs after extAuth, so it matches the injected Remote-Email.
 # split out of the old single hermes-auth policy so each dashboard gets its own
 # allow-list:
-#   raj.hermes      -> raj
 #   kartik.hermes   -> kartik
 #   teaspoon.hermes -> raj + kartik (shared)
 #   abtar.hermes    -> raj + kartik (unchanged from the prior shared whitelist)
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: SecurityPolicy
-metadata:
-  name: assistant-raj-hermes-auth
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: assistant-raj-hermes-web
-  extAuth:
-    headersToExtAuth: [cookie, x-forwarded-proto, x-forwarded-for, user-agent]
-    http:
-      backendRefs:
-        - name: tinyauth
-          namespace: tinyauth
-          port: 3000
-      path: "/api/auth/envoy?path="
-      headersToBackend: [remote-user, remote-email, remote-name, remote-groups]
-  authorization:
-    defaultAction: Deny
-    rules:
-      - name: allow-raj
-        action: Allow
-        principal:
-          headers:
-            - name: Remote-Email
-              values: ["rajsinghcpre@gmail.com"]
----
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:

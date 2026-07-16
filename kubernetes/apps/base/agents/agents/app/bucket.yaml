@@ -13,11 +13,6 @@ spec:
     maxObjects: 10000000
   keyPermissions:
     - keyRef:
-        name: assistant-raj-s3-key
-      read: true
-      write: true
-      owner: true
-    - keyRef:
         name: abtar-s3-key
       read: true
       write: true
