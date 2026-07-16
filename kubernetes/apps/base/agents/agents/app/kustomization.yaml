@@ -5,8 +5,6 @@ namespace: agents
 resources:
   - bucket.yaml
   - egress.yaml
-  - abtar
-  - kartik
   - teaspoon
   - camofox
   - hermes-auth-securitypolicy.yaml

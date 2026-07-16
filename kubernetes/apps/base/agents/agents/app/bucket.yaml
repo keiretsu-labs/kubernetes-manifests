@@ -13,16 +13,6 @@ spec:
     maxObjects: 10000000
   keyPermissions:
     - keyRef:
-        name: abtar-s3-key
-      read: true
-      write: true
-      owner: true
-    - keyRef:
-        name: kartik-s3-key
-      read: true
-      write: true
-      owner: true
-    - keyRef:
         name: teaspoon-s3-key
       read: true
       write: true
