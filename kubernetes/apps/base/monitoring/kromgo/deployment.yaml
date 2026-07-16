@@ -55,7 +55,7 @@ spec:
             limits:
               memory: 64Mi
         - name: mimir-proxy
-          image: nginxinc/nginx-unprivileged:1.31.2-alpine
+          image: nginxinc/nginx-unprivileged:1.31.3-alpine
           ports:
             - name: proxy
               containerPort: 9090
