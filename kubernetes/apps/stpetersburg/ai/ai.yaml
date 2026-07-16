@@ -15,7 +15,6 @@ spec:
     kind: GitRepository
     name: kubernetes-manifests
   dependsOn:
-    - name: envoy-gateway-system-install
     - name: lws-system-install
   wait: false
   interval: 1m

@@ -28,7 +28,6 @@ resources:
   - ./snapshot-controller
   - ./cert-manager
   - ./default
-  - ./envoy-ai-gateway-system
   - ./envoy-gateway-system
   - ./flux-system
   - ./k8gb
