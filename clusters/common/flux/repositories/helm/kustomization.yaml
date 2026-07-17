@@ -6,7 +6,6 @@ resources:
   - ./argoproj.yaml
   - ./cilium.yaml
   - ./spegel.yaml
-  - ./spiderpool.yaml
   - ./cloudnative-pg.yaml
   - ./coredns.yaml
   - ./csi-driver-smb.yaml
@@ -17,7 +16,6 @@ resources:
   - ./external-secrets.yaml
   - ./fairwinds.yaml
   - ./nvidia.yaml
-  - ./nvidia-device-plugin.yaml
   - ./fluent.yaml
   - ./grafana.yaml
   - ./immich.yaml
@@ -35,13 +33,10 @@ resources:
   - ./twin.yaml
   - ./homer-operator.yaml
 
-  - ./kubeshark.yaml
   - ./vector.yaml
   - ./actions-runner-controller.yaml
   - ./unpoller.yaml
 
-  # - ./temporal.yaml
-  # - ./temporal-worker-controller.yaml
   - ./zot.yaml
   - ./woodpecker.yaml
   - ./forgejo.yaml
