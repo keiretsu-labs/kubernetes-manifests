@@ -14,19 +14,21 @@ spec:
       repository: ghcr.io/rajsinghtech/spurfire-server
       tag: "0.1.0"
       pullPolicy: IfNotPresent
+    # Public staging remains zero-mutation until API authentication and a
+    # fresh dedicated organization OAuth client are deployed together.
     config:
-      dryRun: false
+      dryRun: true
       dryRunTtlSeconds: 300
       maxPlayers: 16
-      provisioningMode: tailnet_per_lobby
+      provisioningMode: dry_run
       sharedTailnet: "-"
     tailscale:
       apiBase: https://api.tailscale.com/api/v2
-      existingSecret: spurfire-tailscale
+      existingSecret: ""
       clientIdKey: TS_CLIENT_ID
       clientSecretKey: TS_CLIENT_SECRET
     persistence:
-      enabled: true
+      enabled: false
       storageClass: ceph-block-replicated
       accessModes:
         - ReadWriteOnce
