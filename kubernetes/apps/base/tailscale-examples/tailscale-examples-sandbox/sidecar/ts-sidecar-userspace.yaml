@@ -22,7 +22,7 @@ spec:
         command: ["python3", "-m", "http.server", "8080", "--bind", "127.0.0.1"]
       - name: tailscale
         imagePullPolicy: Always
-        image: "ghcr.io/tailscale/tailscale:v1.98.8"
+        image: "ghcr.io/tailscale/tailscale:v1.98.9"
         env:
         - name: TS_KUBE_SECRET
           value: ""
