@@ -38,6 +38,7 @@ resources:
   - ./searxng
   - ./snapshot-controller
   - ./spegel
+  - ./spurfire
   - ./tailscale-examples
   - ./tailgate-operator-system
   - ./zot
