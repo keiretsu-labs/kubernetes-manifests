@@ -1,0 +1,36 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: spurfire
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: spurfire
+  interval: 1h
+  values:
+    fullnameOverride: spurfire
+    image:
+      repository: ghcr.io/rajsinghtech/spurfire-server
+      tag: "0.1.0"
+      pullPolicy: IfNotPresent
+    config:
+      dryRun: false
+      dryRunTtlSeconds: 300
+      maxPlayers: 16
+      provisioningMode: tailnet_per_lobby
+      sharedTailnet: "-"
+    tailscale:
+      apiBase: https://api.tailscale.com/api/v2
+      existingSecret: spurfire-tailscale
+      clientIdKey: TS_CLIENT_ID
+      clientSecretKey: TS_CLIENT_SECRET
+    persistence:
+      enabled: true
+      storageClass: ceph-block-replicated
+      accessModes:
+        - ReadWriteOnce
+      size: 1Gi
+      retain: true
+    service:
+      port: 80
