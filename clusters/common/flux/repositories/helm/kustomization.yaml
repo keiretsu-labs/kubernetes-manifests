@@ -3,22 +3,15 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./headlamp.yaml
-  - ./angelnu.yaml
   - ./argoproj.yaml
-  - ./authentik.yaml
-  - ./backube-charts.yaml
-  - ./bjw-s.yaml
   - ./cilium.yaml
   - ./spegel.yaml
   - ./spiderpool.yaml
-  - ./clabernetes.yaml
   - ./cloudnative-pg.yaml
-  - ./clusterplex.yaml
   - ./coredns.yaml
   - ./csi-driver-smb.yaml
   - ./descheduler.yaml
   - ./tailscale-helper-charts.yaml
-  - ./emqx.yaml
   - ./envoy-gateway.yaml
   - ./external-dns.yaml
   - ./external-secrets.yaml
@@ -27,53 +20,25 @@ resources:
   - ./nvidia-device-plugin.yaml
   - ./fluent.yaml
   - ./grafana.yaml
-  - ./kiali.yaml
   - ./immich.yaml
-  - ./ingress-nginx.yaml
-  - ./intel-charts.yaml
   - ./isovalent.yaml
-  - ./itzg.yaml
   - ./jetstack.yaml
-  - ./k8s-gateway.yaml
-  - ./kyverno.yaml
-  - ./metrics-server.yaml
-  - ./nextcloud.yaml
   - ./node-feature-discovery.yaml
-  - ./ollama.yaml
   - ./open-webui.yaml
   - ./opencost.yaml
-  - ./openebs.yaml
   - ./openspeedtest.yaml
-  - ./opentelemetry.yaml
   - ./pihole.yaml
   - ./piraeus-charts.yaml
-  - ./plane.yaml
-  - ./postfinance.yaml
-  - ./prometheus-community.yaml
-  - ./prometheus-community-web.yaml
-  - ./qdrant.yaml
-  - ./redash.yaml
   - ./rook-ceph-charts.yaml
-  - ./stakater.yaml
-  - ./stevehipwell.yaml
   - ./strimzi.yaml
   - ./tailscale.yaml
   - ./twin.yaml
-  - ./weave-gitops.yaml
-  - ./wger.yaml
   - ./homer-operator.yaml
 
-  - ./keda.yaml
   - ./kubeshark.yaml
   - ./vector.yaml
-  - ./kuberay.yaml
-  - ./liqo.yaml
   - ./actions-runner-controller.yaml
   - ./unpoller.yaml
-  - ./percona.yaml
-  - ./fleetdm.yaml
-  - ./mariadb-operator.yaml
-  - ./bitnami.yaml
 
   # - ./temporal.yaml
   # - ./temporal-worker-controller.yaml
