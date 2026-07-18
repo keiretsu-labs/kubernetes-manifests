@@ -29,9 +29,12 @@ Look for:
 ## Outputs (all inside this repo)
 
 - `tools/*.sh` — small helper scripts build agents can run instead of verbose
-  commands. Must be executable, silent on success, and print only the relevant
-  failure excerpt. Canonical example: `tools/check.sh` → runs `make test` for
-  all clusters (or single with arg); on failure prints only first ~50 lines.
+  commands. Must be executable, anchored to the repo root (work from any cwd),
+  quiet (a short positive line at most on success — `check.sh` prints one
+  `✓ render OK: …` line so agents don't re-run to confirm), and print only the
+  relevant failure excerpt. `tools/check.sh` → runs `make test` for all clusters
+  (or single with arg); on failure prints only first ~50 lines. Cover new
+  helpers with a deterministic offline case in `tools/tests/run.sh`.
 - `docs/` — condensed reference distillations (YAML patterns, Flux CRD templates,
   variable substitution gotchas, SOPS workflow, etc.) so future agents don't
   re-read large files for facts already established.
