@@ -11,12 +11,22 @@ integration for cross-cluster networking and access.
   changes go through Git and Flux. (`kubectl patch` is OK for live testing —
   `kubectl apply` can't resolve Flux `${VARIABLE}` substitutions.)
 - **Verify with `tools/check.sh`** (or `tools/check.sh <cluster>`) — runs the
-  CI render gate (`make test`), silent on success, ~50 lines on failure. Do
-  NOT run raw `make test` or `kustomize build`; they dump thousands of lines.
+  CI render gate (`make test`), prints exactly one `✓ render OK: …` line on
+  success and ~50 lines on failure. Do NOT run raw `make test` or `kustomize
+  build`; they dump thousands of lines. The full 3-cluster run can exceed a
+  short (120s) tool timeout when cold — if only one cluster changed, scope it
+  (`tools/check.sh talos-ottawa`) or raise the timeout.
 - **Find before you read.** Use `tools/where.sh <pattern> <file>` (grep -n)
   to locate sections, then read narrow windows. Don't re-read large files.
-  To locate an app (base dir + which clusters deploy it) in one call, use
-  `tools/app.sh <name>` instead of a manual find + cross-tree grep.
+  All `tools/*.sh` are anchored to the repo root, so they work from any cwd —
+  no `cd` prefix needed. One-call lookups:
+  - `tools/app.sh <name>` — where an app is defined + which clusters deploy it;
+    `tools/app.sh --list` — full `app | base path | clusters` inventory.
+  - `tools/refs.sh <name>` — every tracked file that references a name (for a
+    decommission sweep); exits non-zero when nothing references it.
+  - `tools/orphans.sh` — kustomization↔disk drift (listed-but-missing targets,
+    unlisted/dead YAML). Exit 1 = discrepancies.
+  - `tools/kc.sh <ot|rb|sp> …` — kubectl for a cluster (see Live cluster access).
 - **Secrets are SOPS-encrypted** (`*.sops.yaml`, PGP key
   FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5). Never commit plaintext secrets,
   kubeconfigs, `talsecret.yaml`, or decrypted `*.dec` files.
@@ -125,11 +135,27 @@ postBuild:
 
 ## Live cluster access
 
-- kubeconfig: `.kube/config` in the repo root (all three clusters); also
-  `/workspace/kubernetes-manifests/.kube/config` in container environments.
-- kubectl contexts: `ottawa-k8s-operator.keiretsu.ts.net`,
-  `robbinsdale-k8s-operator.keiretsu.ts.net`; St. Petersburg via
-  `--kubeconfig ~/.kube/stpetersburg`.
+- **Use `tools/kc.sh <cluster> <kubectl args…>`** — it sets the one canonical
+  `KUBECONFIG` and the right `--context`, execs kubectl (args + exit code pass
+  through), and works from any cwd. Don't re-export `KUBECONFIG`, retype the
+  full context, or `cd` first.
+
+  ```bash
+  tools/kc.sh ot -n media get pods    # ottawa
+  tools/kc.sh rb get ns               # robbinsdale
+  tools/kc.sh sp get nodes            # stpetersburg
+  ```
+
+  | alias            | kubeconfig            | context                                   |
+  |------------------|-----------------------|-------------------------------------------|
+  | `ot`/`ottawa`      | `<repo>/.kube/config` | `ottawa-k8s-operator.keiretsu.ts.net`       |
+  | `rb`/`robbinsdale` | `<repo>/.kube/config` | `robbinsdale-k8s-operator.keiretsu.ts.net`  |
+  | `sp`/`stpetersburg`| `~/.kube/stpetersburg`  | (none)                                    |
+
+- The one canonical kubeconfig is `.kube/config` in the repo root (all three
+  clusters). Container environments symlink/copy it to
+  `/workspace/kubernetes-manifests/.kube/config`; do not guess that path on the
+  host — prefer `tools/kc.sh`.
 - Pod/service CIDRs per site: Robbinsdale 10.1/10.0/10.50, Ottawa
   10.3/10.2/10.169, St. Petersburg 10.5/10.4/10.73 (pods/services/LB, /16s).
 
@@ -137,6 +163,13 @@ postBuild:
 
 ```bash
 tools/check.sh [cluster]   # CI render gate — the sole verify command
+                           # (one ✓ line on success; scope by cluster if only
+                           #  one changed — full run can exceed a 120s timeout)
+tools/tests/run.sh         # offline self-tests for the tools/ helpers
+tools/app.sh <name> | --list   # locate an app / full deploy inventory
+tools/refs.sh <name>       # every tracked file referencing <name>
+tools/orphans.sh           # kustomization ↔ disk drift
+tools/kc.sh <ot|rb|sp> …   # kubectl for a cluster (root kubeconfig + context)
 make diff                  # rendered diff vs origin/main
 flux get all -A            # Flux status (live cluster)
 flux reconcile kustomization <app> -n flux-system

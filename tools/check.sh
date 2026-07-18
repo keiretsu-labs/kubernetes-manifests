@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 # tools/check.sh — the kubernetes-manifests acceptance gate for kustomize/flux.
-# Silent on success. On failure prints only the first ~50 lines of the failing
-# step, so build agents don't dump full output into their context.
+# Prints exactly one line on success; on failure prints only the first ~50 lines
+# of the failing step, so build agents don't dump full output into their context.
+# Anchored to the repo root, so it runs from any cwd.
+#
+# NOTE: the full 3-cluster render can exceed a short (120s) tool timeout when
+# cold. If only one cluster changed, scope it: `tools/check.sh talos-ottawa`.
 #
 # Usage:
 #   tools/check.sh                       # full gate (render-test all clusters)
 #   tools/check.sh <cluster>             # single cluster, e.g. tools/check.sh talos-ottawa
 #   tools/check.sh --quick               # quick check (just syntax, no full render)
 set -euo pipefail
+cd -- "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
 QUICK=0
 TARGET=""
@@ -44,17 +49,19 @@ if [ "$QUICK" = 1 ]; then
   # Quick syntax check: validate kustomize build on a representative sample
   for dir in kubernetes/apps/base/*/; do
     [ -d "$dir" ] || continue
-    ns=$(basename "$dir")
     for app in "$dir"*/; do
       [ -d "$app" ] || continue
       run_capped "syntax: $app" kustomize build --enable-helm "$app"
     done
   done
+  echo "✓ syntax OK"
   exit 0
 fi
 
 if [ -n "$TARGET" ]; then
   run_capped "render" make "test-$TARGET"
+  echo "✓ render OK: $TARGET"
 else
   run_capped "render" make test
+  echo "✓ render OK: talos-ottawa talos-robbinsdale talos-stpetersburg"
 fi
