@@ -1,0 +1,53 @@
+---
+# Monitors kysely_migrations table health and reports any issues.
+# Immich images don't bundle psql, and Node pg module resolution
+# varies between images, so the actual DELETE fix is done manually.
+# This at least surfaces the problem in logs.
+apiVersion: batch.v1
+kind: CronJob
+metadata:
+  name: immich-migration-check
+  namespace: immich
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: migration-check
+              image: postgres:15-alpine
+              env:
+                - name: DB_HOSTNAME
+                  value: immich-postgres-rw
+                - name: DB_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-postgres-app
+                      key: username
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-postgres-app
+                      key: password
+                - name: DB_DATABASE_NAME
+                  value: immich
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "=== immich-migration-check: $(date -u) ==="
+                  COUNT=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOSTNAME" \
+                    -U "$DB_USERNAME" -d "$DB_DATABASE_NAME" -t -A \
+                    -c "SELECT count(*) FROM kysely_migrations" 2>/dev/null | tr -d ' ')
+                  echo "Total migrations in DB: $COUNT"
+                  PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOSTNAME" \
+                    -U "$DB_USERNAME" -d "$DB_DATABASE_NAME" -t -A \
+                    -c "SELECT name FROM kysely_migrations ORDER BY name" 2>/dev/null | \
+                    while IFS= read -r name; do
+                      [ -z "$name" ] && continue
+                      echo "  $name"
+                    done
+                  echo "=== immich-migration-check: complete ==="

@@ -7,6 +7,7 @@ resources:
   - probes.yaml
   - pvc-library.yaml
   - httproute.yaml
+  - migration-cleanup.yaml
   - secret.sops.yaml
   - pg.yaml
   - redis.yaml
