@@ -20,7 +20,6 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
-      remediateLastApplied: true
   values:
     controllers:
       main:
