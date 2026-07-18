@@ -21,7 +21,6 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
-      remediateLastApplied: true
     timeout: 15m
   values:
     controllers:
