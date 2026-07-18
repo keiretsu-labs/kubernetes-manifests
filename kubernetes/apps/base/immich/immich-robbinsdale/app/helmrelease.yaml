@@ -11,12 +11,12 @@ spec:
       version: 0.12.0
       sourceRef:
         kind: HelmRepository
-        name: immich
         namespace: flux-system
   install:
     remediation:
       retries: 3
     timeout: 15m
+  interval: 30m
   upgrade:
     cleanupOnFail: true
     remediation:
@@ -33,30 +33,32 @@ spec:
             command:
               - /bin/sh
               - -c
-              - >-
-                node -e 'const
-                o="pg_advisory_lock(",r="pg_try_advisory_lock(";const
-                p="/usr/src/app/server/dist/repositories/database.repository.js";let
-                c=require("fs").readFileSync(p,"utf8");if(c.includes(o)){c=c.replace(o,r);require("fs").writeFileSync(p,c);}
-                ' && node -e 'const
-                fs=require("fs"),path=require("path");pg=
-                path.dirname(require.resolve("pg/package.json"));const
-                mDir="/usr/src/app/server/dist/schema/migrations";const
-                files=new
-                Set(fs.readdirSync(mDir).filter(f=>f.endsWith(".js")).map(f=>f.replace(/\.js$/,"")));const{Client}=require(pg);const
-                c=new
-                Client({user:process.env.DB_USERNAME,password:process.env.DB_PASSWORD,host:process.env.DB_HOSTNAME,database:process.env.DB_DATABASE_NAME,port:5432});(async()=>{await
-                c.connect();const{rows}=await
-                c.query("SELECT name FROM kysely_migrations");for(const
-                r of
-                rows){const
-                base=r.name.replace(/\.(ts|js)$/,"");if(!files.has(base)){console.log("immich-shim:
-                deleting orphaned migration:",r.name);await
-                c.query("DELETE FROM kysely_migrations WHERE
-                name=$1",[r.name]);}}await
-                c.end();})().catch(e=>console.error("immich-shim:
-                migration check error:",e.message));
-                ' && exec /usr/src/app/server/bin/start.sh
+              - |
+                node -e 'const o="pg_advisory_lock(",r="pg_try_advisory_lock(";const p="/usr/src/app/server/dist/repositories/database.repository.js";let c=require("fs").readFileSync(p,"utf8");if(c.includes(o)){c=c.replace(o,r);require("fs").writeFileSync(p,c);}'
+                node -e '
+                const fs=require("fs"),path=require("path"),{execSync}=require("child_process");
+                const pgDir=execSync("find /usr/src/app/server/node_modules/.pnpm -maxdepth 2 -path \"*/node_modules/pg/package.json\"|head -1",{encoding:"utf8"}).trim();
+                if(!pgDir){console.error("immich-shim: pg module not found");process.exit(1);}
+                const pg=path.dirname(pgDir);
+                const mDir="/usr/src/app/server/dist/schema/migrations";
+                const files=new Set(fs.readdirSync(mDir).filter(f=>f.endsWith(".js")).map(f=>f.replace(/\.js$/,"")));
+                const{Client}=require(pg);
+                const c=new Client({user:process.env.DB_USERNAME,password:process.env.DB_PASSWORD,host:process.env.DB_HOSTNAME,database:process.env.DB_DATABASE_NAME,port:5432});
+                (async()=>{
+                  await c.connect();
+                  const{rows}=await c.query("SELECT name FROM kysely_migrations");
+                  for(const r of rows){
+                    const base=r.name.replace(/\.(ts|js)$/,"");
+                    if(!files.has(base)){
+                      console.log("immich-shim: deleting orphaned migration:",r.name);
+                      await c.query("DELETE FROM kysely_migrations WHERE name=$1",[r.name]);
+                    }
+                  }
+                  await c.end();
+                  console.log("immich-shim: migration check complete");
+                })().catch(e=>console.error("immich-shim: migration check error:",e.message));
+                '
+                exec /usr/src/app/server/bin/start.sh
             resources:
               requests:
                 cpu: "2"
