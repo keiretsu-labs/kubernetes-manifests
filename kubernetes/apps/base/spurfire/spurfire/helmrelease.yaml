@@ -12,8 +12,8 @@ spec:
     fullnameOverride: spurfire
     image:
       repository: ghcr.io/rajsinghtech/spurfire-server
-      tag: "sha-32eed847693f93b267e1965b47369ba03330f99a"
-      digest: "sha256:34eb839ebdb5d502ba93da25a4cb613716b40e77e9d3fa1e600f20a373155bc0"
+      tag: "sha-786886089691982bf854e48554b989bc00775c71"
+      digest: "sha256:5a3b6db9668c764349e662889f5535a757142c8c2560c26ff28968009a476228"
       pullPolicy: IfNotPresent
     # Public staging remains zero-mutation until API authentication and a
     # fresh dedicated organization OAuth client are deployed together.
