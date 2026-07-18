@@ -67,7 +67,7 @@
       "automerge": true
     },
     {
-      "description": "Disable automerge for cluster-critical components (incl. CNI layer: cilium/multus/spiderpool)",
+      "description": "Disable automerge for cluster-critical components (incl. CNI layer: cilium/multus/spiderpool) and high-uptime services",
       "matchFileNames": [
         "clusters/**/bootstrap/**",
         "clusters/**/flux/**",
@@ -84,7 +84,8 @@
         "kubernetes/apps/**/multus*/**",
         "kubernetes/apps/**/rook-ceph*/**",
         "kubernetes/apps/**/tuppr*/**",
-        "kubernetes/apps/**/cert-manager*/**"
+        "kubernetes/apps/**/cert-manager*/**",
+        "kubernetes/apps/**/immich*/**"
       ],
       "automerge": false
     },
