@@ -17,9 +17,10 @@ spec:
     remediation:
       retries: 3
   upgrade:
-    cleanupOnFail: false
+    cleanupOnFail: true
     remediation:
       retries: 3
+      remediateLastApplied: true
   values:
     controllers:
       main:
