@@ -9,6 +9,6 @@ spec:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: "0.2.0-main.36.1.sha-32eed847693f"
-    digest: "sha256:27b48f5d5e2f8702464f32d1f8138715fe169c55d025d4c0b364a6a9b09cc7ce"
+    tag: "0.2.0-main.38.1.sha-786886089691"
+    digest: "sha256:02fa84cedef98d48156aa070761f18f5b77a619645e564497bc45e91fbc06559"
   url: oci://ghcr.io/rajsinghtech/charts/spurfire-control
