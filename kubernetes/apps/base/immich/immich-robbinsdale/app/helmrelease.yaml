@@ -23,48 +23,6 @@ spec:
       retries: 3
     timeout: 15m
   values:
-    controllers:
-      main:
-        containers:
-          main:
-            image:
-              repository: ghcr.io/immich-app/immich-server
-              tag: v3.0.1
-            command:
-              - /bin/sh
-              - -c
-              - >
-                node -e 'const
-                o="pg_advisory_lock(",r="pg_try_advisory_lock(";const
-                p="/usr/src/app/server/dist/repositories/database.repository.js";let
-                c=require("fs").readFileSync(p,"utf8");if(c.includes(o)){c=c.replace(o,r);require("fs").writeFileSync(p,c);}
-                ' && exec /usr/src/app/server/bin/start.sh
-            resources:
-              requests:
-                cpu: "2"
-                memory: 4Gi
-              limits:
-                cpu: "8"
-                memory: 8Gi
-            env:
-              DB_DATABASE_NAME: immich
-              DB_USERNAME:
-                valueFrom:
-                  secretKeyRef:
-                    name: immich-postgres-app
-                    key: username
-              DB_PASSWORD:
-                valueFrom:
-                  secretKeyRef:
-                    name: immich-postgres-app
-                    key: password
-              DB_HOSTNAME: immich-postgres-rw
-              REDIS_HOSTNAME: dragonfly-immich
-              REDIS_PASSWORD:
-                valueFrom:
-                  secretKeyRef:
-                    name: immich-dragonfly-secret
-                    key: password
     immich:
       metrics:
         enabled: true
@@ -74,18 +32,30 @@ spec:
     valkey:
       enabled: false
     server:
-      persistence:
-        pics:
-          enabled: true
-          existingClaim: immich-pics
-          globalMounts:
-            - path: /pics
-              readOnly: true
       controllers:
         main:
           strategy: Recreate
           containers:
             main:
+              image:
+                repository: ghcr.io/immich-app/immich-server
+                tag: v3.0.1
+              command:
+                - /bin/sh
+                - -c
+                - >
+                  node -e 'const
+                  o="pg_advisory_lock(",r="pg_try_advisory_lock(";const
+                  p="/usr/src/app/server/dist/repositories/database.repository.js";let
+                  c=require("fs").readFileSync(p,"utf8");if(c.includes(o)){c=c.replace(o,r);require("fs").writeFileSync(p,c);}
+                  ' && exec /usr/src/app/server/bin/start.sh
+              resources:
+                requests:
+                  cpu: "2"
+                  memory: 4Gi
+                limits:
+                  cpu: "8"
+                  memory: 8Gi
               env:
                 DB_DATABASE_NAME: immich
                 DB_USERNAME:
@@ -105,6 +75,13 @@ spec:
                     secretKeyRef:
                       name: immich-dragonfly-secret
                       key: password
+      persistence:
+        pics:
+          enabled: true
+          existingClaim: immich-pics
+          globalMounts:
+            - path: /pics
+              readOnly: true
     machine-learning:
       controllers:
         main:
