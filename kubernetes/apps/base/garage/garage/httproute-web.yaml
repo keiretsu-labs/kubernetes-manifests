@@ -3,7 +3,8 @@
 # Garage resolves buckets by stripping the root_domain suffix from the Host header.
 # keiretsu.top and www.keiretsu.top need a Host rewrite to keiretsu.keiretsu.top
 # so garage maps them to the "keiretsu" bucket.
-# DNS for keiretsu.top/www managed by ddup (health-checked A records), not ExternalDNS.
+# DNS for keiretsu.top/www is a Cloudflare-proxied CNAME to keiretsu.cdn.keiretsu.top,
+# published by ExternalDNS from the keiretsu-top-cnames DNSEndpoint (k8gb/k8gb-common/config/cnames.yaml).
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
