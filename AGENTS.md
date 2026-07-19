@@ -152,6 +152,12 @@ postBuild:
   | `rb`/`robbinsdale` | `<repo>/.kube/config` | `robbinsdale-k8s-operator.keiretsu.ts.net`  |
   | `sp`/`stpetersburg`| `~/.kube/stpetersburg`  | (none)                                    |
 
+- **Compact pod triage:** `tools/ktriage.sh <ot|rb|sp> <ns> <pod>` prints one
+  pod's bounded read-only summary — phase/node/IP, container + init states,
+  not-True conditions, latest 10 events, a 20-line log tail (plus previous logs
+  for restarted containers) — instead of a 200–800-line `get pod -o yaml`. It
+  routes every call through `kc.sh` and issues only `get`/`logs`. Exit 4 = pod
+  read OK but a later section was unavailable (marked inline).
 - The one canonical kubeconfig is `.kube/config` in the repo root (all three
   clusters). Container environments symlink/copy it to
   `/workspace/kubernetes-manifests/.kube/config`; do not guess that path on the
@@ -170,6 +176,7 @@ tools/app.sh <name> | --list   # locate an app / full deploy inventory
 tools/refs.sh <name>       # every tracked file referencing <name>
 tools/orphans.sh           # kustomization ↔ disk drift
 tools/kc.sh <ot|rb|sp> …   # kubectl for a cluster (root kubeconfig + context)
+tools/ktriage.sh <ot|rb|sp> <ns> <pod>   # bounded read-only pod triage (vs -o yaml)
 make diff                  # rendered diff vs origin/main
 flux get all -A            # Flux status (live cluster)
 flux reconcile kustomization <app> -n flux-system

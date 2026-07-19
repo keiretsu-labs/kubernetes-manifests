@@ -47,6 +47,8 @@ Look for:
 
 - Never modify `kubernetes/apps/base/` product manifests unless fixing a bug
   surfaced by the orchestrator.
-- Keep each helper under ~50 lines; no new dependencies.
+- Keep lookup helpers under ~50 lines. A bounded diagnostic helper may be
+  longer when its safety, failure handling, and output caps have offline tests.
+  Add no new dependencies.
 - End your run with a short summary: what you changed, and the top 3 token sinks
   found with estimated savings.
