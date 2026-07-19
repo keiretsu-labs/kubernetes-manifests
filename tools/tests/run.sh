@@ -48,6 +48,167 @@ assert "sp -> ~/.kube/stpetersburg" grep -q 'KUBECONFIG=.*/.kube/stpetersburg' <
 refute "sp -> no --context"         grep -q -- '--context' <<<"$spout"
 rm -rf "$stub"
 
+# ---------------------------------------------------------------- ktriage.sh
+# Stubs kubectl (reached through kc.sh's exec) and dispatches on args. Every
+# call is appended to $KUBECTL_CALLS so the read-only contract is checkable.
+# Oversized fixtures (100 log lines, 15 events) prove the tail/cut bounds hold;
+# the degraded_* fixtures fail one section after the pod-read gate to prove a
+# later failure degrades (exit 4 + inline marker) instead of reading as empty.
+section "ktriage.sh"
+kstub="$(mktemp -d)"
+cat >"$kstub/kubectl" <<'STUB'
+#!/usr/bin/env bash
+[ -n "${KUBECTL_CALLS:-}" ] && printf '%s\n' "$*" >>"$KUBECTL_CALLS"
+args="$*"
+case "$args" in
+  *--previous*) awk 'BEGIN{for(i=1;i<=100;i++)print "PREVLOG-"i}'; exit 0 ;;
+  *logs*)       awk 'BEGIN{for(i=1;i<=100;i++)print "LOGLINE-"i}'; exit 0 ;;
+esac
+case "${KT_FIXTURE:-crash}" in
+  apifail)
+    case "$args" in
+      *custom-columns=PHASE*) echo 'Error from server (NotFound): pods "ghost" not found' >&2; exit 1 ;;
+    esac
+    exit 0 ;;
+  ok)
+    case "$args" in
+      *"get events"*)          awk 'BEGIN{for(i=1;i<=2;i++)printf "2026-07-18T00:0%d:00Z Normal Started okEVT%d container started\n",i,i}'; exit 0 ;;
+      *initContainerStatuses*) exit 0 ;;
+      *containerStatuses*)     printf 'web\ttrue\t0\t\t2026-07-18T00:00:00Z\t\n'; exit 0 ;;
+      *conditions*)            exit 0 ;;
+      *custom-columns=PHASE*)  printf 'Running node-1 10.3.2.9 2026-07-18T00:00:00Z\n'; exit 0 ;;
+    esac ;;
+  degraded_events)
+    # summary/states/conditions succeed; only the events query fails.
+    case "$args" in
+      *"get events"*)          echo 'Error from server: etcdserver: request timed out' >&2; exit 1 ;;
+      *initContainerStatuses*) exit 0 ;;
+      *containerStatuses*)     printf 'web\ttrue\t0\t\t2026-07-18T00:00:00Z\t\n'; exit 0 ;;
+      *conditions*)            exit 0 ;;
+      *custom-columns=PHASE*)  printf 'Running node-1 10.3.2.9 2026-07-18T00:00:00Z\n'; exit 0 ;;
+    esac ;;
+  degraded_state)
+    # summary succeeds; the container-states query fails; events still succeed.
+    case "$args" in
+      *"get events"*)          awk 'BEGIN{for(i=1;i<=2;i++)printf "2026-07-18T00:0%d:00Z Normal Pulled EVT%d image pulled\n",i,i}'; exit 0 ;;
+      *initContainerStatuses*) exit 0 ;;
+      *containerStatuses*)     echo 'Error from server: unable to return a response' >&2; exit 1 ;;
+      *conditions*)            exit 0 ;;
+      *custom-columns=PHASE*)  printf 'Pending node-1 <none> 2026-07-18T00:00:00Z\n'; exit 0 ;;
+    esac ;;
+  multiline)
+    # a multi-line terminated message must not spawn phantom container rows.
+    case "$args" in
+      *"get events"*)          exit 0 ;;
+      *initContainerStatuses*) exit 0 ;;
+      *containerStatuses*)     printf 'app\tfalse\t0\tError\t\tpanic: boom\ngoroutine 1 [running]:\nmain.main()\n'; exit 0 ;;
+      *conditions*)            exit 0 ;;
+      *custom-columns=PHASE*)  printf 'Running node-1 10.3.2.9 2026-07-18T00:00:00Z\n'; exit 0 ;;
+    esac ;;
+  *)
+    case "$args" in
+      *"get events"*)          awk 'BEGIN{for(i=1;i<=15;i++)printf "2026-07-18T00:%02d:00Z Warning BackOff EVT%02d back-off restarting failed container\n",i,i}'; exit 0 ;;
+      *initContainerStatuses*) printf 'setup\ttrue\t0\tCompleted\t\t\n'; exit 0 ;;
+      *containerStatuses*)     printf 'app\tfalse\t5\tCrashLoopBackOff\t\tback-off 5m0s restarting failed container=app\n'; exit 0 ;;
+      *conditions*)            printf 'Ready\tContainersNotReady\tcontainers with unready status: [app]\nContainersReady\tContainersNotReady\tcontainers with unready status: [app]\n'; exit 0 ;;
+      *custom-columns=PHASE*)  printf 'Running node-3 10.3.1.5 2026-07-18T00:00:00Z\n'; exit 0 ;;
+    esac ;;
+esac
+exit 0
+STUB
+chmod +x "$kstub/kubectl"
+calls="$kstub/calls"
+
+# --- bad usage (no cluster call needed) ---
+exits  "no args -> usage exit 2"        2 "$T/ktriage.sh"
+exits  "missing pod arg -> exit 2"      2 "$T/ktriage.sh" ot media
+exits  "too many args -> exit 2"        2 "$T/ktriage.sh" ot media crashpod extra
+assert "usage names ktriage"            grep -qi 'usage:.*ktriage' <<<"$("$T/ktriage.sh" 2>&1)"
+exits  "bad cluster -> kc.sh exit 2"    2 "$T/ktriage.sh" xx media crashpod
+
+# --- crashing / restarted container ---
+: >"$calls"
+cout="$(PATH="$kstub:$PATH" KT_FIXTURE=crash KUBECTL_CALLS="$calls" "$T/ktriage.sh" ot media crashpod 2>&1)"; cec=$?
+assert "crash -> exit 0"                test "$cec" = 0
+assert "crash -> summary phase"         grep -q 'PHASE=Running' <<<"$cout"
+assert "crash -> container state"       grep -q 'app .*restarts=5 .*CrashLoopBackOff' <<<"$cout"
+assert "crash -> init container state"  grep -q 'setup .*Completed' <<<"$cout"
+assert "crash -> non-True condition"    grep -q 'Ready .*ContainersNotReady' <<<"$cout"
+# events clamped to latest 10 despite 15 emitted
+assert "crash -> latest event kept"     grep -q 'EVT15' <<<"$cout"
+refute "crash -> 11th-from-end dropped" grep -q 'EVT05' <<<"$cout"
+assert "crash -> exactly 10 events"     test "$(grep -c 'EVT[0-9]' <<<"$cout")" = 10
+# current logs clamped to tail 20 despite 100 emitted
+assert "crash -> last log line kept"    grep -q 'LOGLINE-100' <<<"$cout"
+assert "crash -> 20th-from-end kept"    grep -q 'LOGLINE-81' <<<"$cout"
+refute "crash -> 21st-from-end dropped" grep -q 'LOGLINE-80' <<<"$cout"
+assert "crash -> exactly 20 cur logs"   test "$(grep -c 'LOGLINE-' <<<"$cout")" = 20
+# previous logs shown for restarted container, also clamped
+assert "crash -> previous logs shown"   grep -q 'PREVLOG-100' <<<"$cout"
+assert "crash -> exactly 20 prev logs"  test "$(grep -c 'PREVLOG-' <<<"$cout")" = 20
+assert "crash -> output <= 80 lines"    test "$(grep -c . <<<"$cout")" -le 80
+
+# --- read-only contract (recorded verbs) ---
+assert "calls include get pod"          grep -q 'get pod' "$calls"
+assert "calls include logs"             grep -q 'logs' "$calls"
+assert "calls use --request-timeout=10s" grep -q -- '--request-timeout=10s' "$calls"
+assert "restarted -> uses --previous"   grep -q -- '--previous' "$calls"
+refute "never dumps -o yaml"            grep -q -- '-o yaml' "$calls"
+refute "never dumps -o json"            grep -qE -- '-o json($| )' "$calls"
+refute "never touches secrets"          grep -qi 'secret' "$calls"
+for v in apply delete exec patch create replace edit scale drain cordon rollout annotate label cp attach port-forward set; do
+  refute "never runs verb: $v"          grep -qw "$v" "$calls"
+done
+
+# --- healthy / no-restart container ---
+: >"$calls"
+hout="$(PATH="$kstub:$PATH" KT_FIXTURE=ok KUBECTL_CALLS="$calls" "$T/ktriage.sh" ot media healthypod 2>&1)"; hec=$?
+assert "healthy -> exit 0"              test "$hec" = 0
+assert "healthy -> container shown"     grep -q 'web .*ready=true' <<<"$hout"
+refute "healthy -> no crashloop"        grep -q 'CrashLoopBackOff' <<<"$hout"
+refute "healthy -> no previous logs"    grep -q 'PREVLOG' <<<"$hout"
+refute "healthy -> no --previous call"  grep -q -- '--previous' "$calls"
+assert "healthy -> current logs clamped" test "$(grep -c 'LOGLINE-' <<<"$hout")" = 20
+assert "healthy -> compact (<=40 ln)"   test "$(grep -c . <<<"$hout")" -le 40
+
+# --- API failure -> nonzero, no misleading partial success ---
+: >"$calls"
+aout="$(PATH="$kstub:$PATH" KT_FIXTURE=apifail KUBECTL_CALLS="$calls" "$T/ktriage.sh" ot media ghost 2>&1)"; aec=$?
+assert "api failure -> nonzero exit"    test "$aec" != 0
+assert "api failure -> reports error"   grep -qiE 'error|not found|cannot read' <<<"$aout"
+refute "api failure -> no log section"  grep -q 'LOGLINE' <<<"$aout"
+refute "api failure -> no fake summary" grep -q 'PHASE=' <<<"$aout"
+
+# --- later-section failure -> nonzero + inline marker, never mislabeled ---
+# events query fails after the gate: must read "unavailable", not "(none)".
+: >"$calls"
+eout="$(PATH="$kstub:$PATH" KT_FIXTURE=degraded_events KUBECTL_CALLS="$calls" "$T/ktriage.sh" ot media evpod 2>&1)"; eec=$?
+assert "events-fail -> exit 4 (partial)"      test "$eec" = 4
+assert "events-fail -> summary still shown"   grep -q 'PHASE=Running' <<<"$eout"
+assert "events-fail -> container still shown" grep -q 'web .*ready=true' <<<"$eout"
+assert "events-fail -> unavailable marker"    grep -q 'events.*:' <<<"$eout"
+assert "events-fail -> section marked"        grep -q '(unavailable' <<<"$eout"
+refute "events-fail -> not mislabeled none"   grep -q '(none)' <<<"$eout"
+
+# container-states query fails: marker + degrade, but later sections still run.
+: >"$calls"
+sfout="$(PATH="$kstub:$PATH" KT_FIXTURE=degraded_state KUBECTL_CALLS="$calls" "$T/ktriage.sh" ot media stpod 2>&1)"; sfec=$?
+assert "state-fail -> exit 4 (partial)"       test "$sfec" = 4
+assert "state-fail -> summary still shown"    grep -q 'PHASE=Pending' <<<"$sfout"
+assert "state-fail -> states unavailable"     grep -q 'containers: (unavailable' <<<"$sfout"
+assert "state-fail -> events still emitted"   grep -q 'EVT1' <<<"$sfout"
+
+# --- multi-line container message must not spawn phantom rows / log fetches ---
+: >"$calls"
+mout="$(PATH="$kstub:$PATH" KT_FIXTURE=multiline KUBECTL_CALLS="$calls" "$T/ktriage.sh" ot media mlpod 2>&1)"; mec=$?
+assert "multiline -> exit 0"                  test "$mec" = 0
+assert "multiline -> real row kept"           grep -q 'app ready=false .*Error' <<<"$mout"
+assert "multiline -> exactly one state row"   test "$(grep -c 'ready=' <<<"$mout")" = 1
+refute "multiline -> no phantom row printed"  grep -q 'goroutine' <<<"$mout"
+assert "multiline -> logs fetched for app"    grep -q -- '-c app' "$calls"
+refute "multiline -> no phantom log fetch"    grep -q -- 'main.main' "$calls"
+rm -rf "$kstub"
+
 # ---------------------------------------------------------------- app.sh
 section "app.sh"
 list1="$("$T/app.sh" --list)"; list2="$("$T/app.sh" --list)"
@@ -69,7 +230,10 @@ assert "immich -> nonempty"        test -n "$refs"
 assert "output sorted+unique"      test "$refs" = "$(printf '%s\n' "$refs" | sort -u)"
 allfiles=1; while IFS= read -r p; do [ -f "$ROOT/$p" ] || allfiles=0; done <<<"$refs"
 assert "output lines are file paths" test "$allfiles" = 1
-exits  "no-match -> exit 1"         1 "$T/refs.sh" zzz-nonexistent-xyz
+# PID-suffixed at runtime so the query literal can't self-match this tracked
+# test file via refs.sh's content search (a static token would live here).
+nomatch="zzz-refs-nomatch-$$"
+exits  "no-match -> exit 1"         1 "$T/refs.sh" "$nomatch"
 exits  "no args -> exit 2"          2 "$T/refs.sh"
 
 # ---------------------------------------------------------------- orphans.sh
