@@ -18,7 +18,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: migration-check
-              image: postgres:15-alpine
+              image: postgres:18-alpine
               env:
                 - name: DB_HOSTNAME
                   value: immich-postgres-rw
