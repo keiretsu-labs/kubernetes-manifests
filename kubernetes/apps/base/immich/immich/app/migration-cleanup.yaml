@@ -3,7 +3,7 @@
 # Immich images don't bundle psql, and Node pg module resolution
 # varies between images, so the actual DELETE fix is done manually.
 # This at least surfaces the problem in logs.
-apiVersion: batch.v1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: immich-migration-check
