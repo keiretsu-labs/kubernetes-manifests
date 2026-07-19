@@ -190,3 +190,10 @@ flux reconcile kustomization <app> -n flux-system
   scripts, CI workflows
 - `docs/reference/tsdb.md` — historical tsdb connector notes
 - `docs/prompt-notes.md` — prompt patterns that worked/failed for build agents
+
+## Command output hygiene
+
+- Never use `--watch`, `watch`, or sleep-based polling loops for CI, PRs, or long-running jobs. Check once with minimal output (e.g. `gh pr checks <n> | tail -3`) and do other work between checks.
+- Redirect noisy output (test suites, CI failure logs, benchmarks) to a file and inspect selectively: `cargo test ... > /tmp/out.log 2>&1; tail -30 /tmp/out.log`, then grep the file for details.
+- Batch related shell steps into one command with `&&` instead of separate invocations.
+- Delegate inherently noisy multi-step work (benchmark matrices, CI-log triage, retry loops) to a subagent and only bring back the summary.
