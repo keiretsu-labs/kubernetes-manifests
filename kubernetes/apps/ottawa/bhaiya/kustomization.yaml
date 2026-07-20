@@ -7,3 +7,4 @@ resources:
   - ./receiver.yaml
   - ./webhook-secret.yaml
   - ./bhaiya.yaml
+  - ./bhaiya-gateway-rbac.yaml

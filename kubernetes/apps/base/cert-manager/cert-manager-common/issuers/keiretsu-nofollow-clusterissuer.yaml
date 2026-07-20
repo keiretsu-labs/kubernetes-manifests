@@ -1,0 +1,30 @@
+---
+# Identical to the keiretsu-top ClusterIssuer but WITHOUT cnameStrategy: Follow.
+#
+# Used for bhaiya's per-workspace vanity certs (*.<slug>.bhaiya.keiretsu.top).
+# Those workspaces also publish a wildcard CNAME *.<slug>.bhaiya → ottawa, which
+# SHADOWS the ACME challenge name _acme-challenge.<slug>.bhaiya. With Follow,
+# cert-manager would chase that wildcard CNAME instead of writing the challenge
+# TXT, and validation would fail. With Follow disabled, cert-manager writes the
+# TXT directly at _acme-challenge.<slug>.bhaiya via the Cloudflare API; an
+# explicit record beats the wildcard by exact-match precedence, so Let's Encrypt
+# resolves the challenge. (The parent *.bhaiya cert hit the same shadowing and
+# worked around it with a per-name _acme-challenge delegation; this issuer is the
+# cleaner fix for the dynamically-created per-workspace certs.)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: keiretsu-top-nofollow
+spec:
+  acme:
+    email: ${RAJSINGH_INFO_CLOUDFLARE_EMAIL}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-keiretsu-nofollow-key
+    solvers:
+      - dns01:
+          cloudflare:
+            email: ${RAJSINGH_INFO_CLOUDFLARE_EMAIL}
+            apiTokenSecretRef:
+              name: cloudflare-keiretsu
+              key: cert-manager-api-token

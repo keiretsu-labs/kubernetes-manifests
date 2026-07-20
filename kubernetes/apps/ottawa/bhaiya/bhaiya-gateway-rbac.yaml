@@ -1,0 +1,38 @@
+---
+# Cross-namespace RBAC letting the bhaiya ServiceAccount (bhaiya namespace)
+# server-side-apply per-workspace vanity-subtree listeners onto the shared
+# home/public Gateway. bhaiya's own Role lives in the bhaiya namespace (deploy/
+# is namespace-transformed to bhaiya and cannot own home-namespace objects), so
+# this Role+RoleBinding — like the Velero cross-namespace RBAC — lives in the
+# manifests repo, reconciled by the ottawa bhaiya Flux Kustomization.
+#
+# Scoped to the single "public" Gateway. get/patch carry resourceNames; list/watch
+# are in a separate rule because the Kubernetes authorizer ignores resourceNames
+# on list/watch (a resourceNames-scoped list/watch rule would authorize nothing).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bhaiya-gateway-editor
+  namespace: home
+rules:
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gateways"]
+    resourceNames: ["public"]
+    verbs: ["get", "patch", "update"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gateways"]
+    verbs: ["list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bhaiya-gateway-editor
+  namespace: home
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: bhaiya-gateway-editor
+subjects:
+  - kind: ServiceAccount
+    name: bhaiya
+    namespace: bhaiya
