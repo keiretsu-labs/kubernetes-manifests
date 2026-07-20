@@ -20,7 +20,7 @@ spec:
         - name: camofox
           # Upstream prebuilt image (no vendored blob). Camoufox is baked in at
           # build time (~300MB) so first start is fast.
-          image: ghcr.io/jo-inc/camofox-browser:1.12.0
+          image: ghcr.io/jo-inc/camofox-browser:1.12.1
           # The published image bakes the vnc plugin CODE but not its runtime
           # binaries (install-plugin-deps.sh runs against the shipped config
           # where vnc.enabled=false, so x11vnc/noVNC/websockify are absent).
