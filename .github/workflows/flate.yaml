@@ -23,7 +23,7 @@ jobs:
         cluster: [talos-ottawa, talos-robbinsdale, talos-stpetersburg]
     steps:
       - uses: actions/checkout@v7
-      - uses: home-operations/flate/action@v0.4.10
+      - uses: home-operations/flate/action@v0.4.11
         with:
           cache: true
       - name: flate test
@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: home-operations/flate/action@v0.4.10
+      - uses: home-operations/flate/action@v0.4.11
         with:
           cache: true
       - name: flate diff
