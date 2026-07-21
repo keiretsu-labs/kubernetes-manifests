@@ -10,3 +10,4 @@ resources:
   - grafana-datasource-vm.yaml
   - grafana-datasource-vl.yaml
   - grafana-httproute.yaml
+  - dashboard.yaml
