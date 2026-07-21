@@ -140,6 +140,14 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    # monz — tailnet diagnostics Grafana behind tinyauth (raj + kartik)
+    - dnsName: "monz.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: "frigate.${LOCATION}.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:

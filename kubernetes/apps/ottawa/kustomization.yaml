@@ -32,6 +32,8 @@ resources:
   - ./teslamate
   - ./mimir
   - ./media
+  - ./monz
+  - ./monz/monz.yaml
   - ./open-cluster-management
   - ./open-cluster-management-agent
   - ./opencost
