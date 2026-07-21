@@ -24,6 +24,9 @@ spec:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
       namespace: teslamate
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: monz
   to:
     - group: ""
       kind: Service
