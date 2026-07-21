@@ -1,0 +1,130 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: monz-tailnet-logs
+  namespace: monz
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: monz-grafana
+  resyncPeriod: 30m
+  folder: Monz
+  json: |
+    {
+      "title": "Tailnet Logs",
+      "schemaVersion": 39,
+      "version": 1,
+      "uid": "monz-tailnet-logs",
+      "time": {"from": "now-6h", "to": "now"},
+      "refresh": "30s",
+      "tags": ["monz", "tailnet", "logs"],
+      "templating": {
+        "list": [
+          {
+            "name": "node_name",
+            "type": "query",
+            "label": "Node",
+            "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
+            "query": "fields node_name",
+            "includeAll": true,
+            "multi": true,
+            "refresh": 1
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "type": "logs",
+          "title": "Node Logs",
+          "gridPos": {"h": 20, "w": 24, "x": 0, "y": 0},
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
+              "query": "{node_name=~\"$node_name\"}",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": true,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "dedupLevel": "none",
+            "sortOrder": "Descending"
+          }
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Total Log Entries",
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 20},
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
+              "query": "count({node_name=~\"$node_name\"})",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "auto",
+            "textMode": "value",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Unique Nodes",
+          "gridPos": {"h": 4, "w": 6, "x": 6, "y": 20},
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
+              "query": "fields node_name",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "auto",
+            "textMode": "value",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 4,
+          "type": "table",
+          "title": "Top Nodes by Log Volume",
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 24},
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
+              "query": "top_n(10, count_logs({node_name=~\"$node_name\"}) by (node_name))",
+              "queryType": "range",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "showHeader": true,
+            "sortBy": [{"displayName": "Value", "desc": true}]
+          }
+        }
+      ]
+    }
