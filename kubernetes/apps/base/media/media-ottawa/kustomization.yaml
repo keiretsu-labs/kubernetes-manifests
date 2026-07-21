@@ -5,32 +5,32 @@ namespace: media
 resources:
   - pvc-media.yaml
   - probes.yaml
-  # - ./jellyfin
-  # - ./autobrr
-  # - ./prowlarr
-  # - ./radarr-4k
-  # - ./radarr-1080p
-  # - ./radarr-4kremux
-  # - ./radarr-anime
-  # - ./sabnzbd
-  # - ./bazarr-4k
-  # - ./bazarr-4kremux
-  # - ./bazarr-1080p
-  # - ./bazarr-anime
-  # - ./sonarr-4k
-  # - ./sonarr-anime
-  # - ./sonarr-1080p
-  # - ./plex
-  # - ./tautulli
-  # - ./overseerr
-  # - ./jellyseerr
-  # - ./lidarr
-  # - ./wizarr
-  # - ./qb
-  # - ./qb-pvt
+  - ./jellyfin
+  - ./autobrr
+  - ./prowlarr
+  - ./radarr-4k
+  - ./radarr-1080p
+  - ./radarr-4kremux
+  - ./radarr-anime
+  - ./sabnzbd
+  - ./bazarr-4k
+  - ./bazarr-4kremux
+  - ./bazarr-1080p
+  - ./bazarr-anime
+  - ./sonarr-4k
+  - ./sonarr-anime
+  - ./sonarr-1080p
+  - ./plex
+  - ./tautulli
+  - ./overseerr
+  - ./jellyseerr
   - ./jellystat
+  - ./lidarr
+  - ./wizarr
   - ./configarr
   - ./kometa
+  - ./qb
+  - ./qb-pvt
   - ./feedcord
   - ./flaresolverr
   - ./maintainerr
