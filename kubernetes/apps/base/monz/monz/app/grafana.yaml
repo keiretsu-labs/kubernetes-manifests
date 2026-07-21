@@ -14,6 +14,9 @@ spec:
       resources:
         requests:
           storage: 5Gi
+  plugins:
+    - id: victoriametrics-logs-datasource
+      version: latest
   config:
     log:
       mode: console
