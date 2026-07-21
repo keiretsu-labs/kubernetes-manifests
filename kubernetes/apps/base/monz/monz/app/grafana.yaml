@@ -14,9 +14,6 @@ spec:
       resources:
         requests:
           storage: 5Gi
-  plugins:
-    - id: victoriametrics-logs-datasource
-      version: latest
   config:
     log:
       mode: console
@@ -32,3 +29,10 @@ spec:
   deployment:
     spec:
       replicas: 1
+      template:
+        spec:
+          containers:
+            - name: grafana
+              env:
+                - name: GF_INSTALL_PLUGINS
+                  value: victoriametrics-logs-datasource
