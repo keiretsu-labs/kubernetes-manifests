@@ -50,7 +50,5 @@ spec:
       enabled: true
       image:
         tag: v0.0.14
-      oauthSecretName: tailgate-ui-oauth
-      oauthRedirectURL: "https://tailgate.keiretsu.top/callback"
       adminEmails:
         - "rajsingh@keiretsu.top"
