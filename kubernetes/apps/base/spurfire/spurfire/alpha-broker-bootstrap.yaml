@@ -17,7 +17,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: initialize-owner
-          image: ghcr.io/rajsinghtech/spurfire-server@sha256:8a2d8178b796ebcc5b25d0dc73eaf2ffede4aabc1dc915ddd4560d40d15e2e27
+          image: ghcr.io/rajsinghtech/spurfire-server@sha256:fd2aa23dd744c0728ec06c731e4222c562b65ecbfedda95b6f80d192e593e2e3
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
