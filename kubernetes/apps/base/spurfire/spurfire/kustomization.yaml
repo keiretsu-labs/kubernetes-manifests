@@ -8,6 +8,7 @@ resources:
   - ./httproute.yaml
   - ./alpha-state-pvc.yaml
   - ./alpha-public-config.yaml
+  - ./alpha-cilium-policy.yaml
   - ./alpha-broker-oauth.sops.yaml
   - ./alpha-vault-key.sops.yaml
   - ./alpha-broker-mac.sops.yaml
