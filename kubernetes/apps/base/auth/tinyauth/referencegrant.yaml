@@ -27,6 +27,9 @@ spec:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
       namespace: monz
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: tailgate-operator-system
   to:
     - group: ""
       kind: Service
