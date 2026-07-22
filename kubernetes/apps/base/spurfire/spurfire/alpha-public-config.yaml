@@ -5,8 +5,8 @@ metadata:
   name: spurfire-alpha-public
 data:
   broker.json: >-
-    {"run_id":"run-77fe791f97ee055a8e004e2a0201acd5","namespace":"spurfire","lease_name":"spurfire-protected-alpha"}
-  artifact-set-sha256: 4bec34a1cd2b5a7509a76947cb225d1404018bc28ed1dde1818536598e3f36e7
-  source-sha: 7e4034b147ad39366b87e4a712d8837eb8b1dbcc
-  runtime-image-digest: sha256:8a2d8178b796ebcc5b25d0dc73eaf2ffede4aabc1dc915ddd4560d40d15e2e27
-  chart-digest: sha256:7cdf6a71001f63671dedc91fb571558289a86c83c881de46125a6bbb535b5c1d
+    {"run_id":"run-8f8649e17dde110c84189534ce308b27","namespace":"spurfire","lease_name":"spurfire-protected-alpha"}
+  artifact-set-sha256: 0ab424bf382c97b6083a34b88353a1ab83d526ac625407cf61851d17e8f0e955
+  source-sha: 60e6092048c7da8c19065d4703b93c6a6b655287
+  runtime-image-digest: sha256:d30c0894ac869c6864866b2cd5ff24339ea3097ab5bac43e31549456174f5e43
+  chart-digest: sha256:932aa514dac3216b6cc50abf0a10485ae8fc5d316cfe42eb3cd6fdccf7c73e66
