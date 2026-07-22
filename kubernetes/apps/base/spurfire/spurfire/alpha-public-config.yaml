@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spurfire-alpha-public
+data:
+  broker.json: >-
+    {"run_id":"run-c7f0843cbb6982b93ddff5ab0072865a","namespace":"spurfire","lease_name":"spurfire-protected-alpha"}
+  artifact-set-sha256: b8a0e5e4ef92fe69148d1d8ba533f165573d43ff63e10b40bc6ba92e55d0e535
+  source-sha: 76cb81a5c9c211382ed8f82b2ba8529a181a8f39
+  runtime-image-digest: sha256:2d7683ca75b53f1bc66a39008fdfa9ba0a3140d7b12f130f5124b4d32b8c63a1
+  chart-digest: sha256:ca2dfcb0f4537a2c7101367bcac738f28030e144975e31f443a8b6038b1ac335
