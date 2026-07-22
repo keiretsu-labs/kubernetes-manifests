@@ -14,8 +14,14 @@ spec:
   rules:
     - matches:
         - path:
+            type: Exact
+            value: /v1/capabilities
+        - path:
+            type: Exact
+            value: /v1/lobbies
+        - path:
             type: PathPrefix
-            value: /
+            value: /v1/lobbies/bf7a63ff-5769-4325-bf20-a3a31011a64f
       backendRefs:
         - group: ""
           kind: Service

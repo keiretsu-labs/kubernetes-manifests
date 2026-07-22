@@ -15,13 +15,13 @@ spec:
       tag: "sha-7e4034b147ad39366b87e4a712d8837eb8b1dbcc"
       digest: "sha256:8a2d8178b796ebcc5b25d0dc73eaf2ffede4aabc1dc915ddd4560d40d15e2e27"
       pullPolicy: IfNotPresent
-    # Public staging remains zero-mutation until API authentication and a
-    # fresh dedicated organization OAuth client are deployed together.
+    # One receipt-bound, two-rider protected Alpha. Ordinary real-mutation
+    # switches remain closed; provider authority exists only in the broker.
     config:
-      dryRun: true
+      dryRun: false
       dryRunTtlSeconds: 300
-      maxPlayers: 16
-      provisioningMode: dry_run
+      maxPlayers: 2
+      provisioningMode: tailnet_per_lobby
       sharedTailnet: "-"
     tailscale:
       apiBase: https://api.tailscale.com/api/v2
@@ -37,10 +37,27 @@ spec:
       size: 1Gi
       retain: true
     protectedAlpha:
-      prepare: true
-      enabled: false
+      prepare: false
+      enabled: true
       installationId: ottawa-alpha-20260722-7a026dfb20591570
+      authorizedLobbyId: bf7a63ff-5769-4325-bf20-a3a31011a64f
+      publicOrigin: https://spurfire.rajsingh.info
+      internalListener: spurfire-broker.spurfire.svc:9443
+      sourceSha: 7e4034b147ad39366b87e4a712d8837eb8b1dbcc
+      provenanceSha256: 70b78b6b7d5f45505accbe5ec401245f67f7ef1aac2c3c5827b5c1d23f05a838
+      artifactSetSha256: 4bec34a1cd2b5a7509a76947cb225d1404018bc28ed1dde1818536598e3f36e7
+      policyProfileSha256: a663104d4ea858a7d888da570d39824a40103da48d8e6e4d2acd698d83caf135
       leaseName: spurfire-protected-alpha
       runtimeImageDigest: "sha256:8a2d8178b796ebcc5b25d0dc73eaf2ffede4aabc1dc915ddd4560d40d15e2e27"
+      brokerImageDigest: "sha256:8a2d8178b796ebcc5b25d0dc73eaf2ffede4aabc1dc915ddd4560d40d15e2e27"
+      receiptSopsSecret: spurfire-alpha-receipt
+      brokerCredentialSopsSecret: spurfire-alpha-broker-oauth
+      brokerVaultKeySopsSecret: spurfire-alpha-vault-key
+      runtimeTlsSecret: spurfire-alpha-runtime-tls
+      brokerTlsSecret: spurfire-alpha-broker-tls
+      brokerMacSecret: spurfire-alpha-broker-mac
+      publicConfigMap: spurfire-alpha-public
+      kubernetesApiServerCidrs:
+        - 10.2.0.1/32
     service:
       port: 80
