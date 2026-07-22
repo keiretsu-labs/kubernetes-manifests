@@ -13,3 +13,4 @@ resources:
   - ./alpha-broker-mac.sops.yaml
   - ./alpha-runtime-tls.sops.yaml
   - ./alpha-broker-tls.sops.yaml
+  - ./alpha-receipt.sops.yaml
