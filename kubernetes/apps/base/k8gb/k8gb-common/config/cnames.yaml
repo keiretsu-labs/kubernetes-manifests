@@ -64,6 +64,15 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    # tailgate management UI — ottawa-only, same pattern as bhaiya.
+    # Does its own Tailscale OAuth (identity-only), no tinyauth.
+    - dnsName: "tailgate.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: "velero.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
