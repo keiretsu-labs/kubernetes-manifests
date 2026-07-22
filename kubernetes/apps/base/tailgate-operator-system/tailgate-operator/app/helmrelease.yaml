@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: tailgate-operator
-      version: "0.0.12"
+      version: "0.0.13"
       sourceRef:
         kind: HelmRepository
         name: tailgate-operator
@@ -39,17 +39,17 @@ spec:
       # never blackhole through the tunnel.
       clusterCIDRs: "${CLUSTER_POD_CIDR},${CLUSTER_SERVICE_CIDR}"
       image:
-        tag: v0.0.12
+        tag: v0.0.13
     operator:
       image:
-        tag: v0.0.12
+        tag: v0.0.13
     gateway:
       image:
-        tag: v0.0.12
+        tag: v0.0.13
     ui:
       enabled: true
       image:
-        tag: v0.0.12
+        tag: v0.0.13
       oauthSecretName: tailgate-ui-oauth
       oauthRedirectURL: "https://tailgate.keiretsu.top/callback"
       adminEmails:
