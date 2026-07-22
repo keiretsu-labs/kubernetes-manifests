@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: spurfire-alpha-state-20260722-c
+  name: spurfire-alpha-state-20260722-d
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
