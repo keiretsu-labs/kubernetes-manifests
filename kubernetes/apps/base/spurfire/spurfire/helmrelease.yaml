@@ -8,47 +8,18 @@ spec:
     kind: OCIRepository
     name: spurfire
   interval: 1h
-  # The protected runtime must not consume its one-shot receipt until the
-  # private broker is accepting TLS connections.
   postRenderers:
     - kustomize:
         patches:
-          - target:
-              kind: Deployment
-              name: spurfire
-            patch: |
-              - op: add
-                path: /spec/template/spec/initContainers
-                value:
-                  - name: wait-for-provider-broker
-                    image: busybox:1.37.0
-                    imagePullPolicy: IfNotPresent
-                    command: ["/bin/sh", "-ec"]
-                    args:
-                      - until nc -z -w 2 spurfire-broker.spurfire.svc 9443; do sleep 1; done
-                    securityContext:
-                      allowPrivilegeEscalation: false
-                      readOnlyRootFilesystem: true
-                      runAsNonRoot: true
-                      runAsUser: 10001
-                      capabilities:
-                        drop: ["ALL"]
-                    resources:
-                      requests:
-                        cpu: 1m
-                        memory: 4Mi
-                      limits:
-                        cpu: 50m
-                        memory: 16Mi
-          # Run D uses a fresh retained vault because a force-removed run-C
-          # process on rei still owns the previous PVC's OS writer lock.
+          # Run E uses a fresh retained vault and never shares a writer lock
+          # with an earlier failed-closed generation.
           - target:
               kind: PersistentVolumeClaim
               name: spurfire-broker
             patch: |
               - op: replace
                 path: /metadata/name
-                value: spurfire-broker-run-d2
+                value: spurfire-broker-run-e
           - target:
               kind: Deployment
               name: spurfire-broker
@@ -66,7 +37,7 @@ spec:
                     volumes:
                       - name: broker-state
                         persistentVolumeClaim:
-                          claimName: spurfire-broker-run-d2
+                          claimName: spurfire-broker-run-e
   values:
     fullnameOverride: spurfire
     image:
@@ -74,13 +45,12 @@ spec:
       tag: "sha-60e6092048c7da8c19065d4703b93c6a6b655287"
       digest: "sha256:d30c0894ac869c6864866b2cd5ff24339ea3097ab5bac43e31549456174f5e43"
       pullPolicy: IfNotPresent
-    # One receipt-bound, two-rider protected Alpha. Ordinary real-mutation
-    # switches remain closed; provider authority exists only in the broker.
+    # Prepare a fresh protected Alpha generation without provider authority.
     config:
-      dryRun: false
+      dryRun: true
       dryRunTtlSeconds: 300
-      maxPlayers: 2
-      provisioningMode: tailnet_per_lobby
+      maxPlayers: 16
+      provisioningMode: dry_run
       sharedTailnet: "-"
     tailscale:
       apiBase: https://api.tailscale.com/api/v2
@@ -89,17 +59,17 @@ spec:
       clientSecretKey: TS_CLIENT_SECRET
     persistence:
       enabled: true
-      existingClaim: spurfire-alpha-state-20260722-d
+      existingClaim: spurfire-alpha-state-20260722-e
       storageClass: ceph-block-replicated
       accessModes:
         - ReadWriteOnce
       size: 1Gi
       retain: true
     protectedAlpha:
-      prepare: false
-      enabled: true
-      installationId: ottawa-alpha-20260722-a8c0ad23a07dcd117f592a45
-      authorizedLobbyId: db5758b1-af31-4679-82c9-0a87d5e5a2b0
+      prepare: true
+      enabled: false
+      installationId: ottawa-alpha-20260722-543017711aae5997838d04f2
+      authorizedLobbyId: a07cae87-44b1-432e-8f25-affc06c04023
       publicOrigin: https://spurfire.rajsingh.info
       internalListener: spurfire-broker.spurfire.svc:9443
       sourceSha: 60e6092048c7da8c19065d4703b93c6a6b655287
