@@ -39,16 +39,16 @@ spec:
       # never blackhole through the tunnel.
       clusterCIDRs: "${CLUSTER_POD_CIDR},${CLUSTER_SERVICE_CIDR}"
       image:
-        tag: v0.0.14
+        tag: v0.0.15
     operator:
       image:
-        tag: v0.0.14
+        tag: v0.0.15
     gateway:
       image:
-        tag: v0.0.14
+        tag: v0.0.15
     ui:
       enabled: true
       image:
-        tag: v0.0.14
+        tag: v0.0.15
       adminEmails:
         - "rajsingh@keiretsu.top"
