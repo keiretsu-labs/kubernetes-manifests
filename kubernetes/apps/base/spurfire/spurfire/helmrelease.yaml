@@ -48,7 +48,7 @@ spec:
             patch: |
               - op: replace
                 path: /metadata/name
-                value: spurfire-broker-run-d
+                value: spurfire-broker-run-d2
           - target:
               kind: Deployment
               name: spurfire-broker
@@ -58,12 +58,15 @@ spec:
               metadata:
                 name: spurfire-broker
               spec:
+                strategy:
+                  type: Recreate
                 template:
                   spec:
+                    terminationGracePeriodSeconds: 5
                     volumes:
                       - name: broker-state
                         persistentVolumeClaim:
-                          claimName: spurfire-broker-run-d
+                          claimName: spurfire-broker-run-d2
   values:
     fullnameOverride: spurfire
     image:
