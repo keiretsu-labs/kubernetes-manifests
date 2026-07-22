@@ -59,5 +59,8 @@ spec:
       publicConfigMap: spurfire-alpha-public
       kubernetesApiServerCidrs:
         - 10.2.0.1/32
+        - 192.168.169.117/32
+        - 192.168.169.118/32
+        - 192.168.169.119/32
     service:
       port: 80
