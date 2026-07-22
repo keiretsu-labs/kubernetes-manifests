@@ -21,7 +21,7 @@ spec:
             value: /v1/lobbies
         - path:
             type: PathPrefix
-            value: /v1/lobbies/13b7bc0e-0cd3-4eb5-b947-445130d50694
+            value: /v1/lobbies/dae4b494-ee79-4cca-b3c9-c9366fb7b6a1
       backendRefs:
         - group: ""
           kind: Service

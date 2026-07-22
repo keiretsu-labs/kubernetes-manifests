@@ -12,16 +12,16 @@ spec:
     fullnameOverride: spurfire
     image:
       repository: ghcr.io/rajsinghtech/spurfire-server
-      tag: "sha-7e4034b147ad39366b87e4a712d8837eb8b1dbcc"
-      digest: "sha256:8a2d8178b796ebcc5b25d0dc73eaf2ffede4aabc1dc915ddd4560d40d15e2e27"
+      tag: "sha-60e6092048c7da8c19065d4703b93c6a6b655287"
+      digest: "sha256:d30c0894ac869c6864866b2cd5ff24339ea3097ab5bac43e31549456174f5e43"
       pullPolicy: IfNotPresent
     # One receipt-bound, two-rider protected Alpha. Ordinary real-mutation
     # switches remain closed; provider authority exists only in the broker.
     config:
-      dryRun: false
+      dryRun: true
       dryRunTtlSeconds: 300
-      maxPlayers: 2
-      provisioningMode: tailnet_per_lobby
+      maxPlayers: 16
+      provisioningMode: dry_run
       sharedTailnet: "-"
     tailscale:
       apiBase: https://api.tailscale.com/api/v2
@@ -30,26 +30,26 @@ spec:
       clientSecretKey: TS_CLIENT_SECRET
     persistence:
       enabled: true
-      existingClaim: spurfire-alpha-state-20260722-b
+      existingClaim: spurfire-alpha-state-20260722-c
       storageClass: ceph-block-replicated
       accessModes:
         - ReadWriteOnce
       size: 1Gi
       retain: true
     protectedAlpha:
-      prepare: false
-      enabled: true
-      installationId: ottawa-alpha-20260722-d12ef9466e1126cc3f590809
-      authorizedLobbyId: 13b7bc0e-0cd3-4eb5-b947-445130d50694
+      prepare: true
+      enabled: false
+      installationId: ottawa-alpha-20260722-c7d544898d7a4f3e9637ecb9
+      authorizedLobbyId: dae4b494-ee79-4cca-b3c9-c9366fb7b6a1
       publicOrigin: https://spurfire.rajsingh.info
       internalListener: spurfire-broker.spurfire.svc:9443
-      sourceSha: 7e4034b147ad39366b87e4a712d8837eb8b1dbcc
-      provenanceSha256: 70b78b6b7d5f45505accbe5ec401245f67f7ef1aac2c3c5827b5c1d23f05a838
-      artifactSetSha256: 4bec34a1cd2b5a7509a76947cb225d1404018bc28ed1dde1818536598e3f36e7
+      sourceSha: 60e6092048c7da8c19065d4703b93c6a6b655287
+      provenanceSha256: 6f70d69dadd8f77b202aa4596c6a702c152ce2b96804758fe97b89919ae38b06
+      artifactSetSha256: 0ab424bf382c97b6083a34b88353a1ab83d526ac625407cf61851d17e8f0e955
       policyProfileSha256: a663104d4ea858a7d888da570d39824a40103da48d8e6e4d2acd698d83caf135
       leaseName: spurfire-protected-alpha
-      runtimeImageDigest: "sha256:8a2d8178b796ebcc5b25d0dc73eaf2ffede4aabc1dc915ddd4560d40d15e2e27"
-      brokerImageDigest: "sha256:8a2d8178b796ebcc5b25d0dc73eaf2ffede4aabc1dc915ddd4560d40d15e2e27"
+      runtimeImageDigest: "sha256:d30c0894ac869c6864866b2cd5ff24339ea3097ab5bac43e31549456174f5e43"
+      brokerImageDigest: "sha256:d30c0894ac869c6864866b2cd5ff24339ea3097ab5bac43e31549456174f5e43"
       receiptSopsSecret: spurfire-alpha-receipt
       brokerCredentialSopsSecret: spurfire-alpha-broker-oauth
       brokerVaultKeySopsSecret: spurfire-alpha-vault-key
