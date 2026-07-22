@@ -46,9 +46,3 @@ spec:
     gateway:
       image:
         tag: v0.0.16
-    ui:
-      enabled: true
-      image:
-        tag: v0.0.16
-      adminEmails:
-        - "rajsingh@keiretsu.top"
