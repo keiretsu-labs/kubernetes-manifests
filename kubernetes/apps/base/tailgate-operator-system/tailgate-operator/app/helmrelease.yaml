@@ -39,17 +39,17 @@ spec:
       # never blackhole through the tunnel.
       clusterCIDRs: "${CLUSTER_POD_CIDR},${CLUSTER_SERVICE_CIDR}"
       image:
-        tag: v0.0.13
+        tag: v0.0.14
     operator:
       image:
-        tag: v0.0.13
+        tag: v0.0.14
     gateway:
       image:
-        tag: v0.0.13
+        tag: v0.0.14
     ui:
       enabled: true
       image:
-        tag: v0.0.13
+        tag: v0.0.14
       oauthSecretName: tailgate-ui-oauth
       oauthRedirectURL: "https://tailgate.keiretsu.top/callback"
       adminEmails:
