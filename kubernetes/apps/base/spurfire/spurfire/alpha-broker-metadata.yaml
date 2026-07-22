@@ -1,0 +1,76 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: spurfire-broker-metadata-deny-all
+spec:
+  podSelector:
+    matchLabels:
+      alpha.spurfire.dev/diagnostic: broker-metadata
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spurfire-broker-metadata
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        alpha.spurfire.dev/diagnostic: broker-metadata
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: metadata
+          image: ghcr.io/rajsinghtech/spurfire-server@sha256:8a2d8178b796ebcc5b25d0dc73eaf2ffede4aabc1dc915ddd4560d40d15e2e27
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ec
+            - >-
+              stat -c 'vault_parent uid=%u gid=%g mode=%a type=%F' /var/lib/spurfire;
+              stat -c 'key_parent uid=%u gid=%g mode=%a type=%F' /run/key;
+              stat -Lc 'key_target uid=%u gid=%g mode=%a type=%F' /run/key/vault.key;
+              bytes=$(wc -c < /run/key/vault.key); test "$bytes" -eq 32;
+              echo 'key_bytes=32'; ls -lan /var/lib/spurfire
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+          volumeMounts:
+            - name: broker-state
+              mountPath: /var/lib/spurfire
+            - name: vault-key
+              mountPath: /run/key
+              readOnly: true
+      volumes:
+        - name: broker-state
+          persistentVolumeClaim:
+            claimName: spurfire-broker
+        - name: vault-key
+          secret:
+            secretName: spurfire-alpha-vault-key
+            defaultMode: 0400
+---
