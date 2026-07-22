@@ -1,14 +1,14 @@
 apiVersion: v1
 data:
-    mac.key: ENC[AES256_GCM,data:u1dgsvX2Ajos8QKVRVgZYT+bQG+dJ42Yn7r7fK6M5xKv8OmG9qBKRjWBLdQ=,iv:cvlAYx8CmEdZozig6+mJWQvAOFSYEpJIi5tSog1+Y7k=,tag:3Lgtn7er2UupeH6EPGm6Pg==,type:str]
+    mac.key: ENC[AES256_GCM,data:2NGFxlJqK9YwlUqPPq47iRbRz4Df5dTW9w3BJnWYkiBPHG1+TrgqQWtpEQw=,iv:nfHZTze8HO/0DqP66TLOenQI453nYcHZ12MZezLnU40=,tag:OdG1BKko+SY7l9PmfUeyhQ==,type:str]
 kind: Secret
 metadata:
     name: spurfire-alpha-broker-mac
     namespace: spurfire
 sops:
     encrypted_regex: ^(data|stringData)$
-    lastmodified: "2026-07-22T12:08:25Z"
-    mac: ENC[AES256_GCM,data:qp5my2WT943BK6TjvAbD6E6cZWWrPpaDS7J+oo0aQgq6J38qPjciw7iwiEj5gb1yp56EcoOozK46uTeMEV4fMYNNQlYQdxJ+uMA6UeKtZVcw+k1JGSvBm3vS0sCBVqol5nRZ8nYBctYHzGFgXjr5CGbDwlDiN6yAiCY5dmn+blM=,iv:5GpGZ7hZYhejJW3N/zBRuCYBB6ogWsmUyc2rVJuIRzA=,tag:FyvOisDIX81kZd3MuMujkw==,type:str]
+    lastmodified: "2026-07-22T12:28:33Z"
+    mac: ENC[AES256_GCM,data:REZWxbW7GdxBznCh3Zv+bsazbau1R2atDbCHxwEwRMNhZSYsjlUWBtLDHIIygxCG0mUxxnDnwzqC1SY2XWz9yPP1uOMox1u/s1wZ4cUhql5PSXJrzTlvr+xA6msutWEdAZhXrA1DsxGbXxPAqYKAg81lWcYvACphUbsQhSZ1BP0=,iv:dDuJ8SguNtn3Bp++RhCqpjPp5UAjbjs5IRUCRZ5zd/k=,tag:kTKSYtu14BVn1YecOHhbRQ==,type:str]
     pgp:
         - created_at: "2026-07-22T11:25:34Z"
           enc: |-
