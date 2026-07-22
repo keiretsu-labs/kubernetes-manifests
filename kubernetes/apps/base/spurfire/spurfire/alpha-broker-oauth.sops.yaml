@@ -1,0 +1,33 @@
+apiVersion: v1
+data:
+    organization-oauth.json: ENC[AES256_GCM,data:acBTErz0QQliyu+czM2gayFEsf/cfKIHqvsfcAoWpmeiMkn/+qiHX106Lx+sF+YwGSx1q0fkIPsfTPztyHyrzJPQs++rsHPBm0Lg2b3zfQeV2xmGnqr8mzf1vuC+CD+Q+NolixqQKkgtkodGfIzkAqxr7AReKVJxjTUb2OKrOO90nvvw4wSCBWqCspHffWEivtCbKlDCJ5w2A4nIaYiatxXweqOrseL86rzg6hQe+G08e0YUqGrWERDaDMxv9KRDvz0wgwhnHevYyDptCiJRJGdStXyZlLOjFH0WVDkpzVgY4l08eflTLCi3wCA=,iv:tUsYxP1p+VG4LE9zDwaUuufpgWKYV0z0DJlAuwXgn3g=,tag:oGIAh9X3NYoIFS0AZIfN1A==,type:str]
+kind: Secret
+metadata:
+    name: spurfire-alpha-broker-oauth
+    namespace: spurfire
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-07-22T09:39:51Z"
+    mac: ENC[AES256_GCM,data:jxZSes6KbxCV0XBKCaoP2JMBORERUCCSJDxYxzWOT1wB3v0YMnBbJ34XgaASVRCxC+lOcGGVroeqEefWcDGzL50OwQt39fYa9OSAU/GrniX8m0C1kJTywXHop4mNYA4RWWKhKahlhKPmGATiq7TIX+yoqOaMhPOFrXioAlLkIHw=,iv:24FynK6wYm+x4w+bM5OIYQePZwng80ZNIz7u033yhGQ=,tag:oKx8k4Hfggl71+Cct3lJwQ==,type:str]
+    pgp:
+        - created_at: "2026-07-22T09:39:51Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveARAAlL4UiTDIhhmmwCp9tsHwi0YOgUFY+S06wCAxiyJDOgXw
+            dMSG5K1NnlP0zq15f2RK5/SsXXpgMKQqQc+NT2z7JAyXrk0mvhbN3kcZB66C4+js
+            cZu1oEoLYGv/LhzWYUk4XUFGFVYTOLfVTL9MDoduvEE/sIO/IzMrHh7MDLFOQn/H
+            5Bd1ZzA/1GLhod4oBWOS6pGs6f9/Sehq7G97+ch5Ik6u6goTHGne3Sss+q5/4o+z
+            1xnoAYW2MPhvfKi+ZZD8M1FFFuO2yHrfQrzqRDBnTRNqS2GeipbX2v5HJSp9X172
+            XAD4lHaZvkA3+NNE5ESi7gt19La7fPUg+EoUWww5LMYFxuPU67XsaCa5PQBVnaB1
+            MxnY9hkKc1S5p6Bidh8ByZTZyUZKbkAsKWYbxyk8DJMqZZBgF0WofCzMghNvkhP/
+            TwXOMyrA7IXxpnAqR8yZ5pNuut/ffEBxz+kAI3HPRQv8XdfF8swKwaZObIJede2Z
+            KHezCQ2h8RBlYXk8sqqLLBZY+IvYZOum9MQW1zp+FUPYQUVR4E3r70uL9o0wMmGe
+            PswxjxuvYIz9sTEHzR0uCDdq45HFacXZ1iIOiEtmIEXnBiO9WylbdHrGq4s6t9d/
+            OHA88Xs0YpTZ2WaB/crKO4rkBFJzET7xUbgsKYU2e0xbmctPKe2/IXFLQfOGOBjU
+            WwEJAhCU7uw02M+F8eOdqgFpnYXOskHHT2oaKUzgJrSJ0vqZJJzqlZlUmLUNJ6LT
+            LtPpVSac5EO+EdQO4Lven8F7EpK29Xea3tilbRKBDCOoL8QnV00fhlohMzI=
+            =4C6D
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.2
