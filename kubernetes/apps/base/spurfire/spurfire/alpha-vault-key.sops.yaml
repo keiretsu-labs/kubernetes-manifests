@@ -1,0 +1,34 @@
+apiVersion: v1
+data:
+    vault.key: ENC[AES256_GCM,data:x+nHau9jFJ1LkxWLigFx1KYzQz4WOSLHiaunJ+rIHakTwy1VgOBHmGuSTsk=,iv:6qDSaJxYi6Ky+MzYrpG9a+IKHZB2cQ6YTXJASU+pu1U=,tag:A+27EXD97dkz9o/x2rv7dA==,type:str]
+kind: Secret
+metadata:
+    name: spurfire-alpha-vault-key
+    namespace: spurfire
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-07-22T09:39:51Z"
+    mac: ENC[AES256_GCM,data:vAUyWFGG57RhxcQFmbNE7Ud2K2ZSlUzFBlHNKXuSWbSYmClzz9D7iunL0UhEvy40TsohbWPRvWhRZztp/1AqsuBpU2fIFzemcwpw/+sR6wh/nyr7Ydqo9ZpcNXvz68vF4f85u5/YohWd2LA3Hr24auc/gH4D2XTov9Q5bYQF8gg=,iv:0scskRgjM0AH4Tokt3XCqNZ2NNfStd7ZuFk/Vg8KwlU=,tag:PidvmY6bMwYp3EISFfBx4g==,type:str]
+    pgp:
+        - created_at: "2026-07-22T09:39:51Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveARAAgKk1BBdvR9/MLQ1EZYfNm5+biWQ5IVxx8g8brsrk/1Co
+            hneHr8Z/Kun66nlGZYJWta5bJStA3BA5Ro04AT5gtXMGB91DGkIz+lCSe/qHN9W7
+            EeFxlXCX7kNVmOEN+Xw/JJqX0h0YWonPPQJEr1oOIzb3YyskfWjP04JxsEy/U9s3
+            +uaLvlh3BxR1mXB/NNkapQpWUtGma+FIICbddUrqTz6ohjkokJGvMEQnJ5GzJ6b5
+            BbqRCpel0uqe3C+9y8jyL+Bj28F6h0kCuXSJ1mUmQclfc8myLEAka5vUKg3LGSBD
+            fvyszp6mJhcKxqjNiLbIbOVTVmB6YD8zgnr01qRZYS2CFEcsHJ8QLny4yJa8z0eA
+            j+WJWVH8kfhlvT+kc2O6m+vVQDPYXaldIDBJM2aGZRaVxZG0IZGiskWBOWvDUqZK
+            cdLpuRityXBCvf1cBQ5PRXMoMYrq+CO9U0wWVNI7XKfgr+tLEJIR03gd6m5MFzKr
+            oySJsBhrJ7u1hghMmkJ4RBuwqJxIHGzqvqEYZIOKe8+FBjJj1Afst+uSvm0e9e7v
+            MylSe4OjUK3JoQ0XgNOygY/FBmwBmODRu6JPRv2QJLdS8F4J7NlyUGpXHfQZ6hMl
+            oKP/DVG4tjutianXo8Pg6pQAAEluoOjD2SKjGhbIcfQK2W7WZGBXzEGXoIyXEeXU
+            aAEJAhAlTnULyZkkyppDmLCOJwEn36ExR60VSrt+qMO4/vWyQyUpmj0gZznZ340G
+            Sms6ckLojsOdZO95wh83Ckf+/tByMl36O0Egi5wDCAqEtA/j5j0jrjYYZcD9k5fG
+            jeJ1lxGH87MP
+            =3Oie
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.2

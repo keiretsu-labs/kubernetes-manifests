@@ -6,3 +6,10 @@ resources:
   - ./ocirepository.yaml
   - ./helmrelease.yaml
   - ./httproute.yaml
+  - ./alpha-state-pvc.yaml
+  - ./alpha-public-config.yaml
+  - ./alpha-broker-oauth.sops.yaml
+  - ./alpha-vault-key.sops.yaml
+  - ./alpha-broker-mac.sops.yaml
+  - ./alpha-runtime-tls.sops.yaml
+  - ./alpha-broker-tls.sops.yaml

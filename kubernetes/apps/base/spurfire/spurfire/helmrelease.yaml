@@ -12,8 +12,8 @@ spec:
     fullnameOverride: spurfire
     image:
       repository: ghcr.io/rajsinghtech/spurfire-server
-      tag: "sha-786886089691982bf854e48554b989bc00775c71"
-      digest: "sha256:5a3b6db9668c764349e662889f5535a757142c8c2560c26ff28968009a476228"
+      tag: "sha-76cb81a5c9c211382ed8f82b2ba8529a181a8f39"
+      digest: "sha256:2d7683ca75b53f1bc66a39008fdfa9ba0a3140d7b12f130f5124b4d32b8c63a1"
       pullPolicy: IfNotPresent
     # Public staging remains zero-mutation until API authentication and a
     # fresh dedicated organization OAuth client are deployed together.
@@ -29,11 +29,18 @@ spec:
       clientIdKey: TS_CLIENT_ID
       clientSecretKey: TS_CLIENT_SECRET
     persistence:
-      enabled: false
+      enabled: true
+      existingClaim: spurfire-alpha-state-20260722
       storageClass: ceph-block-replicated
       accessModes:
         - ReadWriteOnce
       size: 1Gi
       retain: true
+    protectedAlpha:
+      prepare: true
+      enabled: false
+      installationId: ottawa-alpha-20260722-7a026dfb20591570
+      leaseName: spurfire-protected-alpha
+      runtimeImageDigest: "sha256:2d7683ca75b53f1bc66a39008fdfa9ba0a3140d7b12f130f5124b4d32b8c63a1"
     service:
       port: 80
