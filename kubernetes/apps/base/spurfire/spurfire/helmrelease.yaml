@@ -40,6 +40,30 @@ spec:
                       limits:
                         cpu: 50m
                         memory: 16Mi
+          # Run D uses a fresh retained vault because a force-removed run-C
+          # process on rei still owns the previous PVC's OS writer lock.
+          - target:
+              kind: PersistentVolumeClaim
+              name: spurfire-broker
+            patch: |
+              - op: replace
+                path: /metadata/name
+                value: spurfire-broker-run-d
+          - target:
+              kind: Deployment
+              name: spurfire-broker
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: spurfire-broker
+              spec:
+                template:
+                  spec:
+                    volumes:
+                      - name: broker-state
+                        persistentVolumeClaim:
+                          claimName: spurfire-broker-run-d
   values:
     fullnameOverride: spurfire
     image:
