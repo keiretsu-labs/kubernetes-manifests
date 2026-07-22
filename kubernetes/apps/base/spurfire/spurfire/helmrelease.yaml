@@ -18,10 +18,10 @@ spec:
     # One receipt-bound, two-rider protected Alpha. Ordinary real-mutation
     # switches remain closed; provider authority exists only in the broker.
     config:
-      dryRun: false
+      dryRun: true
       dryRunTtlSeconds: 300
-      maxPlayers: 2
-      provisioningMode: tailnet_per_lobby
+      maxPlayers: 16
+      provisioningMode: dry_run
       sharedTailnet: "-"
     tailscale:
       apiBase: https://api.tailscale.com/api/v2
@@ -30,17 +30,17 @@ spec:
       clientSecretKey: TS_CLIENT_SECRET
     persistence:
       enabled: true
-      existingClaim: spurfire-alpha-state-20260722
+      existingClaim: spurfire-alpha-state-20260722-b
       storageClass: ceph-block-replicated
       accessModes:
         - ReadWriteOnce
       size: 1Gi
       retain: true
     protectedAlpha:
-      prepare: false
-      enabled: true
-      installationId: ottawa-alpha-20260722-7a026dfb20591570
-      authorizedLobbyId: bf7a63ff-5769-4325-bf20-a3a31011a64f
+      prepare: true
+      enabled: false
+      installationId: ottawa-alpha-20260722-d12ef9466e1126cc3f590809
+      authorizedLobbyId: 13b7bc0e-0cd3-4eb5-b947-445130d50694
       publicOrigin: https://spurfire.rajsingh.info
       internalListener: spurfire-broker.spurfire.svc:9443
       sourceSha: 7e4034b147ad39366b87e4a712d8837eb8b1dbcc
