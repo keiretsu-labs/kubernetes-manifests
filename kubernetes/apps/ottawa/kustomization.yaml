@@ -25,6 +25,7 @@ resources:
   - ./hubble-ui
   - ./immich
   - ./k8gb
+  - ./kata-containers
   - ./kener
   - ./kro-system
   - ./kube-system
