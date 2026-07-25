@@ -101,6 +101,7 @@
 			"svc:tsdnsproxy": ["tag:k8s"],
 			"svc:http": ["tag:k8s"],
 			"svc:http-test": ["tag:k8s"],
+			"svc:tempvm": ["tag:k8s"],
 			"svc:tcp": ["tag:k8s"],
 			// "svc:robbinsdale-k8sapiserver-proxy": ["tag:border0-managed"],
 			"tag:bridge-svc": ["tag:bridge"],
@@ -177,7 +178,7 @@
 		},
 		{
 			"src": ["group:superuser"],
-			"dst": ["svc:tcp", "tag:k8s"],
+			"dst": ["svc:tcp", "svc:tempvm", "tag:k8s"],
 			"ip":  ["*"],
 		},
 		{
