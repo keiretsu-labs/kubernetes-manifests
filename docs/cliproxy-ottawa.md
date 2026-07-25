@@ -1,0 +1,224 @@
+# CLIProxyAPI on Ottawa
+
+CLIProxyAPI runs as a single, GitOps-managed Deployment in the `cliproxy`
+namespace. It proxies OAuth-backed Codex and Claude accounts through OpenAI- and
+Anthropic-compatible APIs.
+
+## Architecture and endpoints
+
+- Image: `eceasy/cli-proxy-api:v7.2.99`, pinned by digest in Git.
+- The image and command were smoke-tested from the official amd64 OCI rootfs: port 8317 opened, `/management.html` returned 200, `/v1/models` returned 401 without the API key and 200 with it.
+- State: `cliproxy-data`, a 2 Gi `ceph-block-replicated` RWO PVC mounted at
+  `/data`; OAuth files live in `/data/auth`.
+- Configuration: an init container reads `Secret/cliproxy-credentials` and
+  writes `/config/config.yaml` into a memory-backed `emptyDir`. The file is not
+  stored in a ConfigMap or in plaintext in Git.
+- `Service/cliproxy` exposes `8317`, `1455`, and `54545` inside the cluster.
+  Only `8317` is routed permanently. The callback ports are for interactive
+  login or an optional temporary port-forward.
+- The OCI index digest is `sha256:7e828ffc…f26fca28`; it contains both Linux amd64 and arm64 manifests. Ottawa currently schedules amd64 nodes, including `asuka`.
+
+| Purpose | URL | Exposure | Authentication |
+|---|---|---|---|
+| Browser UI / management | `https://cliproxy.keiretsu.top/management.html` | public, private, and ts gateways | tinyauth (Raj or Kartik), then the CLIProxy management key |
+| Model API | `https://cliproxy-api.killinit.cc` | **private and ts gateways only** | CLIProxy API key |
+
+The split is deliberate: tinyauth protects browser traffic without returning
+OAuth redirects or HTML to API clients. The API hostname has no public gateway
+and no public `${COMMON_DOMAIN}` CNAME. Ottawa's `${CLUSTER_DOMAIN}` HTTPRoute
+DNS integration makes `cliproxy-api.killinit.cc` resolvable on the intended
+private/tailnet path.
+
+`remote-management.allow-remote` is enabled because Envoy is remote from the
+pod, but the management API still requires its separate management key. WebSocket
+authentication is enabled. Debugging, pprof, file logging, TLS in the pod, and
+usage statistics are disabled; TLS terminates at Envoy.
+
+## Status and safe key access
+
+Use the repository wrapper for cluster reads:
+
+```bash
+tools/kc.sh ot -n cliproxy get deploy,pod,svc,pvc,httproute,securitypolicy
+tools/kc.sh ot -n cliproxy describe httproute cliproxy-ui
+tools/kc.sh ot -n cliproxy describe httproute cliproxy-api
+```
+
+Avoid printing credentials in terminal output or shell history. Read a key into
+a hidden shell variable directly from the Secret:
+
+```bash
+read -rs CLIPROXY_API_KEY < <(
+  tools/kc.sh ot -n cliproxy get secret cliproxy-credentials \
+    -o jsonpath='{.data.api-key}' | base64 -d
+)
+export CLIPROXY_API_KEY
+```
+
+For a management request, use the same pattern with
+`{.data.management-key}` and `CLIPROXY_MANAGEMENT_KEY`. Clear values when done:
+
+```bash
+unset CLIPROXY_API_KEY CLIPROXY_MANAGEMENT_KEY
+```
+
+Do not use `kubectl get secret -o yaml`, paste keys into documentation, or add
+OAuth token files to Git.
+
+## OAuth login
+
+The login subcommands write credentials to `/data/auth` on the PVC. They start a
+separate CLIProxyAPI process in command mode; they do not modify the running
+server configuration.
+
+### Codex device flow (preferred)
+
+```bash
+tools/kc.sh ot -n cliproxy exec -it deploy/cliproxy -- \
+  /CLIProxyAPI/CLIProxyAPI \
+  --config /config/config.yaml \
+  --codex-device-login \
+  --no-browser
+```
+
+Open the displayed device URL, enter its one-time code, and wait for the command
+to report successful authentication.
+
+### Claude manual callback paste
+
+```bash
+tools/kc.sh ot -n cliproxy exec -it deploy/cliproxy -- \
+  /CLIProxyAPI/CLIProxyAPI \
+  --config /config/config.yaml \
+  --claude-login \
+  --no-browser
+```
+
+Open the displayed authorization URL. After authorization, the browser redirects
+to a localhost URL on port `54545`. Copy the **entire callback URL**, including
+its query string, from the address bar and paste it into the waiting command.
+Do not publish port `54545` through an HTTPRoute.
+
+### Optional temporary local port-forward
+
+A port-forward is useful for localhost callback behavior or viewing the panel
+without ingress. Keep it temporary:
+
+```bash
+tools/kc.sh ot -n cliproxy port-forward svc/cliproxy \
+  8317:8317 1455:1455 54545:54545
+```
+
+Then open `http://localhost:8317/management.html`. The management key remains
+required.
+
+## Verification requests
+
+These examples obtain the key without displaying it. They are expected to fail
+with an authentication error if the key is omitted, and may return an empty
+model set until at least one provider login exists.
+
+```bash
+read -rs CLIPROXY_API_KEY < <(
+  tools/kc.sh ot -n cliproxy get secret cliproxy-credentials \
+    -o jsonpath='{.data.api-key}' | base64 -d
+)
+
+# OpenAI-compatible model list
+curl --fail-with-body --silent --show-error \
+  -H "Authorization: Bearer ${CLIPROXY_API_KEY}" \
+  https://cliproxy-api.killinit.cc/v1/models | jq .
+
+# Anthropic-compatible request template; replace the model after checking /v1/models.
+curl --fail-with-body --silent --show-error \
+  -H "x-api-key: ${CLIPROXY_API_KEY}" \
+  -H 'anthropic-version: 2023-06-01' \
+  -H 'content-type: application/json' \
+  https://cliproxy-api.killinit.cc/v1/messages \
+  --data '{"model":"<CLAUDE_MODEL>","max_tokens":16,"messages":[{"role":"user","content":"Reply OK"}]}' \
+  | jq .
+
+# OpenAI Responses request template; replace the model after checking /v1/models.
+curl --fail-with-body --silent --show-error \
+  -H "Authorization: Bearer ${CLIPROXY_API_KEY}" \
+  -H 'content-type: application/json' \
+  https://cliproxy-api.killinit.cc/v1/responses \
+  --data '{"model":"<CODEX_MODEL>","input":"Reply OK"}' \
+  | jq .
+
+unset CLIPROXY_API_KEY
+```
+
+Management API requests accept either `Authorization: Bearer` or
+`X-Management-Key`. Prefer the latter to make the credential's purpose explicit:
+
+```bash
+read -rs CLIPROXY_MANAGEMENT_KEY < <(
+  tools/kc.sh ot -n cliproxy get secret cliproxy-credentials \
+    -o jsonpath='{.data.management-key}' | base64 -d
+)
+curl --fail-with-body --silent --show-error \
+  -H "X-Management-Key: ${CLIPROXY_MANAGEMENT_KEY}" \
+  https://cliproxy.keiretsu.top/v0/management/config | jq .
+unset CLIPROXY_MANAGEMENT_KEY
+```
+
+The UI route also requires an authenticated tinyauth browser session.
+
+## Configuration and key rotation
+
+The generated configuration is **GitOps-owned**. Do not treat configuration
+edits made in the management panel as authoritative: the next pod recreation
+regenerates `/config/config.yaml` from the Deployment template and Secret.
+Change configuration in this repository and let Flux reconcile it.
+
+To rotate either key, edit the existing SOPS file from the directory whose
+`.sops.yaml` rules apply:
+
+```bash
+sops kubernetes/apps/base/cliproxy/cliproxy/app/secret.sops.yaml
+```
+
+Change `stringData.api-key` and/or `stringData.management-key`, save, verify the
+file remains encrypted, then update a pod-template annotation such as
+`cliproxy.keiretsu.top/credentials-revision` in `deployment.yaml` in the same
+commit. That GitOps-owned template change rolls the pod so the init container
+regenerates the config. Verify the rollout and both authenticated endpoints.
+
+## Upgrade and rollback
+
+1. Verify the upstream release and multi-architecture digest.
+2. Update **both** image references in `deployment.yaml` (init container and
+   server) to the same immutable tag and digest.
+3. Run `tools/check.sh talos-ottawa` and review the rendered Deployment.
+4. Commit through the normal GitOps process and let Flux reconcile.
+5. Verify Deployment readiness, both HTTPRoutes, SecurityPolicy, `/v1/models`,
+   and one real request through each configured provider.
+
+The Deployment uses one replica and `Recreate`, preventing RWO Ceph multi-attach
+during upgrades. A brief outage is expected.
+
+To roll back, revert the image change in Git (or revert the responsible commit),
+run the Ottawa check again, and let Flux reconcile. OAuth credentials remain on
+the PVC and are not tied to the container image. If a new version changes token
+formats, take or confirm a successful Velero backup before upgrade and consult
+upstream release notes before restoring older software.
+
+## PVC and Velero
+
+`Schedule/cliproxy-backup` runs daily at `09:00` UTC, retains backups for seven
+days (`168h`), includes the `cliproxy` namespace, and enables filesystem volume
+backup. It protects `/data/auth` and the management panel cache on the PVC.
+
+Check schedules and recent backups without mutating the cluster:
+
+```bash
+tools/kc.sh ot -n velero-system get schedule cliproxy-backup
+tools/kc.sh ot -n velero-system get backup \
+  -l velero.io/schedule-name=cliproxy-backup
+```
+
+Before a risky upgrade, verify the latest backup is `Completed`. Restore work is
+an operator-controlled Velero procedure: avoid restoring into the live namespace
+while the Deployment is writing the PVC, and preserve the encrypted Git Secret
+separately because it is the source for API and management keys.

@@ -27,6 +27,9 @@ spec:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
       namespace: monz
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: cliproxy
   to:
     - group: ""
       kind: Service

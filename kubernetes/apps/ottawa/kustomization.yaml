@@ -48,6 +48,7 @@ resources:
   - ./external-secrets
   - ./tailscale-system
   - ./cert-manager
+  - ./cliproxy
   - ./default
   - ./envoy-gateway-system
   - ./flux-system
