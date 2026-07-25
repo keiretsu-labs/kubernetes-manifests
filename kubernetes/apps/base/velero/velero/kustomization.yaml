@@ -5,6 +5,7 @@ resources:
   - ./bhaiya-rbac.yaml
   - ./velero-key.yaml
   - ./helmrelease.yaml
+  - ./node-agent-config.yaml
   - ./limitrange.yaml
   - ./servicemonitor.yaml
   - ./dashboard-configmap.yaml

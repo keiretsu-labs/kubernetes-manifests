@@ -1,0 +1,19 @@
+---
+# node-agent runtime config (--node-agent-configmap). Velero unmarshals the
+# single value in .data as JSON, so the key name is arbitrary.
+#
+# loadConcurrency defaults to ONE data path per node: a single PodVolumeBackup
+# that wedges mid-upload head-of-line blocks every later volume on that node,
+# which then times out and marks the whole backup PartiallyFailed. Two slots
+# keeps one stuck volume from taking the node's other volumes down with it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-agent-config
+data:
+  node-agent-config.json: |
+    {
+      "loadConcurrency": {
+        "globalConfig": 2
+      }
+    }
