@@ -107,6 +107,7 @@ nodes:
     controlPlane: false
     nodeLabels:
       workload-class: specialized
+      runtime.keiretsu.top/kata: "true"
     schematic:
       customization:
         systemExtensions:
@@ -114,6 +115,7 @@ nodes:
             - siderolabs/gvisor
             - siderolabs/i915
             - siderolabs/intel-ucode
+            - siderolabs/kata-containers
             - siderolabs/nut-client
             - siderolabs/binfmt-misc
             - siderolabs/util-linux-tools
