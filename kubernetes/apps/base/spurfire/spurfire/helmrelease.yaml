@@ -21,7 +21,7 @@ spec:
                 path: /spec/template/spec/initContainers
                 value:
                   - name: wait-for-provider-broker
-                    image: busybox:1.37.0
+                    image: busybox:1.38.0
                     imagePullPolicy: IfNotPresent
                     command: ["/bin/sh", "-ec"]
                     args:
