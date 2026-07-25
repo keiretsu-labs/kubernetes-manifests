@@ -21,6 +21,17 @@ Anthropic-compatible APIs.
 - `Service/cliproxy` exposes `8317`, `1455`, and `54545` inside the cluster.
   Only `8317` is routed permanently. The callback ports are for interactive
   login or an optional temporary port-forward.
+- OpenAI-compatible provider `aperture-corp` points at
+  `http://ai.keiretsu.ts.net/v1`. A startup init container discovers the
+  upstream `/v1/models` catalog and exposes each model under the
+  `aperture-corp/` prefix. `Service/aperture-corp-upstream` registers the
+  tailnet FQDN with the shared `common-egress` ProxyGroup.
+- `force-model-prefix` is enabled and every route owns its client-visible
+  prefix: `codex-subscription/<model>` for the logged-in Codex subscription,
+  `anthropic-subscription/<model>` for the logged-in Claude subscription, and
+  `aperture-corp/<model>` for `ai.keiretsu.ts.net`. The two OAuth prefixes live
+  in native per-credential metadata, so CLIProxyAPI itself owns listing,
+  request routing, and subscription pooling.
 - The OCI index digest is `sha256:7e828ffc…f26fca28`; it contains both Linux amd64 and arm64 manifests. Ottawa currently schedules amd64 nodes, including `asuka`.
 
 | Purpose | URL | Exposure | Authentication |
@@ -82,7 +93,14 @@ OAuth token files to Git.
 
 The login subcommands write credentials to `/data/auth` on the PVC. They start a
 separate CLIProxyAPI process in command mode; they do not modify the running
-server configuration.
+server configuration. After adding an OAuth credential, set its native
+`prefix` field through the management UI or
+`PATCH /v0/management/auth-files/fields`: use `codex-subscription` for every
+Codex credential and `anthropic-subscription` for every Claude credential.
+Credentials that share a prefix form one route pool; the configured
+round-robin strategy spreads new sessions across that pool while session
+affinity keeps a conversation on its selected credential when it remains
+available.
 
 ### Codex device flow (preferred)
 

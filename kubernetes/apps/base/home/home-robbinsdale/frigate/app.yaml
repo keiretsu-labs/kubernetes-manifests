@@ -17,7 +17,11 @@ spec:
       labels:
         app: frigate
       annotations:
-        backup.velero.io/backup-volumes-excludes: storage
+        # storage = 2TB recordings on unas; dshm = memory-backed tmpfs; cache =
+        # ephemeral transcode scratch. Only `config` (the sqlite DB + config.yml)
+        # is worth a kopia snapshot — the other three were adding ~830MB of
+        # throwaway data per nightly run and two of the flakiest PVBs.
+        backup.velero.io/backup-volumes-excludes: storage,dshm,cache
     spec:
       containers:
         - name: frigate
