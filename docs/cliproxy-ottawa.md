@@ -26,6 +26,10 @@ Anthropic-compatible APIs.
   upstream `/v1/models` catalog and exposes each model under the
   `aperture-corp/` prefix. `Service/aperture-corp-upstream` registers the
   tailnet FQDN with the shared `common-egress` ProxyGroup.
+- `force-model-prefix` is enabled. Unprefixed models can use only the logged-in
+  OAuth subscriptions (Codex or Claude); Aperture requests must use
+  `aperture-corp/<model>`. This makes the account and billing path explicit
+  when providers publish overlapping model IDs.
 - The OCI index digest is `sha256:7e828ffc…f26fca28`; it contains both Linux amd64 and arm64 manifests. Ottawa currently schedules amd64 nodes, including `asuka`.
 
 | Purpose | URL | Exposure | Authentication |
