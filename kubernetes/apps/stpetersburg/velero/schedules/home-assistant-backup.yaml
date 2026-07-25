@@ -6,7 +6,6 @@ metadata:
   namespace: velero-system
 spec:
   schedule: "0 9 * * *"
-  skipImmediately: true
   template:
     ttl: 168h
     includedNamespaces:
