@@ -8,6 +8,7 @@ resources:
   - pvc.yaml
   - deployment.yaml
   - service.yaml
+  - service-ts.yaml
   - httproute-ui.yaml
   - httproute-api.yaml
   - securitypolicy.yaml

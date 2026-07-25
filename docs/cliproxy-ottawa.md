@@ -26,7 +26,7 @@ Anthropic-compatible APIs.
 | Purpose | URL | Exposure | Authentication |
 |---|---|---|---|
 | Browser UI / management | `https://cliproxy.keiretsu.top/management.html` | public and private gateways | tinyauth (Raj or Kartik), then the CLIProxy management key |
-| Browser UI / management (tailnet) | `https://cliproxy.ts.keiretsu.top/management.html` | ts gateway only | tinyauth (Raj or Kartik), then the CLIProxy management key |
+| Browser UI / management (tailnet) | `http://cliproxy/management.html` (FQDN: `http://cliproxy.keiretsu.ts.net/management.html`) | direct Tailscale LoadBalancer on port 80 | tailnet ACL, then the CLIProxy management key |
 | Model API | `https://cliproxy-api.killinit.cc` | **private and ts gateways only** | CLIProxy API key |
 
 The split is enforced by path as well as hostname. Public/private UI routes only
@@ -35,6 +35,12 @@ Model paths (`/v1*`, `/v1beta*`, `/openai/v1*`, and `/backend-api/codex*`) only
 exist on `cliproxy-api.killinit.cc`, which has no public gateway and no public
 `${COMMON_DOMAIN}` CNAME. Ottawa's `${CLUSTER_DOMAIN}` HTTPRoute DNS integration
 makes it resolvable on the intended private/tailnet path.
+
+The short `http://cliproxy` tailnet URL is provided by `Service/cliproxy-ts`, a
+Tailscale `LoadBalancer` using the shared `common-ingress` ProxyGroup. It goes
+directly to application port 8317 and therefore does not traverse Envoy or
+tinyauth. Tailnet ACLs control network reachability, while CLIProxy's separate
+management key still protects management operations.
 
 `remote-management.allow-remote` is enabled because Envoy is remote from the
 pod, but the management API still requires its separate management key. WebSocket
