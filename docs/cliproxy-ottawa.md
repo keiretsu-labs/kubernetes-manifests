@@ -20,7 +20,8 @@ Anthropic-compatible APIs.
 
 | Purpose | URL | Exposure | Authentication |
 |---|---|---|---|
-| Browser UI / management | `https://cliproxy.keiretsu.top/management.html` | public, private, and ts gateways | tinyauth (Raj or Kartik), then the CLIProxy management key |
+| Browser UI / management | `https://cliproxy.keiretsu.top/management.html` | public and private gateways | tinyauth (Raj or Kartik), then the CLIProxy management key |
+| Browser UI / management (tailnet) | `https://cliproxy.ts.keiretsu.top/management.html` | ts gateway only | tinyauth (Raj or Kartik), then the CLIProxy management key |
 | Model API | `https://cliproxy-api.killinit.cc` | **private and ts gateways only** | CLIProxy API key |
 
 The split is deliberate: tinyauth protects browser traffic without returning
@@ -163,7 +164,7 @@ curl --fail-with-body --silent --show-error \
 unset CLIPROXY_MANAGEMENT_KEY
 ```
 
-The UI route also requires an authenticated tinyauth browser session.
+Both UI routes also require an authenticated tinyauth browser session.
 
 ## Configuration and key rotation
 
