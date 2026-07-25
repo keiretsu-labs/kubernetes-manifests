@@ -60,35 +60,6 @@ spec:
           credential:
             name: velero-credentials
             key: cloud
-        # Frozen pre-2026-07-25 history. Until that date every cluster wrote to
-        # the bucket root (the prefix above was nested under `config`, where
-        # Velero ignores it), so the root held one shared kopia repo per
-        # namespace. That tree was moved to legacy/ so it stays listable and
-        # restorable — a BSL pointed at the root itself will NOT validate, since
-        # Velero rejects the now-present ottawa/ and robbinsdale/ as unknown
-        # top-level directories.
-        #
-        # ReadOnly so no cluster writes here and Velero runs no kopia
-        # maintenance against it — two clusters GC-ing one shared repo is what
-        # wedged backups in the first place.
-        #
-        # Velero will NOT garbage-collect a read-only location, so expired
-        # entries linger and this 77 GiB is never reclaimed on its own. RETIRE
-        # after 2026-08-24 (last 720h bhaiya-raj-trades entry) by following
-        # docs/runbook-velero-legacy-bsl-retire.md.
-        - name: garage-legacy
-          provider: aws
-          bucket: velero
-          prefix: legacy
-          accessMode: ReadOnly
-          default: false
-          config:
-            region: garage
-            s3Url: "http://${COMMON_S3_ENDPOINT}"
-            s3ForcePathStyle: "true"
-          credential:
-            name: velero-credentials
-            key: cloud
       volumeSnapshotLocation: []
 
     deployNodeAgent: true
