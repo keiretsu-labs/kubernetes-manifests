@@ -17,3 +17,5 @@ spec:
       ports:
         - port: ssh
           protocol: TCP
+        - port: health
+          protocol: TCP
