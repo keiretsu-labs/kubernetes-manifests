@@ -25,7 +25,7 @@ spec:
                     operator: DoesNotExist
       containers:
         - name: gateway
-          image: ghcr.io/keiretsu-labs/tempvm-gateway:sha-9ddaa3739bd61b0203a39ae919cec77dbcf81e11@sha256:45227427155d8b2c6e673e583a97c2c7634e08dddf6650f2bde3e9a02b224958
+          image: ghcr.io/keiretsu-labs/tempvm-gateway:sha-0fb8703e8ce700b1d8bfdb5f3e118dc8da5222e7@sha256:f9d9ecf21d831ad83c0dad00009150a338dead192af9c21d2f8f0c47d3166f60
           args:
             - --guest-image=ghcr.io/keiretsu-labs/tempvm-linux:sha-b430a7b22247578484081c08a8bbaf91958bf2e5@sha256:b371e749f4693f3dc4303c08db7cad26670e1901eaf2e8d3c971f10e732f4867
             - --runtime-class=kata-clh
