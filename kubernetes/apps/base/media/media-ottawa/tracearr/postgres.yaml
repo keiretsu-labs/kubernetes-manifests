@@ -20,7 +20,7 @@ spec:
   nodeMaintenanceWindow:
     reusePVC: false
   storage:
-    size: 20Gi
+    size: 40Gi
   monitoring:
     enablePodMonitor: true
   plugins:

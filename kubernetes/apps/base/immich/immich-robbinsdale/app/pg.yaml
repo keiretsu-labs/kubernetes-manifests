@@ -23,7 +23,7 @@ spec:
   monitoring:
     enablePodMonitor: true
   storage:
-    size: 16Gi
+    size: 40Gi
   # Enable Barman Cloud plugin for S3 backups
   plugins:
     - name: barman-cloud.cloudnative-pg.io
@@ -50,6 +50,7 @@ metadata:
   namespace: immich
 spec:
   schedule: "0 0 23 * * *"  # Daily at 11 PM
+  immediate: true
   backupOwnerReference: self
   method: plugin
   pluginConfiguration:
