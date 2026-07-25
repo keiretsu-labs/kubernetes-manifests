@@ -24,6 +24,39 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       initContainers:
+        - name: seed-management-panel
+          image: alpine:3.22@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              expected='c8c8a2cf2b4ca87b38ac885821c94f03601ae3c09eb2eca651bd0f82180e6743'
+              panel=/data/static/management.html
+              if [ ! -f "$panel" ] || ! echo "$expected  $panel" | sha256sum -c - >/dev/null 2>&1; then
+                mkdir -p /data/static
+                wget -q -O "$panel.tmp" \
+                  https://github.com/router-for-me/Cli-Proxy-API-Management-Center/releases/download/v1.19.1/management.html
+                echo "$expected  $panel.tmp" | sha256sum -c -
+                chmod 0644 "$panel.tmp"
+                mv "$panel.tmp" "$panel"
+              fi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
         - name: render-config
           image: eceasy/cli-proxy-api:v7.2.99@sha256:7e828ffc1c56ff9fc9fb5e1cdeb802f902c1449c7a43b702c13a7b9bf26fca28
           command:
@@ -44,6 +77,7 @@ spec:
                 allow-remote: true
                 secret-key: "$${MANAGEMENT_KEY}"
                 disable-control-panel: false
+                disable-auto-update-panel: true
               api-keys:
                 - "$${API_KEY}"
               debug: false

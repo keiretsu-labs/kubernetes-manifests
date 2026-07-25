@@ -12,6 +12,7 @@ spec:
   dependsOn:
     - name: tinyauth
     - name: home-local-gateway
+    - name: home-tailscale-gateway
   path: ./kubernetes/apps/base/cliproxy/cliproxy/app
   prune: true
   sourceRef:
