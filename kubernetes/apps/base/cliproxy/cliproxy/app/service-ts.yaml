@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cliproxy-ts
+  annotations:
+    tailscale.com/hostname: cliproxy
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app.kubernetes.io/name: cliproxy
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
