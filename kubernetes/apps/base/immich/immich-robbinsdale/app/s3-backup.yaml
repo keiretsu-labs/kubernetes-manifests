@@ -8,6 +8,8 @@ spec:
   configuration:
     destinationPath: s3://immich-postgres/${LOCATION}/
     endpointURL: http://${COMMON_S3_ENDPOINT}
+    wal:
+      maxParallel: 8
     s3Credentials:
       accessKeyId:
         name: immich-s3-backup

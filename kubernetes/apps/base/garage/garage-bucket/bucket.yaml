@@ -27,7 +27,7 @@ spec:
     name: garage
   globalAlias: tracearr-postgres
   quotas:
-    maxSize: 20Gi
+    maxSize: 200Gi
     maxObjects: 1000000
   keyPermissions:
     - keyRef:
