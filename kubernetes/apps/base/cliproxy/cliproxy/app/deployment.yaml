@@ -145,10 +145,9 @@ spec:
                 disable-auto-update-panel: true
               api-keys:
                 - "$${API_KEY}"
-              # Keep OAuth subscription models unprefixed while requiring
-              # aperture-corp/<model> for the ai.keiretsu.ts.net provider.
-              # This prevents overlapping model IDs (for example Luna) from
-              # silently falling through to a different billing/account path.
+              # Every credential owns its native route prefix. OAuth prefixes
+              # live in auth metadata; the generated compatible provider
+              # declares aperture-corp below.
               force-model-prefix: true
               debug: false
               pprof:
