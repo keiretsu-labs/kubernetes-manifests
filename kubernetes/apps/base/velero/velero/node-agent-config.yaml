@@ -6,6 +6,8 @@
 # that wedges mid-upload head-of-line blocks every later volume on that node,
 # which then times out and marks the whole backup PartiallyFailed. Two slots
 # keeps one stuck volume from taking the node's other volumes down with it.
+# Bound the prepared queue so repeated schedules cannot create an unlimited
+# number of idle data-mover pods behind a wedged operation.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -14,6 +16,7 @@ data:
   node-agent-config.json: |
     {
       "loadConcurrency": {
-        "globalConfig": 2
+        "globalConfig": 2,
+        "prepareQueueLength": 8
       }
     }

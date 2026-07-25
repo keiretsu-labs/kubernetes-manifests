@@ -39,7 +39,10 @@ spec:
     configuration:
       clientQPS: 100
       clientBurst: 200
-      podVolumeOperationTimeout: 720m
+      # Fail a wedged file-system data path within the upstream default window.
+      # `podVolumeOperationTimeout` is an obsolete chart value and rendered no
+      # server flag with chart 12.1.0.
+      fsBackupTimeout: 4h
       backupStorageLocation:
         - name: garage
           provider: aws

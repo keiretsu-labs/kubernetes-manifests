@@ -26,3 +26,22 @@ spec:
     provider: sops
     secretRef:
       name: sops-gpg
+  patches:
+    # CloudNativePG's Barman plugin owns database recovery through daily base
+    # backups plus continuous WAL archiving. Keep the Cluster and related
+    # Kubernetes objects in Velero, but do not copy live PostgreSQL files or
+    # its ephemeral helper volumes through file-system backup.
+    - target:
+        group: postgresql.cnpg.io
+        version: v1
+        kind: Cluster
+        name: bifrost-postgres
+      patch: |-
+        apiVersion: postgresql.cnpg.io/v1
+        kind: Cluster
+        metadata:
+          name: bifrost-postgres
+        spec:
+          inheritedMetadata:
+            annotations:
+              backup.velero.io/backup-volumes-excludes: pgdata,scratch-data,shm,plugins
