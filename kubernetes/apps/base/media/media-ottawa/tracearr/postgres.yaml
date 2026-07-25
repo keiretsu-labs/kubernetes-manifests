@@ -48,6 +48,7 @@ metadata:
   name: tracearr-postgres-s3
 spec:
   schedule: "0 0 23 * * *"
+  immediate: true
   backupOwnerReference: self
   method: plugin
   pluginConfiguration:
