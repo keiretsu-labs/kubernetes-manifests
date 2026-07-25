@@ -9,6 +9,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - service-ts.yaml
+  - egress.yaml
   - httproute-ui.yaml
   - httproute-api.yaml
   - securitypolicy.yaml
