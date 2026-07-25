@@ -211,6 +211,7 @@ controlPlane:
     - "@./patches/controller/disable-proxy.yaml"
     - "@./patches/controller/kubelet-certs.yaml"
     - "@./patches/controller/etcd-metrics-patch.yaml"
+    - "@./patches/controller/pod-security.yaml"
 
 # Worker nodes config
 worker:

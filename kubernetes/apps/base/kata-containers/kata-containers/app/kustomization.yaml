@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./canary.yaml
   - ./runtimeclass.yaml
+  - ./runtimeclass-tailscale.yaml
