@@ -25,9 +25,9 @@ spec:
                     operator: DoesNotExist
       containers:
         - name: gateway
-          image: ghcr.io/keiretsu-labs/tempvm-gateway:sha-185a9c6155b1db6453f7ac66e6e001db38df52e0@sha256:69827292cc17c3b37de24159ce78b6bdb50a21d8d4a3d747321855e8c795a6cf
+          image: ghcr.io/keiretsu-labs/tempvm-gateway:sha-b430a7b22247578484081c08a8bbaf91958bf2e5@sha256:5380fe554e30d97359b5b1deda89ceab5e8a27072e31febe0427d12042a3e5f8
           args:
-            - --guest-image=ghcr.io/keiretsu-labs/tempvm-linux:sha-185a9c6155b1db6453f7ac66e6e001db38df52e0@sha256:8a53524a0e7716823bcd06cb6471bdfb1dbf7c60cf4a275c5559cabdcca2ac9f
+            - --guest-image=ghcr.io/keiretsu-labs/tempvm-linux:sha-b430a7b22247578484081c08a8bbaf91958bf2e5@sha256:b371e749f4693f3dc4303c08db7cad26670e1901eaf2e8d3c971f10e732f4867
             - --runtime-class=kata-clh
           env:
             - name: POD_NAME
