@@ -8,6 +8,9 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: cliproxy-ui
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: cliproxy-ui-ts
   extAuth:
     failOpen: false
     headersToExtAuth:
