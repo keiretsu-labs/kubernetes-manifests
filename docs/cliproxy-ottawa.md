@@ -21,6 +21,11 @@ Anthropic-compatible APIs.
 - `Service/cliproxy` exposes `8317`, `1455`, and `54545` inside the cluster.
   Only `8317` is routed permanently. The callback ports are for interactive
   login or an optional temporary port-forward.
+- OpenAI-compatible provider `aperture-corp` points at
+  `http://ai.keiretsu.ts.net/v1`. A startup init container discovers the
+  upstream `/v1/models` catalog and exposes each model under the
+  `aperture-corp/` prefix. `Service/aperture-corp-upstream` registers the
+  tailnet FQDN with the shared `common-egress` ProxyGroup.
 - The OCI index digest is `sha256:7e828ffc…f26fca28`; it contains both Linux amd64 and arm64 manifests. Ottawa currently schedules amd64 nodes, including `asuka`.
 
 | Purpose | URL | Exposure | Authentication |
