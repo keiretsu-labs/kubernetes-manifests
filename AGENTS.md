@@ -104,6 +104,14 @@ postBuild:
 
 ## Critical gotchas
 
+- **Talos control-plane patches are rolling operations.** A machine-config
+  patch can restart static control-plane pods even when `talosctl` reports
+  `Applied configuration without a reboot`. Never patch multiple control-plane
+  nodes back-to-back. Apply to exactly one node, then verify that node's etcd
+  member is healthy, its kube-apiserver is serving `/readyz`, and every
+  Kubernetes node is `Ready` before touching the next control-plane node. Treat
+  the node currently holding the control-plane VIP as the final node and repeat
+  the readiness checks after it returns.
 - **`$` mangling:** Flux envsubst (drone/envsubst) eats bare `$` (bcrypt
   hashes, regex, shell). Any value containing `$` must live in a
   Secret/ConfigMap and be injected via `${VAR}`. Substitution is single-pass:
