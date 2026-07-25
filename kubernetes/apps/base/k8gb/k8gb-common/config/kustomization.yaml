@@ -7,7 +7,6 @@ resources:
   - ./gslb-gatus.yaml
 
   - ./gslb-ts-gateway.yaml
-  - ./garage-keiretsu-top.yaml
 
   - ./dashboard-ts.yaml
   - ./cnames.yaml
