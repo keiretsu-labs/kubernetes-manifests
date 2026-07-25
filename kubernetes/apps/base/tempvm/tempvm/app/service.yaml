@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempvm
+  annotations:
+    tailscale.com/hostname: tempvm
+    tailscale.com/proxy-group: common-ingress
+    tailscale.com/tags: "tag:k8s"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app.kubernetes.io/name: tempvm
+  ports:
+    - name: ssh
+      port: 22
+      protocol: TCP
+      targetPort: ssh

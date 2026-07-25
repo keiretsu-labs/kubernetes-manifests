@@ -44,6 +44,7 @@ resources:
   - ./spurfire
   - ./tailscale-examples
   - ./tailgate-operator-system
+  - ./tempvm
   - ./zot
   - ./external-secrets
   - ./tailscale-system
