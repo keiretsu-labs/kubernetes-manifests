@@ -148,6 +148,15 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    # CLIProxyAPI browser UI; the API hostname uses ${CLUSTER_DOMAIN} and is
+    # discovered from its private/ts HTTPRoute instead of public DNS.
+    - dnsName: "cliproxy.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "ottawa.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: "frigate.${LOCATION}.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
