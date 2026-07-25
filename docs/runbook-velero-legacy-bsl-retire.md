@@ -93,6 +93,46 @@ The last entry to expire is `bhaiya-raj-trades-*` at 720h TTL, hence 2026-08-24.
 
 5. Delete this runbook and the `garage-legacy` comment block in the HelmRelease.
 
+## Verifying the legacy data (done 2026-07-25, repeat before retiring)
+
+Don't try to prove this with a Velero restore into a mapped namespace — Velero
+never creates the PodVolumeRestore for a `namespaceMapping` fs-backup restore, so
+the restored pod just hangs in `Init:0/1` on the `restore-wait` init container.
+
+Read the kopia repos directly instead. It is read-only, touches no workloads, and
+checks the thing that actually matters. Velero's repo password lives in the
+`velero-repo-credentials` secret (key `repository-password`) and the S3 keys are
+already broken out as `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` in
+`velero-credentials`, so a throwaway `kopia/kopia` pod in `velero-system` needs no
+extra plumbing. Two things to get right: the image presets
+`KOPIA_CACHE_DIRECTORY=/app/cache`, which is unwritable for a non-root pod, so
+override `KOPIA_CACHE_DIRECTORY`/`KOPIA_LOG_DIR`/`KOPIA_CONFIG_PATH` into an
+emptyDir; and `kopia repository disconnect` + delete the config/cache between
+repos, or the second connect fails misleadingly.
+
+```sh
+kopia repository connect s3 --bucket=velero --prefix="legacy/kopia/<ns>/" \
+  --endpoint=garage-gateway.garage.svc.cluster.local:3900 --disable-tls \
+  --access-key="$AWS_ACCESS_KEY_ID" --secret-access-key="$AWS_SECRET_ACCESS_KEY" \
+  --password="$KOPIA_PASSWORD" \
+  --override-hostname=verify --override-username=verify --no-check-for-updates
+kopia snapshot list --all
+kopia restore <snapshotID> /tmp/out      # proves content blobs, not just manifests
+```
+
+Result on 2026-07-25 — every repo holding data opened, and a real file came back:
+
+| repo | snapshots |
+|---|---|
+| `legacy/kopia/home` | 55 |
+| `legacy/kopia/bhaiya` | 95 |
+| `legacy/kopia/agents` | 13 |
+| `legacy/kopia/tinyauth` | 0 (empty repo, 0 B — nothing was ever backed up) |
+
+`legacy/kopia/{home-assistant,infisical}` also carry a `kopia.repository` blob but
+no data. `kopia restore` of the mqtt snapshot returned `mosquitto.db`, 431.7 KB,
+sha256 `bd6386076eb2ef44…`.
+
 ## Garage S3 gotchas (if you ever copy these trees again)
 
 - `GetObjectTagging` is **NotImplemented** — `aws s3 sync`/`cp` must be given
