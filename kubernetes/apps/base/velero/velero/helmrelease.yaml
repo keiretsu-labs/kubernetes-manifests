@@ -44,12 +44,16 @@ spec:
         - name: garage
           provider: aws
           bucket: velero
+          # Per-cluster prefix. Must sit beside `bucket` (it renders into
+          # spec.objectStorage.prefix); under `config` Velero silently ignores
+          # it and every cluster shares the bucket root — which means shared
+          # kopia repos per namespace across clusters.
+          prefix: "${LOCATION}"
           default: true
           config:
             region: garage
             s3Url: "http://${COMMON_S3_ENDPOINT}"
             s3ForcePathStyle: "true"
-            prefix: "${LOCATION}"
           credential:
             name: velero-credentials
             key: cloud
@@ -63,6 +67,8 @@ spec:
           effect: NoSchedule
       uploaderType: kopia
       podVolumePath: /var/lib/kubelet/pods
+      extraArgs:
+        - --node-agent-configmap=node-agent-config
       resources:
         requests:
           cpu: 200m
