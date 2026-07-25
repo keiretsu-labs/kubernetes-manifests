@@ -29,7 +29,7 @@ spec:
       priorityClassName: "infra-high"
       initContainers:
         - name: route-fix
-          image: alpine:3.21
+          image: alpine:3.24
           command:
             - /bin/sh
             - -c
