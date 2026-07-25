@@ -145,6 +145,10 @@ spec:
                 disable-auto-update-panel: true
               api-keys:
                 - "$${API_KEY}"
+              # Every credential owns its native route prefix. OAuth prefixes
+              # live in auth metadata; the generated compatible provider
+              # declares aperture-corp below.
+              force-model-prefix: true
               debug: false
               pprof:
                 enable: false
