@@ -1,0 +1,82 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempvm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempvm
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tempvm
+    spec:
+      serviceAccountName: tempvm
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: runtime.keiretsu.top/kata
+                    operator: DoesNotExist
+      containers:
+        - name: gateway
+          image: ghcr.io/keiretsu-labs/tempvm-gateway:sha-fb251d8496eb9056d9690fd9b944d4e74a006677@sha256:ef115659de3c09cf5edf6bacad39b04c968467124ec53e779468b2529c224d38
+          args:
+            - --guest-image=ghcr.io/keiretsu-labs/tempvm-linux:sha-fb251d8496eb9056d9690fd9b944d4e74a006677@sha256:5074259b46f25f0c99a2039b726ac8cb609c5af534a83bc37f2fa9f4b9149133
+            - --runtime-class=kata-clh
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          ports:
+            - name: ssh
+              containerPort: 2222
+              protocol: TCP
+            - name: health
+              containerPort: 8080
+              protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
