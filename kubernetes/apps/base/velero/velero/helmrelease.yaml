@@ -72,8 +72,10 @@ spec:
         # maintenance against it — two clusters GC-ing one shared repo is what
         # wedged backups in the first place.
         #
-        # REMOVE once the newest entry has passed its TTL: bhaiya-raj-trades is
-        # 720h, so after 2026-08-24.
+        # Velero will NOT garbage-collect a read-only location, so expired
+        # entries linger and this 77 GiB is never reclaimed on its own. RETIRE
+        # after 2026-08-24 (last 720h bhaiya-raj-trades entry) by following
+        # docs/runbook-velero-legacy-bsl-retire.md.
         - name: garage-legacy
           provider: aws
           bucket: velero
