@@ -60,6 +60,23 @@ spec:
           credential:
             name: velero-credentials
             key: cloud
+        # Read-only view of the un-prefixed bucket root, where every cluster
+        # wrote until 2026-07-25. Keeps those backups listed and restorable
+        # (their kopia repos are at <root>/kopia/<ns>) while they age out.
+        # REMOVE once the newest root-level backup has passed its TTL — the
+        # longest is bhaiya-raj-trades at 720h, so after 2026-08-24.
+        - name: garage-legacy
+          provider: aws
+          bucket: velero
+          accessMode: ReadOnly
+          default: false
+          config:
+            region: garage
+            s3Url: "http://${COMMON_S3_ENDPOINT}"
+            s3ForcePathStyle: "true"
+          credential:
+            name: velero-credentials
+            key: cloud
       volumeSnapshotLocation: []
 
     deployNodeAgent: true
