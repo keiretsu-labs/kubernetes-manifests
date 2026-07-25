@@ -18,8 +18,14 @@ spec:
   rules:
     - matches:
         - path:
+            type: Exact
+            value: /management.html
+        - path:
             type: PathPrefix
-            value: /
+            value: /v0/management
+        - path:
+            type: PathPrefix
+            value: /v0/resource/plugins
       backendRefs:
         - group: ""
           kind: Service
@@ -63,8 +69,14 @@ spec:
   rules:
     - matches:
         - path:
+            type: Exact
+            value: /management.html
+        - path:
             type: PathPrefix
-            value: /
+            value: /v0/management
+        - path:
+            type: PathPrefix
+            value: /v0/resource/plugins
       backendRefs:
         - group: ""
           kind: Service

@@ -13,6 +13,11 @@ Anthropic-compatible APIs.
 - Configuration: an init container reads `Secret/cliproxy-credentials` and
   writes `/config/config.yaml` into a memory-backed `emptyDir`. The file is not
   stored in a ConfigMap or in plaintext in Git.
+- Management UI asset: pinned to CPAMC `v1.19.1`, downloaded by a hardened init
+  container and verified against SHA-256
+  `c8c8a2cf2b4ca87b38ac885821c94f03601ae3c09eb2eca651bd0f82180e6743`.
+  CLIProxyAPI's panel auto-updater is disabled, eliminating unpinned fallback
+  downloads.
 - `Service/cliproxy` exposes `8317`, `1455`, and `54545` inside the cluster.
   Only `8317` is routed permanently. The callback ports are for interactive
   login or an optional temporary port-forward.
@@ -24,11 +29,12 @@ Anthropic-compatible APIs.
 | Browser UI / management (tailnet) | `https://cliproxy.ts.keiretsu.top/management.html` | ts gateway only | tinyauth (Raj or Kartik), then the CLIProxy management key |
 | Model API | `https://cliproxy-api.killinit.cc` | **private and ts gateways only** | CLIProxy API key |
 
-The split is deliberate: tinyauth protects browser traffic without returning
-OAuth redirects or HTML to API clients. The API hostname has no public gateway
-and no public `${COMMON_DOMAIN}` CNAME. Ottawa's `${CLUSTER_DOMAIN}` HTTPRoute
-DNS integration makes `cliproxy-api.killinit.cc` resolvable on the intended
-private/tailnet path.
+The split is enforced by path as well as hostname. Public/private UI routes only
+forward `/management.html`, `/v0/management*`, and `/v0/resource/plugins*`.
+Model paths (`/v1*`, `/v1beta*`, `/openai/v1*`, and `/backend-api/codex*`) only
+exist on `cliproxy-api.killinit.cc`, which has no public gateway and no public
+`${COMMON_DOMAIN}` CNAME. Ottawa's `${CLUSTER_DOMAIN}` HTTPRoute DNS integration
+makes it resolvable on the intended private/tailnet path.
 
 `remote-management.allow-remote` is enabled because Envoy is remote from the
 pod, but the management API still requires its separate management key. WebSocket

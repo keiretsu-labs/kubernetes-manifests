@@ -19,7 +19,19 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /
+            value: /v1
+        - path:
+            type: PathPrefix
+            value: /v1beta
+        - path:
+            type: PathPrefix
+            value: /openai/v1
+        - path:
+            type: PathPrefix
+            value: /backend-api/codex
+        - path:
+            type: PathPrefix
+            value: /healthz
       backendRefs:
         - group: ""
           kind: Service
