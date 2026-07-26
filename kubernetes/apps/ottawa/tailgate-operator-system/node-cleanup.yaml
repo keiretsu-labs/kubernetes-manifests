@@ -1,0 +1,69 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tailgate-node-cleanup
+  namespace: tailgate-operator-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tailgate-node-cleanup
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tailgate-node-cleanup
+    spec:
+      containers:
+        - name: cleanup
+          image: alpine:3.22.1@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              while true; do
+                rm -f -- /host/opt/cni/bin/tailgate-cni
+                rm -rf -- /host/run/tailgate
+                sleep 5
+              done
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - test ! -e /host/opt/cni/bin/tailgate-cni && test ! -e /host/run/tailgate
+            periodSeconds: 2
+          resources:
+            requests:
+              cpu: 5m
+              memory: 8Mi
+            limits:
+              cpu: 20m
+              memory: 16Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 0
+            runAsUser: 0
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: cni-bin
+              mountPath: /host/opt/cni/bin
+            - name: host-run
+              mountPath: /host/run
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        - operator: Exists
+      volumes:
+        - name: cni-bin
+          hostPath:
+            path: /opt/cni/bin
+            type: Directory
+        - name: host-run
+          hostPath:
+            path: /run
+            type: Directory
