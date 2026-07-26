@@ -204,11 +204,6 @@
 			"srcPosture": ["posture:jitDebug"],
 		},
 		{
-			"src": ["autogroup:shared"],
-			"dst": ["tag:k8s"],
-			"ip":  ["*"],
-		},
-		{
 			"src": ["tag:k8s"],
 			"dst": ["rajsinghtech@github"],
 			"ip":  ["*"],
