@@ -39,3 +39,35 @@ subjects:
   - kind: ServiceAccount
     name: external-secrets-store
     namespace: external-secrets
+---
+# Cross-cluster secret reads arrive through the Tailscale API-server proxy,
+# which authenticates the calling proxy's tailnet identity and impersonates
+# the groups from its grant — the ClusterSecretStores below pass
+# "bearerToken: unused", so the tailnet identity is the only credential.
+# Grant that group exactly what those stores need, reading secrets in this
+# namespace, instead of the system:masters it used to inherit from tag:k8s.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tailnet-secret-sync
+rules:
+  - apiGroups: [""]
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tailnet-secret-sync
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: tailnet-secret-sync
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: tailnet-secret-sync
