@@ -138,6 +138,14 @@ postBuild:
   cluster IP. Verify the Service condition `TailscaleEgressSvcReady=True` and
   resolve the `.ts.net` name from a pod before configuring clients. See
   `docs/reference/tailscale-integration.md`.
+- **Embedded workspace Tailscale:** maintainer workspaces run Tailscale in
+  kernel TUN mode inside their single Kata container. Do not reintroduce
+  Tailgate, a Tailscale sidecar, or site-CIDR policy carving as a workaround
+  for asymmetric Pod replies. The workspace entrypoint marks connections that
+  arrive through the CNI and routes their replies through the main table while
+  leaving new accepted-route traffic on `tailscale0`. Keep HuJSON `grants` and
+  `via` rules focused on authorization and router eligibility; they do not
+  control route injection.
 - **SOPS:** run `sops` from the directory whose `.sops.yaml` carries the
   creation rules. Edit with `sops <file>.sops.yaml`.
 
