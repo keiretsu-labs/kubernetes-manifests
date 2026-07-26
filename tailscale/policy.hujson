@@ -36,7 +36,6 @@
 		"tag:debug-granted":    ["group:superuser",],
 		"tag:raj":              ["tag:k8s-operator", "rajsinghtech@github",],
 		"tag:kartik":           ["tag:k8s-operator", "kbpersonal@github",],
-		"tag:border0-managed":  ["tag:k8s-operator", "tag:infra", "group:superuser",],
 	},
 	"ipsets": {
 		"ipset:robbinsdale": [
@@ -92,8 +91,6 @@
 			"svc:http-test": ["tag:k8s"],
 			"svc:tempvm": ["tag:k8s"],
 			"svc:tcp": ["tag:k8s"],
-			// "svc:robbinsdale-k8sapiserver-proxy": ["tag:border0-managed"],
-			"tag:border0-managed": ["tag:border0-managed"],
 		},
 	},
 	"ssh": [
@@ -169,11 +166,6 @@
 				"svc:stpetersburg-home-envoy-gateway",
 			],
 			"ip":  ["22", "53", "80", "443"],
-		},
-		{
-			"src": ["group:superuser"],
-			"dst": ["tag:border0-managed"],
-			"ip":  ["*"],
 		},
 		{
 			"src": ["tag:admin-granted"],
