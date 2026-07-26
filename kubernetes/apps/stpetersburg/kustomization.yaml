@@ -5,7 +5,6 @@ resources:
   - ./agent-sandbox-system
   - ./ai
   - ./arc-systems
-  - ./border0
   - ./cloudflare
   - ./cnpg-system
   - ./fluent-bit

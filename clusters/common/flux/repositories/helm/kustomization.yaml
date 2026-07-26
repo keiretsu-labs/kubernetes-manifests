@@ -3,7 +3,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./headlamp.yaml
-  - ./argoproj.yaml
   - ./cilium.yaml
   - ./spegel.yaml
   - ./cloudnative-pg.yaml
@@ -43,7 +42,6 @@ resources:
   - ./k8gb.yaml
   - ./kro.yaml
   - ./ocm.yaml
-  - ./border0.yaml
   - ./vmware-tanzu.yaml
   - ./otwld.yaml
   - ./victoriametrics.yaml

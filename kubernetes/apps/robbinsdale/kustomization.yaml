@@ -4,7 +4,6 @@ resources:
   - ./monitoring
   - ./agent-sandbox-system
   - ./arc-systems
-  - ./border0
   - ./cloudflare
   - ./cnpg-system
   - ./dragonfly-operator-system

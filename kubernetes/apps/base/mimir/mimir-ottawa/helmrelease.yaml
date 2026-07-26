@@ -124,6 +124,14 @@ spec:
     query_scheduler:
       replicas: 1
 
+    # Cache chunk objects fetched by the queriers so repeated OpenCost windows
+    # do not re-read the same blocks from Garage. Mimir discovers this headless
+    # StatefulSet and jump-hashes keys across both pods (4 GiB total capacity).
+    chunks-cache:
+      enabled: true
+      replicas: 2
+      allocatedMemory: 2048
+
     gateway:
       nginxConfig:
         serverSnippet: |
