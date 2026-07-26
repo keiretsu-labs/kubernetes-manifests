@@ -284,10 +284,17 @@
 						"enforceRecorder": true,
 					},
 				}],
+				// tag:k8s is worn by ~109 devices — every ingress and egress proxy,
+				// app connector, subnet router, recorder, and per-app ts-* sidecar.
+				// It used to impersonate system:masters on all three clusters with
+				// no recorder, so one compromised sidecar was fleet-wide
+				// cluster-admin. Read-only, plus secret reads in the two namespaces
+				// the ClusterSecretStores actually target (they authenticate only
+				// by tailnet identity, passing "bearerToken: unused").
 				"tailscale.com/cap/kubernetes": [
 					{
 						"impersonate": {
-							"groups": ["system:masters"],
+							"groups": ["tailnet-readers", "tailnet-secret-sync"],
 						},
 					},
 				],
