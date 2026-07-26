@@ -20,9 +20,6 @@
 		"group:aurora": [
 			"rajsinghtech@github",
 		],
-		"group:kind": [
-			"rajsinghtech@github",
-		],
 	},
 	"tagOwners": {
 		"tag:infra":        ["tag:infra", "group:superuser",],
@@ -33,20 +30,12 @@
 		"tag:ottawa":       ["tag:k8s-operator", "tag:infra", "group:superuser", "group:ottawa",],
 		"tag:stpetersburg": ["tag:k8s-operator", "tag:infra", "group:superuser", "group:stpetersburg",],
 		"tag:aurora":       ["tag:k8s-operator", "tag:infra", "group:superuser", "group:aurora",],
-		"tag:uscentral1":   ["tag:k8s-operator", "tag:infra", "group:superuser",],
-		"tag:kind":         ["tag:k8s-operator", "tag:infra", "group:superuser", "group:kind",],
-		"tag:ci":           ["tag:k8s-operator", "tag:infra", "group:superuser",],
-		"tag:swarm":            ["tag:k8s-operator", "tag:infra", "group:superuser",],
-		"tag:tailgrant-worker": ["tag:k8s-operator", "tag:infra", "group:superuser",],
-		"tag:ssh-granted":      ["tag:tailgrant-worker", "group:superuser",],
-		"tag:admin-granted":    ["tag:tailgrant-worker", "group:superuser",],
-		"tag:debug-granted":    ["tag:tailgrant-worker", "group:superuser",],
-		"tag:raj-workspace":    ["tag:k8s-operator", "rajsinghtech@github",],
+		"tag:ci":               ["tag:k8s-operator", "tag:infra", "group:superuser",],
+		"tag:ssh-granted":      ["group:superuser",],
+		"tag:admin-granted":    ["group:superuser",],
+		"tag:debug-granted":    ["group:superuser",],
 		"tag:raj":              ["tag:k8s-operator", "rajsinghtech@github",],
 		"tag:kartik":           ["tag:k8s-operator", "kbpersonal@github",],
-		"tag:bubbles":          ["tag:bubbles", "rajsinghtech@github", "kbpersonal@github"],
-		"tag:bridge":           ["autogroup:admin"],
-		"tag:bridge-svc":       ["tag:bridge"],
 		"tag:border0-managed":  ["tag:k8s-operator", "tag:infra", "group:superuser",],
 	},
 	"ipsets": {
@@ -104,7 +93,6 @@
 			"svc:tempvm": ["tag:k8s"],
 			"svc:tcp": ["tag:k8s"],
 			// "svc:robbinsdale-k8sapiserver-proxy": ["tag:border0-managed"],
-			"tag:bridge-svc": ["tag:bridge"],
 			"tag:border0-managed": ["tag:border0-managed"],
 		},
 	},
@@ -133,20 +121,11 @@
 			"recorder":        ["tag:k8s-recorder"],
 			"enforceRecorder": true,
 		},
-		{
-			"action":          "accept",
-			"src":             ["rajsinghtech@github", "kbpersonal@github"],
-			"dst":             ["tag:bubbles"],
-			"users":           ["root", "autogroup:nonroot"],
-			"recorder":        ["tag:k8s-recorder"],
-			"enforceRecorder": true,
-		},
 	],
 	"postures": {
 		"posture:jitSsh":   ["custom:jitSsh == true"],
 		"posture:jitAdmin": ["custom:jitAdmin == true"],
 		"posture:jitDebug": ["custom:jitDebug == true"],
-		"posture:sourceIp": ["ip:publicAddress is set"],
 		"posture:notHome":  ["ip:publicAddress NOT IN ['ipset:home-public-ips']"],
 	},
 	"grants": [
@@ -154,12 +133,6 @@
 			"src": ["autogroup:member"],
 			"dst": ["autogroup:self"],
 			"ip":  ["*"],
-		},
-		{
-			"src":        ["rajsinghtech@github"],
-			"dst":        ["tag:raj-workspace"],
-			"ip":         ["*"],
-			"srcPosture": ["posture:sourceIp"],
 		},
 		{
 			"src": ["rajsinghtech@github", "tag:raj"],
@@ -185,6 +158,17 @@
 			"src": ["group:ottawa"],
 			"dst": ["svc:cliproxy"],
 			"ip":  ["80"],
+		},
+		// Every member reaches the per-cluster home Envoy gateways; the gateways
+		// themselves do the per-app authn/authz behind these ports.
+		{
+			"src": ["autogroup:member"],
+			"dst": [
+				"svc:ottawa-home-envoy-gateway",
+				"svc:robbinsdale-home-envoy-gateway",
+				"svc:stpetersburg-home-envoy-gateway",
+			],
+			"ip":  ["22", "53", "80", "443"],
 		},
 		{
 			"src": ["group:superuser"],
@@ -245,22 +229,6 @@
 			"ip":  ["*"],
 			"via": ["tag:aurora"],
 		},
-    {
-      "src": ["rajsinghtech@github", "kbpersonal@github","tag:bubbles"],
-			"dst": ["tag:bubbles"],
-			"ip":  ["*"],
-			"app": {
-				"tailscale.com/cap/kubernetes": [
-					{
-						"impersonate": {
-							"groups": ["system:masters"],
-						},
-						"recorder":        ["tag:k8s-recorder"],
-						"enforceRecorder": true,
-					},
-				],
-      }
-    },
 		{
 			"src": ["group:superuser",],
 			"dst": ["tag:k8s-operator", "tag:k8s"],
@@ -383,24 +351,15 @@
 				],
 			},
 		},
-		{
-			"src": ["tag:swarm"],
-			"dst": ["tag:k8s-operator", "tag:k8s"],
-			"ip":  ["*"],
-			"app": {
-				"tailscale.com/cap/kubernetes": [
-					{
-						"impersonate": {
-							"groups": ["system:masters"],
-						},
-					},
-				],
-			},
-		},
+		// Read-only Kubernetes for any member, via the API server proxy only.
+		// This used to carry dst tag:k8s + ip "*", which handed every member
+		// all-ports access to ~109 tagged devices and — because an advertising
+		// proxy folds its Tailscale Service VIPs into node-tag rules — to every
+		// Tailscale Service in the tailnet.
 		{
 			"src": ["autogroup:member", "tag:ci"],
-			"dst": ["tag:k8s-operator", "tag:k8s"],
-			"ip":  ["*"],
+			"dst": ["tag:k8s-operator"],
+			"ip":  ["443"],
 			"app": {
 				"tailscale.com/cap/kubernetes": [
 					{
@@ -412,18 +371,6 @@
 					},
 				],
 			},
-		},
-		// Bridge mode: allow all to reach bridge services and bridge nodes
-		{
-			"src": ["autogroup:member", "autogroup:tagged"],
-			"dst": ["tag:bridge-svc", "tag:bridge"],
-			"ip":  ["*"],
-		},
-		// Bridge mode: allow bridge nodes to reach tagged devices
-		{
-			"src": ["tag:bridge"],
-			"dst": ["tag:k8s", "tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:aurora"],
-			"ip":  ["*"],
 		},
 	],
 	"nodeAttrs": [
@@ -501,7 +448,7 @@
 		},
 
 		{
-			"target": ["tag:k8s", "tag:bubbles"],
+			"target": ["tag:k8s"],
 			"attr": [
 				"funnel",
 			],
@@ -536,6 +483,33 @@
 			"src": "kbpersonal@github",
 			"accept": [
 				"svc:cliproxy:80",
+			],
+		},
+		// A plain member (not in group:superuser) reaches the home gateways and
+		// the API server proxy, nothing else.
+		{
+			"src": "rajsinghcpre@gmail.com",
+			"accept": [
+				"svc:ottawa-home-envoy-gateway:443",
+				"svc:robbinsdale-home-envoy-gateway:443",
+				"svc:stpetersburg-home-envoy-gateway:80",
+				"svc:ottawa-home-envoy-gateway:22",
+				"tag:k8s-operator:443",
+			],
+			"deny": [
+				"tag:k8s:443",
+				"tag:k8s-operator:22",
+				"tag:ottawa:443",
+				"svc:ottawa-jellyfin:8096",
+				"svc:ottawa-zot:443",
+				"svc:tsdnsproxy:53",
+			],
+		},
+		{
+			"src":   "rajsinghcpre@gmail.com",
+			"proto": "udp",
+			"accept": [
+				"svc:robbinsdale-home-envoy-gateway:53",
 			],
 		},
 		{
