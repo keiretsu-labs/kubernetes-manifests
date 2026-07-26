@@ -42,7 +42,6 @@ resources:
   - ./snapshot-controller
   - ./spegel
   - ./tailscale-examples
-  - ./tailgate-operator-system
   - ./tempvm
   - ./zot
   - ./external-secrets
