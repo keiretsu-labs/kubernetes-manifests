@@ -158,7 +158,11 @@ postBuild:
   `siderolabs/kata-containers` system extension and the node label
   `runtime.keiretsu.top/kata: "true"` in `talconfig.yaml`. Both
   `kata-workspace` and `kata-tailscale` select that label, so capacity expands
-  without changing Bhaiya or carving per-node scheduling rules.
+  without changing Bhaiya or carving per-node scheduling rules. For an
+  existing node, install and boot the extension image before adding the label;
+  a staged machine config can make labels effective on a plain reboot without
+  installing the new OS image. Remove the RuntimeClass selectors and labels
+  only after `talosctl get extensions` confirms Kata on every eligible node.
 - **SOPS:** run `sops` from the directory whose `.sops.yaml` carries the
   creation rules. Edit with `sops <file>.sops.yaml`.
 
