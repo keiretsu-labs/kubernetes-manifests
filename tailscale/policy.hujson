@@ -81,16 +81,14 @@
 			"192.168.73.0/24":  ["tag:stpetersburg"],
 			"192.168.68.0/24":  ["tag:aurora"],
 		},
+		// The two tag entries let the operator claim service names as it creates
+		// them; the per-svc entries below are redundant with those but kept as
+		// the record of which names are deliberately auto-approved.
 		"services": {
 			"tag:k8s": ["tag:k8s"],
 			"tag:k8s-operator": ["tag:k8s-operator"],
-			"svc:ottawa-tsflow": ["tag:ottawa"],
-			"svc:robbinsdale-tsflow": ["tag:robbinsdale"],
 			"svc:tsdnsproxy": ["tag:k8s"],
-			"svc:http": ["tag:k8s"],
-			"svc:http-test": ["tag:k8s"],
 			"svc:tempvm": ["tag:k8s"],
-			"svc:tcp": ["tag:k8s"],
 		},
 	},
 	"ssh": [
@@ -148,7 +146,7 @@
 		},
 		{
 			"src": ["group:superuser"],
-			"dst": ["svc:tcp", "svc:tempvm", "tag:k8s"],
+			"dst": ["svc:tempvm", "tag:k8s"],
 			"ip":  ["*"],
 		},
 		{
@@ -536,12 +534,14 @@
 				"192.168.169.1:443",
 			],
 		},
-	{
-		"src": "group:superuser",
-		"accept": [
-			"svc:tcp:5432",
-		],
-	},
+		{
+			"src": "group:superuser",
+			"accept": [
+				"svc:tempvm:5432",
+				"tag:k8s:443",
+				"tag:k8s-operator:443",
+			],
+		},
 	],
   "attrConfig": {
     "custom:potato":      {"type": "string", "allowSetByNode": true, "broadcastToPeers": ["*"]},
