@@ -154,8 +154,13 @@
       "labels": ["Tuppr", "Critical-Infrastructure"]
     },
     {
-      "description": "Group all Flux components together (controllers, manifests, bootstrap ref)",
-      "matchPackagePatterns": ["^ghcr\\.io/fluxcd/", "^fluxcd/flux2$"],
+      "description": "Group all Flux components together (controllers, manifests, bootstrap ref, operator + instance). flux-operator reconciles flux-instance and the two ship as a matched pair, so they must upgrade in one PR.",
+      "matchPackageNames": [
+        "/^ghcr\\.io\\/fluxcd\\//",
+        "fluxcd/flux2",
+        "flux-operator",
+        "flux-instance"
+      ],
       "groupName": "flux",
       "labels": ["Flux", "Critical-Infrastructure"]
     }
