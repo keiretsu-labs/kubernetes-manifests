@@ -1,0 +1,39 @@
+name: version-sync
+
+# Runs on push to main as well as pull_request: the drift this catches has come
+# from direct pushes that bypass PR gates, so a pull_request-only trigger would
+# miss it.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "clusters/*/bootstrap/talos/talconfig.yaml"
+      - "kubernetes/apps/base/tuppr/**"
+      - "tools/check-versions.sh"
+      - ".github/workflows/version-sync.yaml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "clusters/*/bootstrap/talos/talconfig.yaml"
+      - "kubernetes/apps/base/tuppr/**"
+      - "tools/check-versions.sh"
+      - ".github/workflows/version-sync.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: version-sync-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install PyYAML
+        run: pip3 install pyyaml --quiet
+
+      - name: Check talconfig / tuppr version sync
+        run: tools/check-versions.sh
