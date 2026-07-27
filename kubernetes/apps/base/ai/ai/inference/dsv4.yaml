@@ -150,10 +150,13 @@ spec:
           args:
           - |
             set -e
-            echo "[dspark-overlay] Cloning Tony's latest DSpark overlay with concurrency fixes…"
-            git clone --depth 1 \
-              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
-              /tmp/dspark-repo 2>&1 | tail -3
+            DSPARK_OVERLAY_COMMIT=0081289d92049d15aafa666ad155b173747b10d8
+            echo "[dspark-overlay] Fetching pinned DSpark overlay $DSPARK_OVERLAY_COMMIT…"
+            git init -q /tmp/dspark-repo
+            git -C /tmp/dspark-repo remote add origin \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git
+            git -C /tmp/dspark-repo fetch -q --depth 1 origin "$DSPARK_OVERLAY_COMMIT"
+            git -C /tmp/dspark-repo checkout -q --detach FETCH_HEAD
             echo "[dspark-overlay] Applying overlay files…"
             mkdir -p /overlay/vllm
             cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
@@ -190,7 +193,7 @@ spec:
             python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('def validate_nvfp4_kv_cache_with_mla(self)','def _disabled_validate_nvfp4_kv_cache_with_mla(self)');t=t.replace('if self.cache_dtype == \"nvfp4_ds_mla\" and self.use_mla:','if False:');open(p,'w').write(t);print('[ok] VllmConfig nvfp4_ds_mla validator disabled')"
             python3 -c "p='$VLLM_DIR/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[ok] attention')"
             python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
-            echo "[dspark] Patches applied. Starting vLLM with MTP3 + cudagraph…"
+            echo "[dspark] Patches applied. Starting vLLM with correct 5-token DSpark block + cudagraph…"
             exec vllm serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
@@ -211,7 +214,7 @@ spec:
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
-              --speculative-config '{"method":"dspark","num_speculative_tokens":3,"draft_sample_method":"probabilistic"}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
               --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 25002
           ports:
@@ -352,10 +355,13 @@ spec:
           args:
           - |
             set -e
-            echo "[dspark-overlay] Cloning Tony's latest DSpark overlay with concurrency fixes…"
-            git clone --depth 1 \
-              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git \
-              /tmp/dspark-repo 2>&1 | tail -3
+            DSPARK_OVERLAY_COMMIT=0081289d92049d15aafa666ad155b173747b10d8
+            echo "[dspark-overlay] Fetching pinned DSpark overlay $DSPARK_OVERLAY_COMMIT…"
+            git init -q /tmp/dspark-repo
+            git -C /tmp/dspark-repo remote add origin \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git
+            git -C /tmp/dspark-repo fetch -q --depth 1 origin "$DSPARK_OVERLAY_COMMIT"
+            git -C /tmp/dspark-repo checkout -q --detach FETCH_HEAD
             echo "[dspark-overlay] Applying overlay files…"
             mkdir -p /overlay/vllm
             cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
@@ -411,7 +417,7 @@ spec:
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
-              --speculative-config '{"method":"dspark","num_speculative_tokens":3,"draft_sample_method":"probabilistic"}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
               --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 25002 \
               --headless
