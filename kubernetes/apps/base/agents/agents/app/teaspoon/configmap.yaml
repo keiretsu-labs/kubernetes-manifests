@@ -36,13 +36,10 @@ data:
   # needed for self-hosted scrape->markdown.
   FIRECRAWL_API_URL: "http://api.firecrawl.svc.cluster.local:3002"
 
-  # LLM endpoint lives in /opt/data/config.yaml inside the PVC (set once via
-  # kubectl exec). The "new model" for templated agents is anthropic/claude-opus-4-8
-  # (Anthropic OAuth credential in /opt/data/auth.json). OPENAI_BASE_URL is kept
-  # so Hermes auxiliary clients (summarization / compression) route to the shared
-  # vLLM endpoint when invoked.
-  OPENAI_BASE_URL: "http://stpetersburg-vllm/v1"
-  OPENAI_API_KEY: "unused"
+  # The init container makes CLIProxyAPI the authoritative Hermes provider in
+  # /opt/data/config.yaml. These legacy variables also point auxiliary clients
+  # at the same OpenAI-compatible endpoint.
+  OPENAI_BASE_URL: "http://cliproxy.cliproxy.svc.cluster.local:8317/v1"
 
   # ---- Persona ----
   AGENT_NAME: "teaspoon"
