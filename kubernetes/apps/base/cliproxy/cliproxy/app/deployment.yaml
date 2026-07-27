@@ -91,18 +91,83 @@ spec:
 
               lines = [
                   "openai-compatibility:",
-                  '  - name: "aperture-corp"',
-                  '    prefix: "aperture-corp"',
+                  '  - name: "ai"',
+                  '    prefix: "ai"',
                   f'    base-url: "{upstream}"',
                   "    disable-cooling: false",
                   "    models:",
               ]
               for model in models:
                   lines.append("      - name: " + json.dumps(model))
-              pathlib.Path("/provider/aperture-corp.yaml").write_text(
+              pathlib.Path("/provider/ai.yaml").write_text(
                   "\n".join(lines) + "\n", encoding="utf-8"
               )
-              print(f"discovered {len(models)} aperture-corp models")
+              print(f"discovered {len(models)} ai models")
+          env:
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+          volumeMounts:
+            - name: provider-config
+              mountPath: /provider
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+        - name: discover-vllm-models
+          image: python:3.13-alpine@sha256:399babc8b49529dabfd9c922f2b5eea81d611e4512e3ed250d75bd2e7683f4b0
+          command:
+            - python
+            - -c
+          args:
+            - |
+              import json
+              import pathlib
+              import time
+              import urllib.request
+
+              upstream = "http://stpetersburg-vllm.keiretsu.ts.net/v1"
+              for attempt in range(30):
+                  try:
+                      with urllib.request.urlopen(upstream + "/models", timeout=10) as response:
+                          payload = json.load(response)
+                      models = []
+                      seen = set()
+                      for entry in payload.get("data", []):
+                          model = str(entry.get("id", "")).strip()
+                          if model and model not in seen:
+                              seen.add(model)
+                              models.append(model)
+                      if not models:
+                          raise RuntimeError("upstream returned no models")
+                      break
+                  except Exception:
+                      if attempt == 29:
+                          raise
+                      time.sleep(2)
+
+              lines = [
+                  "openai-compatibility:",
+                  '  - name: "vllm"',
+                  '    prefix: "vllm"',
+                  f'    base-url: "{upstream}"',
+                  "    disable-cooling: false",
+                  "    models:",
+              ]
+              for model in models:
+                  lines.append("      - name: " + json.dumps(model))
+              pathlib.Path("/provider/vllm.yaml").write_text(
+                  "\n".join(lines) + "\n", encoding="utf-8"
+              )
+              print(f"discovered {len(models)} vllm models")
           env:
             - name: PYTHONDONTWRITEBYTECODE
               value: "1"
@@ -160,7 +225,8 @@ spec:
                 strategy: round-robin
                 session-affinity: true
               EOF
-              cat /provider/aperture-corp.yaml >> /config/config.yaml
+              cat /provider/ai.yaml >> /config/config.yaml
+              tail -n +2 /provider/vllm.yaml >> /config/config.yaml
           env:
             - name: API_KEY
               valueFrom:

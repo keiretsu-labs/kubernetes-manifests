@@ -9,6 +9,8 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: agents
+  dependsOn:
+    - name: cliproxy
   path: ./kubernetes/apps/base/agents/agents/app
   prune: true
   sourceRef:
