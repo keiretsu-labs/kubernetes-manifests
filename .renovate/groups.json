@@ -2,38 +2,148 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "packageRules": [
     {
-      "description": "Group Talos versions together (installer images)",
+      "description": "Talos — Ottawa only. Scoped per cluster so each cluster upgrades in its own PR and its own tuppr run.",
       "matchDatasources": ["docker"],
-      "matchPackagePatterns": ["^ghcr\\.io/siderolabs/installer$"],
-      "groupName": "talos",
-      "labels": ["talos", "Critical-Infrastructure"],
+      "matchPackageNames": ["ghcr.io/siderolabs/installer"],
+      "matchFileNames": [
+        "clusters/talos-ottawa/**",
+        "kubernetes/apps/base/tuppr/tuppr-config-ottawa/**"
+      ],
+      "groupName": "talos-ottawa",
+      "labels": ["talos", "Critical-Infrastructure", "cluster:ottawa"],
       "prBodyNotes": [
-        "## Talos Upgrade",
+        "## Talos Upgrade — Ottawa",
         "",
-        "This updates the Talos version used by tuppr for node upgrades.",
+        "Updates `talconfig.yaml` and the tuppr `TalosUpgrade` CR together. Both must",
+        "move in the same commit: tuppr rolls every node to whatever the CR says once",
+        "any spec change bumps its generation, so a CR left behind is a downgrade.",
         "",
         "### Before merging:",
         "- [ ] Review [Talos release notes](https://github.com/siderolabs/talos/releases)",
         "- [ ] Verify cluster health",
-        "- [ ] Ensure tuppr controller is running"
+        "- [ ] Ensure tuppr controller is running",
+        "- [ ] Confirm no other cluster's Talos PR is mid-rollout"
       ]
     },
     {
-      "description": "Group Kubernetes versions together (kubelet images)",
+      "description": "Talos — Robbinsdale only. Scoped per cluster so each cluster upgrades in its own PR and its own tuppr run.",
       "matchDatasources": ["docker"],
-      "matchPackagePatterns": ["^ghcr\\.io/siderolabs/kubelet$"],
-      "groupName": "kubernetes",
-      "labels": ["Kubernetes", "Critical-Infrastructure"],
+      "matchPackageNames": ["ghcr.io/siderolabs/installer"],
+      "matchFileNames": [
+        "clusters/talos-robbinsdale/**",
+        "kubernetes/apps/base/tuppr/tuppr-config-robbinsdale/**"
+      ],
+      "groupName": "talos-robbinsdale",
+      "labels": ["talos", "Critical-Infrastructure", "cluster:robbinsdale"],
       "prBodyNotes": [
-        "## Kubernetes Upgrade",
+        "## Talos Upgrade — Robbinsdale",
         "",
-        "This updates the Kubernetes version used by tuppr for cluster upgrades.",
+        "Updates `talconfig.yaml` and the tuppr `TalosUpgrade` CR together. Both must",
+        "move in the same commit: tuppr rolls every node to whatever the CR says once",
+        "any spec change bumps its generation, so a CR left behind is a downgrade.",
+        "",
+        "### Before merging:",
+        "- [ ] Review [Talos release notes](https://github.com/siderolabs/talos/releases)",
+        "- [ ] Verify cluster health",
+        "- [ ] Ensure tuppr controller is running",
+        "- [ ] Confirm no other cluster's Talos PR is mid-rollout"
+      ]
+    },
+    {
+      "description": "Talos — St. Petersburg only. Scoped per cluster so each cluster upgrades in its own PR and its own tuppr run.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/siderolabs/installer"],
+      "matchFileNames": [
+        "clusters/talos-stpetersburg/**",
+        "kubernetes/apps/base/tuppr/tuppr-config-stpetersburg/**"
+      ],
+      "groupName": "talos-stpetersburg",
+      "labels": ["talos", "Critical-Infrastructure", "cluster:stpetersburg"],
+      "prBodyNotes": [
+        "## Talos Upgrade — St. Petersburg",
+        "",
+        "Updates `talconfig.yaml` and the tuppr `TalosUpgrade` CR together. Both must",
+        "move in the same commit: tuppr rolls every node to whatever the CR says once",
+        "any spec change bumps its generation, so a CR left behind is a downgrade.",
+        "",
+        "### Before merging:",
+        "- [ ] Review [Talos release notes](https://github.com/siderolabs/talos/releases)",
+        "- [ ] Verify cluster health",
+        "- [ ] Ensure tuppr controller is running",
+        "- [ ] Confirm no other cluster's Talos PR is mid-rollout"
+      ]
+    },
+    {
+      "description": "Kubernetes — Ottawa only. Scoped per cluster so each cluster upgrades in its own PR and its own tuppr run.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/siderolabs/kubelet"],
+      "matchFileNames": [
+        "clusters/talos-ottawa/**",
+        "kubernetes/apps/base/tuppr/tuppr-config-ottawa/**"
+      ],
+      "groupName": "kubernetes-ottawa",
+      "labels": ["Kubernetes", "Critical-Infrastructure", "cluster:ottawa"],
+      "prBodyNotes": [
+        "## Kubernetes Upgrade — Ottawa",
+        "",
+        "Updates `talconfig.yaml` and the tuppr `KubernetesUpgrade` CR together.",
         "",
         "### Before merging:",
         "- [ ] Review [Kubernetes release notes](https://github.com/kubernetes/kubernetes/releases)",
         "- [ ] Check [Talos compatibility matrix](https://www.talos.dev/latest/introduction/support-matrix/)",
         "- [ ] Verify cluster health",
-        "- [ ] Ensure tuppr controller is running"
+        "- [ ] Ensure tuppr controller is running",
+        "- [ ] Confirm this cluster's Talos upgrade is complete, not mid-rollout"
+      ]
+    },
+    {
+      "description": "Kubernetes — Robbinsdale only. Scoped per cluster so each cluster upgrades in its own PR and its own tuppr run.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/siderolabs/kubelet"],
+      "matchFileNames": [
+        "clusters/talos-robbinsdale/**",
+        "kubernetes/apps/base/tuppr/tuppr-config-robbinsdale/**"
+      ],
+      "groupName": "kubernetes-robbinsdale",
+      "labels": ["Kubernetes", "Critical-Infrastructure", "cluster:robbinsdale"],
+      "prBodyNotes": [
+        "## Kubernetes Upgrade — Robbinsdale",
+        "",
+        "Updates `talconfig.yaml` and the tuppr `KubernetesUpgrade` CR together.",
+        "",
+        "The tuppr CR carries a deliberate hold and a `# version-sync: ignore` marker.",
+        "If this PR touches it, confirm the hold is meant to be lifted and drop the",
+        "marker; otherwise keep the CR pinned and let only `talconfig.yaml` move.",
+        "",
+        "### Before merging:",
+        "- [ ] Review [Kubernetes release notes](https://github.com/kubernetes/kubernetes/releases)",
+        "- [ ] Check [Talos compatibility matrix](https://www.talos.dev/latest/introduction/support-matrix/)",
+        "- [ ] Verify cluster health",
+        "- [ ] Ensure tuppr controller is running",
+        "- [ ] Confirm this cluster's Talos upgrade is complete, not mid-rollout"
+      ]
+    },
+    {
+      "description": "Kubernetes — St. Petersburg only. Scoped per cluster so each cluster upgrades in its own PR and its own tuppr run.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/siderolabs/kubelet"],
+      "matchFileNames": [
+        "clusters/talos-stpetersburg/**",
+        "kubernetes/apps/base/tuppr/tuppr-config-stpetersburg/**"
+      ],
+      "groupName": "kubernetes-stpetersburg",
+      "labels": ["Kubernetes", "Critical-Infrastructure", "cluster:stpetersburg"],
+      "prBodyNotes": [
+        "## Kubernetes Upgrade — St. Petersburg",
+        "",
+        "Updates `talconfig.yaml` and the tuppr `KubernetesUpgrade` CR together.",
+        "",
+        "### Before merging:",
+        "- [ ] Review [Kubernetes release notes](https://github.com/kubernetes/kubernetes/releases)",
+        "- [ ] Check [Talos compatibility matrix](https://www.talos.dev/latest/introduction/support-matrix/)",
+        "- [ ] Verify cluster health",
+        "- [ ] Ensure tuppr controller is running",
+        "- [ ] Confirm this cluster's Talos upgrade is complete, not mid-rollout"
       ]
     },
     {
