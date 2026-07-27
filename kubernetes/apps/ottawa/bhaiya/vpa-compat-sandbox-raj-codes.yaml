@@ -10,7 +10,7 @@ metadata:
     bhaiya.corp/workspace: raj-codes
 spec:
   targetRef:
-    apiVersion: agents.x-k8s.io/v1beta1
+    apiVersion: agents.x-k8s.io/v1alpha1
     kind: Sandbox
     name: sandbox-raj-codes
   updatePolicy:
