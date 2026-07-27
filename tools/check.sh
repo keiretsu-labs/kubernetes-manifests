@@ -45,6 +45,8 @@ run_capped() {
   exit 1
 }
 
+run_capped "version-sync" tools/check-versions.sh
+
 if [ "$QUICK" = 1 ]; then
   # Quick syntax check: validate kustomize build on a representative sample
   for dir in kubernetes/apps/base/*/; do
