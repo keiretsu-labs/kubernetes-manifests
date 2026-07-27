@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: home
 resources:
   - ./pvc.yaml
+  - ./configmap.yaml
   - ./deployment.yaml
   - ./service.yaml
   - ./httproute.yaml

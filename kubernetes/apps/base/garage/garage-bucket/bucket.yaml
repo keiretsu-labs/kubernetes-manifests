@@ -138,10 +138,3 @@ spec:
   quotas:
     maxSize: 200Gi
     maxObjects: 10000000
-  keyPermissions:
-    - keyRef:
-        name: tempo-key
-        namespace: tempo
-      read: true
-      write: true
-      owner: true
