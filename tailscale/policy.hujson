@@ -32,8 +32,6 @@
 		"tag:aurora":       ["tag:k8s-operator", "tag:infra", "group:superuser", "group:aurora",],
 		"tag:ci":               ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:ssh-granted":      ["group:superuser",],
-		"tag:admin-granted":    ["group:superuser",],
-		"tag:debug-granted":    ["group:superuser",],
 		"tag:raj":              ["tag:k8s-operator", "rajsinghtech@github",],
 		"tag:kartik":           ["tag:k8s-operator", "kbpersonal@github",],
 	},
@@ -65,10 +63,6 @@
 			"10.7.0.0/16",
 			"10.68.0.0/16",
 			"fd7a:115c:a1e0:b1a:0:4::/96",
-		],
-		"ipset:home-public-ips": [
-			"76.71.102.41/32",
-			"73.176.223.238/32",
 		],
 	},
 	"autoApprovers": {
@@ -119,9 +113,6 @@
 	],
 	"postures": {
 		"posture:jitSsh":   ["custom:jitSsh == true"],
-		"posture:jitAdmin": ["custom:jitAdmin == true"],
-		"posture:jitDebug": ["custom:jitDebug == true"],
-		"posture:notHome":  ["ip:publicAddress NOT IN ['ipset:home-public-ips']"],
 	},
 	"grants": [
 		{
@@ -166,34 +157,18 @@
 			"ip":  ["22", "53", "80", "443"],
 		},
 		{
-			"src": ["tag:admin-granted"],
-			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
-			"ip":  ["*"],
-			"srcPosture": ["posture:jitAdmin"],
-		},
-		{
-			"src": ["tag:debug-granted"],
-			"dst": ["tag:ottawa", "tag:robbinsdale", "tag:stpetersburg", "tag:k8s"],
-			"ip":  ["*"],
-			"srcPosture": ["posture:jitDebug"],
-		},
-		{
 			"src": ["tag:k8s"],
 			"dst": ["rajsinghtech@github"],
 			"ip":  ["*"],
 		},
+		// Exit nodes are for people, not machines: one grant for members instead
+		// of the previous pair that also handed autogroup:internet to tag:k8s
+		// and tag:ci, and gated the two admins on a home-IP posture.
 		{
-			"src": ["LukeHouge@github", "abtars@gmail.com", "tag:k8s", "tag:ci"],
+			"src": ["autogroup:member"],
 			"dst": ["autogroup:internet"],
 			"ip":  ["*"],
-			"via": ["tag:robbinsdale", "tag:ottawa", "tag:stpetersburg", "tag:ci"],
-		},
-		{
-			"src":        ["kbpersonal@github", "rajsinghtech@github"],
-			"dst":        ["autogroup:internet"],
-			"ip":         ["*"],
-			"via":        ["tag:robbinsdale", "tag:ottawa", "tag:stpetersburg", "tag:ci"],
-			"srcPosture": ["posture:notHome"],
+			"via": ["tag:robbinsdale", "tag:ottawa", "tag:stpetersburg"],
 		},
 		{
 			"src": ["group:superuser", "tag:ottawa", "tag:stpetersburg", "tag:ci"],
@@ -225,14 +200,6 @@
 			"ip":  ["*"],
 			"app": {
 				"tailscale.com/cap/relay": [],
-				"tailscale.com/cap/databases": [{
-					"jellystat": {
-						"access": [{"databases": ["postgres", "app"], "roles": ["postgres", "app"]}],
-						"engine": "postgres",
-						"recorder": ["tag:k8s-recorder"],
-						"enforceRecorder": true,
-					},
-				}],
 				"tailscale.com/cap/kubernetes": [
 					{
 						"impersonate": {
@@ -274,14 +241,6 @@
 			"ip":  ["*"],
 			"app": {
 				"tailscale.com/cap/relay": [],
-				"tailscale.com/cap/databases": [{
-					"jellystat": {
-						"access": [{"databases": ["postgres", "app"], "roles": ["postgres", "app"]}],
-						"engine": "postgres",
-						"recorder": ["tag:k8s-recorder"],
-						"enforceRecorder": true,
-					},
-				}],
 				// tag:k8s is worn by ~109 devices — every ingress and egress proxy,
 				// app connector, subnet router, recorder, and per-app ts-* sidecar.
 				// It used to impersonate system:masters on all three clusters with
@@ -546,7 +505,5 @@
   "attrConfig": {
     "custom:potato":      {"type": "string", "allowSetByNode": true, "broadcastToPeers": ["*"]},
     "custom:jitSsh":     {"type": "bool"},
-    "custom:jitAdmin":   {"type": "bool"},
-    "custom:jitDebug":   {"type": "bool"},
   },
 }
