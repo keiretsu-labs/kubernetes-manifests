@@ -4,7 +4,6 @@
 			"kbpersonal@github",
 			"LukeHouge@github",
 			"rajsinghtech@github",
-      "abtars@gmail.com",
 		],
 		"group:ottawa": [
 			"kbpersonal@github",
@@ -17,9 +16,6 @@
 		"group:stpetersburg": [
 			"rajsinghtech@github",
 		],
-		"group:aurora": [
-			"rajsinghtech@github",
-		],
 	},
 	"tagOwners": {
 		"tag:infra":        ["tag:infra", "group:superuser",],
@@ -29,7 +25,6 @@
 		"tag:robbinsdale":  ["tag:k8s-operator", "tag:infra", "group:superuser", "group:robbinsdale",],
 		"tag:ottawa":       ["tag:k8s-operator", "tag:infra", "group:superuser", "group:ottawa",],
 		"tag:stpetersburg": ["tag:k8s-operator", "tag:infra", "group:superuser", "group:stpetersburg",],
-		"tag:aurora":       ["tag:k8s-operator", "tag:infra", "group:superuser", "group:aurora",],
 		"tag:ci":               ["tag:k8s-operator", "tag:infra", "group:superuser",],
 		"tag:ssh-granted":      ["group:superuser",],
 		"tag:raj":              ["tag:k8s-operator", "rajsinghtech@github",],
@@ -57,13 +52,6 @@
 			"10.73.0.0/16",
 			"fd7a:115c:a1e0:b1a:0:3::/96",
 		],
-		"ipset:aurora": [
-			"192.168.68.0/24",
-			"10.6.0.0/16",
-			"10.7.0.0/16",
-			"10.68.0.0/16",
-			"fd7a:115c:a1e0:b1a:0:4::/96",
-		],
 	},
 	"autoApprovers": {
 		"exitNode": ["tag:k8s"],
@@ -73,11 +61,7 @@
 			"192.168.50.0/24":  ["tag:robbinsdale"],
 			"192.168.169.0/24": ["tag:ottawa"],
 			"192.168.73.0/24":  ["tag:stpetersburg"],
-			"192.168.68.0/24":  ["tag:aurora"],
 		},
-		// The two tag entries let the operator claim service names as it creates
-		// them; the per-svc entries below are redundant with those but kept as
-		// the record of which names are deliberately auto-approved.
 		"services": {
 			"tag:k8s": ["tag:k8s"],
 			"tag:k8s-operator": ["tag:k8s-operator"],
@@ -86,14 +70,6 @@
 		},
 	},
 	"ssh": [
-		{
-			"action":          "accept",
-			"src":             ["rajsinghtech@github"],
-			"dst":             ["tag:aurora"],
-			"users":           ["root", "autogroup:nonroot"],
-			"recorder":        ["tag:k8s-recorder"],
-			"enforceRecorder": true,
-		},
 		{
 			"action":          "accept",
 			"src":             ["group:superuser", "tag:k8s", "tag:ci"],
@@ -111,9 +87,6 @@
 			"enforceRecorder": true,
 		},
 	],
-	"postures": {
-		"posture:jitSsh":   ["custom:jitSsh == true"],
-	},
 	"grants": [
 		{
 			"src": ["autogroup:member"],
@@ -145,8 +118,6 @@
 			"dst": ["svc:cliproxy"],
 			"ip":  ["80"],
 		},
-		// Every member reaches the per-cluster home Envoy gateways; the gateways
-		// themselves do the per-app authn/authz behind these ports.
 		{
 			"src": ["autogroup:member"],
 			"dst": [
@@ -161,9 +132,6 @@
 			"dst": ["rajsinghtech@github"],
 			"ip":  ["*"],
 		},
-		// Exit nodes are for people, not machines: one grant for members instead
-		// of the previous pair that also handed autogroup:internet to tag:k8s
-		// and tag:ci, and gated the two admins on a home-IP posture.
 		{
 			"src": ["autogroup:member"],
 			"dst": ["autogroup:internet"],
@@ -187,12 +155,6 @@
 			"dst": ["ipset:stpetersburg"],
 			"ip":  ["*"],
 			"via": ["tag:stpetersburg"],
-		},
-		{
-			"src": ["group:superuser", "tag:robbinsdale", "tag:ottawa", "tag:stpetersburg", "tag:ci"],
-			"dst": ["ipset:aurora"],
-			"ip":  ["*"],
-			"via": ["tag:aurora"],
 		},
 		{
 			"src": ["group:superuser",],
@@ -241,13 +203,6 @@
 			"ip":  ["*"],
 			"app": {
 				"tailscale.com/cap/relay": [],
-				// tag:k8s is worn by ~109 devices — every ingress and egress proxy,
-				// app connector, subnet router, recorder, and per-app ts-* sidecar.
-				// It used to impersonate system:masters on all three clusters with
-				// no recorder, so one compromised sidecar was fleet-wide
-				// cluster-admin. Read-only, plus secret reads in the two namespaces
-				// the ClusterSecretStores actually target (they authenticate only
-				// by tailnet identity, passing "bearerToken: unused").
 				"tailscale.com/cap/kubernetes": [
 					{
 						"impersonate": {
@@ -307,11 +262,6 @@
 				],
 			},
 		},
-		// Read-only Kubernetes for any member, via the API server proxy only.
-		// This used to carry dst tag:k8s + ip "*", which handed every member
-		// all-ports access to ~109 tagged devices and — because an advertising
-		// proxy folds its Tailscale Service VIPs into node-tag rules — to every
-		// Tailscale Service in the tailnet.
 		{
 			"src": ["autogroup:member", "tag:ci"],
 			"dst": ["tag:k8s-operator"],
@@ -337,16 +287,6 @@
       ],
 			"app": {
 				"tailscale.com/app-connectors": [
-					// {
-					// 	"name":        "aws-cloudfront-global",
-					// 	"connectors":  ["tag:k8s"],
-					// 	"presetAppID": "aws-cloudfront-global",
-					// },
-					// {
-					// 	"name":        "app-github",
-					// 	"connectors":  ["tag:k8s"],
-					// 	"presetAppID": "github",
-					// },
 					{
 						"name":       "tiktok",
 						"connectors": ["tag:k8s"],
@@ -397,9 +337,6 @@
 		{
 			"target": ["group:superuser"],
 			"attr":   [
-				// "experimental:exit-node-steering", // FF traffic-steering
-				// "only-tcp-443", // FF allow-only-tcp-443
-				// "custom:test" // FF metadata-node-set-attrs node-attributes-api
 			],
 		},
 
@@ -412,98 +349,119 @@
 	],
 	"tests": [
 		{
-			"src": "rajsinghtech@github",
-			"proto": "icmp",
-			"accept": [
-				"tag:robbinsdale:0",
-			],
+			"src":    "rajsinghtech@github",
+			"proto":  "icmp",
+			"accept": ["tag:robbinsdale:0"],
 		},
 		{
 			"src": "rajsinghtech@github",
 			"accept": [
-				"192.168.50.1:443",
-				"192.168.169.1:443",
-				"10.0.0.1:443",
-				"10.1.0.1:443",
-				"10.2.0.1:443",
-				"tag:k8s-operator:443",
 				"tag:k8s:443",
+				"tag:k8s-operator:443",
 				"tag:ottawa:443",
 				"tag:robbinsdale:443",
 				"tag:stpetersburg:443",
-				"rajsinghtech@github:53",
+				"svc:tempvm:5432",
 				"svc:cliproxy:80",
+				"svc:tsdnsproxy:53",
+				"192.168.50.1:443",
+				"192.168.169.1:443",
+				"192.168.73.1:443",
+				"10.0.0.1:443",
+				"10.2.0.1:443",
+				"10.4.0.1:443",
 			],
 		},
 		{
 			"src": "kbpersonal@github",
 			"accept": [
 				"svc:cliproxy:80",
+				"tag:k8s:443",
+				"tag:k8s-operator:443",
 			],
 		},
-		// A plain member (not in group:superuser) reaches the home gateways and
-		// the API server proxy, nothing else.
 		{
 			"src": "rajsinghcpre@gmail.com",
 			"accept": [
+				"svc:ottawa-home-envoy-gateway:22",
 				"svc:ottawa-home-envoy-gateway:443",
 				"svc:robbinsdale-home-envoy-gateway:443",
 				"svc:stpetersburg-home-envoy-gateway:80",
-				"svc:ottawa-home-envoy-gateway:22",
 				"tag:k8s-operator:443",
 			],
 			"deny": [
 				"tag:k8s:443",
 				"tag:k8s-operator:22",
 				"tag:ottawa:443",
+				"tag:robbinsdale:443",
+				"tag:stpetersburg:443",
+				"svc:cliproxy:80",
 				"svc:ottawa-zot:443",
 				"svc:k9s:443",
+				"svc:tempvm:5432",
 				"svc:tsdnsproxy:53",
+				"192.168.50.1:443",
+				"192.168.169.1:443",
 			],
 		},
 		{
-			"src":   "rajsinghcpre@gmail.com",
-			"proto": "udp",
+			"src":    "rajsinghcpre@gmail.com",
+			"proto":  "udp",
+			"accept": ["svc:robbinsdale-home-envoy-gateway:53"],
+		},
+		{
+			"src": "abtars@gmail.com",
 			"accept": [
-				"svc:robbinsdale-home-envoy-gateway:53",
+				"svc:ottawa-home-envoy-gateway:443",
+				"tag:k8s-operator:443",
+			],
+			"deny": [
+				"tag:k8s:443",
+				"tag:ottawa:443",
+				"svc:cliproxy:80",
+				"svc:tempvm:5432",
+			],
+		},
+		{
+			"src": "LukeHouge@github",
+			"accept": [
+				"tag:k8s:443",
+				"tag:robbinsdale:443",
+				"svc:ottawa-home-envoy-gateway:443",
 			],
 		},
 		{
 			"src": "tag:k8s",
 			"accept": [
-				"tag:k8s-operator:443",
 				"tag:k8s:443",
-			],
-		},
-		{
-			"src": "tag:robbinsdale",
-			"accept": [
-				"192.168.169.1:443",
+				"tag:k8s-operator:443",
 			],
 			"deny": [
+				"svc:cliproxy:80",
 				"192.168.50.1:443",
 			],
 		},
 		{
-			"src": "tag:ottawa",
-			"accept": [
-				"192.168.50.1:443",
-			],
-			"deny": [
-				"192.168.169.1:443",
-			],
+			"src":    "tag:robbinsdale",
+			"accept": ["192.168.169.1:443", "192.168.73.1:443"],
+			"deny":   ["192.168.50.1:443"],
 		},
 		{
-			"src": "group:superuser",
-			"accept": [
-				"svc:tempvm:5432",
-				"tag:k8s:443",
-				"tag:k8s-operator:443",
-			],
+			"src":    "tag:ottawa",
+			"accept": ["192.168.50.1:443", "192.168.73.1:443"],
+			"deny":   ["192.168.169.1:443"],
+		},
+		{
+			"src":    "tag:stpetersburg",
+			"accept": ["192.168.50.1:443", "192.168.169.1:443"],
+			"deny":   ["192.168.73.1:443"],
+		},
+		{
+			"src":  "tag:ci",
+			"deny": ["svc:cliproxy:80", "svc:tempvm:5432"],
 		},
 	],
   "attrConfig": {
     "custom:potato":      {"type": "string", "allowSetByNode": true, "broadcastToPeers": ["*"]},
-    "custom:jitSsh":     {"type": "bool"},
   },
 }
