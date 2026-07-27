@@ -20,7 +20,6 @@ resources:
   - ./mimir
   - ./spegel
   - ./speedtest
-  - ./tailgate-operator-system
   - ./external-secrets
   - ./hubble-ui
   - ./open-cluster-management-agent

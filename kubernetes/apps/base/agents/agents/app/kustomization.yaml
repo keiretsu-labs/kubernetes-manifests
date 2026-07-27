@@ -5,5 +5,4 @@ namespace: agents
 resources:
   - egress.yaml
   - teaspoon
-  - camofox
   - hermes-auth-securitypolicy.yaml

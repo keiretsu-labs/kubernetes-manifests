@@ -5,4 +5,3 @@ resources:
   - ./controlplaneio.yaml
   - ./home-operations.yaml
   - ./garage-operator.yaml
-  - ./tailgate-operator.yaml

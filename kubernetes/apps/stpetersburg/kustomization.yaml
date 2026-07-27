@@ -31,7 +31,6 @@ resources:
   - ./flux-system
   - ./k8gb
   - ./node-feature-discovery
-  - ./tailgate-operator-system
   - ./tailscale-system
   - ./tailscale
   - ./local-path-storage

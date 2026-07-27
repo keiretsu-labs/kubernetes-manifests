@@ -14,8 +14,8 @@ Each tenant is a **group**. Groups vary in size: some are a single person, some
 are several users sharing one backend. The system must scale to many groups with
 "add a group = a tiny overlay", and isolate groups hard from one another.
 
-The existing five single-user Tailscale agents (`assistant-raj`, `abtar`,
-`kartik`, `teaspoon`, `camofox`) stay exactly as they are. This is an additive
+The existing four single-user Tailscale agents (`assistant-raj`, `abtar`,
+`kartik`, `teaspoon`) stay exactly as they are. This is an additive
 second template, not a migration.
 
 ## terminology
