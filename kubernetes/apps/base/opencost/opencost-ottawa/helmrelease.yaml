@@ -46,12 +46,16 @@ spec:
         provider: custom
         costModel:
           description: Market-based pricing (AWS c6i/m6i comparable)
+          # CPU/RAM/GPU are $/unit-hour; egress is $/GB.
+          # storage is $/GiB-HOUR, not $/GiB-month — divide the monthly rate by
+          # 730. Quoted so small values never render in scientific notation.
+          # gp3 at $0.08/GiB-month => 0.08/730 = 0.000109589.
           CPU: 0.04
           spotCPU: 0.012
           RAM: 0.008
           spotRAM: 0.0024
           GPU: 1.50
-          storage: 0.08
+          storage: "0.000109589"
           zoneNetworkEgress: 0.01
           regionNetworkEgress: 0.01
           internetNetworkEgress: 0.09
