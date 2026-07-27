@@ -30,10 +30,9 @@
 
     "lukehouge.com": [
         "svc:robbinsdale-home-envoy-gateway"
-      ],
+    ],
     "robbinsdale.lan": [
-        "192.168.50.1",
-        "device:robbinsdale-udm-pro"
+        "192.168.50.1"
     ],
     "tailscale-system.svc.cluster.local": [
         "10.2.0.10"

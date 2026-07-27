@@ -28,12 +28,6 @@ data:
   # explicitly is the documented fix (browser_tool.py honours AGENT_BROWSER_ARGS).
   AGENT_BROWSER_ARGS: "--no-sandbox,--disable-dev-shm-usage"
 
-  # ---- Camofox browser backend (watchable browser) ----
-  # Routes the browser_* tools through the shared camofox deployment in this ns.
-  # Camofox runs headed with a noVNC viewer at https://camofox.keiretsu.ts.net.
-  # Cluster-internal API; no auth header is sent by Hermes, so it's ClusterIP-only.
-  CAMOFOX_URL: "http://camofox.agents.svc.cluster.local:9377"
-
   # ---- Web extract backend (self-hosted Firecrawl) ----
   # web_extract routes to the self-hosted Firecrawl canary in the firecrawl ns
   # (clusters/talos-ottawa/apps/firecrawl). SearXNG is search-only and cannot
