@@ -1,0 +1,30 @@
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: sandbox-raj-codes-compat-probe
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: bhaiya
+    bhaiya.corp/purpose: vpa-compatibility-probe
+    bhaiya.corp/workspace: raj-codes
+spec:
+  targetRef:
+    apiVersion: agents.x-k8s.io/v1beta1
+    kind: Sandbox
+    name: sandbox-raj-codes
+  updatePolicy:
+    updateMode: "Off"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: workspace
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsOnly
+        minAllowed:
+          cpu: 100m
+          memory: 256Mi
+        maxAllowed:
+          cpu: "4"
+          memory: 8Gi
