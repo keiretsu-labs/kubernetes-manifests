@@ -349,12 +349,12 @@
 	],
 	"tests": [
 		{
-			"src":    "rajsinghtech@github",
+			"src":    "group:superuser",
 			"proto":  "icmp",
 			"accept": ["tag:robbinsdale:0"],
 		},
 		{
-			"src": "rajsinghtech@github",
+			"src": "group:superuser",
 			"accept": [
 				"tag:k8s:443",
 				"tag:k8s-operator:443",
@@ -362,7 +362,6 @@
 				"tag:robbinsdale:443",
 				"tag:stpetersburg:443",
 				"svc:tempvm:5432",
-				"svc:cliproxy:80",
 				"svc:tsdnsproxy:53",
 				"192.168.50.1:443",
 				"192.168.169.1:443",
@@ -373,12 +372,8 @@
 			],
 		},
 		{
-			"src": "kbpersonal@github",
-			"accept": [
-				"svc:cliproxy:80",
-				"tag:k8s:443",
-				"tag:k8s-operator:443",
-			],
+			"src":    "group:ottawa",
+			"accept": ["svc:cliproxy:80"],
 		},
 		{
 			"src": "rajsinghcpre@gmail.com",
@@ -411,35 +406,13 @@
 		},
 		{
 			"src": "abtars@gmail.com",
-			"accept": [
-				"svc:ottawa-home-envoy-gateway:443",
-				"tag:k8s-operator:443",
-			],
-			"deny": [
-				"tag:k8s:443",
-				"tag:ottawa:443",
-				"svc:cliproxy:80",
-				"svc:tempvm:5432",
-			],
+			"accept": ["svc:ottawa-home-envoy-gateway:443", "tag:k8s-operator:443"],
+			"deny":   ["tag:k8s:443", "tag:ottawa:443", "svc:cliproxy:80", "svc:tempvm:5432"],
 		},
 		{
-			"src": "LukeHouge@github",
-			"accept": [
-				"tag:k8s:443",
-				"tag:robbinsdale:443",
-				"svc:ottawa-home-envoy-gateway:443",
-			],
-		},
-		{
-			"src": "tag:k8s",
-			"accept": [
-				"tag:k8s:443",
-				"tag:k8s-operator:443",
-			],
-			"deny": [
-				"svc:cliproxy:80",
-				"192.168.50.1:443",
-			],
+			"src":    "tag:k8s",
+			"accept": ["tag:k8s:443", "tag:k8s-operator:443"],
+			"deny":   ["svc:cliproxy:80", "192.168.50.1:443"],
 		},
 		{
 			"src":    "tag:robbinsdale",
