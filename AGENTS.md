@@ -146,6 +146,14 @@ postBuild:
   leaving new accepted-route traffic on `tailscale0`. Keep HuJSON `grants` and
   `via` rules focused on authorization and router eligibility; they do not
   control route injection.
+- **Bhaiya sandbox runtimes:** all user-executed workspaces and shared-browser
+  sessions use `kata-workspace`. Embedded-Tailscale workspaces use the separate
+  `kata-tailscale` RuntimeClass because it alone receives the Pod Security
+  exemption and TUN capabilities. Do not move ordinary sandboxes back to
+  gVisor or grant them the Tailscale exemption. Bhaiya's destination-side
+  Cilium policy must keep its Remote-Email-trusting UI listener inaccessible
+  from workspace and subnet-router traffic; source workspace policy cannot see
+  final destinations carried inside accepted Tailscale routes.
 - **SOPS:** run `sops` from the directory whose `.sops.yaml` carries the
   creation rules. Edit with `sops <file>.sops.yaml`.
 
