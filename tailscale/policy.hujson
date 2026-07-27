@@ -405,11 +405,6 @@
 			"accept": ["svc:robbinsdale-home-envoy-gateway:53"],
 		},
 		{
-			"src": "abtars@gmail.com",
-			"accept": ["svc:ottawa-home-envoy-gateway:443", "tag:k8s-operator:443"],
-			"deny":   ["tag:k8s:443", "tag:ottawa:443", "svc:cliproxy:80", "svc:tempvm:5432"],
-		},
-		{
 			"src":    "tag:k8s",
 			"accept": ["tag:k8s:443", "tag:k8s-operator:443"],
 			"deny":   ["svc:cliproxy:80", "192.168.50.1:443"],
@@ -433,8 +428,5 @@
 			"src":  "tag:ci",
 			"deny": ["svc:cliproxy:80", "svc:tempvm:5432"],
 		},
-	],
-  "attrConfig": {
-    "custom:potato":      {"type": "string", "allowSetByNode": true, "broadcastToPeers": ["*"]},
-  },
+	]
 }
