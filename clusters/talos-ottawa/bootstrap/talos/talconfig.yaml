@@ -187,6 +187,7 @@ controlPlane:
           - siderolabs/amd-ucode
           - siderolabs/amdgpu
           - siderolabs/gvisor
+          - siderolabs/kata-containers
           - siderolabs/nut-client
           - siderolabs/binfmt-misc
           - siderolabs/util-linux-tools
