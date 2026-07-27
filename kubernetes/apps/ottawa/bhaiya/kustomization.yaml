@@ -8,3 +8,4 @@ resources:
   - ./webhook-secret.yaml
   - ./bhaiya.yaml
   - ./bhaiya-gateway-rbac.yaml
+  - ./vpa-compat-sandbox-raj-codes.yaml

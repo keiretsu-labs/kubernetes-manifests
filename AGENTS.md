@@ -8,8 +8,14 @@ integration for cross-cluster networking and access.
 ## Ground rules
 
 - **GitOps-first.** Never `helm install` / `kubectl apply` manifests directly;
-  changes go through Git and Flux. (`kubectl patch` is OK for live testing —
-  `kubectl apply` can't resolve Flux `${VARIABLE}` substitutions.)
+  every durable Kubernetes object or configuration change must be committed in
+  this repository and delivered by Flux. Do not use `kubectl create`, `apply`,
+  `replace`, `edit`, or a write-capable API/MCP resource tool, even for a quick
+  experiment. Read-only inspection is allowed. A narrowly scoped live
+  `kubectl patch` is reserved for explicit incident mitigation or testing that
+  the user requested; record the durable GitOps change immediately and remove
+  any temporary object when the test ends. `kubectl apply` also cannot resolve
+  Flux `${VARIABLE}` substitutions.
 - **Verify with `tools/check.sh`** (or `tools/check.sh <cluster>`) — runs the
   CI render gate (`make test`), prints exactly one `✓ render OK: …` line on
   success and ~50 lines on failure. Do NOT run raw `make test` or `kustomize
@@ -171,13 +177,19 @@ postBuild:
 
 - **Use `tools/kc.sh <cluster> <kubectl args…>`** — it sets the one canonical
   `KUBECONFIG` and the right `--context`, execs kubectl (args + exit code pass
-  through), and works from any cwd. Don't re-export `KUBECONFIG`, retype the
-  full context, or `cd` first.
+  through). Do not pass the display aliases `ottawa`, `robbinsdale`, or
+  `stpetersburg` directly to `kubectl --context`; they are helper aliases, not
+  necessarily kubeconfig context names. Don't re-export `KUBECONFIG`, guess a
+  context from another tool's display output, or `cd` first. Invoke the helper
+  by a path that resolves from the current workspace: use `tools/kc.sh` while
+  in this repo, or `../kubernetes-manifests/tools/kc.sh` from the sibling
+  `bhaiya` repo.
 
   ```bash
   tools/kc.sh ot -n media get pods    # ottawa
   tools/kc.sh rb get ns               # robbinsdale
   tools/kc.sh sp get nodes            # stpetersburg
+  ../kubernetes-manifests/tools/kc.sh ot get vpa -A  # from ../bhaiya
   ```
 
   | alias            | kubeconfig            | context                                   |
