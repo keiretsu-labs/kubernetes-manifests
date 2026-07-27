@@ -154,6 +154,11 @@ postBuild:
   Cilium policy must keep its Remote-Email-trusting UI listener inaccessible
   from workspace and subnet-router traffic; source workspace policy cannot see
   final destinations carried inside accepted Tailscale routes.
+- **Adding Kata workers:** give each new Talos machine the
+  `siderolabs/kata-containers` system extension and the node label
+  `runtime.keiretsu.top/kata: "true"` in `talconfig.yaml`. Both
+  `kata-workspace` and `kata-tailscale` select that label, so capacity expands
+  without changing Bhaiya or carving per-node scheduling rules.
 - **SOPS:** run `sops` from the directory whose `.sops.yaml` carries the
   creation rules. Edit with `sops <file>.sops.yaml`.
 
