@@ -46,7 +46,7 @@ spec:
               mountPath: /data
           resources:
             requests:
-              cpu: 5m
+              cpu: 10m
               memory: 16Mi
             limits:
               cpu: 100m
