@@ -342,10 +342,6 @@
 			],
 		},
 		{
-			"src":    "group:ottawa",
-			"accept": ["svc:cliproxy:80"],
-		},
-		{
 			"src": "rajsinghcpre@gmail.com",
 			"accept": [
 				"svc:ottawa-home-envoy-gateway:22",
