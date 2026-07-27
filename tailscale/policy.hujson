@@ -128,11 +128,6 @@
 			"ip":  ["22", "53", "80", "443"],
 		},
 		{
-			"src": ["tag:k8s"],
-			"dst": ["rajsinghtech@github"],
-			"ip":  ["*"],
-		},
-		{
 			"src": ["autogroup:member"],
 			"dst": ["autogroup:internet"],
 			"ip":  ["*"],
@@ -208,11 +203,6 @@
 						"impersonate": {
 							"groups": ["tailnet-readers", "tailnet-secret-sync"],
 						},
-					},
-				],
-				"tailscale.com/cap/tsidp": [
-					{
-						"allow_admin_ui": true,
 					},
 				],
 				"rajsingh.info/cap/tsdnsproxy": [
@@ -317,29 +307,9 @@
 						"connectors": ["tag:k8s"],
 						"domains":    ["speed.cloudflare.com"],
 					},
-					{
-						"name":       "robbinsdale",
-						"connectors": ["tag:robbinsdale"],
-						"domains": [
-							"bestbuy.com",
-						],
-					},
-					{
-						"name":       "ottawa",
-						"connectors": ["tag:ottawa"],
-						"domains": [
-							"newegg.com",
-						],
-					},
 				],
 			},
 		},
-		{
-			"target": ["group:superuser"],
-			"attr":   [
-			],
-		},
-
 		{
 			"target": ["tag:k8s"],
 			"attr": [
