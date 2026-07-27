@@ -154,7 +154,7 @@
 			"via": ["tag:stpetersburg"],
 		},
 		{
-			"src": ["group:superuser", "tag:k8s"],
+			"src": ["group:superuser", "tag:k8s", "tag:ci"],
 			"dst": ["ipset:infrastructure"],
 			"ip":  ["*"],
 		},
@@ -399,8 +399,9 @@
 			"deny":   ["192.168.73.1:443"],
 		},
 		{
-			"src":  "tag:ci",
-			"deny": ["svc:cliproxy:80", "svc:tempvm:5432"],
+			"src":    "tag:ci",
+			"accept": ["[fd7a:115c:a1e0:b1a:0:3:a04:1]:443"],
+			"deny":   ["svc:cliproxy:80", "svc:tempvm:5432"],
 		},
 	]
 }
