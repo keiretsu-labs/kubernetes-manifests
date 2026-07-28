@@ -5,4 +5,5 @@ namespace: opencost
 resources:
   - helmrelease.yaml
   - httproute.yaml
+  - referencegrant.yaml
   - dashboard.yaml

@@ -46,7 +46,7 @@ spec:
         priorityClassName: infra-high
         externalLabels:
           cluster: ${CLUSTER_NAME}
-        externalUrl: https://prometheus.${CLUSTER_DOMAIN}
+        externalUrl: https://prometheus.${COMMON_DOMAIN}
         serviceMonitorSelector: {}
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false

@@ -6,3 +6,4 @@ resources:
   - alertmanagerconfig.yaml
   - prometheusrules.yaml
   - httproute.yaml
+  - referencegrant-prometheus.yaml
