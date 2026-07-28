@@ -78,6 +78,34 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    - dnsName: "hubble.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "hubble.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "logs.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "logs.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "prometheus.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "prometheus.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+    - dnsName: "opencost.${COMMON_DOMAIN}"
+      recordType: CNAME
+      targets:
+        - "opencost.cdn.${COMMON_DOMAIN}"
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: "oci.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:

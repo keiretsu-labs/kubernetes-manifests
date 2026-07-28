@@ -20,26 +20,10 @@ spec:
   hostnames:
     - "logs.${CLUSTER_DOMAIN}"
   rules:
-    # Redirect from / to /select/vmui/
-    - matches:
-        - path:
-            type: Exact
-            value: /
-      filters:
+    - filters:
         - type: RequestRedirect
           requestRedirect:
-            path:
-              type: ReplaceFullPath
-              replaceFullPath: /select/vmui/
-            statusCode: 302
-    # Serve all paths
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /
-      backendRefs:
-        - group: ""
-          kind: Service
-          name: victoria-logs-victoria-logs-single-server
-          port: 9428
-          weight: 1
+            scheme: https
+            hostname: "logs.${COMMON_DOMAIN}"
+            port: 443
+            statusCode: 301

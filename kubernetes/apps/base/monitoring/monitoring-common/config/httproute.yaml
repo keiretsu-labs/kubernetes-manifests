@@ -20,13 +20,10 @@ spec:
   hostnames:
     - "prometheus.${CLUSTER_DOMAIN}"
   rules:
-    - backendRefs:
-        - group: ""
-          kind: Service
-          name: kube-prometheus-stack-prometheus
-          port: 9090
-          weight: 1
-      matches:
-        - path:
-            type: PathPrefix
-            value: /
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: "prometheus.${COMMON_DOMAIN}"
+            port: 443
+            statusCode: 301

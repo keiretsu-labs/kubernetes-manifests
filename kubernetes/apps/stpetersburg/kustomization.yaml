@@ -35,6 +35,7 @@ resources:
   - ./tailscale
   - ./local-path-storage
   - ./tuppr
+  - ./tinyauth-egress
   - ./rdma-shared-dp
   - ./gpu-operator
   - ./velero
