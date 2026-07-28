@@ -5,5 +5,6 @@ resources:
   - ./proxyclass.yaml
   - ./proxygroup.yaml
   - ./service.yaml
+  - ./httproute.yaml
   - ./probe-config.yaml
   - ./probe-deployment.yaml
