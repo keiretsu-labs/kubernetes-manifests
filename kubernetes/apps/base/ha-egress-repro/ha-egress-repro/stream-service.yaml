@@ -6,7 +6,7 @@ metadata:
   namespace: ha-egress-repro
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
-    tailscale.com/tailnet-fqdn: ha-egress-stream.keiretsu.ts.net
+    tailscale.com/tailnet-fqdn: ha-egress-stream-1.keiretsu.ts.net
     tailscale.com/proxy-group: ha-egress-repro
 spec:
   type: ExternalName
