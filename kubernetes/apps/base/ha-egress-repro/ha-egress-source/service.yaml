@@ -5,7 +5,6 @@ metadata:
   name: ha-egress-source
   annotations:
     tailscale.com/hostname: ha-egress-stream
-    tailscale.com/proxy-group: common-ingress
 spec:
   type: LoadBalancer
   loadBalancerClass: tailscale
