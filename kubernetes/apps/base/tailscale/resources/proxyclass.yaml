@@ -24,6 +24,30 @@ spec:
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyClass
 metadata:
+  name: common-unstable
+spec:
+  metrics:
+    enable: true
+    serviceMonitor:
+      enable: true
+  statefulSet:
+    pod:
+      tailscaleContainer:
+        image: tailscale/tailscale:unstable-v1.101.284
+      priorityClassName: "infra-high"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              tailscale.com/managed: "true"
+          matchLabelKeys:
+            - tailscale.com/parent-resource
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
   name: common-accept-routes
 spec:
   tailscale:
