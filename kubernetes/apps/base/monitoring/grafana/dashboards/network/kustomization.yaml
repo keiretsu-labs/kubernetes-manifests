@@ -6,3 +6,4 @@ resources:
   - cilium-operator.yaml
   - hubble-overview.yaml
   - k8gb-gslb.yaml
+  - tailscale-network-metrics.yaml
