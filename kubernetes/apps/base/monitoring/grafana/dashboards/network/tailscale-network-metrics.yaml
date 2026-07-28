@@ -1189,8 +1189,8 @@ spec:
                 "uid": "$${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum by(exported_service) (rate(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
-              "legendFormat": "{{exported_service}} inbound (Serve)",
+              "expr": "sum by(exported_service) (rate({__name__=~\"tailscaled_(serve|tun_service)_inbound_bytes_total\", namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
+              "legendFormat": "{{exported_service}} inbound",
               "range": true,
               "refId": "A"
             },
@@ -1200,35 +1200,13 @@ spec:
                 "uid": "$${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum by(exported_service) (rate(tailscaled_serve_outbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
-              "legendFormat": "{{exported_service}} outbound (Serve)",
+              "expr": "sum by(exported_service) (rate({__name__=~\"tailscaled_(serve|tun_service)_outbound_bytes_total\", namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
+              "legendFormat": "{{exported_service}} outbound",
               "range": true,
               "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$${datasource}"
-              },
-              "editorMode": "code",
-              "expr": "sum by(exported_service) (rate(tailscaled_tun_service_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
-              "legendFormat": "{{exported_service}} inbound (TUN)",
-              "range": true,
-              "refId": "C"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$${datasource}"
-              },
-              "editorMode": "code",
-              "expr": "sum by(exported_service) (rate(tailscaled_tun_service_outbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
-              "legendFormat": "{{exported_service}} outbound (TUN)",
-              "range": true,
-              "refId": "D"
             }
           ],
-          "title": "Tailscale Service Throughput (Serve + TUN)",
+          "title": "Tailscale Service Throughput",
           "type": "timeseries"
         }
       ],
