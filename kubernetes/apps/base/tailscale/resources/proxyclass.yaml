@@ -34,14 +34,6 @@ spec:
     pod:
       tailscaleContainer:
         image: tailscale/tailscale:unstable-v1.101.284
-        env:
-          - name: TS_USERSPACE
-            value: "true"
-        securityContext:
-          privileged: false
-          capabilities:
-            drop:
-              - ALL
       priorityClassName: "infra-high"
       topologySpreadConstraints:
         - maxSkew: 1
