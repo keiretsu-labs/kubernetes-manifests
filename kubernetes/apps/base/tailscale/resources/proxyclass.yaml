@@ -48,6 +48,30 @@ spec:
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyClass
 metadata:
+  name: common-dev
+spec:
+  metrics:
+    enable: true
+    serviceMonitor:
+      enable: true
+  statefulSet:
+    pod:
+      tailscaleContainer:
+        image: ghcr.io/rajsinghtech/tailscale/tailscale:tun-service-metrics-292e7b0e4@sha256:7995a44ef78fece8fd3dd8fed717dccbc2fa28382bb7593ff4b7c1ee80bc8416
+      priorityClassName: "infra-high"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              tailscale.com/managed: "true"
+          matchLabelKeys:
+            - tailscale.com/parent-resource
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
   name: common-accept-routes
 spec:
   tailscale:

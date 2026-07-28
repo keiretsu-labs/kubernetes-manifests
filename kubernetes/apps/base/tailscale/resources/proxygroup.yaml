@@ -21,7 +21,7 @@ spec:
   tags:
     - tag:k8s
     - tag:${LOCATION}
-  proxyClass: common-unstable
+  proxyClass: common-dev
   type: ingress
   replicas: 3
 ---
