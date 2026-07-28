@@ -1,0 +1,123 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ha-egress-probe
+  namespace: ha-egress-repro
+data:
+  probe.py: |
+    import collections
+    import datetime
+    import http.client
+    import json
+    import os
+    import threading
+    import time
+
+    POD_NAME = os.environ.get("POD_NAME", "unknown")
+    INTERVAL = 0.1
+    TARGETS = {
+        "direct": {
+            "address": "aperture.ha-egress-repro.svc.cluster.local",
+            "host": "aperture.ha-egress-repro.svc.cluster.local",
+        },
+        "gateway": {
+            "address": "10.169.10.14",
+            "host": "ha-egress-repro.killinit.cc",
+        },
+    }
+
+    lock = threading.Lock()
+    samples = collections.defaultdict(list)
+    errors = collections.Counter()
+    statuses = collections.Counter()
+    reconnects = collections.Counter()
+
+    def emit(event):
+        event["time"] = datetime.datetime.now(datetime.UTC).isoformat()
+        event["pod"] = POD_NAME
+        print(json.dumps(event, sort_keys=True), flush=True)
+
+    def worker(name, connection_id, target):
+        connection = None
+        while True:
+            started = time.monotonic()
+            try:
+                if connection is None:
+                    connection = http.client.HTTPConnection(
+                        target["address"], 80, timeout=15
+                    )
+                    with lock:
+                        reconnects[name] += 1
+                connection.request("GET", "/", headers={"Host": target["host"]})
+                response = connection.getresponse()
+                response.read()
+                elapsed_ms = (time.monotonic() - started) * 1000
+                with lock:
+                    samples[name].append(elapsed_ms)
+                    statuses[(name, response.status)] += 1
+                if elapsed_ms >= 1000:
+                    emit({
+                        "event": "slow",
+                        "target": name,
+                        "connection": connection_id,
+                        "latency_ms": round(elapsed_ms, 3),
+                        "status": response.status,
+                    })
+                if response.will_close:
+                    connection.close()
+                    connection = None
+            except Exception as error:
+                elapsed_ms = (time.monotonic() - started) * 1000
+                with lock:
+                    errors[name] += 1
+                emit({
+                    "event": "error",
+                    "target": name,
+                    "connection": connection_id,
+                    "latency_ms": round(elapsed_ms, 3),
+                    "error": f"{type(error).__name__}: {error}",
+                })
+                if connection is not None:
+                    connection.close()
+                connection = None
+                time.sleep(INTERVAL)
+            time.sleep(INTERVAL)
+
+    for target_name, target_config in TARGETS.items():
+        for index in range(3):
+            threading.Thread(
+                target=worker,
+                args=(target_name, index, target_config),
+                daemon=True,
+            ).start()
+
+    while True:
+        time.sleep(1)
+        with lock:
+            current_samples = dict(samples)
+            current_errors = dict(errors)
+            current_statuses = dict(statuses)
+            current_reconnects = dict(reconnects)
+            samples.clear()
+            errors.clear()
+            statuses.clear()
+            reconnects.clear()
+        summary = {
+            "event": "summary",
+            "targets": {},
+        }
+        for target_name in TARGETS:
+            latencies = current_samples.get(target_name, [])
+            summary["targets"][target_name] = {
+                "requests": len(latencies),
+                "errors": current_errors.get(target_name, 0),
+                "reconnects": current_reconnects.get(target_name, 0),
+                "max_ms": round(max(latencies), 3) if latencies else None,
+                "statuses": {
+                    str(status): count
+                    for (name, status), count in current_statuses.items()
+                    if name == target_name
+                },
+            }
+        emit(summary)

@@ -1,0 +1,13 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: ha-egress-repro
+spec:
+  hostnamePrefix: ottawa-ha-egress-repro
+  tags:
+    - tag:k8s
+    - tag:ottawa
+  proxyClass: ha-egress-repro-v1984
+  type: egress
+  replicas: 3

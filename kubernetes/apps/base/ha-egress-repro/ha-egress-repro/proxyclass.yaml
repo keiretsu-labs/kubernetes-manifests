@@ -1,0 +1,28 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
+  name: ha-egress-repro-v1984
+spec:
+  tailscale:
+    acceptRoutes: true
+  statefulSet:
+    pod:
+      tailscaleContainer:
+        image: tailscale/tailscale:v1.98.4
+        resources:
+          requests:
+            cpu: 300m
+            memory: 128Mi
+          limits:
+            cpu: 600m
+            memory: 256Mi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              tailscale.com/managed: "true"
+          matchLabelKeys:
+            - tailscale.com/parent-resource
