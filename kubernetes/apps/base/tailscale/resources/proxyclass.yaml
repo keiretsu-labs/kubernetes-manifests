@@ -57,7 +57,7 @@ spec:
   statefulSet:
     pod:
       tailscaleContainer:
-        image: ghcr.io/rajsinghtech/tailscale/tailscale:tun-service-metrics-a4a2240d4@sha256:62a482c2b9bd7963ad919887462301701dc4aa0a710d39d2bf87d4dda6f53719
+        image: ghcr.io/rajsinghtech/tailscale/tailscale:tun-service-metrics-64ee27f3c@sha256:d0105dea7e624c1af85d1ac5c01bb597e2c1df0ce76304248875ef0964bc602a
       priorityClassName: "infra-high"
       topologySpreadConstraints:
         - maxSkew: 1
