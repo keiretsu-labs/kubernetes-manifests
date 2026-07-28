@@ -1189,8 +1189,8 @@ spec:
                 "uid": "mimir-local"
               },
               "editorMode": "code",
-              "expr": "sum by(service) (rate(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", service=~\"$service\"}[$__rate_interval])) * 8",
-              "legendFormat": "{{service}} inbound",
+              "expr": "sum by(exported_service) (rate(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
+              "legendFormat": "{{exported_service}} inbound",
               "range": true,
               "refId": "A"
             },
@@ -1200,8 +1200,8 @@ spec:
                 "uid": "mimir-local"
               },
               "editorMode": "code",
-              "expr": "sum by(service) (rate(tailscaled_serve_outbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", service=~\"$service\"}[$__rate_interval])) * 8",
-              "legendFormat": "{{service}} outbound",
+              "expr": "sum by(exported_service) (rate(tailscaled_serve_outbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
+              "legendFormat": "{{exported_service}} outbound",
               "range": true,
               "refId": "B"
             }
@@ -1253,14 +1253,14 @@ spec:
           },
           {
             "current": {},
-            "definition": "label_values(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\"}, service)",
+            "definition": "label_values(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\"}, exported_service)",
             "includeAll": true,
             "label": "Tailscale Service",
-            "name": "service",
+            "name": "tailscale_service",
             "options": [],
             "query": {
               "qryType": 1,
-              "query": "label_values(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\"}, service)",
+              "query": "label_values(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\"}, exported_service)",
               "refId": "PrometheusVariableQueryEditor-VariableQuery"
             },
             "refresh": 1,
