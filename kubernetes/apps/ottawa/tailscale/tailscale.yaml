@@ -38,7 +38,7 @@ spec:
     name: kubernetes-manifests
   postBuild:
     substitute:
-      TAILSCALE_INGRESS_PROXY_CLASS: common-unstable
+      TAILSCALE_INGRESS_PROXY_CLASS: common-dev
   interval: 30m
   retryInterval: 1m
   timeout: 5m
