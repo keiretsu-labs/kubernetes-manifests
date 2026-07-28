@@ -158,8 +158,7 @@
       "matchPackageNames": [
         "/^ghcr\\.io\\/fluxcd\\//",
         "fluxcd/flux2",
-        "flux-operator",
-        "flux-instance"
+        "/(^|\\/)flux-(operator|instance)$/"
       ],
       "groupName": "flux",
       "labels": ["Flux", "Critical-Infrastructure"]
