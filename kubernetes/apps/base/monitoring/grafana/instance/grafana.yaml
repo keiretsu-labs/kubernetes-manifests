@@ -22,17 +22,33 @@ spec:
     security:
       admin_user: admin
       admin_password: "${DEFAULT_PASSWORD}"
-    auth.generic_oauth:
+      cookie_secure: "true"
+    auth:
+      disable_login_form: "true"
+      disable_signout_menu: "true"
+    auth.basic:
       enabled: "true"
-      name: TailscaleIDP
-      allow_sign_up: "true"
-      client_id: "${TS_IDP_GRAFANA_CLIENT_ID}"
-      scopes: openid email profile
-      auth_url: https://${LOCATION}-idp.keiretsu.ts.net/authorize
-      token_url: https://${LOCATION}-idp.keiretsu.ts.net/token
-      api_url: https://${LOCATION}-idp.keiretsu.ts.net/userinfo
-      redirect_uri: https://grafana.${COMMON_DOMAIN}/login/generic_oauth
-      login_attribute: preferred_username
+    auth.proxy:
+      enabled: "true"
+      header_name: Remote-Email
+      header_property: email
+      auto_sign_up: "true"
+      sync_ttl: "0"
+      headers: "Name:Remote-Name Login:Remote-User Email:Remote-Email"
+      headers_encoded: "false"
+      enable_login_token: "false"
+    users:
+      allow_sign_up: "false"
+      auto_assign_org: "true"
+      auto_assign_org_role: Admin
   deployment:
     spec:
+      strategy:
+        type: Recreate
       replicas: 1
+      template:
+        spec:
+          volumes:
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc

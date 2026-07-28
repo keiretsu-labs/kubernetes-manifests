@@ -1,0 +1,71 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: grafana-ingress
+spec:
+  description: Restrict access to Grafana because auth.proxy trusts identity headers from Envoy.
+  endpointSelector:
+    matchLabels:
+      app: grafana
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway-system
+            app.kubernetes.io/name: envoy
+            app.kubernetes.io/component: proxy
+            gateway.envoyproxy.io/owning-gateway-name: public
+            gateway.envoyproxy.io/owning-gateway-namespace: home
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: grafana-operator
+            app.kubernetes.io/instance: grafana-operator
+            io.cilium.k8s.policy.serviceaccount: grafana-operator
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: prometheus-agent
+            app.kubernetes.io/instance: kube-prometheus-stack
+            operator.prometheus.io/name: kube-prometheus-stack
+            io.cilium.k8s.policy.serviceaccount: kube-prometheus-stack-prometheus
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: /metrics$
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: gatus
+            app.kubernetes.io/name: gatus
+            app.kubernetes.io/instance: gatus
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: /api/health$
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: /api/health$

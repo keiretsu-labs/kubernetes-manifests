@@ -6,5 +6,6 @@ resources:
   - ./httproute.yaml
   - ./referencegrant.yaml
   - ./servicemonitor.yaml
+  - ./networkpolicy.yaml
   - ../plugins/image-renderer/deployment.yaml
   - ../plugins/image-renderer/service.yaml
