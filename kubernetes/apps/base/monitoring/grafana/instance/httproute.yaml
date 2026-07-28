@@ -19,85 +19,10 @@ spec:
   hostnames:
     - "grafana.${CLUSTER_DOMAIN}"
   rules:
-    - backendRefs:
-        - group: ""
-          kind: Service
-          name: grafana-service
-          port: 3000
-          weight: 1
-      matches:
-        - path:
-            type: PathPrefix
-            value: /
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: grafana-public
-  annotations:
-    item.homer.rajsingh.info/name: "Grafana"
-    item.homer.rajsingh.info/subtitle: "Analytics & Monitoring"
-    item.homer.rajsingh.info/logo: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png"
-    item.homer.rajsingh.info/keywords: "monitoring, metrics, dashboard, visualization"
-    service.homer.rajsingh.info/name: "Infrastructure"
-    service.homer.rajsingh.info/icon: "fas fa-server"
-spec:
-  parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: public
-      namespace: home
-  hostnames:
-    - "grafana.${COMMON_DOMAIN}"
-    - "grafana.${LOCATION}.${COMMON_DOMAIN}"
-  rules:
-    - backendRefs:
-        - group: ""
-          kind: Service
-          name: grafana-service
-          port: 3000
-          weight: 1
-      matches:
-        - path:
-            type: PathPrefix
-            value: /
----
-# grafana-public access control via tinyauth.
-# raj + kartik (admin observability).
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: SecurityPolicy
-metadata:
-  name: grafana-tinyauth
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: grafana-public
-  extAuth:
-    headersToExtAuth:
-      - cookie
-      - x-forwarded-proto
-      - x-forwarded-for
-      - user-agent
-    http:
-      backendRefs:
-        - name: tinyauth
-          namespace: tinyauth
-          port: 3000
-      path: "/api/auth/envoy?path="
-      headersToBackend:
-        - remote-user
-        - remote-email
-        - remote-name
-        - remote-groups
-  authorization:
-    defaultAction: Deny
-    rules:
-      - name: allow-shared
-        action: Allow
-        principal:
-          headers:
-            - name: Remote-Email
-              values:
-                - rajsinghcpre@gmail.com
-                - kartikbharath@gmail.com
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: "grafana.${COMMON_DOMAIN}"
+            port: 443
+            statusCode: 301

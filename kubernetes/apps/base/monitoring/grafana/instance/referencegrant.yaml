@@ -1,0 +1,15 @@
+---
+# Allow the k8gb-managed HTTPRoute in keiretsu-top to use Grafana's Service.
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: grafana-cdn
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: keiretsu-top
+  to:
+    - group: ""
+      kind: Service
+      name: grafana-service

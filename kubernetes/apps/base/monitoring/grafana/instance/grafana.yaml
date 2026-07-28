@@ -17,8 +17,8 @@ spec:
     log:
       mode: console
     server:
-      root_url: https://grafana.${CLUSTER_DOMAIN}
-      domain: grafana.${CLUSTER_DOMAIN}
+      root_url: https://grafana.${COMMON_DOMAIN}
+      domain: grafana.${COMMON_DOMAIN}
     security:
       admin_user: admin
       admin_password: "${DEFAULT_PASSWORD}"
@@ -31,7 +31,7 @@ spec:
       auth_url: https://${LOCATION}-idp.keiretsu.ts.net/authorize
       token_url: https://${LOCATION}-idp.keiretsu.ts.net/token
       api_url: https://${LOCATION}-idp.keiretsu.ts.net/userinfo
-      redirect_uri: https://grafana.${CLUSTER_DOMAIN}/login/generic_oauth
+      redirect_uri: https://grafana.${COMMON_DOMAIN}/login/generic_oauth
       login_attribute: preferred_username
   deployment:
     spec:

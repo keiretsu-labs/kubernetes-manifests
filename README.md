@@ -116,9 +116,9 @@ Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. This reposit
 ## Directory Structure
 
 The app tree is [`kubernetes/`](kubernetes/README.md): config lives once in `base/`,
-clusters opt in with thin pointer files. The old `clusters/*/apps` trees have been
-fully migrated (completed June 2026) and removed. `clusters/` now only holds cluster
-bootstrap, Talos config, and the Flux entrypoints/vars.
+clusters opt in with thin pointer files. Most apps have migrated from the old
+`clusters/*/apps` trees (completed June 2026); a few remnants remain (see below).
+`clusters/` now primarily holds cluster bootstrap, Talos config, and Flux entrypoints/vars.
 
 ```
 ├── kubernetes/                    # the app tree (see kubernetes/README.md)
@@ -129,17 +129,26 @@ bootstrap, Talos config, and the Flux entrypoints/vars.
 │   ├── apps/stpetersburg/<ns>/
 │   └── components/                # shared kustomize components (oidc-protect, ...)
 │
+├── kubernetes/                    # the app tree (see kubernetes/README.md)
+│   ├── apps/base/<ns>/<app>/      # ALL app config, exactly once
+│   │                              #   <app>-<location>/ for cluster-specific variants
+│   ├── apps/ottawa/<ns>/          # pointer Flux Kustomizations per cluster
+│   ├── apps/robbinsdale/<ns>/     #   app deploys wherever its pointer exists
+│   ├── apps/stpetersburg/<ns>/
+│   └── components/                # shared kustomize components (oidc-protect, ...)
+│
 ├── clusters/
 │   ├── common/
-│   │   ├── bootstrap/flux/        # FluxCD bootstrap
-│   │   ├── components/            # legacy component location (migrating)
-│   │   └── flux/                  # common Flux layer
-│   │       ├── repositories/      # Helm/OCI/Git repository definitions
-│   │       └── vars/              # common-settings / common-secrets (sops)
+│   │   ├── bootstrap/             # FluxCD bootstrap
+│   │   ├── flux/
+│   │   │   ├── repositories/     # Helm/OCI/Git repository definitions
+│   │   │   └── vars/              # common-settings / common-secrets (sops)
+│   │   ├── apps/                  # migration remnants (home/local-gateway, searxng disabled)
+│   │   └── scripts/               # utility scripts
 │   ├── talos-<location>/          # per cluster: ottawa | robbinsdale | stpetersburg
 │   │   ├── bootstrap/talos/       # Talos configuration (talhelper)
-│   │   └── flux/                  # entrypoints (config/cluster.yaml) + vars (sops)
-│   └── template/                  # legacy templates (superseded by kubernetes/)
+│   │   ├── flux/                  # entrypoints (config/cluster.yaml) + vars (sops)
+│   │   └── apps/                  # migration remnants (location-specific)
 │
 ├── tailscale/                     # tailnet policy (hujson), scripts, CI tailnets
 └── Makefile                       # make test / make diff (flate)
@@ -168,7 +177,7 @@ clusters/<cluster>/flux/vars/cluster-secrets.sops.yaml # Encrypted secrets
 All secrets are encrypted with PGP using SOPS:
 
 ```yaml
-# .sops.yaml
+# clusters/common/.sops.yaml
 creation_rules:
   - path_regex: .*.yaml
     encrypted_regex: ^(data|stringData)$
@@ -238,71 +247,77 @@ Cluster ingress via Gateway API:
 - `snapshot-controller` - Volume snapshots
 - `spegel` - Container registry P2P mirror
 - `local-path-storage` - Local volume provisioner
-- `volsync` - PVC replication
+- `external-secrets` - External secrets management
+- `velero` - Cluster backup & restore
 
-### Service Mesh & Networking
-- `istio-system` - Istio control plane + east-west gateway
+### Networking
 - `tailscale` - Tailscale operator + egress proxies
 - `cloudflare` - External DNS + Tunnel
-- `core-dns` - DNS customization
-- `envoy-ai-gateway-system` - AI gateway
+- `core-dns` - DNS customization (kube-system)
+- `cilium` - CNI (per-cluster config)
 
 ### Monitoring & Observability
 - `monitoring` - kube-prometheus-stack
-- `grafana` - Grafana operator + dashboards
 - `victoria-logs` - Log aggregation
 - `hubble-ui` - Cilium network observability
+- `mimir` - Distributed metrics (per-cluster)
+- `kromgo` - Cluster metrics badges
 - `blackbox-exporter` - Endpoint probing
-- `opencost` - Kubernetes cost monitoring
 - `unpoller` - UniFi metrics
+- `gatus` - Automated status page
 
 ### Databases & Storage
 - `cnpg-system` - CloudNative PostgreSQL operator
 - `dragonfly-operator-system` - Dragonfly (Redis-compatible)
-- `mariadb-operator-system` - MariaDB operator
-- `pxc-operator-system` - Percona XtraDB Cluster
 - `garage` - S3-compatible object storage
 - `garage-operator-system` - Garage bucket operator
 
 ### Applications
-- `ai` - OpenWebUI
-- `argocd` - ArgoCD (backup GitOps)
-- `coder` - Cloud development environments
-- `home` - Homer dashboard, code-server
-- `headlamp` - Kubernetes dashboard
+- `home` - Homer dashboard, homepage, tailscale gateways
 - `fluent-bit` - Log shipping
 
 ### CI/CD
 - `actions-runner-controller` - GitHub Actions runners
-- `keda` - Event-driven autoscaling
+
+### Cluster Infrastructure
+- `node-feature-discovery` - Hardware feature detection
+- `vpa-system` - Vertical Pod Autoscaler
+- `kro-system` - Kubernetes Resource Orchestrator
+- `csi-secrets-store` - Secrets Store CSI driver
+- `gvisor` - gVisor container runtime sandbox
 
 ## Cluster-Specific Applications (pointer exists only in that location tree)
 
 ### talos-ottawa
-- [cilium](https://github.com/cilium/cilium) - CNI with custom config
 - [rook-ceph](https://github.com/rook/rook) - Distributed storage cluster
 - [immich](https://github.com/immich-app/immich) - Photo management
 - `media` - Media management stack
-- [gatus](https://github.com/TwiN/gatus) - Status page
-- [dockur](https://github.com/dockur/windows) - Docker-in-Kubernetes
-- [tuppr](https://github.com/home-operations/tuppr) - Kubernetes controller to upgrade Talos and Kubernetes
+- [forgejo](https://forgejo.org) - Git server
+- [woodpecker](https://woodpecker-ci.org) - CI/CD
+- [tempo](https://grafana.com/oss/tempo/) - Distributed tracing
+- [zot](https://zotregistry.dev) - OCI registry cache
+- [teslamate](https://docs.teslamate.org) - Tesla data logging
+- [searxng](https://docs.searxng.org) - Privacy search engine
+- `k8s-gpu-dra-driver` - NVIDIA GPU DRA driver
+- `kata-containers` - Kata Containers runtime
+- `lan` - Internal LAN routing
+- `headlamp` - Kubernetes dashboard (ottawa only)
+- `opencost` - Kubernetes cost monitoring (ottawa only)
+- `auth/tinyauth` - Google SSO auth
 
 ### talos-robbinsdale
-- `cilium` - CNI
 - `rook-ceph` - Distributed storage cluster
 - `immich` - Photo management
 - `media` - Media management stack
-- `home` - Home Assistant
-- `homarr` - Home dashboard ([homarr.lukehouge.com](https://homarr.lukehouge.com))
-- `typeo` - Typing practice app
-- `strimzi` - Kafka cluster
+- `speedtest` - Network speed testing
 
 ### talos-stpetersburg
 - `gpu-operator` - NVIDIA GPU support
-- `kuberay` - Ray cluster for distributed ML
-- `kserve` - Model serving
-- `ai/inference` - ML inference workloads
-- `ai/clawd` - Custom AI app
+- `ai` - vLLM inference workloads
+- `home-assistant` - Home automation
+- `lws-system` - LeaderWorkerSet (AI batch scheduling)
+- `rdma-shared-dp` - RDMA shared device plugin
+- `tailbench` - Tailscale benchmarking
 
 ## Prerequisites
 
@@ -342,18 +357,19 @@ See [clusters/talos-ottawa/bootstrap/talos/README.md](clusters/talos-ottawa/boot
 cd clusters/<cluster-name>
 
 # 1. Generate Talos configs (requires talhelper + sops)
-mise run init        # Generate encrypted secrets
-mise run genconfig   # Generate node configs
+talhelper gensecret > bootstrap/talos/talsecret.sops.yaml
+sops --encrypt bootstrap/talos/talsecret.sops.yaml
+talhelper genconfig
 
 # 2. Apply configs to nodes
-mise run apply       # Apply to all nodes
-mise run bootstrap   # Bootstrap Kubernetes
+talosctl apply-config -n <node-ip> -f bootstrap/talos/manifests/<node>.yaml
+talosctl bootstrap -n <node-ip>
 
 # 3. Install Cilium CNI
-helm install cilium cilium/cilium -n kube-system -f apps/cilium/app/values.yaml
+helm install cilium cilium/cilium -n kube-system -f ../../kubernetes/apps/base/kube-system/cilium-<cluster>/app/values.yaml
 
 # 4. Install Flux
-kubectl apply --server-side --kustomize clusters/common/bootstrap/flux/
+kubectl apply --server-side --kustomize ../../clusters/common/bootstrap/flux/
 kubectl apply -f flux/config/cluster.yaml
 
 # 5. Wait for reconciliation
@@ -375,7 +391,9 @@ mkdir -p kubernetes/apps/base/<namespace>/<app>
 
 ### 2. Pointer per target cluster
 
-`kubernetes/apps/<location>/<namespace>/<app>.yaml` — deploys wherever this file exists:
+`kubernetes/apps/<location>/<namespace>/<app>.yaml` — deploys wherever this file exists.
+The parent Kustomization injects SOPS decryption + the `substituteFrom` stack, so
+pointers stay thin and need no `postBuild` block:
 
 ```yaml
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -400,8 +418,6 @@ spec:
 
 List it (and a `namespace.yaml` if the namespace is new) in that directory's
 `kustomization.yaml`, and the namespace dir in the location root `kustomization.yaml`.
-sops decryption + settings/secrets substitution are injected by the parent — pointers
-stay thin.
 
 ### 3. Ingress
 
@@ -459,10 +475,11 @@ flux resume ks <name> -n flux-system
 ### Talos Commands (per-cluster)
 
 ```bash
-cd clusters/talos-ottawa
-mise run health      # Check cluster health
-mise run dashboard   # Open Talos dashboard
-mise run kubeconfig  # Fetch kubeconfig
+cd clusters/talos-ottawa/bootstrap/talos
+talhelper genconfig  # Regenerate node configs
+talosctl health      # Check cluster health
+talosctl dashboard   # Open Talos dashboard
+talosctl kubeconfig  # Fetch kubeconfig
 ```
 
 ### Secret Management
@@ -498,7 +515,7 @@ make diff
 
 Gotchas CI will catch for you: helm values schema violations, broken kustomizations, unresolvable chart versions. Two repo rules it enforces by construction:
 
-- Remote *git-directory* kustomize bases don't render offline — vendor the YAML instead (see `clusters/*/apps/cilium/app/descheduler-cronjob.yaml` for the pattern: provenance header with upstream ref/SHA and the re-render command).
+- Remote *git-directory* kustomize bases don't render offline — vendor the YAML instead (see legacy examples in `clusters/*/apps/` for the pattern: provenance header with upstream ref/SHA and the re-render command).
 - HelmRepository URLs need a trailing slash when the index uses relative tgz paths (`https://pkgs.tailscale.com/helmcharts/`).
 
 SOPS secret values render as placeholders; charts gated on CRD capability checks (e.g. cilium ServiceMonitors) set `trustCRDsExist: true` in values.
@@ -526,8 +543,8 @@ Services are accessible at `<hostname>.keiretsu.ts.net`:
 - [Talos Linux](https://www.talos.dev/latest/)
 - [Talhelper](https://github.com/budimanjojo/talhelper)
 - [SOPS](https://github.com/getsops/sops)
-- [Istio Multi-Cluster](https://istio.io/latest/docs/setup/install/multicluster/)
 - [Tailscale Kubernetes Operator](https://tailscale.com/kb/1236/kubernetes-operator)
+- [Flate](https://github.com/home-operations/flate) - Offline Flux manifest renderer
 
 ## Support
 

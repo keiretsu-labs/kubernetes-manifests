@@ -18,7 +18,7 @@ each location is reconciled by the `kubernetes-apps` Flux Kustomization
 sops decryption + the settings/secrets substituteFrom stack into every child,
 same as the old `common-apps` parent.
 
-## moving an app (historical reference — all apps migrated as of June 2026)
+## moving an app (historical reference — most apps migrated as of June 2026)
 
 The old tree used to hold apps at clusters/*/apps/<ns>/<app>/. The migration re-parented each app's Flux Kustomization CR without ever touching workload ownership. The two-PR process below was used for every app; it remains valid for any future restructures.
 
@@ -56,7 +56,12 @@ GC skips the foreign-owned CR.
 keep the A→B window short (hours): during it both parents apply the same CR
 and the ownership label can flap. never batch A and B into one PR.
 
-The full migration completed June 2026. New apps should be created directly in kubernetes/apps/base/<ns>/<app>/ with pointer files in kubernetes/apps/<location>/<ns>/<app>.yaml — no migration needed.
+Most of the migration completed June 2026. A few remnants remain
+(`clusters/common/apps/`, `clusters/talos-ottawa/apps/`,
+`clusters/talos-stpetersburg/apps/`) — these should be migrated to
+`kubernetes/apps/` using the same two-PR process above. New apps should be
+created directly in `kubernetes/apps/base/<ns>/<app>/` with pointer files in
+`kubernetes/apps/<location>/<ns>/<app>.yaml` — no migration needed.
 
 ## namespaces
 
