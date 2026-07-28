@@ -19,6 +19,7 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: wildcard-keiretsu-top-https
   hostnames:
     - "grafana.cdn.${COMMON_DOMAIN}"
     - "grafana.${COMMON_DOMAIN}"
@@ -39,6 +40,29 @@ spec:
         - path:
             type: PathPrefix
             value: /
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana-http-redirect
+  namespace: keiretsu-top
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+      sectionName: http
+  hostnames:
+    - "grafana.cdn.${COMMON_DOMAIN}"
+    - "grafana.${COMMON_DOMAIN}"
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            port: 443
+            statusCode: 301
 ---
 apiVersion: k8gb.absa.oss/v1beta1
 kind: Gslb
