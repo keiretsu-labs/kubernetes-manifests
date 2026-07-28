@@ -18,6 +18,7 @@ resources:
   - ./gatus
   - ./gvisor
   - ./hermes
+  - ./ha-egress-repro
   - ./home
   - ./homer-operator
   - ./hubble-ui
