@@ -42,12 +42,6 @@ spec:
           capabilities:
             drop:
               - ALL
-      tailscaleInitContainer:
-        securityContext:
-          privileged: false
-          capabilities:
-            drop:
-              - ALL
       priorityClassName: "infra-high"
       topologySpreadConstraints:
         - maxSkew: 1
