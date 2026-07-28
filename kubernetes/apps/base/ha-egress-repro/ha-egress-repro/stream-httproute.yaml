@@ -18,6 +18,9 @@ spec:
         - path:
             type: PathPrefix
             value: /
+      timeouts:
+        request: 3600s
+        backendRequest: 3600s
       backendRefs:
         - group: ""
           kind: Service
