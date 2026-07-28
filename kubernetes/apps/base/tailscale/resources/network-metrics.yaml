@@ -1098,6 +1098,116 @@ spec:
           ],
           "title": "Connection Efficiency",
           "type": "bargauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-local"
+          },
+          "description": "Inbound and outbound throughput for connections handled by Tailscale Serve on Tailscale Service hosts",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 29
+          },
+          "id": 32,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "11.5.2",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "mimir-local"
+              },
+              "editorMode": "code",
+              "expr": "sum by(service) (rate(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", service=~\"$service\"}[$__rate_interval])) * 8",
+              "legendFormat": "{{service}} inbound",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "mimir-local"
+              },
+              "editorMode": "code",
+              "expr": "sum by(service) (rate(tailscaled_serve_outbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", service=~\"$service\"}[$__rate_interval])) * 8",
+              "legendFormat": "{{service}} outbound",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Tailscale Service Throughput",
+          "type": "timeseries"
         }
       ],
       "preload": false,
@@ -1134,6 +1244,23 @@ spec:
             "query": {
               "qryType": 1,
               "query": "label_values(tailscaled_health_messages{namespace=\"tailscale\"}, ts_proxy_type)",
+              "refId": "PrometheusVariableQueryEditor-VariableQuery"
+            },
+            "refresh": 1,
+            "regex": "",
+            "sort": 1,
+            "type": "query"
+          },
+          {
+            "current": {},
+            "definition": "label_values(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\"}, service)",
+            "includeAll": true,
+            "label": "Tailscale Service",
+            "name": "service",
+            "options": [],
+            "query": {
+              "qryType": 1,
+              "query": "label_values(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\"}, service)",
               "refId": "PrometheusVariableQueryEditor-VariableQuery"
             },
             "refresh": 1,
