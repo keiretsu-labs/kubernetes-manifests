@@ -12,7 +12,6 @@ resources:
   - ./garage
   - ./gatus
   - ./gvisor
-  - ./ha-egress-repro
   - ./home
   - ./homer-operator
   - ./immich

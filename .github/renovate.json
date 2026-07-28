@@ -17,8 +17,7 @@
   "reviewers": [],
   "ignorePaths": [
     "**/*.sops.*",
-    "**/clusterplex.yaml",
-    "kubernetes/apps/base/ha-egress-repro/**"
+    "**/clusterplex.yaml"
   ],
   "ignoreDeps": ["go.temporal.io/api", "code.forgejo.org/forgejo-helm/forgejo"],
   "flux": {
