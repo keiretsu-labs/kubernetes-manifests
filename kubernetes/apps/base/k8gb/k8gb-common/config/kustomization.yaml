@@ -18,3 +18,4 @@ resources:
   - ./gslb-forgejo.yaml
   - ./gslb-bhaiya.yaml
   - ./gslb-velero.yaml
+  - ./gslb-grafana.yaml

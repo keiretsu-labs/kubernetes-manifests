@@ -25,6 +25,6 @@ spec:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
-            hostname: grafana.killinit.cc
+            hostname: grafana.keiretsu.top
             port: 443
             statusCode: 301

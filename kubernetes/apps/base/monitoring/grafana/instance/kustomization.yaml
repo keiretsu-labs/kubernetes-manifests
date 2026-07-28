@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ./grafana.yaml
   - ./httproute.yaml
+  - ./referencegrant.yaml
   - ./servicemonitor.yaml
   - ../plugins/image-renderer/deployment.yaml
   - ../plugins/image-renderer/service.yaml
