@@ -8,7 +8,7 @@ spec:
   statefulSet:
     pod:
       container:
-        image: docker.io/tailscale/tsrecorder:v1.98.9
+        image: docker.io/tailscale/tsrecorder:v1.98.10
         env:
           - name: TSRECORDER_SECURE
             value: "false"
