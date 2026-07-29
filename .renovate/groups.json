@@ -10,7 +10,7 @@
         "kubernetes/apps/base/tuppr/tuppr-config-ottawa/**"
       ],
       "groupName": "talos-ottawa",
-      "labels": ["talos", "Critical-Infrastructure", "cluster:ottawa"],
+      "labels": ["Talos", "Critical-Infrastructure", "cluster:ottawa"],
       "prBodyNotes": [
         "## Talos Upgrade — Ottawa",
         "",
@@ -34,7 +34,7 @@
         "kubernetes/apps/base/tuppr/tuppr-config-robbinsdale/**"
       ],
       "groupName": "talos-robbinsdale",
-      "labels": ["talos", "Critical-Infrastructure", "cluster:robbinsdale"],
+      "labels": ["Talos", "Critical-Infrastructure", "cluster:robbinsdale"],
       "prBodyNotes": [
         "## Talos Upgrade — Robbinsdale",
         "",
@@ -58,7 +58,7 @@
         "kubernetes/apps/base/tuppr/tuppr-config-stpetersburg/**"
       ],
       "groupName": "talos-stpetersburg",
-      "labels": ["talos", "Critical-Infrastructure", "cluster:stpetersburg"],
+      "labels": ["Talos", "Critical-Infrastructure", "cluster:stpetersburg"],
       "prBodyNotes": [
         "## Talos Upgrade — St. Petersburg",
         "",
@@ -144,6 +144,136 @@
         "- [ ] Verify cluster health",
         "- [ ] Ensure tuppr controller is running",
         "- [ ] Confirm this cluster's Talos upgrade is complete, not mid-rollout"
+      ]
+    },
+    {
+      "description": "Rook — Ottawa only. Scoped per cluster so one storage control plane moves at a time.",
+      "matchManagers": ["flux"],
+      "matchPackageNames": ["rook-ceph"],
+      "matchFileNames": [
+        "kubernetes/apps/base/rook-ceph/rook-ceph-ottawa/**",
+        "kubernetes/apps/ottawa/rook-ceph/**"
+      ],
+      "groupName": "rook-ottawa",
+      "labels": ["Rook", "Critical-Storage", "Merge-1st-before-Ceph", "cluster:ottawa"],
+      "automerge": false,
+      "prBodyNotes": [
+        "## Rook Operator Upgrade — Ottawa",
+        "",
+        "Bumps the Rook operator chart for **this cluster only**. Robbinsdale has its",
+        "own PR; never have two clusters' storage rollouts in flight at once.",
+        "",
+        "Order within a cluster is fixed: **Rook operator first, Ceph daemons second.**",
+        "A new operator runs the older Ceph release; the reverse is not supported.",
+        "",
+        "### Before merging:",
+        "- [ ] Read the [Rook upgrade guide](https://rook.io/docs/rook/latest/Upgrade/rook-upgrade/)",
+        "- [ ] Read the [Rook release notes](https://github.com/rook/rook/releases) for this version",
+        "- [ ] Check [Rook issues](https://github.com/rook/rook/issues) for known bugs in this version",
+        "- [ ] `tools/kc.sh ot -n rook-ceph exec deploy/rook-ceph-tools -- ceph status` → HEALTH_OK",
+        "- [ ] Confirm this cluster's Ceph image PR is not mid-rollout",
+        "",
+        "### After merging:",
+        "- [ ] Watch the operator and CSI provisioner rollout finish",
+        "- [ ] Back to HEALTH_OK before merging the matching Ceph image PR"
+      ]
+    },
+    {
+      "description": "Rook — Robbinsdale only. Scoped per cluster so one storage control plane moves at a time.",
+      "matchManagers": ["flux"],
+      "matchPackageNames": ["rook-ceph"],
+      "matchFileNames": [
+        "kubernetes/apps/base/rook-ceph/rook-ceph-robbinsdale/**",
+        "kubernetes/apps/robbinsdale/rook-ceph/**"
+      ],
+      "groupName": "rook-robbinsdale",
+      "labels": ["Rook", "Critical-Storage", "Merge-1st-before-Ceph", "cluster:robbinsdale"],
+      "automerge": false,
+      "prBodyNotes": [
+        "## Rook Operator Upgrade — Robbinsdale",
+        "",
+        "Bumps the Rook operator chart for **this cluster only**. Ottawa has its own PR;",
+        "never have two clusters' storage rollouts in flight at once.",
+        "",
+        "Order within a cluster is fixed: **Rook operator first, Ceph daemons second.**",
+        "A new operator runs the older Ceph release; the reverse is not supported.",
+        "",
+        "### Before merging:",
+        "- [ ] Read the [Rook upgrade guide](https://rook.io/docs/rook/latest/Upgrade/rook-upgrade/)",
+        "- [ ] Read the [Rook release notes](https://github.com/rook/rook/releases) for this version",
+        "- [ ] Check [Rook issues](https://github.com/rook/rook/issues) for known bugs in this version",
+        "- [ ] `tools/kc.sh rb -n rook-ceph exec deploy/rook-ceph-tools -- ceph status` → HEALTH_OK",
+        "- [ ] Confirm this cluster's Ceph image PR is not mid-rollout",
+        "",
+        "### After merging:",
+        "- [ ] Watch the operator and CSI provisioner rollout finish",
+        "- [ ] Back to HEALTH_OK before merging the matching Ceph image PR"
+      ]
+    },
+    {
+      "description": "Ceph — Ottawa only. Scoped per cluster so one set of storage daemons rolls at a time.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["quay.io/ceph/ceph"],
+      "matchFileNames": [
+        "kubernetes/apps/base/rook-ceph/rook-ceph-ottawa/**",
+        "kubernetes/apps/ottawa/rook-ceph/**"
+      ],
+      "groupName": "ceph-ottawa",
+      "labels": ["Ceph", "Critical-Storage", "Merge-2nd-after-Rook", "cluster:ottawa"],
+      "automerge": false,
+      "prBodyNotes": [
+        "## Ceph Daemon Upgrade — Ottawa",
+        "",
+        "Moves `CephCluster.spec.cephVersion.image` and the toolbox image together for",
+        "**this cluster only**. Both must land in the same commit —",
+        "`tools/check-versions.sh` fails the build if the two tags drift.",
+        "",
+        "Rook rolls MON → MGR → OSD → MDS one daemon at a time. Expect degraded PGs",
+        "during the OSD phase, and leave the other cluster's Ceph PR alone until this",
+        "one is back to active+clean.",
+        "",
+        "### Before merging:",
+        "- [ ] **Open Rook operator PR for this cluster? Merge that first.**",
+        "- [ ] Confirm the running Rook release supports this Ceph version ([release notes](https://github.com/rook/rook/releases))",
+        "- [ ] Read the [Ceph upgrade guide](https://rook.io/docs/rook/latest/Upgrade/ceph-upgrade/)",
+        "- [ ] `tools/kc.sh ot -n rook-ceph exec deploy/rook-ceph-tools -- ceph status` → HEALTH_OK, all PGs active+clean",
+        "",
+        "### After merging:",
+        "- [ ] Watch each daemon tier roll (mon, mgr, osd, mds) — do not restart pods by hand",
+        "- [ ] HEALTH_OK and all PGs active+clean before touching the other cluster"
+      ]
+    },
+    {
+      "description": "Ceph — Robbinsdale only. Scoped per cluster so one set of storage daemons rolls at a time.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["quay.io/ceph/ceph"],
+      "matchFileNames": [
+        "kubernetes/apps/base/rook-ceph/rook-ceph-robbinsdale/**",
+        "kubernetes/apps/robbinsdale/rook-ceph/**"
+      ],
+      "groupName": "ceph-robbinsdale",
+      "labels": ["Ceph", "Critical-Storage", "Merge-2nd-after-Rook", "cluster:robbinsdale"],
+      "automerge": false,
+      "prBodyNotes": [
+        "## Ceph Daemon Upgrade — Robbinsdale",
+        "",
+        "Moves `CephCluster.spec.cephVersion.image` and the toolbox image together for",
+        "**this cluster only**. Both must land in the same commit —",
+        "`tools/check-versions.sh` fails the build if the two tags drift.",
+        "",
+        "Rook rolls MON → MGR → OSD → MDS one daemon at a time. Expect degraded PGs",
+        "during the OSD phase, and leave the other cluster's Ceph PR alone until this",
+        "one is back to active+clean.",
+        "",
+        "### Before merging:",
+        "- [ ] **Open Rook operator PR for this cluster? Merge that first.**",
+        "- [ ] Confirm the running Rook release supports this Ceph version ([release notes](https://github.com/rook/rook/releases))",
+        "- [ ] Read the [Ceph upgrade guide](https://rook.io/docs/rook/latest/Upgrade/ceph-upgrade/)",
+        "- [ ] `tools/kc.sh rb -n rook-ceph exec deploy/rook-ceph-tools -- ceph status` → HEALTH_OK, all PGs active+clean",
+        "",
+        "### After merging:",
+        "- [ ] Watch each daemon tier roll (mon, mgr, osd, mds) — do not restart pods by hand",
+        "- [ ] HEALTH_OK and all PGs active+clean before touching the other cluster"
       ]
     },
     {

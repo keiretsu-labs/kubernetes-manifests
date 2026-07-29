@@ -9,6 +9,7 @@ on:
     paths:
       - "clusters/*/bootstrap/talos/talconfig.yaml"
       - "kubernetes/apps/base/tuppr/**"
+      - "kubernetes/apps/base/rook-ceph/**"
       - "tools/check-versions.sh"
       - ".github/workflows/version-sync.yaml"
   pull_request:
@@ -16,6 +17,7 @@ on:
     paths:
       - "clusters/*/bootstrap/talos/talconfig.yaml"
       - "kubernetes/apps/base/tuppr/**"
+      - "kubernetes/apps/base/rook-ceph/**"
       - "tools/check-versions.sh"
       - ".github/workflows/version-sync.yaml"
   workflow_dispatch:
