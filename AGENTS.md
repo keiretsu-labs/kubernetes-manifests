@@ -19,9 +19,9 @@ integration for cross-cluster networking and access.
 - **Verify with `tools/check.sh`** (or `tools/check.sh <cluster>`) — runs the
   CI render gate (`make test`), prints exactly one `✓ render OK: …` line on
   success and ~50 lines on failure. Do NOT run raw `make test` or `kustomize
-  build`; they dump thousands of lines. The full 3-cluster run can exceed a
-  short (120s) tool timeout when cold — if only one cluster changed, scope it
-  (`tools/check.sh talos-ottawa`) or raise the timeout.
+  build`; they dump thousands of lines. The gate bootstraps the CI-pinned Flate
+  release and renders all three clusters concurrently. If only one cluster
+  changed, scope it (`tools/check.sh talos-ottawa`) to keep feedback fast.
 - **Find before you read.** Use `tools/where.sh <pattern> <file>` (grep -n)
   to locate sections, then read narrow windows. Don't re-read large files.
   All `tools/*.sh` are anchored to the repo root, so they work from any cwd —

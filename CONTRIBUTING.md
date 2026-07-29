@@ -30,11 +30,11 @@ both are opt-in. internal tools reachable only via tailscale need neither.
 ## validation
 
 ```sh
-make test   # flate render-test all three clusters
+tools/check.sh   # bounded Flate render-test for all three clusters
 make diff   # show rendered diff vs origin/main
 ```
 
-run `make test` before pushing. CI runs the same check. **PR diffs are
+run `tools/check.sh` before pushing. CI runs the same check. **PR diffs are
 authoritative** — review the rendered output, not just the yaml source.
 
 ## repo gotchas

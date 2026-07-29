@@ -497,17 +497,14 @@ sops secret.sops.yaml
 
 ### Validation
 
-Every PR touching `clusters/**` is rendered offline with [flate](https://github.com/home-operations/flate) — the CI runs `flate test` for all three clusters and comments the rendered manifest diff on the PR.
+Every PR touching `clusters/**` or `kubernetes/**` is rendered offline with [flate](https://github.com/home-operations/flate) — CI runs the same bounded render gate used locally and comments the rendered manifest diff on the PR. The gate uses the CI-pinned Flate version automatically.
 
 ```bash
-# Install
-brew install --cask home-operations/tap/flate
-
 # Render-test all three clusters (what CI runs)
-make test
+tools/check.sh
 
 # One cluster
-make test-talos-ottawa
+tools/check.sh talos-ottawa
 
 # Rendered manifest diff vs origin/main (CI comments this on your PR)
 make diff
