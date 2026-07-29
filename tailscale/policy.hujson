@@ -67,6 +67,7 @@
 		"services": {
 			"tag:k8s": ["tag:k8s"],
 			"tag:k8s-operator": ["tag:k8s-operator"],
+			"svc:test": ["tag:k8s"],
 			"svc:tsdnsproxy": ["tag:k8s"],
 			"svc:tempvm": ["tag:k8s"],
 		},
@@ -99,6 +100,11 @@
 			"src": ["rajsinghtech@github", "tag:raj"],
 			"dst": ["tag:raj"],
 			"ip":  ["*"],
+		},
+		{
+			"src": ["rajsinghtech@github"],
+			"dst": ["svc:test"],
+			"ip":  ["8080"],
 		},
 		{
 			"src": ["kbpersonal@github", "tag:kartik"],
@@ -329,6 +335,10 @@
 			"src":    "group:superuser",
 			"proto":  "icmp",
 			"accept": ["tag:robbinsdale:0"],
+		},
+		{
+			"src":    "rajsinghtech@github",
+			"accept": ["svc:test:8080"],
 		},
 		{
 			"src": "group:superuser",

@@ -1,0 +1,19 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: tailscale-service-repro
+  namespace: flux-system
+spec:
+  targetNamespace: tailscale-examples
+  dependsOn:
+    - name: tailscale-examples-sandbox
+  path: ./kubernetes/apps/base/tailscale-examples/tailscale-service-repro
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
