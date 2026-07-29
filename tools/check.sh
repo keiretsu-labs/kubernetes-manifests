@@ -4,8 +4,8 @@
 # of the failing step, so build agents don't dump full output into their context.
 # Anchored to the repo root, so it runs from any cwd.
 #
-# NOTE: the full 3-cluster render can exceed a short (120s) tool timeout when
-# cold. If only one cluster changed, scope it: `tools/check.sh talos-ottawa`.
+# The full gate renders all three clusters concurrently. If only one cluster
+# changed, scope it anyway: `tools/check.sh talos-ottawa`.
 #
 # Usage:
 #   tools/check.sh                       # full gate (render-test all clusters)
@@ -14,15 +14,49 @@
 set -euo pipefail
 cd -- "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
+usage() {
+  cat <<'EOF'
+Usage:
+  tools/check.sh
+  tools/check.sh <talos-ottawa|talos-robbinsdale|talos-stpetersburg>
+  tools/check.sh --quick
+EOF
+}
+
 QUICK=0
 TARGET=""
 for a in "$@"; do
   case "$a" in
     --quick) QUICK=1 ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
     --*) echo "unknown flag: $a" >&2; exit 2 ;;
-    *) TARGET="$a" ;;
+    *)
+      if [ -n "$TARGET" ]; then
+        echo "error: expected at most one cluster target" >&2
+        exit 2
+      fi
+      TARGET="$a"
+      ;;
   esac
 done
+
+case "$TARGET" in
+  "") ;;
+  ot|ottawa|talos-ottawa) TARGET="talos-ottawa" ;;
+  rb|robbinsdale|talos-robbinsdale) TARGET="talos-robbinsdale" ;;
+  sp|stpetersburg|talos-stpetersburg) TARGET="talos-stpetersburg" ;;
+  *)
+    echo "error: unknown cluster '$TARGET' (valid: talos-ottawa, talos-robbinsdale, talos-stpetersburg)" >&2
+    exit 2
+    ;;
+esac
+if [ "$QUICK" = 1 ] && [ -n "$TARGET" ]; then
+  echo "error: --quick does not accept a cluster target" >&2
+  exit 2
+fi
 
 run_capped() {
   local label="$1"; shift

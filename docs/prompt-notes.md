@@ -36,9 +36,9 @@ Running log for the orchestrator to fold into future phase prompts.
 2. "Verify with `tools/check.sh` (or `tools/check.sh <cluster>`) — it runs the
    full CI gate (`make test`), prints one `✓ render OK: …` line on success /
    ~50 lines on failure. Do NOT run raw `make test` or `kustomize build`
-   yourself — that dumps full output into your context. The full 3-cluster run
-   can exceed a short (120s) timeout when cold; scope to the changed cluster
-   (`tools/check.sh talos-ottawa`) when only one cluster changed."
+   yourself — that dumps full output into your context. It bootstraps the
+   CI-pinned Flate release and renders all clusters concurrently; scope to the
+   changed cluster (`tools/check.sh talos-ottawa`) when only one changed."
 3. "To find a specific section in your own files, use `tools/where.sh <pattern>
    <file>` (or `grep -n`) instead of re-reading the whole file. Only re-read
    if you need surrounding context for an edit."

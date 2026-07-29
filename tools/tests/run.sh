@@ -292,6 +292,42 @@ upperwhere="$( (cd /tmp && "$T/where.sh" 'RESOURCES' kubernetes/apps/base/immich
 assert "pattern matching is case-insensitive" test -n "$upperwhere"
 exits  "missing file -> exit 1"     1 "$T/where.sh" foo /no/such/file.xyz
 
+# ---------------------------------------------------------------- flate.sh (pinned binary; no network)
+section "flate.sh (stubbed binary)"
+fstub="$(mktemp -d)"
+flate_calls="$fstub/calls"
+cat >"$fstub/flate" <<'EOF'
+#!/usr/bin/env bash
+if [ "${1:-}" = "--version" ]; then
+  echo "flate version 0.4.12"
+  exit 0
+fi
+printf '%s\n' "$*" >>"$FLATE_CALLS"
+EOF
+chmod +x "$fstub/flate"
+
+: >"$flate_calls"
+KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" "$T/flate.sh" test all --no-progress
+assert "pinned override -> args passthrough" grep -q '^test all --no-progress$' "$flate_calls"
+assert "CI action pin matches wrapper fixture" grep -q 'home-operations/flate/action@v0.4.12' "$ROOT/.github/workflows/flate.yaml"
+
+cat >"$fstub/old-flate" <<'EOF'
+#!/usr/bin/env bash
+echo "flate version 0.4.10"
+EOF
+chmod +x "$fstub/old-flate"
+oldout="$(KMAN_FLATE_BIN="$fstub/old-flate" "$T/flate.sh" test all 2>&1)"; oldec=$?
+assert "mismatched override -> exit 2" test "$oldec" = 2
+assert "mismatch names required version" grep -q 'CI requires 0.4.12' <<<"$oldout"
+
+: >"$flate_calls"
+KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" make -s -C "$ROOT" test
+assert "full make gate -> three renders" test "$(wc -l <"$flate_calls" | tr -d ' ')" = 3
+for cluster in talos-ottawa talos-robbinsdale talos-stpetersburg; do
+  assert "full make gate -> $cluster" grep -q -- "--path clusters/$cluster/flux/config" "$flate_calls"
+done
+rm -rf "$fstub"
+
 # ---------------------------------------------------------------- check.sh (stubbed make; no real render)
 section "check.sh (stubbed make)"
 mstub="$(mktemp -d)"
@@ -300,6 +336,12 @@ sout="$(PATH="$mstub:$PATH" "$T/check.sh" 2>/dev/null)"; sec=$?
 assert "success -> exit 0"              test "$sec" = 0
 assert "success prints exactly 1 line"  test "$(printf '%s\n' "$sout" | grep -c .)" = 1
 assert "success line format"            grep -q '^✓ render OK:' <<<"$sout"
+exits  "unknown cluster -> exit 2"      2 "$T/check.sh" nope
+exits  "multiple clusters -> exit 2"    2 "$T/check.sh" ot rb
+exits  "quick + cluster -> exit 2"      2 "$T/check.sh" --quick ot
+assert "help -> concise usage"           grep -q '^Usage:' <<<"$("$T/check.sh" --help)"
+aliasout="$(PATH="$mstub:$PATH" "$T/check.sh" ot 2>/dev/null)"
+assert "short cluster alias accepted"   grep -q '^✓ render OK: talos-ottawa$' <<<"$aliasout"
 printf '#!/usr/bin/env bash\necho "render Error: boom"; exit 1\n' >"$mstub/make"; chmod +x "$mstub/make"
 fout="$(PATH="$mstub:$PATH" "$T/check.sh" 2>/dev/null)"; fec=$?
 assert "failure -> exit 1"              test "$fec" = 1

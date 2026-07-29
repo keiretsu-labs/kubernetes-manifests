@@ -26,16 +26,12 @@ jobs:
       - uses: home-operations/flate/action@v0.4.12
         with:
           cache: true
-      - name: flate test
-        # the flate action exports FLATE_BASE=<pr base> which switches test to
-        # changed-only mode and requires rendering the base tree; unset it so a
-        # broken main can never fail PR tests — always test the full head tree
+      - name: render gate
+        # check.sh is the same bounded gate agents run locally. The flate action
+        # exports FLATE_BASE=<pr base>, so unset it to test the full head tree.
         run: |
           unset FLATE_BASE
-          flate test all \
-            --path clusters/${{ matrix.cluster }}/flux/config \
-            --allow-missing-secrets \
-            --no-progress
+          tools/check.sh ${{ matrix.cluster }}
 
   diff:
     runs-on: ubuntu-latest
@@ -58,7 +54,7 @@ jobs:
         id: diff
         run: |
           set +e
-          flate diff all \
+          tools/flate.sh diff all \
             --path clusters/${{ matrix.cluster }}/flux/config \
             --base origin/main \
             --no-progress \
