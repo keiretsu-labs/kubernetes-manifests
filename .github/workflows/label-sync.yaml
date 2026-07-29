@@ -12,6 +12,12 @@ jobs:
   label-sync:
     name: Label Sync
     runs-on: ubuntu-latest
+    # Without these the default read-only GITHUB_TOKEN 403s on POST /labels and
+    # every run fails silently-ish, which is how labels.yaml drifted from the
+    # labels Renovate had created in the repo.
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
