@@ -1,4 +1,9 @@
 ---
+# Authoritative label set. label-sync runs with delete-other-labels: true, so
+# anything missing here is DELETED from the repo on the next push that touches
+# this file — including the labels .renovate/groups.json attaches to upgrade
+# PRs. Add a label here before referencing it from a Renovate rule.
+
 # Area
 - { name: "area/bootstrap",          color: "0e8a16" }
 - { name: "area/github",             color: "0e8a16" }
@@ -16,5 +21,28 @@
 - { name: "type/minor",              color: "ff9800" }
 - { name: "type/major",              color: "f6412d" }
 - { name: "type/break",              color: "f6412d" }
+# Upgrade tracks — one PR per cluster, see .renovate/groups.json
+- { name: "Talos",                   color: "d93f0b", description: "Talos Linux upgrades" }
+- { name: "Kubernetes",              color: "1d76db", description: "Kubernetes version upgrades" }
+- { name: "Tuppr",                   color: "2b2e87", description: "Kubernetes Upgrade controller for Talos Linux" }
+- { name: "Flux",                    color: "2521a0", description: "FluxCD upgrades" }
+- { name: "Rook",                    color: "0e8a16", description: "Rook Storage Controller upgrades" }
+- { name: "Ceph",                    color: "0e8a16", description: "Ceph Storage upgrades" }
+# Merge gates
+- { name: "Critical-Infrastructure", color: "b60205", description: "No automerging allowed, human intervention mandatory" }
+- { name: "Critical-Storage",        color: "b60205", description: "No automerging allowed, human intervention mandatory" }
+- { name: "Merge-1st-before-Ceph",   color: "fbca04", description: "Rook upgrades before Ceph upgrades" }
+- { name: "Merge-2nd-after-Rook",    color: "fbca04", description: "Ceph upgrades, always after Rook upgrades" }
+# Cluster scope — every critical-infrastructure PR carries exactly one
+- { name: "cluster:ottawa",          color: "ededed", description: "Scoped to the Ottawa cluster" }
+- { name: "cluster:robbinsdale",     color: "ededed", description: "Scoped to the Robbinsdale cluster" }
+- { name: "cluster:stpetersburg",    color: "ededed", description: "Scoped to the St. Petersburg cluster" }
 # Uncategorized
 - { name: "hold/upstream",           color: "ee0701" }
+# GitHub defaults still in use on open issues
+- { name: "Bug",                     color: "d73a4a", description: "Something isn't working" }
+- { name: "Documentation",           color: "0075ca", description: "Improvements or additions to documentation" }
+- { name: "Duplicate",               color: "cfd3d7", description: "This issue or pull request already exists" }
+- { name: "Enhancement",             color: "a2eeef", description: "New feature or request" }
+- { name: "Question",                color: "d876e3", description: "Further information is requested" }
+- { name: "Wontfix",                 color: "ffffff", description: "This will not be worked on" }
