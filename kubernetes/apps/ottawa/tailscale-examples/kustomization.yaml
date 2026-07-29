@@ -4,4 +4,4 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./tailscale-examples-sandbox.yaml
-  - ./tailscale-service-repro.yaml
+  # - ./tailscale-service-repro.yaml # Enable only for controlled svc:test replacement tests.
