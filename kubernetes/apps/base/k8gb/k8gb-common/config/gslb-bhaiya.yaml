@@ -34,6 +34,8 @@ spec:
         - path:
             type: PathPrefix
             value: /
+      timeouts:
+        request: 3600s
 ---
 # admin console access control via tinyauth. tinyauth does authN (Google login,
 # injects Remote-Email); bhaiya does its own authZ in-process against its users
