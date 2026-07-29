@@ -118,6 +118,14 @@ postBuild:
   Kubernetes node is `Ready` before touching the next control-plane node. Treat
   the node currently holding the control-plane VIP as the final node and repeat
   the readiness checks after it returns.
+- **Rook-Ceph upgrades are per cluster, Rook before Ceph.** Renovate groups
+  storage the same way it groups Talos: `rook-<location>` and `ceph-<location>`,
+  one PR each (`.renovate/groups.json`). Merge a cluster's Rook operator PR
+  first and let it settle — a new operator drives the older Ceph release, not
+  the reverse — then its Ceph image PR, and never leave two clusters' storage
+  rollouts in flight at once. `CephCluster.spec.cephVersion.image` and the
+  `rook-ceph-tools` image must move together; `tools/check-versions.sh` fails
+  the build when they drift, with `# version-sync: ignore` as the escape hatch.
 - **`$` mangling:** Flux envsubst (drone/envsubst) eats bare `$` (bcrypt
   hashes, regex, shell). Any value containing `$` must live in a
   Secret/ConfigMap and be injected via `${VAR}`. Substitution is single-pass:
@@ -215,8 +223,10 @@ postBuild:
 
 ```bash
 tools/check.sh [cluster]   # CI render gate — the sole verify command
-                           # (one ✓ line on success; scope by cluster if only
-                           #  one changed — full run can exceed a 120s timeout)
+                           # (one ✓ line on success; accepts ot/rb/sp aliases;
+                           #  scope by cluster if only one changed)
+tools/check-versions.sh    # talconfig↔tuppr and CephCluster↔toolbox version sync
+tools/flate.sh <args…>     # flate at the CI-pinned version (bootstraps if needed)
 tools/tests/run.sh         # offline self-tests for the tools/ helpers
 tools/app.sh <name> | --list   # locate an app / full deploy inventory
 tools/refs.sh <name>       # every tracked file referencing <name>
