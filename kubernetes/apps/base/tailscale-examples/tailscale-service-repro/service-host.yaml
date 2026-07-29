@@ -36,7 +36,7 @@ spec:
       terminationGracePeriodSeconds: 35
       containers:
         - name: backend
-          image: python:3.13-alpine
+          image: python:3.14-alpine
           command:
             - /bin/sh
             - -c
