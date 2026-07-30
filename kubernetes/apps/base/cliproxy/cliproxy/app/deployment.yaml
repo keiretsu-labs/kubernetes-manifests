@@ -122,6 +122,71 @@ spec:
             capabilities:
               drop:
                 - ALL
+        - name: discover-aperture-kartik-models
+          image: python:3.14-alpine@sha256:26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92
+          command:
+            - python
+            - -c
+          args:
+            - |
+              import json
+              import pathlib
+              import time
+              import urllib.request
+
+              upstream = "http://ai-kartik.keiretsu.ts.net/v1"
+              for attempt in range(30):
+                  try:
+                      with urllib.request.urlopen(upstream + "/models", timeout=10) as response:
+                          payload = json.load(response)
+                      models = []
+                      seen = set()
+                      for entry in payload.get("data", []):
+                          model = str(entry.get("id", "")).strip()
+                          if model and model not in seen:
+                              seen.add(model)
+                              models.append(model)
+                      if not models:
+                          raise RuntimeError("upstream returned no models")
+                      break
+                  except Exception:
+                      if attempt == 29:
+                          raise
+                      time.sleep(2)
+
+              lines = [
+                  "openai-compatibility:",
+                  '  - name: "ai-kartik"',
+                  '    prefix: "ai-kartik"',
+                  f'    base-url: "{upstream}"',
+                  "    disable-cooling: false",
+                  "    models:",
+              ]
+              for model in models:
+                  lines.append("      - name: " + json.dumps(model))
+              pathlib.Path("/provider/ai-kartik.yaml").write_text(
+                  "\n".join(lines) + "\n", encoding="utf-8"
+              )
+              print(f"discovered {len(models)} ai-kartik models")
+          env:
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+          volumeMounts:
+            - name: provider-config
+              mountPath: /provider
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
         - name: discover-vllm-models
           image: python:3.14-alpine@sha256:26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92
           command:
@@ -211,8 +276,8 @@ spec:
               api-keys:
                 - "$${API_KEY}"
               # Every credential owns its native route prefix. OAuth prefixes
-              # live in auth metadata; the generated compatible provider
-              # declares aperture-corp below.
+              # live in auth metadata; the generated compatible providers
+              # declare the Tailscale-backed routes below.
               force-model-prefix: true
               debug: false
               pprof:
@@ -226,6 +291,7 @@ spec:
                 session-affinity: true
               EOF
               cat /provider/ai.yaml >> /config/config.yaml
+              tail -n +2 /provider/ai-kartik.yaml >> /config/config.yaml
               tail -n +2 /provider/vllm.yaml >> /config/config.yaml
           env:
             - name: API_KEY

@@ -21,19 +21,21 @@ Anthropic-compatible APIs.
 - `Service/cliproxy` exposes `8317`, `1455`, and `54545` inside the cluster.
   Only `8317` is routed permanently. The callback ports are for interactive
   login or an optional temporary port-forward.
-- OpenAI-compatible provider `aperture-corp` points at
-  `http://ai.keiretsu.ts.net/v1`. A startup init container discovers the
-  upstream `/v1/models` catalog and exposes each model under the
-  `aperture-corp/` prefix. `Service/aperture-corp-upstream` registers the
-  tailnet FQDN with the shared `common-egress` ProxyGroup.
+- OpenAI-compatible providers `ai` and `ai-kartik` point at
+  `http://ai.keiretsu.ts.net/v1` and
+  `http://ai-kartik.keiretsu.ts.net/v1`. Startup init containers discover each
+  upstream `/v1/models` catalog and expose the models under the `ai/` and
+  `ai-kartik/` prefixes. `Service/ai` and `Service/ai-kartik` register the
+  tailnet FQDNs with the shared `common-egress` ProxyGroup.
 - OpenAI-compatible provider `vllm` points at the St. Petersburg DeepSeek V4
   vLLM service through `Service/stpetersburg-vllm-upstream`. Startup discovery
   exposes its live catalog under the `vllm/` prefix.
 - `force-model-prefix` is enabled and every route owns its client-visible
   prefix: `codex-subscription/<model>` for the logged-in Codex subscription,
   `anthropic-subscription/<model>` for the logged-in Claude subscription,
-  `aperture-corp/<model>` for `ai.keiretsu.ts.net`, and `vllm/<model>` for the
-  St. Petersburg vLLM service. The two OAuth prefixes live
+  `ai/<model>` for `ai.keiretsu.ts.net`, `ai-kartik/<model>` for
+  `ai-kartik.keiretsu.ts.net`, and `vllm/<model>` for the St. Petersburg vLLM
+  service. The two OAuth prefixes live
   in native per-credential metadata, so CLIProxyAPI itself owns listing,
   request routing, and subscription pooling.
 - The OCI index digest is `sha256:7e828ffc…f26fca28`; it contains both Linux amd64 and arm64 manifests. Ottawa currently schedules amd64 nodes, including `asuka`.

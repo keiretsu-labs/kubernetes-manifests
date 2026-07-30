@@ -18,6 +18,22 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: ai-kartik
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ai-kartik.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: stpetersburg-vllm-upstream
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
