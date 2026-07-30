@@ -6,7 +6,7 @@ Anthropic-compatible APIs.
 
 ## Architecture and endpoints
 
-- Image: `eceasy/cli-proxy-api:v7.2.99`, pinned by digest in Git.
+- Image: `eceasy/cli-proxy-api:v7.2.109`, pinned by digest in Git.
 - The image and command were smoke-tested from the official amd64 OCI rootfs: port 8317 opened, `/management.html` returned 200, `/v1/models` returned 401 without the API key and 200 with it.
 - State: `cliproxy-data`, a 2 Gi `ceph-block-replicated` RWO PVC mounted at
   `/data`; OAuth files live in `/data/auth`.
@@ -43,7 +43,8 @@ Anthropic-compatible APIs.
   service. The two OAuth prefixes live
   in native per-credential metadata, so CLIProxyAPI itself owns listing,
   request routing, and subscription pooling.
-- The OCI index digest is `sha256:7e828ffc…f26fca28`; it contains both Linux amd64 and arm64 manifests. Ottawa currently schedules amd64 nodes, including `asuka`.
+- The pinned OCI digest is `sha256:f8c2f64a…b586311b`; Ottawa currently
+  schedules the amd64 image on `asuka`.
 
 | Purpose | URL | Exposure | Authentication |
 |---|---|---|---|
