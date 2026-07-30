@@ -26,10 +26,15 @@ Anthropic-compatible APIs.
   `http://ai-kartik.keiretsu.ts.net/v1`. Startup init containers discover each
   upstream `/v1/models` catalog and expose the models under the `ai/` and
   `ai-kartik/` prefixes. `Service/ai` and `Service/ai-kartik` register the
-  tailnet FQDNs with the shared `common-egress` ProxyGroup.
+  tailnet FQDNs with the shared `common-egress` ProxyGroup. Both provider
+  configs override CLIProxy's generic compatibility user agent because the
+  upstream gateways reject that agent while accepting the Bhaiya-specific
+  identifier.
 - OpenAI-compatible provider `vllm` points at the St. Petersburg DeepSeek V4
   vLLM service through `Service/stpetersburg-vllm-upstream`. Startup discovery
-  exposes its live catalog under the `vllm/` prefix.
+  exposes its live catalog under the `vllm/` prefix. The stable
+  `vllm/DeepSeek-V4-Flash` client alias maps to the upstream
+  `deepseek-v4-flash` model.
 - `force-model-prefix` is enabled and every route owns its client-visible
   prefix: `codex-subscription/<model>` for the logged-in Codex subscription,
   `anthropic-subscription/<model>` for the logged-in Claude subscription,
