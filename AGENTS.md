@@ -24,7 +24,7 @@ integration for cross-cluster networking and access.
   changed, scope it (`tools/check.sh talos-ottawa`) to keep feedback fast.
   Flate intermittently wedges in a CPU spin instead of returning, so the gate
   kills the render's whole process group after `KMAN_CHECK_TIMEOUT` seconds
-  (default 600) and exits 124. Exit 124 means retry, not a broken manifest.
+  (default 120) and exits 124. Exit 124 means retry, not a broken manifest.
 - **Find before you read.** Use `tools/where.sh <pattern> <file>` (grep -n)
   to locate sections, then read narrow windows. Don't re-read large files.
   All `tools/*.sh` are anchored to the repo root, so they work from any cwd —
