@@ -298,6 +298,10 @@ spec:
       - name: "tank"
         devices:
           - name: "nvme*"
+          # sdd is the 4TB WDC that backed osd.6 until it went autoout. The
+          # nvme* filter dates from excluding a different destroyed disk (sda),
+          # so it also kept this healthy disk out; list it explicitly.
+          - name: "sdd"
     #   - name: "172.17.4.201"
     #     devices: # specific devices to use for storage can be specified for each node
     #       - name: "sdb"
