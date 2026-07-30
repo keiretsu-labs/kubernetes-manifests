@@ -5,7 +5,7 @@
 #
 # Architecture  : TP=2 via PyTorch mp backend, DSpark spec-decode,
 #                 fp8 KV cache, LeaderWorkerSet gang scheduling.
-# Image         : ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
+# Image         : ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
 #                 (Aiden's community image, B12X MoE, CUDA 12.1, sm121)
 #                 Built from: https://github.com/local-inference-lab/vllm/tree/dev/unholy-fusion
 # Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
@@ -127,7 +127,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command:
           - /bin/bash
           args:
@@ -145,7 +145,7 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: dspark-overlay
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
@@ -179,7 +179,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
@@ -332,7 +332,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command:
           - /bin/bash
           args:
@@ -350,7 +350,7 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: dspark-overlay
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
@@ -384,7 +384,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4:latest
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
