@@ -181,6 +181,19 @@ spec:
   #   # allowUninstallWithVolumes defines how the uninstall should be performed
   #   # If set to true, cephCluster deletion does not wait for the PVs to be deleted.
   #   allowUninstallWithVolumes: true
+  # tuppr taints every node it considers outdated. The effect is only
+  # PreferNoSchedule, so it never stopped existing daemons, but Rook's node
+  # validity check rejects a node carrying ANY untolerated taint regardless of
+  # effect — it logged "skipping creation of OSDs on nodes [stone titan tank]:
+  # placement settings do not match" and silently provisioned nothing. The
+  # TalosUpgrade has been Failed since 2026-06-28 with tank and titan still on
+  # v1.13.3, so the taint is not going away on its own. Tolerate it: an
+  # informational "this node is behind" marker must not gate storage.
+  placement:
+    all:
+      tolerations:
+        - key: tuppr.home-operations.com/outdated
+          operator: Exists
   # To control where various services will be scheduled by kubernetes, use the placement configuration sections below.
   # The example under 'all' would have all services scheduled on kubernetes nodes labeled with 'role=storage-node' and
   # tolerate taints with a key of 'storage-node'.
