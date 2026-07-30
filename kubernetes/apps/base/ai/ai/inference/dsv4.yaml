@@ -20,7 +20,7 @@
 #
 # Memory guard  : 95Gi Guaranteed QoS, drop-caches init + loop sidecar,
 #                 GPU reset at startup. DSpark weights: ~79 GiB.
-#                 NVFP4 KV: 1M calibrated context at 0.76 utilization.
+#                 NVFP4 KV: 1M calibrated context at 0.78 utilization.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -202,7 +202,7 @@ spec:
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 4096 \
               --max-cudagraph-capture-size 36 \
-              --gpu-memory-utilization 0.76 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
@@ -405,7 +405,7 @@ spec:
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 4096 \
               --max-cudagraph-capture-size 36 \
-              --gpu-memory-utilization 0.76 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
