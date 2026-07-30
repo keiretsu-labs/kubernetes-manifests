@@ -95,6 +95,8 @@ spec:
                   '    prefix: "ai"',
                   f'    base-url: "{upstream}"',
                   "    disable-cooling: false",
+                  "    headers:",
+                  '      User-Agent: "Bhaiya-CLIProxy/1.0"',
                   "    models:",
               ]
               for model in models:
@@ -160,6 +162,8 @@ spec:
                   '    prefix: "ai-kartik"',
                   f'    base-url: "{upstream}"',
                   "    disable-cooling: false",
+                  "    headers:",
+                  '      User-Agent: "Bhaiya-CLIProxy/1.0"',
                   "    models:",
               ]
               for model in models:
@@ -229,6 +233,8 @@ spec:
               ]
               for model in models:
                   lines.append("      - name: " + json.dumps(model))
+                  if model == "deepseek-v4-flash" and "DeepSeek-V4-Flash" not in seen:
+                      lines.append('        alias: "DeepSeek-V4-Flash"')
               pathlib.Path("/provider/vllm.yaml").write_text(
                   "\n".join(lines) + "\n", encoding="utf-8"
               )
