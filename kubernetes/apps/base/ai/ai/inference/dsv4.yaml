@@ -200,7 +200,7 @@ spec:
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
-              --max-num-seqs 4 --max-num-batched-tokens 4096 \
+              --max-num-seqs 4 --max-num-batched-tokens 8192 \
               --enforce-eager \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
@@ -403,7 +403,7 @@ spec:
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
-              --max-num-seqs 4 --max-num-batched-tokens 4096 \
+              --max-num-seqs 4 --max-num-batched-tokens 8192 \
               --enforce-eager \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
