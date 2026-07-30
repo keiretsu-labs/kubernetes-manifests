@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
-.kube/
+.kube/*
+!.kube/config
 .DS_Store
 .terraform*
 terraform.tfstate*

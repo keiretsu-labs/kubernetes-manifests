@@ -207,7 +207,7 @@ postBuild:
   |------------------|-----------------------|-------------------------------------------|
   | `ot`/`ottawa`      | `<repo>/.kube/config` | `ottawa-k8s-operator.keiretsu.ts.net`       |
   | `rb`/`robbinsdale` | `<repo>/.kube/config` | `robbinsdale-k8s-operator.keiretsu.ts.net`  |
-  | `sp`/`stpetersburg`| `~/.kube/stpetersburg`  | (none)                                    |
+  | `sp`/`stpetersburg`| `<repo>/.kube/config` | `stpetersburg-k8s-operator.keiretsu.ts.net` |
 
 - **Compact pod triage:** `tools/ktriage.sh <ot|rb|sp> <ns> <pod>` prints one
   pod's bounded read-only summary — phase/node/IP, container + init states,
@@ -216,7 +216,11 @@ postBuild:
   routes every call through `kc.sh` and issues only `get`/`logs`. Exit 4 = pod
   read OK but a later section was unavailable (marked inline).
 - The one canonical kubeconfig is `.kube/config` in the repo root (all three
-  clusters). Container environments symlink/copy it to
+  clusters). It is tracked on purpose and holds **no credentials** — three
+  operator `server:` URLs and a `token: unused` placeholder, because the
+  Tailscale auth proxy authorizes by tailnet identity. Never add a client cert,
+  key, or real token to it, and never track anything else under `.kube/` (the
+  discovery cache stays ignored). Container environments symlink/copy it to
   `/workspace/kubernetes-manifests/.kube/config`; do not guess that path on the
   host — prefer `tools/kc.sh`.
 - Pod/service CIDRs per site: Robbinsdale 10.1/10.0/10.50, Ottawa
