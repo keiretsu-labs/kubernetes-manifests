@@ -58,12 +58,47 @@ if [ "$QUICK" = 1 ] && [ -n "$TARGET" ]; then
   exit 2
 fi
 
+# Flate occasionally wedges in a CPU spin instead of returning, which hangs the
+# gate forever. macOS ships no coreutils `timeout`, so enable job control to put
+# the render in its own process group and kill the whole group on deadline —
+# signalling `make` alone would orphan the spinning flate child.
+CHECK_TIMEOUT="${KMAN_CHECK_TIMEOUT:-600}"
+
 run_capped() {
   local label="$1"; shift
-  local out
+  local out timedout rc=0
   out="$(mktemp)"
+  timedout="$(mktemp)"
 
-  if "$@" >"$out" 2>&1; then
+  set -m
+  "$@" >"$out" 2>&1 &
+  local pid=$!
+  set +m
+
+  {
+    sleep "$CHECK_TIMEOUT"
+    printf 'yes' >"$timedout"
+    kill -TERM -"$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null
+    sleep 5
+    kill -KILL -"$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null
+  } >/dev/null 2>&1 &
+  local watchdog=$!
+
+  wait "$pid" || rc=$?
+  kill "$watchdog" 2>/dev/null || true
+  wait "$watchdog" 2>/dev/null || true
+
+  if [ -s "$timedout" ]; then
+    rm -f "$timedout"
+    echo "=== $label TIMED OUT after ${CHECK_TIMEOUT}s ===" >&2
+    echo "killed process group; raise the budget with KMAN_CHECK_TIMEOUT=<secs>" >&2
+    tail -15 "$out" >&2
+    rm -f "$out"
+    exit 124
+  fi
+  rm -f "$timedout"
+
+  if [ "$rc" -eq 0 ]; then
     rm -f "$out"
     return 0
   fi
