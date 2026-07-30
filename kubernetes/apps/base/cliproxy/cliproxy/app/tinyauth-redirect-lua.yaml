@@ -1,0 +1,26 @@
+---
+# Tinyauth's Envoy endpoint returns 401 with x-tinyauth-location when the
+# browser has no session. Envoy Gateway passes that local reply through unless
+# a route-level response filter converts it into a browser redirect.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: cliproxy-ui-tinyauth-redirect
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: cliproxy-ui
+  lua:
+    - inline: |
+        function envoy_on_response(response_handle)
+          local headers = response_handle:headers()
+          if headers:get(":status") == "401" then
+            local location = headers:get("x-tinyauth-location")
+            if location then
+              headers:replace(":status", "302")
+              headers:add("Location", location)
+              headers:remove("x-tinyauth-location")
+            end
+          end
+        end
