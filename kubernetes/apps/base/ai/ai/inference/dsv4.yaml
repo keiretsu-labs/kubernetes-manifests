@@ -10,7 +10,7 @@
 # Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8 weights)
 #
 # Key settings:
-# - --max-num-seqs 4, --max-model-len 1048576
+# - --max-num-seqs 6, --max-model-len 1048576
 # - --enable-chunked-prefill, --enable-prefix-caching, --async-scheduling
 # - --reasoning-config, --default-chat-template-kwargs '{"thinking":false}'
 # - --generation-config vllm (no server-side sampling override)
@@ -200,8 +200,8 @@ spec:
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
-              --max-num-seqs 4 --max-num-batched-tokens 4096 \
-              --max-cudagraph-capture-size 24 \
+              --max-num-seqs 6 --max-num-batched-tokens 4096 \
+              --max-cudagraph-capture-size 36 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
@@ -403,8 +403,8 @@ spec:
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
-              --max-num-seqs 4 --max-num-batched-tokens 4096 \
-              --max-cudagraph-capture-size 24 \
+              --max-num-seqs 6 --max-num-batched-tokens 4096 \
+              --max-cudagraph-capture-size 36 \
               --gpu-memory-utilization 0.76 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
