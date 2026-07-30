@@ -1189,7 +1189,7 @@ spec:
                 "uid": "$${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum by(exported_service) (rate({__name__=~\"tailscaled_(serve|tun_service)_inbound_bytes_total\", namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
+              "expr": "sum by(exported_service) (label_replace(rate(tailscaled_serve_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval]), \"accounting_path\", \"serve\", \"exported_service\", \".+\") or label_replace(rate(tailscaled_tun_service_inbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval]), \"accounting_path\", \"tun\", \"exported_service\", \".+\")) * 8",
               "legendFormat": "{{exported_service}} inbound",
               "range": true,
               "refId": "A"
@@ -1200,7 +1200,7 @@ spec:
                 "uid": "$${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum by(exported_service) (rate({__name__=~\"tailscaled_(serve|tun_service)_outbound_bytes_total\", namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval])) * 8",
+              "expr": "sum by(exported_service) (label_replace(rate(tailscaled_serve_outbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval]), \"accounting_path\", \"serve\", \"exported_service\", \".+\") or label_replace(rate(tailscaled_tun_service_outbound_bytes_total{namespace=\"tailscale\", ts_proxy_parent_name=~\"$node\", ts_proxy_type=~\"$proxy_type\", exported_service=~\"$tailscale_service\"}[$__rate_interval]), \"accounting_path\", \"tun\", \"exported_service\", \".+\")) * 8",
               "legendFormat": "{{exported_service}} outbound",
               "range": true,
               "refId": "B"
