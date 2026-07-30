@@ -346,6 +346,29 @@ printf '#!/usr/bin/env bash\necho "render Error: boom"; exit 1\n' >"$mstub/make"
 fout="$(PATH="$mstub:$PATH" "$T/check.sh" 2>/dev/null)"; fec=$?
 assert "failure -> exit 1"              test "$fec" = 1
 assert "failure -> nothing on stdout"   test -z "$fout"
+
+# A wedged render must be killed rather than hang the gate forever. The stub
+# backgrounds a child and waits on it, mirroring make->flate: signalling only
+# the direct child would leave the real spinning flate orphaned.
+cat >"$mstub/make" <<'EOF'
+#!/usr/bin/env bash
+sleep 300 &
+printf '%s' "$!" >"$WEDGE_PID_FILE"
+wait
+EOF
+chmod +x "$mstub/make"
+wedge_pid_file="$(mktemp)"
+tstart=$SECONDS
+WEDGE_PID_FILE="$wedge_pid_file" PATH="$mstub:$PATH" KMAN_CHECK_TIMEOUT=2 \
+  "$T/check.sh" >/dev/null 2>&1; tec=$?
+telapsed=$((SECONDS - tstart))
+wedge_pid="$(cat "$wedge_pid_file" 2>/dev/null)"
+assert "timeout -> exit 124"            test "$tec" = 124
+assert "timeout -> returns promptly"    test "$telapsed" -lt 30
+assert "timeout -> reports the budget"  grep -q 'TIMED OUT after 2s' \
+  <<<"$(WEDGE_PID_FILE="$wedge_pid_file" PATH="$mstub:$PATH" KMAN_CHECK_TIMEOUT=2 "$T/check.sh" 2>&1)"
+refute "timeout -> grandchild reaped"   kill -0 "$wedge_pid" 2>/dev/null
+rm -f "$wedge_pid_file"
 rm -rf "$mstub"
 
 # ---------------------------------------------------------------- summary
