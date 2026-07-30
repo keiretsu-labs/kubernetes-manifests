@@ -106,7 +106,11 @@ run_capped() {
   echo "=== $label FAILED ===" >&2
   # Render output is mostly successful objects. Surface failure context first,
   # then retain the summary tail, without flooding agent context.
-  rg -n -C 2 '✗|⊘|[Ee]rror|[Ff]ailed|blocked by' "$out" | tail -35 >&2 || true
+  if command -v rg >/dev/null 2>&1; then
+    rg -n -C 2 '✗|⊘|[Ee]rror|[Ff]ailed|blocked by' "$out" | tail -35 >&2 || true
+  else
+    grep -n -C 2 -E '✗|⊘|[Ee]rror|[Ff]ailed|blocked by' "$out" | tail -35 >&2 || true
+  fi
   echo "--- summary tail ---" >&2
   tail -15 "$out" >&2
   echo "(showing focused diagnostics from '$*')" >&2
