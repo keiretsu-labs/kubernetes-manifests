@@ -109,9 +109,9 @@
       "allowedVersions": "/^[1-9]\\.\\d+\\.\\d+$/"
     },
     {
-      "description": "Rook and Ceph are grouped per cluster in .renovate/groups.json — one storage rollout at a time. Keep Ceph pinned to released patch versions.",
+      "description": "Rook and Ceph are grouped per cluster in .renovate/groups.json — one storage rollout at a time. Ceph encodes release type in the minor field (x.0.z development, x.1.z release candidates, x.2.z stable — https://docs.ceph.com/en/latest/releases/general/), so only x.2.z may be proposed. An RC carries no prerelease suffix, so ignoreUnstable cannot see it: v21.1.0 was offered and merged as if stable, and Rook refused it cluster-wide.",
       "matchPackageNames": ["quay.io/ceph/ceph"],
-      "allowedVersions": "/^v\\d+\\.\\d+\\.\\d+$/"
+      "allowedVersions": "/^v\\d+\\.2\\.\\d+$/"
     },
     {
       "description": "Track code-server with build suffix (format: 4.109.2-39)",
