@@ -62,7 +62,9 @@ fi
 # gate forever. macOS ships no coreutils `timeout`, so enable job control to put
 # the render in its own process group and kill the whole group on deadline —
 # signalling `make` alone would orphan the spinning flate child.
-CHECK_TIMEOUT="${KMAN_CHECK_TIMEOUT:-600}"
+# A healthy full three-cluster render finishes in seconds, so cap at 120s: a
+# wedge costs 2 minutes, not 10. Raise via KMAN_CHECK_TIMEOUT if ever needed.
+CHECK_TIMEOUT="${KMAN_CHECK_TIMEOUT:-120}"
 
 run_capped() {
   local label="$1"; shift
