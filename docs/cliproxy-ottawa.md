@@ -59,6 +59,12 @@ exist on `cliproxy-api.killinit.cc`, which has no public gateway and no public
 `${COMMON_DOMAIN}` CNAME. Ottawa's `${CLUSTER_DOMAIN}` HTTPRoute DNS integration
 makes it resolvable on the intended private/tailnet path.
 
+The UI route has a route-scoped Envoy Lua response filter. Tinyauth represents
+an unauthenticated browser as `401` plus `x-tinyauth-location`; the filter
+converts only that response into a `302` to the Tinyauth login URL. After the
+Tinyauth browser session is established, CPAMC still asks for the independent
+CLIProxy management key.
+
 The short `http://cliproxy` tailnet URL is provided by `Service/cliproxy-ts`, a
 Tailscale `LoadBalancer` using the shared `common-ingress` ProxyGroup. It goes
 directly to application port 8317 and therefore does not traverse Envoy or
