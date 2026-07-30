@@ -44,8 +44,8 @@ rbout="$(PATH="$stub:$PATH" "$T/kc.sh" rb get ns 2>&1)"
 assert "rb -> robbinsdale context" grep -q 'robbinsdale-k8s-operator.keiretsu.ts.net' <<<"$rbout"
 
 spout="$(PATH="$stub:$PATH" "$T/kc.sh" sp get nodes 2>&1)"
-assert "sp -> ~/.kube/stpetersburg" grep -q 'KUBECONFIG=.*/.kube/stpetersburg' <<<"$spout"
-refute "sp -> no --context"         grep -q -- '--context' <<<"$spout"
+assert "sp -> repo kubeconfig"     grep -q "KUBECONFIG=$ROOT/.kube/config" <<<"$spout"
+assert "sp -> stpetersburg context" grep -q -- '--context stpetersburg-k8s-operator.keiretsu.ts.net' <<<"$spout"
 rm -rf "$stub"
 
 # ---------------------------------------------------------------- ktriage.sh

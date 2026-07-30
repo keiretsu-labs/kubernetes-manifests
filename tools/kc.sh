@@ -13,7 +13,7 @@
 # Clusters:
 #   ot | ottawa        repo .kube/config, context ottawa-k8s-operator.keiretsu.ts.net
 #   rb | robbinsdale   repo .kube/config, context robbinsdale-k8s-operator.keiretsu.ts.net
-#   sp | stpetersburg  ~/.kube/stpetersburg (no --context)
+#   sp | stpetersburg  repo .kube/config, context stpetersburg-k8s-operator.keiretsu.ts.net
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -23,7 +23,7 @@ usage: ${0##*/} <cluster> [kubectl args...]
 clusters:
   ot | ottawa        -> $ROOT/.kube/config, context ottawa-k8s-operator.keiretsu.ts.net
   rb | robbinsdale   -> $ROOT/.kube/config, context robbinsdale-k8s-operator.keiretsu.ts.net
-  sp | stpetersburg  -> ~/.kube/stpetersburg
+  sp | stpetersburg  -> \$ROOT/.kube/config, context stpetersburg-k8s-operator.keiretsu.ts.net
 examples:
   ${0##*/} ot -n media get pods
   ${0##*/} rb get ns
@@ -36,7 +36,7 @@ context=""
 case "$1" in
   ot|ottawa)       kubeconfig="$ROOT/.kube/config";  context="ottawa-k8s-operator.keiretsu.ts.net" ;;
   rb|robbinsdale)  kubeconfig="$ROOT/.kube/config";  context="robbinsdale-k8s-operator.keiretsu.ts.net" ;;
-  sp|stpetersburg) kubeconfig="$HOME/.kube/stpetersburg" ;;
+  sp|stpetersburg) kubeconfig="$ROOT/.kube/config"; context="stpetersburg-k8s-operator.keiretsu.ts.net" ;;
   -h|--help)       usage; exit 0 ;;
   *) echo "kc.sh: unknown cluster '$1' (valid: ot|ottawa rb|robbinsdale sp|stpetersburg)" >&2
      usage; exit 2 ;;
