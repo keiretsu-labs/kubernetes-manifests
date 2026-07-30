@@ -3,15 +3,14 @@
 #
 # DeepSeek-V4-Flash on 2× DGX Spark — vLLM v1 engine (DSpark spec-decode)
 #
-# Architecture  : TP=2 via PyTorch mp backend, DSpark spec-decode,
-#                 fp8 KV cache, LeaderWorkerSet gang scheduling.
+# Architecture  : TP=2 via PyTorch mp backend, DSpark k=5 spec-decode,
+#                 NVFP4 sparse-MLA KV cache, LeaderWorkerSet gang scheduling.
 # Image         : ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
-#                 (Aiden's community image, B12X MoE, CUDA 12.1, sm121)
-#                 Built from: https://github.com/local-inference-lab/vllm/tree/dev/unholy-fusion
-# Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8, 79.44 GiB)
+#                 (custom arm64 vLLM 0.21+B12X runtime with NVFP4 patches)
+# Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8 weights)
 #
-# Key settings (kept from comprehensive upgrade):
-# - --max-num-seqs 6, --max-model-len 1000000
+# Key settings:
+# - --max-num-seqs 4, --max-model-len 1048576
 # - --enable-chunked-prefill, --enable-prefix-caching, --async-scheduling
 # - --reasoning-config, --default-chat-template-kwargs '{"thinking":false}'
 # - --generation-config vllm (no server-side sampling override)
@@ -19,9 +18,9 @@
 # - VLLM_USE_B12X_MOE=1, VLLM_USE_B12X_WO_PROJECTION=1 (critical speed lift)
 # - DSpark garble-fix env vars (confidence_scheduler=off, local_argmax=1, etc.)
 #
-# Memory guard  : 93Gi Guaranteed QoS, drop-caches init + loop sidecar,
-#                 GPU reset at startup. DSpark weights: 79.44 GiB.
-#                 fp8 KV: ~800K ctx fits (6.53 GiB KV avail).
+# Memory guard  : 95Gi Guaranteed QoS, drop-caches init + loop sidecar,
+#                 GPU reset at startup. DSpark weights: ~79 GiB.
+#                 NVFP4 KV: 1M calibrated context at 0.76 utilization.
 ---
 apiVersion: v1
 kind: ConfigMap
