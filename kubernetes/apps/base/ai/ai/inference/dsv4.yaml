@@ -7,7 +7,7 @@
 #                 NVFP4 sparse-MLA KV cache, LeaderWorkerSet gang scheduling.
 # Image         : ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
 #                 (custom arm64 vLLM 0.21+B12X runtime with NVFP4 patches)
-# Model         : deepseek-ai/DeepSeek-V4-Flash-DSpark (48 shards, FP8 weights)
+# Model         : deepseek-ai/DeepSeek-V4-Flash-0731@9e165c30 (48 shards, FP8 weights)
 #
 # Key settings:
 # - --max-num-seqs 6, --max-model-len 1048576
@@ -32,27 +32,37 @@ data:
     #!/bin/bash
     set -euo pipefail
     MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
-    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-DSpark}"
+    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-0731}"
+    HF_REVISION="$${HF_REVISION:-9e165c30e2704aec5d9d593cce3eebd58bbef1cb}"
+    MODEL_MARKER="$${MODEL_DIR}/.model-revision"
+    EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
     EXPECTED=48
 
     mkdir -p "$${MODEL_DIR}"
     cd "$${MODEL_DIR}"
 
-    # Check if model is already cached on PVC — skip download if complete
+    # Reuse only the exact pinned model revision. A shard-count-only check would
+    # incorrectly keep the superseded preview weights because both have 48 shards.
     COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
-    if [ "$${COUNT}" -ge "$${EXPECTED}" ]; then
+    CURRENT_MARKER="$$(cat "$${MODEL_MARKER}" 2>/dev/null || true)"
+    if [ "$${COUNT}" -eq "$${EXPECTED}" ] && [ "$${CURRENT_MARKER}" = "$${EXPECTED_MARKER}" ]; then
       echo "[download] All $${EXPECTED} shards already present — skipping download."
       echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
       echo "[download] Done."
       exit 0
     fi
 
+    if [ "$${CURRENT_MARKER}" != "$${EXPECTED_MARKER}" ]; then
+      echo "[download] Model revision changed ($${CURRENT_MARKER:-unmarked} -> $${EXPECTED_MARKER}); clearing old weights."
+      find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+    fi
+
     # Clean stale lock files from previous force-killed downloads
     echo "[download] Cleaning stale lock files…"
     rm -rf "$${MODEL_DIR}"/.cache/huggingface/download/*.lock 2>/dev/null || true
 
-    echo "[download] Starting model download with hf CLI ($${HF_REPO})…"
-    hf download "$${HF_REPO}" --local-dir "$${MODEL_DIR}" 2>&1
+    echo "[download] Starting model download with hf CLI ($${HF_REPO}@$${HF_REVISION})…"
+    hf download "$${HF_REPO}" --revision "$${HF_REVISION}" --local-dir "$${MODEL_DIR}" 2>&1
 
     echo "[validate] Checking for $${EXPECTED} shards…"
     COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
@@ -60,8 +70,8 @@ data:
 
     if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
       echo "[ERROR] Expected $${EXPECTED} shards, got $${COUNT}. Redownloading…"
-      rm -rf "$${MODEL_DIR}"/*
-      hf download "$${HF_REPO}" --local-dir "$${MODEL_DIR}" 2>&1
+      find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+      hf download "$${HF_REPO}" --revision "$${HF_REVISION}" --local-dir "$${MODEL_DIR}" 2>&1
       COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
       if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
         echo "[FATAL] Still only $${COUNT} shards after retry. Aborting."
@@ -69,6 +79,7 @@ data:
       fi
     fi
 
+    printf '%s\n' "$${EXPECTED_MARKER}" > "$${MODEL_MARKER}"
     echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
     echo "[download] Done."
 ---
@@ -194,7 +205,7 @@ spec:
             python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
             echo "[dspark] Patches applied. Starting vLLM with correct 5-token DSpark block in memory-safe eager mode…"
             exec vllm serve /models/dsv4 \
-              --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
+              --served-model-name deepseek-v4-flash deepseek-v4-flash-0731 deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
@@ -397,7 +408,7 @@ spec:
             python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
             echo "[dspark] Patches applied. Starting vLLM worker…"
             exec vllm serve /models/dsv4 \
-              --served-model-name deepseek-v4-flash deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
+              --served-model-name deepseek-v4-flash deepseek-v4-flash-0731 deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
