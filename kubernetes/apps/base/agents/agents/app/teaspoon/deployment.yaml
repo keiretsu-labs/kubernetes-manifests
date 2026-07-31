@@ -20,7 +20,7 @@ spec:
     spec:
       initContainers:
         - name: configure-cliproxy
-          image: nousresearch/hermes-agent:v2026.7.20
+          image: nousresearch/hermes-agent:v2026.7.30
           command:
             - python
             - -c
@@ -80,7 +80,7 @@ spec:
               mountPath: /opt/data
       containers:
         - name: gateway
-          image: nousresearch/hermes-agent:v2026.7.20
+          image: nousresearch/hermes-agent:v2026.7.30
           args: ["gateway", "run"]
           envFrom:
             - configMapRef:
