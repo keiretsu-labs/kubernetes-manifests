@@ -46,6 +46,17 @@ spec:
             secretKeyRef:
               name: woodpecker-postgres-app
               key: uri
+        # Persist the gRPC JWT signing secret across server restarts. When unset,
+        # the server mints a fresh random secret on every boot, invalidating every
+        # agent's cached JWT and forcing all agents to CrashLoop-reconnect (seen
+        # during the 3.17 upgrade outage). Reuse the chart-managed agent secret —
+        # it is already stable (createAgentSecret writes it once and keeps it), so
+        # no new secret material is introduced.
+        WOODPECKER_GRPC_SECRET:
+          valueFrom:
+            secretKeyRef:
+              name: woodpecker-default-agent-secret
+              key: WOODPECKER_AGENT_SECRET
       createAgentSecret: true
       service:
         type: ClusterIP
