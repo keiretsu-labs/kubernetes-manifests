@@ -8,6 +8,5 @@ resources:
 - httproute.yaml
 - postgres.yaml
 - s3-backup.yaml
-- backup-validation.yaml
 - dragonfly.yaml
 - secret.yaml
