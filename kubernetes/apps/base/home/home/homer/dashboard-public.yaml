@@ -75,27 +75,6 @@ spec:
           tag: "k8gb"
           tagstyle: "is-info"
           url: "https://keiretsu.ts.${COMMON_DOMAIN}/"
-    - parameters:
-        name: "Media"
-        icon: "fas fa-tv"
-      items:
-      - parameters:
-          name: "Jellyseerr"
-          subtitle: "Request Media"
-          tag: "requests"
-          tagstyle: "is-info"
-          url: "https://jellyseerr.rajsingh.info/"
-          logo: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyseerr.svg"
-      - parameters:
-          name: "Jellyfin Client Desktop"
-          subtitle: "macOS/Windows"
-          url: "https://github.com/jellyfin/jellyfin-media-player/releases"
-          logo: "https://raw.githubusercontent.com/jellyfin/jellyfin-media-player/refs/heads/master/resources/images/icon.svg"
-      - parameters:
-          name: "Jellyfin Client Mobile"
-          subtitle: "iOS/Android"
-          url: "https://streamyfin.app/"
-          logo: "https://avatars.githubusercontent.com/u/193271640?s=280&v=4"
   gatewaySelector:
     matchLabels:
       gateway: public

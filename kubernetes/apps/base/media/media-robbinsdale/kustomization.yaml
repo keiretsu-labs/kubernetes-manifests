@@ -4,8 +4,6 @@ kind: Kustomization
 namespace: media
 resources:
   - pvc-media.yaml
-  - probes.yaml
-  - ./jellyfin
   - ./autobrr
   - ./prowlarr
   - ./radarr-4k
@@ -23,8 +21,6 @@ resources:
   - ./plex
   - ./tautulli
   - ./overseerr
-  - ./jellyseerr
-  - ./jellystat
   - ./lidarr
   - ./wizarr
   - ./configarr

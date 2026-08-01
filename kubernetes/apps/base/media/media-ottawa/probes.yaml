@@ -11,10 +11,6 @@ spec:
   targets:
     staticConfig:
       static:
-        # Jellyfin stack
-        - http://jellyfin.media:8096/health
-        - http://jellystat.media:3000
-        - http://jellyseerr.media:5055
         # Plex
         - http://plex.media:32400/identity
         # *arr — movies

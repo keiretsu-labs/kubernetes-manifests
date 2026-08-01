@@ -233,36 +233,6 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-        - name: Jellyfin
-          group: Media
-          url: http://jellyfin.media:8096/health
-          interval: 60s
-          conditions:
-            - "[STATUS] == 200"
-            - "[RESPONSE_TIME] < 3000"
-          alerts:
-            - type: discord
-              send-on-resolved: true
-        - name: Jellystat
-          group: Media
-          url: http://jellystat.media:3000
-          interval: 60s
-          conditions:
-            - "[STATUS] == 200"
-            - "[RESPONSE_TIME] < 3000"
-          alerts:
-            - type: discord
-              send-on-resolved: true
-        - name: Jellyseerr
-          group: Media
-          url: http://jellyseerr.media:5055
-          interval: 60s
-          conditions:
-            - "[STATUS] == 200"
-            - "[RESPONSE_TIME] < 3000"
-          alerts:
-            - type: discord
-              send-on-resolved: true
         - name: Radarr 4k Remux
           group: Media
           url: http://radarr-4kremux.media:7878
