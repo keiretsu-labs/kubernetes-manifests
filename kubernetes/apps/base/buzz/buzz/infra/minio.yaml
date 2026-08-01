@@ -7,6 +7,7 @@ spec:
   selector:
     app.kubernetes.io/name: minio
     app.kubernetes.io/instance: buzz
+    app.kubernetes.io/component: object-storage
   ports:
     - name: s3
       port: 9000
