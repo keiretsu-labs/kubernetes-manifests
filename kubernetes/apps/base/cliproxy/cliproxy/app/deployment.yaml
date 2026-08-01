@@ -12,6 +12,8 @@ spec:
       app.kubernetes.io/name: cliproxy
   template:
     metadata:
+      annotations:
+        backup.velero.io/backup-volumes-excludes: logs
       labels:
         app.kubernetes.io/name: cliproxy
     spec:
@@ -290,7 +292,8 @@ spec:
                 enable: false
                 addr: "127.0.0.1:8316"
               logging-to-file: true
-              logs-max-total-size-mb: 256
+              logs-max-total-size-mb: 0
+              request-log: true
               usage-statistics-enabled: false
               ws-auth: true
               routing:
@@ -340,6 +343,8 @@ spec:
           env:
             - name: HOME
               value: /data
+            - name: WRITABLE_PATH
+              value: /var/lib/cliproxy
             - name: MANAGEMENT_STATIC_PATH
               value: /data/static
           ports:
@@ -387,6 +392,51 @@ spec:
               readOnly: true
             - name: data
               mountPath: /data
+            - name: logs
+              mountPath: /var/lib/cliproxy
+        - name: log-forwarder
+          image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              mkdir -p /var/lib/cliproxy/logs
+
+              cleanup_request_logs() {
+                find /var/lib/cliproxy/logs -maxdepth 1 -type f \
+                  -mmin +5760 ! -name main.log \
+                  -exec rm -f -- {} \;
+                find /var/lib/cliproxy/logs -maxdepth 1 -type d \
+                  -name 'request-log-parts-*' -mmin +5760 \
+                  -exec rm -rf -- {} \;
+              }
+
+              cleanup_request_logs
+              while sleep 3600; do
+                cleanup_request_logs
+              done &
+
+              while [ ! -f /var/lib/cliproxy/logs/main.log ]; do
+                sleep 1
+              done
+              exec tail -n 0 -F /var/lib/cliproxy/logs/main.log
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: logs
+              mountPath: /var/lib/cliproxy
       volumes:
         - name: config
           emptyDir:
@@ -399,3 +449,6 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: cliproxy-data
+        - name: logs
+          persistentVolumeClaim:
+            claimName: cliproxy-logs
