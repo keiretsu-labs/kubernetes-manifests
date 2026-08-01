@@ -6,7 +6,9 @@ metadata:
   namespace: media
 spec:
   configuration:
-    destinationPath: s3://tracearr-postgres/
+    # Garage is federated across sites. Keep each CNPG cluster in its own
+    # prefix so simultaneous backups cannot share a Barman catalog.
+    destinationPath: s3://tracearr-postgres/${LOCATION}/
     endpointURL: http://${COMMON_S3_ENDPOINT}
     s3Credentials:
       accessKeyId:
