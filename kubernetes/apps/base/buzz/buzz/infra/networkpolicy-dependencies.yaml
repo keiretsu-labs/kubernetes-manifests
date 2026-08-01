@@ -61,12 +61,19 @@ spec:
             app.kubernetes.io/component: relay
         - matchLabels:
             app: dragonfly-buzz
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+    - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: dragonfly-operator-system
             control-plane: controller-manager
       toPorts:
         - ports:
             - port: "6379"
+              protocol: TCP
+            - port: "9999"
               protocol: TCP
     - fromEndpoints:
         - matchLabels:
