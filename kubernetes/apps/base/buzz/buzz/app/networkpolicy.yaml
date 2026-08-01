@@ -71,11 +71,13 @@ spec:
               protocol: TCP
     - toEndpoints:
         - matchLabels:
-            k8s:io.kubernetes.pod.namespace: garage
-            garage.rajsingh.info/tier: gateway
+            k8s:io.kubernetes.pod.namespace: buzz
+            app.kubernetes.io/name: minio
+            app.kubernetes.io/instance: buzz
+            app.kubernetes.io/component: object-storage
       toPorts:
         - ports:
-            - port: "3900"
+            - port: "9000"
               protocol: TCP
     - toEndpoints:
         - matchLabels:

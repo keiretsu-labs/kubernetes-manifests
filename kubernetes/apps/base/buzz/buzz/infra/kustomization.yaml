@@ -6,5 +6,6 @@ resources:
   - postgres.yaml
   - redis.yaml
   - object-storage.yaml
+  - minio.yaml
   - networkpolicy-dependencies.yaml
   - servicemonitor-dragonfly.yaml

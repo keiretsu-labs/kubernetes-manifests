@@ -13,6 +13,7 @@ spec:
     - name: cnpg-system
     - name: dragonfly-operator-system
     - name: garage
+    - name: rook-ceph-cluster-config
   path: ./kubernetes/apps/base/buzz/buzz/infra
   prune: true
   sourceRef:

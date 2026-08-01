@@ -2,9 +2,9 @@
 
 This stack uses Block's released Buzz chart `0.1.7` from
 `oci://ghcr.io/block/buzz/charts/buzz`. It provisions dedicated, operator-managed
-Postgres and Dragonfly instances and a dedicated bucket/key on the shared Garage
-cluster. The relay is configured for two replicas at
-`wss://buzz.ottawa.keiretsu.top` behind the Ottawa public Gateway.
+Postgres and Dragonfly instances plus a dedicated single-replica MinIO object
+store backed by a replicated Ceph block volume. The relay is configured for two
+replicas at `wss://buzz.ottawa.keiretsu.top` behind the Ottawa public Gateway.
 
 The HelmRelease uses the operator's configured owner identity and the
 SOPS-encrypted `buzz-identity` Secret. A production Flux render must not use the
@@ -15,8 +15,9 @@ chart's generated-secret path. To rotate only the Git hook HMAC secret:
    `BUZZ_GIT_HOOK_HMAC_SECRET` (at least 32 random characters). Add that file to
    `app/kustomization.yaml`.
 2. Wait for `ExternalSecret/buzz-secrets` to become Ready. It combines the
-   identity secret with CNPG's generated database URL and Garage's generated S3
-   credentials. Dragonfly is private to the namespace and uses an in-cluster URL.
+   identity secret with CNPG's generated database URL and the existing generated
+   `buzz-s3` credentials, which are also MinIO's root credentials. Dragonfly is
+   private to the namespace and uses an in-cluster URL.
 3. Let Flux reconcile the HelmRelease normally.
 
 Do not rotate `BUZZ_RELAY_PRIVATE_KEY`: it is the permanent relay identity. Do
@@ -51,12 +52,15 @@ The CNPG `Cluster` owns database recovery: restore it from the
 `buzz-postgres-backup` external cluster definition before allowing the relay to
 start against a replacement database.
 
-The separate `buzz` Garage bucket is authoritative for relay media and
-object-backed Git state. CNPG does not back up that bucket. Garage operators own
-restoring or repairing object data and its bucket/key metadata before Buzz is
-resumed; the Buzz deployment only consumes the restored bucket and credentials.
-Database and object data should be restored to a consistent recovery point when
-recovering the whole service.
+The `buzz` bucket in the dedicated MinIO StatefulSet is authoritative for relay
+media and object-backed Git state. Its `200Gi` `ceph-block-replicated` PVC is
+retained if the StatefulSet is removed. The old Garage `buzz` bucket and key are
+temporarily retained so Garage can continue generating the existing `buzz-s3`
+Secret without introducing another encrypted credential; Buzz network policy
+does not permit the relay to connect to Garage. Database and object data should
+be restored to a consistent recovery point when recovering the whole service.
+
+The `buzz-postgres` bucket remains on Garage and is still the CNPG backup target.
 
 The Dragonfly cache is intentionally non-durable and is not part of restore.
 Its operator-generated NetworkPolicy is disabled because this stack supplies a

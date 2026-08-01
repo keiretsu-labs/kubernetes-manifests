@@ -68,7 +68,7 @@ spec:
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: dragonfly-operator-system
-            control-plane: controller-manager
+            io.cilium.k8s.policy.serviceaccount: dragonfly-operator-controller-manager
       toPorts:
         - ports:
             - port: "6379"
@@ -82,4 +82,83 @@ spec:
       toPorts:
         - ports:
             - port: "9999"
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: buzz-minio-ingress
+spec:
+  description: Keep Buzz's authoritative object store private to the relay and bucket initializer.
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: minio
+      app.kubernetes.io/instance: buzz
+      app.kubernetes.io/component: object-storage
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: buzz
+            app.kubernetes.io/instance: buzz
+            app.kubernetes.io/component: relay
+        - matchLabels:
+            app.kubernetes.io/name: minio
+            app.kubernetes.io/instance: buzz
+            app.kubernetes.io/component: bucket-init
+      toPorts:
+        - ports:
+            - port: "9000"
+              protocol: TCP
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "9000"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: /minio/health/live$
+              - method: GET
+                path: /minio/health/ready$
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: buzz-minio-bucket-init-egress
+spec:
+  description: Allow the declarative bucket initializer to reach only MinIO and cluster DNS.
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: minio
+      app.kubernetes.io/instance: buzz
+      app.kubernetes.io/component: bucket-init
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: minio
+            app.kubernetes.io/instance: buzz
+            app.kubernetes.io/component: object-storage
+      toPorts:
+        - ports:
+            - port: "9000"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    - toEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
               protocol: TCP

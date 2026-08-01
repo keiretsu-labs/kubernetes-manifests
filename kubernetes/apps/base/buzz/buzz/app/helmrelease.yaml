@@ -29,7 +29,7 @@ spec:
       existingSecret: buzz-secrets
 
     s3:
-      endpoint: http://${COMMON_S3_ENDPOINT}
+      endpoint: http://minio.buzz.svc.cluster.local:9000
       bucket: buzz
 
     persistence:
@@ -60,7 +60,9 @@ spec:
         - name: RUST_LOG
           value: buzz_relay=info,buzz_db=info,buzz_auth=info,buzz_pubsub=info,tower_http=info
         - name: BUZZ_S3_REGION
-          value: garage
+          value: us-east-1
+        - name: BUZZ_S3_ADDRESSING_STYLE
+          value: path
         - name: BUZZ_GIT_CONFORMANCE_PROBE
           value: "true"
 
