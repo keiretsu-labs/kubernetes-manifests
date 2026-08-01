@@ -1,0 +1,73 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: buzz-postgres
+spec:
+  inheritedMetadata:
+    labels:
+      app.kubernetes.io/part-of: buzz
+  enablePDB: true
+  instances: 2
+  bootstrap:
+    initdb:
+      database: buzz
+      owner: buzz
+      dataChecksums: true
+  storage:
+    size: 20Gi
+    storageClass: ceph-block-replicated
+  monitoring:
+    enablePodMonitor: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: buzz-postgres-s3-store
+        serverName: buzz-postgres
+  backup:
+    retentionPolicy: "30d"
+  externalClusters:
+    - name: buzz-postgres-backup
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: buzz-postgres-s3-store
+          serverName: buzz-postgres
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: buzz-postgres-s3-store
+spec:
+  configuration:
+    destinationPath: s3://buzz-postgres/ottawa/
+    endpointURL: http://${COMMON_S3_ENDPOINT}
+    s3Credentials:
+      accessKeyId:
+        name: buzz-postgres-s3
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: buzz-postgres-s3
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      maxParallel: 8
+  instanceSidecarConfiguration:
+    env:
+      - name: AWS_DEFAULT_REGION
+        value: garage
+  retentionPolicy: "30d"
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: buzz-postgres-s3
+spec:
+  schedule: "0 30 2 * * *"
+  immediate: true
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: buzz-postgres

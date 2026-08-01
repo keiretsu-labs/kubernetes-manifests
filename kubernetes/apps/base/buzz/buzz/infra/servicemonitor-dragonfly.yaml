@@ -1,0 +1,35 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dragonfly-buzz
+  labels:
+    app.kubernetes.io/name: dragonfly-buzz
+    app.kubernetes.io/part-of: buzz
+spec:
+  selector:
+    matchLabels:
+      monitoring.keiretsu.top/service: dragonfly-buzz
+  endpoints:
+    - port: admin
+      path: /metrics
+      interval: 30s
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dragonfly-buzz-metrics
+  labels:
+    app.kubernetes.io/name: dragonfly-buzz-metrics
+    app.kubernetes.io/part-of: buzz
+    monitoring.keiretsu.top/service: dragonfly-buzz
+spec:
+  selector:
+    app: dragonfly-buzz
+    app.kubernetes.io/name: dragonfly
+    role: master
+  ports:
+    - name: admin
+      port: 9999
+      targetPort: admin
+      protocol: TCP

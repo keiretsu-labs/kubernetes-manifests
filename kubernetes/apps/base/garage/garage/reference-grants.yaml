@@ -53,3 +53,7 @@ spec:
       namespace: tempo
     - kind: GarageBucket
       namespace: tempo
+    - kind: GarageKey
+      namespace: buzz
+    - kind: GarageBucket
+      namespace: buzz
