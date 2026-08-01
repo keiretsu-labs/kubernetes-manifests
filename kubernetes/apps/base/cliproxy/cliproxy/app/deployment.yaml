@@ -289,7 +289,8 @@ spec:
               pprof:
                 enable: false
                 addr: "127.0.0.1:8316"
-              logging-to-file: false
+              logging-to-file: true
+              logs-max-total-size-mb: 256
               usage-statistics-enabled: false
               ws-auth: true
               routing:
