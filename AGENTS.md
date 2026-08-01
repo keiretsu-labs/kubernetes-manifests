@@ -39,7 +39,13 @@ integration for cross-cluster networking and access.
 - **Secrets are SOPS-encrypted** (`*.sops.yaml`, PGP key
   FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5). Never commit plaintext secrets,
   kubeconfigs, `talsecret.yaml`, or decrypted `*.dec` files.
-- **Commit as the local user only** (rajsinghtech / rajsinghcpre@gmail.com).
+- **Commit attribution must match the authenticated human user.** Before every
+  commit, resolve the authenticated GitHub user and use an email already present
+  in that user's commits in this repository (for `kbpersonal`, use
+  `kbpersonal <kbpersonal@killinit.cc>`). Never copy an identity from repository
+  history, documentation, another contributor, or a previous workspace. If the
+  authenticated user cannot be determined unambiguously, ask the user to confirm
+  their name and commit email, then stop before committing until they answer.
   No AI signatures, co-author trailers, or generated-with lines.
 - You have local network access to pod/service/LB CIDRs over Tailscale —
   curl services directly, no port-forwarding needed.
