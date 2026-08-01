@@ -1,0 +1,190 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: cliproxy
+  labels:
+    app.kubernetes.io/name: cliproxy
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: 30m
+  folder: Cliproxy
+  json: |
+    {
+      "title": "CliProxy",
+      "schemaVersion": 39,
+      "version": 1,
+      "uid": "cliproxy-logs",
+      "time": {"from": "now-6h", "to": "now"},
+      "refresh": "30s",
+      "tags": ["cliproxy", "logs"],
+      "templating": {
+        "list": [
+          {
+            "name": "pod_name",
+            "type": "textbox",
+            "label": "Pod (regex)",
+            "query": ".*",
+            "current": {"text": ".*", "value": ".*"}
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "type": "logs",
+          "title": "CliProxy Logs",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 14, "w": 24, "x": 0, "y": 0},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+              "query": "kubernetes.namespace_name:cliproxy and kubernetes.pod_name:~\"$pod_name\"",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": true,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "dedupStrategy": "none",
+            "sortOrder": "Descending"
+          }
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Total Log Entries",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 14},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+              "query": "kubernetes.namespace_name:cliproxy and kubernetes.pod_name:~\"$pod_name\" | stats count(*)",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "auto",
+            "textMode": "value",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Errors",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 4, "w": 6, "x": 6, "y": 14},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+              "query": "kubernetes.namespace_name:cliproxy and kubernetes.pod_name:~\"$pod_name\" and error | stats count(*)",
+              "queryType": "range"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "auto",
+            "textMode": "value",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "Requests (chat/completions)",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 4, "w": 6, "x": 12, "y": 14},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+              "query": "kubernetes.namespace_name:cliproxy and kubernetes.pod_name:~\"$pod_name\" and \"chat/completions\" | stats count(*)",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "auto",
+            "textMode": "value",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 5,
+          "type": "timeseries",
+          "title": "Log Volume Over Time",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 18},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+              "query": "kubernetes.namespace_name:cliproxy and kubernetes.pod_name:~\"$pod_name\" | stats count(*)",
+              "queryType": "range"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "showPoints": "never",
+                "spanNulls": false
+              },
+              "unit": "short"
+            }
+          }
+        },
+        {
+          "id": 6,
+          "type": "table",
+          "title": "Top Pods by Log Volume",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 26},
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+              "query": "kubernetes.namespace_name:cliproxy | stats by (kubernetes.pod_name) count(*)",
+              "queryType": "range",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "showHeader": true,
+            "sortBy": [{"displayName": "Value", "desc": true}]
+          }
+        }
+      ]
+    }
