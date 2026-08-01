@@ -2,25 +2,6 @@
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
-  name: jellystat-postgres
-spec:
-  clusterRef:
-    name: garage
-  globalAlias: jellystat-postgres
-  quotas:
-    maxSize: 50Gi
-    maxObjects: 1000000
-  keyPermissions:
-    - keyRef:
-        name: jellystat-postgres-key
-        namespace: media
-      read: true
-      write: true
-      owner: true
----
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageBucket
-metadata:
   name: tracearr-postgres
 spec:
   clusterRef:
