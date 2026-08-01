@@ -6,6 +6,7 @@ resources:
   - ocirepository.yaml
   - helmrelease.yaml
   - buzz-identity.sops.yaml
+  - secretstore.yaml
   - externalsecret.yaml
   - networkpolicy.yaml
   - probe.yaml
