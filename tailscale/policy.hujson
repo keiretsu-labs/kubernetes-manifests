@@ -89,6 +89,12 @@
 			"recorder":        ["tag:k8s-recorder"],
 			"enforceRecorder": true,
 		},
+		{
+			"action": "accept",
+			"src":    ["autogroup:member"],
+			"dst":    ["autogroup:self"],
+			"users":  ["autogroup:nonroot", "root"],
+		},
 	],
 	"grants": [
 		{
