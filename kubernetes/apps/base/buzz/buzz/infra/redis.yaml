@@ -5,6 +5,7 @@ metadata:
   name: dragonfly-buzz
 spec:
   replicas: 2
+  enableReplicationReadinessGate: true
   networkPolicyEnabled: false
   args:
     - --maxmemory=2G
