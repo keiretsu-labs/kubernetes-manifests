@@ -1,0 +1,17 @@
+---
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: dragonfly-buzz
+spec:
+  replicas: 2
+  networkPolicyEnabled: false
+  args:
+    - --maxmemory=2G
+    - --proactor_threads=2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 1Gi
+    limits:
+      memory: 2500Mi

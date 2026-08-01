@@ -1,0 +1,12 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: buzz
+resources:
+  - ocirepository.yaml
+  - helmrelease.yaml
+  - buzz-identity.sops.yaml
+  - externalsecret.yaml
+  - networkpolicy.yaml
+  - probe.yaml
+  - prometheusrule.yaml

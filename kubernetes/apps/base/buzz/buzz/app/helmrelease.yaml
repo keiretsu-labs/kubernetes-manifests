@@ -1,0 +1,79 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: buzz
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: buzz
+  interval: 1h
+  timeout: 10m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    fullnameOverride: buzz
+    relayUrl: wss://buzz.ottawa.keiretsu.top
+    ownerPubkey: b0ea34e1aad99dd51ea38673f433e43e6d7a73e557b95a2145e3a45ff3d5f12e
+    replicaCount: 2
+
+    secrets:
+      existingSecret: buzz-secrets
+
+    s3:
+      endpoint: http://${COMMON_S3_ENDPOINT}
+      bucket: buzz
+
+    persistence:
+      git:
+        enabled: false
+        size: 20Gi
+
+    relay:
+      corsOrigins:
+        - https://buzz.ottawa.keiretsu.top
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          cpu: "2"
+          memory: 2Gi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: buzz
+              app.kubernetes.io/instance: buzz
+              app.kubernetes.io/component: relay
+      extraEnv:
+        - name: RUST_LOG
+          value: buzz_relay=info,buzz_db=info,buzz_auth=info,buzz_pubsub=info,tower_http=info
+        - name: BUZZ_GIT_CONFORMANCE_PROBE
+          value: "true"
+
+    httproute:
+      enabled: true
+      parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: public
+          namespace: home
+          sectionName: wildcard-location-keiretsu-top-https
+      hostnames:
+        - buzz.ottawa.keiretsu.top
+
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      scrapeTimeout: 10s
+
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1

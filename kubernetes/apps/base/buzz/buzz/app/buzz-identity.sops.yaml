@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: buzz-identity
+    namespace: buzz
+type: Opaque
+stringData:
+    BUZZ_RELAY_PRIVATE_KEY: ENC[AES256_GCM,data:JmoAJsURzovWn93cbwV9TJEv9XYswhO8Y5Dy9/gcBC+00uEtKlFCPZQOQApWl0w2IidQusaw1X7Nbu8xUcbeRw==,iv:HQe0drQONzgBS0tunUvA83CE2sUHcR6krvpPlYFSi0E=,tag:ObNdL39DEOby4o7cQjdGBQ==,type:str]
+    BUZZ_GIT_HOOK_HMAC_SECRET: ENC[AES256_GCM,data:/3+9O/b03f/qOCCTf0gc4pjonXg90PC8XVtC1pgO4Yuzy9FpPHAoZvFrdfIdmfdgbxvL6TSafwhJr7TJ9MPS5A==,iv:bodhj6tSJQcXcFTjeDSgrvpW5JlK75gkGJwx/LV8Ufc=,tag:51x1tgPG74XokKOcSpbPoA==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-08-01T16:50:53Z"
+    mac: ENC[AES256_GCM,data:Wjiz6Mln8j5euKwJ/ZkGyT19CoLyutt+zbUFeyNZDCtVAs4TxLTavigeb22aZOrUCLENPs5H5Xpn8qBjzp9zZDaR76oBPg1wxO9ebbCzHp3cIF9WKfdRIDhQJCV2Hef6zDmUTGchCyCmgGNRPp1z4vjRIuW5S08AcsjyzvxDJjI=,iv:sdACwnsKqHuDlEAzoTtAhChQnIw8KBen8elbqmQZ2JA=,tag:fz/6bkfqLCGHNWaJ0lDG3Q==,type:str]
+    pgp:
+        - created_at: "2026-08-01T16:50:53Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveAQ//avWcee02+oc5n2gVIJ0iXOf+4XwzSsV872oHKSRC0ZDy
+            DALqHr18kLjNXbVsHvYq8B2Hzy0MarfJfl01DEbZbsDmnL1LpbTBP8XxzkBXVHH1
+            VUZf/sMAgvJc9cYDu9d4y/dRfSWTsoGwSsRGc6M9F90TRhg5ZMfBeX7pLiuAXdie
+            5zvT/FKqar3udSy8yjZpck+OIQO6GN/Ct2/c7MKUEQQBcZvWGlbJhiVPyrKDa5t8
+            BA0COn6q/A5AXhDblm+wqSkxUCpFJuMmjgSHYVYm8PcpVudrcouMjqOPM7WDrP7s
+            w8hMNgwovUPzqiNdeUzHj95ERBqNLiXXACLSvTggx6h/G0C0YahT5514p8++fOK3
+            4MT9GtYmfzxLmPjPMnpTOzDUnGv5mjFqr9DvUQNLxFDPDzX+JkGhb9aHpc4VIrxg
+            GEOf+JMHdcyU/pjJB1/qAOBc/nJaSyI9f23Eqim2clldIfyE5+Aw5sz0Sv7cEB6P
+            8CLiKF0Ot9sv3cpiLWKXOjF9GclEP6obocQwIb38bNC9TKDNIDZ+nIQwspbXkjvQ
+            XcBYf0j4MfFgy/7PTLvhPFe6WY89pflFKCwgt1PkmScEvk7pVTsr8Pq1VW7ZmBzV
+            rtQAGOZ8Uio8492+2UBWQ0EsxNELy+lJyEiGHldu5gDbrf+trdpM20tqzn1F8HnS
+            XgEN3yJlTsJu4GrckZX8XLx07gj83LoCCTyioJe72BnBnMd/emUD0w7UrDE3irAZ
+            IPCTUdgdLcSx/iimTrraBDuwWVwlPt+SzRDDLt9K+pabFTxbwbsx4I9A9bOdCb8=
+            =UgPR
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.3

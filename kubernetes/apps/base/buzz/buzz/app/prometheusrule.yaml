@@ -1,0 +1,57 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: buzz
+  labels:
+    app.kubernetes.io/name: buzz
+spec:
+  groups:
+    - name: buzz.rules
+      rules:
+        - alert: BuzzRelayReplicasUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="buzz",deployment="buzz"} < 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Buzz relay has fewer than two available replicas
+            description: The Ottawa Buzz relay has been below its two-replica target for 5 minutes.
+        - alert: BuzzRelayMetricsAbsent
+          expr: |
+            absent(up{namespace="buzz",job="buzz"} == 1)
+            and on() kube_deployment_spec_replicas{namespace="buzz",deployment="buzz"} > 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: Buzz relay metrics are absent
+            description: Prometheus has not scraped a healthy Buzz relay target for 10 minutes.
+        - alert: BuzzPublicEndpointUnavailable
+          expr: |
+            probe_success{service="buzz",target="public",check="https"} == 0
+            and on() kube_deployment_spec_replicas{namespace="buzz",deployment="buzz"} > 0
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: Buzz public HTTPS endpoint is unavailable
+            description: The external HTTPS probe to buzz.ottawa.keiretsu.top has failed for 3 minutes.
+        - alert: BuzzDragonflyReplicasUnavailable
+          expr: kube_statefulset_status_replicas_ready{namespace="buzz",statefulset="dragonfly-buzz"} < 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Buzz Dragonfly has fewer than two ready replicas
+            description: The dedicated Buzz Dragonfly StatefulSet has been below its two-replica target for 5 minutes.
+        - alert: BuzzDragonflyMetricsAbsent
+          expr: |
+            absent(up{namespace="buzz",service="dragonfly-buzz-metrics"} == 1)
+            and on() kube_statefulset_replicas{namespace="buzz",statefulset="dragonfly-buzz"} > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Buzz Dragonfly metrics are absent
+            description: Prometheus has not received metrics from the dedicated Buzz Dragonfly service for 10 minutes.

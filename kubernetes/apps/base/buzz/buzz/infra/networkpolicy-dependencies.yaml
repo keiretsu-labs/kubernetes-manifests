@@ -1,0 +1,78 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: buzz-postgres-ingress
+spec:
+  description: Keep the dedicated Buzz database private to the relay, CNPG, and monitoring.
+  endpointSelector:
+    matchLabels:
+      cnpg.io/cluster: buzz-postgres
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: buzz
+            app.kubernetes.io/instance: buzz
+            app.kubernetes.io/component: relay
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            cnpg.io/cluster: buzz-postgres
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: cnpg-system
+            app.kubernetes.io/name: cloudnative-pg
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+            - port: "5432"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: prometheus-agent
+      toPorts:
+        - ports:
+            - port: "9187"
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: buzz-redis-ingress
+spec:
+  description: Keep the dedicated Dragonfly service private to Buzz, its replicas, the operator, and monitoring.
+  endpointSelector:
+    matchLabels:
+      app: dragonfly-buzz
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: buzz
+            app.kubernetes.io/instance: buzz
+            app.kubernetes.io/component: relay
+        - matchLabels:
+            app: dragonfly-buzz
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: dragonfly-operator-system
+            control-plane: controller-manager
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: prometheus-agent
+      toPorts:
+        - ports:
+            - port: "9999"
+              protocol: TCP
