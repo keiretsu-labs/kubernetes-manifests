@@ -10,7 +10,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: validate
-          image: alpine:3.23.3
+          image: alpine:3.24.1
           command:
             - /bin/sh
             - -c
