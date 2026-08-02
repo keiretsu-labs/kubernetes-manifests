@@ -78,7 +78,7 @@ spec:
       persistence:
         pics:
           enabled: true
-          existingClaim: immich-pics
+          existingClaim: immich-pics-v2
           globalMounts:
             - path: /pics
               readOnly: true
