@@ -6,7 +6,7 @@ metadata:
   namespace: immich
 spec:
   instances: 2
-  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:15-0.3.0
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:17-0.3.0
   postgresql:
     shared_preload_libraries:
       - "vchord.so"
