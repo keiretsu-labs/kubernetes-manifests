@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: immich
 resources:
   - helmrelease.yaml
+  - disable-network-library-watch.yaml
   - probes.yaml
   - pvc-library.yaml
   - httproute.yaml
