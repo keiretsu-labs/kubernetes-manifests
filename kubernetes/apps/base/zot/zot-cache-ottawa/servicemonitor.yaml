@@ -8,8 +8,47 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: dragonfly-zot
+      monitoring.keiretsu.top/service: dragonfly-zot
   endpoints:
-    - port: redis
+    - port: admin
       path: /metrics
       interval: 30s
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dragonfly-zot-metrics
+  labels:
+    app.kubernetes.io/name: dragonfly-zot-metrics
+    monitoring.keiretsu.top/service: dragonfly-zot
+spec:
+  selector:
+    app: dragonfly-zot
+    app.kubernetes.io/name: dragonfly
+    role: master
+  ports:
+    - name: admin
+      port: 9999
+      targetPort: admin
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dragonfly-zot-metrics
+spec:
+  podSelector:
+    matchLabels:
+      app: dragonfly-zot
+      app.kubernetes.io/name: dragonfly
+      app.kubernetes.io/part-of: dragonfly
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9999
