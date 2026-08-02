@@ -48,7 +48,7 @@ spec:
       terminationGracePeriodSeconds: 120
       initContainers:
       - name: download-models
-        image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4
+        image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4@sha256:aa8204ff722ff9bfb264a983a43e52c7910f912c32958ce295b673cba3ecff71
         command: [python3, /scripts/download.py]
         env:
         - name: HUGGING_FACE_HUB_TOKEN
@@ -82,7 +82,7 @@ spec:
             memory: "32Mi"
       containers:
       - name: vllm
-        image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4
+        image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4@sha256:aa8204ff722ff9bfb264a983a43e52c7910f912c32958ce295b673cba3ecff71
         command: [bash, -c]
         args:
         - |
@@ -248,23 +248,43 @@ data:
   download.py: |
     import glob
     import os
+    import shutil
     from huggingface_hub import snapshot_download
 
     token = os.environ.get('HUGGING_FACE_HUB_TOKEN')
+    # renovate: datasource=git-refs depName=https://huggingface.co/AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS
+    AEON_REVISION="0902999b992b94a65bec1027f8b68764c3e41f8c"
+    # renovate: datasource=git-refs depName=https://huggingface.co/z-lab/Qwen3.6-27B-DFlash
+    DFLASH_REVISION="0919688658996800f86b895034249700e9481106"
     models = [
-        ('AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS', '/models/aeon-ultimate-xs'),
-        ('z-lab/Qwen3.6-27B-DFlash', '/models/aeon-ultimate-dflash'),
+        ('AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS', AEON_REVISION, '/models/aeon-ultimate-xs'),
+        ('z-lab/Qwen3.6-27B-DFlash', DFLASH_REVISION, '/models/aeon-ultimate-dflash'),
     ]
-    for repo, path in models:
+    for repo, revision, path in models:
+        marker = os.path.join(path, '.model-revision')
+        expected_marker = f'{repo}@{revision}'
+        try:
+            with open(marker, encoding='utf-8') as handle:
+                current_marker = handle.read().strip()
+        except FileNotFoundError:
+            current_marker = ''
+
         # Verify both config.json AND at least one .safetensors weight file exist.
         # The previous check (config.json only) missed partial downloads where
         # the small files landed but the weights got interrupted, causing vLLM
         # to fail later with "Cannot find any model weights".
         has_config = os.path.exists(os.path.join(path, 'config.json'))
         has_weights = bool(glob.glob(os.path.join(path, '*.safetensors')))
+        if current_marker != expected_marker:
+            print(f'Revision changed for {repo}: {current_marker or "unmarked"} -> {expected_marker}; clearing cache', flush=True)
+            shutil.rmtree(path, ignore_errors=True)
+            has_config = False
+            has_weights = False
         if not (has_config and has_weights):
             print(f'Downloading {repo} (config={has_config}, weights={has_weights})...', flush=True)
-            snapshot_download(repo_id=repo, local_dir=path, token=token, max_workers=4)
+            snapshot_download(repo_id=repo, revision=revision, local_dir=path, token=token, max_workers=4)
+            with open(marker, 'w', encoding='utf-8') as handle:
+                handle.write(f'{expected_marker}\n')
             print(f'Done: {repo}', flush=True)
         else:
             print(f'Already cached: {repo}', flush=True)

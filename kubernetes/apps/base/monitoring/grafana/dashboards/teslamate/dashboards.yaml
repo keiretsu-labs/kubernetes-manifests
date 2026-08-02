@@ -10,7 +10,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/overview.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/overview.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -27,7 +27,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/charge-level.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/charge-level.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -44,7 +44,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/charges.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/charges.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -61,7 +61,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/charging-stats.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/charging-stats.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -78,7 +78,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/drives.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/drives.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -95,7 +95,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/drive-stats.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/drive-stats.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -112,7 +112,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/efficiency.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/efficiency.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -129,7 +129,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/trip.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/trip.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -146,7 +146,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/battery-health.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/battery-health.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -163,7 +163,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/projected-range.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/projected-range.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -180,7 +180,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/locations.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/locations.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -197,7 +197,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/visited.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/visited.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -214,7 +214,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/mileage.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/mileage.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -231,7 +231,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/states.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/states.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -248,7 +248,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/timeline.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/timeline.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -265,7 +265,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/updates.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/updates.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -282,7 +282,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/vampire-drain.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/vampire-drain.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -299,7 +299,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/statistics.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/statistics.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate
@@ -316,7 +316,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/main/grafana/dashboards/database-info.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/database-info.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
       datasourceName: TeslaMate

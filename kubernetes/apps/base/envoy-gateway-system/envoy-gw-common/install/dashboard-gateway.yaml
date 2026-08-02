@@ -10,4 +10,4 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: Envoy Gateway
-  url: https://raw.githubusercontent.com/envoyproxy/gateway/main/charts/gateway-addons-helm/dashboards/envoy-gateway-global.json
+  url: https://raw.githubusercontent.com/envoyproxy/gateway/v1.8.3/charts/gateway-addons-helm/dashboards/envoy-gateway-global.json

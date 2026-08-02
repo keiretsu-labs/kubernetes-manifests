@@ -19,7 +19,8 @@ spec:
                 - |
                   mkdir -p /config/metadata/overlays
                   if [ ! -f /config/metadata/overlays/fonts/Adlib.ttf ]; then
-                    wget -q https://raw.githubusercontent.com/Kometa-Team/Community-Configs/master/bullmoose20/fonts.zip -O /tmp/fonts.zip
+                    # renovate: datasource=github-tags depName=Kometa-Team/Community-Configs
+                    wget -q https://raw.githubusercontent.com/Kometa-Team/Community-Configs/v2.4.6/bullmoose20/fonts.zip -O /tmp/fonts.zip
                     unzip -o /tmp/fonts.zip -d /config/metadata/overlays/
                     rm /tmp/fonts.zip
                   fi

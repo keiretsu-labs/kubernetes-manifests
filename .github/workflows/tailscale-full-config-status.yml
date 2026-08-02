@@ -19,6 +19,7 @@ jobs:
           oauth-client-id: TbqNGJkY5611CNTRL-kvAScMUim511CNTRL
           audience: api.tailscale.com/TbqNGJkY5611CNTRL-kvAScMUim511CNTRL
           tags: tag:k8s
+          # renovate: datasource=github-releases depName=tailscale/tailscale
           version: 1.90.8
           args: --accept-dns
 

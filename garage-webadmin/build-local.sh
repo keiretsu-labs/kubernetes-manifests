@@ -2,6 +2,8 @@
 set -e
 
 SCRIPT_DIR="${0:a:h}"
+source "$SCRIPT_DIR/source.env"
+GARAGE_WEBADMIN_REV="${GARAGE_WEBADMIN_REF#*@}"
 REGISTRY="ghcr.io/keiretsu-labs/kubernetes-manifests"
 IMAGE="garage-webadmin"
 BUILD_DIR="/tmp/garage-webadmin-build"
@@ -10,7 +12,8 @@ BUILDER_NAME="garage-webadmin-builder"
 
 echo "==> Cloning upstream..."
 rm -rf "$BUILD_DIR"
-git clone --depth=1 https://git.deuxfleurs.fr/Deuxfleurs/garage-webadmin.git "$BUILD_DIR"
+git clone --filter=blob:none --no-checkout "$GARAGE_WEBADMIN_REPOSITORY" "$BUILD_DIR"
+git -C "$BUILD_DIR" checkout --detach "$GARAGE_WEBADMIN_REV"
 
 echo "==> Applying overlay..."
 cp "$SCRIPT_DIR/Dockerfile" "$BUILD_DIR/Dockerfile"

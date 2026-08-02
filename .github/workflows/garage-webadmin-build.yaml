@@ -7,6 +7,7 @@ on:
       - "garage-webadmin/Dockerfile"
       - "garage-webadmin/nginx.conf.template"
       - "garage-webadmin/overlay/**"
+      - "garage-webadmin/source.env"
       - ".github/workflows/garage-webadmin-build.yaml"
   workflow_dispatch:
 
@@ -37,7 +38,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clone garage-webadmin source
-        run: git clone --depth=1 https://git.deuxfleurs.fr/Deuxfleurs/garage-webadmin.git /tmp/garage-webadmin
+        run: |
+          set -a
+          source garage-webadmin/source.env
+          set +a
+          GARAGE_WEBADMIN_REV="${GARAGE_WEBADMIN_REF#*@}"
+          git clone --filter=blob:none --no-checkout "$GARAGE_WEBADMIN_REPOSITORY" /tmp/garage-webadmin
+          git -C /tmp/garage-webadmin checkout --detach "$GARAGE_WEBADMIN_REV"
 
       - name: Copy build files into source
         run: |
