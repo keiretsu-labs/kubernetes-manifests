@@ -5,7 +5,7 @@
       "customType": "regex",
       "description": "Process annotated dependencies (tuppr, talos configs, talconfig, etc)",
       "managerFilePatterns": [
-        "/\\.ya?ml$/"
+        "/^(?:clusters|kubernetes)/.+\\.ya?ml$/"
       ],
       "matchStrings": [
         "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*(?:talos|kubernetes)?[Vv]?ersion:\\s*(?<currentValue>\\S+)"
@@ -19,9 +19,222 @@
         "/\\.ya?ml$/"
       ],
       "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*\\\\w*[Tt]ag:\\s*\\\"?(?<currentValue>[^\"\\\\s]+)\\\"?"
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*\\w*[Tt]ag:\\s*\\\"?(?<currentValue>[^\"\\s]+)\\\"?"
       ],
       "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}docker{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Process CRD imageName fields as Docker dependencies",
+      "managerFilePatterns": [
+        "/^kubernetes/.+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "imageName:\\s*[\"']?(?<depName>(?:[a-z0-9.-]+(?::[0-9]+)?/)+[a-z0-9._/-]+):(?<currentValue>[^\"'\\s]+)[\"']?"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Process annotated versions embedded in release, raw manifest, and schema URLs",
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*(?:-\\s*|#\\s*yaml-language-server:\\s*\\$schema=)https?://[^\\s]+?/(?<currentValue>v?\\d+\\.\\d+\\.\\d+)/"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Process annotated release versions in scalar URLs",
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*[a-zA-Z][a-zA-Z0-9_-]*:\\s*https?://[^\\s]+?/(?<currentValue>v?\\d+\\.\\d+\\.\\d+)/"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Process annotated scalar versions in workflow action inputs",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*[a-zA-Z][a-zA-Z0-9_]*:\\s*[\"']?(?<currentValue>v?\\d+\\.\\d+\\.\\d+)[\"']?"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the Kind version installed by helm/kind-action",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/api-tailnet-k8s-test\\.yml$/"
+      ],
+      "matchStrings": [
+        "uses:\\s*helm/kind-action@[^\\s]+[^\\n]*\\n\\s*with:\\n\\s*install_only:\\s*true\\n\\s*version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "kubernetes-sigs/kind"
+    },
+    {
+      "customType": "regex",
+      "description": "Process annotated release versions in workflow download URLs",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*[^\\n]*https?://[^\\s]+?/(?<currentValue>v?\\d+\\.\\d+\\.\\d+)/"
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Process annotated Git revisions embedded in raw URLs and shell variables",
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*-\\s*https?://[^\\s]+?/(?<currentValue>[a-f0-9]{40})/",
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*[A-Z][A-Z0-9_]*=\\\"?(?:\\$\\$?\\{[^:]+:-)?(?<currentValue>[a-f0-9]{40})"
+      ],
+      "datasourceTemplate": "{{{datasource}}}",
+      "versioningTemplate": "git"
+    },
+    {
+      "customType": "regex",
+      "description": "Track shared source revisions in environment files",
+      "managerFilePatterns": [
+        "/^garage-webadmin/source\\.env$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n[A-Z][A-Z0-9_]*=(?<currentValue>[^@\\s]+)@(?<currentDigest>[a-f0-9]{40})"
+      ],
+      "datasourceTemplate": "{{{datasource}}}",
+      "versioningTemplate": "git"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Aqua bootstrap, registry, schema, and package versions",
+      "managerFilePatterns": [
+        "/^aqua\\.ya?ml$/",
+        "/^\\.github/workflows/api-tailnet-k8s-test\\.yml$/"
+      ],
+      "matchStrings": [
+        "aqua_version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "aquaproj/aqua"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Aqua registry versions",
+      "managerFilePatterns": [
+        "/^aqua\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "ref:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)\\s*#\\s*renovate:\\s*depName=(?<depName>\\S+)"
+      ],
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Aqua-managed package versions",
+      "managerFilePatterns": [
+        "/^aqua\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "-\\s*name:\\s*(?<depName>[^@\\s]+)@(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Aqua schema versions",
+      "managerFilePatterns": [
+        "/^aqua\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*yaml-language-server:\\s*\\$schema=https://raw\\.githubusercontent\\.com/(?<depName>aquaproj/aqua)/(?<currentValue>v?\\d+\\.\\d+\\.\\d+)/"
+      ],
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Track release-tagged GitHub raw files and kustomize refs",
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "https://raw\\.githubusercontent\\.com/(?<depName>k8snetworkplumbingwg/multus-cni)/(?<currentValue>v\\d+\\.\\d+\\.\\d+)/deployments/multus-daemonset-thick\\.yml",
+        "https://raw\\.githubusercontent\\.com/(?<depName>envoyproxy/gateway)/(?<currentValue>v\\d+\\.\\d+\\.\\d+)/charts/gateway-addons-helm/dashboards/[^\\s]+\\.json",
+        "https://raw\\.githubusercontent\\.com/(?<depName>grafana/loki)/(?<currentValue>v\\d+\\.\\d+\\.\\d+)/production/loki-mixin-compiled/dashboards/[^\\s]+\\.json",
+        "https://raw\\.githubusercontent\\.com/(?<depName>grafana/mimir)/(?<currentValue>mimir-\\d+\\.\\d+\\.\\d+)/operations/mimir-mixin-compiled/dashboards/[^\\s]+\\.json",
+        "https://raw\\.githubusercontent\\.com/(?<depName>teslamate-org/teslamate)/(?<currentValue>v\\d+\\.\\d+\\.\\d+)/grafana/dashboards/[^\\s]+\\.json",
+        "https://raw\\.githubusercontent\\.com/(?<depName>vllm-project/vllm)/(?<currentValue>v\\d+\\.\\d+\\.\\d+)/examples/observability/dashboards/grafana/[^\\s]+\\.json",
+        "https://raw\\.githubusercontent\\.com/(?<depName>rook/rook)/(?<currentValue>v\\d+\\.\\d+\\.\\d+)/deploy/examples/monitoring/grafana/[^\\s]+\\.json"
+      ],
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Track CloudNativePG dashboard component releases",
+      "managerFilePatterns": [
+        "/^kubernetes/apps/base/monitoring/grafana/dashboards/cnpg/.+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "https://raw\\.githubusercontent\\.com/(?<depName>cloudnative-pg/grafana-dashboards)/(?<currentValue>cluster-v\\d+\\.\\d+\\.\\d+)/"
+      ],
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "regex:^(?:cluster-)?v?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Track Kometa Community Config tagged assets",
+      "managerFilePatterns": [
+        "/^kubernetes/apps/base/media/.+/kometa/.+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "https://raw\\.githubusercontent\\.com/(?<depName>Kometa-Team/Community-Configs)/(?<currentValue>v\\d+\\.\\d+\\.\\d+)/[^\\s]+\\.zip"
+      ],
+      "datasourceTemplate": "github-tags"
+    },
+    {
+      "customType": "regex",
+      "description": "Track commit-pinned GitHub raw files for repositories without releases",
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "https://raw\\.githubusercontent\\.com/(?<owner>fluxcd)/(?<repo>flux2-monitoring-example)/(?<currentValue>[a-f0-9]{40})/[^\\s]+\\.json"
+      ],
+      "datasourceTemplate": "git-refs",
+      "depNameTemplate": "https://github.com/{{{owner}}}/{{{repo}}}.git",
+      "versioningTemplate": "git"
+    },
+    {
+      "customType": "regex",
+      "description": "Process annotated container images embedded in command arguments",
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=docker\\s+depName=(?<depName>\\S+)\\n\\s*-\\s*--[^=]*image=(?:[a-z0-9.-]+(?::[0-9]+)?/)+[a-z0-9._/-]+:(?<currentValue>[^@\\s]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Process annotated container images in workflow environment values",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=docker\\s+depName=(?<depName>\\S+)\\n\\s*[A-Z][A-Z0-9_]*:\\s*(?:[a-z0-9.-]+(?::[0-9]+)?/)?[a-z0-9._/-]+:(?<currentValue>[^@\\s]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"
+      ],
+      "datasourceTemplate": "docker"
     }
   ]
 }

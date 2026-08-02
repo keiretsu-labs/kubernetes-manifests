@@ -36,4 +36,5 @@ spec:
       port: 9092
       tls: true
       type: cluster-ip
-    version: 3.7.1 
+    # renovate: datasource=maven depName=org.apache.kafka:kafka_2.13
+    version: 3.7.1

@@ -148,13 +148,13 @@
     },
     {
       "description": "Rook — Ottawa only. Scoped per cluster so one storage control plane moves at a time.",
-      "matchManagers": ["flux"],
-      "matchPackageNames": ["rook-ceph"],
+      "matchPackageNames": ["rook-ceph", "rook/rook"],
       "matchFileNames": [
         "kubernetes/apps/base/rook-ceph/rook-ceph-ottawa/**",
         "kubernetes/apps/ottawa/rook-ceph/**"
       ],
       "groupName": "rook-ottawa",
+      "minimumGroupSize": 2,
       "labels": ["Rook", "Critical-Storage", "Merge-1st-before-Ceph", "cluster:ottawa"],
       "automerge": false,
       "prBodyNotes": [
@@ -284,11 +284,10 @@
       "labels": ["Tuppr", "Critical-Infrastructure"]
     },
     {
-      "description": "Group all Flux components together (controllers, manifests, bootstrap ref, operator + instance). flux-operator reconciles flux-instance and the two ship as a matched pair, so they must upgrade in one PR.",
+      "description": "Group Flux controller images and bootstrap manifests together. The operator and instance charts use their own matched-pair group.",
       "matchPackageNames": [
         "/^ghcr\\.io\\/fluxcd\\//",
-        "fluxcd/flux2",
-        "/(^|\\/)flux-(operator|instance)$/"
+        "fluxcd/flux2"
       ],
       "groupName": "flux",
       "labels": ["Flux", "Critical-Infrastructure"]
@@ -320,6 +319,230 @@
       "groupName": "immich-robbinsdale",
       "minimumGroupSize": 2,
       "labels": ["Immich", "cluster:robbinsdale"]
+    },
+    {
+      "description": "Keep Grafana Mimir and mimirtool on the same upstream release.",
+      "matchDatasources": ["docker", "github-releases"],
+      "matchPackageNames": [
+        "grafana/mimir",
+        "grafana/mimirtool"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/mimir/**"
+      ],
+      "groupName": "grafana-mimir",
+      "minimumGroupSize": 3,
+      "labels": ["Mimir"]
+    },
+    {
+      "description": "Keep the Kromgo runtime image and configuration schema on the same upstream release.",
+      "matchPackageNames": [
+        "ghcr.io/home-operations/kromgo",
+        "home-operations/kromgo"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/monitoring/kromgo/**"
+      ],
+      "groupName": "kromgo",
+      "minimumGroupSize": 2,
+      "labels": ["Monitoring"]
+    },
+    {
+      "description": "Keep the OCM hub and all klusterlet agents on the same OCM release.",
+      "matchDatasources": ["helm"],
+      "matchPackageNames": ["cluster-manager", "klusterlet"],
+      "matchFileNames": [
+        "kubernetes/apps/base/open-cluster-management/ocm-ottawa/helmrelease.yaml",
+        "kubernetes/apps/base/open-cluster-management-agent/ocm-agent/app/helmrelease.yaml"
+      ],
+      "groupName": "open-cluster-management",
+      "minimumGroupSize": 2,
+      "labels": ["OCM", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Keep Flux operator and instance charts on the same controlplane.io release.",
+      "matchDatasources": ["helm"],
+      "matchPackageNames": ["flux-operator", "flux-instance"],
+      "matchFileNames": [
+        "kubernetes/apps/base/flux-system/flux-system-common/flux-operator/app/helmrelease.yaml",
+        "kubernetes/apps/base/flux-system/flux-system-common/flux-instance/app/helmrelease.yaml"
+      ],
+      "groupName": "flux-operator-instance",
+      "minimumGroupSize": 2,
+      "labels": ["Flux", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Keep TempVM gateway and guest runtime images in one reviewed update.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/keiretsu-labs/tempvm-gateway",
+        "ghcr.io/keiretsu-labs/tempvm-linux"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/tempvm/tempvm/app/deployment.yaml"
+      ],
+      "groupName": "tempvm-runtime",
+      "minimumGroupSize": 2,
+      "automerge": false,
+      "labels": ["TempVM"]
+    },
+    {
+      "description": "Keep Multus release manifests and the thick runtime image on one release.",
+      "matchPackageNames": [
+        "k8snetworkplumbingwg/multus-cni",
+        "ghcr.io/k8snetworkplumbingwg/multus-cni"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/kube-system/cilium-*/app/**"
+      ],
+      "groupName": "multus-cni",
+      "minimumGroupSize": 2,
+      "automerge": false,
+      "labels": ["CNI", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Keep Envoy Gateway dashboards aligned with the deployed chart release.",
+      "matchPackageNames": ["gateway-helm", "envoyproxy/gateway"],
+      "matchFileNames": [
+        "kubernetes/apps/base/envoy-gateway-system/envoy-gw-common/install/**"
+      ],
+      "groupName": "envoy-gateway",
+      "minimumGroupSize": 2,
+      "automerge": false,
+      "labels": ["Envoy-Gateway", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Keep TeslaMate dashboards aligned with the application release and database schema.",
+      "matchPackageNames": ["teslamate/teslamate", "teslamate-org/teslamate"],
+      "matchFileNames": [
+        "kubernetes/apps/base/teslamate/teslamate/app/deployment.yaml",
+        "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate/**"
+      ],
+      "groupName": "teslamate",
+      "minimumGroupSize": 2,
+      "automerge": false,
+      "labels": ["TeslaMate"]
+    },
+    {
+      "description": "Keep the CSI SMB Helm repository index and both deployed chart versions on one release.",
+      "matchPackageNames": [
+        "kubernetes-csi/csi-driver-smb",
+        "csi-driver-smb"
+      ],
+      "matchFileNames": [
+        "clusters/common/flux/repositories/helm/csi-driver-smb.yaml",
+        "kubernetes/apps/base/csi-driver-smb/**/helmrelease.yaml"
+      ],
+      "groupName": "csi-driver-smb",
+      "minimumGroupSize": 2,
+      "automerge": false,
+      "labels": ["Storage", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Group Talhelper schema references across all cluster configurations.",
+      "matchDatasources": ["github-releases"],
+      "matchPackageNames": ["budimanjojo/talhelper"],
+      "matchFileNames": [
+        "clusters/talos-*/bootstrap/talos/talconfig.yaml"
+      ],
+      "groupName": "talhelper-schema",
+      "automerge": false,
+      "labels": ["Talos"]
+    },
+    {
+      "description": "Group kubelet-serving-cert-approver manifests across all clusters.",
+      "matchDatasources": ["github-releases"],
+      "matchPackageNames": ["alex1989hu/kubelet-serving-cert-approver"],
+      "groupName": "kubelet-serving-cert-approver",
+      "automerge": false,
+      "labels": ["Kubernetes", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Review snapshot-controller chart and external-snapshotter CRD releases together for API compatibility.",
+      "matchPackageNames": [
+        "snapshot-controller",
+        "kubernetes-csi/external-snapshotter"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/snapshot-controller/app/**"
+      ],
+      "groupName": "snapshot-controller",
+      "minimumGroupSize": 2,
+      "automerge": false,
+      "labels": ["Storage", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Require review for database engine images managed through CloudNativePG CRs.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/tensorchord/cloudnative-vectorchord",
+        "ghcr.io/cloudnative-pg/postgresql"
+      ],
+      "automerge": false,
+      "labels": ["Database", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Require review for Kafka broker version changes in Strimzi CRs.",
+      "matchDatasources": ["maven"],
+      "matchPackageNames": ["org.apache.kafka:kafka_2.13"],
+      "automerge": false,
+      "labels": ["Kafka", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Keep the DeepSeek model, DSpark overlay, and custom vLLM runtime on one reviewed revision set.",
+      "matchPackageNames": [
+        "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731",
+        "https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git",
+        "ghcr.io/rajsinghtechbot/dsv4-nvfp4"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/ai/ai/inference/dsv4.yaml"
+      ],
+      "groupName": "deepseek-v4-runtime",
+      "minimumGroupSize": 3,
+      "automerge": false,
+      "labels": ["AI", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Keep the Qwen3.6 AEON target model, DFlash draft model, and patched vLLM runtime in one reviewed compatibility set.",
+      "matchPackageNames": [
+        "https://huggingface.co/AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS",
+        "https://huggingface.co/z-lab/Qwen3.6-27B-DFlash",
+        "ghcr.io/aeon-7/vllm-aeon-ultimate-dflash"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/ai/ai/inference/vllm.yaml"
+      ],
+      "groupName": "qwen36-aeon-dflash-runtime",
+      "automerge": false,
+      "labels": ["AI", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Require review for Garage Webadmin upstream source revisions.",
+      "matchDatasources": ["git-refs"],
+      "matchPackageNames": ["https://git.deuxfleurs.fr/Deuxfleurs/garage-webadmin.git"],
+      "groupName": "garage-webadmin-source",
+      "automerge": false,
+      "labels": ["Garage"]
+    },
+    {
+      "description": "Never automerge commit-pinned Git references.",
+      "matchDatasources": ["git-refs"],
+      "automerge": false
+    },
+    {
+      "description": "Group Flux Grafana dashboards.",
+      "matchDatasources": ["git-refs"],
+      "matchPackageNames": ["https://github.com/fluxcd/flux2-monitoring-example.git"],
+      "groupName": "git-refs-flux-dashboards"
+    },
+    {
+      "description": "Keep vLLM dashboards on the deployed 0.21 metrics line until the custom runtime is upgraded.",
+      "matchDatasources": ["github-releases"],
+      "matchPackageNames": ["vllm-project/vllm"],
+      "allowedVersions": "/^v0\\.21\\./",
+      "automerge": false,
+      "labels": ["AI", "Monitoring"]
     }
   ]
 }

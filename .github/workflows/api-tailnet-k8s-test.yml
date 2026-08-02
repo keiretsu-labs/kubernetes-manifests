@@ -23,6 +23,9 @@ on:
 jobs:
   api-tailnet-k8s-test:
     runs-on: ubuntu-latest
+    env:
+      # renovate: datasource=docker depName=kindest/node
+      KIND_NODE_IMAGE: kindest/node:v1.36.1@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -99,30 +102,29 @@ jobs:
           echo "k8s_oauth_client_id=$K8S_OAUTH_CLIENT_ID" >> $GITHUB_OUTPUT
           echo "k8s_oauth_client_secret=$K8S_OAUTH_CLIENT_SECRET" >> $GITHUB_OUTPUT
 
-      - name: Install Kind
-        run: |
-          # Install Kind
-          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
-          chmod +x ./kind
-          sudo mv ./kind /usr/local/bin/kind
-          
-          # Install kubectl
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/kubectl
+      - name: Install Kind and kubectl
+        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
+        with:
+          install_only: true
+          version: v0.32.0
+          # renovate: datasource=github-releases depName=kubernetes/kubernetes
+          kubectl_version: v1.36.3
 
       - name: Create Kind cluster
         run: |
           echo "Creating Kind cluster..."
-          kind create cluster --config ./tailscale/cicd/kind-config.yaml
+          kind create cluster \
+            --config ./tailscale/cicd/kind-config.yaml \
+            --image "$KIND_NODE_IMAGE"
           
           echo "Cluster created, waiting for it to be ready..."
           kubectl cluster-info --context kind-tailscale-test
           kubectl wait --for=condition=Ready nodes --all --timeout=300s
 
       - name: Install Helm
-        run: |
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e # v4.0.5
+        with:
+          aqua_version: v2.62.3
 
       - name: Install Tailscale Kubernetes Operator
         run: |

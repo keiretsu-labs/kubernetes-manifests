@@ -96,7 +96,24 @@
     {
       "description": "Group ARC controller and runner scale set together",
       "matchPackageNames": ["gha-runner-scale-set", "gha-runner-scale-set-controller"],
-      "groupName": "actions-runner-controller"
+      "matchFileNames": [
+        "kubernetes/apps/base/arc-systems/actions-runner-controller/app/helmrelease.yaml",
+        "kubernetes/apps/base/arc-systems/actions-runner-controller/runners/helmrelease.yaml"
+      ],
+      "groupName": "actions-runner-controller",
+      "minimumGroupSize": 2
+    },
+    {
+      "description": "Do not update runtime images independently inside generated or vendored manifests; regenerate the complete upstream bundle instead.",
+      "matchDatasources": ["docker"],
+      "matchFileNames": [
+        "clusters/talos-robbinsdale/flux/flux-system/gotk-components.yaml",
+        "kubernetes/apps/base/agent-sandbox/agent-sandbox/app/raw-manifest.yaml",
+        "kubernetes/apps/base/node-feature-discovery/nfd-common/install/intel-nfd.yaml",
+        "kubernetes/apps/base/kube-system/cilium-*/app/descheduler-cronjob.yaml",
+        "kubernetes/apps/base/local-path-storage/local-path-storage-*/app/local-path-provisioner.yaml"
+      ],
+      "enabled": false
     },
     {
       "description": "Exclude legacy tags with 4-digit build numbers in patch position",

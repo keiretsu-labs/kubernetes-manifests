@@ -6,5 +6,7 @@ resources:
   - helmrelease.yaml
   # renovate: datasource=github-releases depName=kubernetes-csi/external-snapshotter
   - https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v5.0.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+  # renovate: datasource=github-releases depName=kubernetes-csi/external-snapshotter
   - https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v5.0.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
-  - https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v5.0.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml 
+  # renovate: datasource=github-releases depName=kubernetes-csi/external-snapshotter
+  - https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v5.0.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
