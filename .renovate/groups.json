@@ -292,6 +292,34 @@
       ],
       "groupName": "flux",
       "labels": ["Flux", "Critical-Infrastructure"]
+    },
+    {
+      "description": "Keep Ottawa Immich server and machine-learning images on the same upstream release.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/immich-app/immich-server",
+        "ghcr.io/immich-app/immich-machine-learning"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/immich/immich/app/helmrelease.yaml"
+      ],
+      "groupName": "immich-ottawa",
+      "minimumGroupSize": 2,
+      "labels": ["Immich", "cluster:ottawa"]
+    },
+    {
+      "description": "Keep Robbinsdale Immich server and machine-learning images on the same upstream release.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/immich-app/immich-server",
+        "ghcr.io/immich-app/immich-machine-learning"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/immich/immich-robbinsdale/app/helmrelease.yaml"
+      ],
+      "groupName": "immich-robbinsdale",
+      "minimumGroupSize": 2,
+      "labels": ["Immich", "cluster:robbinsdale"]
     }
   ]
 }
