@@ -35,6 +35,9 @@ spec:
       controllers:
         main:
           strategy: Recreate
+          pod:
+            annotations:
+              keiretsu.top/restarted-for: disable-network-library-watch
           containers:
             main:
               image:
