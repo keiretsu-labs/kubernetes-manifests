@@ -10,7 +10,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: Loki
-  url: https://raw.githubusercontent.com/grafana/loki/v3.7.4/production/loki-mixin-compiled/dashboards/loki-operational.json
+  url: https://raw.githubusercontent.com/grafana/loki/main/production/loki-mixin-compiled/dashboards/loki-operational.json
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
@@ -28,7 +28,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: Loki
-  url: https://raw.githubusercontent.com/grafana/loki/v3.7.4/production/loki-mixin-compiled/dashboards/loki-writes.json
+  url: https://raw.githubusercontent.com/grafana/loki/main/production/loki-mixin-compiled/dashboards/loki-writes.json
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
@@ -44,7 +44,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: Loki
-  url: https://raw.githubusercontent.com/grafana/loki/v3.7.4/production/loki-mixin-compiled/dashboards/loki-reads.json
+  url: https://raw.githubusercontent.com/grafana/loki/main/production/loki-mixin-compiled/dashboards/loki-reads.json
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
@@ -60,7 +60,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: Loki
-  url: https://raw.githubusercontent.com/grafana/loki/v3.7.4/production/loki-mixin-compiled/dashboards/loki-chunks.json
+  url: https://raw.githubusercontent.com/grafana/loki/main/production/loki-mixin-compiled/dashboards/loki-chunks.json
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
@@ -76,7 +76,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: Loki
-  url: https://raw.githubusercontent.com/grafana/loki/v3.7.4/production/loki-mixin-compiled/dashboards/loki-retention.json
+  url: https://raw.githubusercontent.com/grafana/loki/main/production/loki-mixin-compiled/dashboards/loki-retention.json
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
@@ -92,7 +92,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: Loki
-  url: https://raw.githubusercontent.com/grafana/loki/v3.7.4/production/loki-mixin-compiled/dashboards/loki-logs.json
+  url: https://raw.githubusercontent.com/grafana/loki/main/production/loki-mixin-compiled/dashboards/loki-logs.json
   datasources:
     - inputName: DS_LOKI
       datasourceName: Loki

@@ -102,13 +102,10 @@ jobs:
           echo "k8s_oauth_client_id=$K8S_OAUTH_CLIENT_ID" >> $GITHUB_OUTPUT
           echo "k8s_oauth_client_secret=$K8S_OAUTH_CLIENT_SECRET" >> $GITHUB_OUTPUT
 
-      - name: Install Kind and kubectl
-        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
+      - name: Install Kind, kubectl, and Helm
+        uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e # v4.0.5
         with:
-          install_only: true
-          version: v0.32.0
-          # renovate: datasource=github-releases depName=kubernetes/kubernetes
-          kubectl_version: v1.36.3
+          aqua_version: v2.62.3
 
       - name: Create Kind cluster
         run: |
@@ -120,11 +117,6 @@ jobs:
           echo "Cluster created, waiting for it to be ready..."
           kubectl cluster-info --context kind-tailscale-test
           kubectl wait --for=condition=Ready nodes --all --timeout=300s
-
-      - name: Install Helm
-        uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e # v4.0.5
-        with:
-          aqua_version: v2.62.3
 
       - name: Install Tailscale Kubernetes Operator
         run: |

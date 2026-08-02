@@ -33,7 +33,6 @@ data:
     set -euo pipefail
     MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
     HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-0731}"
-    # renovate: datasource=git-refs depName=https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731
     HF_REVISION="$${HF_REVISION:-9e165c30e2704aec5d9d593cce3eebd58bbef1cb}"
     MODEL_MARKER="$${MODEL_DIR}/.model-revision"
     EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
@@ -161,7 +160,6 @@ spec:
           args:
           - |
             set -e
-            # renovate: datasource=git-refs depName=https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git
             DSPARK_OVERLAY_COMMIT=0081289d92049d15aafa666ad155b173747b10d8
             echo "[dspark-overlay] Fetching pinned DSpark overlay $DSPARK_OVERLAY_COMMIT…"
             git init -q /tmp/dspark-repo
@@ -367,7 +365,6 @@ spec:
           args:
           - |
             set -e
-            # renovate: datasource=git-refs depName=https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git
             DSPARK_OVERLAY_COMMIT=0081289d92049d15aafa666ad155b173747b10d8
             echo "[dspark-overlay] Fetching pinned DSpark overlay $DSPARK_OVERLAY_COMMIT…"
             git init -q /tmp/dspark-repo
