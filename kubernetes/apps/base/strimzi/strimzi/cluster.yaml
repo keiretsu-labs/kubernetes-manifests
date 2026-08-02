@@ -37,4 +37,4 @@ spec:
       tls: true
       type: cluster-ip
     # renovate: datasource=maven depName=org.apache.kafka:kafka_2.13
-    version: 3.9.2
+    version: 4.3.1
