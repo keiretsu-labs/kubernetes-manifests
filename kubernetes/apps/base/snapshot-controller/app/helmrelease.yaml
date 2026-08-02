@@ -26,4 +26,4 @@ spec:
       replicaCount: 1
       serviceMonitor:
         create: true
-    volumeSnapshotClasses: [] 
+    volumeSnapshotClasses: []

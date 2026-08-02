@@ -325,13 +325,14 @@
       "matchDatasources": ["docker", "github-releases"],
       "matchPackageNames": [
         "grafana/mimir",
-        "grafana/mimirtool"
+        "docker.io/grafana/mimirtool"
       ],
       "matchFileNames": [
-        "kubernetes/apps/base/mimir/**"
+        "kubernetes/apps/base/mimir/**",
+        "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/**"
       ],
       "groupName": "grafana-mimir",
-      "minimumGroupSize": 3,
+      "automerge": false,
       "labels": ["Mimir"]
     },
     {
@@ -344,7 +345,7 @@
         "kubernetes/apps/base/monitoring/kromgo/**"
       ],
       "groupName": "kromgo",
-      "minimumGroupSize": 2,
+      "automerge": false,
       "labels": ["Monitoring"]
     },
     {
@@ -356,35 +357,20 @@
         "kubernetes/apps/base/open-cluster-management-agent/ocm-agent/app/helmrelease.yaml"
       ],
       "groupName": "open-cluster-management",
-      "minimumGroupSize": 2,
+      "automerge": false,
       "labels": ["OCM", "Critical-Infrastructure"]
     },
     {
       "description": "Keep Flux operator and instance charts on the same controlplane.io release.",
-      "matchDatasources": ["helm"],
+      "matchDatasources": ["docker"],
       "matchPackageNames": ["flux-operator", "flux-instance"],
       "matchFileNames": [
         "kubernetes/apps/base/flux-system/flux-system-common/flux-operator/app/helmrelease.yaml",
         "kubernetes/apps/base/flux-system/flux-system-common/flux-instance/app/helmrelease.yaml"
       ],
       "groupName": "flux-operator-instance",
-      "minimumGroupSize": 2,
-      "labels": ["Flux", "Critical-Infrastructure"]
-    },
-    {
-      "description": "Keep TempVM gateway and guest runtime images in one reviewed update.",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": [
-        "ghcr.io/keiretsu-labs/tempvm-gateway",
-        "ghcr.io/keiretsu-labs/tempvm-linux"
-      ],
-      "matchFileNames": [
-        "kubernetes/apps/base/tempvm/tempvm/app/deployment.yaml"
-      ],
-      "groupName": "tempvm-runtime",
-      "minimumGroupSize": 2,
       "automerge": false,
-      "labels": ["TempVM"]
+      "labels": ["Flux", "Critical-Infrastructure"]
     },
     {
       "description": "Keep Multus release manifests and the thick runtime image on one release.",
@@ -396,7 +382,6 @@
         "kubernetes/apps/base/kube-system/cilium-*/app/**"
       ],
       "groupName": "multus-cni",
-      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["CNI", "Critical-Infrastructure"]
     },
@@ -407,7 +392,6 @@
         "kubernetes/apps/base/envoy-gateway-system/envoy-gw-common/install/**"
       ],
       "groupName": "envoy-gateway",
-      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["Envoy-Gateway", "Critical-Infrastructure"]
     },
@@ -419,7 +403,6 @@
         "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate/**"
       ],
       "groupName": "teslamate",
-      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["TeslaMate"]
     },
@@ -434,7 +417,6 @@
         "kubernetes/apps/base/csi-driver-smb/**/helmrelease.yaml"
       ],
       "groupName": "csi-driver-smb",
-      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["Storage", "Critical-Infrastructure"]
     },
@@ -450,14 +432,6 @@
       "labels": ["Talos"]
     },
     {
-      "description": "Group kubelet-serving-cert-approver manifests across all clusters.",
-      "matchDatasources": ["github-releases"],
-      "matchPackageNames": ["alex1989hu/kubelet-serving-cert-approver"],
-      "groupName": "kubelet-serving-cert-approver",
-      "automerge": false,
-      "labels": ["Kubernetes", "Critical-Infrastructure"]
-    },
-    {
       "description": "Review snapshot-controller chart and external-snapshotter CRD releases together for API compatibility.",
       "matchPackageNames": [
         "snapshot-controller",
@@ -467,7 +441,6 @@
         "kubernetes/apps/base/snapshot-controller/app/**"
       ],
       "groupName": "snapshot-controller",
-      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["Storage", "Critical-Infrastructure"]
     },
@@ -482,67 +455,9 @@
       "labels": ["Database", "Critical-Infrastructure"]
     },
     {
-      "description": "Require review for Kafka broker version changes in Strimzi CRs.",
-      "matchDatasources": ["maven"],
-      "matchPackageNames": ["org.apache.kafka:kafka_2.13"],
-      "automerge": false,
-      "labels": ["Kafka", "Critical-Infrastructure"]
-    },
-    {
-      "description": "Keep the DeepSeek model, DSpark overlay, and custom vLLM runtime on one reviewed revision set.",
-      "matchPackageNames": [
-        "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731",
-        "https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git",
-        "ghcr.io/rajsinghtechbot/dsv4-nvfp4"
-      ],
-      "matchFileNames": [
-        "kubernetes/apps/base/ai/ai/inference/dsv4.yaml"
-      ],
-      "groupName": "deepseek-v4-runtime",
-      "minimumGroupSize": 3,
-      "automerge": false,
-      "labels": ["AI", "Critical-Infrastructure"]
-    },
-    {
-      "description": "Keep the Qwen3.6 AEON target model, DFlash draft model, and patched vLLM runtime in one reviewed compatibility set.",
-      "matchPackageNames": [
-        "https://huggingface.co/AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS",
-        "https://huggingface.co/z-lab/Qwen3.6-27B-DFlash",
-        "ghcr.io/aeon-7/vllm-aeon-ultimate-dflash"
-      ],
-      "matchFileNames": [
-        "kubernetes/apps/base/ai/ai/inference/vllm.yaml"
-      ],
-      "groupName": "qwen36-aeon-dflash-runtime",
-      "automerge": false,
-      "labels": ["AI", "Critical-Infrastructure"]
-    },
-    {
-      "description": "Require review for Garage Webadmin upstream source revisions.",
-      "matchDatasources": ["git-refs"],
-      "matchPackageNames": ["https://git.deuxfleurs.fr/Deuxfleurs/garage-webadmin.git"],
-      "groupName": "garage-webadmin-source",
-      "automerge": false,
-      "labels": ["Garage"]
-    },
-    {
       "description": "Never automerge commit-pinned Git references.",
       "matchDatasources": ["git-refs"],
       "automerge": false
-    },
-    {
-      "description": "Group Flux Grafana dashboards.",
-      "matchDatasources": ["git-refs"],
-      "matchPackageNames": ["https://github.com/fluxcd/flux2-monitoring-example.git"],
-      "groupName": "git-refs-flux-dashboards"
-    },
-    {
-      "description": "Keep vLLM dashboards on the deployed 0.21 metrics line until the custom runtime is upgraded.",
-      "matchDatasources": ["github-releases"],
-      "matchPackageNames": ["vllm-project/vllm"],
-      "allowedVersions": "/^v0\\.21\\./",
-      "automerge": false,
-      "labels": ["AI", "Monitoring"]
     }
   ]
 }

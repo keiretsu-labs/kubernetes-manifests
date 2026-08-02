@@ -1,0 +1,37 @@
+name: aqua-checksums
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "aqua.yaml"
+      - "aqua-checksums.json"
+      - ".github/workflows/aqua-checksums.yaml"
+  push:
+    branches: [main]
+    paths:
+      - "aqua.yaml"
+      - "aqua-checksums.json"
+      - ".github/workflows/aqua-checksums.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Aqua
+        uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e # v4.0.5
+        with:
+          aqua_version: v2.62.3
+          enable_aqua_install: false
+
+      - name: Verify checksums
+        run: |
+          cp aqua-checksums.json /tmp/aqua-checksums.before.json
+          aqua update-checksum --prune
+          diff -u /tmp/aqua-checksums.before.json aqua-checksums.json

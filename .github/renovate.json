@@ -10,7 +10,7 @@
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "platformAutomerge": true,
   "rebaseWhen": "conflicted",
-  "ignoreTests": true,
+  "ignoreTests": false,
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
   "assignees": [],
@@ -47,7 +47,7 @@
     },
     {
       "description": "Auto merge Docker tags in CI and app Dockerfiles",
-      "matchManagers": ["dockerfile", "docker-compose","custom.regex"],
+      "matchManagers": ["dockerfile", "docker-compose"],
       "matchFileNames": [
         ".github/**"
       ],
@@ -63,7 +63,7 @@
     },
     {
       "description": "Auto merge non-critical-infrastructure cluster updates",
-      "matchManagers": ["flux", "helm-values", "kubernetes", "kustomize","custom.regex"],
+      "matchManagers": ["flux", "helm-values", "kubernetes", "kustomize"],
       "matchFileNames": [
         "clusters/**",
         "kubernetes/**"
@@ -101,7 +101,21 @@
         "kubernetes/apps/base/arc-systems/actions-runner-controller/runners/helmrelease.yaml"
       ],
       "groupName": "actions-runner-controller",
-      "minimumGroupSize": 2
+      "minimumGroupSize": 2,
+      "automerge": false
+    },
+    {
+      "description": "Custom managers track nonstandard and coupled sources; always require review.",
+      "matchManagers": ["custom.regex"],
+      "automerge": false
+    },
+    {
+      "description": "Aqua package updates require a matching generated checksum file.",
+      "matchFileNames": ["aqua.yaml"],
+      "automerge": false,
+      "prBodyNotes": [
+        "Run `aqua update-checksum --prune` and commit `aqua-checksums.json` before merging."
+      ]
     },
     {
       "description": "Do not update runtime images independently inside generated or vendored manifests; regenerate the complete upstream bundle instead.",
@@ -134,6 +148,11 @@
       "description": "Track code-server with build suffix (format: 4.109.2-39)",
       "matchPackageNames": ["ghcr.io/coder/code-server"],
       "versioning": "loose"
+    },
+    {
+      "description": "CloudNativePG compound tags encode PostgreSQL major and extension version; keep Renovate on the current compatibility line.",
+      "matchPackageNames": ["ghcr.io/tensorchord/cloudnative-vectorchord"],
+      "allowedVersions": "/^15-/"
     }
   ]
 }

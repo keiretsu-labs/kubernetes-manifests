@@ -10,7 +10,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: PostgreSQL
-  url: https://raw.githubusercontent.com/cloudnative-pg/grafana-dashboards/cluster-v0.0.5/charts/cluster/grafana-dashboard.json
+  url: https://raw.githubusercontent.com/cloudnative-pg/grafana-dashboards/main/charts/cluster/grafana-dashboard.json
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}

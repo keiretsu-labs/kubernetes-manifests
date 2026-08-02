@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tools/check-versions.sh — assert that files which must move together do.
 #
-# Three invariants, all per cluster, so one cluster upgrading never implies
+# Version invariants, mostly per cluster, so one cluster upgrading never implies
 # anything about another:
 #
 # 1. talconfig vs the tuppr upgrade CRs (Talos/Kubernetes versions).
@@ -31,6 +31,11 @@
 #    minor field (x.0.z development, x.1.z release candidate, x.2.z stable), so
 #    an RC has no prerelease suffix for Renovate to filter on: v21.1.0 shipped
 #    to both clusters as a routine major bump.
+#
+# 4. Semver-coupled application artifacts. Renovate groups related packages for
+#    review, while this script enforces the actual invariant across distinct
+#    files: runtime, charts, release manifests, schemas, dashboards, and CRDs
+#    must resolve to the same normalized upstream version.
 #
 # Deliberate mismatches: put '# version-sync: ignore' in the tuppr, toolbox, or
 # CephCluster file.
@@ -63,6 +68,7 @@ ROOK_SRC = (
     "https://raw.githubusercontent.com/rook/rook/{tag}"
     "/pkg/operator/ceph/version/version.go"
 )
+PIRAEUS_INDEX = "https://piraeus.io/helm-charts/index.yaml"
 # Ceph release type lives in the minor field; x.2.z is the stable line.
 CEPH_STABLE_MINOR = 2
 
@@ -205,6 +211,244 @@ for cluster in CEPH_CLUSTERS:
             f"    Rook fails its version check before initializing and stops\n"
             f"    reconciling this cluster entirely. Upgrade Rook first."
         )
+
+SEMVER = re.compile(r"^(?:mimir-)?v?(\d+\.\d+\.\d+)(?:-thick)?$")
+
+
+def canonical(value):
+    match = SEMVER.fullmatch(str(value))
+    if not match:
+        raise ValueError(f"unsupported version {value!r}")
+    return match.group(1)
+
+
+def docs(path):
+    return [doc for doc in yaml.safe_load_all(path.read_text()) if doc]
+
+
+def container_image(path, name, repository):
+    image = None
+    for doc in docs(path):
+        containers = doc.get("spec", {}).get("template", {}).get("spec", {}).get("containers", [])
+        match = next((c["image"] for c in containers if c.get("name") == name), None)
+        if match:
+            image = match
+            break
+    if image is None:
+        raise ValueError(f"container {name!r} not found in {path}")
+    prefix = f"{repository}:"
+    if not image.startswith(prefix):
+        raise ValueError(f"{image!r} is not from {repository}")
+    return canonical(image[len(prefix):].split("@", 1)[0])
+
+
+def chart_version(path):
+    return canonical(yaml.safe_load(path.read_text())["spec"]["chart"]["spec"]["version"])
+
+
+def url_versions(path, pattern, expected):
+    values = []
+    for doc in docs(path):
+        url = doc.get("spec", {}).get("url")
+        if not url:
+            continue
+        match = re.fullmatch(pattern, url)
+        if match:
+            if os.environ.get("CI"):
+                try:
+                    with urllib.request.urlopen(url, timeout=20) as resp:
+                        if resp.status != 200:
+                            raise ValueError(f"HTTP {resp.status}")
+                except (urllib.error.URLError, OSError, ValueError) as err:
+                    raise ValueError(f"unavailable asset {url}: {err}") from err
+            values.append(canonical(match.group("version")))
+    if len(values) != expected:
+        raise ValueError(f"expected {expected} matching URLs, found {len(values)}")
+    return values
+
+
+def require_equal(group, artifacts):
+    try:
+        values = [(label, getter()) for label, getter in artifacts]
+    except (KeyError, StopIteration, TypeError, ValueError, yaml.YAMLError) as err:
+        failures.append(f"  {group}: cannot extract all versions: {err}")
+        return
+    if len({value for _, value in values}) != 1:
+        failures.append(
+            f"  {group}: coupled artifacts differ\n"
+            + "\n".join(f"    {label}: {value}" for label, value in values)
+        )
+
+
+mimir_dashboards = pathlib.Path(
+    "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/dashboards.yaml"
+)
+require_equal("Grafana Mimir", [
+    ("ruler", lambda: container_image(
+        pathlib.Path("kubernetes/apps/base/mimir/mimir-ruler/app/deployment.yaml"),
+        "ruler", "grafana/mimir")),
+    ("ruler-robbinsdale", lambda: container_image(
+        pathlib.Path("kubernetes/apps/base/mimir/mimir-ruler-robbinsdale/app/deployment.yaml"),
+        "ruler", "grafana/mimir")),
+    ("mimirtool", lambda: container_image(
+        pathlib.Path("kubernetes/apps/base/mimir/mimir-ottawa/loader-job.yaml"),
+        "rules-ottawa", "docker.io/grafana/mimirtool")),
+    *[(f"dashboard-{index}", lambda value=value: value) for index, value in enumerate(
+        url_versions(
+            mimir_dashboards,
+            r"https://raw\.githubusercontent\.com/grafana/mimir/(?P<version>mimir-\d+\.\d+\.\d+)/operations/mimir-mixin-compiled/dashboards/[^/\s]+\.json",
+            7,
+        ), 1
+    )],
+])
+
+kromgo_config = pathlib.Path("kubernetes/apps/base/monitoring/kromgo/configmap.yaml")
+require_equal("Kromgo", [
+    ("runtime", lambda: container_image(
+        pathlib.Path("kubernetes/apps/base/monitoring/kromgo/deployment.yaml"),
+        "kromgo", "ghcr.io/home-operations/kromgo")),
+    ("schema", lambda: canonical(re.search(
+        r"home-operations/kromgo/([^/]+)/config\.schema\.json",
+        kromgo_config.read_text(),
+    ).group(1))),
+])
+
+require_equal("Open Cluster Management", [
+    ("cluster-manager", lambda: chart_version(pathlib.Path(
+        "kubernetes/apps/base/open-cluster-management/ocm-ottawa/helmrelease.yaml"))),
+    ("klusterlet", lambda: chart_version(pathlib.Path(
+        "kubernetes/apps/base/open-cluster-management-agent/ocm-agent/app/helmrelease.yaml"))),
+])
+
+require_equal("Flux operator/instance", [
+    ("operator", lambda: chart_version(pathlib.Path(
+        "kubernetes/apps/base/flux-system/flux-system-common/flux-operator/app/helmrelease.yaml"))),
+    ("instance", lambda: chart_version(pathlib.Path(
+        "kubernetes/apps/base/flux-system/flux-system-common/flux-instance/app/helmrelease.yaml"))),
+])
+
+for cluster in CLUSTERS:
+    base = pathlib.Path(f"kubernetes/apps/base/kube-system/cilium-{cluster}/app")
+    kustomization = base / "kustomization.yaml"
+
+    def multus_manifest(path=kustomization):
+        resource = next(
+            item for item in yaml.safe_load(path.read_text())["resources"]
+            if "multus-daemonset-thick.yml" in item
+        )
+        return canonical(re.search(r"/multus-cni/(v\d+\.\d+\.\d+)/", resource).group(1))
+
+    def multus_runtime(cluster=cluster, base=base, path=kustomization):
+        if cluster == "robbinsdale":
+            patch = yaml.safe_load(path.read_text())["patches"][0]["patch"]
+            doc = yaml.safe_load(patch)
+        else:
+            doc = yaml.safe_load((base / "patch-multus.yaml").read_text())
+        containers = doc["spec"]["template"]["spec"]["initContainers"]
+        image = next(c["image"] for c in containers if c["name"] == "install-multus-binary")
+        return canonical(image.split(":", 1)[1].split("@", 1)[0])
+
+    require_equal(f"Multus {cluster}", [
+        ("manifest", multus_manifest),
+        ("runtime", multus_runtime),
+    ])
+
+envoy_base = pathlib.Path(
+    "kubernetes/apps/base/envoy-gateway-system/envoy-gw-common/install"
+)
+envoy_urls = []
+for filename in ("dashboard-gateway.yaml", "dashboard-proxy.yaml"):
+    envoy_urls.extend(url_versions(
+        envoy_base / filename,
+        r"https://raw\.githubusercontent\.com/envoyproxy/gateway/(?P<version>v\d+\.\d+\.\d+)/charts/gateway-addons-helm/dashboards/[^/\s]+\.json",
+        1,
+    ))
+require_equal("Envoy Gateway", [
+    ("chart", lambda: chart_version(envoy_base / "helmrelease.yaml")),
+    *[(f"dashboard-{index}", lambda value=value: value) for index, value in enumerate(envoy_urls, 1)],
+])
+
+teslamate_urls = []
+teslamate_base = pathlib.Path(
+    "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate"
+)
+for filename, expected in (("dashboards.yaml", 19), ("internal-reports.yaml", 4)):
+    teslamate_urls.extend(url_versions(
+        teslamate_base / filename,
+        r"https://raw\.githubusercontent\.com/teslamate-org/teslamate/(?P<version>v\d+\.\d+\.\d+)/grafana/dashboards/.+\.json",
+        expected,
+    ))
+require_equal("TeslaMate", [
+    ("runtime", lambda: container_image(
+        pathlib.Path("kubernetes/apps/base/teslamate/teslamate/app/deployment.yaml"),
+        "teslamate", "teslamate/teslamate")),
+    *[(f"dashboard-{index}", lambda value=value: value) for index, value in enumerate(teslamate_urls, 1)],
+])
+
+csi_repo = pathlib.Path("clusters/common/flux/repositories/helm/csi-driver-smb.yaml")
+require_equal("CSI SMB", [
+    ("repository", lambda: canonical(re.search(
+        r"csi-driver-smb/(v\d+\.\d+\.\d+)/charts",
+        yaml.safe_load(csi_repo.read_text())["spec"]["url"],
+    ).group(1))),
+    ("ottawa-chart", lambda: chart_version(pathlib.Path(
+        "kubernetes/apps/base/csi-driver-smb/csi-driver-smb-ottawa/app/helmrelease.yaml"))),
+    ("robbinsdale-chart", lambda: chart_version(pathlib.Path(
+        "kubernetes/apps/base/csi-driver-smb/csi-driver-smb-robbinsdale/app/helmrelease.yaml"))),
+])
+
+for site in ("ottawa", "robbinsdale"):
+    kometa = pathlib.Path(
+        f"kubernetes/apps/base/media/media-{site}/kometa/cronjob.yaml"
+    )
+    match = re.search(
+        r"https://raw\.githubusercontent\.com/Kometa-Team/Community-Configs/"
+        r"v\d+\.\d+\.\d+/[^\s]+\.zip",
+        kometa.read_text(),
+    )
+    if not match:
+        failures.append(f"  Kometa {site}: versioned fonts archive URL not found")
+    elif os.environ.get("CI"):
+        try:
+            with urllib.request.urlopen(match.group(0), timeout=20) as resp:
+                if resp.status != 200:
+                    raise ValueError(f"HTTP {resp.status}")
+        except (urllib.error.URLError, OSError, ValueError) as err:
+            failures.append(f"  Kometa {site}: unavailable asset {match.group(0)}: {err}")
+
+snapshot_hr = pathlib.Path("kubernetes/apps/base/snapshot-controller/app/helmrelease.yaml")
+snapshot_chart = yaml.safe_load(snapshot_hr.read_text())["spec"]["chart"]["spec"]["version"]
+snapshot_expected = None
+try:
+    with urllib.request.urlopen(PIRAEUS_INDEX, timeout=20) as resp:
+        index = yaml.safe_load(resp.read().decode())
+    releases = index["entries"]["snapshot-controller"]
+    release = next(item for item in releases if str(item["version"]) == str(snapshot_chart))
+    snapshot_expected = canonical(release["appVersion"])
+except (KeyError, StopIteration, TypeError, ValueError, yaml.YAMLError,
+        urllib.error.URLError, OSError) as err:
+    note = f"snapshot-controller chart {snapshot_chart}: cannot resolve appVersion from {PIRAEUS_INDEX}: {err}"
+    if os.environ.get("CI"):
+        failures.append(f"  {note}")
+    else:
+        skipped.append(f"{note} — offline, snapshot compatibility NOT verified")
+snapshot_resources = yaml.safe_load(pathlib.Path(
+    "kubernetes/apps/base/snapshot-controller/app/kustomization.yaml"
+).read_text())["resources"]
+snapshot_versions = [
+    canonical(match.group(1))
+    for resource in snapshot_resources
+    if (match := re.search(r"external-snapshotter/(v\d+\.\d+\.\d+)/client/config/crd/", resource))
+]
+if snapshot_expected is not None and (
+    len(snapshot_versions) != 3
+    or any(value != snapshot_expected for value in snapshot_versions)
+):
+    failures.append(
+        "  external-snapshotter: controller app marker and three CRD refs must match\n"
+        f"    controller app: {snapshot_expected}\n"
+        f"    CRDs: {snapshot_versions}"
+    )
 
 for entry in skipped:
     print(f"  skipped (marker): {entry}")

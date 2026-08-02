@@ -10,6 +10,21 @@ on:
       - "clusters/*/bootstrap/talos/talconfig.yaml"
       - "kubernetes/apps/base/tuppr/**"
       - "kubernetes/apps/base/rook-ceph/**"
+      - "kubernetes/apps/base/mimir/**"
+      - "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/**"
+      - "kubernetes/apps/base/monitoring/kromgo/**"
+      - "kubernetes/apps/base/open-cluster-management/**"
+      - "kubernetes/apps/base/open-cluster-management-agent/**"
+      - "kubernetes/apps/base/flux-system/flux-system-common/flux-operator/**"
+      - "kubernetes/apps/base/flux-system/flux-system-common/flux-instance/**"
+      - "kubernetes/apps/base/kube-system/cilium-*/app/**"
+      - "kubernetes/apps/base/envoy-gateway-system/envoy-gw-common/install/**"
+      - "kubernetes/apps/base/teslamate/**"
+      - "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate/**"
+      - "clusters/common/flux/repositories/helm/csi-driver-smb.yaml"
+      - "kubernetes/apps/base/csi-driver-smb/**"
+      - "kubernetes/apps/base/snapshot-controller/**"
+      - "kubernetes/apps/base/media/media-*/kometa/**"
       - "tools/check-versions.sh"
       - ".github/workflows/version-sync.yaml"
   pull_request:
@@ -18,6 +33,21 @@ on:
       - "clusters/*/bootstrap/talos/talconfig.yaml"
       - "kubernetes/apps/base/tuppr/**"
       - "kubernetes/apps/base/rook-ceph/**"
+      - "kubernetes/apps/base/mimir/**"
+      - "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/**"
+      - "kubernetes/apps/base/monitoring/kromgo/**"
+      - "kubernetes/apps/base/open-cluster-management/**"
+      - "kubernetes/apps/base/open-cluster-management-agent/**"
+      - "kubernetes/apps/base/flux-system/flux-system-common/flux-operator/**"
+      - "kubernetes/apps/base/flux-system/flux-system-common/flux-instance/**"
+      - "kubernetes/apps/base/kube-system/cilium-*/app/**"
+      - "kubernetes/apps/base/envoy-gateway-system/envoy-gw-common/install/**"
+      - "kubernetes/apps/base/teslamate/**"
+      - "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate/**"
+      - "clusters/common/flux/repositories/helm/csi-driver-smb.yaml"
+      - "kubernetes/apps/base/csi-driver-smb/**"
+      - "kubernetes/apps/base/snapshot-controller/**"
+      - "kubernetes/apps/base/media/media-*/kometa/**"
       - "tools/check-versions.sh"
       - ".github/workflows/version-sync.yaml"
   workflow_dispatch:
@@ -37,5 +67,5 @@ jobs:
       - name: Install PyYAML
         run: pip3 install pyyaml --quiet
 
-      - name: Check talconfig / tuppr version sync
+      - name: Check coupled version invariants
         run: tools/check-versions.sh

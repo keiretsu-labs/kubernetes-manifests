@@ -10,7 +10,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: AI
-  url: https://raw.githubusercontent.com/vllm-project/vllm/v0.21.0/examples/observability/dashboards/grafana/performance_statistics.json
+  url: https://raw.githubusercontent.com/vllm-project/vllm/main/examples/observability/dashboards/grafana/performance_statistics.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -23,4 +23,4 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: AI
-  url: https://raw.githubusercontent.com/vllm-project/vllm/v0.21.0/examples/observability/dashboards/grafana/query_statistics.json
+  url: https://raw.githubusercontent.com/vllm-project/vllm/main/examples/observability/dashboards/grafana/query_statistics.json
