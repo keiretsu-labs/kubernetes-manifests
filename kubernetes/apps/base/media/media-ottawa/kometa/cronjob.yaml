@@ -70,6 +70,8 @@ spec:
                   subPath: tv.yml
                 - name: logs
                   mountPath: /config/logs
+                - name: tmp
+                  mountPath: /tmp
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
@@ -90,5 +92,7 @@ spec:
               configMap:
                 name: kometa-tv
             - name: logs
+              emptyDir: {}
+            - name: tmp
               emptyDir: {}
           restartPolicy: Never
