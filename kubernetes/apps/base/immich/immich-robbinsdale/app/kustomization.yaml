@@ -6,6 +6,7 @@ resources:
   - helmrelease.yaml
   - probes.yaml
   - pvc-library.yaml
+  - pics-validation.yaml
   - httproute.yaml
   - secret.sops.yaml
   - pg.yaml
