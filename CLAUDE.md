@@ -45,3 +45,13 @@ tool calls and improve `tools/` / `docs/`: instructions in `docs/toolsmith.md`.
 ```bash
 tools/agent/pi-task.sh "toolsmith-$(date +%Y%m%d)" "Read docs/toolsmith.md and follow it."
 ```
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs live as GitHub issues in `keiretsu-labs/kubernetes-manifests`, managed with the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
