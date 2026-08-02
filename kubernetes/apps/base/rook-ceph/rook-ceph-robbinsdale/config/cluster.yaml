@@ -16,6 +16,11 @@ metadata:
   namespace: rook-ceph # namespace:cluster
 spec:
   cephConfig:
+    # Ceph v20.2.2 logs full Rook PodList responses into the recent-log ring.
+    # Bound the ring until the upstream logging fix reaches Tentacle.
+    # https://github.com/rook/rook/issues/17786
+    mgr:
+      log_max_recent: "100"
     mds:
       mds_wipe_ino_prealloc: "true"
     mon:
