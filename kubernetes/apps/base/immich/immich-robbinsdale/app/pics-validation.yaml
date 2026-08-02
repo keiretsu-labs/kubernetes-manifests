@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: immich-pics-v2-validation
+  name: immich-pics-v2-validation-2
 spec:
   backoffLimit: 1
   template:
@@ -17,7 +17,7 @@ spec:
             - |
               set -eu
               count="$(find /pics -mindepth 1 -maxdepth 1 | wc -l)"
-              hash="$(find /pics -mindepth 1 -maxdepth 1 -printf '%f\n' | LC_ALL=C sort | sha256sum | cut -d' ' -f1)"
+              hash="$(find /pics -mindepth 1 -maxdepth 1 | sed 's#^/pics/##' | LC_ALL=C sort | sha256sum | cut -d' ' -f1)"
               test "$count" = "300"
               test "$hash" = "71a18d8286762735b8844bd02373b8d443f4cfbe27ca788753c478ef276283aa"
               echo "validated count=$count hash=$hash"
