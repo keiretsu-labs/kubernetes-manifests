@@ -74,7 +74,7 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /api/v1/auth/oidc/callback
+            value: /oauth2-callback
       backendRefs:
         - name: bookorbit
           port: 3000

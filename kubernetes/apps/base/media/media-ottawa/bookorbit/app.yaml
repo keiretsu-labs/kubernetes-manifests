@@ -50,26 +50,6 @@ spec:
                 secretKeyRef:
                   name: bookorbit-app-secret
                   key: setup-bootstrap-token
-            - name: OIDC_ISSUER
-              value: "https://auth.keiretsu.top"
-            - name: OIDC_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: bookorbit-oidc-secret
-                  key: client-id
-            - name: OIDC_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: bookorbit-oidc-secret
-                  key: client-secret
-            - name: OIDC_FORCE_SSO
-              value: "true"
-            - name: OIDC_AUTO_APPROVE
-              value: "true"
-            - name: OIDC_ADMIN_GROUP
-              value: ""
-            - name: OIDC_USER_GROUP
-              value: ""
           volumeMounts:
             - name: config
               mountPath: /data

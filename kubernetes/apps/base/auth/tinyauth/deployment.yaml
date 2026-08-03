@@ -75,7 +75,7 @@ spec:
                   name: tinyauth-secret
                   key: bookorbit-oidc-client-secret
             - name: TINYAUTH_OIDC_CLIENTS_BOOKORBIT_TRUSTEDREDIRECTURIS
-              value: https://bookorbit.killinit.cc/api/v1/auth/oidc/callback
+              value: https://bookorbit.killinit.cc/oauth2-callback
             - name: TINYAUTH_OIDC_CLIENTS_BOOKORBIT_NAME
               value: BookOrbit
             - name: TINYAUTH_OIDC_CLIENTS_OMNIBUS_CLIENTID
