@@ -11,9 +11,6 @@ spec:
       name: shelfmark
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      name: bookorbit
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
       name: omnibus
   extAuth:
     failOpen: false
