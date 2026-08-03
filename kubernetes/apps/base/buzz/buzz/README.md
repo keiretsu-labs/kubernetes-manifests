@@ -5,6 +5,12 @@ This stack uses Block's released Buzz chart `0.1.7` from
 Postgres and Dragonfly instances plus a dedicated single-replica MinIO object
 store backed by a replicated Ceph block volume. The relay is configured for two
 replicas at `wss://buzz.ottawa.keiretsu.top` behind the Ottawa public Gateway.
+A separate single-replica `buzz-pairing` Deployment handles the ephemeral
+NIP-AB device handshake at `wss://buzz.ottawa.keiretsu.top/pair`; keeping it
+single-replica ensures both pairing WebSockets share the same in-memory state.
+The Gateway sends only the exact `/pair` path to that unauthenticated,
+non-persistent service and sends every other path to the membership-gated main
+relay.
 
 The HelmRelease uses the operator's configured owner identity and the
 SOPS-encrypted `buzz-identity` Secret. A production Flux render must not use the
