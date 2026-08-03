@@ -10,6 +10,7 @@ resources:
   - secretstore-rbac.yaml
   - secretstore.yaml
   - externalsecret.yaml
+  - connector-bootstrap.yaml
   - networkpolicy.yaml
   - probe.yaml
   - prometheusrule.yaml

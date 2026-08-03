@@ -62,6 +62,20 @@ it. Never commit the plaintext form.
 The OCI chart source, infrastructure, route, policies, monitoring, and relay
 Deployment reconcile through Flux.
 
+## Bhaiya connector administrator
+
+`Job/buzz-bhaiya-connector-bootstrap-v1` uses `/usr/local/bin/buzz-admin` from
+the same released, pinned Buzz image as the relay to admit Bhaiya's deployment
+connector public key as a community administrator. It reads the existing relay,
+database, and Redis settings from `buzz-secrets`; no connector private key is
+present in this namespace. Destination and egress policies limit the Job to
+Buzz Postgres, Dragonfly, and DNS.
+
+The completed Job is deliberately retained so Flux does not rerun it on every
+reconciliation. After restoring Buzz Postgres to a point before connector
+enrollment, rename the Job to the next version and let Flux reconcile it. Do
+not run `buzz-admin` manually against production.
+
 ## Backup and restore ownership
 
 CNPG archives WAL continuously and creates a daily plugin backup in the
