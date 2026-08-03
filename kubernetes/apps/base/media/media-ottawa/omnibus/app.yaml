@@ -18,6 +18,13 @@ spec:
       labels:
         app: omnibus
     spec:
+      initContainers:
+        - name: init-dirs
+          image: busybox:1.36
+          command: ["sh", "-c", "mkdir -p /config/cache /config/logs /config/backups"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
       containers:
         - name: omnibus
           image: ghcr.io/hankscafe/omnibus:v1.4.2
