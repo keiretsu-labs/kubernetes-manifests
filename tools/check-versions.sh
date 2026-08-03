@@ -45,6 +45,14 @@
 set -euo pipefail
 cd -- "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# Locate pyyaml in the user nix profile if the system python doesn't have it
+if ! python3 -c "import yaml" 2>/dev/null; then
+  _yaml_site=$(find /workspace/.local/share/nix/root/nix/store -maxdepth 1 -name "*pyyaml*" -not -name "*.drv" -type d 2>/dev/null | head -1)
+  if [ -n "$_yaml_site" ]; then
+    export PYTHONPATH="${_yaml_site}/lib/python3.14/site-packages${PYTHONPATH:+:$PYTHONPATH}"
+  fi
+fi
+
 python3 - <<'PY'
 import os
 import pathlib
