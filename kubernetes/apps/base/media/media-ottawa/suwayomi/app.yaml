@@ -53,10 +53,17 @@ spec:
             - name: DATABASE_TYPE
               value: POSTGRESQL
             - name: DATABASE_URL
+              value: "postgresql://suwayomi-postgres-rw.media:5432/suwayomi"
+            - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: suwayomi-postgres-app
-                  key: jdbc-uri
+                  key: username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: suwayomi-postgres-app
+                  key: password
             - name: DOWNLOAD_AS_CBZ
               value: "true"
             - name: AUTO_DOWNLOAD_CHAPTERS
