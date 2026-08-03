@@ -42,20 +42,6 @@ spec:
                 secretKeyRef:
                   name: omnibus-sensitive-secret
                   key: NEXTAUTH_SECRET
-            - name: OIDC_ISSUER
-              value: "https://auth.keiretsu.top"
-            - name: OIDC_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: omnibus-oidc-secret
-                  key: client-id
-            - name: OIDC_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: omnibus-oidc-secret
-                  key: client-secret
-            - name: OIDC_AUTO_APPROVE
-              value: "true"
             - name: OMNIBUS_CONFIG_DIR
               value: /config
             - name: OMNIBUS_CACHE_DIR
