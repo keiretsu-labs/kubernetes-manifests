@@ -76,3 +76,42 @@ spec:
       read: true
       write: true
       owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: buzz-backup
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: buzz-backup
+  quotas:
+    maxSize: 400Gi
+    maxObjects: 20000000
+  keyPermissions:
+    - keyRef:
+        name: buzz-backup-key
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: buzz-backup-key
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: Buzz Object Backup Key
+  secretTemplate:
+    name: buzz-backup-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: buzz-backup
+      read: true
+      write: true
+      owner: true
