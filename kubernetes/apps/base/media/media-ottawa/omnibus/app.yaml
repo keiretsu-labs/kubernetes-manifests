@@ -90,6 +90,11 @@ spec:
                   key: uri
             - name: REDIS_URL
               value: redis://dragonfly-omnibus:6379
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: omnibus-sensitive-secret
+                  key: NEXTAUTH_SECRET
           resources:
             requests:
               cpu: 50m
