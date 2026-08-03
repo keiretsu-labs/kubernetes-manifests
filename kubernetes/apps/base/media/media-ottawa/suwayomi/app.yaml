@@ -86,8 +86,8 @@ spec:
             - |
               WATCH_DIR=/media-share/suwayomi-manga
               KOMGA_URL=http://komga.media.svc:25600
-              KOMGA_API_KEY="${KOMGA_SCAN_API_KEY}"
-              LIBRARY_ID="${KOMGA_MANGA_LIBRARY_ID}"
+              KOMGA_API_KEY="$KOMGA_SCAN_API_KEY"
+              LIBRARY_ID="$KOMGA_MANGA_LIBRARY_ID"
               DEBOUNCE=30
               last_mtime=""
               while true; do

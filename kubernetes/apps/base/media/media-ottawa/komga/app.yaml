@@ -72,8 +72,8 @@ spec:
             - |
               WATCH_DIR=/media-share/omnibus-comics
               KOMGA_URL=http://localhost:25600
-              KOMGA_API_KEY="${KOMGA_SCAN_API_KEY}"
-              LIBRARY_ID="${KOMGA_COMICS_LIBRARY_ID}"
+              KOMGA_API_KEY="$KOMGA_SCAN_API_KEY"
+              LIBRARY_ID="$KOMGA_COMICS_LIBRARY_ID"
               DEBOUNCE=30
               touch /tmp/.last_scan
               while true; do
