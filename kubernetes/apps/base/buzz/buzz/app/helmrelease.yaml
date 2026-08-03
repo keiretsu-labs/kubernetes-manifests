@@ -25,6 +25,7 @@ spec:
       pullPolicy: Always
     relayUrl: wss://buzz.ottawa.keiretsu.top
     ownerPubkey: b0ea34e1aad99dd51ea38673f433e43e6d7a73e557b95a2145e3a45ff3d5f12e
+    bootstrapAdminPubkeys: 895441d89f14296136e7b85ac6f9d170b6f3fe271eea68040a0c2d5a74851564
     replicaCount: 2
 
     # Metrics Server is available in Ottawa. Keep a two-replica HA floor and
