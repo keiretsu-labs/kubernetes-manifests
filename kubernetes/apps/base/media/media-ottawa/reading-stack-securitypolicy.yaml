@@ -12,9 +12,6 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: omnibus
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: bookorbit
   extAuth:
     failOpen: false
     headersToExtAuth:
