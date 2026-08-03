@@ -7,5 +7,6 @@ resources:
   - redis.yaml
   - object-storage.yaml
   - minio.yaml
+  - object-backup.yaml
   - networkpolicy-dependencies.yaml
   - servicemonitor-dragonfly.yaml

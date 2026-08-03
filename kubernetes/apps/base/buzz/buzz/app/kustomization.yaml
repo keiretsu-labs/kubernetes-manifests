@@ -5,6 +5,7 @@ namespace: buzz
 resources:
   - ocirepository.yaml
   - helmrelease.yaml
+  - admin-httproute.yaml
   - buzz-identity.sops.yaml
   - secretstore-rbac.yaml
   - secretstore.yaml
