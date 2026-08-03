@@ -25,6 +25,14 @@ spec:
     ownerPubkey: b0ea34e1aad99dd51ea38673f433e43e6d7a73e557b95a2145e3a45ff3d5f12e
     replicaCount: 2
 
+    # NIP-43 blocks an unpaired phone from reaching the main relay. Keep the
+    # ephemeral NIP-AB handshake on its dedicated, single-replica service so
+    # both WebSocket peers share the same in-memory pairing state.
+    pairingRelay:
+      enabled: true
+      url: wss://buzz.ottawa.keiretsu.top/pair
+      replicaCount: 1
+
     secrets:
       existingSecret: buzz-secrets
 
@@ -76,6 +84,21 @@ spec:
           sectionName: wildcard-location-keiretsu-top-https
       hostnames:
         - buzz.ottawa.keiretsu.top
+      rules:
+        - matches:
+            - path:
+                type: Exact
+                value: /pair
+          backendRefs:
+            - name: buzz-pairing
+              port: 5000
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          backendRefs:
+            - name: buzz
+              port: 3000
 
     serviceMonitor:
       enabled: true
