@@ -46,7 +46,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: suwayomi-postgres-app
-                  key: uri
+                  key: jdbc-uri
             - name: DOWNLOAD_AS_CBZ
               value: "true"
             - name: AUTO_DOWNLOAD_CHAPTERS
