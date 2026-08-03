@@ -52,7 +52,7 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /api/auth/callback
+            value: /api/auth/callback/oidc
       backendRefs:
         - name: omnibus
           port: 3000

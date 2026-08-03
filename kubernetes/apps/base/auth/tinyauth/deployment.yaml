@@ -89,7 +89,7 @@ spec:
                   name: tinyauth-secret
                   key: omnibus-oidc-client-secret
             - name: TINYAUTH_OIDC_CLIENTS_OMNIBUS_TRUSTEDREDIRECTURIS
-              value: https://omnibus.killinit.cc/api/auth/callback/tinyauth
+              value: https://omnibus.killinit.cc/api/auth/callback/oidc
             - name: TINYAUTH_OIDC_CLIENTS_OMNIBUS_NAME
               value: Omnibus
             - name: TINYAUTH_OIDC_CLIENTS_SHELFMARK_CLIENTID
