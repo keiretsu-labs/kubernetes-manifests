@@ -32,6 +32,7 @@ spec:
                 sed -i '/^server\.databaseUrl/d' "$CONF"
                 sed -i '/^server\.databaseUsername/d' "$CONF"
                 sed -i '/^server\.databasePassword/d' "$CONF"
+                sed -i 's|server\.downloadsPath = ""|server.downloadsPath = "/media-share/suwayomi-manga"|' "$CONF"
               fi
           volumeMounts:
             - name: config
