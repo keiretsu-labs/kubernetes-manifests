@@ -22,7 +22,17 @@ spec:
       initContainers:
         - name: fix-permissions
           image: busybox:latest
-          command: ["sh", "-c", "chown -R 1000:1000 /data"]
+          command:
+            - sh
+            - -c
+            - |
+              chown -R 1000:1000 /data
+              CONF=/data/Tachidesk/server.conf
+              if [ -f "$CONF" ]; then
+                sed -i '/^server\.databaseUrl/d' "$CONF"
+                sed -i '/^server\.databaseUsername/d' "$CONF"
+                sed -i '/^server\.databasePassword/d' "$CONF"
+              fi
           volumeMounts:
             - name: config
               mountPath: /data
