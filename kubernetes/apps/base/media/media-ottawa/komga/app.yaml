@@ -43,6 +43,8 @@ spec:
                 secretKeyRef:
                   name: komga-oidc-secret
                   key: client-secret
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_TINYAUTH_CLIENT_NAME
+              value: "tinyauth"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_TINYAUTH_SCOPE
               value: "openid,profile,email"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_TINYAUTH_ISSUER_URI
