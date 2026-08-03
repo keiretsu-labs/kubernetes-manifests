@@ -63,11 +63,6 @@ spec:
               value: /media-share/omnibus-unmatched
             - name: OMNIBUS_MAX_UPLOAD_MB
               value: "2048"
-            - name: COMICVINE_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: omnibus-sensitive-secret
-                  key: COMICVINE_API_KEY
           volumeMounts:
             - name: config
               mountPath: /config
