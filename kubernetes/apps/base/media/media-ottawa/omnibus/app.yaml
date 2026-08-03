@@ -42,6 +42,8 @@ spec:
                   key: uri
             - name: REDIS_URL
               value: redis://dragonfly-omnibus:6379
+            - name: OMNIBUS_REDIS_URL
+              value: redis://dragonfly-omnibus:6379
             - name: NEXTAUTH_URL
               value: "https://omnibus.${CLUSTER_DOMAIN}"
             - name: NEXTAUTH_SECRET
