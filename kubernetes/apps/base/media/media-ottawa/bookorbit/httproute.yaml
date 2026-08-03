@@ -78,3 +78,10 @@ spec:
       backendRefs:
         - name: bookorbit
           port: 3000
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1/auth
+      backendRefs:
+        - name: bookorbit
+          port: 3000
