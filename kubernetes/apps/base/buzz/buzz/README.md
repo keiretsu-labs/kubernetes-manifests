@@ -3,9 +3,11 @@
 This stack uses Block's released Buzz chart `0.1.7` from
 `oci://ghcr.io/block/buzz/charts/buzz`. It provisions dedicated, operator-managed
 Postgres and Dragonfly instances plus a dedicated single-replica MinIO object
-store backed by a replicated Ceph block volume. The relay is configured for two
-to six replicas (CPU HPA, with a two-replica floor) at
-`wss://buzz.ottawa.keiretsu.top` behind the Ottawa public Gateway.
+store backed by a replicated Ceph block volume. The relay temporarily runs as
+one replica at `wss://buzz.ottawa.keiretsu.top` behind the Ottawa public Gateway
+so chart `0.1.7` can serve its process-local huddle audio rooms. The HPA,
+topology spread, and relay PDB settings remain commented beside the active
+values for restoration when cross-pod mesh audio has production chart support.
 A separate single-replica `buzz-pairing` Deployment handles the ephemeral
 NIP-AB device handshake at `wss://buzz.ottawa.keiretsu.top/pair`; keeping it
 single-replica ensures both pairing WebSockets share the same in-memory state.
@@ -102,15 +104,27 @@ namespaced Cilium policy for relay, replication, operator, and metrics access.
 The public monitor performs a full external DNS/TLS/HTTPS request through the
 Ottawa Gateway. A second blackbox check negotiates TLS, sends an RFC 6455 Upgrade
 request to `/pair`, and passes only when the Gateway and pairing relay return
-`101 Switching Protocols`. Alerts also cover relay and pairing replicas, HPA
-health and saturation, MinIO readiness, scheduled backup freshness/failures,
-Dragonfly, metrics ingestion, and public push-gateway reachability.
+`101 Switching Protocols`. Alerts also cover relay and pairing availability,
+MinIO readiness, scheduled backup freshness/failures, Dragonfly, metrics
+ingestion, and public push-gateway reachability.
+
+## Temporary single-pod huddle audio mode
+
+`relay.huddleAudioAvailable` is explicitly enabled. The released chart keeps
+huddle rooms in the relay process, so the Deployment must remain at exactly one
+replica and must not use an HPA while this mode is active. This trades relay
+failover for working desktop-to-desktop huddle audio; Postgres, Dragonfly,
+MinIO, and their backups retain their existing redundancy and durability.
+
+Do not raise the relay replica count without first disabling huddle audio or
+shipping and validating the cross-pod mesh path. The current mobile client can
+display huddle lifecycle events but does not yet implement the microphone/audio
+WebSocket path, so this server mode does not claim phone voice support.
 
 ## Deliberately gated features
 
-- Huddle audio remains unavailable because the released chart supports it only
-  for a single relay replica until a production SFU path exists. This deployment
-  keeps relay HA and autoscaling instead.
+- Cross-pod huddle audio and relay HA remain gated until the mesh path has
+  production chart support and an Ottawa rollout test.
 - Join terms, privacy notice, and age attestation remain disabled until the
   operator supplies approved policy text and an age-gating decision. Do not
   invent legal copy in manifests.
