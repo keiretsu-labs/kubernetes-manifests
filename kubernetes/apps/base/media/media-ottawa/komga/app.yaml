@@ -47,9 +47,8 @@ spec:
               value: "openid,profile,email"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_TINYAUTH_ISSUER_URI
               value: "https://auth.keiretsu.top"
-            # Leave oauth2AccountCreation false — Wizarr creates accounts
             - name: KOMGA_OAUTH2_ACCOUNT_CREATION
-              value: "false"
+              value: "true"
           resources:
             requests:
               cpu: 100m
