@@ -103,7 +103,7 @@ spec:
                   name: tinyauth-secret
                   key: shelfmark-oidc-client-secret
             - name: TINYAUTH_OIDC_CLIENTS_SHELFMARK_TRUSTEDREDIRECTURIS
-              value: https://shelfmark.killinit.cc/oidc/callback
+              value: https://shelfmark.killinit.cc/api/auth/oidc/callback
             - name: TINYAUTH_OIDC_CLIENTS_SHELFMARK_NAME
               value: Shelfmark
             - name: TINYAUTH_OIDC_CLIENTS_KOMGA_CLIENTID

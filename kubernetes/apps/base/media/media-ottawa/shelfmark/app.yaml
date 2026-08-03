@@ -31,22 +31,6 @@ spec:
               value: /config
             - name: TMP_DIR
               value: /tmp/shelfmark
-            - name: OIDC_DISCOVERY_URL
-              value: "https://auth.keiretsu.top/.well-known/openid-configuration"
-            - name: OIDC_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: shelfmark-oidc-secret
-                  key: client-id
-            - name: OIDC_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: shelfmark-oidc-secret
-                  key: client-secret
-            - name: OIDC_SCOPES
-              value: "openid profile email"
-            - name: OIDC_AUTO_PROVISION
-              value: "true"
           volumeMounts:
             - name: config
               mountPath: /config
