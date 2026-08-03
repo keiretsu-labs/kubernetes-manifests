@@ -9,9 +9,6 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: shelfmark
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: omnibus
   extAuth:
     failOpen: false
     headersToExtAuth:
