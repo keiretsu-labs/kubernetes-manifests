@@ -63,6 +63,77 @@ spec:
               value: https://forgejo.keiretsu.top/user/oauth2/Tinyauth/callback
             - name: TINYAUTH_OIDC_CLIENTS_FORGEJO_NAME
               value: Forgejo
+            # reading-stack OIDC clients — registered via GitOps (env-driven)
+            - name: TINYAUTH_OIDC_CLIENTS_BOOKORBIT_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: bookorbit-oidc-client-id
+            - name: TINYAUTH_OIDC_CLIENTS_BOOKORBIT_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: bookorbit-oidc-client-secret
+            - name: TINYAUTH_OIDC_CLIENTS_BOOKORBIT_TRUSTEDREDIRECTURIS
+              value: https://bookorbit.killinit.cc/api/v1/auth/oidc/callback
+            - name: TINYAUTH_OIDC_CLIENTS_BOOKORBIT_NAME
+              value: BookOrbit
+            - name: TINYAUTH_OIDC_CLIENTS_OMNIBUS_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: omnibus-oidc-client-id
+            - name: TINYAUTH_OIDC_CLIENTS_OMNIBUS_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: omnibus-oidc-client-secret
+            - name: TINYAUTH_OIDC_CLIENTS_OMNIBUS_TRUSTEDREDIRECTURIS
+              value: https://omnibus.killinit.cc/api/auth/callback/tinyauth
+            - name: TINYAUTH_OIDC_CLIENTS_OMNIBUS_NAME
+              value: Omnibus
+            - name: TINYAUTH_OIDC_CLIENTS_SHELFMARK_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: shelfmark-oidc-client-id
+            - name: TINYAUTH_OIDC_CLIENTS_SHELFMARK_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: shelfmark-oidc-client-secret
+            - name: TINYAUTH_OIDC_CLIENTS_SHELFMARK_TRUSTEDREDIRECTURIS
+              value: https://shelfmark.killinit.cc/oidc/callback
+            - name: TINYAUTH_OIDC_CLIENTS_SHELFMARK_NAME
+              value: Shelfmark
+            - name: TINYAUTH_OIDC_CLIENTS_KOMGA_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: komga-oidc-client-id
+            - name: TINYAUTH_OIDC_CLIENTS_KOMGA_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: komga-oidc-client-secret
+            - name: TINYAUTH_OIDC_CLIENTS_KOMGA_TRUSTEDREDIRECTURIS
+              value: https://komga.killinit.cc/login/oauth2/code/tinyauth
+            - name: TINYAUTH_OIDC_CLIENTS_KOMGA_NAME
+              value: Komga
+            - name: TINYAUTH_OIDC_CLIENTS_AUDIOBOOKSHELF_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: audiobookshelf-oidc-client-id
+            - name: TINYAUTH_OIDC_CLIENTS_AUDIOBOOKSHELF_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: audiobookshelf-oidc-client-secret
+            - name: TINYAUTH_OIDC_CLIENTS_AUDIOBOOKSHELF_TRUSTEDREDIRECTURIS
+              value: https://audiobookshelf.killinit.cc/auth/openid/callback
+            - name: TINYAUTH_OIDC_CLIENTS_AUDIOBOOKSHELF_NAME
+              value: Audiobookshelf
             - name: TINYAUTH_DATABASE_PATH
               value: /data/tinyauth.db
           volumeMounts:

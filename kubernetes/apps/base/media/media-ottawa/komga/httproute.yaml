@@ -1,0 +1,37 @@
+---
+# Komga has no SecurityPolicy — accounts are managed by Wizarr, matching Plex/Jellyfin pattern
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: komga
+  annotations:
+    item.homer.rajsingh.info/name: Komga
+    item.homer.rajsingh.info/subtitle: Comics & Manga Library
+    item.homer.rajsingh.info/logo: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/komga.svg
+    item.homer.rajsingh.info/keywords: comics, manga, library, reading
+    service.homer.rajsingh.info/name: Reading
+    service.homer.rajsingh.info/icon: fas fa-book
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - komga.${CLUSTER_DOMAIN}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: komga
+          port: 25600

@@ -1,0 +1,123 @@
+---
+# Omnibus must run at exactly 1 replica — login lockout is in-memory per-process
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: omnibus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: omnibus
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes-excludes: media
+      labels:
+        app: omnibus
+    spec:
+      containers:
+        - name: omnibus
+          image: ghcr.io/hankscafe/omnibus:v1.4.2
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "${TIMEZONE}"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: omnibus-postgres-app
+                  key: uri
+            - name: REDIS_URL
+              value: redis://dragonfly-omnibus:6379
+            - name: NEXTAUTH_URL
+              value: "https://omnibus.${CLUSTER_DOMAIN}"
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: omnibus-sensitive-secret
+                  key: NEXTAUTH_SECRET
+            - name: OIDC_ISSUER
+              value: "https://auth.keiretsu.top"
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: omnibus-oidc-secret
+                  key: client-id
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: omnibus-oidc-secret
+                  key: client-secret
+            - name: OIDC_AUTO_APPROVE
+              value: "true"
+            - name: OMNIBUS_CONFIG_DIR
+              value: /config
+            - name: OMNIBUS_CACHE_DIR
+              value: /config/cache
+            - name: OMNIBUS_LOGS_DIR
+              value: /config/logs
+            - name: OMNIBUS_BACKUPS_DIR
+              value: /config/backups
+            - name: OMNIBUS_WATCHED_DIR
+              value: /media-share/omnibus-watched
+            - name: OMNIBUS_AWAITING_MATCH_DIR
+              value: /media-share/omnibus-unmatched
+            - name: OMNIBUS_MAX_UPLOAD_MB
+              value: "2048"
+            - name: COMICVINE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: omnibus-sensitive-secret
+                  key: COMICVINE_API_KEY
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media-share
+        - name: omnibus-engine
+          image: ghcr.io/hankscafe/omnibus-engine:v1.4.2
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: omnibus-postgres-app
+                  key: uri
+            - name: REDIS_URL
+              value: redis://dragonfly-omnibus:6379
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media-share
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: omnibus-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-share
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: omnibus
+spec:
+  selector:
+    app: omnibus
+  ports:
+    - name: http
+      port: 3000
+      protocol: TCP
+      targetPort: 3000

@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shelfmark
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shelfmark
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes-excludes: media
+      labels:
+        app: shelfmark
+    spec:
+      containers:
+        - name: shelfmark
+          image: ghcr.io/calibrain/shelfmark:v1.3.5
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "${TIMEZONE}"
+            - name: CONFIG_DIR
+              value: /config
+            - name: TMP_DIR
+              value: /tmp/shelfmark
+            - name: OIDC_DISCOVERY_URL
+              value: "https://auth.keiretsu.top/.well-known/openid-configuration"
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: shelfmark-oidc-secret
+                  key: client-id
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: shelfmark-oidc-secret
+                  key: client-secret
+            - name: OIDC_SCOPES
+              value: "openid profile email"
+            - name: OIDC_AUTO_PROVISION
+              value: "true"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media-share
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: shelfmark-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-share
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shelfmark
+spec:
+  selector:
+    app: shelfmark
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080

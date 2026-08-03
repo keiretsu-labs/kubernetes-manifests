@@ -1,0 +1,25 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: suwayomi-postgres
+  annotations:
+    cnpg.io/skipEmptyWalArchiveCheck: "enabled"
+spec:
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: suwayomi-postgres-superuser-creds
+  inheritedMetadata:
+    labels:
+      app: suwayomi-postgres
+  instances: 2
+  bootstrap:
+    initdb:
+      database: suwayomi
+      owner: suwayomi
+  nodeMaintenanceWindow:
+    reusePVC: false
+  storage:
+    size: 10Gi
+  monitoring:
+    enablePodMonitor: true

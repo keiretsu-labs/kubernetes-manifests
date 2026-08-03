@@ -1,0 +1,36 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: shelfmark
+  annotations:
+    item.homer.rajsingh.info/name: Shelfmark
+    item.homer.rajsingh.info/subtitle: eBook & Audiobook Requests
+    item.homer.rajsingh.info/logo: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/readarr.svg
+    item.homer.rajsingh.info/keywords: ebooks, audiobooks, requests
+    service.homer.rajsingh.info/name: Reading
+    service.homer.rajsingh.info/icon: fas fa-book
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - shelfmark.${CLUSTER_DOMAIN}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: shelfmark
+          port: 8080

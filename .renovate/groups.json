@@ -458,6 +458,16 @@
       "description": "Never automerge commit-pinned Git references.",
       "matchDatasources": ["git-refs"],
       "automerge": false
+    },
+    {
+      "description": "Omnibus — web and Rust engine are released in lockstep; a split bump breaks the pair.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/hankscafe/omnibus",
+        "ghcr.io/hankscafe/omnibus-engine"
+      ],
+      "groupName": "omnibus",
+      "labels": ["media"]
     }
   ]
 }

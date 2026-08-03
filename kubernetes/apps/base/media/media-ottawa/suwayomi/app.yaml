@@ -1,0 +1,148 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: suwayomi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: suwayomi
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes-excludes: media
+      labels:
+        app: suwayomi
+    spec:
+      containers:
+        - name: suwayomi
+          image: ghcr.io/suwayomi/suwayomi-server:v2.3.2298
+          ports:
+            - name: http
+              containerPort: 4567
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "${TIMEZONE}"
+            - name: EXTENSION_STORES
+              value: '["https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"]'
+            - name: DATABASE_TYPE
+              value: POSTGRESQL
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: suwayomi-postgres-app
+                  key: uri
+            - name: DOWNLOAD_AS_CBZ
+              value: "true"
+            - name: AUTO_DOWNLOAD_CHAPTERS
+              value: "true"
+            - name: AUTO_DOWNLOAD_NEW_CHAPTERS_LIMIT
+              value: "5"
+            - name: AUTO_DOWNLOAD_IGNORE_REUPLOADS
+              value: "true"
+            - name: MAX_SOURCES_IN_PARALLEL
+              value: "3"
+            - name: UPDATE_INTERVAL
+              value: "24"
+            - name: UPDATE_EXCLUDE_COMPLETED
+              value: "true"
+            - name: FLARESOLVERR_ENABLED
+              value: "true"
+            - name: FLARESOLVERR_URL
+              value: http://flaresolverr.media.svc:8191
+            - name: KOREADER_SYNC_STRATEGY_FORWARD
+              value: PROMPT
+            - name: OPDS_SKIP_CHAPTER_METADATA_FEED
+              value: "true"
+            - name: AUTH_MODE
+              value: none
+            # Suwayomi writes chapters here; Komga reads this path read-only
+            - name: SUWAYOMI_DOWNLOADS_PATH
+              value: /media-share/suwayomi-manga
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 1536Mi
+          volumeMounts:
+            - name: config
+              mountPath: /home/suwayomi/.local/share/Tachidesk
+            - name: media
+              mountPath: /media-share
+        # Komga scan watcher — polls suwayomi-manga for new/changed CBZs,
+        # debounces on mtime settle, then fires POST scan to Komga.
+        # Must be a sidecar: inotify does not cross an SMB mount, so a
+        # standalone watcher deployment would see nothing.
+        - name: komga-watcher
+          image: ghcr.io/gotson/komga:1.25.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              WATCH_DIR=/media-share/suwayomi-manga
+              KOMGA_URL=http://komga.media.svc:25600
+              KOMGA_API_KEY="${KOMGA_SCAN_API_KEY}"
+              LIBRARY_ID="${KOMGA_MANGA_LIBRARY_ID}"
+              DEBOUNCE=30
+              last_mtime=""
+              while true; do
+                current_mtime=$(find "$WATCH_DIR" -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
+                if [ "$current_mtime" -gt "0" ]; then
+                  sleep "$DEBOUNCE"
+                  still=$(find "$WATCH_DIR" -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
+                  if [ "$still" -gt "0" ]; then
+                    touch /tmp/.last_scan
+                    wget -q --method=POST \
+                      --header="X-API-Key: $KOMGA_API_KEY" \
+                      "$KOMGA_URL/api/v1/libraries/$LIBRARY_ID/scan" \
+                      -O /dev/null && echo "scan triggered"
+                  fi
+                fi
+                sleep 15
+              done
+          env:
+            - name: KOMGA_SCAN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: komga-scan-secret
+                  key: api-key
+            - name: KOMGA_MANGA_LIBRARY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: komga-scan-secret
+                  key: manga-library-id
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          volumeMounts:
+            - name: media
+              mountPath: /media-share
+              readOnly: true
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: suwayomi-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-share
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: suwayomi
+spec:
+  selector:
+    app: suwayomi
+  ports:
+    - name: http
+      port: 4567
+      protocol: TCP
+      targetPort: 4567

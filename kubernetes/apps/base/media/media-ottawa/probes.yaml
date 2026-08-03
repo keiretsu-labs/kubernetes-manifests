@@ -42,5 +42,12 @@ spec:
         # Request / share management
         - http://overseerr.media:5055
         - http://wizarr.media:5690
+        # Reading stack
+        - http://bookorbit.media:3000
+        - http://audiobookshelf.media:80
+        - http://suwayomi.media:4567
+        - http://komga.media:25600
+        - http://shelfmark.media:8080
+        - http://omnibus.media:3000
       labels:
         service: media

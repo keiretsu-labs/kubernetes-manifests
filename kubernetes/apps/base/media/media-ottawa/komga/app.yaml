@@ -1,0 +1,135 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: komga
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: komga
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes-excludes: media
+      labels:
+        app: komga
+    spec:
+      containers:
+        - name: komga
+          image: ghcr.io/gotson/komga:1.25.0
+          ports:
+            - name: http
+              containerPort: 25600
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "${TIMEZONE}"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx512m"
+            - name: SERVER_PORT
+              value: "25600"
+            - name: KOMGA_CONFIG_DIR
+              value: /config
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_TINYAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: komga-oidc-secret
+                  key: client-id
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_TINYAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: komga-oidc-secret
+                  key: client-secret
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_TINYAUTH_SCOPE
+              value: "openid,profile,email"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_TINYAUTH_ISSUER_URI
+              value: "https://auth.keiretsu.top"
+            # Leave oauth2AccountCreation false — Wizarr creates accounts
+            - name: KOMGA_OAUTH2_ACCOUNT_CREATION
+              value: "false"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /media-share
+              readOnly: true
+        # Komga scan watcher for omnibus-comics — polls for new/changed CBZs,
+        # debounces, fires POST scan. Sidecar because inotify does not cross SMB.
+        - name: komga-watcher
+          image: ghcr.io/gotson/komga:1.25.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              WATCH_DIR=/media-share/omnibus-comics
+              KOMGA_URL=http://localhost:25600
+              KOMGA_API_KEY="${KOMGA_SCAN_API_KEY}"
+              LIBRARY_ID="${KOMGA_COMICS_LIBRARY_ID}"
+              DEBOUNCE=30
+              touch /tmp/.last_scan
+              while true; do
+                found=$(find "$WATCH_DIR" -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
+                if [ "$found" -gt "0" ]; then
+                  sleep "$DEBOUNCE"
+                  still=$(find "$WATCH_DIR" -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
+                  if [ "$still" -gt "0" ]; then
+                    touch /tmp/.last_scan
+                    wget -q --method=POST \
+                      --header="X-API-Key: $KOMGA_API_KEY" \
+                      "$KOMGA_URL/api/v1/libraries/$LIBRARY_ID/scan" \
+                      -O /dev/null && echo "comics scan triggered"
+                  fi
+                fi
+                sleep 15
+              done
+          env:
+            - name: KOMGA_SCAN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: komga-scan-secret
+                  key: api-key
+            - name: KOMGA_COMICS_LIBRARY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: komga-scan-secret
+                  key: comics-library-id
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          volumeMounts:
+            - name: media
+              mountPath: /media-share
+              readOnly: true
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: komga-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-share
+          readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: komga
+spec:
+  selector:
+    app: komga
+  ports:
+    - name: http
+      port: 25600
+      protocol: TCP
+      targetPort: 25600

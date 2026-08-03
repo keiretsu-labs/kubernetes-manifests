@@ -1,0 +1,25 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: omnibus-postgres
+  annotations:
+    cnpg.io/skipEmptyWalArchiveCheck: "enabled"
+spec:
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: omnibus-postgres-superuser-creds
+  inheritedMetadata:
+    labels:
+      app: omnibus-postgres
+  instances: 2
+  bootstrap:
+    initdb:
+      database: omnibus
+      owner: omnibus
+  nodeMaintenanceWindow:
+    reusePVC: false
+  storage:
+    size: 10Gi
+  monitoring:
+    enablePodMonitor: true

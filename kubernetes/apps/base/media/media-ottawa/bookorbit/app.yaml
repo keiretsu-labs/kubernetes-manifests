@@ -1,0 +1,87 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookorbit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookorbit
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        backup.velero.io/backup-volumes-excludes: media
+      labels:
+        app: bookorbit
+    spec:
+      containers:
+        - name: bookorbit
+          image: ghcr.io/bookorbit/bookorbit:2.3.0
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "${TIMEZONE}"
+            - name: APP_URL
+              value: "https://bookorbit.${CLUSTER_DOMAIN}"
+            - name: APP_DATA_PATH
+              value: /data
+            - name: BOOK_DOCK_PATH
+              value: /media-share/bookorbit-bookdrop
+            - name: LIBRARY_BROWSE_ROOT
+              value: /media-share
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: bookorbit-postgres-app
+                  key: uri
+            - name: OIDC_ISSUER
+              value: "https://auth.keiretsu.top"
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: bookorbit-oidc-secret
+                  key: client-id
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: bookorbit-oidc-secret
+                  key: client-secret
+            - name: OIDC_FORCE_SSO
+              value: "true"
+            - name: OIDC_AUTO_APPROVE
+              value: "true"
+            - name: OIDC_ADMIN_GROUP
+              value: ""
+            - name: OIDC_USER_GROUP
+              value: ""
+          volumeMounts:
+            - name: config
+              mountPath: /data
+            - name: media
+              mountPath: /media-share
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: bookorbit-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-share
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookorbit
+spec:
+  selector:
+    app: bookorbit
+  ports:
+    - name: http
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
