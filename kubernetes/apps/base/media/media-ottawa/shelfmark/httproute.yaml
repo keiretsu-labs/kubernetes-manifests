@@ -52,7 +52,7 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /oidc/callback
+            value: /api/auth/oidc/callback
       backendRefs:
         - name: shelfmark
           port: 8080
