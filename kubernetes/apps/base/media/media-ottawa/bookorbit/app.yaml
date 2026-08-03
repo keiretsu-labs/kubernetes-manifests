@@ -45,6 +45,11 @@ spec:
                 secretKeyRef:
                   name: bookorbit-app-secret
                   key: jwt-secret
+            - name: SETUP_BOOTSTRAP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: bookorbit-app-secret
+                  key: setup-bootstrap-token
             - name: OIDC_ISSUER
               value: "https://auth.keiretsu.top"
             - name: OIDC_CLIENT_ID
