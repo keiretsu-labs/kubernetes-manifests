@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ./gitrepository.yaml
   - ./forgejo-auth.sops.yaml
+  - ./buzz-connector.sops.yaml
   - ./receiver.yaml
   - ./webhook-secret.yaml
   - ./bhaiya.yaml

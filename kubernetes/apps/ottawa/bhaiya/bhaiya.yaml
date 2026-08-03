@@ -13,6 +13,7 @@ spec:
     - name: garage
     - name: agent-sandbox
     - name: cert-manager
+    - name: buzz
   path: ./deploy
   prune: true
   sourceRef:
