@@ -336,6 +336,13 @@
 			],
 		},
 	],
+	"sshTests": [
+		{
+			"src":    "rajsinghtech@github",
+			"dst":    ["rajsinghtech@github"],
+			"accept": ["root", "workspace", "rajsingh"],
+		},
+	],
 	"tests": [
 		{
 			"src":    "group:superuser",
