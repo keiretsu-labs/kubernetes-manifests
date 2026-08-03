@@ -17,13 +17,6 @@ spec:
       labels:
         app: shelfmark
     spec:
-      initContainers:
-        - name: init-dirs
-          image: busybox:1.36
-          command: ["sh", "-c", "mkdir -p /config/cache"]
-          volumeMounts:
-            - name: config
-              mountPath: /config
       containers:
         - name: shelfmark
           image: ghcr.io/calibrain/shelfmark:v1.3.5
