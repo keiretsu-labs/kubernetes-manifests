@@ -22,7 +22,7 @@ spec:
           image: ghcr.io/calibrain/shelfmark:v1.3.5
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: 8084
               protocol: TCP
           env:
             - name: TZ
@@ -55,4 +55,4 @@ spec:
     - name: http
       port: 8080
       protocol: TCP
-      targetPort: 8080
+      targetPort: 8084
