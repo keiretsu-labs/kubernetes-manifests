@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: nousresearch/hermes-agent:v2026.7.30
+          image: nousresearch/hermes-agent:v2026.8.3
           args: ["gateway", "run"]
           envFrom:
             - configMapRef:
