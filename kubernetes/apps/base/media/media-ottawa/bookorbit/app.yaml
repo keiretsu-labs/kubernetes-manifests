@@ -40,6 +40,11 @@ spec:
                 secretKeyRef:
                   name: bookorbit-postgres-app
                   key: uri
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: bookorbit-app-secret
+                  key: jwt-secret
             - name: OIDC_ISSUER
               value: "https://auth.keiretsu.top"
             - name: OIDC_CLIENT_ID
