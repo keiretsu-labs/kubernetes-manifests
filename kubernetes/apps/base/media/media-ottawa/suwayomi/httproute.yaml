@@ -1,0 +1,33 @@
+---
+# Suwayomi is admin-only (single-user by design) — private + ts, no public
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: suwayomi
+  annotations:
+    item.homer.rajsingh.info/name: Suwayomi
+    item.homer.rajsingh.info/subtitle: Manga Acquisition
+    item.homer.rajsingh.info/logo: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/suwayomi.svg
+    item.homer.rajsingh.info/keywords: manga, acquisition, admin
+    service.homer.rajsingh.info/name: Reading
+    service.homer.rajsingh.info/icon: fas fa-book
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+  hostnames:
+    - suwayomi.${CLUSTER_DOMAIN}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: suwayomi
+          port: 4567

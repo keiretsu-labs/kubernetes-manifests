@@ -32,3 +32,13 @@ resources:
   - ./flaresolverr
   - ./maintainerr
   - ./tracearr
+  - ./bookorbit
+  - ./audiobookshelf
+  - ./suwayomi
+  - ./komga
+  - ./shelfmark
+  - ./omnibus
+  - omnibus/secret.sops.yaml
+  - reading-stack-securitypolicy.yaml
+  - oidc-secrets.sops.yaml
+  - komga-scan-secret.yaml

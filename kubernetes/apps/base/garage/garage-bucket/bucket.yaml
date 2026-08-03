@@ -119,3 +119,22 @@ spec:
   quotas:
     maxSize: 200Gi
     maxObjects: 10000000
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: bookorbit-postgres
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: bookorbit-postgres
+  quotas:
+    maxSize: 200Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef:
+        name: bookorbit-postgres-key
+        namespace: media
+      read: true
+      write: true
+      owner: true

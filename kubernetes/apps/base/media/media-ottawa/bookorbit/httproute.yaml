@@ -1,0 +1,81 @@
+---
+# Browser route — targeted by reading-stack-tinyauth SecurityPolicy
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bookorbit
+  annotations:
+    item.homer.rajsingh.info/name: BookOrbit
+    item.homer.rajsingh.info/subtitle: eBook Library
+    item.homer.rajsingh.info/logo: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/calibre-web.svg
+    item.homer.rajsingh.info/keywords: ebooks, reading, library
+    service.homer.rajsingh.info/name: Reading
+    service.homer.rajsingh.info/icon: fas fa-book
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - bookorbit.${CLUSTER_DOMAIN}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: bookorbit
+          port: 3000
+---
+# Device route — NOT targeted by SecurityPolicy; Kobo/KOReader/OPDS carry their own auth
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bookorbit-devices
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+  hostnames:
+    - bookorbit.${CLUSTER_DOMAIN}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1/kobo
+      backendRefs:
+        - name: bookorbit
+          port: 3000
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1/koreader
+      backendRefs:
+        - name: bookorbit
+          port: 3000
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1/opds
+      backendRefs:
+        - name: bookorbit
+          port: 3000

@@ -8,3 +8,4 @@ resources:
   - immich-postgres-key.yaml
   - tailscale-logs-key.yaml
   - mimir-key.yaml
+  - bookorbit-postgres-key.yaml

@@ -1,0 +1,68 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: bookorbit-postgres
+  annotations:
+    cnpg.io/skipEmptyWalArchiveCheck: "enabled"
+spec:
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:17-0.4.3
+  postgresql:
+    shared_preload_libraries:
+      - "vchord.so"
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: bookorbit-postgres-superuser-creds
+  inheritedMetadata:
+    labels:
+      app: bookorbit-postgres
+  instances: 2
+  bootstrap:
+    initdb:
+      database: bookorbit
+      owner: bookorbit
+      dataChecksums: true
+      postInitApplicationSQL:
+        - ALTER USER bookorbit WITH SUPERUSER;
+        - CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+        - CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+        - CREATE EXTENSION IF NOT EXISTS "unaccent";
+        - CREATE EXTENSION IF NOT EXISTS "vector";
+  nodeMaintenanceWindow:
+    reusePVC: false
+  storage:
+    size: 10Gi
+  monitoring:
+    enablePodMonitor: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: bookorbit-s3-store
+        serverName: bookorbit-postgres
+  backup:
+    retentionPolicy: "30d"
+  externalClusters:
+    - name: keiretsu
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: bookorbit-s3-store
+          serverName: bookorbit-postgres
+  # bootstrap:
+  #   recovery:
+  #     source: keiretsu
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: bookorbit-postgres-s3
+spec:
+  schedule: "0 0 1 * * *"
+  immediate: true
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: bookorbit-postgres

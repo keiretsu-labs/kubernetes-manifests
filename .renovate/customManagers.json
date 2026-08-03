@@ -27,7 +27,7 @@
       "customType": "regex",
       "description": "Process known CloudNativePG imageName fields as Docker dependencies",
       "managerFilePatterns": [
-        "/^kubernetes/apps/base/(?:immich/.+/app|teslamate/teslamate/app)/pg\\.yaml$/"
+        "/^kubernetes/apps/base/(?:immich/.+/app|teslamate/teslamate/app|media/media-ottawa/bookorbit)/(?:pg|postgres)\\.yaml$/"
       ],
       "matchStrings": [
         "imageName:\\s*[\"']?(?<depName>(?:[a-z0-9.-]+(?::[0-9]+)?/)+[a-z0-9._/-]+):(?<currentValue>[^\"'\\s]+)[\"']?"
