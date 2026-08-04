@@ -11,7 +11,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - https://k8s.robbinsdale.local:6443/readyz
+        - https://k8s.robbinsdale.internal:6443/readyz
       labels:
         service: kubernetes-api
         target: cluster-vip

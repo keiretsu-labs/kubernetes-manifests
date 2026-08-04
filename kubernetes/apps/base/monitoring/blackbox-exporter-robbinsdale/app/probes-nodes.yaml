@@ -11,30 +11,18 @@ spec:
   targets:
     staticConfig:
       static:
-        - tank.local:6443
-        - titan.local:6443
-        - stone.local:6443
+        - tank.robbinsdale.internal:6443
+        - titan.robbinsdale.internal:6443
+        - stone.robbinsdale.internal:6443
       labels:
         service: nodes
         target: kubelet-port
 ---
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-nas-https
-spec:
-  jobName: blackbox
-  module: http_2xx_insecure
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - https://nas.local
-      labels:
-        service: nodes
-        target: nas
----
+# NAS (SMB / HTTPS) is monitored natively by Gatus (https://nas.local);
+# there is no DNS record reachable from the blackbox probe pod on the
+# cluster network, so the blackbox NAS probes were removed (they only
+# produced false ProbeFailed alerts). See gatus-robbinsdale.
+# ICMP reachability for nodes.
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
@@ -47,10 +35,9 @@ spec:
   targets:
     staticConfig:
       static:
-        - tank.local
-        - titan.local
-        - stone.local
-        - nas.local
+        - tank.robbinsdale.internal
+        - titan.robbinsdale.internal
+        - stone.robbinsdale.internal
       labels:
         service: nodes
         target: ping
