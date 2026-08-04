@@ -38,6 +38,7 @@ resources:
   - ./komga
   - ./shelfmark
   - ./omnibus
+  - ./manga-bridge
   - omnibus/secret.sops.yaml
   - oidc-secrets.sops.yaml
   - komga-scan-secret.sops.yaml
