@@ -215,6 +215,13 @@ spec:
 
     prometheus-node-exporter:
       priorityClassName: "infra-high"
+      # DGX/RDMA nodes (stpetersburg spark-0/spark-1) intermittently wedge
+      # node_exporter: a slow collector lets scrapes pile up and trip the
+      # default --web.max-requests=40 cap, making the exporter 503 every scrape
+      # and dropping up=0 (issue #2189). Raise the parallel-scrape cap for
+      # headroom so transient slowness can't knock the target down.
+      extraArgs:
+        - --web.max-requests=200
       updateStrategy:
         rollingUpdate:
           maxUnavailable: "100%"
