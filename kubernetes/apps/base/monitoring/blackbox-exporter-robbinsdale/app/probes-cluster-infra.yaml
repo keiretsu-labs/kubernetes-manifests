@@ -1,20 +1,7 @@
----
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-k8s-api-local
-spec:
-  jobName: blackbox
-  module: http_401
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - https://k8s.robbinsdale.internal:6443/readyz
-      labels:
-        service: kubernetes-api
-        target: cluster-vip
+# app-k8s-api-local (https://k8s.robbinsdale.internal:6443/readyz, the cluster-VIP)
+# removed: the blackbox probe pod has no route to the robbinsdale LAN 192.168.50.0/24,
+# so it could never connect (HTTP status 0 -> permanent false ProbeFailed). API
+# liveness is covered by the in-cluster kubernetes.default.svc probe below/Gatus.
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
