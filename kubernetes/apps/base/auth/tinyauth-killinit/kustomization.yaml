@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+  - httproute.yaml
+  - referencegrant.yaml
+  - pvc.yaml
+# Config generated so its name carries a content hash — editing tinyauth.env
+# rewrites the deployment's envFrom ref and rolls the pod.
+configMapGenerator:
+  - name: tinyauth-killinit-config
+    envs:
+      - tinyauth.env

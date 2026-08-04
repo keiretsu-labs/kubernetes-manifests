@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tinyauth-killinit
+spec:
+  selector:
+    app: tinyauth-killinit
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000

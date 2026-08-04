@@ -1,0 +1,22 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tinyauth-killinit
+spec:
+  parentRefs:
+    - { group: gateway.networking.k8s.io, kind: Gateway, name: public, namespace: home }
+  hostnames:
+    # CLUSTER_DOMAIN = killinit.cc (Ottawa). This host's cookie domain is
+    # killinit.cc, so extAuth for *.killinit.cc apps works without a loop.
+    # ${CLUSTER_DOMAIN} hosts get DNS automatically via external-dns.
+    - "auth.${CLUSTER_DOMAIN}"
+  rules:
+    # Forward everything to tinyauth-killinit, force no-store (an auth server
+    # must never be cached — see the primary instance's httproute for the why).
+    - backendRefs:
+        - { group: "", kind: Service, name: tinyauth-killinit, port: 3000 }
+      filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            set:
+              - { name: Cache-Control, value: "no-store" }

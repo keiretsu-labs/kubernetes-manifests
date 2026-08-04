@@ -1,5 +1,8 @@
 ---
-# Suwayomi is admin-only (single-user by design) — private + ts, no public
+# Suwayomi on public + private + ts. Public access is gated by the
+# suwayomi-tinyauth SecurityPolicy (extAuth -> tinyauth-killinit, the killinit.cc
+# cookie-domain instance). Suwayomi itself runs AUTH_MODE=none; all authN/authZ
+# is at the gateway.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -20,6 +23,10 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: ts
+      namespace: home
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
       namespace: home
   hostnames:
     - suwayomi.${CLUSTER_DOMAIN}

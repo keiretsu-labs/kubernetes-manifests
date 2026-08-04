@@ -1,0 +1,15 @@
+---
+# tinyauth keeps sessions in SQLite at /data/tinyauth.db — MUST be durable, or a
+# pod restart wipes sessions and bounces OAuth login forever. Separate PVC from
+# the primary instance (distinct cookie domain, distinct session store).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tinyauth-killinit-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ceph-block-replicated
+  resources:
+    requests:
+      storage: 1Gi

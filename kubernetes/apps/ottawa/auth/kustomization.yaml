@@ -4,3 +4,4 @@ resources:
   - ./tinyauth-ts.yaml
   - ./namespace.yaml
   - ./tinyauth.yaml
+  - ./tinyauth-killinit.yaml
