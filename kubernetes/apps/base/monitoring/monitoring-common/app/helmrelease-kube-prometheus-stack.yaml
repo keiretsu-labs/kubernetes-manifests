@@ -22,8 +22,8 @@ spec:
   values:
     cleanPrometheusOperatorObjectNames: true
     # Agent mode evaluates no rules — don't ship dead PrometheusRule objects.
-    # The infra alerts in config/prometheusrules.yaml are now unevaluated;
-    # re-home them in the Mimir ruler when alerting is reinstated.
+    # The infra alerts now live in the Mimir ruler (monitoring.yaml per tenant);
+    # config/prometheusrules.yaml was removed as an unevaluated duplicate.
     defaultRules:
       create: false
     grafana:
