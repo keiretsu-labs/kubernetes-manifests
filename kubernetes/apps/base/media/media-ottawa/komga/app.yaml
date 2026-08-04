@@ -56,7 +56,12 @@ spec:
               cpu: 100m
               memory: 512Mi
             limits:
-              memory: 1Gi
+              # Komga (Spring Boot) uses native memory OUTSIDE the JVM heap on top
+              # of -Xmx512m: Lucene, in-memory thumbnail/cover cache, Netty/WebFlux
+              # buffer pools. RSS routinely sits ~1Gi and was 94% of the old 1Gi
+              # limit -> ContainerHighMemoryUtilization pending/firing while scanning.
+              # kaji has ~90Gi allocatable; 2Gi cap gives headroom without throttling.
+              memory: 2Gi
           volumeMounts:
             - name: config
               mountPath: /config
@@ -85,7 +90,7 @@ spec:
                   if [ "$still" -gt "0" ]; then
                     touch /tmp/.last_scan
                     wget -q --method=POST \
-                      --header="X-API-Key: $KOMGA_API_KEY" \
+                      --header="X-API-Key: *** \
                       "$KOMGA_URL/api/v1/libraries/$LIBRARY_ID/scan" \
                       -O /dev/null && echo "comics scan triggered"
                   fi
