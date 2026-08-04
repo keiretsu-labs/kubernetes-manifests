@@ -1,0 +1,17 @@
+---
+# Allow SecurityPolicies in app namespaces to point extAuth at tinyauth-killinit.
+# Currently only media (Suwayomi); add namespaces as more killinit.cc apps adopt
+# cookie-based extAuth against this instance.
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: extauth-to-tinyauth-killinit
+spec:
+  from:
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: media
+  to:
+    - group: ""
+      kind: Service
+      name: tinyauth-killinit

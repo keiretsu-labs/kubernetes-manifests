@@ -1,0 +1,50 @@
+---
+# Suwayomi (Ottawa, killinit.cc) access control via tinyauth-killinit.
+#
+# Points at the killinit.cc-scoped tinyauth instance, NOT the keiretsu.top one.
+# WHY: tinyauth sets its session cookie on the registrable domain derived from
+# its APPURL. The primary tinyauth (auth.keiretsu.top) issues a keiretsu.top
+# cookie the browser never sends to suwayomi.killinit.cc → infinite auth loop.
+# tinyauth-killinit (auth.killinit.cc) issues a killinit.cc cookie that IS
+# in-scope here, so extAuth completes. See tinyauth-killinit/tinyauth.env.
+#
+# tinyauth does authN (google login, injects remote-email); the authZ allowlist
+# lives in this policy's authorization block (EG RBAC runs after extAuth).
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: suwayomi-tinyauth
+  namespace: media
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: suwayomi
+  extAuth:
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-proto
+      - x-forwarded-for
+      - user-agent
+    http:
+      backendRefs:
+        - name: tinyauth-killinit
+          namespace: tinyauth
+          port: 3000
+      path: "/api/auth/envoy?path="
+      headersToBackend:
+        - remote-user
+        - remote-email
+        - remote-name
+        - remote-groups
+  authorization:
+    defaultAction: Deny
+    rules:
+      - name: allow-admins
+        action: Allow
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com

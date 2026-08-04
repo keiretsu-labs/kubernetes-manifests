@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tinyauth-killinit
+spec:
+  replicas: 1
+  strategy:
+    # /data is a ReadWriteOnce ceph volume — Recreate to avoid multi-attach deadlock.
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tinyauth-killinit
+  template:
+    metadata:
+      labels:
+        app: tinyauth-killinit
+    spec:
+      containers:
+        - name: tinyauth
+          image: ghcr.io/tinyauthapp/tinyauth:v5.1.3
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: tinyauth-killinit-config
+          env:
+            # Reuse the same Google OAuth app as the primary instance. The Google
+            # console must list https://auth.killinit.cc/api/oauth/callback/google
+            # as an authorized redirect URI (manual console step — see handoff).
+            - name: TINYAUTH_OAUTH_PROVIDERS_GOOGLE_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: google-client-id
+            - name: TINYAUTH_OAUTH_PROVIDERS_GOOGLE_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: google-client-secret
+            - name: TINYAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tinyauth-secret
+                  key: tinyauth-secret
+                  optional: true
+            - name: TINYAUTH_DATABASE_PATH
+              value: /data/tinyauth.db
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command: ["tinyauth", "healthcheck"]
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command: ["tinyauth", "healthcheck"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: tinyauth-killinit-data
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
