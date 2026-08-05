@@ -20,6 +20,15 @@ spec:
       kind: Gateway
       name: ts
       namespace: home
+    # Public: users authenticate with OIDC in the Audiobookshelf app and web UI
+    # (ABS runs its own login, so no SecurityPolicy/extAuth here — a native
+    # client cannot present a tinyauth cookie). Who may log in is gated by
+    # TINYAUTH_OAUTH_WHITELIST at tinyauth; ABS auto-registers whitelisted
+    # users as type 'user' with accessAllLibraries.
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
   hostnames:
     - audiobookshelf.${CLUSTER_DOMAIN}
   rules:
