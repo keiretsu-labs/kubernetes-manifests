@@ -130,8 +130,15 @@ spec:
                 secretKeyRef:
                   name: tinyauth-secret
                   key: audiobookshelf-oidc-client-secret
+            # Comma-separated; tinyauth exact-matches the request's redirect_uri
+            # against this list. The mobile-redirect entry is required for the
+            # Audiobookshelf phone/tablet app: its OIDC login runs the PKCE
+            # mobile flow, where ABS asks the IdP to call back to
+            # /auth/openid/mobile-redirect and then bounces to the app's own
+            # audiobookshelf://oauth scheme itself. Without it the app's login
+            # fails with "The provided redirect URI is not trusted".
             - name: TINYAUTH_OIDC_CLIENTS_AUDIOBOOKSHELF_TRUSTEDREDIRECTURIS
-              value: https://audiobookshelf.killinit.cc/auth/openid/callback
+              value: https://audiobookshelf.killinit.cc/auth/openid/callback,https://audiobookshelf.killinit.cc/auth/openid/mobile-redirect
             - name: TINYAUTH_OIDC_CLIENTS_AUDIOBOOKSHELF_NAME
               value: Audiobookshelf
             - name: TINYAUTH_DATABASE_PATH
