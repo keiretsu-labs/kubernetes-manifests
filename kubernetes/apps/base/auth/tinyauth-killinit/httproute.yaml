@@ -5,6 +5,14 @@ metadata:
 spec:
   parentRefs:
     - { group: gateway.networking.k8s.io, kind: Gateway, name: public, namespace: home }
+    # MUST also attach to private + ts, unlike the primary instance. The apps this
+    # gates (e.g. suwayomi) are on all three gateways, and *.killinit.cc resolves to
+    # the ts gateway (100.76.8.70) from the tailnet. A tailnet browser redirected to
+    # auth.killinit.cc would hit a gateway with no tinyauth route and get a 404.
+    # auth.keiretsu.top does not need this because *.keiretsu.top resolves to the
+    # public address even on the tailnet.
+    - { group: gateway.networking.k8s.io, kind: Gateway, name: private, namespace: home }
+    - { group: gateway.networking.k8s.io, kind: Gateway, name: ts, namespace: home }
   hostnames:
     # CLUSTER_DOMAIN = killinit.cc (Ottawa). This host's cookie domain is
     # killinit.cc, so extAuth for *.killinit.cc apps works without a loop.
