@@ -12,3 +12,8 @@ configMapGenerator:
   - name: tinyauth-killinit-config
     envs:
       - tinyauth.env
+  # custom login-page background, served from /resources (see UI_* env) —
+  # mirrors the primary instance's tinyauth-resources
+  - name: tinyauth-resources
+    files:
+      - background.svg
