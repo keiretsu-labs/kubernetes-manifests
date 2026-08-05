@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1612"/>
+      <stop offset="100%" stop-color="#0f0d0a"/>
+    </linearGradient>
+    <linearGradient id="grid" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3d3028" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#3d3028" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#34d399" stop-opacity="0.04"/>
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="900" fill="url(#bg)"/>
+
+  <!-- Subtle grid pattern -->
+  <g stroke="url(#grid)" stroke-width="0.5" fill="none">
+    <line x1="0" y1="100" x2="1440" y2="100"/>
+    <line x1="0" y1="200" x2="1440" y2="200"/>
+    <line x1="0" y1="300" x2="1440" y2="300"/>
+    <line x1="0" y1="500" x2="1440" y2="500"/>
+    <line x1="0" y1="600" x2="1440" y2="600"/>
+    <line x1="0" y1="700" x2="1440" y2="700"/>
+    <line x1="100" y1="0" x2="100" y2="900"/>
+    <line x1="300" y1="0" x2="300" y2="900"/>
+    <line x1="500" y1="0" x2="500" y2="900"/>
+    <line x1="700" y1="0" x2="700" y2="900"/>
+    <line x1="900" y1="0" x2="900" y2="900"/>
+    <line x1="1100" y1="0" x2="1100" y2="900"/>
+    <line x1="1300" y1="0" x2="1300" y2="900"/>
+  </g>
+
+  <!-- Accent glow -->
+  <ellipse cx="720" cy="450" rx="500" ry="400" fill="url(#accent)"/>
+
+  <!-- Branding watermark -->
+  <g transform="translate(720, 780)" opacity="0.12">
+    <text text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" fill="#a09080" letter-spacing="4">KEIRETSU LABS</text>
+    <text text-anchor="middle" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#5a5048" letter-spacing="6">INFRASTRUCTURE</text>
+  </g>
+
+  <!-- Decorative corner hexagons -->
+  <g opacity="0.04" fill="#a78bfa">
+    <polygon points="60,60 70,50 85,50 95,60 85,70 70,70"/>
+    <polygon points="1380,60 1390,50 1405,50 1415,60 1405,70 1390,70"/>
+    <polygon points="1380,840 1390,830 1405,830 1415,840 1405,850 1390,850"/>
+    <polygon points="60,840 70,830 85,830 95,840 85,850 70,850"/>
+  </g>
+</svg>
