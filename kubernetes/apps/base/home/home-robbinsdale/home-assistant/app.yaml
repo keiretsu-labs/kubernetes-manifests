@@ -17,6 +17,8 @@ spec:
         app: homeassistant
     spec:
       hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: stone
       containers:
         - name: homeassistant
           image: homeassistant/home-assistant:2026.8
