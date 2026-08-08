@@ -85,7 +85,10 @@ One Tailscale LoadBalancer Service selects each exact pool/node pair by
 
 ### 1. Release and upgrade the operator
 
-Use the v0.7.1 patch release only after its repair PR and all E2E shards pass.
+Use v0.7.1 for this migration. Its repair PR and complete E2E matrix passed.
+The image and chart signatures and provenance, the image SPDX SBOM attestation,
+and the install manifest provenance were independently verified.
+
 The v0.7.0 chart was pushed but its signing/provenance step failed before this
 migration began, so it was never deployed. Upgrade the shared HelmRelease to
 chart 0.7.1 and wait in all three clusters for:
