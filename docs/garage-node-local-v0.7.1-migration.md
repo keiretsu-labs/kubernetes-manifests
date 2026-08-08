@@ -115,6 +115,9 @@ In one non-topology PR:
 - label each `garage` namespace for HostPath admission;
 - create per-node marker Jobs that mount only the new empty HostPaths;
 - create the new identity-specific Tailscale Services;
+- add every new pool RPC name to the shared Tailscale storage-egress catalog so
+  Garage pods at the other two sites resolve it through their local
+  `common-egress` proxy group; and
 - add no-op Flux substitution points for per-site pools, consistency mode, and
   drain peer policy.
 
@@ -123,7 +126,9 @@ future pool/node selector. Before a pool pod exists,
 `TailscaleIngressSvcConfigured=False` with reason
 `IngressSvcNoBackendsConfigured` is the expected fail-closed state; no
 LoadBalancer address should be published yet. Completed Jobs mount nothing and
-may remain until the pool is healthy.
+may remain until the pool is healthy. An ingress Service at the source site is
+not sufficient by itself: before pool activation, confirm the corresponding
+ExternalName egress Service exists in all three clusters.
 
 ### 3. Add replacement pool members one site at a time
 
@@ -139,6 +144,9 @@ For each site, require:
 - every pool Service reports `TailscaleIngressSvcConfigured=True`, publishes
   its expected identity-specific `.keiretsu.ts.net` hostname, and reaches the
   matching pod on RPC port 3901;
+- Garage status from each of the other two sites reports every new identity
+  connected; a healthy source-site view alone does not prove cross-site RPC
+  reachability;
 - every generated GarageNode has a new 64-hex identity, is Connected and
   InLayout, and has the intended zone/capacity/RPC address;
 - `NodeLocalPoolsReady=True` and `StorageRolloutReady=True` at the current
