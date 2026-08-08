@@ -136,6 +136,57 @@ spec:
       port: 3901
       protocol: TCP
 ---
+# The Tailscale Services above advertise both address families, but their
+# Kubernetes backends are IPv4-only. These aliases pin egress to the working
+# service VIP so Garage never selects the unroutable service IPv6 address.
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-pool-stone-v4
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-ip: "100.74.83.242"
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-pool-tank-v4
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-ip: "100.68.131.183"
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-pool-titan-v4
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-ip: "100.69.254.237"
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
 apiVersion: v1
 kind: Service
 metadata:
