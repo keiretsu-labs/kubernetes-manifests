@@ -1,5 +1,5 @@
 # renovate: datasource=github-releases depName=budimanjojo/talhelper
-# yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/v3.1.15/pkg/config/schemas/talconfig.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/v3.1.16/pkg/config/schemas/talconfig.json
 ---
 # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
 talosVersion: v1.13.7
