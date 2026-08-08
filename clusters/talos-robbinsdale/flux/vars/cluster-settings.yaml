@@ -72,7 +72,7 @@ data:
           "hostPathType": "Directory"
         },
         "network": {
-          "rpcPublicAddrTemplate": "robbinsdale-garage-pool-{nodeName}.keiretsu.ts.net:3901"
+          "rpcPublicAddrTemplate": "robbinsdale-garage-pool-{nodeName}-v4.garage.svc.cluster.local:3901"
         },
         "podTemplate": {
           "priorityClassName": "infra-critical",
