@@ -1,4 +1,4 @@
-# Garage node-local migration for operator v0.7.0
+# Garage node-local migration with operator v0.7.1
 
 This runbook moves the ten LocalPath-backed Garage identities in Ottawa,
 Robbinsdale, and St. Petersburg to operator-managed node-local pools. The SMB
@@ -85,11 +85,13 @@ One Tailscale LoadBalancer Service selects each exact pool/node pair by
 
 ### 1. Release and upgrade the operator
 
-Cut v0.7.0 only after the release PR and all E2E shards pass. Upgrade the shared
-HelmRelease to chart 0.7.0 and wait in all three clusters for:
+Use the v0.7.1 patch release only after its repair PR and all E2E shards pass.
+The v0.7.0 chart was pushed but its signing/provenance step failed before this
+migration began, so it was never deployed. Upgrade the shared HelmRelease to
+chart 0.7.1 and wait in all three clusters for:
 
-- HelmRelease Ready with `lastAttemptedRevision: 0.7.0`;
-- the operator Deployment at the v0.7.0 image and fully available;
+- HelmRelease Ready with `lastAttemptedRevision: 0.7.1`;
+- the operator Deployment at the v0.7.1 image and fully available;
 - conversion and validating webhooks serving;
 - existing GarageClusters and GarageNodes still Ready at their observed
   generations; and
