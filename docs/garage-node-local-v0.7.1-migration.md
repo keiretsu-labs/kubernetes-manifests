@@ -1,4 +1,4 @@
-# Garage node-local migration with operator v0.7.1
+# Garage node-local migration with operator v0.7.2
 
 This runbook moves the ten LocalPath-backed Garage identities in Ottawa,
 Robbinsdale, and St. Petersburg to operator-managed node-local pools. The SMB
@@ -27,8 +27,10 @@ across their expected nodes. Every reported object reference belonged only to
 the already-deleted Garage bucket `99aa1da58dc06129`. With explicit approval,
 the orphaned references were purged and each node retried its own failed block
 work on 2026-08-08. `garage stats --all-nodes` then reported zero block errors
-on all 18 processes. The cleanup temporarily populated resync queues, so do not
-begin pool enrollment until those queues have also returned to zero.
+on all 18 processes. The cleanup temporarily populated resync queues. Garage
+keeps delayed checks in those queue counts, so exact zero is not a completion
+gate; require every enabled block-resync worker to be idle with zero persistent
+and consecutive errors.
 
 The source LocalPath identities are:
 
@@ -93,16 +95,18 @@ One Tailscale LoadBalancer Service selects each exact pool/node pair by
 
 ### 1. Release and upgrade the operator
 
-Use v0.7.1 for this migration. Its repair PR and complete E2E matrix passed.
+Use v0.7.2 for this migration. It includes the block-resync repair from v0.7.1
+and keeps a healthy node-local cluster Ready when periodic controllers briefly
+contend for the serialized Garage layout lock. Its complete E2E matrix passed.
 The image and chart signatures and provenance, the image SPDX SBOM attestation,
 and the install manifest provenance were independently verified.
 
 The v0.7.0 chart was pushed but its signing/provenance step failed before this
 migration began, so it was never deployed. Upgrade the shared HelmRelease to
-chart 0.7.1 and wait in all three clusters for:
+chart 0.7.2 and wait in all three clusters for:
 
-- HelmRelease Ready with `lastAttemptedRevision: 0.7.1`;
-- the operator Deployment at the v0.7.1 image and fully available;
+- HelmRelease Ready with `lastAttemptedRevision: 0.7.2`;
+- the operator Deployment at the v0.7.2 image and fully available;
 - conversion and validating webhooks serving;
 - existing GarageClusters and GarageNodes still Ready at their observed
   generations; and
