@@ -46,5 +46,68 @@ data:
   # tier stays operator-managed (Auto). Requires operator v0.6.11+.
   GARAGE_STORAGE_LAYOUT_POLICY: "Manual"
 
+  # Operator-managed replacements for the four LocalPath GarageNodes. Each
+  # selected Node already has marker-backed metadata/data directories, and the
+  # identity-specific Tailscale Services use the same pool/node labels.
+  GARAGE_NODE_LOCAL_POOLS: >-
+    [
+      {
+        "name": "local-700",
+        "capacity": "700Gi",
+        "selector": {
+          "matchExpressions": [
+            {
+              "key": "kubernetes.io/hostname",
+              "operator": "In",
+              "values": ["asuka", "kaji", "rei"]
+            }
+          ]
+        },
+        "metadata": {
+          "hostPath": "/var/local-path-provisioner/garage-node-local/ottawa-700/metadata",
+          "hostPathType": "Directory"
+        },
+        "data": {
+          "hostPath": "/var/local-path-provisioner/garage-node-local/ottawa-700/data",
+          "hostPathType": "Directory"
+        },
+        "network": {
+          "rpcPublicAddrTemplate": "ottawa-garage-pool-{nodeName}.keiretsu.ts.net:3901"
+        },
+        "podTemplate": {
+          "priorityClassName": "infra-critical",
+          "resources": {
+            "requests": {"cpu": "100m", "memory": "256Mi"},
+            "limits": {"cpu": "3000m", "memory": "3Gi"}
+          }
+        }
+      },
+      {
+        "name": "local-200",
+        "capacity": "200Gi",
+        "selector": {
+          "matchLabels": {"kubernetes.io/hostname": "shiro"}
+        },
+        "metadata": {
+          "hostPath": "/var/local-path-provisioner/garage-node-local/ottawa-200/metadata",
+          "hostPathType": "Directory"
+        },
+        "data": {
+          "hostPath": "/var/local-path-provisioner/garage-node-local/ottawa-200/data",
+          "hostPathType": "Directory"
+        },
+        "network": {
+          "rpcPublicAddrTemplate": "ottawa-garage-pool-{nodeName}.keiretsu.ts.net:3901"
+        },
+        "podTemplate": {
+          "priorityClassName": "infra-critical",
+          "resources": {
+            "requests": {"cpu": "100m", "memory": "256Mi"},
+            "limits": {"cpu": "3000m", "memory": "3Gi"}
+          }
+        }
+      }
+    ]
+
   # Garage: exclude asuka from gateway scheduling (SIGILL on that node)
   GARAGE_GATEWAY_AFFINITY: '{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/hostname","operator":"NotIn","values":["asuka"]}]}]}}}'
