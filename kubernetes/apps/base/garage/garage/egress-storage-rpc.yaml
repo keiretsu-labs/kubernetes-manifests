@@ -19,6 +19,170 @@ spec:
     - name: rpc
       port: 3901
       protocol: TCP
+
+# Node-local replacement identities use new RPC names while the source
+# StatefulSet identities remain online. Publish every planned pool endpoint in
+# each cluster before another site joins the shared Garage layout.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ottawa-garage-pool-asuka
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-garage-pool-asuka.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ottawa-garage-pool-kaji
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-garage-pool-kaji.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ottawa-garage-pool-rei
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-garage-pool-rei.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ottawa-garage-pool-shiro
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: ottawa-garage-pool-shiro.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-pool-stone
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-garage-pool-stone.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-pool-tank
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-garage-pool-tank.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: robbinsdale-garage-pool-titan
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: robbinsdale-garage-pool-titan.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-garage-pool-spark-0
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-garage-pool-spark-0.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-garage-pool-spark-1
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-garage-pool-spark-1.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-garage-pool-orin-0
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg-garage-pool-orin-0.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
 ---
 apiVersion: v1
 kind: Service
