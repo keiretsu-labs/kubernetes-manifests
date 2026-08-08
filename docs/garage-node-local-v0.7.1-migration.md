@@ -118,9 +118,12 @@ In one non-topology PR:
 - add no-op Flux substitution points for per-site pools, consistency mode, and
   drain peer policy.
 
-Wait for every marker Job to complete, every marker-backed path to remain
-present, and every new Tailscale Service to report ready. Completed Jobs mount
-nothing and may remain until the pool is healthy.
+Wait for every marker Job to complete and confirm each Service has the exact
+future pool/node selector. Before a pool pod exists,
+`TailscaleIngressSvcConfigured=False` with reason
+`IngressSvcNoBackendsConfigured` is the expected fail-closed state; no
+LoadBalancer address should be published yet. Completed Jobs mount nothing and
+may remain until the pool is healthy.
 
 ### 3. Add replacement pool members one site at a time
 
@@ -133,6 +136,9 @@ Declare pools through the site's `GARAGE_NODE_LOCAL_POOLS` value in this order:
 For each site, require:
 
 - every expected DaemonSet pod Ready on its exact Node;
+- every pool Service reports `TailscaleIngressSvcConfigured=True`, publishes
+  its expected identity-specific `.keiretsu.ts.net` hostname, and reaches the
+  matching pod on RPC port 3901;
 - every generated GarageNode has a new 64-hex identity, is Connected and
   InLayout, and has the intended zone/capacity/RPC address;
 - `NodeLocalPoolsReady=True` and `StorageRolloutReady=True` at the current
