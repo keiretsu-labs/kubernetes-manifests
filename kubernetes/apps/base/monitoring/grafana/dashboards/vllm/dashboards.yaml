@@ -10,7 +10,16 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: AI
+  resyncPeriod: "168h"
+  # vLLM observability dashboard. Datasource is pinned to the per-cluster
+  # Mimir-StPetersburg tenant (uid mimir-stpetersburg) so the `vllm:*` and
+  # DCGM_FI_* metrics scraped from the `ai` namespace resolve here — without
+  # this, the dashboard's $DS_PROMETHEUS defaults to a datasource that has no
+  # vLLM data and renders empty.
   url: https://raw.githubusercontent.com/vllm-project/vllm/main/examples/observability/dashboards/grafana/performance_statistics.json
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Mimir-StPetersburg
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -23,4 +32,8 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: AI
+  resyncPeriod: "168h"
   url: https://raw.githubusercontent.com/vllm-project/vllm/main/examples/observability/dashboards/grafana/query_statistics.json
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Mimir-StPetersburg
