@@ -27,5 +27,7 @@ spec:
       connMaxLifetime: 14400
       maxIdleConns: 2
       maxOpenConns: 0
+    secureJsonData:
+      password: "$${password}"
     isDefault: false
     editable: false
