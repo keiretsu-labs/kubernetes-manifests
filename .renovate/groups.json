@@ -468,6 +468,15 @@
       ],
       "groupName": "omnibus",
       "labels": ["media"]
+    },
+    {
+      "description": "Omnibus manga fork — pinned to sha-<commit> images built from the fork's manga branch, which carry no version ordering for Renovate to follow. Bumped by hand after rebasing the fork onto a new upstream release (see docs/manga-fork.md in kbpersonal/omnibus).",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/kbpersonal/omnibus",
+        "ghcr.io/kbpersonal/omnibus-engine"
+      ],
+      "enabled": false
     }
   ]
 }

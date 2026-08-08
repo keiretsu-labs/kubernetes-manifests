@@ -27,7 +27,7 @@ spec:
               mountPath: /config
       containers:
         - name: omnibus
-          image: ghcr.io/hankscafe/omnibus:v1.4.3
+          image: ghcr.io/kbpersonal/omnibus:sha-8fbb2d3
           ports:
             - name: http
               containerPort: 3000
@@ -65,13 +65,29 @@ spec:
               value: /media-share/omnibus-unmatched
             - name: OMNIBUS_MAX_UPLOAD_MB
               value: "2048"
+            # Manga acquisition (killinit fork): requests detected as manga are resolved against
+            # Suwayomi's configured sources instead of the comic indexers, then Komga is told which
+            # way the series reads. See docs/manga-fork.md in the fork.
+            - name: SUWAYOMI_URL
+              value: http://suwayomi.media.svc:4567
+            - name: SUWAYOMI_DOWNLOADS_PATH
+              value: /media-share/suwayomi-manga
+            - name: KOMGA_URL
+              value: http://komga.media.svc:25600
+            # Series metadata PATCH is ADMIN-only in Komga; this key is already admin-scoped and is
+            # the same one both komga-watcher sidecars use to trigger library scans.
+            - name: KOMGA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: komga-scan-secret
+                  key: api-key
           volumeMounts:
             - name: config
               mountPath: /config
             - name: media
               mountPath: /media-share
         - name: omnibus-engine
-          image: ghcr.io/hankscafe/omnibus-engine:v1.4.3
+          image: ghcr.io/kbpersonal/omnibus-engine:sha-8fbb2d3
           env:
             - name: DATABASE_URL
               valueFrom:
