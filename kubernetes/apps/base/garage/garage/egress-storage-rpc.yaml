@@ -235,6 +235,56 @@ spec:
       port: 3901
       protocol: TCP
 ---
+# St. Petersburg's advertised pool addresses point at these aliases so egress
+# always uses the working IPv4 side of each IPv4-backed Tailscale Service.
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-garage-pool-spark-0-v4
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-ip: "100.102.240.70"
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-garage-pool-spark-1-v4
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-ip: "100.123.167.105"
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-garage-pool-orin-0-v4
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-ip: "100.69.141.19"
+    tailscale.com/proxy-group: common-egress
+spec:
+  type: ExternalName
+  externalName: placeholder
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+---
 apiVersion: v1
 kind: Service
 metadata:
