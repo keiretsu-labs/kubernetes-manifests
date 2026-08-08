@@ -22,6 +22,13 @@ never mounted by a pool pod.
 - Kubernetes is v1.36.3, the validating/conversion webhooks are enabled, and
   the operator is installed cluster-wide.
 
+Final preflight also found six persistent block-resync error hashes replicated
+across their expected nodes. Their reported object references all belong to a
+Garage bucket that no longer exists, which suggests orphaned metadata rather
+than reachable S3 data, but that is not permission to discard it. Do not begin
+pool enrollment until the references receive a separate destructive-action
+review and `garage stats --all-nodes` reports zero block errors everywhere.
+
 The source LocalPath identities are:
 
 | Site | GarageNode | Node ID | Capacity |

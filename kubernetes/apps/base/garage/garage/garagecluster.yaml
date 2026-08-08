@@ -26,7 +26,7 @@ spec:
     # consumer; the rest are content-addressed (OCI/zot, Kopia/velero) or
     # append-only (logs, barman/CNPG backups), which tolerate eventual-consistent
     # reads (a stale/absent read is a transient retry, not corruption).
-    consistencyMode: "degraded"
+    consistencyMode: "${GARAGE_CONSISTENCY_MODE:=degraded}"
 
   s3Api:
     rootDomain: ".s3.${COMMON_DOMAIN}"
@@ -86,6 +86,11 @@ spec:
     # autoApply lets the operator apply legitimate same-zone tombstone cleanup on
     # gateway scale-down/replacement instead of leaving it pending.
     autoApply: true
+    # Positive-capacity retirement is enabled only after every federated site
+    # has completed its rollout to literal consistent mode. Keep the fail-closed
+    # default until that separately observed migration phase.
+    drain:
+      unverifiedPeersPolicy: "${GARAGE_DRAIN_PEER_POLICY:=Block}"
 
   blocks:
     ramBufferMax: 128Mi
@@ -109,6 +114,9 @@ spec:
     # tier stays operator-managed. Auto->Manual is one-way (operator ejects its
     # storage nodes; Manual->Auto is rejected by the webhook).
     layoutPolicy: "${GARAGE_STORAGE_LAYOUT_POLICY:=Auto}"
+    # Site-specific pool definitions are introduced one physical site at a
+    # time. The empty default makes this preparatory change topology-neutral.
+    nodeLocalPools: ${GARAGE_NODE_LOCAL_POOLS:=[]}
     metadata:
       size: 10Gi
       storageClassName: "${STORAGECLASS_METADATA}"
