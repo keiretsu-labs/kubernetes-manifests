@@ -1,0 +1,104 @@
+---
+# Fresh, empty HostPaths only. These Jobs never mount an existing LocalPath PVC
+# or Garage node_key; their completed pods have no running mounts.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: garage-hostpath-prep-stone
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 300
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector: { kubernetes.io/hostname: stone }
+      containers:
+        - name: prepare
+          image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
+          command: ["/bin/sh", "-ec"]
+          args: ["touch /metadata/.garage-volume-id /data/.garage-volume-id && sync && test -f /metadata/.garage-volume-id && test -f /data/.garage-volume-id"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+            readOnlyRootFilesystem: true
+            runAsNonRoot: false
+            runAsUser: 0
+            seccompProfile: { type: RuntimeDefault }
+          volumeMounts:
+            - { name: metadata, mountPath: /metadata }
+            - { name: data, mountPath: /data }
+      volumes:
+        - name: metadata
+          hostPath: { path: /var/local-path-provisioner/garage-node-local/robbinsdale-700/metadata, type: DirectoryOrCreate }
+        - name: data
+          hostPath: { path: /var/local-path-provisioner/garage-node-local/robbinsdale-700/data, type: DirectoryOrCreate }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: garage-hostpath-prep-tank
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 300
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector: { kubernetes.io/hostname: tank }
+      containers:
+        - name: prepare
+          image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
+          command: ["/bin/sh", "-ec"]
+          args: ["touch /metadata/.garage-volume-id /data/.garage-volume-id && sync && test -f /metadata/.garage-volume-id && test -f /data/.garage-volume-id"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+            readOnlyRootFilesystem: true
+            runAsNonRoot: false
+            runAsUser: 0
+            seccompProfile: { type: RuntimeDefault }
+          volumeMounts:
+            - { name: metadata, mountPath: /metadata }
+            - { name: data, mountPath: /data }
+      volumes:
+        - name: metadata
+          hostPath: { path: /var/local-path-provisioner/garage-node-local/robbinsdale-700/metadata, type: DirectoryOrCreate }
+        - name: data
+          hostPath: { path: /var/local-path-provisioner/garage-node-local/robbinsdale-700/data, type: DirectoryOrCreate }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: garage-hostpath-prep-titan
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 300
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector: { kubernetes.io/hostname: titan }
+      containers:
+        - name: prepare
+          image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
+          command: ["/bin/sh", "-ec"]
+          args: ["touch /metadata/.garage-volume-id /data/.garage-volume-id && sync && test -f /metadata/.garage-volume-id && test -f /data/.garage-volume-id"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+            readOnlyRootFilesystem: true
+            runAsNonRoot: false
+            runAsUser: 0
+            seccompProfile: { type: RuntimeDefault }
+          volumeMounts:
+            - { name: metadata, mountPath: /metadata }
+            - { name: data, mountPath: /data }
+      volumes:
+        - name: metadata
+          hostPath: { path: /var/local-path-provisioner/garage-node-local/robbinsdale-700/metadata, type: DirectoryOrCreate }
+        - name: data
+          hostPath: { path: /var/local-path-provisioner/garage-node-local/robbinsdale-700/data, type: DirectoryOrCreate }

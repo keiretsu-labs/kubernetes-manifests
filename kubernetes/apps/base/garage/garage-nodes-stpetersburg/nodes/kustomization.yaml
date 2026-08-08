@@ -9,4 +9,5 @@ resources:
   - stpetersburg-garage-localpath-spark-0.yaml
   - stpetersburg-garage-localpath-spark-1.yaml
   - stpetersburg-garage-localpath-orin-0.yaml
+  - hostpath-prep.yaml
   - service-ts-storage.yaml

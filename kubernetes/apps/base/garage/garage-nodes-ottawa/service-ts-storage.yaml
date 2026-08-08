@@ -100,3 +100,94 @@ spec:
     statefulset.kubernetes.io/pod-name: ottawa-garage-smb-0
   type: LoadBalancer
   loadBalancerClass: tailscale
+---
+# Pre-stage one identity-specific endpoint per future node-local-pool member.
+# These selectors do not match the current StatefulSets, so the existing
+# endpoints above remain untouched until a later GitOps change adds the pool.
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-pool-asuka
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-pool-asuka-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: rpc
+  selector:
+    app.kubernetes.io/instance: garage
+    garage.rajsingh.info/node-local-pool: local-700
+    garage.rajsingh.info/kubernetes-node: asuka
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-pool-kaji
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-pool-kaji-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: rpc
+  selector:
+    app.kubernetes.io/instance: garage
+    garage.rajsingh.info/node-local-pool: local-700
+    garage.rajsingh.info/kubernetes-node: kaji
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-pool-rei
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-pool-rei-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: rpc
+  selector:
+    app.kubernetes.io/instance: garage
+    garage.rajsingh.info/node-local-pool: local-700
+    garage.rajsingh.info/kubernetes-node: rei
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/hostname: ottawa-garage-pool-shiro
+    tailscale.com/tags: "tag:k8s,tag:ottawa"
+    tailscale.com/proxy-group: "common-ingress"
+  name: garage-pool-shiro-ts
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - name: rpc
+      port: 3901
+      protocol: TCP
+      targetPort: rpc
+  selector:
+    app.kubernetes.io/instance: garage
+    garage.rajsingh.info/node-local-pool: local-200
+    garage.rajsingh.info/kubernetes-node: shiro
+  type: LoadBalancer
+  loadBalancerClass: tailscale
