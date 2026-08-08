@@ -22,6 +22,14 @@ never mounted by a pool pod.
 - Kubernetes is v1.36.3, the validating/conversion webhooks are enabled, and
   the operator is installed cluster-wide.
 
+Final preflight also found six persistent block-resync error hashes replicated
+across their expected nodes. Every reported object reference belonged only to
+the already-deleted Garage bucket `99aa1da58dc06129`. With explicit approval,
+the orphaned references were purged and each node retried its own failed block
+work on 2026-08-08. `garage stats --all-nodes` then reported zero block errors
+on all 18 processes. The cleanup temporarily populated resync queues, so do not
+begin pool enrollment until those queues have also returned to zero.
+
 The source LocalPath identities are:
 
 | Site | GarageNode | Node ID | Capacity |
