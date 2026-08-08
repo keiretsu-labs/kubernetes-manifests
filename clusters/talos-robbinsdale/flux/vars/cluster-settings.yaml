@@ -41,6 +41,10 @@ data:
   COMMON_S3_ENDPOINT: "garage-gateway.garage.svc.cluster.local:3900"
   VICTORIA_LOGS_HOST: "victoria-logs-victoria-logs-single-server.monitoring"
 
+  # Second site in the drain-safety rollout. Merge only after Ottawa is fully
+  # rolled out in consistent mode and the global Garage cluster is healthy.
+  GARAGE_CONSISTENCY_MODE: "consistent"
+
   # Garage: storage layout hand-managed per-node in clusters/talos-robbinsdale/apps/garage
   # (Manual) so the array can move off SMB to ceph/local-path per node. Gateway
   # tier stays operator-managed (Auto). Requires operator v0.6.11+.
