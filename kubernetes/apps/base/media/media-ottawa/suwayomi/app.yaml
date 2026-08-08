@@ -118,10 +118,12 @@ spec:
               KOMGA_API_KEY="$KOMGA_SCAN_API_KEY"
               LIBRARY_ID="$KOMGA_MANGA_LIBRARY_ID"
               DEBOUNCE=30
-              last_mtime=""
+              # Seed the mtime reference: `find -newer` on a missing file errors out and
+              # (stderr swallowed) counts zero forever, so the scan below never fires.
+              touch /tmp/.last_scan
               while true; do
-                current_mtime=$(find "$WATCH_DIR" -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
-                if [ "$current_mtime" -gt "0" ]; then
+                found=$(find "$WATCH_DIR" -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
+                if [ "$found" -gt "0" ]; then
                   sleep "$DEBOUNCE"
                   still=$(find "$WATCH_DIR" -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
                   if [ "$still" -gt "0" ]; then
