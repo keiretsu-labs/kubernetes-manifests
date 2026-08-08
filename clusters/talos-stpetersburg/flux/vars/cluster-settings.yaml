@@ -49,6 +49,79 @@ data:
   # gateway tier, replication) still comes from common. Requires operator
   # v0.6.11+ (spec.storage.layoutPolicy).
   GARAGE_STORAGE_LAYOUT_POLICY: "Manual"
+
+  # Operator-managed replacements for the three LocalPath GarageNodes. Each
+  # selected Node already has marker-backed metadata/data directories, and the
+  # identity-specific Tailscale Services use the same pool/node labels. The
+  # advertised names reserve per-cluster IPv4-pinned egress aliases; those are
+  # added after Tailscale assigns each newly active ingress Service its VIP.
+  GARAGE_NODE_LOCAL_POOLS: >-
+    [
+      {
+        "name": "local-2ti",
+        "capacity": "2Ti",
+        "selector": {
+          "matchExpressions": [
+            {
+              "key": "kubernetes.io/hostname",
+              "operator": "In",
+              "values": ["spark-0", "spark-1"]
+            }
+          ]
+        },
+        "metadata": {
+          "hostPath": "/var/local-path-provisioner/garage-node-local/stpetersburg-2ti/metadata",
+          "hostPathType": "Directory"
+        },
+        "data": {
+          "hostPath": "/var/local-path-provisioner/garage-node-local/stpetersburg-2ti/data",
+          "hostPathType": "Directory"
+        },
+        "network": {
+          "rpcPublicAddrTemplate": "stpetersburg-garage-pool-{nodeName}-v4.garage.svc.cluster.local:3901"
+        },
+        "podTemplate": {
+          "priorityClassName": "infra-critical",
+          "resources": {
+            "requests": {"cpu": "100m", "memory": "256Mi"},
+            "limits": {"cpu": "3000m", "memory": "3Gi"}
+          }
+        }
+      },
+      {
+        "name": "local-200",
+        "capacity": "200Gi",
+        "selector": {
+          "matchLabels": {"kubernetes.io/hostname": "orin-0"}
+        },
+        "metadata": {
+          "hostPath": "/var/local-path-provisioner/garage-node-local/stpetersburg-200/metadata",
+          "hostPathType": "Directory"
+        },
+        "data": {
+          "hostPath": "/var/local-path-provisioner/garage-node-local/stpetersburg-200/data",
+          "hostPathType": "Directory"
+        },
+        "network": {
+          "rpcPublicAddrTemplate": "stpetersburg-garage-pool-{nodeName}-v4.garage.svc.cluster.local:3901"
+        },
+        "podTemplate": {
+          "priorityClassName": "infra-critical",
+          "tolerations": [
+            {
+              "key": "node-role.kubernetes.io/control-plane",
+              "operator": "Exists",
+              "effect": "NoSchedule"
+            }
+          ],
+          "resources": {
+            "requests": {"cpu": "100m", "memory": "256Mi"},
+            "limits": {"cpu": "3000m", "memory": "3Gi"}
+          }
+        }
+      }
+    ]
+
   GARAGE_REPLICAS: "2"
   GARAGE_NODE_SELECTOR: '{"node.kubernetes.io/instance-type":"dgx-spark"}'
   GARAGE_TOPOLOGY_SPREAD: '[{"maxSkew":1,"topologyKey":"kubernetes.io/hostname","whenUnsatisfiable":"DoNotSchedule","labelSelector":{"matchLabels":{"app.kubernetes.io/name":"garage"}}}]'
