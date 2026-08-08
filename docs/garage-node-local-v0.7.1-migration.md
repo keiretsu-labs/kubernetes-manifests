@@ -23,11 +23,12 @@ never mounted by a pool pod.
   the operator is installed cluster-wide.
 
 Final preflight also found six persistent block-resync error hashes replicated
-across their expected nodes. Their reported object references all belong to a
-Garage bucket that no longer exists, which suggests orphaned metadata rather
-than reachable S3 data, but that is not permission to discard it. Do not begin
-pool enrollment until the references receive a separate destructive-action
-review and `garage stats --all-nodes` reports zero block errors everywhere.
+across their expected nodes. Every reported object reference belonged only to
+the already-deleted Garage bucket `99aa1da58dc06129`. With explicit approval,
+the orphaned references were purged and each node retried its own failed block
+work on 2026-08-08. `garage stats --all-nodes` then reported zero block errors
+on all 18 processes. The cleanup temporarily populated resync queues, so do not
+begin pool enrollment until those queues have also returned to zero.
 
 The source LocalPath identities are:
 
