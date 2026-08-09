@@ -66,9 +66,11 @@ spec:
       robbinsdale: 0
       stpetersburg: 0
 ---
-# Timeouts/retry for the public registry path. Kaniko blob uploads of large
-# layers can exceed 300s on a slow Garage quorum; 600s request + 120s per-retry
-# lets Envoy retry transiently slow S3 writes instead of surfacing a 504.
+# Timeouts/retry for the public registry path. A S3 read or write can wait for
+# Garage to recover its quorum. Do not turn a still-running registry operation
+# into a client-visible 504: `0s` disables Envoy's overall route deadline, and
+# omitting perRetry.timeout makes each attempt inherit that unbounded deadline.
+# Immediate 503/504/reset failures are still retried on the other Zot replica.
 # Targets the zot-public HTTPRoute (same namespace); on remote clusters the
 # route is inert (backend absent) so this policy is a no-op there.
 apiVersion: gateway.envoyproxy.io/v1alpha1
@@ -83,7 +85,7 @@ spec:
       name: zot-public
   timeout:
     http:
-      requestTimeout: 600s
+      requestTimeout: 0s
       connectionIdleTimeout: 3600s
       maxConnectionDuration: 0s
   # Resilience: zot's only data store is the shared cross-cluster Garage S3
@@ -95,7 +97,6 @@ spec:
   retry:
     numRetries: 3
     perRetry:
-      timeout: 120s
       backOff:
         baseInterval: 100ms
         maxInterval: 2s
