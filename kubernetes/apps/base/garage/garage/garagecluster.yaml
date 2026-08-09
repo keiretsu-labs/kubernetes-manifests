@@ -99,13 +99,19 @@ spec:
     # Temporarily accelerated (2026-06-05) to clear a large resync backlog from the
     # stp-rejoin re-replication + node-rename layout churn. Revert to 1 / 3 once the
     # block_resync_queue_length drains to ~0 across nodes.
-    resyncWorkerCount: 4
-    resyncTranquility: 1
+    resyncWorkerCount: 8
+    resyncTranquility: 0
     scrubTranquility: 4
 
   # Storage tier — persistent identity in metadata PVC; data PVC holds blocks.
   storage:
     replicas: ${GARAGE_REPLICAS:=1}
+    # Retired legacy StatefulSets no longer need rollback claims after their
+    # exact drain proof completes; deleting those claims releases local-path
+    # space. Scaling remains Retain so ordinary replica changes cannot reap data.
+    pvcRetentionPolicy:
+      whenDeleted: Delete
+      whenScaled: Retain
     # Per-tier layout ownership (operator v0.6.11+). Default Auto: the operator
     # generates and owns one storage GarageNode per replica. A region can set
     # GARAGE_STORAGE_LAYOUT_POLICY=Manual in its cluster-settings to hand-manage
