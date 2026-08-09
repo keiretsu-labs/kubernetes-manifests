@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: qbittorrent-pvt-portforward-probe
+  name: qbittorrent-portforward-probe
 spec:
   schedule: "*/5 * * * *"
   concurrencyPolicy: Forbid
@@ -20,7 +20,7 @@ spec:
             image: curlimages/curl:8.18.0
             env:
             - name: API
-              value: "http://qbittorrent-pvt:8000"
+              value: "http://qbittorrent:8000"
             command: ["/bin/sh"]
             args:
             - -c
