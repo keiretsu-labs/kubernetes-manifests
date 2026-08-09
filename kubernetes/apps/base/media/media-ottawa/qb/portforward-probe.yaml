@@ -79,7 +79,11 @@ spec:
                 -d '{"status":"stopped"}' "$${API}/v1/vpn/status"
               curl -sS --max-time 60 -X PUT -H 'Content-Type: application/json' \
                 -d '{"status":"running"}' "$${API}/v1/vpn/status"
+              # Exit non-zero so the Job records a failure. That failure is the
+              # signal the rotation alert fires on; a silent success would make
+              # rotations invisible.
               echo "rotation requested"
+              exit 1
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
