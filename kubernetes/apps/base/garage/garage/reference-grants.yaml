@@ -50,10 +50,6 @@ spec:
     - kind: GarageKey
       namespace: velero-system
     - kind: GarageKey
-      namespace: tempo
-    - kind: GarageBucket
-      namespace: tempo
-    - kind: GarageKey
       namespace: buzz
     - kind: GarageBucket
       namespace: buzz
