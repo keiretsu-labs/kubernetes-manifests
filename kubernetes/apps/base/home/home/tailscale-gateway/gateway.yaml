@@ -83,4 +83,3 @@ spec:
         - kind: TCPRoute
         namespaces:
           from: All
-    
