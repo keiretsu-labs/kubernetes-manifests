@@ -42,8 +42,6 @@ spec:
           value: "1410"
         - name: VPN_PORT_FORWARDING
           value: "on"
-        - name: VPN_PORT_FORWARDING_DOWN_COMMAND
-          value: "wget -qO- http://localhost:8000/openvpn/actions/restart"
         - name: PORT_FORWARD_ONLY
           value: "on"
         - name: SERVER_COUNTRIES
