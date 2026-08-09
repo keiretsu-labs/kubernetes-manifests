@@ -45,6 +45,10 @@ data:
   # Robbinsdale are fully rolled out and global Garage health is confirmed.
   GARAGE_CONSISTENCY_MODE: "consistent"
 
+  # Final site in the positive-capacity drain rollout. Merge only after Ottawa
+  # and Robbinsdale accept this policy and global Garage health is confirmed.
+  GARAGE_DRAIN_PEER_POLICY: "AssumeConsistent"
+
   # Garage: STORAGE layout is hand-managed per Spark node via GarageNode CRs in
   # clusters/talos-stpetersburg/apps/garage (decoupled from clusters/common so
   # each Spark can carry its own heterogeneous storage array). Per-tier Manual
