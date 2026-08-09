@@ -33,7 +33,11 @@ spec:
         port: 5000
     serviceMonitor:
       enabled: true
+    # Fleet-native Spegel dashboard is provided via the ConfigMap in this dir
+    # (kustomization configMapGenerator -> grafana_dashboard label) so the
+    # Grafana sidecar imports it. Disable the chart's bundled one to avoid a
+    # duplicate CM name conflict.
     grafanaDashboard:
-      enabled: true
+      enabled: false
       labels:
         grafana_dashboard: "1"
