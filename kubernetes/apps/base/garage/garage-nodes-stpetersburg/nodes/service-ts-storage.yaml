@@ -10,26 +10,6 @@
 #
 # Each of these per-pod LBs pins to exactly one storage pod via
 # statefulset.kubernetes.io/pod-name.
-apiVersion: v1
-kind: Service
-metadata:
-  annotations:
-    tailscale.com/hostname: stpetersburg-garage-spark-1
-    tailscale.com/tags: "tag:k8s,tag:stpetersburg"
-    tailscale.com/proxy-group: "common-ingress"
-  name: garage-storage-spark-1-ts
-spec:
-  publishNotReadyAddresses: true
-  ports:
-    - name: rpc
-      port: 3901
-      protocol: TCP
-      targetPort: 3901
-  selector:
-    statefulset.kubernetes.io/pod-name: stpetersburg-garage-localpath-spark-1-0
-  type: LoadBalancer
-  loadBalancerClass: tailscale
----
 # Pre-stage one identity-specific endpoint per future node-local-pool member.
 # These selectors do not match the current StatefulSets, so the existing
 # endpoints above remain untouched until a later GitOps change adds the pool.
