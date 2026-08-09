@@ -3,7 +3,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - tailscale-recorder-key.yaml
-  - rajsingh-key.yaml
   - tracearr-postgres-key.yaml
   - immich-postgres-key.yaml
   - tailscale-logs-key.yaml
