@@ -36,24 +36,12 @@ spec:
             secretKeyRef:
               name: qbittorrent-pvt-secret
               key: WIREGUARD_PRIVATE_KEY
-        - name: WIREGUARD_PUBLIC_KEY
-          valueFrom:
-            secretKeyRef:
-              name: qbittorrent-pvt-secret
-              key: WIREGUARD_PUBLIC_KEY
-        - name: WIREGUARD_ENDPOINT_IP
-          valueFrom:
-            secretKeyRef:
-              name: qbittorrent-pvt-secret
-              key: WIREGUARD_ENDPOINT_IP
         - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
           value: 14s
         - name: WIREGUARD_MTU
           value: "1410"
         - name: VPN_PORT_FORWARDING
           value: "on"
-        - name: VPN_PORT_FORWARDING_DOWN_COMMAND
-          value: "wget -qO- http://localhost:8000/openvpn/actions/restart"
         - name: PORT_FORWARD_ONLY
           value: "on"
         - name: SERVER_COUNTRIES
@@ -81,8 +69,9 @@ spec:
         - name: LOG_LEVEL
           value: info
         volumeMounts:
-        - name: gluetun-config
+        - name: config-volume
           mountPath: /gluetun
+          subPath: gluetun
       - name: gluetun-qb-port-sync
         # renovate: datasource=docker depName=ghcr.io/bjw-s-labs/gluetun-qb-port-sync
         image: ghcr.io/bjw-s-labs/gluetun-qb-port-sync:0.0.4
@@ -150,8 +139,6 @@ spec:
       - name: downloads-volume
         persistentVolumeClaim:
           claimName: qbittorrent-downloads
-      - name: gluetun-config
-        emptyDir: {}
       - name: qb-port-sync-config
         emptyDir: {}
 ---
@@ -167,4 +154,8 @@ spec:
     port: 80
     protocol: TCP
     targetPort: 8080
+  - name: control
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
   type: ClusterIP
