@@ -19,15 +19,3 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
-  # Keep the controller paused while Titan's RBD recovery is validated.
-  # This also prevents the interrupted Tank rollout from being recreated.
-  patches:
-    - patch: |-
-        - op: add
-          path: /spec/suspend
-          value: true
-      target:
-        group: helm.toolkit.fluxcd.io
-        version: v2
-        kind: HelmRelease
-        name: tuppr
