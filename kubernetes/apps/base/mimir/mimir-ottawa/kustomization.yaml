@@ -18,5 +18,6 @@ configMapGenerator:
       - rules/flux.yaml
       - rules/garage.yaml
       - rules/k8gb.yaml
+      - rules/media.yaml
       - rules/monitoring.yaml
       - rules/smartctl.yaml

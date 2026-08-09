@@ -13,5 +13,6 @@ configMapGenerator:
       - flux.yaml
       - garage.yaml
       - k8gb.yaml
+      - media.yaml
       - monitoring.yaml
       - smartctl.yaml
