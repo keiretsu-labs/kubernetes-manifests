@@ -7,6 +7,4 @@ resources:
   - pg.yaml
   - helmrelease.yaml
   - httproute.yaml
-  - tcproute.yaml
   - referencegrant.yaml
-
