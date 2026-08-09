@@ -3,6 +3,5 @@ kind: Kustomization
 namespace: garage
 resources:
   - ottawa-garage-smb.yaml
-  - ottawa-garage-localpath-shiro.yaml
   - hostpath-prep.yaml
   - service-ts-storage.yaml
