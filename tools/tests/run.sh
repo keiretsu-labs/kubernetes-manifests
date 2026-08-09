@@ -299,7 +299,7 @@ flate_calls="$fstub/calls"
 cat >"$fstub/flate" <<'EOF'
 #!/usr/bin/env bash
 if [ "${1:-}" = "--version" ]; then
-  echo "flate version 0.4.12"
+  echo "flate version 0.5.0"
   exit 0
 fi
 printf '%s\n' "$*" >>"$FLATE_CALLS"
@@ -316,7 +316,7 @@ KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" \
   "$T/flate.sh" diff all --allow-missing-secrets
 assert "explicit missing-secret flag -> no duplicate" \
   grep -q '^diff all --allow-missing-secrets$' "$flate_calls"
-assert "CI action pin matches wrapper fixture" grep -q 'home-operations/flate/action@v0.4.12' "$ROOT/.github/workflows/flate.yaml"
+assert "CI action pin matches wrapper fixture" grep -q 'home-operations/flate/action@v0.5.0' "$ROOT/.github/workflows/flate.yaml"
 
 cat >"$fstub/old-flate" <<'EOF'
 #!/usr/bin/env bash
@@ -325,7 +325,7 @@ EOF
 chmod +x "$fstub/old-flate"
 oldout="$(KMAN_FLATE_BIN="$fstub/old-flate" "$T/flate.sh" test all 2>&1)"; oldec=$?
 assert "mismatched override -> exit 2" test "$oldec" = 2
-assert "mismatch names required version" grep -q 'CI requires 0.4.12' <<<"$oldout"
+assert "mismatch names required version" grep -q 'CI requires 0.5.0' <<<"$oldout"
 
 : >"$flate_calls"
 KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" make -s -C "$ROOT" test
