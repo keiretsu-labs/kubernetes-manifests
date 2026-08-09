@@ -6,7 +6,6 @@ kind: Kustomization
 # namespace and fails ("namespace not specified").
 namespace: garage
 resources:
-  - stpetersburg-garage-localpath-spark-0.yaml
   - stpetersburg-garage-localpath-spark-1.yaml
   - hostpath-prep.yaml
   - service-ts-storage.yaml
