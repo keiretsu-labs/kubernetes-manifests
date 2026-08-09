@@ -46,6 +46,8 @@ spec:
           value: "on"
         - name: SERVER_COUNTRIES
           value: Denmark
+        - name: SERVER_HOSTNAMES
+          value: "node-dk-05.protonvpn.net,node-dk-06.protonvpn.net"
         - name: DOT
           value: "off"
         - name: HEALTH_TARGET_ADDRESS
