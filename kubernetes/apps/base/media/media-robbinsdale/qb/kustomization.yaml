@@ -5,6 +5,7 @@ namespace: media
 resources:
   - app.yaml
   - httproute.yaml
+  - portforward-probe.yaml
   - secret.yaml
   - pvc-config.yaml
   - pvc-downloads.yaml

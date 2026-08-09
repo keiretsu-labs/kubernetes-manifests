@@ -36,16 +36,6 @@ spec:
             secretKeyRef:
               name: qbittorrent-secret
               key: WIREGUARD_PRIVATE_KEY
-        - name: WIREGUARD_PUBLIC_KEY
-          valueFrom:
-            secretKeyRef:
-              name: qbittorrent-secret
-              key: WIREGUARD_PUBLIC_KEY
-        - name: WIREGUARD_ENDPOINT_IP
-          valueFrom:
-            secretKeyRef:
-              name: qbittorrent-secret
-              key: WIREGUARD_ENDPOINT_IP
         - name: WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL
           value: 14s
         - name: WIREGUARD_MTU
@@ -79,8 +69,9 @@ spec:
         - name: LOG_LEVEL
           value: info
         volumeMounts:
-        - name: gluetun-config
+        - name: config-volume
           mountPath: /gluetun
+          subPath: gluetun
       - name: gluetun-qb-port-sync
         # renovate: datasource=docker depName=ghcr.io/bjw-s-labs/gluetun-qb-port-sync
         image: ghcr.io/bjw-s-labs/gluetun-qb-port-sync:0.0.4
@@ -148,8 +139,6 @@ spec:
       - name: downloads-volume
         persistentVolumeClaim:
           claimName: qbittorrent-downloads
-      - name: gluetun-config
-        emptyDir: {}
       - name: qb-port-sync-config
         emptyDir: {}
 ---
