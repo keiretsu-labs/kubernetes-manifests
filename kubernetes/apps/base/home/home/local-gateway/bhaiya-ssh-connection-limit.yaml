@@ -1,0 +1,21 @@
+---
+# Envoy's connection counter is per proxy instance, so Bhaiya also enforces a
+# stricter process-local ceiling. This edge limit sheds excess handshake load
+# before it can consume SSH/Kubernetes-exec resources.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: bhaiya-ssh-connection-limit
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      sectionName: bhaiya-ssh
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      sectionName: bhaiya-ssh
+  connection:
+    connectionLimit:
+      value: 32
