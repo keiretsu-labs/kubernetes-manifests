@@ -165,6 +165,9 @@ spec:
             replacement: ${CLUSTER_NAME}
           - action: labeldrop
             regex: ^id$
+          # Keep the per-pod FD ceiling and current count. Kata's virtiofsd
+          # lives in the pod cgroup, so this is the low-cardinality signal
+          # before a single VM loses its virtio-fs-backed mounts.
           # Drop high-cardinality, low-value cadvisor series that bloat the agent
           # WAL (root of the OOM crashloop). container_fs_*/blkio_* are per-device
           # and explode on these Ceph rbd-heavy nodes — they were also the source
@@ -172,7 +175,7 @@ spec:
           # Kept: container_cpu_*, container_memory_working_set_bytes, network.
           - action: drop
             sourceLabels: [__name__]
-            regex: container_(fs|blkio|spec|tasks_state|memory_failures_total|file_descriptors|sockets|threads|threads_max|ulimits_soft|processes|start_time_seconds|last_seen).*
+            regex: container_(fs|blkio|spec|tasks_state|memory_failures_total|sockets|threads|threads_max|processes|start_time_seconds|last_seen).*
           # Redundant cadvisor container variants no dashboard uses. Kept:
           # container_cpu_usage_seconds_total, container_cpu_cfs_throttled_seconds_total,
           # container_memory_working_set_bytes/rss/cache/swap, container_network_*.

@@ -41,6 +41,49 @@ groups:
         labels:
           severity: warning
 
+  - name: kata-virtiofs.rules
+    rules:
+      # A fixed Nix workspace image can legitimately use roughly 30% of the
+      # daemon's FD limit for its overlay-backed rootfs. The thresholds leave
+      # that bounded baseline alone while detecting the old unbounded PVC path.
+      - alert: KataVirtioFSFileDescriptorPressure
+        expr: |
+          (
+            max by (cluster, namespace, pod) (
+              container_file_descriptors{namespace="bhaiya",pod=~"sandbox-.+"}
+            )
+            /
+            max by (cluster, namespace, pod) (
+              container_ulimits_soft{namespace="bhaiya",pod=~"sandbox-.+",ulimit="max_open_files"}
+            )
+          ) * 100 > 50
+        for: 5m
+        annotations:
+          summary: >-
+            Kata virtio-fs for {{ $labels.namespace }}/{{ $labels.pod }} is using
+            {{ printf "%.0f" $value }}% of its file-descriptor limit.
+        labels:
+          severity: warning
+
+      - alert: KataVirtioFSFileDescriptorCritical
+        expr: |
+          (
+            max by (cluster, namespace, pod) (
+              container_file_descriptors{namespace="bhaiya",pod=~"sandbox-.+"}
+            )
+            /
+            max by (cluster, namespace, pod) (
+              container_ulimits_soft{namespace="bhaiya",pod=~"sandbox-.+",ulimit="max_open_files"}
+            )
+          ) * 100 > 75
+        for: 1m
+        annotations:
+          summary: >-
+            Kata virtio-fs for {{ $labels.namespace }}/{{ $labels.pod }} is using
+            {{ printf "%.0f" $value }}% of its file-descriptor limit.
+        labels:
+          severity: critical
+
   - name: node.rules
     rules:
       - alert: NodeHighCpuUsage
