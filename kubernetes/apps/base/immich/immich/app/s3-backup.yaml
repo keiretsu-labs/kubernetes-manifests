@@ -19,4 +19,4 @@ spec:
     env:
       - name: AWS_DEFAULT_REGION
         value: garage
-  retentionPolicy: "30d"
+  retentionPolicy: "7d"
