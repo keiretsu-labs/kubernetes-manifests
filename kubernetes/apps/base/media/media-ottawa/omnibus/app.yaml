@@ -104,7 +104,7 @@ spec:
                   name: omnibus-sensitive-secret
                   key: NEXTAUTH_SECRET
             - name: OMNIBUS_NODE_URL
-              value: http://127.0.0.1:3000
+              value: http://omnibus:3000
             - name: OMNIBUS_WATCHED_DIR
               value: /media-share/omnibus-watched
             - name: OMNIBUS_AWAITING_MATCH_DIR
