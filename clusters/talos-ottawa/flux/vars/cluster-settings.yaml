@@ -41,14 +41,6 @@ data:
   COMMON_S3_ENDPOINT: "garage-gateway.garage.svc.cluster.local:3900"
   VICTORIA_LOGS_HOST: "victoria-logs-victoria-logs-single-server.monitoring"
 
-  # First site in the drain-safety rollout. Advance the other sites only after
-  # this site's Garage processes restart and the global cluster remains healthy.
-  GARAGE_CONSISTENCY_MODE: "consistent"
-
-  # All three sites now run literal consistent mode. Enable positive-capacity
-  # drain verification in Ottawa first; no GarageNode is retired by this change.
-  GARAGE_DRAIN_PEER_POLICY: "AssumeConsistent"
-
   # Garage: storage layout hand-managed per-node in clusters/talos-ottawa/apps/garage
   # (Manual) so the array can move off SMB to ceph/local-path per node. Gateway
   # tier stays operator-managed (Auto). Requires operator v0.6.11+.
