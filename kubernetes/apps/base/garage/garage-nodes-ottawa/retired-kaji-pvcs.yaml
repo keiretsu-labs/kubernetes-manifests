@@ -1,0 +1,50 @@
+# Adopt the retained legacy claims for one Flux revision. The follow-up
+# retirement revision prunes them so local-path-provisioner reclaims Kaji's
+# superseded Garage data only after the replacement identity is proven.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-ottawa-garage-localpath-kaji-0
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: Merge
+  labels:
+    app.kubernetes.io/component: node
+    app.kubernetes.io/instance: garage
+    app.kubernetes.io/managed-by: garage-operator
+    app.kubernetes.io/name: garage
+    garage.rajsingh.info/cluster: garage
+    garage.rajsingh.info/node: ottawa-garage-localpath-kaji
+    garage.rajsingh.info/tier: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 700Gi
+  storageClassName: local-path
+  volumeMode: Filesystem
+  volumeName: pvc-6d90f65e-1870-4f10-90bc-4e9a5f5e4a84
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: metadata-ottawa-garage-localpath-kaji-0
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: Merge
+  labels:
+    app.kubernetes.io/component: node
+    app.kubernetes.io/instance: garage
+    app.kubernetes.io/managed-by: garage-operator
+    app.kubernetes.io/name: garage
+    garage.rajsingh.info/cluster: garage
+    garage.rajsingh.info/node: ottawa-garage-localpath-kaji
+    garage.rajsingh.info/tier: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
+  volumeMode: Filesystem
+  volumeName: pvc-625acd1f-28cc-4fd8-984a-a7475d774f16
