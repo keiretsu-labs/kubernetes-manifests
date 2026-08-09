@@ -308,7 +308,14 @@ chmod +x "$fstub/flate"
 
 : >"$flate_calls"
 KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" "$T/flate.sh" test all --no-progress
-assert "pinned override -> args passthrough" grep -q '^test all --no-progress$' "$flate_calls"
+assert "pinned override -> missing-secret safety" \
+  grep -q '^test all --no-progress --allow-missing-secrets$' "$flate_calls"
+
+: >"$flate_calls"
+KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" \
+  "$T/flate.sh" diff all --allow-missing-secrets
+assert "explicit missing-secret flag -> no duplicate" \
+  grep -q '^diff all --allow-missing-secrets$' "$flate_calls"
 assert "CI action pin matches wrapper fixture" grep -q 'home-operations/flate/action@v0.4.12' "$ROOT/.github/workflows/flate.yaml"
 
 cat >"$fstub/old-flate" <<'EOF'

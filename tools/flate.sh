@@ -20,6 +20,26 @@ if [ -z "$pins" ] || [ "$(printf '%s\n' "$pins" | wc -l | tr -d ' ')" != 1 ]; th
 fi
 version="$pins"
 
+# SOPS-encrypted Secret values are intentionally unavailable in offline renders.
+# Without this flag, GitRepository reconciliation can fail before Flate reaches
+# the manifests being compared (and diff can fail identically on both trees).
+# Keep every test/diff caller safe, including CI invocations outside Make.
+flate_args=("$@")
+case "${flate_args[0]:-}" in
+  test|diff)
+    allow_missing_secrets=false
+    for arg in "${flate_args[@]}"; do
+      if [ "$arg" = "--allow-missing-secrets" ]; then
+        allow_missing_secrets=true
+        break
+      fi
+    done
+    if [ "$allow_missing_secrets" = false ]; then
+      flate_args+=(--allow-missing-secrets)
+    fi
+    ;;
+esac
+
 flate_version() {
   "$1" --version 2>/dev/null | sed -n 's/^flate version //p' | head -1
 }
@@ -30,13 +50,13 @@ if [ -n "${KMAN_FLATE_BIN:-}" ]; then
     echo "error: KMAN_FLATE_BIN is Flate ${actual:-unknown}; CI requires $version" >&2
     exit 2
   fi
-  exec "$KMAN_FLATE_BIN" "$@"
+  exec "$KMAN_FLATE_BIN" "${flate_args[@]}"
 fi
 
 if command -v flate >/dev/null 2>&1; then
   system_flate="$(command -v flate)"
   if [ "$(flate_version "$system_flate" || true)" = "$version" ]; then
-    exec "$system_flate" "$@"
+    exec "$system_flate" "${flate_args[@]}"
   fi
 fi
 
@@ -64,7 +84,7 @@ fi
 install_dir="$cache_root/kubernetes-manifests/flate/$version/$platform"
 cached_flate="$install_dir/flate"
 if [ -x "$cached_flate" ] && [ "$(flate_version "$cached_flate" || true)" = "$version" ]; then
-  exec "$cached_flate" "$@"
+  exec "$cached_flate" "${flate_args[@]}"
 fi
 
 mkdir -p "$install_dir"
@@ -114,4 +134,4 @@ fi
 mv -f -- "$stage/flate" "$cached_flate"
 cleanup
 trap - EXIT INT TERM
-exec "$cached_flate" "$@"
+exec "$cached_flate" "${flate_args[@]}"
