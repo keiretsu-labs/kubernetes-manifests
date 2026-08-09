@@ -44,7 +44,7 @@ spec:
               attempt=1
               while [ "$${attempt}" -le 3 ]; do
                 connect=$$(curl -sS --connect-timeout 5 --max-time 8 -o /dev/null \
-                  -w '%{time_connect}' "http://$${ip}:$${port}" 2>/dev/null || true)
+                  -w '%{time_connect}' "http://$${ip}:1" 2>/dev/null || true)
                 case "$${connect}" in
                   ""|0|0.000000)
                     echo "attempt $${attempt}/3: $${ip}:$${port} unreachable"
