@@ -7,5 +7,4 @@ resources:
   - ottawa-garage-localpath-asuka.yaml
   - ottawa-garage-localpath-rei.yaml
   - hostpath-prep.yaml
-  - retired-kaji-pvcs.yaml
   - service-ts-storage.yaml
