@@ -21,6 +21,8 @@ spec:
             env:
             - name: API
               value: "http://qbittorrent:8000"
+            - name: QBT
+              value: "http://qbittorrent:80"
             command: ["/bin/sh"]
             args:
             - -c
@@ -40,6 +42,16 @@ spec:
 
               if [ -z "$${ip}" ] || [ -z "$${port}" ] || [ "$${port}" = "0" ]; then
                 echo "no exit ip or forwarded port yet (ip='$${ip}' port='$${port}') - nothing to do"
+                exit 0
+              fi
+
+              # The port-sync sidecar pushes the forwarded port into qbittorrent once a
+              # minute. Until it has, nothing is listening on that port and an
+              # unreachable result would say nothing about the vpn server.
+              listen=$$(curl -sf --max-time 10 "$${QBT}/api/v2/app/preferences" \
+                | sed -n 's/.*"listen_port":\([0-9]*\).*/\1/p')
+              if [ "$${listen}" != "$${port}" ]; then
+                echo "qbittorrent listens on '$${listen}', forwarded port is '$${port}' - port sync has not caught up, nothing to do"
                 exit 0
               fi
 
