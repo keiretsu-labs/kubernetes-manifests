@@ -13,6 +13,9 @@ spec:
     rebootMode: default
     placement: soft
     timeout: 30m
+    # Ensure RBD mounts are fully detached before the Talos reboot so a
+    # rescheduled workload cannot inherit an orphaned kernel mapping.
+    waitForVolumeDetach: true
   drain:
     enabled: true
     disableEviction: true
