@@ -1,0 +1,80 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: qbittorrent-pvt-portforward-probe
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: probe
+            # renovate: datasource=docker depName=curlimages/curl
+            image: curlimages/curl:8.18.0
+            command: ["/bin/sh"]
+            args:
+            - -c
+            - |
+              set -u
+              API="http://qbittorrent-pvt:8000"
+
+              status=$$(curl -sf --max-time 10 "$${API}/v1/vpn/status" || true)
+              case "$${status}" in
+                *'"running"'*) ;;
+                *) echo "vpn status is '$${status}', not running - nothing to do"; exit 0 ;;
+              esac
+
+              ip=$$(curl -sf --max-time 10 "$${API}/v1/publicip/ip" \
+                | sed -n 's/.*"public_ip":"\([^"]*\)".*/\1/p')
+              port=$$(curl -sf --max-time 10 "$${API}/v1/portforward" \
+                | sed -n 's/.*"port":\([0-9]*\).*/\1/p')
+
+              if [ -z "$${ip}" ] || [ -z "$${port}" ] || [ "$${port}" = "0" ]; then
+                echo "no exit ip or forwarded port yet (ip='$${ip}' port='$${port}') - nothing to do"
+                exit 0
+              fi
+
+              attempt=1
+              while [ "$${attempt}" -le 3 ]; do
+                connect=$$(curl -sS --connect-timeout 5 --max-time 8 -o /dev/null \
+                  -w '%{time_connect}' "http://$${ip}:$${port}" 2>/dev/null || true)
+                case "$${connect}" in
+                  ""|0|0.000000)
+                    echo "attempt $${attempt}/3: $${ip}:$${port} unreachable"
+                    ;;
+                  *)
+                    echo "attempt $${attempt}/3: $${ip}:$${port} reachable (connect $${connect}s)"
+                    exit 0
+                    ;;
+                esac
+                attempt=$$((attempt + 1))
+                if [ "$${attempt}" -le 3 ]; then
+                  sleep 15
+                fi
+              done
+
+              echo "forwarded port $${ip}:$${port} unreachable after 3 attempts - rotating vpn server"
+              curl -sS --max-time 30 -X PUT -H 'Content-Type: application/json' \
+                -d '{"status":"stopped"}' "$${API}/v1/vpn/status"
+              curl -sS --max-time 60 -X PUT -H 'Content-Type: application/json' \
+                -d '{"status":"running"}' "$${API}/v1/vpn/status"
+              echo "rotation requested"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 64Mi
