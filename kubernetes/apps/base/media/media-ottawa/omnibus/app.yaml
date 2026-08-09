@@ -27,7 +27,7 @@ spec:
               mountPath: /config
       containers:
         - name: omnibus
-          image: ghcr.io/kbpersonal/omnibus:km-1.4.3-1
+          image: ghcr.io/kbpersonal/omnibus:v1.4.3
           ports:
             - name: http
               containerPort: 3000
@@ -87,7 +87,7 @@ spec:
             - name: media
               mountPath: /media-share
         - name: omnibus-engine
-          image: ghcr.io/kbpersonal/omnibus-engine:km-1.4.3-1
+          image: ghcr.io/kbpersonal/omnibus-engine:v1.4.3
           env:
             - name: DATABASE_URL
               valueFrom:
