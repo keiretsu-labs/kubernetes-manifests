@@ -9,7 +9,6 @@ resources:
   - certificate-wildcard.yaml
   - redirect.yaml
   - clienttrafficpolicy.yaml
-  - bhaiya-ssh-connection-limit.yaml
 # DNS
   - secret.yaml
   - pihole.yaml

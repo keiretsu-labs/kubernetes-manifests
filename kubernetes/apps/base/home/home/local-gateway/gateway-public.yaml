@@ -167,16 +167,6 @@ spec:
         - kind: TCPRoute
         namespaces:
           from: All
-    # A raw TCP listener cannot route by the hostname an SSH client typed.
-    # Forgejo owns :22, so Bhaiya receives a distinct hardened listener.
-    - name: bhaiya-ssh
-      protocol: TCP
-      port: 2222
-      allowedRoutes:
-        kinds:
-        - kind: TCPRoute
-        namespaces:
-          from: All
     - name: webrtc-tcp
       protocol: TCP
       port: 8555
