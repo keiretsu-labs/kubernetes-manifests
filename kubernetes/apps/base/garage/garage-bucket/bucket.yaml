@@ -40,25 +40,6 @@ spec:
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
-  name: rajsingh
-spec:
-  clusterRef:
-    name: garage
-  globalAlias: rajsingh
-  quotas:
-    maxSize: 100Gi
-    maxObjects: 1000000
-  keyPermissions:
-    - keyRef:
-        name: rajsingh-key
-        namespace: flux-system
-      read: true
-      write: true
-      owner: true
----
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageBucket
-metadata:
   name: tailscale-logs
 spec:
   clusterRef:
