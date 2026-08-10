@@ -58,6 +58,11 @@ spec:
                 secretKeyRef:
                   name: lobby-ts-oauth
                   key: TS_API_KEY
+            # Probe VIP backends through the tailscale sidecar SOCKS5.
+            - name: TS_SOCKS_PROXY
+              value: socks5://127.0.0.1:1055
+            - name: ALL_PROXY
+              value: socks5://127.0.0.1:1055
           readinessProbe:
             httpGet:
               path: /
@@ -81,6 +86,8 @@ spec:
               value: ""
             - name: TS_USERSPACE
               value: "true"
+            - name: TS_SOCKS5_SERVER
+              value: ":1055"
             - name: TS_STATE_DIR
               value: /var/lib/tailscale  # PVC: node key + ACME certs survive restarts
             - name: TS_HOSTNAME
