@@ -28,11 +28,14 @@ spec:
       retentionPeriod: 7d
       resources:
         requests:
-          cpu: 100m
-          memory: 256Mi
+          cpu: 200m
+          memory: 1Gi
         limits:
-          cpu: 500m
-          memory: 512Mi
+          cpu: 2
+          memory: 2Gi
+      extraArgs:
+        maxConcurrentInserts: 8
+        insert.maxQueueDuration: 2m
       serviceMonitor:
         enabled: true
     dashboards:
