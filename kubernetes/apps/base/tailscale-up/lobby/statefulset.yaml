@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: lobby
+  namespace: tailscale-up
+  labels:
+    app.kubernetes.io/name: lobby
+spec:
+  serviceName: lobby
+  replicas: 1
+  # Funnel hostname is sticky; don't roll two pods with the same TS_HOSTNAME.
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lobby
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: lobby
+    spec:
+      terminationGracePeriodSeconds: 35
+      containers:
+        # Plain HTTP app. Identity comes from Serve L7 headers, not LocalAPI WhoIs.
+        - name: lobby
+          image: ghcr.io/rajsinghtech/tailscale-up-prompt-to-prod/lobby:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: LISTEN_ADDR
+              value: ":8080"
+            - name: TAILNET_NAME
+              value: rajsinghtech.github
+            - name: TS_TAILNET
+              value: "-"
+            # CNPG writes user secret lobby-postgres-app with uri / username / password
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lobby-postgres-app
+                  key: uri
+            # Management API (auth keys, VIP services) — conference tailnet OAuth.
+            - name: TS_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: lobby-ts-oauth
+                  key: TS_OAUTH_CLIENT_ID
+            - name: TS_OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: lobby-ts-oauth
+                  key: TS_OAUTH_CLIENT_SECRET
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+
+        # Official containerboot sidecar owns Magicsock + Funnel + Serve.
+        # Operator ProxyGroup does not support Funnel on secondary tailnets.
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:v1.102.1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TS_KUBE_SECRET
+              value: ""
+            - name: TS_USERSPACE
+              value: "true"
+            - name: TS_STATE_DIR
+              value: /var/lib/tailscale  # PVC: node key + ACME certs survive restarts
+            - name: TS_HOSTNAME
+              value: lobby
+            - name: TS_ACCEPT_DNS
+              value: "false"
+            - name: TS_AUTH_ONCE
+              value: "true"
+            - name: TS_EXTRA_ARGS
+              value: --advertise-tags=tag:lobby
+            # OAuth for conference tailnet (rajsinghtech.github / rajsingh.ts.net).
+            - name: TS_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: lobby-ts-oauth
+                  key: TS_OAUTH_CLIENT_ID
+            - name: TS_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: lobby-ts-oauth
+                  key: TS_OAUTH_CLIENT_SECRET
+            - name: TS_SERVE_CONFIG
+              value: /config/serve.json
+          volumeMounts:
+            - name: serve-config
+              mountPath: /config
+              readOnly: true
+            - name: ts-state
+              mountPath: /var/lib/tailscale
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+
+      volumes:
+        - name: serve-config
+          configMap:
+            name: lobby-serve-config
+  volumeClaimTemplates:
+    - metadata:
+        name: ts-state
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: ceph-block-replicated
+        resources:
+          requests:
+            storage: 2Gi
