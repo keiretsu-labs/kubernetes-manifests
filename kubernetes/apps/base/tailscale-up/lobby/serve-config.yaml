@@ -5,15 +5,26 @@ metadata:
   namespace: tailscale-up
 data:
   # containerboot substitutes ${TS_CERT_DOMAIN} at runtime.
-  # Funnel edges need AllowFunnel + HTTPS Web → local lobby.
+  # :80 HTTP for MagicDNS http://lobby/
+  # :443 HTTPS + Funnel for https://lobby.rajsingh.ts.net/
   serve.json: |
     {
       "TCP": {
+        "80": {
+          "HTTP": true
+        },
         "443": {
           "HTTPS": true
         }
       },
       "Web": {
+        "${TS_CERT_DOMAIN}:80": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:8080"
+            }
+          }
+        },
         "${TS_CERT_DOMAIN}:443": {
           "Handlers": {
             "/": {
