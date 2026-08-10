@@ -52,6 +52,12 @@ spec:
                 secretKeyRef:
                   name: lobby-ts-oauth
                   key: TS_OAUTH_CLIENT_SECRET
+            # User invites need users:write; API key has it (OAuth client does not).
+            - name: TS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lobby-ts-oauth
+                  key: TS_API_KEY
           readinessProbe:
             httpGet:
               path: /
