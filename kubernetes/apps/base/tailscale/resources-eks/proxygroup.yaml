@@ -1,0 +1,27 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: common-egress
+spec:
+  hostnamePrefix: ${LOCATION}-common-egress
+  tags:
+    - tag:k8s
+    - tag:${LOCATION}
+  proxyClass: common-accept-routes
+  type: egress
+  replicas: 1
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: ${LOCATION}-k8s
+spec:
+  type: kube-apiserver
+  replicas: 1
+  proxyClass: common
+  tags:
+    - tag:k8s-operator
+    - tag:${LOCATION}
+  kubeAPIServer:
+    mode: auth

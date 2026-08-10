@@ -1,0 +1,34 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: DNSConfig
+metadata:
+  name: ts-dns
+spec:
+  nameserver:
+    replicas: 1
+    image:
+      tag: unstable
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ts-dns
+  namespace: tailscale
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+spec:
+  ports:
+  - name: udp
+    port: 53
+    protocol: UDP
+    targetPort: 1053
+  - name: tcp
+    port: 53
+    protocol: TCP
+    targetPort: 1053
+  selector:
+    app: nameserver
+  sessionAffinity: None
+  type: LoadBalancer

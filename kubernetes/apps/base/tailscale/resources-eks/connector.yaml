@@ -1,0 +1,17 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: &name ${LOCATION}-subnetrouter
+spec:
+  replicas: 1
+  proxyClass: common
+  tags:
+    - tag:k8s
+    - tag:${LOCATION}
+  hostnamePrefix: *name
+  subnetRouter:
+    advertiseRoutes:
+      - "${CLUSTER_SERVICE_CIDR}"
+      - "${CLUSTER_POD_CIDR}"
+      - fd7a:115c:a1e0:b1a:0:${SITE_ID}::/96

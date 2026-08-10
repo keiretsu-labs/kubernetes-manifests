@@ -1,6 +1,6 @@
 .PHONY: help test diff
 
-CLUSTERS := talos-ottawa talos-robbinsdale talos-stpetersburg
+CLUSTERS := talos-ottawa talos-robbinsdale talos-stpetersburg eks-use1
 FLATE := tools/flate.sh
 FLATE_FLAGS := --no-progress --allow-missing-secrets
 

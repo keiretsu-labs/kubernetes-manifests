@@ -1,0 +1,24 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
+  name: common
+spec:
+  metrics:
+    enable: true
+  statefulSet:
+    pod:
+      priorityClassName: "infra-high"
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
+  name: common-accept-routes
+spec:
+  tailscale:
+    acceptRoutes: true
+  metrics:
+    enable: true
+  statefulSet:
+    pod:
+      priorityClassName: "infra-high"

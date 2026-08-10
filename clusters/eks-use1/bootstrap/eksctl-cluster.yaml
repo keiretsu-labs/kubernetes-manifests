@@ -1,0 +1,49 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: eks-use1
+  region: us-east-1
+  version: "1.32"
+  tags:
+    owner: rajsinghtech
+    purpose: peer-relay-bandwidth-repro
+
+iam:
+  withOIDC: true
+
+autoModeConfig:
+  enabled: false
+
+vpc:
+  cidr: 10.80.0.0/16
+  nat:
+    gateway: Single
+  clusterEndpoints:
+    publicAccess: true
+    privateAccess: true
+
+managedNodeGroups:
+  - name: bw
+    instanceType: c5.xlarge
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 3
+    volumeSize: 40
+    privateNetworking: false
+    disableIMDSv1: true
+    iam:
+      withAddonPolicies:
+        ebs: true
+
+addons:
+  - name: vpc-cni
+    version: latest
+  - name: coredns
+    version: latest
+  - name: kube-proxy
+    version: latest
+  - name: aws-ebs-csi-driver
+    version: latest
+    wellKnownPolicies:
+      ebsCSIController: true

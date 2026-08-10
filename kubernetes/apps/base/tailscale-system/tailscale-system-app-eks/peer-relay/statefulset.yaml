@@ -1,0 +1,146 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ${LOCATION}-peer-relay
+spec:
+  replicas: 1
+  serviceName: ${LOCATION}-peer-relay
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: ${LOCATION}-peer-relay
+  template:
+    metadata:
+      labels:
+        app: ${LOCATION}-peer-relay
+    spec:
+      serviceAccountName: "tailscale"
+      initContainers:
+      - name: sysctler
+        image: "ghcr.io/tailscale/tailscale:v1.102.2"
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c"]
+        args:
+          - sysctl -w net.ipv4.ip_forward=1 && if sysctl net.ipv6.conf.all.forwarding; then sysctl -w net.ipv6.conf.all.forwarding=1; fi
+        securityContext:
+          privileged: true
+      containers:
+      - name: tailscale
+        imagePullPolicy: IfNotPresent
+        image: "ghcr.io/tailscale/tailscale:v1.102.2"
+        securityContext:
+          privileged: true
+        ports:
+        - name: metrics
+          containerPort: 9002
+          protocol: TCP
+        - name: relay
+          containerPort: 6969
+          protocol: UDP
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: TS_KUBE_SECRET
+          value: $$(POD_NAME)
+        - name: TS_STATE
+          value: kube:$$(POD_NAME)
+        - name: TS_USERSPACE
+          value: "false"
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: ts-oauth
+              key: TS_AUTHKEY
+              optional: true
+        - name: TS_ACCEPT_DNS
+          value: "true"
+        - name: TS_EXTRA_ARGS
+          value: "--advertise-tags=tag:k8s,tag:${LOCATION} --accept-routes --ssh"
+        - name: TS_ENABLE_METRICS
+          value: "true"
+        - name: TS_LOCAL_ADDR_PORT
+          value: 0.0.0.0:9002
+        - name: TS_HOSTNAME
+          value: $$(POD_NAME)
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  (
+                    sleep 20
+                    LAST=""
+                    while true; do
+                      if ! tailscale status >/dev/null 2>&1; then
+                        sleep 5
+                        continue
+                      fi
+                      EP=""
+                      if [ -s /shared/static-endpoint ]; then
+                        EP=$$(cat /shared/static-endpoint)
+                      fi
+                      if [ -n "$$EP" ] && [ "$$EP" != "$$LAST" ]; then
+                        tailscale set --relay-server-port=6969 --relay-server-static-endpoints="$$EP" && LAST="$$EP"
+                      else
+                        tailscale set --relay-server-port=6969 || true
+                      fi
+                      sleep 30
+                    done
+                  ) >/proc/1/fd/1 2>/proc/1/fd/2 &
+        volumeMounts:
+        - name: shared
+          mountPath: /shared
+      - name: endpoint-sync
+        image: alpine/k8s:1.32.0
+        imagePullPolicy: IfNotPresent
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -eu
+            SVC="${LOCATION}-peer-relay-0"
+            NS="$$POD_NAMESPACE"
+            while true; do
+              HOST=$$(kubectl -n "$$NS" get svc "$$SVC" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+              IP=$$(kubectl -n "$$NS" get svc "$$SVC" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+              EPS=""
+              if [ -n "$$IP" ]; then
+                EPS="$$IP:6969"
+              elif [ -n "$$HOST" ]; then
+                # static endpoints require IP:port — resolve NLB hostname
+                for a in $$(getent ahostsv4 "$$HOST" 2>/dev/null | awk '{print $$1}' | sort -u); do
+                  if [ -n "$$EPS" ]; then EPS="$$EPS,"; fi
+                  EPS="$$EPS$$a:6969"
+                done
+              fi
+              if [ -n "$$EPS" ]; then
+                echo "$$EPS" > /shared/static-endpoint
+              fi
+              sleep 30
+            done
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: shared
+          mountPath: /shared
+      volumes:
+      - name: shared
+        emptyDir: {}

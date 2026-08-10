@@ -18,7 +18,7 @@ usage() {
   cat <<'EOF'
 Usage:
   tools/check.sh
-  tools/check.sh <talos-ottawa|talos-robbinsdale|talos-stpetersburg>
+  tools/check.sh <talos-ottawa|talos-robbinsdale|talos-stpetersburg|eks-use1>
   tools/check.sh --quick
 EOF
 }
@@ -48,8 +48,9 @@ case "$TARGET" in
   ot|ottawa|talos-ottawa) TARGET="talos-ottawa" ;;
   rb|robbinsdale|talos-robbinsdale) TARGET="talos-robbinsdale" ;;
   sp|stpetersburg|talos-stpetersburg) TARGET="talos-stpetersburg" ;;
+  eks|eks-use1|use1) TARGET="eks-use1" ;;
   *)
-    echo "error: unknown cluster '$TARGET' (valid: talos-ottawa, talos-robbinsdale, talos-stpetersburg)" >&2
+    echo "error: unknown cluster '$TARGET' (valid: talos-ottawa, talos-robbinsdale, talos-stpetersburg, eks-use1)" >&2
     exit 2
     ;;
 esac
@@ -140,5 +141,5 @@ if [ -n "$TARGET" ]; then
   echo "✓ render OK: $TARGET"
 else
   run_capped "render" make test
-  echo "✓ render OK: talos-ottawa talos-robbinsdale talos-stpetersburg"
+  echo "✓ render OK: talos-ottawa talos-robbinsdale talos-stpetersburg eks-use1"
 fi
