@@ -108,7 +108,7 @@ spec:
         # Must be a sidecar: inotify does not cross an SMB mount, so a
         # standalone watcher deployment would see nothing.
         - name: komga-watcher
-          image: ghcr.io/gotson/komga:1.26.0
+          image: ghcr.io/gotson/komga:1.26.1
           command:
             - /bin/sh
             - -c
