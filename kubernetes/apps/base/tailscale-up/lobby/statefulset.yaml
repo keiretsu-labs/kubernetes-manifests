@@ -52,7 +52,7 @@ spec:
                 secretKeyRef:
                   name: lobby-ts-oauth
                   key: TS_OAUTH_CLIENT_SECRET
-            # User invites need users:write; API key has it (OAuth client does not).
+            # user-invites require a user-owned API key (OAuth tokens are rejected).
             - name: TS_API_KEY
               valueFrom:
                 secretKeyRef:
