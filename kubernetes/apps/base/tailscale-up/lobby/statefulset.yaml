@@ -68,7 +68,7 @@ spec:
         # Official containerboot sidecar owns Magicsock + Funnel + Serve.
         # Operator ProxyGroup does not support Funnel on secondary tailnets.
         - name: tailscale
-          image: ghcr.io/tailscale/tailscale:v1.102.1
+          image: ghcr.io/tailscale/tailscale:v1.102.2
           imagePullPolicy: IfNotPresent
           env:
             - name: TS_KUBE_SECRET
