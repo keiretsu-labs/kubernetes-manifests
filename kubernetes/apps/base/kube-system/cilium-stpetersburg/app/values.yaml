@@ -31,6 +31,9 @@ bandwidthManager:
   bbr: true
 envoy:
   enabled: true
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
 ipam:
   mode: "cluster-pool"
   operator:
@@ -67,6 +70,10 @@ operator:
         - targetLabel: cluster
           replacement: ${CLUSTER_NAME}
 rollOutCiliumPods: true
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
 localRedirectPolicy: true
 bgpControlPlane:
   enabled: true
