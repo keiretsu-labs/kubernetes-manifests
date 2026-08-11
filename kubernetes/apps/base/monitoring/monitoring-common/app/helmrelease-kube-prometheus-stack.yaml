@@ -47,6 +47,12 @@ spec:
         externalLabels:
           cluster: ${CLUSTER_NAME}
         externalUrl: https://prometheus.${COMMON_DOMAIN}
+        # The Agent WAL is an emptyDir. Bump this only when changing scrape
+        # relabeling in a way that leaves invalid historical samples queued for
+        # remote write; it deliberately rolls the stateless agent once.
+        podMetadata:
+          annotations:
+            monitoring.keiretsu.top/remote-write-wal-epoch: "2026-08-11"
         serviceMonitorSelector: {}
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false

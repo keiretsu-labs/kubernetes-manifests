@@ -26,6 +26,23 @@ spec:
               - op: add
                 path: /spec/template/spec/priorityClassName
                 value: infra-high
+          # K8GB v0.20 retains Prometheus GaugeVec labels for deleted GSLBs.
+          # This one-time, GitOps-managed rollout clears that in-memory state
+          # after moving monitoring GSLBs to Ottawa, without interrupting the
+          # separately replicated CoreDNS service.
+          - target:
+              kind: Deployment
+              name: k8gb
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: k8gb
+              spec:
+                template:
+                  metadata:
+                    annotations:
+                      monitoring.keiretsu.top/gslb-state-reset: "2026-08-11"
   values:
     k8gb:
       clusterGeoTag: "${LOCATION}"
