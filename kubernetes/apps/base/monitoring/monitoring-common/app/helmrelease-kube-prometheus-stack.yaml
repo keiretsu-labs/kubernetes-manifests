@@ -74,11 +74,11 @@ spec:
                 regex: .+_annotations
             queueConfig:
               # shard memory ≈ maxShards * (capacity + maxSamplesPerSend).
-              # A single shard repeatedly filled during synchronized scrape
-              # bursts even though Mimir accepted every batch.  Keep three warm
-              # shards so those bursts are hashed across 30k queue slots rather
-              # than stalling the WAL reader on one 10k-slot queue.
-              capacity: 10000
+              # Agents ingest 8k–20k samples/s, and a single shard repeatedly
+              # filled during synchronized scrape bursts even though Mimir
+              # accepted every batch. Keep three warm shards with enough room
+              # for a short burst instead of stalling the WAL reader.
+              capacity: 50000
               maxSamplesPerSend: 2000
               minShards: 3
               maxShards: 10
@@ -90,14 +90,14 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 1Gi
+            memory: 2Gi
           limits:
             # Agent WAL memory scales with active series. The OOM crashloop (exit
             # 137) at 2Gi was driven by ~470k of 936k series being apiserver/etcd
             # latency-histogram buckets — dropped via the kubeApiServer
-            # metricRelabelings below. That roughly halves active series, so the
-            # agent fits back under 2Gi without flapping the Mimir tenant.
-            memory: 2Gi
+            # metricRelabelings below. The filtered agents now hold ~1.8Gi at
+            # steady state, so reserve room for a bounded remote-write burst.
+            memory: 3Gi
         storageSpec:
           emptyDir: {}
 
