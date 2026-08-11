@@ -1,15 +1,14 @@
 ---
-# These suspended resources are deletion tombstones for datasources left behind
-# by the retired Loki deployment. The Grafana operator adds its finalizer while
-# suspended; remove this file in a later GitOps change to have that finalizer
-# delete each datasource by UID from the Grafana API.
+# These short-lived resources adopt datasources left behind by the retired Loki
+# deployment. The installed CRD predates spec.suspend, so they mirror the old
+# API models just long enough to gain the operator finalizer. Remove this file
+# in a later GitOps change to delete each datasource by UID from Grafana.
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
   name: retired-loki
 spec:
   allowCrossNamespaceImport: true
-  suspend: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
@@ -17,6 +16,13 @@ spec:
     name: Loki
     type: loki
     uid: loki
+    access: proxy
+    url: http://loki-gateway.loki.svc.cluster.local
+    jsonData:
+      httpHeaderName1: X-Scope-OrgID
+      maxLines: 1000
+      timeout: 60
+    editable: false
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
@@ -24,7 +30,6 @@ metadata:
   name: retired-loki-local
 spec:
   allowCrossNamespaceImport: true
-  suspend: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
@@ -32,3 +37,10 @@ spec:
     name: Loki-Ottawa
     type: loki
     uid: loki-local
+    access: proxy
+    url: http://loki-gateway.loki.svc.cluster.local
+    jsonData:
+      httpHeaderName1: X-Scope-OrgID
+      maxLines: 1000
+      timeout: 60
+    editable: false
