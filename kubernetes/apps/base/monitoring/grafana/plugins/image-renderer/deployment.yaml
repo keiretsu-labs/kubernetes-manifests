@@ -28,6 +28,9 @@ spec:
           image: docker.io/grafana/grafana-image-renderer:v5.12.0
           imagePullPolicy: IfNotPresent
           args: ["server", "--server.addr=:8081"]
+          env:
+            - name: LOG_LEVEL
+              value: debug
           ports:
             - name: renderer
               containerPort: 8081
