@@ -133,6 +133,10 @@ spec:
       allocatedMemory: 2048
 
     gateway:
+      # This is the shared ingestion and query entrypoint for all three
+      # clusters.  Two replicas preserve remote-write availability while a
+      # gateway pod rolls or its nginx ConfigMap changes.
+      replicas: 2
       # nginx.config (not nginxConfig) is the chart's values path.  Keeping the
       # exporter behind the gateway means its metrics use the existing Service
       # and avoids exposing its sidecar port directly.
