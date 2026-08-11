@@ -75,12 +75,12 @@ spec:
             queueConfig:
               # shard memory ≈ maxShards * (capacity + maxSamplesPerSend).
               # A single shard repeatedly filled during synchronized scrape
-              # bursts even though Mimir accepted every batch.  Keep two warm
-              # shards so those bursts are hashed across 20k queue slots rather
+              # bursts even though Mimir accepted every batch.  Keep three warm
+              # shards so those bursts are hashed across 30k queue slots rather
               # than stalling the WAL reader on one 10k-slot queue.
               capacity: 10000
               maxSamplesPerSend: 2000
-              minShards: 2
+              minShards: 3
               maxShards: 10
               batchSendDeadline: 5s
         topologySpreadConstraints:
