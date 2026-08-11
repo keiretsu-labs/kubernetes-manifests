@@ -36,3 +36,14 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 15m
+  patches:
+    - target:
+        group: grafana.integreatly.org
+        version: v1beta1
+        kind: GrafanaDashboard
+      patch: |-
+        apiVersion: grafana.integreatly.org/v1beta1
+        kind: GrafanaDashboard
+        metadata:
+          name: remove-without-grafana
+        $$patch: delete
