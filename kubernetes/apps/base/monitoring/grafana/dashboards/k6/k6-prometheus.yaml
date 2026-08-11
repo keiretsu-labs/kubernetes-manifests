@@ -11,6 +11,7 @@ spec:
   folder: k6
   grafanaCom:
     id: 19665
+  contentCacheDuration: "1h"
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: mimir-local

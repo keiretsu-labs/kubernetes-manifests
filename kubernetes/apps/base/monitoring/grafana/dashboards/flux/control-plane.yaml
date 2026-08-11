@@ -11,6 +11,7 @@ spec:
   resyncPeriod: "168h"
   folder: Flux
   url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/control-plane.json
+  contentCacheDuration: "1h"
   datasources:
-    - inputName: DS_MIMIR
+    - inputName: DS_PROMETHEUS
       datasourceName: mimir-local

@@ -11,3 +11,7 @@ spec:
   resyncPeriod: "168h"
   folder: Ceph
   url: https://raw.githubusercontent.com/rook/rook/v1.20.3/deploy/examples/monitoring/grafana/Ceph%20Pools%20Dashboard.json
+  contentCacheDuration: "1h"
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: mimir-local
