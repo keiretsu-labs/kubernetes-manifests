@@ -3,6 +3,9 @@ kind: GrafanaDashboard
 metadata:
   name: teslamate-internal-charge-details
   namespace: monitoring
+  annotations:
+    monitoring.keiretsu.top/source-url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/internal/charge-details.json
+    monitoring.keiretsu.top/local-patch: assign the determine_phases variable to the TeslaMate datasource
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
@@ -10,7 +13,9 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/internal/charge-details.json
+  configMapRef:
+    name: teslamate-charge-details-dashboard
+    key: dashboard.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
