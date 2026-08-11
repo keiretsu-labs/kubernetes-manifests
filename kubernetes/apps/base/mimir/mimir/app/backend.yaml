@@ -1,0 +1,13 @@
+---
+# Envoy Gateway cannot use the remote Mimir ExternalName Service directly.
+# Its FQDN resolves to the local gateway in Ottawa and to the Tailscale egress
+# proxy in the other clusters, while k8gb can still health-check the Service.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: mimir-gateway
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mimir-gateway.mimir.svc.cluster.local
+        port: 8080

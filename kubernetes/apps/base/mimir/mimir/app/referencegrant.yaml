@@ -2,16 +2,13 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: ReferenceGrant
 metadata:
-  name: agent-mimir-gateway
+  name: prometheus-cdn
 spec:
   from:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      namespace: agents
+      namespace: keiretsu-top
   to:
-    - group: ""
-      kind: Service
-      name: mimir-gateway
     - group: gateway.envoyproxy.io
       kind: Backend
       name: mimir-gateway

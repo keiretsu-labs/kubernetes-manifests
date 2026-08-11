@@ -1,0 +1,12 @@
+---
+# See ../mimir/app/backend.yaml. Ottawa resolves this FQDN to its local Mimir
+# gateway; remote clusters resolve it through their Tailscale egress proxies.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: mimir-gateway
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mimir-gateway.mimir.svc.cluster.local
+        port: 8080
