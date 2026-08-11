@@ -63,6 +63,15 @@ spec:
             headers:
               X-Scope-OrgID: ${CLUSTER_NAME}
             remoteTimeout: 30s
+            # Keep the scrape-side KSM drop above for WAL cardinality, and
+            # enforce the same bound at remote write as a final safeguard.
+            # An oversized Kubernetes annotation otherwise rejects every
+            # sample in its Mimir batch, even when a separate scrape path
+            # emits that metric family.
+            writeRelabelConfigs:
+              - action: drop
+                sourceLabels: [__name__]
+                regex: .+_annotations
             queueConfig:
               # shard memory ≈ maxShards * (capacity + maxSamplesPerSend).
               # Bound maxShards so a Mimir backlog can't balloon the agent;
