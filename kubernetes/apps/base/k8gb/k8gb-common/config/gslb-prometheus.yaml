@@ -1,4 +1,18 @@
 ---
+# Envoy Gateway does not support ExternalName Services as HTTPRoute backends.
+# Resolve the service FQDN through the cluster DNS instead: it reaches Ottawa's
+# local Mimir gateway there and the Tailscale egress proxy in the remote sites.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: mimir-gateway
+  namespace: keiretsu-top
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mimir-gateway.mimir.svc.cluster.local
+        port: 8080
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -16,17 +30,15 @@ spec:
   rules:
     # Prometheus runs in agent mode, so its local HTTP endpoint cannot answer
     # PromQL requests. Keep the public API useful by serving each site's tenant
-    # through the local Mimir gateway (an egress Service outside Ottawa).
+    # through the Mimir gateway Backend (an egress proxy outside Ottawa).
     - matches:
         - path:
             type: PathPrefix
             value: /api/v1
       backendRefs:
-        - group: ""
-          kind: Service
+        - group: gateway.envoyproxy.io
+          kind: Backend
           name: mimir-gateway
-          namespace: mimir
-          port: 8080
       filters:
         - type: RequestHeaderModifier
           requestHeaderModifier:
