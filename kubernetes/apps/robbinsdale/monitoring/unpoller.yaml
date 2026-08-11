@@ -19,3 +19,13 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
+  patches:
+    - target:
+        group: helm.toolkit.fluxcd.io
+        version: v2
+        kind: HelmRelease
+        name: unpoller
+      patch: |-
+        - op: replace
+          path: /spec/values/dashboards/create
+          value: false
