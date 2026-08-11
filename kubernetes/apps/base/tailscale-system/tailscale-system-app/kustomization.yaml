@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
   - ./secret.yaml
   - ./rbac.yaml
-  - ./peer-relay
   # - ./testing
   # - ./ds
   - ./tsddns
