@@ -41,6 +41,14 @@ spec:
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: monitoring
+            app: grafana-image-renderer
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
             app.kubernetes.io/name: prometheus-agent
             app.kubernetes.io/instance: kube-prometheus-stack
             operator.prometheus.io/name: kube-prometheus-stack
