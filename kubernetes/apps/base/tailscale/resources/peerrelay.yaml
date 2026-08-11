@@ -1,0 +1,19 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: PeerRelay
+metadata:
+  name: ${LOCATION}
+spec:
+  # Keep the existing tailnet hostname shape: <location>-peer-relay-0
+  hostnamePrefix: ${LOCATION}-peer-relay
+  replicas: 1
+  tags:
+    - tag:k8s
+    - tag:${LOCATION}
+  # Metrics + infra-high priority via the shared ProxyClass.
+  proxyClass: common
+  service:
+    annotations:
+      # PeerRelay Services do not expose spec.loadBalancerIP. Pin the
+      # historical per-site relay VIP through Cilium LB-IPAM instead.
+      lbipam.cilium.io/ips: ${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.100.100

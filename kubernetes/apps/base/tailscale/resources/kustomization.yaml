@@ -7,6 +7,7 @@ resources:
   - ./proxyclass.yaml
   - ./dnsconfig.yaml
   - ./proxygroup.yaml
+  - ./peerrelay.yaml
   - ./recorder.yaml
   - ./egress.yaml
   - ./tailnet.yaml

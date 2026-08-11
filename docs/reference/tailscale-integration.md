@@ -32,18 +32,38 @@ Auth: `get-access-token.sh`, `exchange-oidc-token.sh`, `create-oauth-client.sh`,
 test (`.github/workflows/api-tailnet-k8s-test.yml` — GitHub OIDC → ephemeral
 API-only tailnet → kind + operator → verify → cleanup).
 
-## Operator deployment (`kubernetes/apps/base/tailscale-system/`)
+## Operator deployment
 
-- API server proxy with impersonation; hostname `${LOCATION}-k8s-operator`
-- **Connector** — subnet router + app connector, 3 replicas, advertises LAN/
-  service/pod/LB CIDRs + 4via6, exit node enabled
-- **ProxyClass** `common` (metrics + ServiceMonitor), `common-accept-routes`
+Split across two bases:
+
+- `kubernetes/apps/base/tailscale/operator` — HelmRelease for
+  `tailscale/tailscale-operator` (chart/app `1.102.2`), API server proxy with
+  impersonation, hostname `${LOCATION}-k8s-operator`
+- `kubernetes/apps/base/tailscale/resources` — operator CRs in `tailscale` ns
+  (cluster-scoped CRs are fine under the Flux `targetNamespace`)
+- `kubernetes/apps/base/tailscale-system/tailscale-system-app` — companion
+  workloads (tsdnsproxy, log streaming, secrets/RBAC), **not** the operator
+
+Operator resources:
+
+- **Connector** — subnet router + app connector (2 replicas each), advertises
+  LAN/service/pod/LB CIDRs + 4via6
+- **PeerRelay** `${LOCATION}` — operator-managed peer relay (StatefulSet
+  `peerrelay-${LOCATION}` in `tailscale`). Hostname prefix
+  `${LOCATION}-peer-relay` keeps `…-peer-relay-0` on the tailnet. UDP **41641**
+  (operator default; replaces the old hand-rolled 6969 path). Stable public VIP
+  pinned via Cilium `lbipam.cilium.io/ips` →
+  `${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.100.100` because PeerRelay Services do
+  not expose `spec.loadBalancerIP`. ACLs already grant `tailscale.com/cap/relay`
+  for `group:superuser` / `tag:k8s` → `tag:k8s-operator`/`tag:k8s`.
+- **ProxyClass** `common` (metrics + ServiceMonitor), `common-accept-routes`,
+  `common-dev` / `common-unstable` / `common-userspace`
 - **ProxyGroup** `common-egress` / `common-ingress` (3 replicas each),
-  `kubernetes-${LOCATION}` for API server access
+  `${LOCATION}-k8s` for API server access
 - Cross-cluster K8s API egress services per cluster operator
 - **Recorder** — SSH session recording, S3 backend (DigitalOcean Spaces nyc3,
   bucket tailscale-ssh-recorder-keiretsu)
-- **DNSConfig** — nameserver LoadBalancer at `${CLUSTER_LOAD_BALANCER_CIDR}.69.50`
+- **DNSConfig** — nameserver LoadBalancer at site `.69.50`
 - `tailnet-readers-view` ClusterRoleBinding for read-only tailnet users
 - Custom CSI provider DaemonSet
   (`ghcr.io/rajsinghtech/tailscale/tailscale-csi-provider:dev`) — Secrets Store
