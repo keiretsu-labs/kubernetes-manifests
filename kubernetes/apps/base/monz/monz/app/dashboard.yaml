@@ -29,7 +29,13 @@ spec:
             "type": "query",
             "label": "Node",
             "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
-            "query": "fields node_name",
+            "query": {
+              "refId": "VictoriaLogsVariableQueryEditor-VariableQuery",
+              "type": "fieldValue",
+              "field": "node_name",
+              "query": "*",
+              "limit": 1000
+            },
             "includeAll": true,
             "multi": true,
             "refresh": 1
@@ -47,8 +53,8 @@ spec:
             {
               "refId": "A",
               "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
-              "query": "{node_name=~\"$node_name\"}",
-              "queryType": "range"
+              "expr": "{node_name=~\"$node_name\"}",
+              "queryType": "instant"
             }
           ],
           "options": {
@@ -72,8 +78,8 @@ spec:
             {
               "refId": "A",
               "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
-              "query": "count({node_name=~\"$node_name\"})",
-              "queryType": "range"
+              "expr": "{node_name=~\"$node_name\"} | stats count() logs_total",
+              "queryType": "stats"
             }
           ],
           "options": {
@@ -95,8 +101,8 @@ spec:
             {
               "refId": "A",
               "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
-              "query": "fields node_name",
-              "queryType": "range"
+              "expr": "{node_name=~\"$node_name\"} | stats count_uniq(node_name) unique_nodes",
+              "queryType": "stats"
             }
           ],
           "options": {
@@ -118,8 +124,8 @@ spec:
             {
               "refId": "A",
               "datasource": {"type": "victoriametrics-logs-datasource", "uid": "monz-vl"},
-              "query": "top_n(10, count_logs({node_name=~\"$node_name\"}) by (node_name))",
-              "queryType": "range",
+              "expr": "{node_name=~\"$node_name\"} | stats by (node_name) count() logs_total | sort by (logs_total desc) | limit 10",
+              "queryType": "stats",
               "format": "table"
             }
           ],
