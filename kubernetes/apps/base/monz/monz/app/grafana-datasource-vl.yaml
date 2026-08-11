@@ -7,6 +7,7 @@ metadata:
   labels:
     app.kubernetes.io/name: grafana
 spec:
+  uid: monz-vl
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -14,7 +15,6 @@ spec:
   datasource:
     name: VictoriaLogs
     type: victoriametrics-logs-datasource
-    uid: monz-vl
     access: proxy
     url: http://victoria-logs-victoria-logs-single-server.monz.svc.cluster.local:9428
     jsonData:

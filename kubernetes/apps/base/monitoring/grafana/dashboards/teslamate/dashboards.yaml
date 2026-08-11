@@ -13,7 +13,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/overview.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -30,7 +30,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/charge-level.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -47,7 +47,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/charges.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -64,7 +64,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/charging-stats.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -81,7 +81,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/drives.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -98,7 +98,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/drive-stats.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -115,7 +115,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/efficiency.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -132,7 +132,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/trip.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -149,7 +149,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/battery-health.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -166,7 +166,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/projected-range.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -183,7 +183,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/locations.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -200,7 +200,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/visited.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -217,7 +217,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/mileage.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -234,7 +234,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/states.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -251,7 +251,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/timeline.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -268,7 +268,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/updates.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -285,7 +285,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/vampire-drain.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -302,7 +302,7 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/statistics.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -319,4 +319,4 @@ spec:
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/database-info.json
   datasources:
     - inputName: DS_POSTGRES_TSLM
-      datasourceName: TeslaMate
+      datasourceName: teslamate-postgres

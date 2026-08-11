@@ -13,4 +13,4 @@ spec:
     id: 19665
   datasources:
     - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
+      datasourceName: mimir-local

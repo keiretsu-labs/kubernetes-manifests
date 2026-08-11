@@ -12,7 +12,7 @@ spec:
   folder: Ceph
   datasources:
     - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-Ottawa
+      datasourceName: mimir-ottawa
   # Vendored from the Rook v1.20.3 dashboard to replace its retired
   # Prometheus UID in panels which are not covered by datasource mappings.
   json: |

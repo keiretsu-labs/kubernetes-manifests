@@ -4,6 +4,7 @@ kind: GrafanaDatasource
 metadata:
   name: mimir
 spec:
+  uid: mimir
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -11,7 +12,6 @@ spec:
   datasource:
     name: Mimir
     type: prometheus
-    uid: mimir
     access: proxy
     url: http://mimir-gateway.mimir.svc.cluster.local:8080/prometheus
     isDefault: false

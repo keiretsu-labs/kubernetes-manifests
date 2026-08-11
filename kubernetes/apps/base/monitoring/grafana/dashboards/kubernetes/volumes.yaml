@@ -2356,4 +2356,4 @@ spec:
     }
   datasources:
     - inputName: DS_OPENSHIFT_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
+      datasourceName: mimir-local

@@ -14,7 +14,7 @@ spec:
     id: 7587
   datasources:
     - inputName: DS_SIGNCL-PROMETHEUS
-      datasourceName: Prometheus
+      datasourceName: mimir-local
 ---
 # Blackbox Exporter (HTTP prober) (id 13659).
 apiVersion: grafana.integreatly.org/v1beta1
@@ -31,7 +31,7 @@ spec:
     id: 13659
   datasources:
     - inputName: DS_PROMETHEUS
-      datasourceName: Prometheus
+      datasourceName: mimir-local
 ---
 # Prometheus Blackbox Exporter (id 14928) — alternate Prom-relabeled view.
 apiVersion: grafana.integreatly.org/v1beta1
@@ -48,7 +48,7 @@ spec:
     id: 14928
   datasources:
     - inputName: DS_PROMETHEUS
-      datasourceName: Prometheus
+      datasourceName: mimir-local
 ---
 # Blackbox Exporter Overview (id 5345) — declares its input as
 # DS_PROMETHEUS-APL (with a dash). Mapped accordingly.
@@ -66,4 +66,4 @@ spec:
     id: 5345
   datasources:
     - inputName: DS_PROMETHEUS-APL
-      datasourceName: Prometheus
+      datasourceName: mimir-local
