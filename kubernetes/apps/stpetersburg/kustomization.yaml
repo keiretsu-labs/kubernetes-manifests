@@ -20,7 +20,6 @@ resources:
   - ./lws-system
   - ./mimir
   - ./spegel
-  - ./tailbench
   - ./external-secrets
   - ./hubble-ui
   - ./open-cluster-management-agent
