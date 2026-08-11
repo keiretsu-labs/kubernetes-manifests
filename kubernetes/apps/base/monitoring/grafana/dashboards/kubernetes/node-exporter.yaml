@@ -3,14 +3,15 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
   name: node-exporter-full
+  annotations:
+    monitoring.keiretsu.top/source-url: https://grafana.com/api/dashboards/1860/revisions/45/download
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
+  resyncPeriod: "168h"
   folder: Kubernetes
-  grafanaCom:
-    id: 1860
-  datasources:
-    - inputName: DS_MIMIR
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
+  configMapRef:
+    name: node-exporter-full-dashboard
+    key: dashboard.json
