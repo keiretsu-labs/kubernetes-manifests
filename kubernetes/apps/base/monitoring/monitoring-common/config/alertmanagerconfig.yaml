@@ -31,16 +31,6 @@ spec:
       - matchers:
           - matchType: "="
             name: alertname
-            value: SmartDeviceHighTemperature
-        receiver: blackhole
-      - matchers:
-          - matchType: "="
-            name: alertname
-            value: SmartDeviceTestFailed
-        receiver: blackhole
-      - matchers:
-          - matchType: "="
-            name: alertname
             value: NodeDiskIOSaturation
         receiver: blackhole
       - matchers:
@@ -58,18 +48,13 @@ spec:
             name: alertname
             value: K8gbEndpointNoTargets
         receiver: blackhole
-      # Known Talos issues - kube-controller-manager/scheduler metrics not exposed
-      - matchers:
-          - matchType: "="
-            name: alertname
       - matchers:
           - matchType: "="
             name: alertname
             value: Watchdog
-        receiver: gatus-heartbeat
-        groupInterval: 2m
-        groupWait: 0s
-        repeatInterval: 2m30s
+        # The Gatus heartbeat endpoint was retired; retain the standard
+        # liveness alert without repeatedly delivering it to a dead webhook.
+        receiver: blackhole
       # All other alerts with severity go to Discord
       - matchers:
           - matchType: "=~"
@@ -78,15 +63,6 @@ spec:
         receiver: discord
   receivers:
     - name: blackhole
-    - name: gatus-heartbeat
-      webhookConfigs:
-        - httpConfig:
-            bearerTokenSecret:
-              name: alertmanager-secret
-              key: GATUS_HEARTBEAT_TOKEN
-          urlSecret:
-            name: alertmanager-secret
-            key: GATUS_HEARTBEAT_URL
     - discordConfigs:
         - apiURL:
             key: DISCORD_ALERTMANAGER_WEBHOOK_URL

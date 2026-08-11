@@ -18,7 +18,5 @@ resources:
   - ./gslb-forgejo.yaml
   - ./gslb-bhaiya.yaml
   - ./gslb-velero.yaml
-  - ./gslb-grafana.yaml
   - ./gslb-hubble.yaml
-  - ./gslb-victoria-logs.yaml
   - ./gslb-opencost.yaml

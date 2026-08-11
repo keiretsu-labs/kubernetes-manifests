@@ -78,3 +78,12 @@ spec:
               - op: add
                 path: /spec/resyncPeriod
                 value: "168h"
+          - target:
+              kind: GrafanaDashboard
+              name: unpoller-(uap|usg|usw)-insights
+            patch: |
+              - op: add
+                path: /spec/datasources/-
+                value:
+                  inputName: DS_UNIFI_POLLER
+                  datasourceName: Prometheus

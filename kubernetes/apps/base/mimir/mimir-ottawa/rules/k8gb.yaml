@@ -36,16 +36,6 @@ groups:
         labels:
           severity: warning
 
-      - alert: K8gbReconciliationStalled
-        expr: |
-          rate(k8gb_gslb_reconciliation_loops_total{name!="init"}[15m]) == 0
-        for: 15m
-        annotations:
-          summary: >-
-            k8gb reconciliation has stalled - no successful loops in 15 minutes.
-        labels:
-          severity: critical
-
       - alert: K8gbNoHealthyRecords
         expr: |
           k8gb_gslb_healthy_records{name!="init"} == 0

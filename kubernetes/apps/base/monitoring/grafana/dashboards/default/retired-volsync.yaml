@@ -1,0 +1,15 @@
+---
+# This suspended resource adopts the unmanaged, obsolete VolSync dashboard only
+# long enough for the Grafana operator to add its deletion finalizer. Remove it
+# in the follow-up GitOps change to prune dashboard UID cdp5agkgn4yrkc.
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: retired-volsync
+spec:
+  allowCrossNamespaceImport: true
+  suspend: true
+  uid: cdp5agkgn4yrkc
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana

@@ -27,7 +27,7 @@ spec:
             "name": "datasource",
             "type": "datasource",
             "query": "prometheus",
-            "current": { "text": "DS_PROMETHEUS", "value": "DS_PROMETHEUS" }
+            "current": { "text": "Mimir-Ottawa", "value": "mimir-ottawa" }
           },
           {
             "name": "cluster_src",
