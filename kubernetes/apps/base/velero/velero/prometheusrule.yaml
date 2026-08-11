@@ -1,0 +1,44 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: velero-rules
+spec:
+  groups:
+    - name: velero.rules
+      rules:
+        - alert: VeleroBackupFailed
+          expr: velero_backup_last_status{schedule!=""} == 0
+          for: 5m
+          annotations:
+            summary: Velero schedule {{ $labels.schedule }} last backup failed
+            description: >-
+              The most recent backup for schedule {{ $labels.schedule }} did not
+              complete successfully. Inspect the Backup object and its logs before
+              the next scheduled run.
+          labels:
+            severity: critical
+
+        - alert: VeleroBackupStale
+          expr: time() - velero_backup_last_successful_timestamp{schedule!=""} > 129600
+          for: 15m
+          annotations:
+            summary: Velero schedule {{ $labels.schedule }} has no recent successful backup
+            description: >-
+              Schedule {{ $labels.schedule }} has not completed a successful backup
+              in 36 hours. Check the schedule, BackupStorageLocation, Velero server,
+              and node-agent pods.
+          labels:
+            severity: critical
+
+        - alert: VeleroBackupWarning
+          expr: increase(velero_backup_warning_total{schedule!=""}[1h]) > 0
+          for: 5m
+          annotations:
+            summary: Velero schedule {{ $labels.schedule }} completed with warnings
+            description: >-
+              The most recent backup for schedule {{ $labels.schedule }} reported
+              warnings. A Completed phase can still mean pod volume data was skipped;
+              inspect the backup logs and confirm all intended volumes were captured.
+          labels:
+            severity: warning
