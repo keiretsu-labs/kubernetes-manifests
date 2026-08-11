@@ -7,7 +7,6 @@ metadata:
   labels:
     app.kubernetes.io/name: grafana
 spec:
-  uid: monz-vm
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -15,6 +14,7 @@ spec:
   datasource:
     name: VictoriaMetrics
     type: prometheus
+    uid: monz-vm
     access: proxy
     url: http://victoria-metrics-victoria-metrics-single-server.monz.svc.cluster.local:8428
     isDefault: true

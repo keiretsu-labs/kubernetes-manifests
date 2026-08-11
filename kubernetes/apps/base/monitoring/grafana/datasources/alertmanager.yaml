@@ -4,7 +4,6 @@ kind: GrafanaDatasource
 metadata:
   name: alertmanager
 spec:
-  uid: alertmanager
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -12,6 +11,7 @@ spec:
   datasource:
     name: Alertmanager
     type: alertmanager
+    uid: alertmanager
     access: proxy
     url: http://kube-prometheus-stack-alertmanager.monitoring.svc.cluster.local:9093
     jsonData:
