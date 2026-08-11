@@ -8,6 +8,7 @@ resources:
   - ingress-qf-ts.yaml
   - egress.yaml
   - backend.yaml
+  - gateway-servicemonitor.yaml
   - loader-job.yaml
   - referencegrant.yaml
 configMapGenerator:

@@ -74,10 +74,13 @@ spec:
                 regex: .+_annotations
             queueConfig:
               # shard memory ≈ maxShards * (capacity + maxSamplesPerSend).
-              # Bound maxShards so a Mimir backlog can't balloon the agent;
-              # keep capacity ~5x maxSamplesPerSend to avoid WAL stalls.
+              # A single shard repeatedly filled during synchronized scrape
+              # bursts even though Mimir accepted every batch.  Keep two warm
+              # shards so those bursts are hashed across 20k queue slots rather
+              # than stalling the WAL reader on one 10k-slot queue.
               capacity: 10000
               maxSamplesPerSend: 2000
+              minShards: 2
               maxShards: 10
               batchSendDeadline: 5s
         topologySpreadConstraints:
