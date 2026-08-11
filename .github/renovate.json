@@ -121,7 +121,6 @@
       "description": "Do not update runtime images independently inside generated or vendored manifests; regenerate the complete upstream bundle instead.",
       "matchDatasources": ["docker"],
       "matchFileNames": [
-        "clusters/talos-robbinsdale/flux/flux-system/gotk-components.yaml",
         "kubernetes/apps/base/agent-sandbox/agent-sandbox/app/raw-manifest.yaml",
         "kubernetes/apps/base/node-feature-discovery/nfd-common/install/intel-nfd.yaml",
         "kubernetes/apps/base/kube-system/cilium-*/app/descheduler-cronjob.yaml",
