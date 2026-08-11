@@ -1,0 +1,27 @@
+---
+# The upstream Mimir chart does not create a ServiceMonitor for its nginx
+# gateway.  Scrape the exporter that is deliberately served through /metrics
+# on the existing gateway Service so request and connection failures are
+# visible alongside the rest of the Mimir components.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mimir-gateway
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: gateway
+      app.kubernetes.io/instance: mimir
+      app.kubernetes.io/name: mimir
+  namespaceSelector:
+    matchNames:
+      - mimir
+  endpoints:
+    - port: http-metrics
+      relabelings:
+        - action: replace
+          replacement: mimir/gateway
+          targetLabel: job
+        - action: replace
+          replacement: ottawa
+          targetLabel: cluster

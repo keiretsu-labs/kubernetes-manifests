@@ -133,16 +133,20 @@ spec:
       allocatedMemory: 2048
 
     gateway:
-      nginxConfig:
-        serverSnippet: |
-          location /nginx_status {
-            stub_status on;
-            access_log off;
-          }
-          location /metrics {
-            proxy_pass http://localhost:9113/metrics;
-            access_log off;
-          }
+      # nginx.config (not nginxConfig) is the chart's values path.  Keeping the
+      # exporter behind the gateway means its metrics use the existing Service
+      # and avoids exposing its sidecar port directly.
+      nginx:
+        config:
+          serverSnippet: |
+            location /nginx_status {
+              stub_status on;
+              access_log off;
+            }
+            location /metrics {
+              proxy_pass http://localhost:9113/metrics;
+              access_log off;
+            }
       extraContainers:
         - name: nginx-exporter
           image: nginx/nginx-prometheus-exporter:1.5
