@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./monitoring.yaml
+  - ./grafana-dashboard-prune.yaml
   - ./kromgo.yaml
   - ./unpoller.yaml
   - ./blackbox-exporter.yaml
