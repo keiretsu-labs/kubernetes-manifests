@@ -4,7 +4,6 @@ metadata:
   name: teslamate-postgres
   namespace: teslamate
 spec:
-  uid: teslamate-postgres
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -18,6 +17,7 @@ spec:
   datasource:
     name: TeslaMate
     type: postgres
+    uid: teslamate-postgres
     access: proxy
     url: teslamate-postgres-rw.teslamate.svc.cluster.local:5432
     user: teslamate

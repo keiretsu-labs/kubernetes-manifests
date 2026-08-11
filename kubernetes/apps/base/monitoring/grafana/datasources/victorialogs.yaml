@@ -4,7 +4,6 @@ kind: GrafanaDatasource
 metadata:
   name: victorialogs
 spec:
-  uid: victorialogs
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
@@ -12,6 +11,7 @@ spec:
   datasource:
     name: VictoriaLogs
     type: victoriametrics-logs-datasource
+    uid: victorialogs
     access: proxy
     url: http://victoria-logs-victoria-logs-single-server.monitoring:9428
     jsonData:
