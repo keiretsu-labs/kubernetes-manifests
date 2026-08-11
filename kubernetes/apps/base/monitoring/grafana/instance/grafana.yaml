@@ -21,7 +21,7 @@ spec:
       domain: grafana.${COMMON_DOMAIN}
     rendering:
       server_url: http://grafana-image-renderer.monitoring.svc:8081/render
-      callback_url: http://grafana-service.monitoring.svc:3000/
+      callback_url: https://grafana.${COMMON_DOMAIN}
     security:
       admin_user: admin
       admin_password: "${DEFAULT_PASSWORD}"
