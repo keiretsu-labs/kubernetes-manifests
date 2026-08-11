@@ -11,9 +11,6 @@ spec:
   resyncPeriod: "168h"
   folder: TeslaMate
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/internal/charge-details.json
-  datasources:
-    - inputName: DS_POSTGRES_TSLM
-      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -28,9 +25,6 @@ spec:
   resyncPeriod: "168h"
   folder: TeslaMate
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/internal/drive-details.json
-  datasources:
-    - inputName: DS_POSTGRES_TSLM
-      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -45,9 +39,6 @@ spec:
   resyncPeriod: "168h"
   folder: TeslaMate
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/internal/home.json
-  datasources:
-    - inputName: DS_POSTGRES_TSLM
-      datasourceName: teslamate-postgres
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -62,6 +53,3 @@ spec:
   resyncPeriod: "168h"
   folder: TeslaMate
   url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/reports/dutch-tax.json
-  datasources:
-    - inputName: DS_POSTGRES_TSLM
-      datasourceName: teslamate-postgres

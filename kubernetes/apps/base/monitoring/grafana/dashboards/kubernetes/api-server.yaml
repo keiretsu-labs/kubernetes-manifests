@@ -12,6 +12,7 @@ spec:
   folder: Kubernetes
   grafanaCom:
     id: 15761
+  contentCacheDuration: "1h"
   datasources:
-    - inputName: DS_PROMETHEUS
+    - inputName: datasource
       datasourceName: mimir-local

@@ -17,7 +17,8 @@ spec:
   datasource:
     name: TeslaMate
     type: postgres
-    uid: teslamate-postgres
+    # TeslaMate's upstream dashboards reference this UID directly.
+    uid: TeslaMate
     access: proxy
     url: teslamate-postgres-rw.teslamate.svc.cluster.local:5432
     user: teslamate
