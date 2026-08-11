@@ -3,3 +3,9 @@ kind: Kustomization
 resources:
   - dashboards.yaml
   - internal-reports.yaml
+configMapGenerator:
+  - name: teslamate-charge-details-dashboard
+    files:
+      - dashboard.json=charge-details.json
+generatorOptions:
+  disableNameSuffixHash: true
