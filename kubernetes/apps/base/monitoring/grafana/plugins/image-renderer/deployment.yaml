@@ -41,6 +41,18 @@ spec:
               value: "1"
             - name: RATE_LIMIT_MAX_LIMIT
               value: "2"
+            # Grafana dashboards continue lightweight frontend/network work
+            # after their data queries settle. Keep waiting for queries, but
+            # bound the auxiliary readiness checks so rendering does not fail
+            # at the renderer's 30-second default.
+            - name: BROWSER_READINESS_TIMEOUT
+              value: 60s
+            - name: BROWSER_READINESS_GIVE_UP_ON_ALL_QUERIES
+              value: 20s
+            - name: BROWSER_READINESS_NETWORK_IDLE_TIMEOUT
+              value: 10s
+            - name: BROWSER_READINESS_DOM_HASHCODE_TIMEOUT
+              value: 10s
           ports:
             - name: renderer
               containerPort: 8081
