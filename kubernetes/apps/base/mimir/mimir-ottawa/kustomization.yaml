@@ -15,9 +15,11 @@ configMapGenerator:
   - name: mimir-rules
     files:
       - rules/blackbox.yaml
+      - rules/buzz.yaml
       - rules/flux.yaml
       - rules/garage.yaml
       - rules/k8gb.yaml
       - rules/media.yaml
       - rules/monitoring.yaml
       - rules/smartctl.yaml
+      - rules/zot.yaml

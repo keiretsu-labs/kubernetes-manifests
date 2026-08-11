@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - ./cluster.yaml
   - ./control-plane.yaml
-  - ./logs.yaml

@@ -14,3 +14,5 @@ spec:
   datasources:
     - inputName: DS_PROMETHEUS
       datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
+    - inputName: DS_EXPRESSION
+      datasourceName: __expr__

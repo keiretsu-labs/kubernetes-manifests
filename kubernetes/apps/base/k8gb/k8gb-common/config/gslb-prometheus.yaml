@@ -14,22 +14,45 @@ spec:
     - "prometheus.cdn.${COMMON_DOMAIN}"
     - "prometheus.${COMMON_DOMAIN}"
   rules:
-    - backendRefs:
+    # Prometheus runs in agent mode, so its local HTTP endpoint cannot answer
+    # PromQL requests. Keep the public API useful by serving each site's tenant
+    # through the local Mimir gateway (an egress Service outside Ottawa).
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1
+      backendRefs:
         - group: ""
           kind: Service
-          name: kube-prometheus-stack-prometheus
-          namespace: monitoring
-          port: 9090
+          name: mimir-gateway
+          namespace: mimir
+          port: 8080
       filters:
         - type: RequestHeaderModifier
           requestHeaderModifier:
             set:
               - name: X-Forwarded-Proto
                 value: https
-      matches:
+              - name: X-Scope-OrgID
+                value: ${CLUSTER_NAME}
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /prometheus/api/v1
+    # Mimir deliberately has no Prometheus web UI. Send interactive users to
+    # Grafana while preserving PromQL API compatibility above.
+    - matches:
         - path:
             type: PathPrefix
             value: /
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: "grafana.${COMMON_DOMAIN}"
+            port: 443
+            statusCode: 302
 ---
 apiVersion: k8gb.absa.oss/v1beta1
 kind: Gslb

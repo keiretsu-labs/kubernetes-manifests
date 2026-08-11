@@ -140,11 +140,13 @@ groups:
     rules:
       - alert: KubeAPILatencyHigh
         expr: |
-          histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{verb!~"WATCH|CONNECT"}[5m])) by (le, verb, resource)) > 4
+          sum(rate(apiserver_request_duration_seconds_sum{verb!~"WATCH|CONNECT"}[5m])) by (verb, resource)
+            /
+          sum(rate(apiserver_request_duration_seconds_count{verb!~"WATCH|CONNECT"}[5m])) by (verb, resource) > 4
         for: 10m
         annotations:
           summary: >-
-            Kubernetes API server has high latency for {{ $labels.verb }} {{ $labels.resource }} requests (p99 > 4s).
+            Kubernetes API server has high average latency for {{ $labels.verb }} {{ $labels.resource }} requests (> 4s).
         labels:
           severity: warning
 
