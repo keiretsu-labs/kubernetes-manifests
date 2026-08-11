@@ -7,4 +7,4 @@ resources:
   - dashboard.yaml
   - dashboard-vector.yaml
   - httproute.yaml
-  - ../referencegrant.yaml
+  - referencegrant.yaml
