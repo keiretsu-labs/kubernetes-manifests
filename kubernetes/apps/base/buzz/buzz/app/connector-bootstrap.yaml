@@ -28,7 +28,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: admit-connector
-          image: ghcr.io/block/buzz:sha-ac4fa13
+          image: ghcr.io/block/buzz:sha-5e4d0fe
           imagePullPolicy: Always
           command:
             - /bin/sh
