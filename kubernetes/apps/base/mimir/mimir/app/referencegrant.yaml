@@ -1,0 +1,17 @@
+---
+# Permit the k8gb-managed public Prometheus API route to use the local Mimir
+# gateway. On Robbinsdale and St. Petersburg this Service is the Tailscale
+# egress proxy to Ottawa; on Ottawa the equivalent grant is in mimir-ottawa.
+apiVersion: gateway.networking.k8s.io/v1
+kind: ReferenceGrant
+metadata:
+  name: prometheus-cdn
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: keiretsu-top
+  to:
+    - group: ""
+      kind: Service
+      name: mimir-gateway

@@ -13,5 +13,5 @@ spec:
   grafanaCom:
     id: 19105
   datasources:
-    - inputName: DS_MIMIR
+    - inputName: DS_PROMETHEUS
       datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}

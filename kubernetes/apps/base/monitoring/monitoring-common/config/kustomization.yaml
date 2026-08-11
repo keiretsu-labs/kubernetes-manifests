@@ -5,4 +5,3 @@ resources:
   - alertmanager-secret.sops.yaml
   - alertmanagerconfig.yaml
   - httproute.yaml
-  - referencegrant-prometheus.yaml

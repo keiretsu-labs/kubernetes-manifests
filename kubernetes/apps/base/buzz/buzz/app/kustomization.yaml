@@ -13,4 +13,3 @@ resources:
   - connector-bootstrap.yaml
   - networkpolicy.yaml
   - probe.yaml
-  - prometheusrule.yaml

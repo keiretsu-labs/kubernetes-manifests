@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: zot
 resources:
   - probes.yaml
-  - prometheusrule.yaml
   - bucket.yaml
   - egress.yaml
   - grafana-dashboard.yaml

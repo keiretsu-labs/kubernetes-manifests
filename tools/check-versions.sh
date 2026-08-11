@@ -292,15 +292,15 @@ mimir_dashboards = pathlib.Path(
     "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/dashboards.yaml"
 )
 require_equal("Grafana Mimir", [
-    ("ruler", lambda: container_image(
-        pathlib.Path("kubernetes/apps/base/mimir/mimir-ruler/app/deployment.yaml"),
-        "ruler", "grafana/mimir")),
-    ("ruler-robbinsdale", lambda: container_image(
-        pathlib.Path("kubernetes/apps/base/mimir/mimir-ruler-robbinsdale/app/deployment.yaml"),
-        "ruler", "grafana/mimir")),
-    ("mimirtool", lambda: container_image(
+    ("mimirtool-ottawa", lambda: container_image(
         pathlib.Path("kubernetes/apps/base/mimir/mimir-ottawa/loader-job.yaml"),
         "rules-ottawa", "docker.io/grafana/mimirtool")),
+    ("mimirtool-robbinsdale", lambda: container_image(
+        pathlib.Path("kubernetes/apps/base/mimir/mimir-ottawa/loader-job.yaml"),
+        "rules-robbinsdale", "docker.io/grafana/mimirtool")),
+    ("mimirtool-stpetersburg", lambda: container_image(
+        pathlib.Path("kubernetes/apps/base/mimir/mimir-ottawa/loader-job.yaml"),
+        "rules-stpetersburg", "docker.io/grafana/mimirtool")),
     *[(f"dashboard-{index}", lambda value=value: value) for index, value in enumerate(
         url_versions(
             mimir_dashboards,
