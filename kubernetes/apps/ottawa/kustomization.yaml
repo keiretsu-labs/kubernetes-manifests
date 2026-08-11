@@ -25,7 +25,6 @@ resources:
   - ./immich
   - ./k8gb
   - ./kata-containers
-  - ./kener
   - ./kro-system
   - ./kube-system
   - ./lan

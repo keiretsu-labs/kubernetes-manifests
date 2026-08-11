@@ -317,7 +317,6 @@ Cluster ingress via Gateway API:
 - `home-assistant` - Home automation
 - `lws-system` - LeaderWorkerSet (AI batch scheduling)
 - `rdma-shared-dp` - RDMA shared device plugin
-- `tailbench` - Tailscale benchmarking
 
 ## Prerequisites
 

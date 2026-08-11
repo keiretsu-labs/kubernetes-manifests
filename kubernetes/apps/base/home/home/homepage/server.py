@@ -386,12 +386,6 @@ KNOWN_SERVICES = {
         "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/grafana.svg",
         "group": "Monitoring",
     },
-    "kener": {
-        "name": "Kener",
-        "subtitle": "Public Status Page",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/kener.svg",
-        "group": "Monitoring",
-    },
     "hubble": {
         "name": "Hubble UI",
         "subtitle": "Network Observability",
@@ -432,13 +426,6 @@ KNOWN_SERVICES = {
         "name": "Kromgo",
         "subtitle": "Public Status Badges",
         "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/kubernetes.svg",
-        "group": "Monitoring",
-    },
-    "kener": {
-        "name": "Kener",
-        "subtitle": "Public Status Page",
-        "logo": "",
-        "icon": "📊",
         "group": "Monitoring",
     },
     "tinyauth": {
