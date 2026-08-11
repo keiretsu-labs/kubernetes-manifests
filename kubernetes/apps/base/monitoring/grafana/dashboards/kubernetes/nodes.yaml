@@ -3,14 +3,15 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
   name: kubernetes-nodes
+  annotations:
+    monitoring.keiretsu.top/source-url: https://grafana.com/api/dashboards/15759/revisions/40/download
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
+  resyncPeriod: "168h"
   folder: Kubernetes
-  grafanaCom:
-    id: 15759
-  datasources:
-    - inputName: DS_PROMETHEUS
-      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}
+  configMapRef:
+    name: kubernetes-nodes-dashboard
+    key: dashboard.json

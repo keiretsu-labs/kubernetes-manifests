@@ -11,3 +11,21 @@ resources:
   - volumes.yaml
   - node-exporter.yaml
   - prometheus.yaml
+configMapGenerator:
+  - name: kubernetes-global-dashboard
+    files:
+      - dashboard.json=global.json
+  - name: kubernetes-namespaces-dashboard
+    files:
+      - dashboard.json=namespaces.json
+  - name: kubernetes-nodes-dashboard
+    files:
+      - dashboard.json=nodes.json
+  - name: kubernetes-pods-dashboard
+    files:
+      - dashboard.json=pods.json
+  - name: node-exporter-full-dashboard
+    files:
+      - dashboard.json=node-exporter.json
+generatorOptions:
+  disableNameSuffixHash: true
