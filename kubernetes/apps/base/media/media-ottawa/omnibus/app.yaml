@@ -28,7 +28,7 @@ spec:
       containers:
         - name: omnibus
           # renovate: datasource=docker depName=ghcr.io/kbpersonal/omnibus
-          image: ghcr.io/kbpersonal/omnibus:v1.4.7@sha256:ec6c7a672f34f27078273e63344700de5b30f9e4e4b8d1cee75e4e1f38366a58
+          image: ghcr.io/kbpersonal/omnibus:v1.4.8@sha256:0a249c63b97cd33625ef5bd9dc251acbd888ea0420f4a2327b063cdf2d123a59
           ports:
             - name: http
               containerPort: 3000
@@ -89,7 +89,7 @@ spec:
               mountPath: /media-share
         - name: omnibus-engine
           # renovate: datasource=docker depName=ghcr.io/kbpersonal/omnibus-engine
-          image: ghcr.io/kbpersonal/omnibus-engine:v1.4.7@sha256:bec908a804f938fa22dbf146e0d832c6058da712ae5163864a64063bc005893a
+          image: ghcr.io/kbpersonal/omnibus-engine:v1.4.8@sha256:7fa8ae5bf80ee246566a385a37943cefa72b457e22346d1abf53e41ee148fb0b
           env:
             - name: DATABASE_URL
               valueFrom:
