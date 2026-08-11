@@ -218,12 +218,13 @@ spec:
           metricRelabelings:
             - targetLabel: cluster
               replacement: ${CLUSTER_NAME}
-            # Kubernetes annotations are unbounded user input. Keep the
-            # kube-state-metrics annotation families, but drop their labels so
-            # an oversized annotation cannot make the whole remote-write batch
-            # invalid for Mimir.
-            - action: labeldrop
-              regex: ^annotation_.+$
+            # Kubernetes annotations are unbounded user input and the
+            # annotation metric families have no alert or dashboard consumers.
+            # Drop them before remote write so one oversized value cannot make
+            # an entire Mimir batch invalid.
+            - action: drop
+              sourceLabels: [__name__]
+              regex: .+_annotations
 
     prometheus-node-exporter:
       priorityClassName: "infra-high"
