@@ -21,5 +21,4 @@ resources:
   - ./gslb-grafana.yaml
   - ./gslb-hubble.yaml
   - ./gslb-victoria-logs.yaml
-  - ./gslb-prometheus.yaml
   - ./gslb-opencost.yaml

@@ -1,3 +1,6 @@
+---
+# The public Prometheus-compatible endpoint is backed by central Mimir, so it
+# is deliberately published only from Ottawa alongside the Mimir gateway.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -14,8 +17,8 @@ spec:
     - "prometheus.${COMMON_DOMAIN}"
   rules:
     # Prometheus runs in agent mode, so its local HTTP endpoint cannot answer
-    # PromQL requests. Keep the public API useful by serving each site's tenant
-    # through the Mimir gateway Backend (an egress proxy outside Ottawa).
+    # PromQL requests. Serve the federated Mimir API instead; all tenants are
+    # available from the Ottawa primary, so callers see one coherent dataset.
     - matches:
         - path:
             type: PathPrefix
@@ -32,7 +35,7 @@ spec:
               - name: X-Forwarded-Proto
                 value: https
               - name: X-Scope-OrgID
-                value: ${CLUSTER_NAME}
+                value: talos-robbinsdale|talos-ottawa|talos-stpetersburg
         - type: URLRewrite
           urlRewrite:
             path:
@@ -68,9 +71,9 @@ spec:
     type: roundRobin
     dnsTtlSeconds: 30
     weight:
-      ottawa: 33
-      robbinsdale: 33
-      stpetersburg: 34
+      ottawa: 100
+      robbinsdale: 0
+      stpetersburg: 0
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
