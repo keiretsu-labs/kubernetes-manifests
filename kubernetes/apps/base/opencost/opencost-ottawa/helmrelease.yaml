@@ -34,6 +34,14 @@ spec:
           enabled: true
           additionalLabels:
             release: prometheus
+          # OpenCost exports Kubernetes annotation metric families with
+          # unbounded user-supplied values. They are not queried by any
+          # dashboard or alert, and a single oversized annotation invalidates
+          # an entire Mimir remote-write batch.
+          metricRelabelings:
+            - action: drop
+              sourceLabels: [__name__]
+              regex: .+_annotations
       prometheus:
         external:
           enabled: true
