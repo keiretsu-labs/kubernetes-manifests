@@ -86,4 +86,4 @@ spec:
                 path: /spec/datasources/-
                 value:
                   inputName: DS_UNIFI_POLLER
-                  datasourceName: Prometheus
+                  datasourceName: mimir-local

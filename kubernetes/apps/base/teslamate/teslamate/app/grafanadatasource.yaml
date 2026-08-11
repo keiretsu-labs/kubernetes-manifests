@@ -4,6 +4,7 @@ metadata:
   name: teslamate-postgres
   namespace: teslamate
 spec:
+  uid: teslamate-postgres
   allowCrossNamespaceImport: true
   instanceSelector:
     matchLabels:
