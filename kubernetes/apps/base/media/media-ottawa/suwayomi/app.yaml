@@ -113,28 +113,51 @@ spec:
             - /bin/sh
             - -c
             - |
+              log() {
+                printf '%s [komga-watcher] [%s] %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$1" "$2"
+              }
+              log_changed_files() {
+                find "$WATCH_DIR" -type f -name "*.cbz" -newer /tmp/.last_scan -print 2>/dev/null |
+                  while IFS= read -r file; do
+                    log INFO "changed_file=$file"
+                  done
+              }
               WATCH_DIR=/media-share/suwayomi-manga
               KOMGA_URL=http://komga.media.svc:25600
               KOMGA_API_KEY="$KOMGA_SCAN_API_KEY"
               LIBRARY_ID="$KOMGA_MANGA_LIBRARY_ID"
               DEBOUNCE=30
+              POLL_INTERVAL=15
               # Seed the mtime reference: `find -newer` on a missing file errors out and
               # (stderr swallowed) counts zero forever, so the scan below never fires.
               touch /tmp/.last_scan
+              log INFO "watcher started watch_dir=$WATCH_DIR library_id=$LIBRARY_ID poll_interval_seconds=$POLL_INTERVAL debounce_seconds=$DEBOUNCE"
               while true; do
-                found=$(find "$WATCH_DIR" -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
+                found=$(find "$WATCH_DIR" -type f -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
                 if [ "$found" -gt "0" ]; then
+                  log INFO "changes detected changed_file_count=$found"
+                  log_changed_files
+                  log INFO "waiting for files to settle delay_seconds=$DEBOUNCE"
                   sleep "$DEBOUNCE"
-                  still=$(find "$WATCH_DIR" -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
+                  still=$(find "$WATCH_DIR" -type f -name "*.cbz" -newer /tmp/.last_scan 2>/dev/null | wc -l)
                   if [ "$still" -gt "0" ]; then
-                    touch /tmp/.last_scan
-                    wget -q --method=POST \
+                    log INFO "settled changes changed_file_count=$still"
+                    log_changed_files
+                    log INFO "requesting library scan library_id=$LIBRARY_ID changed_file_count=$still"
+                    if wget -q --method=POST \
                       --header="X-API-Key: $KOMGA_API_KEY" \
                       "$KOMGA_URL/api/v1/libraries/$LIBRARY_ID/scan" \
-                      -O /dev/null && echo "scan triggered"
+                      -O /dev/null; then
+                      touch /tmp/.last_scan
+                      log INFO "library scan triggered library_id=$LIBRARY_ID changed_file_count=$still"
+                    else
+                      log ERROR "library scan request failed library_id=$LIBRARY_ID changed_file_count=$still"
+                    fi
+                  else
+                    log INFO "changes no longer present after settle delay; scan skipped"
                   fi
                 fi
-                sleep 15
+                sleep "$POLL_INTERVAL"
               done
           env:
             - name: KOMGA_SCAN_API_KEY
