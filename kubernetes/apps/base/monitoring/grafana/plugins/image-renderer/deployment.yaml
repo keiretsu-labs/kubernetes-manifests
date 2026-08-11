@@ -28,6 +28,19 @@ spec:
           image: docker.io/grafana/grafana-image-renderer:v5.12.0
           imagePullPolicy: IfNotPresent
           args: ["server", "--server.addr=:8081"]
+          env:
+            # Chromium needs considerably more headroom than the renderer's Go
+            # process. The old 256Mi limit OOM-killed the pod when two Grafana
+            # image requests overlapped.
+            - name: GOMEMLIMIT
+              value: 1GiB
+            # v5 otherwise admits at least three browser requests, even when
+            # cgroup memory is too small. Keep two useful concurrent renders
+            # while bounding Chromium's peak memory deterministically.
+            - name: RATE_LIMIT_MIN_LIMIT
+              value: "1"
+            - name: RATE_LIMIT_MAX_LIMIT
+              value: "2"
           ports:
             - name: renderer
               containerPort: 8081
@@ -38,11 +51,11 @@ spec:
               drop: ["ALL"]
           resources:
             requests:
-              cpu: 10m
-              memory: 64Mi
+              cpu: 100m
+              memory: 512Mi
             limits:
-              cpu: 200m
-              memory: 256Mi
+              cpu: 1
+              memory: 2Gi
           readinessProbe:
             httpGet:
               port: renderer
