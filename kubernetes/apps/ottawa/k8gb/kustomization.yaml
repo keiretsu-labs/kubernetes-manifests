@@ -5,4 +5,5 @@ resources:
   - ./namespace.yaml
   - ./k8gb.yaml
   - ./k8gb-dashboard.yaml
+  - ./k8gb-monitoring.yaml
   - ./k8gb-prometheus.yaml

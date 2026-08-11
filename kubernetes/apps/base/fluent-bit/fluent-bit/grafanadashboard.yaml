@@ -11,3 +11,6 @@ spec:
   folder: FluentBit
   grafanaCom:
     id: 7752
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: Mimir-${CLUSTER_DISPLAY_NAME}

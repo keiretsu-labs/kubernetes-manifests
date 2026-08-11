@@ -215,6 +215,17 @@ groups:
         labels:
           severity: warning
 
+      - alert: PrometheusRemoteWriteFailed
+        expr: |
+          sum by (cluster) (rate(prometheus_remote_storage_samples_failed_total[5m])) > 0
+        for: 10m
+        annotations:
+          summary: >-
+            Prometheus Agent in {{ $labels.cluster }} is dropping samples while
+            remote-writing to Mimir.
+        labels:
+          severity: critical
+
   - name: kubelet.rules
     rules:
       # Override of the upstream kube-prometheus-stack KubeletDown rule, kept

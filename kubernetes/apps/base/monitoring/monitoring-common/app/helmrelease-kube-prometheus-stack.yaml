@@ -163,8 +163,11 @@ spec:
         cAdvisorMetricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
-          - action: labeldrop
-            regex: ^id$
+          # Kata exposes both the pod cgroup and its kata_overhead cgroup with
+          # otherwise identical labels. The id label is the only distinction;
+          # dropping it merges different samples at the same scrape timestamp
+          # and Mimir rejects the remote-write batch as a duplicate series.
+          # Keep id while the metric-family drops below bound the cardinality.
           # Keep the per-pod FD ceiling and current count. Kata's virtiofsd
           # lives in the pod cgroup, so this is the low-cardinality signal
           # before a single VM loses its virtio-fs-backed mounts.
@@ -215,6 +218,12 @@ spec:
           metricRelabelings:
             - targetLabel: cluster
               replacement: ${CLUSTER_NAME}
+            # Kubernetes annotations are unbounded user input. Keep the
+            # kube-state-metrics annotation families, but drop their labels so
+            # an oversized annotation cannot make the whole remote-write batch
+            # invalid for Mimir.
+            - action: labeldrop
+              regex: ^annotation_.+$
 
     prometheus-node-exporter:
       priorityClassName: "infra-high"

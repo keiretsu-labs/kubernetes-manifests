@@ -39,7 +39,7 @@ spec:
       serviceMonitor:
         enabled: true
     dashboards:
-      enabled: true
+      enabled: false
       annotations:
         grafana_folder: VictoriaMetrics
       grafanaOperator:

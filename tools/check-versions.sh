@@ -257,7 +257,14 @@ def chart_version(path):
 def url_versions(path, pattern, expected):
     values = []
     for doc in docs(path):
-        url = doc.get("spec", {}).get("url")
+        # Vendored dashboards carry their immutable upstream URL as metadata
+        # because Grafana Operator accepts exactly one content source per CR.
+        url = (
+            doc.get("spec", {}).get("url")
+            or doc.get("metadata", {}).get("annotations", {}).get(
+                "monitoring.keiretsu.top/source-url"
+            )
+        )
         if not url:
             continue
         match = re.fullmatch(pattern, url)
