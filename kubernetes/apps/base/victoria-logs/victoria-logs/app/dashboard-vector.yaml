@@ -11,8 +11,7 @@ spec:
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana
-  # Reapply promptly while the chart-owned predecessor is pruned.
-  resyncPeriod: "5m"
+  resyncPeriod: "168h"
   folder: VictoriaMetrics
   json: |
     {
