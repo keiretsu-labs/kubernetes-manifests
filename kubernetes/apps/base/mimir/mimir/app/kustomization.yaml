@@ -4,4 +4,3 @@ kind: Kustomization
 namespace: mimir
 resources:
   - egress.yaml
-  - referencegrant.yaml
