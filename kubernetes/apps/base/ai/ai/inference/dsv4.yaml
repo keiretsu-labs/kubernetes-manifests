@@ -10,7 +10,7 @@
 # Model         : deepseek-ai/DeepSeek-V4-Flash-0731@9e165c30 (48 shards, FP8 weights)
 #
 # Key settings:
-# - --max-num-seqs 6, --max-model-len 1048576
+# - --max-num-seqs 6, --max-model-len 131072 (safe Anemll qualification profile)
 # - --enable-chunked-prefill, --enable-prefix-caching, --async-scheduling
 # - MiaAI Issue #21 tool-history, #22 long-context NVFP4, and #24 grammar hotfixes
 # - Regular CUDA graphs (breakable graphs disabled), native B12X MoE
@@ -202,7 +202,7 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 1048576 \
+              --max-model-len 131072 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
               --max-cudagraph-capture-size 36 \
               --gpu-memory-utilization 0.76 \
@@ -392,7 +392,7 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 1048576 \
+              --max-model-len 131072 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
               --max-cudagraph-capture-size 36 \
               --gpu-memory-utilization 0.76 \
