@@ -58,6 +58,21 @@ if [ "$QUICK" = 1 ] && [ -n "$TARGET" ]; then
   exit 2
 fi
 
+# Rendering resolves Helm/OCI chart sources through go-containerregistry, which
+# reads ~/.docker/config.json. On macOS that file sets `credsStore: osxkeychain`,
+# so every registry read shells out to docker-credential-osxkeychain and raises a
+# keychain prompt. Prompts nobody answers fail the fetch and surface as render
+# errors rather than auth errors, and the waiting turns a 2s render into ~2min —
+# which then reads as a flate wedge. The gate needs no registry credentials (a
+# full three-cluster render passes with an empty config), so point Docker and Helm
+# at a throwaway one. Export DOCKER_CONFIG yourself to opt back in.
+if [ -z "${DOCKER_CONFIG:-}" ]; then
+  KMAN_DOCKER_CONFIG="$(mktemp -d)"
+  trap 'rm -rf "$KMAN_DOCKER_CONFIG"' EXIT
+  export DOCKER_CONFIG="$KMAN_DOCKER_CONFIG"
+fi
+export HELM_REGISTRY_CONFIG="${HELM_REGISTRY_CONFIG:-$DOCKER_CONFIG/helm-registry.json}"
+
 # Flate occasionally wedges in a CPU spin instead of returning, which hangs the
 # gate forever. macOS ships no coreutils `timeout`, so enable job control to put
 # the render in its own process group and kill the whole group on deadline —
@@ -90,7 +105,12 @@ run_capped() {
   kill "$watchdog" 2>/dev/null || true
   wait "$watchdog" 2>/dev/null || true
 
-  if [ -s "$timedout" ]; then
+  # The watchdog's timer can elapse in the gap between the render finishing and
+  # this shell reaping it, which mislabels a completed render as a timeout and
+  # buries the real failures under "raise the budget". A render the watchdog
+  # actually killed dies from a signal, so `wait` reports 128+signum; anything
+  # lower means it exited on its own and its output is trustworthy.
+  if [ -s "$timedout" ] && [ "$rc" -ge 128 ]; then
     rm -f "$timedout"
     echo "=== $label TIMED OUT after ${CHECK_TIMEOUT}s ===" >&2
     echo "killed process group; raise the budget with KMAN_CHECK_TIMEOUT=<secs>" >&2
