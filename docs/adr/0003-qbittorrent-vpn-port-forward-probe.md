@@ -10,6 +10,15 @@ anywhere. A `qbittorrent-portforward-probe` CronJob connects to `exit_ip:forward
 from outside the tunnel every 5 minutes and restarts the VPN via the gluetun control
 server when it cannot, forcing a new draw.
 
+A single unreachable result is not enough to condemn a server, because the address the
+probe is testing moves underneath it. gluetun re-draws the forwarded port on any NAT-PMP
+lease change or tunnel restart (`external port changed: 52095 changed to 35858`), and its
+own healthcheck restarts the tunnel on its own schedule, independent of this probe. A port
+gluetun has already discarded — or one belonging to a tunnel that came back seconds ago —
+is unreachable for reasons that say nothing about the server. So the probe re-reads
+`publicip` and `portforward` before every attempt and gives up when either moved, and it
+rotates only after the same address fails two rounds a minute apart.
+
 ## Considered options
 
 Pinning `SERVER_HOSTNAMES` to servers observed to behave was rejected. The mismatch is
@@ -25,3 +34,11 @@ refreshed server list survives restarts. `VPN_PORT_FORWARDING_DOWN_COMMAND` must
 unset — pointed at the control server it deadlocks gluetun's own stop path. The probe
 exits non-zero after rotating so `QbittorrentVpnRotated` can fire, and
 `QbittorrentPortForwardProbeStale` covers the probe silently doing nothing.
+
+`QbittorrentVpnRotated` counts rotations over an hour rather than testing a failed Job for
+presence: `kube_job_status_failed` stays above zero for as long as `failedJobsHistoryLimit`
+retains the Job, so a presence check latches the alert on for days after rotation has
+converged. kube-state-metrics attaches no `cronjob` label to Job metrics, hence the
+`label_replace` that derives one from `job_name`. A worst-case run now spans two rounds plus
+the settle wait, so it must stay well inside the 5 minute schedule that
+`concurrencyPolicy: Forbid` enforces.
