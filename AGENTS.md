@@ -24,7 +24,15 @@ integration for cross-cluster networking and access.
   changed, scope it (`tools/check.sh talos-ottawa`) to keep feedback fast.
   Flate intermittently wedges in a CPU spin instead of returning, so the gate
   kills the render's whole process group after `KMAN_CHECK_TIMEOUT` seconds
-  (default 120) and exits 124. Exit 124 means retry, not a broken manifest.
+  (default 120) and exits 124. Exit 124 means retry, not a broken manifest — but
+  only when the render was actually killed; a render that exits on its own is
+  reported as a failure with its real diagnostics, never as a timeout.
+  A full three-cluster render takes ~2 seconds. If it instead crawls and reports
+  a scatter of unexplained failures, the cause is registry auth, not manifests:
+  the gate exports a throwaway `DOCKER_CONFIG` precisely so chart fetches never
+  shell out to `docker-credential-osxkeychain` and stall on macOS keychain
+  prompts. It needs no registry credentials. Don't set `DOCKER_CONFIG` yourself
+  unless you specifically want authenticated pulls.
 - **Find before you read.** Use `tools/where.sh <pattern> <file>` (grep -n)
   to locate sections, then read narrow windows. Don't re-read large files.
   All `tools/*.sh` are anchored to the repo root, so they work from any cwd —
