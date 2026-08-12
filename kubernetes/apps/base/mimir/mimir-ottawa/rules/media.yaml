@@ -22,12 +22,16 @@ groups:
         for: 5m
         annotations:
           summary: >-
-            {{ $labels.cronjob }} rotated the ProtonVPN server more than twice in an hour
+            {{ $labels.cronjob }} reports port forwarding is not working
           description: >-
-            The port-forward probe found the forwarded port unreachable from outside
-            the tunnel on two rounds a minute apart and restarted the VPN to draw a
-            new server, more than twice in the last hour. Rotation is not converging
-            on a usable exit address.
+            The port-forward probe failed more than twice in the last hour. Either it
+            found the forwarded port unreachable on two rounds a minute apart and rotated
+            the VPN without converging on a usable exit address, or gluetun has no
+            forwarded port at all — its NAT-PMP request is refused when the Proton
+            wireguard key was generated without NAT-PMP (Port Forwarding), which no
+            rotation can fix. The Job logs distinguish the two. Only clusters that
+            actually port forward run this to completion; Robbinsdale deliberately runs
+            without port forwarding and short-circuits instead.
         labels:
           severity: warning
 

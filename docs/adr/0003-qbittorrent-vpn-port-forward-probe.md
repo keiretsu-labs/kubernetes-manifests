@@ -35,6 +35,14 @@ unset — pointed at the control server it deadlocks gluetun's own stop path. Th
 exits non-zero after rotating so `QbittorrentVpnRotated` can fire, and
 `QbittorrentPortForwardProbeStale` covers the probe silently doing nothing.
 
+Ottawa is the only cluster that port forwards. Robbinsdale runs the same qBittorrent stack
+deliberately without it, so its gluetun reports `{"port":0,"ports":[]}` and its NAT-PMP
+request is refused (`10.2.0.1:5351: recvfrom: connection refused`) — expected, not a fault,
+and not something to "fix" by regenerating keys or restarting pods. Its probe therefore
+keeps treating a zero port as nothing to do. Only Ottawa's probe treats a persistent zero
+as a failure, and even there it exits non-zero *without* rotating: a refused NAT-PMP request
+is identical on every server, so rotating would restart the tunnel every 5 minutes forever.
+
 `QbittorrentVpnRotated` counts rotations over an hour rather than testing a failed Job for
 presence: `kube_job_status_failed` stays above zero for as long as `failedJobsHistoryLimit`
 retains the Job, so a presence check latches the alert on for days after rotation has
