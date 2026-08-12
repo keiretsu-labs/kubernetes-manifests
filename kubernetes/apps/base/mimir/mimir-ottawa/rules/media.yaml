@@ -4,16 +4,30 @@ groups:
       # The probe exits non-zero after it asks gluetun to re-pick a server, so a
       # failed Job means a rotation happened. One is routine; a stream of them
       # means every server being drawn has an unusable forwarded port.
+      #
+      # Count rotations in a window rather than testing a failed Job for presence:
+      # kube_job_status_failed stays >0 for as long as failedJobsHistoryLimit
+      # retains the Job, so `> 0` latches the alert on long after convergence.
+      # kube-state-metrics carries no cronjob label, hence the label_replace.
       - alert: QbittorrentVpnRotated
-        expr: kube_job_status_failed{namespace="media", job_name=~"qbittorrent(-pvt)?-portforward-probe-.*"} > 0
+        expr: >-
+          count by (cronjob) (
+            label_replace(
+              max_over_time(
+                kube_job_status_failed{namespace="media", job_name=~"qbittorrent(-pvt)?-portforward-probe-.*"}[1h]
+              ) > 0,
+              "cronjob", "$$1", "job_name", "(qbittorrent(?:-pvt)?-portforward-probe)-.*"
+            )
+          ) > 2
         for: 5m
         annotations:
           summary: >-
-            {{ $labels.job_name }} rotated the ProtonVPN server
+            {{ $labels.cronjob }} rotated the ProtonVPN server more than twice in an hour
           description: >-
-            The port-forward probe found the forwarded port unreachable from
-            outside the tunnel and restarted the VPN to draw a new server. Repeated
-            firing means rotation is not converging on a usable exit address.
+            The port-forward probe found the forwarded port unreachable from outside
+            the tunnel on two rounds a minute apart and restarted the VPN to draw a
+            new server, more than twice in the last hour. Rotation is not converging
+            on a usable exit address.
         labels:
           severity: warning
 
