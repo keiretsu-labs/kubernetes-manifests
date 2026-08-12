@@ -300,9 +300,9 @@ spec:
                 strategy: round-robin
                 session-affinity: true
               EOF
-              cat /provider/ai.yaml >> /config/config.yaml
-              tail -n +2 /provider/ai-kartik.yaml >> /config/config.yaml
-              tail -n +2 /provider/vllm.yaml >> /config/config.yaml
+              # Aperture Corp and Kartik are unavailable; vLLM is the only
+              # discovered compatible provider for this deployment.
+              cat /provider/vllm.yaml >> /config/config.yaml
           env:
             - name: API_KEY
               valueFrom:
