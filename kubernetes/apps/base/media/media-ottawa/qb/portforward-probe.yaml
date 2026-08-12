@@ -35,6 +35,8 @@ spec:
 
               first_ip=""
               first_port=""
+              prev_noport=""
+              reason=""
 
               round=1
               while [ "$${round}" -le "$${ROUNDS}" ]; do
@@ -49,72 +51,106 @@ spec:
                 port=$$(curl -sf --max-time 10 "$${API}/v1/portforward" \
                   | sed -n 's/.*"port":\([0-9]*\).*/\1/p')
 
-                if [ -z "$${ip}" ] || [ -z "$${port}" ] || [ "$${port}" = "0" ]; then
-                  echo "no exit ip or forwarded port yet (ip='$${ip}' port='$${port}') - nothing to do"
+                if [ -z "$${ip}" ] || [ -z "$${port}" ]; then
+                  echo "gluetun reported no exit ip or port (ip='$${ip}' port='$${port}') - nothing to do"
                   exit 0
                 fi
 
-                # The port-sync sidecar pushes the forwarded port into qbittorrent once a
-                # minute. Until it has, nothing is listening on that port and an
-                # unreachable result would say nothing about the vpn server.
-                listen=$$(curl -sf --max-time 10 "$${QBT}/api/v2/app/preferences" \
-                  | sed -n 's/.*"listen_port":\([0-9]*\).*/\1/p')
-                if [ "$${listen}" != "$${port}" ]; then
-                  echo "qbittorrent listens on '$${listen}', forwarded port is '$${port}' - port sync has not caught up, nothing to do"
-                  exit 0
+                # gluetun's port forwarding service exits for good when nat-pmp fails at
+                # startup ("recvfrom: connection refused") and never retries, leaving
+                # qbittorrent firewalled on its default port indefinitely. A persistent 0
+                # is therefore condemnable, not "nothing to do" — a restart re-runs port
+                # forward init. It is also briefly 0 while a rotation clears the port file,
+                # which the second round filters out.
+                noport=0
+                if [ "$${port}" = "0" ]; then
+                  noport=1
+                  reason="no forwarded port across $${ROUNDS} rounds"
+                  echo "round $${round}/$${ROUNDS}: vpn is running but gluetun has no forwarded port"
                 fi
 
-                # gluetun's own healthcheck restarts the tunnel on its own schedule, and a
-                # tunnel that came back seconds ago is not reachable yet. Only the same
-                # address condemned twice, SETTLE apart, justifies a rotation; a different
-                # address in round 2 is a different question.
-                if [ "$${round}" -gt 1 ] && { [ "$${ip}" != "$${first_ip}" ] || [ "$${port}" != "$${first_port}" ]; }; then
-                  echo "exit address changed between rounds ($${first_ip}:$${first_port} -> $${ip}:$${port}) - nothing to do"
+                if [ -n "$${prev_noport}" ] && [ "$${noport}" != "$${prev_noport}" ]; then
+                  echo "forwarded port state changed between rounds - nothing to do"
                   exit 0
                 fi
-                first_ip="$${ip}"
-                first_port="$${port}"
+                prev_noport="$${noport}"
 
-                attempt=1
-                while [ "$${attempt}" -le "$${ATTEMPTS}" ]; do
-                  # gluetun re-draws the forwarded port on any nat-pmp lease change or
-                  # tunnel restart ("external port changed: X changed to Y"). A port it has
-                  # already discarded is unreachable for a reason that says nothing about
-                  # the server, so re-read before every attempt and stop if it moved.
-                  now_ip=$$(curl -sf --max-time 10 "$${API}/v1/publicip/ip" \
-                    | sed -n 's/.*"public_ip":"\([^"]*\)".*/\1/p')
-                  now_port=$$(curl -sf --max-time 10 "$${API}/v1/portforward" \
-                    | sed -n 's/.*"port":\([0-9]*\).*/\1/p')
-                  if [ "$${now_ip}" != "$${ip}" ] || [ "$${now_port}" != "$${port}" ]; then
-                    echo "exit address changed mid-probe ($${ip}:$${port} -> $${now_ip}:$${now_port}) - nothing to do"
+                if [ "$${noport}" = "0" ]; then
+                  # The port-sync sidecar pushes the forwarded port into qbittorrent once a
+                  # minute. Until it has, nothing is listening on that port and an
+                  # unreachable result would say nothing about the vpn server.
+                  listen=$$(curl -sf --max-time 10 "$${QBT}/api/v2/app/preferences" \
+                    | sed -n 's/.*"listen_port":\([0-9]*\).*/\1/p')
+                  if [ "$${listen}" != "$${port}" ]; then
+                    echo "qbittorrent listens on '$${listen}', forwarded port is '$${port}' - port sync has not caught up, nothing to do"
                     exit 0
                   fi
 
-                  connect=$$(curl -sS --connect-timeout 5 --max-time 8 -o /dev/null \
-                    -w '%{time_connect}' "http://$${ip}:$${port}" 2>/dev/null || true)
-                  case "$${connect}" in
-                    ""|0|0.000000)
-                      echo "round $${round}/$${ROUNDS} attempt $${attempt}/$${ATTEMPTS}: $${ip}:$${port} unreachable"
-                      ;;
-                    *)
-                      echo "round $${round}/$${ROUNDS} attempt $${attempt}/$${ATTEMPTS}: $${ip}:$${port} reachable (connect $${connect}s)"
-                      exit 0
-                      ;;
-                  esac
-                  attempt=$$((attempt + 1))
-                  if [ "$${attempt}" -le "$${ATTEMPTS}" ]; then
-                    sleep 15
+                  # gluetun's own healthcheck restarts the tunnel on its own schedule, and a
+                  # tunnel that came back seconds ago is not reachable yet. Only the same
+                  # address condemned twice, SETTLE apart, justifies a rotation; a different
+                  # address in round 2 is a different question.
+                  if [ "$${round}" -gt 1 ] && { [ "$${ip}" != "$${first_ip}" ] || [ "$${port}" != "$${first_port}" ]; }; then
+                    echo "exit address changed between rounds ($${first_ip}:$${first_port} -> $${ip}:$${port}) - nothing to do"
+                    exit 0
                   fi
-                done
+                  first_ip="$${ip}"
+                  first_port="$${port}"
+                  reason="forwarded port $${ip}:$${port} unreachable across $${ROUNDS} rounds"
+
+                  attempt=1
+                  while [ "$${attempt}" -le "$${ATTEMPTS}" ]; do
+                    # gluetun re-draws the forwarded port on any nat-pmp lease change or
+                    # tunnel restart ("external port changed: X changed to Y"). A port it has
+                    # already discarded is unreachable for a reason that says nothing about
+                    # the server, so re-read before every attempt and stop if it moved.
+                    now_ip=$$(curl -sf --max-time 10 "$${API}/v1/publicip/ip" \
+                      | sed -n 's/.*"public_ip":"\([^"]*\)".*/\1/p')
+                    now_port=$$(curl -sf --max-time 10 "$${API}/v1/portforward" \
+                      | sed -n 's/.*"port":\([0-9]*\).*/\1/p')
+                    if [ "$${now_ip}" != "$${ip}" ] || [ "$${now_port}" != "$${port}" ]; then
+                      echo "exit address changed mid-probe ($${ip}:$${port} -> $${now_ip}:$${now_port}) - nothing to do"
+                      exit 0
+                    fi
+
+                    connect=$$(curl -sS --connect-timeout 5 --max-time 8 -o /dev/null \
+                      -w '%{time_connect}' "http://$${ip}:$${port}" 2>/dev/null || true)
+                    case "$${connect}" in
+                      ""|0|0.000000)
+                        echo "round $${round}/$${ROUNDS} attempt $${attempt}/$${ATTEMPTS}: $${ip}:$${port} unreachable"
+                        ;;
+                      *)
+                        echo "round $${round}/$${ROUNDS} attempt $${attempt}/$${ATTEMPTS}: $${ip}:$${port} reachable (connect $${connect}s)"
+                        exit 0
+                        ;;
+                    esac
+                    attempt=$$((attempt + 1))
+                    if [ "$${attempt}" -le "$${ATTEMPTS}" ]; then
+                      sleep 15
+                    fi
+                  done
+                fi
 
                 if [ "$${round}" -lt "$${ROUNDS}" ]; then
-                  echo "round $${round} found $${ip}:$${port} unreachable - re-confirming in $${SETTLE}s"
+                  echo "round $${round} unresolved - re-confirming in $${SETTLE}s"
                   sleep "$${SETTLE}"
                 fi
                 round=$$((round + 1))
               done
 
-              echo "forwarded port $${first_ip}:$${first_port} unreachable across $${ROUNDS} rounds - rotating vpn server"
+              # A missing forwarded port is not a bad draw, so rotating cannot fix it.
+              # gluetun's nat-pmp request is refused outright when the Proton wireguard
+              # key was generated without NAT-PMP (Port Forwarding) enabled, and every
+              # server refuses it identically. Fail so the alert fires, but leave the
+              # tunnel alone rather than restarting it every 5 minutes forever.
+              if [ "$${prev_noport}" = "1" ]; then
+                echo "$${reason} - gluetun's nat-pmp request is refused, which no restart or"
+                echo "server change can fix; regenerate the proton wireguard key with"
+                echo "NAT-PMP (Port Forwarding) enabled"
+                exit 1
+              fi
+
+              echo "$${reason} - rotating vpn server"
               curl -sS --max-time 30 -X PUT -H 'Content-Type: application/json' \
                 -d '{"status":"stopped"}' "$${API}/v1/vpn/status"
               curl -sS --max-time 60 -X PUT -H 'Content-Type: application/json' \
