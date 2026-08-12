@@ -11,6 +11,8 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: garage
+    - name: cnpg-system
+    - name: garage-keys
     - name: agent-sandbox
     - name: cert-manager
     - name: buzz
@@ -26,3 +28,10 @@ spec:
     provider: sops
     secretRef:
       name: sops-gpg
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: common-settings
+      - kind: ConfigMap
+        name: cluster-settings
+        optional: true
