@@ -8,6 +8,7 @@ machine:
       max-pods: "400"
       allowed-unsafe-sysctls: net.ipv4.ip_forward,net.ipv6.conf.all.forwarding
     extraConfig:
+      imageMaximumGCAge: "48h"
       shutdownGracePeriod: "0s"
       shutdownGracePeriodCriticalPods: "0s"
       shutdownGracePeriodByPodPriority:
