@@ -153,7 +153,7 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: miaai-hotfixes
-          image: alpine/git:v2.49.1
+          image: alpine/git:v2.54.0
           command: [sh, -c]
           args:
           - |
@@ -343,7 +343,7 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: miaai-hotfixes
-          image: alpine/git:v2.49.1
+          image: alpine/git:v2.54.0
           command: [sh, -c]
           args:
           - |
