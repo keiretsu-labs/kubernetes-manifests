@@ -75,7 +75,7 @@ COMMON_S3_ENDPOINT: "garage-gateway.garage.svc.cluster.local:3900"
 - velero, hermes, assistant-raj (reader), abtar, kartik
 - mimir, loki, kro, forgejo, zot
 - tsflow (tailscale flow logs)
-- immich, jellystat, tracearr (CNPG postgres backups via barman)
+- immich and tracearr (CNPG postgres backups via barman)
 
 **Monitoring probes** (probes.yaml): Correctly checks both storage (`garage.garage:3900`) and gateway (`garage-gateway.garage:3900`) tiers with tcp_connect and http_2xx /health checks. Cross-cluster probes use ExternalName services (`ottawa-garage.garage` etc.) — correct.
 
