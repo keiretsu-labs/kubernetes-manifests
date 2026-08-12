@@ -24,8 +24,6 @@ spec:
     monitoring:
       enabled: true
       createPrometheusRules: true
-    toolbox:
-      enabled: true
     csi:
       # Deploy the csi-addons sidecar into the RBD provisioner + nodeplugin pods.
       # Required for automatic RBD network fencing on hard node loss: when a node
