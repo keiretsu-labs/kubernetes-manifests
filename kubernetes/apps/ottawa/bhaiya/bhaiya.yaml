@@ -4,6 +4,8 @@ kind: Kustomization
 metadata:
   name: &app bhaiya
   namespace: flux-system
+  labels:
+    notifications.keiretsu.top/github-status: disabled
 spec:
   targetNamespace: bhaiya
   commonMetadata:

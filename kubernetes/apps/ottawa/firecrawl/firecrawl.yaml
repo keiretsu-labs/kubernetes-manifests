@@ -4,6 +4,8 @@ kind: Kustomization
 metadata:
   name: &app firecrawl
   namespace: flux-system
+  labels:
+    notifications.keiretsu.top/github-status: disabled
 spec:
   targetNamespace: firecrawl
   commonMetadata:
