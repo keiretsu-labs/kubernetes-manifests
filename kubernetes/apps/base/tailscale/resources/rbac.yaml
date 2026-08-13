@@ -15,6 +15,28 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name: tailnet-readers-gateway-api
+rules:
+- apiGroups: ["gateway.networking.k8s.io"]
+  resources: ["gateways", "httproutes"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tailnet-readers-gateway-api
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tailnet-readers-gateway-api
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: tailnet-readers
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
   name: tailnet-readers-ops
 rules:
 - apiGroups: ["apps"]
@@ -44,4 +66,4 @@ roleRef:
 subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: Group
-  name: tailnet-readers 
+  name: tailnet-readers
