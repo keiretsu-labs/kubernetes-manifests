@@ -6,5 +6,4 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1h
-  # renovate: datasource=github-releases depName=kubernetes-csi/csi-driver-smb
-  url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/v1.20.3/charts
+  url: https://kubernetes-csi.github.io/csi-driver-smb

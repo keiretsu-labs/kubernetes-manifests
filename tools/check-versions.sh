@@ -401,16 +401,28 @@ require_equal("TeslaMate", [
 ])
 
 csi_repo = pathlib.Path("clusters/common/flux/repositories/helm/csi-driver-smb.yaml")
-require_equal("CSI SMB", [
-    ("repository", lambda: canonical(re.search(
-        r"csi-driver-smb/(v\d+\.\d+\.\d+)/charts",
-        yaml.safe_load(csi_repo.read_text())["spec"]["url"],
-    ).group(1))),
+csi_url = yaml.safe_load(csi_repo.read_text())["spec"]["url"].rstrip("/")
+csi_charts = [
     ("ottawa-chart", lambda: chart_version(pathlib.Path(
         "kubernetes/apps/base/csi-driver-smb/csi-driver-smb-ottawa/app/helmrelease.yaml"))),
     ("robbinsdale-chart", lambda: chart_version(pathlib.Path(
         "kubernetes/apps/base/csi-driver-smb/csi-driver-smb-robbinsdale/app/helmrelease.yaml"))),
-])
+]
+if csi_url == "https://kubernetes-csi.github.io/csi-driver-smb":
+    # The upstream GitHub Pages repository is stable; chart versions are
+    # pinned and updated in the HelmReleases below.
+    require_equal("CSI SMB", csi_charts)
+else:
+    csi_release = re.search(
+        r"csi-driver-smb/(v\d+\.\d+\.\d+)/charts$", csi_url
+    )
+    if not csi_release:
+        failures.append(f"  CSI SMB: unsupported HelmRepository URL: {csi_url}")
+    else:
+        require_equal(
+            "CSI SMB",
+            [("repository", lambda: canonical(csi_release.group(1))), *csi_charts],
+        )
 
 for site in ("ottawa", "robbinsdale"):
     kometa = pathlib.Path(
