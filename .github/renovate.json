@@ -83,6 +83,7 @@
         "clusters/**/apps/cert-manager/**",
         "kubernetes/**/bootstrap/**",
         "kubernetes/apps/**/flux-system*/**",
+        "kubernetes/apps/**/cliproxy*/**",
         "kubernetes/apps/**/cilium-*/**",
         "kubernetes/apps/**/spiderpool*/**",
         "kubernetes/apps/**/multus*/**",
