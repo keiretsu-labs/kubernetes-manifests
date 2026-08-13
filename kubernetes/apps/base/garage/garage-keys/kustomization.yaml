@@ -9,4 +9,3 @@ resources:
   - mimir-key.yaml
   - bookorbit-postgres-key.yaml
   - omnibus-postgres-key.yaml
-  - bhaiya-postgres-key.yaml

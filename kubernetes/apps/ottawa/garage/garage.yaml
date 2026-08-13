@@ -31,7 +31,9 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: garage
-  path: ./kubernetes/apps/base/garage/garage-bucket
+    - name: garage-reference-grants
+    - name: garage-ottawa-reference-grants
+  path: ./kubernetes/apps/base/garage/garage-bucket-ottawa
   prune: true
   sourceRef:
     kind: GitRepository
@@ -50,7 +52,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/base/garage/garage-keys
+  path: ./kubernetes/apps/base/garage/garage-keys-ottawa
   prune: true
   sourceRef:
     kind: GitRepository

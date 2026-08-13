@@ -9,4 +9,3 @@ resources:
   - ./webhook-secret.yaml
   - ./bhaiya.yaml
   - ./bhaiya-gateway-rbac.yaml
-  - ./garage-reference-grant.yaml
