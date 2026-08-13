@@ -43,6 +43,36 @@ spec:
                   metadata:
                     annotations:
                       monitoring.keiretsu.top/gslb-state-reset: "2026-08-11"
+          # k8gb v0.20.0 accepts dnsZones[].extraPlugins in its values schema
+          # but no longer renders that field into the static Corefile. Keep the
+          # delegated CDN ACME challenge reachable until the chart restores the
+          # missing template behavior.
+          - target:
+              kind: ConfigMap
+              name: k8gb-coredns
+            patch: |
+              - op: replace
+                path: /data/Corefile
+                value: |
+                  (k8gbplugins) {
+                      errors
+                      health
+                      reload 30s 15s
+                      ready
+                      prometheus 0.0.0.0:9153
+                      forward . /etc/resolv.conf
+                      k8s_crd {
+                          filter k8gb.io/dnstype=local
+                          negttl 30
+                          loadbalance weight
+                      }
+                  }
+                  import ../dynamic/*.conf
+                  _acme-challenge.cdn.keiretsu.top:5353 {
+                      template IN ANY _acme-challenge.cdn.keiretsu.top {
+                          answer "_acme-challenge.cdn.keiretsu.top. 30 IN CNAME _acme-challenge-cdn.keiretsu.top."
+                      }
+                  }
   values:
     k8gb:
       clusterGeoTag: "${LOCATION}"
