@@ -16,7 +16,6 @@ spec:
       interval: 30m
   releaseName: valkey
   values:
-    replicaCount: 1
     auth:
       enabled: false
     dataStorage:
