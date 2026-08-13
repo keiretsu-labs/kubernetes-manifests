@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
   - ocirepository.yaml
   - helmrelease-kube-prometheus-stack.yaml
-  - service.yaml
   - egress.yaml
 configMapGenerator:
   - name: flux-kube-state-metrics-config
