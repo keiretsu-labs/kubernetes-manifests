@@ -98,7 +98,6 @@ spec:
       enabled: true
     serviceMonitor:
       enabled: true
-    logLevel: warn
     priorityClassName: "infra-critical"
 
     tolerations:
