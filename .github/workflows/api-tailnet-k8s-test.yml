@@ -83,7 +83,7 @@ jobs:
       - name: Convert and apply ACL policy
         run: |
           echo "Converting HuJSON policy to JSON..."
-          ./tailscale/scripts/convert-hujson.sh ./tailscale/cicd/policy.hujson /tmp/policy.json
+          ./tailscale/scripts/convert-hujson.sh ./tailscale/policy.hujson /tmp/policy.json
           
           echo "Applying ACL policy to tailnet..."
           ./tailscale/scripts/update-acl.sh "${{ steps.get_tailnet_token.outputs.tailnet_access_token }}" "${{ steps.create_tailnet.outputs.full_tailnet_name }}" /tmp/policy.json
@@ -111,7 +111,7 @@ jobs:
         run: |
           echo "Creating Kind cluster..."
           kind create cluster \
-            --config ./tailscale/cicd/kind-config.yaml \
+            --name tailscale-test \
             --image "$KIND_NODE_IMAGE"
           
           echo "Cluster created, waiting for it to be ready..."
