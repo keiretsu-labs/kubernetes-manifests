@@ -32,3 +32,18 @@ spec:
       name: buzz-postgres
     - kind: GarageBucket
       name: buzz-backup
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-keys-to-teaspoon-bucket
+  namespace: agents
+spec:
+  from:
+    - kind: GarageKey
+      namespace: garage
+    - kind: GarageKey
+      namespace: hermes
+  to:
+    - kind: GarageBucket
+      name: teaspoon-web-v2
