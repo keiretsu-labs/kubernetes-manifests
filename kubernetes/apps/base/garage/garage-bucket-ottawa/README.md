@@ -1,8 +1,10 @@
 # Ottawa Garage bucket migration guard
 
 `bhaiya-postgres` is a production backup bucket. The Garage operator records
-its immutable bucket identity in `status.bucketId`; it is not a writable
-`spec` field and must not be added to the manifest.
+its immutable bucket identity in `status.bucketId`. For a new bucket, omit
+`spec.bucketId`; for recovery after the Kubernetes object is lost or stuck,
+set it to the exact existing remote bucket ID before recreating the object.
+The field is immutable once the operator has established the bucket identity.
 
 The bucket and its GarageKey are explicitly excluded from Flux pruning. Keep
 that protection in place while moving either resource between Kustomizations
@@ -11,7 +13,7 @@ or changing its path. A safe migration is:
 1. Apply the destination manifest with the same name and namespace while the
    source inventory still contains the resource. Use the operator's supported
    adoption/recovery procedure to bind a recreated object to the existing
-   remote bucket; do not invent or add a `spec.bucketId` field.
+   remote bucket, setting `spec.bucketId` to the verified remote ID.
 2. Confirm the destination Kustomization has applied and the bucket/key are
    Ready.
 3. Remove the source resource only after the destination inventory owns the
