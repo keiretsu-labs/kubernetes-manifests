@@ -11,8 +11,10 @@ metadata:
 spec:
   clusterRef:
     name: garage
-  globalAlias: bhaiya-postgres
+  # Pin the pre-existing bucket so a recreate after a Kubernetes metadata
+  # incident can never create a replacement bucket under the same alias.
   bucketId: 6e81032abd8ea328a2966c2348d7e92a150904067f0e1782f93fb48ce59016f3
+  globalAlias: bhaiya-postgres
   quotas:
     maxSize: 100Gi
     maxObjects: 1000000

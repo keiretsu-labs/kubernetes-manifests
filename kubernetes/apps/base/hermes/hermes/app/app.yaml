@@ -140,22 +140,3 @@ spec:
       port: 9119
       targetPort: 9119
       protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: hermes-ts
-  annotations:
-    tailscale.com/hostname: "hermes"
-    tailscale.com/proxy-group: common-ingress
-    tailscale.com/tags: "tag:k8s"
-spec:
-  type: LoadBalancer
-  loadBalancerClass: tailscale
-  ports:
-  - name: http
-    port: 80
-    protocol: TCP
-    targetPort: 8642
-  selector:
-    app.kubernetes.io/name: hermes

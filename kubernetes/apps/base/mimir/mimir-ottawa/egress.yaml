@@ -2,17 +2,11 @@
 # The Ottawa Helm release owns the local mimir-gateway Service. This minimal
 # declaration remains in the Kustomization so Flux can relinquish the legacy
 # Tailscale egress fields without pruning and recreating the live Service.
-# Robbinsdale and St. Petersburg use the ExternalName declaration in
-# base/mimir/mimir/app/egress.yaml instead. Merge preserves the Helm-owned
-# Service spec while the explicit nulls remove the fields Flux previously
-# applied.
+# Override removes fields previously owned by this Flux Kustomization while
+# leaving Helm-owned fields on the Service intact.
 apiVersion: v1
 kind: Service
 metadata:
   name: mimir-gateway
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: Merge
-    tailscale.com/tailnet-fqdn: null
-    tailscale.com/proxy-group: null
-spec:
-  externalName: null
+    kustomize.toolkit.fluxcd.io/ssa: Override
