@@ -22,6 +22,11 @@ spec:
     name: kubernetes-manifests
   eventSeverity: info
   eventSources:
+    # Only child Kustomizations explicitly labeled enabled report GitHub
+    # commit statuses. External GitRepository sources are labeled disabled
+    # because their revisions belong to another repository.
     - kind: Kustomization
       name: '*'
       namespace: flux-system
+      matchLabels:
+        notifications.keiretsu.top/github-status: enabled
