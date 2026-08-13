@@ -5,3 +5,4 @@ resources:
   - ./velero.yaml
   - ./velero-ui.yaml
   - ./schedules
+  - ./migrations

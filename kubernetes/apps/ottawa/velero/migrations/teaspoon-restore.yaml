@@ -1,0 +1,21 @@
+apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: teaspoon-data-migration
+  namespace: velero-system
+  labels:
+    app.kubernetes.io/name: teaspoon-data-migration
+    app.kubernetes.io/part-of: bhaiya-migration
+spec:
+  backupName: hermes-backup-20260813070029
+  labelSelector:
+    matchLabels:
+      kro.run/instance-name: teaspoon-data
+  includedNamespaces:
+    - agents
+  includedResources:
+    - persistentvolumeclaims
+  namespaceMapping:
+    agents: bhaiya
+  existingResourcePolicy: update
+  restorePVs: true
