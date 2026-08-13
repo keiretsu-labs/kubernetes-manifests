@@ -5,3 +5,4 @@ namespace: gatus
 resources:
   - helmrelease.yaml
   - httproute.yaml
+  - ../../gatus/app/referencegrant.yaml
