@@ -4,7 +4,10 @@ kind: Deployment
 metadata:
   name: teaspoon
 spec:
-  replicas: 1
+  # The Discord gateway and its durable state are migrating into Bhaiya.
+  # Keep the old workload defined as a rollback anchor, but do not run two
+  # Discord connections during the cutover.
+  replicas: 0
   revisionHistoryLimit: 3
   strategy:
     type: Recreate
