@@ -18,20 +18,6 @@ spec:
   values:
     proxyGroup: "common-egress"
     services:
-      - name: robbinsdale-prometheus
-        fqdn: robbinsdale-prometheus.keiretsu.ts.net
-        ports:
-          - port: 9090
-            protocol: TCP
-          - port: 8080
-            protocol: TCP
-      - name: ottawa-prometheus
-        fqdn: ottawa-prometheus.keiretsu.ts.net
-        ports:
-          - port: 9090
-            protocol: TCP
-          - port: 8080
-            protocol: TCP
       - name: nagato
         fqdn: nagato.keiretsu.ts.net
         ports:
