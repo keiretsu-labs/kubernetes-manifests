@@ -6,7 +6,7 @@ echo "=== Testing Workflow Components ==="
 
 # Test 1: HuJSON conversion
 echo "1. Testing HuJSON to JSON conversion..."
-./tailscale/scripts/convert-hujson.sh ./tailscale/cicd/policy.hujson /tmp/test-policy.json
+./tailscale/scripts/convert-hujson.sh ./tailscale/policy.hujson /tmp/test-policy.json
 echo "✅ HuJSON conversion successful"
 
 # Test 2: Validate converted JSON
@@ -21,14 +21,14 @@ echo "3. Checking script permissions..."
 ls -la tailscale/scripts/*.sh | grep -E "^-rwx" | wc -l
 echo "✅ All scripts are executable"
 
-# Test 4: Validate Kind config
-echo "4. Validating Kind configuration..."
+# Test 4: Check Kind CLI availability
+echo "4. Checking Kind CLI availability..."
 if command -v kind >/dev/null 2>&1; then
-    kind create cluster --config ./tailscale/cicd/kind-config.yaml --dry-run 2>/dev/null || echo "Kind config syntax appears valid (dry-run not supported)"
+    kind version
 else
-    echo "Kind not installed, but config syntax appears valid"
+    echo "Kind not installed; skipping local CLI check"
 fi
-echo "✅ Kind configuration appears valid"
+echo "✅ Kind CLI check complete"
 
 # Test 5: Check required tools in workflow
 echo "5. Checking availability of required tools..."
