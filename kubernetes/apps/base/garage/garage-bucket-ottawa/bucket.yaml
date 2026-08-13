@@ -11,6 +11,7 @@ metadata:
 spec:
   clusterRef:
     name: garage
+  bucketId: 6e81032abd8ea328a2966c2348d7e92a150904067f0e1782f93fb48ce59016f3
   globalAlias: bhaiya-postgres
   quotas:
     maxSize: 100Gi
