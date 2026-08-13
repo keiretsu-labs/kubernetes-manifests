@@ -15,9 +15,6 @@ spec:
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
     includeEndpoint: false
     includeRegion: false
-    additionalData:
-      endpoint: "http://${COMMON_S3_ENDPOINT}"
-      region: "garage"
   bucketPermissions:
     - bucketRef:
         name: mimir
