@@ -4,6 +4,10 @@ kind: GarageKey
 metadata:
   name: bhaiya-postgres-key
   namespace: bhaiya
+  annotations:
+    # Keep the credential CR through Garage Kustomization migrations; the
+    # generated Secret and remote key are stateful and must be adopted in place.
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   clusterRef:
     name: garage

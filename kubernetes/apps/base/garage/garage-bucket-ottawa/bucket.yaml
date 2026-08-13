@@ -3,10 +3,16 @@ apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
   name: bhaiya-postgres
+  annotations:
+    # This bucket owns production PostgreSQL backups. Keep it in the cluster
+    # while a Flux path/inventory migration is staged, and bind the recreated
+    # CR to the existing Garage bucket instead of allowing a replacement.
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   clusterRef:
     name: garage
   globalAlias: bhaiya-postgres
+  bucketId: 6e81032abd8ea328a2966c2348d7e92a150904067f0e1782f93fb48ce59016f3
   quotas:
     maxSize: 100Gi
     maxObjects: 1000000
