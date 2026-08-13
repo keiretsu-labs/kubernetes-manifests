@@ -4,4 +4,6 @@ kind: Kustomization
 resources:
   - ./garage-cluster.yaml
   - ./garage.yaml
+  - ./garage-reference-grants.yaml
+  - ./garage-ottawa-reference-grants.yaml
   - ./namespace.yaml

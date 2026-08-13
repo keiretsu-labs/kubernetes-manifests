@@ -13,6 +13,8 @@ spec:
     name: mimir-s3
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    includeEndpoint: false
+    includeRegion: false
     additionalData:
       endpoint: "http://${COMMON_S3_ENDPOINT}"
       region: "garage"

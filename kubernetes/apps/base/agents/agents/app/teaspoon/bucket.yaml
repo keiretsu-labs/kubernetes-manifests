@@ -12,6 +12,7 @@ spec:
     maxSize: 1Gi
     maxObjects: 10000
   website:
+    enabled: true
     indexDocument: index.html
     errorDocument: error.html
   keyPermissions:

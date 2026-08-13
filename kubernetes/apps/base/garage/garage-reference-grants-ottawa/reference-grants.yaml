@@ -1,0 +1,34 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: bhaiya-postgres-bucket
+  namespace: bhaiya
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: bhaiya-postgres-key
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-keys-to-buzz-buckets
+  namespace: buzz
+spec:
+  from:
+    - kind: GarageKey
+      namespace: garage
+    - kind: GarageKey
+      namespace: hermes
+    - kind: GarageKey
+      namespace: agents
+  to:
+    - kind: GarageBucket
+      name: buzz
+    - kind: GarageBucket
+      name: buzz-postgres
+    - kind: GarageBucket
+      name: buzz-backup

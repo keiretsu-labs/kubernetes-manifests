@@ -1,0 +1,69 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-bucket-to-immich-key
+  namespace: immich
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: immich-postgres-key
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-bucket-to-media-keys
+  namespace: media
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: bookorbit-postgres-key
+    - kind: GarageKey
+      name: omnibus-postgres-key
+    - kind: GarageKey
+      name: tracearr-postgres-key
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-bucket-to-mimir-key
+  namespace: mimir
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: mimir-key
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-bucket-to-tailscale-logs-key
+  namespace: tailscale-system
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: tailscale-logs-key
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-bucket-to-tailscale-recorder-key
+  namespace: tailscale
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: tailscale-recorder-key

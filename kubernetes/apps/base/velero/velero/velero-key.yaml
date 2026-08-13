@@ -13,9 +13,8 @@ spec:
     name: velero-credentials
     accessKeyIdKey: AWS_ACCESS_KEY_ID
     secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
-    additionalData:
-      endpoint: "http://${COMMON_S3_ENDPOINT}"
-      region: garage
+    includeEndpoint: false
+    includeRegion: false
   bucketPermissions:
     - bucketRef:
         name: velero
