@@ -1,0 +1,95 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-teaspoon-web-v2
+  labels:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/component: retired-agents-cleanup
+spec:
+  activeDeadlineSeconds: 300
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: garage
+        app.kubernetes.io/component: retired-agents-cleanup
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: cleanup
+          image: docker.io/rclone/rclone:1.75.0@sha256:b06aed988cf5967de7c25be5925240983981c757f4ed1ac9d2fa659d51d60548
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -eu
+            - -c
+            - |
+              echo "Objects before cleanup:"
+              rclone lsf cleanup:teaspoon-web-v2 --recursive
+              rclone delete cleanup:teaspoon-web-v2 --rmdirs --fast-list
+              remaining="$$(rclone lsf cleanup:teaspoon-web-v2 --recursive)"
+              if [ -n "$${remaining}" ]; then
+                echo "Objects remain after cleanup:"
+                printf '%s\n' "$${remaining}"
+                exit 1
+              fi
+              echo "teaspoon-web-v2 is empty"
+          env:
+            - name: HOME
+              value: /tmp
+            - name: RCLONE_CONFIG
+              value: /tmp/rclone.conf
+            - name: RCLONE_CONFIG_CLEANUP_TYPE
+              value: s3
+            - name: RCLONE_CONFIG_CLEANUP_PROVIDER
+              value: Other
+            - name: RCLONE_CONFIG_CLEANUP_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: garage-webui-sidecar
+                  key: endpoint
+            - name: RCLONE_CONFIG_CLEANUP_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: garage-webui-sidecar
+                  key: region
+            - name: RCLONE_CONFIG_CLEANUP_FORCE_PATH_STYLE
+              value: "true"
+            - name: RCLONE_CONFIG_CLEANUP_NO_CHECK_BUCKET
+              value: "true"
+            - name: RCLONE_CONFIG_CLEANUP_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: garage-webui-sidecar
+                  key: AWS_ACCESS_KEY_ID
+            - name: RCLONE_CONFIG_CLEANUP_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: garage-webui-sidecar
+                  key: AWS_SECRET_ACCESS_KEY
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
