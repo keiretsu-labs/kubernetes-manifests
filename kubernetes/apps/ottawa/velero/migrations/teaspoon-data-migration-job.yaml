@@ -1,0 +1,112 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: teaspoon-data-migration
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: teaspoon-data-migration
+    app.kubernetes.io/part-of: bhaiya-migration
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: teaspoon-data-migration
+        app.kubernetes.io/part-of: bhaiya-migration
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  bhaiya.corp/workload: workspace
+                  bhaiya.corp/workspace: teaspoon
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsUser: 10000
+        runAsGroup: 10000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: copy
+          image: oci.cdn.keiretsu.top/corp/workspace:0.3.99
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -eu
+            - -c
+            - |
+              source=/mnt/source
+              target=/mnt/target
+
+              printf 'source_usage='
+              du -sh "$source" | cut -f1
+              printf 'target_usage_before='
+              du -sh "$target" | cut -f1
+
+              if [ -f "$source/.config/gh/hosts.yml" ]; then
+                echo 'source_github_cli_config=present'
+                sed -n -E 's/^[[:space:]]+user:[[:space:]]*(.*)$/source_github_cli_account=\1/p' "$source/.config/gh/hosts.yml" | head -1
+              else
+                echo 'source_github_cli_config=absent'
+              fi
+
+              find "$source" -xdev -type f -printf '%P\n' | sort > /tmp/source-files
+              source_files=$(wc -l < /tmp/source-files | tr -d ' ')
+              echo "source_file_count=$source_files"
+
+              # Merge the old durable home into the active home. The source
+              # claim stays read-only and remains bound in agents for rollback.
+              # Keep target-only files; source files are authoritative on name
+              # collisions. lost+found is filesystem metadata, not workspace data.
+              find "$source" -mindepth 1 -maxdepth 1 ! -name lost+found -exec cp -a {} "$target/" \;
+
+              missing=0
+              while IFS= read -r relative; do
+                if [ ! -e "$target/$relative" ] && [ ! -L "$target/$relative" ]; then
+                  echo "missing_after_copy=$relative"
+                  missing=$((missing + 1))
+                fi
+              done < /tmp/source-files
+              if [ "$missing" -ne 0 ]; then
+                echo "copy_verification=failed missing=$missing"
+                exit 1
+              fi
+
+              target_files=$(find "$target" -xdev -type f | wc -l | tr -d ' ')
+              echo "target_file_count=$target_files"
+              if [ -f "$target/.config/gh/hosts.yml" ]; then
+                echo 'target_github_cli_config=present'
+                sed -n -E 's/^[[:space:]]+user:[[:space:]]*(.*)$/target_github_cli_account=\1/p' "$target/.config/gh/hosts.yml" | head -1
+              else
+                echo 'target_github_cli_config=absent'
+              fi
+              echo 'copy_verification=passed'
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: source
+              mountPath: /mnt/source
+              readOnly: true
+            - name: target
+              mountPath: /mnt/target
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: source
+          persistentVolumeClaim:
+            claimName: teaspoon-data-migration-source
+            readOnly: true
+        - name: target
+          persistentVolumeClaim:
+            claimName: ws-teaspoon-home
+        - name: tmp
+          emptyDir: {}
