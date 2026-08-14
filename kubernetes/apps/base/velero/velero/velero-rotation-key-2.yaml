@@ -1,0 +1,24 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: velero-key-rotation-2
+  namespace: velero-system
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Velero Backup Key Rotation 2"
+  secretTemplate:
+    name: velero-credentials-rotation-2
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    includeEndpoint: false
+    includeRegion: false
+  bucketPermissions:
+    - bucketRef:
+        name: velero
+        namespace: garage
+      read: true
+      write: true
+      owner: true
