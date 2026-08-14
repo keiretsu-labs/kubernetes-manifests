@@ -12,7 +12,8 @@ spec:
     force: true
     rebootMode: default
     placement: soft
-    timeout: 30m
+    # Give the recovered cluster a fresh, slightly longer retry window.
+    timeout: 31m
     # Ensure RBD mounts are fully detached before the Talos reboot so a
     # rescheduled workload cannot inherit an orphaned kernel mapping.
     waitForVolumeDetach: true
