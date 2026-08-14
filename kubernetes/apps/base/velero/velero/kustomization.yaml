@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./bhaiya-rbac.yaml
-  - ./velero-rotation-key.yaml
   - ./velero-rotation-key-2.yaml
   - ./helmrelease.yaml
   - ./node-agent-config.yaml
