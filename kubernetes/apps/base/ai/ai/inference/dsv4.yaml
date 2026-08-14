@@ -5,20 +5,24 @@
 #
 # Architecture  : TP=2 via PyTorch mp backend, DSpark k=5 spec-decode,
 #                 NVFP4 sparse-MLA KV cache, LeaderWorkerSet gang scheduling.
-# Image         : ghcr.io/anemll/dspark-vllm-gx10:0.1.1@sha256:a83948492cf13df455170fb42885f5ef4db54fefe0feff0f841ecbff464ac9d8
-#                 (MiaAI/Anemll arm64 vLLM 0.25.2 DSpark/NVFP4/B12X runtime)
+# Image         : ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
+#                 (custom arm64 vLLM 0.21+B12X runtime with NVFP4 patches)
 # Model         : deepseek-ai/DeepSeek-V4-Flash-0731@9e165c30 (48 shards, FP8 weights)
 #
-# Key settings:
-# - --max-num-seqs 2, --max-model-len 262144 (safe Anemll 256K profile)
+# Tech2Wild-derived Stage-C NVFP4/B12X profile (upstream recipe commit 2d4820f):
+# - --max-num-seqs 6, --max-model-len 1048576 (the calibrated YaRN ceiling)
 # - --enable-chunked-prefill, --enable-prefix-caching, --async-scheduling
-# - MiaAI Issue #21 tool-history, #22 long-context NVFP4, and #24 grammar hotfixes
-# - Regular CUDA graphs (breakable graphs disabled), native B12X MoE
-# - --generation-config vllm and k=5 probabilistic DSpark decoding
+# - --reasoning-config, --default-chat-template-kwargs '{"thinking":false}'
+# - --generation-config vllm (no server-side sampling override)
+# - DSpark k=5 probabilistic drafting; B12X MoE + WO projection enabled
+# - CUDA graphs are runtime-derived: do not use an explicit capture-size flag
+# - 0.76 is the first 95Gi-cgroup qualification setting; do not assume bare-metal 0.78 transfers
+# - The existing immutable internal NVFP4 image carries the prebuilt Stage-C path; the runtime
+#   changes below move to Tech2Wild's proven 1M configuration.
 #
 # Memory guard  : 95Gi Guaranteed QoS, drop-caches init + loop sidecar,
 #                 GPU reset at startup. DSpark weights: ~79 GiB.
-#                 NVFP4 KV: starts qualification at the proven 0.76 utilization.
+#                 NVFP4 KV: 1M calibrated context at 0.78 utilization.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -152,26 +156,31 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
-        - name: miaai-hotfixes
-          image: alpine/git:v2.54.0
-          command: [sh, -c]
+        - name: dspark-overlay
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
+          command: [bash, -c]
           args:
           - |
-            set -eu
-            MIAAI_COMMIT=cbd719fe1efc874d7ff1775b0977899f3b210a30
-            git init -q /tmp/miaai
-            git -C /tmp/miaai remote add origin https://github.com/MiaAI-Lab/DeepSeek-v4-Flash-DSpark-2x-DGX-Spark.git
-            git -C /tmp/miaai fetch -q --depth 1 origin "$MIAAI_COMMIT"
-            git -C /tmp/miaai checkout -q --detach FETCH_HEAD
-            cp /tmp/miaai/patches/hotfix-encoding-dsv4-issue21.py /patches/
-            cp /tmp/miaai/patches/hotfix-nvfp4-ds-mla-issue22.sh /patches/
-            cp /tmp/miaai/patches/hotfix-dsv4-grammar-advance.sh /patches/
-            chmod 0555 /patches/*
+            set -e
+            DSPARK_OVERLAY_COMMIT=0081289d92049d15aafa666ad155b173747b10d8
+            echo "[dspark-overlay] Fetching pinned DSpark overlay $DSPARK_OVERLAY_COMMIT…"
+            git init -q /tmp/dspark-repo
+            git -C /tmp/dspark-repo remote add origin \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git
+            git -C /tmp/dspark-repo fetch -q --depth 1 origin "$DSPARK_OVERLAY_COMMIT"
+            git -C /tmp/dspark-repo checkout -q --detach FETCH_HEAD
+            echo "[dspark-overlay] Applying overlay files…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Overlay already has concurrency crash fix…"
+            # (overlay version has req_ids support, standalone would overwrite it)
+            echo "[dspark-overlay] Files applied: $(find /overlay/vllm -type f | wc -l)"
+            rm -rf /tmp/dspark-repo
           volumeMounts:
-          - { name: miaai-hotfixes, mountPath: /patches }
+          - { name: overlay-files, mountPath: /overlay }
           resources:
-            requests: { memory: "128Mi", cpu: "250m" }
-            limits: { memory: "512Mi", cpu: "1000m" }
+            requests: { memory: "2Gi", cpu: "1000m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
 
         containers:
         - name: drop-caches-loop
@@ -182,40 +191,63 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/anemll/dspark-vllm-gx10:0.1.1@sha256:a83948492cf13df455170fb42885f5ef4db54fefe0feff0f841ecbff464ac9d8
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
+            # Drop page cache immediately before weight load
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])")
-            ENCODER=/models/dsv4/encoding/encoding_dsv4.py
-            test -f "$ENCODER"
-            cp "$ENCODER" "$VLLM_DIR/tokenizers/deepseek_v4_encoding.py"
-            python3 /patches/hotfix-encoding-dsv4-issue21.py "$VLLM_DIR/tokenizers/deepseek_v4_encoding.py"
-            export VLLM_ROOT="$VLLM_DIR"
-            bash /patches/hotfix-nvfp4-ds-mla-issue22.sh
-            bash /patches/hotfix-dsv4-grammar-advance.sh
-            exec /usr/local/bin/vllm serve /models/dsv4 \
+            # Apply Tony's DSpark overlay (Keys concurrency patch + req_ids support)
+            echo "[dspark] Applying overlay with concurrency fixes…"
+            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null)
+            cp -r /overlay/vllm/* "$VLLM_DIR/"
+            # DeepSeek-V4-Flash-0731 needs the DSpark draft shared-expert w1/w3
+            # projections mapped into gate_up_proj. The pinned overlay predates
+            # this upstream fix and otherwise silently drops 12 draft tensors,
+            # collapsing speculative acceptance without affecting output quality.
+            python3 - "$VLLM_DIR/v1/spec_decode/dspark.py" <<'PY'
+            import sys
+
+            path = sys.argv[1]
+            text = open(path).read()
+            marker = '("shared_experts.gate_up_proj", ".shared_experts.w1", 0)'
+            anchor = '    ("attn.fused_wqa_wkv", ".attn.wkv", 1),\n'
+            addition = (
+                '    ("shared_experts.gate_up_proj", ".shared_experts.w1", 0),\n'
+                '    ("shared_experts.gate_up_proj", ".shared_experts.w3", 1),\n'
+            )
+            if marker not in text:
+                if anchor not in text:
+                    raise RuntimeError("DSpark stacked-parameter mapping anchor not found")
+                text = text.replace(anchor, anchor + addition, 1)
+                open(path, "w").write(text)
+            print("[ok] DSpark 0731 shared-expert w1/w3 mapping enabled")
+            PY
+            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('def validate_nvfp4_kv_cache_with_mla(self)','def _disabled_validate_nvfp4_kv_cache_with_mla(self)');t=t.replace('if self.cache_dtype == \"nvfp4_ds_mla\" and self.use_mla:','if False:');open(p,'w').write(t);print('[ok] VllmConfig nvfp4_ds_mla validator disabled')"
+            python3 -c "p='$VLLM_DIR/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[ok] attention')"
+            python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
+            echo "[dspark] Patches applied. Starting vLLM with correct 5-token DSpark block in memory-safe eager mode…"
+            exec vllm serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-0731 deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 262144 \
-              --max-num-seqs 2 --max-num-batched-tokens 2048 \
-              --max-cudagraph-capture-size 2 \
+              --max-model-len 1048576 \
+              --max-num-seqs 6 --max-num-batched-tokens 8192 \
               --gpu-memory-utilization 0.76 \
-              --enable-prefix-caching --enable-prompt-tokens-details \
-              --enable-flashinfer-autotune --async-scheduling --enable-chunked-prefill \
+              --enable-prefix-caching \
+              --enable-flashinfer-autotune \
+              --async-scheduling \
+              --enable-chunked-prefill \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
-              --default-chat-template-kwargs '{"thinking":true,"reasoning_effort":"max"}' \
+              --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
               --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
-              --moe-backend flashinfer_b12x \
               --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 25002
           ports:
@@ -224,24 +256,36 @@ spec:
           - { name: NODE_RANK, value: "0" }
           - { name: VLLM_HOST_IP, value: "192.168.74.1" }
           - { name: MASTER_ADDR, value: "192.168.74.1" }
-          # Anemll-safe set. Stage-C-only VLLM_DSPARK_* and WO-projection
-          # switches are intentionally omitted because they are no-ops on this image.
-          - { name: VLLM_USE_B12X_MOE, value: "1" }
-          - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
-          - { name: VLLM_USE_BREAKABLE_CUDAGRAPH, value: "0" }
-          - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
+          - { name: VLLM_ENGINE_READY_TIMEOUT_S, value: "3600" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: VLLM_TRITON_MLA_SPARSE, value: "1" }
+          - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
+          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
+          - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
+          - { name: VLLM_USE_NVFP4_DSPARK, value: "1" }
+          - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
+          - { name: DSPARK_SLOT_CLAMP, value: "1" }
+          # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
+          # patch). Required for --max-num-seqs > 1.
           - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
+          # DSpark agent-stability env vars (from Tony's 2026-07-03 garble-fix profile)
+          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
+          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
+          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
+          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
+          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
+          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
+          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
           - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
           - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
           - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
-          - { name: CUTE_DSL_ARCH, value: "sm_121a" }
-          - { name: TORCH_CUDA_ARCH_LIST, value: "12.1a" }
-          - { name: FLASHINFER_CUDA_ARCH_LIST, value: "12.1a" }
-          - { name: FLASHINFER_DISABLE_VERSION_CHECK, value: "1" }
-          - { name: TILELANG_CLEANUP_TEMP_FILES, value: "1" }
-          - { name: DG_JIT_USE_NVRTC, value: "0" }
-          - { name: DG_JIT_NVCC_COMPILER, value: "/usr/local/cuda/bin/nvcc" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
           - { name: NCCL_NVLS_ENABLE, value: "0" }
           - { name: NCCL_NET, value: "IB" }
@@ -267,7 +311,7 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
-          - { name: miaai-hotfixes, mountPath: /patches }
+          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -290,7 +334,7 @@ spec:
             periodSeconds: 15
             timeoutSeconds: 10
         volumes:
-        - name: miaai-hotfixes
+        - name: overlay-files
           emptyDir: {}
         - name: shm
           emptyDir:
@@ -342,26 +386,31 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
-        - name: miaai-hotfixes
-          image: alpine/git:v2.54.0
-          command: [sh, -c]
+        - name: dspark-overlay
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
+          command: [bash, -c]
           args:
           - |
-            set -eu
-            MIAAI_COMMIT=cbd719fe1efc874d7ff1775b0977899f3b210a30
-            git init -q /tmp/miaai
-            git -C /tmp/miaai remote add origin https://github.com/MiaAI-Lab/DeepSeek-v4-Flash-DSpark-2x-DGX-Spark.git
-            git -C /tmp/miaai fetch -q --depth 1 origin "$MIAAI_COMMIT"
-            git -C /tmp/miaai checkout -q --detach FETCH_HEAD
-            cp /tmp/miaai/patches/hotfix-encoding-dsv4-issue21.py /patches/
-            cp /tmp/miaai/patches/hotfix-nvfp4-ds-mla-issue22.sh /patches/
-            cp /tmp/miaai/patches/hotfix-dsv4-grammar-advance.sh /patches/
-            chmod 0555 /patches/*
+            set -e
+            DSPARK_OVERLAY_COMMIT=0081289d92049d15aafa666ad155b173747b10d8
+            echo "[dspark-overlay] Fetching pinned DSpark overlay $DSPARK_OVERLAY_COMMIT…"
+            git init -q /tmp/dspark-repo
+            git -C /tmp/dspark-repo remote add origin \
+              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git
+            git -C /tmp/dspark-repo fetch -q --depth 1 origin "$DSPARK_OVERLAY_COMMIT"
+            git -C /tmp/dspark-repo checkout -q --detach FETCH_HEAD
+            echo "[dspark-overlay] Applying overlay files…"
+            mkdir -p /overlay/vllm
+            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
+            echo "[dspark-overlay] Overlay already has concurrency crash fix…"
+            # (overlay version has req_ids support, standalone would overwrite it)
+            echo "[dspark-overlay] Files applied: $(find /overlay/vllm -type f | wc -l)"
+            rm -rf /tmp/dspark-repo
           volumeMounts:
-          - { name: miaai-hotfixes, mountPath: /patches }
+          - { name: overlay-files, mountPath: /overlay }
           resources:
-            requests: { memory: "128Mi", cpu: "250m" }
-            limits: { memory: "512Mi", cpu: "1000m" }
+            requests: { memory: "2Gi", cpu: "1000m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
 
         containers:
         - name: drop-caches-loop
@@ -372,40 +421,61 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/anemll/dspark-vllm-gx10:0.1.1@sha256:a83948492cf13df455170fb42885f5ef4db54fefe0feff0f841ecbff464ac9d8
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])")
-            ENCODER=/models/dsv4/encoding/encoding_dsv4.py
-            test -f "$ENCODER"
-            cp "$ENCODER" "$VLLM_DIR/tokenizers/deepseek_v4_encoding.py"
-            python3 /patches/hotfix-encoding-dsv4-issue21.py "$VLLM_DIR/tokenizers/deepseek_v4_encoding.py"
-            export VLLM_ROOT="$VLLM_DIR"
-            bash /patches/hotfix-nvfp4-ds-mla-issue22.sh
-            bash /patches/hotfix-dsv4-grammar-advance.sh
-            exec /usr/local/bin/vllm serve /models/dsv4 \
+            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null)
+            echo "[dspark] Applying overlay with concurrency fixes…"
+            cp -r /overlay/vllm/* "$VLLM_DIR/"
+            # DeepSeek-V4-Flash-0731 needs the DSpark draft shared-expert w1/w3
+            # projections mapped into gate_up_proj. The pinned overlay predates
+            # this upstream fix and otherwise silently drops 12 draft tensors,
+            # collapsing speculative acceptance without affecting output quality.
+            python3 - "$VLLM_DIR/v1/spec_decode/dspark.py" <<'PY'
+            import sys
+
+            path = sys.argv[1]
+            text = open(path).read()
+            marker = '("shared_experts.gate_up_proj", ".shared_experts.w1", 0)'
+            anchor = '    ("attn.fused_wqa_wkv", ".attn.wkv", 1),\n'
+            addition = (
+                '    ("shared_experts.gate_up_proj", ".shared_experts.w1", 0),\n'
+                '    ("shared_experts.gate_up_proj", ".shared_experts.w3", 1),\n'
+            )
+            if marker not in text:
+                if anchor not in text:
+                    raise RuntimeError("DSpark stacked-parameter mapping anchor not found")
+                text = text.replace(anchor, anchor + addition, 1)
+                open(path, "w").write(text)
+            print("[ok] DSpark 0731 shared-expert w1/w3 mapping enabled")
+            PY
+            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('def validate_nvfp4_kv_cache_with_mla(self)','def _disabled_validate_nvfp4_kv_cache_with_mla(self)');t=t.replace('if self.cache_dtype == \"nvfp4_ds_mla\" and self.use_mla:','if False:');open(p,'w').write(t);print('[ok] VllmConfig nvfp4_ds_mla validator disabled')"
+            python3 -c "p='$VLLM_DIR/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[ok] attention')"
+            python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
+            echo "[dspark] Patches applied. Starting vLLM worker…"
+            exec vllm serve /models/dsv4 \
               --served-model-name deepseek-v4-flash deepseek-v4-flash-0731 deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 262144 \
-              --max-num-seqs 2 --max-num-batched-tokens 2048 \
-              --max-cudagraph-capture-size 2 \
+              --max-model-len 1048576 \
+              --max-num-seqs 6 --max-num-batched-tokens 8192 \
               --gpu-memory-utilization 0.76 \
-              --enable-prefix-caching --enable-prompt-tokens-details \
-              --enable-flashinfer-autotune --async-scheduling --enable-chunked-prefill \
+              --enable-prefix-caching \
+              --enable-flashinfer-autotune \
+              --async-scheduling \
+              --enable-chunked-prefill \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
-              --default-chat-template-kwargs '{"thinking":true,"reasoning_effort":"max"}' \
+              --default-chat-template-kwargs '{"thinking":false}' \
               --generation-config vllm \
               --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
-              --moe-backend flashinfer_b12x \
               --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 25002 \
               --headless
@@ -414,24 +484,33 @@ spec:
           - { name: VLLM_HOST_IP, value: "192.168.74.2" }
           - { name: MASTER_ADDR, value: "192.168.74.1" }
           - { name: HEADLESS, value: "1" }
-          # Anemll-safe set. Stage-C-only VLLM_DSPARK_* and WO-projection
-          # switches are intentionally omitted because they are no-ops on this image.
-          - { name: VLLM_USE_B12X_MOE, value: "1" }
-          - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
-          - { name: VLLM_USE_BREAKABLE_CUDAGRAPH, value: "0" }
-          - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
+          - { name: VLLM_ENGINE_READY_TIMEOUT_S, value: "3600" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: VLLM_TRITON_MLA_SPARSE, value: "1" }
+          - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
+          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
+          - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
+          - { name: VLLM_USE_NVFP4_DSPARK, value: "1" }
+          - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
+          - { name: DSPARK_SLOT_CLAMP, value: "1" }
           - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
+          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
+          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
+          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
+          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
+          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
+          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
+          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
+          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
+          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
           - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
           - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
           - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
-          - { name: CUTE_DSL_ARCH, value: "sm_121a" }
-          - { name: TORCH_CUDA_ARCH_LIST, value: "12.1a" }
-          - { name: FLASHINFER_CUDA_ARCH_LIST, value: "12.1a" }
-          - { name: FLASHINFER_DISABLE_VERSION_CHECK, value: "1" }
-          - { name: TILELANG_CLEANUP_TEMP_FILES, value: "1" }
-          - { name: DG_JIT_USE_NVRTC, value: "0" }
-          - { name: DG_JIT_NVCC_COMPILER, value: "/usr/local/cuda/bin/nvcc" }
+          - { name: B12X_W4A16_TC_DECODE, value: "0" }
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
           - { name: NCCL_NVLS_ENABLE, value: "0" }
           - { name: NCCL_NET, value: "IB" }
@@ -457,7 +536,7 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           volumeMounts:
-          - { name: miaai-hotfixes, mountPath: /patches }
+          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -466,7 +545,7 @@ spec:
             requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
             limits: { memory: "95Gi", nvidia.com/gpu: "1" }
         volumes:
-        - name: miaai-hotfixes
+        - name: overlay-files
           emptyDir: {}
         - name: shm
           emptyDir:
