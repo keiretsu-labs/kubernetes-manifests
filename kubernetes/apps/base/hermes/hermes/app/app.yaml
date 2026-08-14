@@ -4,8 +4,8 @@ kind: Deployment
 metadata:
   name: hermes
 spec:
-  # Scaled to 0: migrated to the templated agent `teaspoon` in ns `agents`
-  # (Discord bot + tag:k8s). Only one gateway may hold the Discord token at a
+  # Scaled to 0: migrated to the Bhaiya-managed Teaspoon workspace (Discord
+  # bot + tag:k8s). Only one gateway may hold the Discord token at a
   # time, so this old non-templated app is retired. Kept in git (not deleted)
   # as a rollback anchor until teaspoon is confirmed stable.
   replicas: 0

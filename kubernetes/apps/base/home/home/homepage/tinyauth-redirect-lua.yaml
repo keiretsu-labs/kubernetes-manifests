@@ -9,8 +9,8 @@
 # it never sees the ext_authz local reply. Route-level Lua runs after and
 # can intercept and convert the 401.
 #
-# Routes in other namespaces (e.g. agents/*-hermes-web) need their own
-# per-route EnvoyExtensionPolicy replicating this logic.
+# Routes in other namespaces need their own per-route EnvoyExtensionPolicy
+# replicating this logic.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyExtensionPolicy
 metadata:
