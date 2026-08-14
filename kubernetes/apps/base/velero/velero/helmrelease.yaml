@@ -37,7 +37,7 @@ spec:
       # variables. Keep the Secret out of the chart's mounted cloud-credentials
       # file, which is only needed for file-based provider credentials.
       useSecret: false
-      extraSecretRef: velero-credentials-rotation
+      extraSecretRef: velero-credentials-rotation-2
 
     configuration:
       clientQPS: 100
