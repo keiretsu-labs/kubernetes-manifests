@@ -6,6 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   targetNamespace: agents
+  deletionPolicy: Delete
   commonMetadata:
     labels:
       app.kubernetes.io/name: agents
