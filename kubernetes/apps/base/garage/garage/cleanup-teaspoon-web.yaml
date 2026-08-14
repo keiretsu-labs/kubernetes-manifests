@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: cleanup-teaspoon-web-v2
+  name: cleanup-teaspoon-web-v2-retry-2
   annotations:
     kustomize.toolkit.fluxcd.io/force: enabled
     garage.rajsingh.info/cleanup-attempt: "2"
