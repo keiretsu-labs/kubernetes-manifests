@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: teaspoon-data-migration
+  name: teaspoon-data-migration-v2
   namespace: bhaiya
   labels:
     app.kubernetes.io/name: teaspoon-data-migration
@@ -26,9 +26,12 @@ spec:
                   bhaiya.corp/workspace: teaspoon
               topologyKey: kubernetes.io/hostname
       securityContext:
-        runAsUser: 10000
-        runAsGroup: 10000
-        runAsNonRoot: true
+        # The legacy PVC contains root-owned files created by its init
+        # containers. This one-shot, source-read-only copy job needs DAC read
+        # access to preserve those files; it has no service account or network.
+        runAsUser: 0
+        runAsGroup: 0
+        runAsNonRoot: false
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -92,6 +95,10 @@ spec:
             capabilities:
               drop:
                 - ALL
+              add:
+                - DAC_OVERRIDE
+                - DAC_READ_SEARCH
+                - FOWNER
           volumeMounts:
             - name: source
               mountPath: /mnt/source
