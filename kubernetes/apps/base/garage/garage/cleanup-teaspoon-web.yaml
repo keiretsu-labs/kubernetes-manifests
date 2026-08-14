@@ -2,6 +2,8 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: cleanup-teaspoon-web-v2
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
   labels:
     app.kubernetes.io/name: garage
     app.kubernetes.io/component: retired-agents-cleanup
@@ -32,8 +34,12 @@ spec:
             - -c
             - |
               echo "Objects before cleanup:"
-              rclone lsf cleanup:teaspoon-web-v2 --recursive
-              rclone delete cleanup:teaspoon-web-v2 --rmdirs --fast-list
+              objects="$$(rclone lsf cleanup:teaspoon-web-v2 --recursive --files-only)"
+              printf '%s\n' "$${objects}"
+              for object in $${objects}; do
+                echo "Deleting $${object}"
+                rclone deletefile "cleanup:teaspoon-web-v2/$${object}" --contimeout 10s --timeout 30s
+              done
               remaining="$$(rclone lsf cleanup:teaspoon-web-v2 --recursive)"
               if [ -n "$${remaining}" ]; then
                 echo "Objects remain after cleanup:"
