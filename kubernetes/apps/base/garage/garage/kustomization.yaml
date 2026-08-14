@@ -13,7 +13,6 @@ resources:
   - rpc-secret.yaml
   - httproute-s3.yaml
   - httproute-web.yaml
-  - referencegrant-agent-web.yaml
   - referencegrant-bhaiya-web.yaml
   - probes.yaml
   - prometheusrule.yaml

@@ -8,9 +8,6 @@ spec:
   from:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
-      namespace: agents
-    - group: gateway.envoyproxy.io
-      kind: SecurityPolicy
       namespace: home
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy

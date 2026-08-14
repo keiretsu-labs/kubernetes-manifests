@@ -7,9 +7,6 @@ spec:
   from:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      namespace: agents
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
       namespace: keiretsu-top
   to:
     - group: ""

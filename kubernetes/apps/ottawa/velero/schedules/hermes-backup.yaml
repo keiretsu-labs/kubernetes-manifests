@@ -10,5 +10,4 @@ spec:
     ttl: 168h
     includedNamespaces:
       - hermes
-      - agents
     defaultVolumesToFsBackup: true

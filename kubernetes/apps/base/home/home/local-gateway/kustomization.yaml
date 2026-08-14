@@ -13,7 +13,6 @@ resources:
   - secret.yaml
   - clienttrafficpolicy.yaml
   - certificate-s3.yaml
-  - certificate-agents.yaml
   - certificate-hermes.yaml
   - certificate-bhaiya.yaml
   - certificate-location.yaml
