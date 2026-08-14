@@ -4,6 +4,7 @@ metadata:
   name: cleanup-teaspoon-web-v2
   annotations:
     kustomize.toolkit.fluxcd.io/force: enabled
+    garage.rajsingh.info/cleanup-attempt: "2"
   labels:
     app.kubernetes.io/name: garage
     app.kubernetes.io/component: retired-agents-cleanup
