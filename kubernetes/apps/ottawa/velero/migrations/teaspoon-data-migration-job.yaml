@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: teaspoon-data-migration-v3
+  name: teaspoon-data-migration-v4
   namespace: bhaiya
   labels:
     app.kubernetes.io/name: teaspoon-data-migration
@@ -51,43 +51,80 @@ spec:
               printf 'target_usage_before='
               du -sh "$target" | cut -f1
 
-              if [ -f "$source/.config/gh/hosts.yml" ]; then
+              # The source is a Velero-restored snapshot and remains read-only.
+              # The active workspace must be quiesced while this job runs so
+              # SQLite sidecars and other durable files cannot change during
+              # the copy. Keep target-only files for rollback-safe merging.
+              # lost+found is filesystem metadata, not workspace data.
+              find "$source" -xdev -mindepth 1 ! -path "$source/lost+found" ! -path "$source/lost+found/*" -printf '%y %P\n' | sort > /tmp/source-entries
+              find "$source" -xdev -type f ! -path "$source/lost+found/*" -printf '%s %P\n' | sort > /tmp/source-files
+              source_entries=$(wc -l < /tmp/source-entries | tr -d ' ')
+              source_files=$(wc -l < /tmp/source-files | tr -d ' ')
+              echo "source_entry_count=$source_entries"
+              echo "source_file_count=$source_files"
+
+              tar -C "$source" --exclude='./lost+found' -cf - . | tar -C "$target" -xpf -
+
+              # gh historically lived below a nested home directory in the
+              # restored PVC. Normalize it to the active image's XDG path so
+              # an ordinary `gh` invocation uses the migrated account.
+              gh_user() {
+                awk '$1 == "user:" { print $2; exit }' "$1"
+              }
+              source_gh=''
+              for candidate in "$source/.config/gh/hosts.yml" "$source/home/.config/gh/hosts.yml"; do
+                if [ -f "$candidate" ]; then
+                  source_gh="$candidate"
+                  break
+                fi
+              done
+              if [ -n "$source_gh" ]; then
                 echo 'source_github_cli_config=present'
-                sed -n -E 's/^[[:space:]]+user:[[:space:]]*(.*)$/source_github_cli_account=\1/p' "$source/.config/gh/hosts.yml" | head -1
+                source_account=$(gh_user "$source_gh")
+                echo "source_github_cli_account=$source_account"
+                if [ "$source_account" != 'rajsinghtechbot' ]; then
+                  echo 'github_cli_account_mismatch=source'
+                  exit 1
+                fi
+                mkdir -p "$target/.config/gh"
+                cp -a "$(dirname "$source_gh")/." "$target/.config/gh/"
               else
                 echo 'source_github_cli_config=absent'
               fi
 
-              find "$source" -xdev -type f -printf '%P\n' | sort > /tmp/source-files
-              source_files=$(wc -l < /tmp/source-files | tr -d ' ')
-              echo "source_file_count=$source_files"
-
-              # Merge the old durable home into the active home. The source
-              # claim stays read-only and remains bound in agents for rollback.
-              # Keep target-only files; source files are authoritative on name
-              # collisions. lost+found is filesystem metadata, not workspace data.
-              find "$source" -mindepth 1 -maxdepth 1 ! -name lost+found -exec cp -a {} "$target/" \;
-
-              missing=0
-              while IFS= read -r relative; do
-                if [ ! -e "$target/$relative" ] && [ ! -L "$target/$relative" ]; then
-                  echo "missing_after_copy=$relative"
-                  missing=$((missing + 1))
-                fi
-              done < /tmp/source-files
-              if [ "$missing" -ne 0 ]; then
-                echo "copy_verification=failed missing=$missing"
+              if [ ! -f "$target/.config/gh/hosts.yml" ]; then
+                for candidate in "$target/home/.config/gh/hosts.yml" "$target/.config/gh/hosts.yml"; do
+                  if [ -f "$candidate" ]; then
+                    mkdir -p "$target/.config/gh"
+                    cp -a "$(dirname "$candidate")/." "$target/.config/gh/"
+                    break
+                  fi
+                done
+              fi
+              if [ ! -f "$target/.config/gh/hosts.yml" ]; then
+                echo 'target_github_cli_config=absent'
+                exit 1
+              fi
+              target_account=$(gh_user "$target/.config/gh/hosts.yml")
+              echo 'target_github_cli_config=present'
+              echo "target_github_cli_account=$target_account"
+              if [ "$target_account" != 'rajsinghtechbot' ]; then
+                echo 'github_cli_account_mismatch=target'
                 exit 1
               fi
 
-              target_files=$(find "$target" -xdev -type f | wc -l | tr -d ' ')
-              echo "target_file_count=$target_files"
-              if [ -f "$target/.config/gh/hosts.yml" ]; then
-                echo 'target_github_cli_config=present'
-                sed -n -E 's/^[[:space:]]+user:[[:space:]]*(.*)$/target_github_cli_account=\1/p' "$target/.config/gh/hosts.yml" | head -1
-              else
-                echo 'target_github_cli_config=absent'
+              find "$target" -xdev -mindepth 1 ! -path "$target/lost+found" ! -path "$target/lost+found/*" -printf '%y %P\n' | sort > /tmp/target-entries
+              find "$target" -xdev -type f ! -path "$target/lost+found/*" -printf '%s %P\n' | sort > /tmp/target-files
+              missing_entries=$(comm -23 /tmp/source-entries /tmp/target-entries)
+              missing_files=$(comm -23 /tmp/source-files /tmp/target-files)
+              if [ -n "$missing_entries" ] || [ -n "$missing_files" ]; then
+                printf '%s\n' "$missing_entries" | sed '/^$/d' | head -20 | sed 's/^/missing_after_copy=/'
+                printf '%s\n' "$missing_files" | sed '/^$/d' | head -20 | sed 's/^/file_mismatch_after_copy=/'
+                echo 'copy_verification=failed'
+                exit 1
               fi
+              target_files=$(wc -l < /tmp/target-files | tr -d ' ')
+              echo "target_file_count=$target_files"
               echo 'copy_verification=passed'
           securityContext:
             allowPrivilegeEscalation: false
