@@ -63,7 +63,15 @@ spec:
               echo "source_entry_count=$source_entries"
               echo "source_file_count=$source_files"
 
-              tar -C "$source" --exclude='./lost+found' -cf - . | tar -C "$target" -xpf -
+              for source_entry in "$source"/* "$source"/.[!.]* "$source"/..?*; do
+                if [ ! -e "$source_entry" ] && [ ! -L "$source_entry" ]; then
+                  continue
+                fi
+                if [ "${source_entry##*/}" = 'lost+found' ]; then
+                  continue
+                fi
+                cp -a "$source_entry" "$target/"
+              done
 
               # gh historically lived below a nested home directory in the
               # restored PVC. Normalize it to the active image's XDG path so
