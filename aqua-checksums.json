@@ -56,33 +56,33 @@
       "algorithm": "sha256"
     },
     {
-      "id": "http/get.helm.sh/helm-v3.21.3-darwin-amd64.tar.gz",
-      "checksum": "76D0DB4730B05D3D625EEE11E80F0721B32B4D8422F4E5D093DE6337BF3AC9F8",
+      "id": "http/get.helm.sh/helm-v4.2.4-darwin-amd64.tar.gz",
+      "checksum": "6C163D687CA03C3B5C01928E53BBBCF9518278F47CE7A2F249A5A08E8BDAA2BC",
       "algorithm": "sha256"
     },
     {
-      "id": "http/get.helm.sh/helm-v3.21.3-darwin-arm64.tar.gz",
-      "checksum": "19879A848CAD832B7A1AC24B767A481D20FB3B95AB53A220849649422ADA144E",
+      "id": "http/get.helm.sh/helm-v4.2.4-darwin-arm64.tar.gz",
+      "checksum": "D747EB4E28BD2727173D15B759FA0A17822291EC09DB7CED3D55AF290A3661A2",
       "algorithm": "sha256"
     },
     {
-      "id": "http/get.helm.sh/helm-v3.21.3-linux-amd64.tar.gz",
-      "checksum": "15E041A93A590DCE8100F39385CD98C84A765C9E36AEEB9E2DC6FF9E4769E2E0",
+      "id": "http/get.helm.sh/helm-v4.2.4-linux-amd64.tar.gz",
+      "checksum": "C306B46F719B0A4DA32D0F78EE21BF90CE8D602F15B22AB753F0674D1670A7F3",
       "algorithm": "sha256"
     },
     {
-      "id": "http/get.helm.sh/helm-v3.21.3-linux-arm64.tar.gz",
-      "checksum": "67F58155079FF9FFAB98BA5C88DAFF0ED9B542F3A4732F5DD426DDE7DD0F5244",
+      "id": "http/get.helm.sh/helm-v4.2.4-linux-arm64.tar.gz",
+      "checksum": "564DE2191B881E9F71B5606B25345821EA1682F06AB90499D3AB22B530176DA1",
       "algorithm": "sha256"
     },
     {
-      "id": "http/get.helm.sh/helm-v3.21.3-windows-amd64.tar.gz",
-      "checksum": "D3E17320DA1934C43717C07EAA6E65C7133F1B63422932DDA41C890B0E781EB1",
+      "id": "http/get.helm.sh/helm-v4.2.4-windows-amd64.tar.gz",
+      "checksum": "38CBDAB1C7D4F0412D571C3AEEFC700BCDC7B663BE481832A11DFED01EE67C36",
       "algorithm": "sha256"
     },
     {
-      "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.546.0/registry.yaml",
-      "checksum": "934EBC672E08D6EB10711D0D805573ED40CD9A36A2FA97BD8374805FA62316E8",
+      "id": "registries/github_content/github.com/aquaproj/aqua-registry/v4.548.0/registry.yaml",
+      "checksum": "747C06DCDF1663805F96C788B0E3CD96DE3920AB7A984AE9D0147A6D24771349",
       "algorithm": "sha256"
     }
   ]
