@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: teaspoon-data-migration-v4
+  name: teaspoon-data-migration-v5
   namespace: bhaiya
   labels:
     app.kubernetes.io/name: teaspoon-data-migration
@@ -67,7 +67,8 @@ spec:
                 if [ ! -e "$source_entry" ] && [ ! -L "$source_entry" ]; then
                   continue
                 fi
-                if [ "${source_entry##*/}" = 'lost+found' ]; then
+                source_entry_name=$(basename "$source_entry")
+                if [ "$source_entry_name" = 'lost+found' ]; then
                   continue
                 fi
                 cp -a "$source_entry" "$target/"
