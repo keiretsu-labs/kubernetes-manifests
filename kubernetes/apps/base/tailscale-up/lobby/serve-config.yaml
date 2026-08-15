@@ -6,7 +6,7 @@ metadata:
 data:
   # containerboot substitutes ${TS_CERT_DOMAIN} at runtime.
   # :80 HTTP for MagicDNS http://lobby/
-  # :443 HTTPS + Funnel for https://lobby.rajsingh.ts.net/
+  # :443 HTTPS + Funnel for https://lobby.sheep-adder.ts.net/
   serve.json: |
     {
       "TCP": {

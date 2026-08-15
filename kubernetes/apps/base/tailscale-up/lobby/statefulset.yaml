@@ -32,7 +32,7 @@ spec:
             - name: LISTEN_ADDR
               value: ":8080"
             - name: TAILNET_NAME
-              value: rajsinghtech.github
+              value: sheep-adder
             - name: TS_TAILNET
               value: "-"
             # CNPG writes user secret lobby-postgres-app with uri / username / password
@@ -98,7 +98,7 @@ spec:
               value: "true"
             - name: TS_EXTRA_ARGS
               value: --advertise-tags=tag:lobby
-            # OAuth for conference tailnet (rajsinghtech.github / rajsingh.ts.net).
+            # OAuth for conference tailnet (sheep-adder.ts.net).
             - name: TS_CLIENT_ID
               valueFrom:
                 secretKeyRef:
