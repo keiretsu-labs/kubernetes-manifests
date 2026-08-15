@@ -4,7 +4,7 @@ kind: GrafanaDashboard
 metadata:
   name: envoy-gateway-metrics
   annotations:
-    monitoring.keiretsu.top/source-url: https://raw.githubusercontent.com/envoyproxy/gateway/v1.8.3/charts/gateway-addons-helm/dashboards/envoy-gateway-global.json
+    monitoring.keiretsu.top/source-url: https://raw.githubusercontent.com/envoyproxy/gateway/v1.9.0/charts/gateway-addons-helm/dashboards/envoy-gateway-global.json
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
