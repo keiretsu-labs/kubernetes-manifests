@@ -4,36 +4,21 @@ metadata:
   name: lobby-serve-config
   namespace: tailscale-up
 data:
-  # containerboot substitutes ${TS_CERT_DOMAIN} at runtime.
-  # :80 HTTP for MagicDNS http://lobby/
-  # :443 HTTPS + Funnel for https://lobby.sheep-adder.ts.net/
   serve.json: |
     {
       "TCP": {
-        "80": {
-          "HTTP": true
-        },
-        "443": {
-          "HTTPS": true
-        }
+        "80": { "HTTP": true },
+        "443": { "HTTPS": true }
       },
       "Web": {
-        "$${TS_CERT_DOMAIN}:80": {
-          "Handlers": {
-            "/": {
-              "Proxy": "http://127.0.0.1:8080"
-            }
-          }
+        "${TS_CERT_DOMAIN}:80": {
+          "Handlers": { "/": { "Proxy": "http://127.0.0.1:8080" } }
         },
-        "$${TS_CERT_DOMAIN}:443": {
-          "Handlers": {
-            "/": {
-              "Proxy": "http://127.0.0.1:8080"
-            }
-          }
+        "${TS_CERT_DOMAIN}:443": {
+          "Handlers": { "/": { "Proxy": "http://127.0.0.1:8080" } }
         }
       },
       "AllowFunnel": {
-        "$${TS_CERT_DOMAIN}:443": true
+        "${TS_CERT_DOMAIN}:443": true
       }
     }
