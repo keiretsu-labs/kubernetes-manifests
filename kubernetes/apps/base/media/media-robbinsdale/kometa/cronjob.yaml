@@ -29,7 +29,7 @@ spec:
                   mountPath: /config
           containers:
             - name: kometa
-              image: kometateam/kometa:v2.4.7
+              image: kometateam/kometa:v2.4.8
               command:
                 - /bin/sh
                 - -c
