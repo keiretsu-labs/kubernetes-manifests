@@ -403,7 +403,7 @@
         "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate/**"
       ],
       "groupName": "teslamate",
-      "automerge": false,
+      "automerge": true,
       "labels": ["TeslaMate"]
     },
     {

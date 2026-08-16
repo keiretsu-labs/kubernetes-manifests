@@ -118,6 +118,15 @@
       "automerge": true
     },
     {
+      "description": "Auto merge TeslaMate application and dashboard updates after the render gate passes.",
+      "matchPackageNames": ["teslamate/teslamate", "teslamate-org/teslamate"],
+      "matchFileNames": [
+        "kubernetes/apps/base/teslamate/teslamate/app/deployment.yaml",
+        "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate/**"
+      ],
+      "automerge": true
+    },
+    {
       "description": "Aqua package updates require a matching generated checksum file.",
       "matchFileNames": ["aqua.yaml"],
       "automerge": false,
