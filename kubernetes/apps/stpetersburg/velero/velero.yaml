@@ -29,3 +29,38 @@ spec:
         metadata:
           name: remove-without-grafana
         $$patch: delete
+    - target:
+        group: helm.toolkit.fluxcd.io
+        version: v2
+        kind: HelmRelease
+        name: velero
+      patch: |-
+        apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        metadata:
+          name: velero
+        spec:
+          values:
+            configuration:
+              repositoryMaintenanceJob:
+                repositoryConfigData:
+                  # All 5 kopia-maintain jobs were landing on spark-0 every cycle
+                  # (default scheduler behavior, not an explicit affinity), stacking
+                  # up to ~10GiB of transient limits on the same node dsv4 runs on.
+                  # Pin two of the five repos to spark-1 so worst-case concurrent
+                  # maintenance splits across both GPU nodes instead of one.
+                  repositories:
+                    agents-garage-kopia:
+                      loadAffinity:
+                        - nodeSelector:
+                            matchExpressions:
+                              - key: kubernetes.io/hostname
+                                operator: In
+                                values: ["spark-1"]
+                    bhaiya-garage-kopia:
+                      loadAffinity:
+                        - nodeSelector:
+                            matchExpressions:
+                              - key: kubernetes.io/hostname
+                                operator: In
+                                values: ["spark-1"]
