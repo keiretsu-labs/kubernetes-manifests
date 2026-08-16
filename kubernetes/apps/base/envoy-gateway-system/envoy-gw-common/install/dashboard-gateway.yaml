@@ -4,7 +4,7 @@ kind: GrafanaDashboard
 metadata:
   name: envoy-gateway-metrics
   annotations:
-    monitoring.keiretsu.top/source-url: https://raw.githubusercontent.com/envoyproxy/gateway/v1.8.3/charts/gateway-addons-helm/dashboards/envoy-gateway-global.json
+    monitoring.keiretsu.top/source-url: https://raw.githubusercontent.com/envoyproxy/gateway/v1.9.0/charts/gateway-addons-helm/dashboards/envoy-gateway-global.json
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
@@ -12,7 +12,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: Envoy Gateway
-  # Vendored from Envoy Gateway v1.8.3 so the datasource default and retained
+  # Vendored from Envoy Gateway v1.9.0 so the datasource default and retained
   # panel UIDs reference the managed central Mimir datasource.
   json: |
     {

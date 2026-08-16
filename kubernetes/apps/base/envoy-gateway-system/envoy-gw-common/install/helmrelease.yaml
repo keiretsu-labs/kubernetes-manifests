@@ -31,3 +31,8 @@ spec:
         extensionApis:
           enableBackend: true
           enableEnvoyPatchPolicy: true
+          # The public auth routes use EnvoyExtensionPolicy Lua hooks to turn
+          # TinyAuth's 401 challenge into the OAuth redirect. Envoy Gateway
+          # disables Lua by default; leaving it off makes those routes render
+          # as an Envoy-generated direct 500 instead of reaching their backend.
+          enableLua: true
