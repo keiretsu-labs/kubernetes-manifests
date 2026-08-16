@@ -285,7 +285,6 @@ spec:
           - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
           - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
           - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
-          - { name: B12X_W4A16_TC_DECODE, value: "0" }
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
           - { name: NCCL_NVLS_ENABLE, value: "0" }
           - { name: NCCL_NET, value: "IB" }
@@ -510,7 +509,6 @@ spec:
           - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
           - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
           - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
-          - { name: B12X_W4A16_TC_DECODE, value: "0" }
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
           - { name: NCCL_NVLS_ENABLE, value: "0" }
           - { name: NCCL_NET, value: "IB" }
