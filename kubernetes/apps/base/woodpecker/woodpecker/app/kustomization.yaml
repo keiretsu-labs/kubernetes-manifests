@@ -4,5 +4,6 @@ kind: Kustomization
 namespace: woodpecker
 resources:
   - pg.yaml
+  - workspace-nix-cache-pvc.yaml
   - helmrelease.yaml
   - httproute.yaml
