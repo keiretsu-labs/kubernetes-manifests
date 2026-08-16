@@ -603,8 +603,8 @@ spec:
                       translated = {
                           "input": cost.get("input"),
                           "output": cost.get("output"),
-                          "cache_read": cost.get("cache_read"),
-                          "cache_write": cost.get("cache_write"),
+                          "cacheRead": cost.get("cache_read"),
+                          "cacheWrite": cost.get("cache_write"),
                       }
                       translated = {
                           key: value
@@ -894,13 +894,13 @@ spec:
                   for source_key, document_key in fields.items():
                       if source_key in metadata and model.get(document_key) != metadata[source_key]:
                           return False
-                  if "cost" in metadata:
+                  if "cost" in metadata and "cost" in model:
                       actual = model.get("cost") or {}
                       expected = {
                           "input": metadata["cost"].get("input"),
                           "output": metadata["cost"].get("output"),
-                          "cacheRead": metadata["cost"].get("cache_read"),
-                          "cacheWrite": metadata["cost"].get("cache_write"),
+                          "cacheRead": metadata["cost"].get("cacheRead"),
+                          "cacheWrite": metadata["cost"].get("cacheWrite"),
                       }
                       for key, value in expected.items():
                           if value is not None and actual.get(key) != value:
