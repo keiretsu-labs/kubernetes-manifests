@@ -328,6 +328,14 @@ spec:
               # live in auth metadata; the generated compatible providers
               # declare the Tailscale-backed routes below.
               force-model-prefix: true
+              # Keep a stable, GitOps-owned fallback in the Codex subscription
+              # pool while the DeepSeek route is omitted during a DSV4 outage.
+              oauth-model-alias:
+                codex:
+                  - name: "gpt-5.3-codex-spark"
+                    alias: "vllm-fallback"
+                    display-name: "Codex subscription fallback"
+                    fork: true
               plugins:
                 enabled: true
                 dir: "/CLIProxyAPI/plugins"

@@ -37,6 +37,9 @@ Anthropic-compatible APIs.
   `deepseek-v4-flash` model. If the upstream catalog is unavailable, CLIProxy
   omits that dead route rather than blocking startup; clients use the available
   Codex subscription model instead.
+- `codex-subscription/vllm-fallback` is the GitOps-owned fallback model. It
+  maps to the live `gpt-5.3-codex-spark` Codex subscription model and remains
+  available whether or not the DeepSeek vLLM endpoint is healthy.
 - `force-model-prefix` is enabled and every route owns its client-visible
   prefix: `codex-subscription/<model>` for the logged-in Codex subscription,
   `anthropic-subscription/<model>` for the logged-in Claude subscription,
