@@ -26,6 +26,12 @@ spec:
       # pressure; the data-plane proxies carry the same class via their
       # EnvoyProxy CRs (home namespace).
       priorityClassName: infra-high
+      # The chart mounts envoy-gateway-config but does not checksum it into
+      # the pod template. Roll the controller when extension API settings
+      # change so the process rereads the mounted configuration.
+      pod:
+        annotations:
+          config.keiretsu.top/extension-apis: enable-lua-v1
     config:
       envoyGateway:
         extensionApis:
