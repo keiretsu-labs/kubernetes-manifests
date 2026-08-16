@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: teslamate
-          image: teslamate/teslamate:4.0.1
+          image: teslamate/teslamate:4.1.1
           ports:
             - containerPort: 4000
               name: http

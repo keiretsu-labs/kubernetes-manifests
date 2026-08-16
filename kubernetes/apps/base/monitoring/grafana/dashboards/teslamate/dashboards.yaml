@@ -10,7 +10,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/overview.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/overview.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -24,7 +24,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/charge-level.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/charge-level.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -38,7 +38,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/charges.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/charges.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -52,7 +52,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/charging-stats.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/charging-stats.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -66,7 +66,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/drives.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/drives.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -80,7 +80,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/drive-stats.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/drive-stats.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -94,7 +94,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/efficiency.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/efficiency.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -108,7 +108,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/trip.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/trip.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -122,7 +122,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/battery-health.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/battery-health.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -136,7 +136,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/projected-range.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/projected-range.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -150,7 +150,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/locations.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/locations.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -164,7 +164,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/visited.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/visited.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -178,7 +178,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/mileage.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/mileage.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -192,7 +192,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/states.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/states.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -206,7 +206,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/timeline.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/timeline.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -220,7 +220,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/updates.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/updates.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -234,7 +234,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/vampire-drain.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/vampire-drain.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -248,7 +248,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/statistics.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/statistics.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -262,4 +262,4 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.0.1/grafana/dashboards/database-info.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/database-info.json
