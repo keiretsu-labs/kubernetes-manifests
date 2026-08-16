@@ -246,11 +246,10 @@ spec:
               import urllib.request
 
               # This external Service is the supported in-cluster route to the
-              # tailnet endpoint. The DSV4 rollout can take several minutes;
-              # retain the stable model while its live catalog is unavailable
-              # so a transient remote outage cannot keep CLIProxy in init.
+              # tailnet endpoint. Do not advertise a vLLM model during a DSV4
+              # rollout: it cannot accept requests, while the Codex
+              # subscription remains the available fallback provider.
               upstream = "http://stpetersburg-vllm-upstream/v1"
-              fallback_models = ["deepseek-v4-flash"]
               try:
                   with urllib.request.urlopen(upstream + "/models", timeout=5) as response:
                       payload = json.load(response)
@@ -264,26 +263,25 @@ spec:
                   if not models:
                       raise RuntimeError("upstream returned no models")
               except Exception as error:
-                  models = fallback_models
-                  seen = set(models)
-                  print(f"vllm discovery unavailable; using stable fallback: {error}")
-
-              lines = [
-                  "openai-compatibility:",
-                  '  - name: "vllm"',
-                  '    prefix: "vllm"',
-                  f'    base-url: "{upstream}"',
-                  "    disable-cooling: false",
-                  "    models:",
-              ]
-              for model in models:
-                  lines.append("      - name: " + json.dumps(model))
-                  if model == "deepseek-v4-flash" and "DeepSeek-V4-Flash" not in seen:
-                      lines.append('        alias: "DeepSeek-V4-Flash"')
-              pathlib.Path("/provider/vllm.yaml").write_text(
-                  "\n".join(lines) + "\n", encoding="utf-8"
-              )
-              print(f"discovered {len(models)} vllm models")
+                  pathlib.Path("/provider/vllm.yaml").write_text("", encoding="utf-8")
+                  print(f"vllm discovery unavailable; using Codex subscription fallback: {error}")
+              else:
+                  lines = [
+                      "openai-compatibility:",
+                      '  - name: "vllm"',
+                      '    prefix: "vllm"',
+                      f'    base-url: "{upstream}"',
+                      "    disable-cooling: false",
+                      "    models:",
+                  ]
+                  for model in models:
+                      lines.append("      - name: " + json.dumps(model))
+                      if model == "deepseek-v4-flash" and "DeepSeek-V4-Flash" not in seen:
+                          lines.append('        alias: "DeepSeek-V4-Flash"')
+                  pathlib.Path("/provider/vllm.yaml").write_text(
+                      "\n".join(lines) + "\n", encoding="utf-8"
+                  )
+                  print(f"discovered {len(models)} vllm models")
           env:
             - name: PYTHONDONTWRITEBYTECODE
               value: "1"

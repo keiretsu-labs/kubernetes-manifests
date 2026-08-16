@@ -34,7 +34,9 @@ Anthropic-compatible APIs.
   vLLM service through `Service/stpetersburg-vllm-upstream`. Startup discovery
   exposes its live catalog under the `vllm/` prefix. The stable
   `vllm/DeepSeek-V4-Flash` client alias maps to the upstream
-  `deepseek-v4-flash` model.
+  `deepseek-v4-flash` model. If the upstream catalog is unavailable, CLIProxy
+  omits that dead route rather than blocking startup; clients use the available
+  Codex subscription model instead.
 - `force-model-prefix` is enabled and every route owns its client-visible
   prefix: `codex-subscription/<model>` for the logged-in Codex subscription,
   `anthropic-subscription/<model>` for the logged-in Claude subscription,
