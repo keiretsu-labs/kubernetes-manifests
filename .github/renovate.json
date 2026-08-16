@@ -156,7 +156,10 @@
         "ghcr.io/kbpersonal/omnibus",
         "ghcr.io/kbpersonal/omnibus-engine"
       ],
-      "versioning": "regex:^v?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)$"
+      "versioning": "regex:^v?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)$",
+      "groupName": "omnibus-fork",
+      "automerge": false,
+      "labels": ["media"]
     },
     {
       "description": "CloudNativePG compound tags encode PostgreSQL major and extension version; keep Renovate on the current compatibility line.",

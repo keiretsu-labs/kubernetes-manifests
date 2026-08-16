@@ -475,7 +475,10 @@
       "matchPackageNames": [
         "ghcr.io/kbpersonal/omnibus",
         "ghcr.io/kbpersonal/omnibus-engine"
-      ]
+      ],
+      "groupName": "omnibus-fork",
+      "automerge": false,
+      "labels": ["media"]
     }
   ]
 }
