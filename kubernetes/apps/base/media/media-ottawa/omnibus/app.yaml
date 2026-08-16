@@ -89,7 +89,7 @@ spec:
               mountPath: /media-share
         - name: omnibus-engine
           # renovate: datasource=docker depName=ghcr.io/kbpersonal/omnibus-engine
-          image: ghcr.io/kbpersonal/omnibus-engine:v1.4.10@sha256:7f8e67691646eada95b02425b26697f071eb6543015fdd7724387cb53a7dcf3d
+          image: ghcr.io/kbpersonal/omnibus-engine:v1.4.11@sha256:424b12238208f18f52ac1fdfdcd7779097dbd63d8834cf3515c6d87fb16a91c9
           env:
             - name: DATABASE_URL
               valueFrom:
