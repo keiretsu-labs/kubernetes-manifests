@@ -3,4 +3,4 @@ operator:
   metrics:
     enabled: true
 serviceMonitor:
-  create: true
+  enabled: true
