@@ -22,6 +22,8 @@ spec:
       retries: 3
   values:
     replicaCount: 2
+    image:
+      tag: "v2.1.20"
     startupProbe:
       initialDelaySeconds: 30
       periodSeconds: 10
