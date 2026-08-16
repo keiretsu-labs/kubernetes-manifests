@@ -9,7 +9,7 @@
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "platformAutomerge": true,
-  "rebaseWhen": "conflicted",
+  "rebaseWhen": "behind-base-branch",
   "ignoreTests": false,
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
@@ -109,6 +109,13 @@
       "description": "Custom managers track nonstandard and coupled sources; always require review.",
       "matchManagers": ["custom.regex"],
       "automerge": false
+    },
+    {
+      "description": "Auto merge Kometa community configuration assets after the render gate passes.",
+      "matchManagers": ["custom.regex"],
+      "matchDatasources": ["github-tags"],
+      "matchFileNames": ["kubernetes/apps/base/media/**/kometa/**"],
+      "automerge": true
     },
     {
       "description": "Aqua package updates require a matching generated checksum file.",
