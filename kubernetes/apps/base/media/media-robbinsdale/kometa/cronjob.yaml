@@ -20,7 +20,7 @@ spec:
                   mkdir -p /config/metadata/overlays
                   if [ ! -f /config/metadata/overlays/fonts/Adlib.ttf ]; then
                     # renovate: datasource=github-tags depName=Kometa-Team/Community-Configs
-                    wget -q https://raw.githubusercontent.com/Kometa-Team/Community-Configs/v2.4.7/bullmoose20/fonts.zip -O /tmp/fonts.zip
+                    wget -q https://raw.githubusercontent.com/Kometa-Team/Community-Configs/v2.4.8/bullmoose20/fonts.zip -O /tmp/fonts.zip
                     unzip -o /tmp/fonts.zip -d /config/metadata/overlays/
                     rm /tmp/fonts.zip
                   fi
