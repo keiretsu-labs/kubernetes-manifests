@@ -485,17 +485,20 @@ spec:
               ready = state / "ready"
               interval = 300
 
-              def request(method, path, token, payload=None):
+              def request(method, path, token, payload=None, extra_headers=None):
                   body = None if payload is None else json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
+                  headers = {
+                      "Accept": "application/json",
+                      "Authorization": "Bearer " + token,
+                      "Content-Type": "application/json",
+                  }
+                  if extra_headers:
+                      headers.update(extra_headers)
                   req = urllib.request.Request(
                       base + path,
                       data=body,
                       method=method,
-                      headers={
-                          "Accept": "application/json",
-                          "Authorization": "Bearer " + token,
-                          "Content-Type": "application/json",
-                      },
+                      headers=headers,
                   )
                   try:
                       with urllib.request.urlopen(req, timeout=20) as response:
@@ -527,30 +530,33 @@ spec:
                       raise RuntimeError("plain and rich model catalogs differ")
 
                   aliases = {}
-                  overrides = {}
+                  rich_metadata = {}
                   for model_id in sorted(plain_ids):
                       row = rich_by_id[model_id]
                       context_window = int(row.get("context_window") or row.get("max_context_window") or 0)
                       name = str(row.get("display_name", "")).strip()
                       if context_window <= 0 or not name:
                           raise RuntimeError("rich catalog has incomplete metadata")
-                      override = {
+                      metadata = {
                           "name": name,
                           "context_window": context_window,
                       }
                       levels = row.get("supported_reasoning_levels")
                       if isinstance(levels, list):
-                          override["reasoning"] = bool(levels)
-                      overrides[model_id] = override
+                          metadata["reasoning"] = bool(levels)
+                      rich_metadata[model_id] = metadata
+                      # CLIProxy's prefix is an independently selectable route,
+                      # not part of the upstream model id that models.dev knows.
                       if "/" in model_id:
                           aliases[model_id] = model_id.split("/", 1)[1]
-                  return plain_ids, aliases, overrides
+                  return plain_ids, aliases, rich_metadata
 
               def bridge_document():
                   status, document = request(
                       "GET",
                       "/v0/resource/plugins/pi-bridge/well-known",
                       api_key,
+                      extra_headers={"X-Pi-Contract": "2"},
                   )
                   if status != 200 or not isinstance(document, dict):
                       return None
@@ -564,7 +570,7 @@ spec:
                           models[model["id"]] = model
                   return document, models
 
-              def synchronized(ids, overrides):
+              def live_document(ids):
                   result = bridge_document()
                   if result is None:
                       return None
@@ -581,14 +587,41 @@ spec:
                   }
                   if document.get("schemaVersion") != 1 or set(models) != exposed_ids:
                       return None
+                  catalog = document.get("catalog")
+                  if not isinstance(catalog, dict) or int(catalog.get("entries") or 0) <= 0:
+                      return None
+                  unmatched_ids = catalog.get("unmatchedIds") or []
+                  if not isinstance(unmatched_ids, list) or not all(isinstance(item, str) for item in unmatched_ids):
+                      return None
+                  unmatched_ids = set(unmatched_ids)
+                  if not unmatched_ids.issubset(exposed_ids):
+                      return None
                   if not all(
-                      models[model_id].get("contextWindow") == metadata["context_window"]
-                      and models[model_id].get("name") == metadata["name"]
-                      for model_id, metadata in overrides.items()
-                      if model_id in exposed_ids
+                      isinstance(models[model_id].get("contextWindow"), int)
+                      and models[model_id]["contextWindow"] > 0
+                      for model_id in exposed_ids
                   ):
                       return None
-                  return len(exposed_ids)
+                  return document, models, exposed_ids, unmatched_ids
+
+              def bridge_ready():
+                  status, payload = request(
+                      "GET",
+                      "/v0/management/plugins",
+                      management_key,
+                  )
+                  if status != 200 or not isinstance(payload, dict) or not payload.get("plugins_enabled"):
+                      return False
+                  for plugin in payload.get("plugins", []):
+                      if (
+                          isinstance(plugin, dict)
+                          and plugin.get("id") == "pi-bridge"
+                          and plugin.get("configured")
+                          and plugin.get("registered")
+                          and plugin.get("effective_enabled")
+                      ):
+                          return True
+                  return False
 
               def reload_bridge():
                   status, _ = request(
@@ -599,68 +632,111 @@ spec:
                   )
                   if status != 200:
                       raise RuntimeError("pi-bridge reload failed")
+                  deadline = time.monotonic() + 30
+                  while time.monotonic() < deadline:
+                      if bridge_ready():
+                          return
+                      time.sleep(1)
+                  raise RuntimeError("pi-bridge reload did not become ready")
 
-              def wait_for_synchronization(ids, overrides, timeout):
+              def wait_for_live_document(ids, timeout):
                   deadline = time.monotonic() + timeout
                   while time.monotonic() < deadline:
-                      exposed_count = synchronized(ids, overrides)
-                      if exposed_count is not None:
-                          return exposed_count
+                      document = live_document(ids)
+                      if document is not None:
+                          return document
                       time.sleep(2)
                   return None
+
+              def advanced_config():
+                  config_status, plugin_config = request(
+                      "GET",
+                      "/v0/management/plugins/pi-bridge/config",
+                      management_key,
+                  )
+                  if config_status != 200 or not isinstance(plugin_config, dict):
+                      raise RuntimeError("pi-bridge management config is not ready")
+                  current = plugin_config.get("advanced", "")
+                  try:
+                      current = json.loads(current) if current else {}
+                  except (TypeError, ValueError):
+                      current = {}
+                  return current if isinstance(current, dict) else {}
+
+              def apply_advanced(current, aliases, overrides):
+                  desired = dict(current)
+                  desired.update({
+                      "model_aliases": aliases,
+                      "model_overrides": overrides,
+                  })
+                  if canonical(current) != canonical(desired):
+                      patch_status, _ = request(
+                          "PATCH",
+                          "/v0/management/plugins/pi-bridge/config",
+                          management_key,
+                          {"advanced": canonical(desired)},
+                      )
+                      if patch_status != 200:
+                          raise RuntimeError("pi-bridge metadata update failed")
+                      reload_bridge()
+                  return desired
 
               ready.unlink(missing_ok=True)
               while True:
                   try:
-                      model_ids, aliases, overrides = catalog()
-                      desired_advanced = {
-                          "model_aliases": aliases,
-                          "model_overrides": overrides,
-                      }
-                      config_status, plugin_config = request(
-                          "GET",
-                          "/v0/management/plugins/pi-bridge/config",
-                          management_key,
-                      )
-                      if config_status != 200 or not isinstance(plugin_config, dict):
-                          raise RuntimeError("pi-bridge management config is not ready")
-                      current_advanced = plugin_config.get("advanced", "")
-                      try:
-                          current_advanced = json.loads(current_advanced) if current_advanced else {}
-                      except (TypeError, ValueError):
-                          current_advanced = {}
-                      if not isinstance(current_advanced, dict):
-                          current_advanced = {}
-                      merged_advanced = dict(current_advanced)
-                      merged_advanced.update(desired_advanced)
-                      if canonical(current_advanced) != canonical(merged_advanced):
-                          patch_status, _ = request(
-                              "PATCH",
-                              "/v0/management/plugins/pi-bridge/config",
-                              management_key,
-                              {"advanced": canonical(merged_advanced)},
-                          )
-                          if patch_status != 200:
-                              raise RuntimeError("pi-bridge metadata update failed")
-                          # CLIProxy persists PATCH /config without reconfiguring
-                          # the running plugin. Its idempotent enabled update uses
-                          # the normal host reload path.
+                      model_ids, aliases, rich_metadata = catalog()
+                      aliases_only = apply_advanced(advanced_config(), aliases, {})
+                      baseline = wait_for_live_document(model_ids, 90)
+                      if baseline is None:
                           reload_bridge()
-                      exposed_count = wait_for_synchronization(model_ids, overrides, 90)
-                      if exposed_count is None:
-                          # Recover a configuration persisted by an earlier sync
-                          # run that did not get a matching host reload.
-                          reload_bridge()
-                          exposed_count = wait_for_synchronization(model_ids, overrides, 30)
-                      if exposed_count is None:
+                          baseline = wait_for_live_document(model_ids, 30)
+                      if baseline is None:
                           raise RuntimeError("pi-bridge did not expose the live metadata")
-                      ready.write_text(str(exposed_count) + "/" + str(len(model_ids)) + "\n", encoding="ascii")
+
+                      _, _, exposed_ids, fallback_ids = baseline
+                      missing_metadata = fallback_ids - set(rich_metadata)
+                      if missing_metadata:
+                          raise RuntimeError("rich catalog is missing bridge fallbacks")
+                      overrides = {
+                          model_id: rich_metadata[model_id]
+                          for model_id in sorted(fallback_ids)
+                      }
+                      apply_advanced(aliases_only, aliases, overrides)
+                      final = wait_for_live_document(model_ids, 90)
+                      if final is None:
+                          reload_bridge()
+                          final = wait_for_live_document(model_ids, 30)
+                      if final is None:
+                          raise RuntimeError("pi-bridge did not expose synchronized metadata")
+
+                      _, models, exposed_ids, unresolved = final
+                      if unresolved:
+                          raise RuntimeError("pi-bridge retained unresolved models")
+                      if not all(
+                          models[model_id].get("contextWindow") == metadata["context_window"]
+                          and models[model_id].get("name") == metadata["name"]
+                          and (
+                              "reasoning" not in metadata
+                              or bool(models[model_id].get("reasoning")) == metadata["reasoning"]
+                          )
+                          for model_id, metadata in overrides.items()
+                          if model_id in exposed_ids
+                      ):
+                          raise RuntimeError("pi-bridge fallback metadata differs from CLIProxy")
+
+                      (state / "fallback-ids.json").write_text(
+                          canonical({"ids": sorted(fallback_ids)}) + "\n",
+                          encoding="ascii",
+                      )
+                      ready.write_text(str(len(exposed_ids)) + "/" + str(len(model_ids)) + "\n", encoding="ascii")
                       print(
                           "pi-bridge metadata ready for "
-                          + str(exposed_count)
+                          + str(len(exposed_ids))
                           + " exposed models (of "
                           + str(len(model_ids))
-                          + " live models)",
+                          + " live models; "
+                          + str(len(fallback_ids))
+                          + " rich metadata fallbacks)",
                           flush=True,
                       )
                   except Exception as error:
