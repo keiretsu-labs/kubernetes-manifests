@@ -590,6 +590,25 @@ spec:
                       return None
                   return len(exposed_ids)
 
+              def reload_bridge():
+                  status, _ = request(
+                      "PATCH",
+                      "/v0/management/plugins/pi-bridge/enabled",
+                      management_key,
+                      {"enabled": True},
+                  )
+                  if status != 200:
+                      raise RuntimeError("pi-bridge reload failed")
+
+              def wait_for_synchronization(ids, overrides, timeout):
+                  deadline = time.monotonic() + timeout
+                  while time.monotonic() < deadline:
+                      exposed_count = synchronized(ids, overrides)
+                      if exposed_count is not None:
+                          return exposed_count
+                      time.sleep(2)
+                  return None
+
               ready.unlink(missing_ok=True)
               while True:
                   try:
@@ -623,13 +642,16 @@ spec:
                           )
                           if patch_status != 200:
                               raise RuntimeError("pi-bridge metadata update failed")
-                      deadline = time.monotonic() + 90
-                      exposed_count = None
-                      while time.monotonic() < deadline:
-                          exposed_count = synchronized(model_ids, overrides)
-                          if exposed_count is not None:
-                              break
-                          time.sleep(2)
+                          # CLIProxy persists PATCH /config without reconfiguring
+                          # the running plugin. Its idempotent enabled update uses
+                          # the normal host reload path.
+                          reload_bridge()
+                      exposed_count = wait_for_synchronization(model_ids, overrides, 90)
+                      if exposed_count is None:
+                          # Recover a configuration persisted by an earlier sync
+                          # run that did not get a matching host reload.
+                          reload_bridge()
+                          exposed_count = wait_for_synchronization(model_ids, overrides, 30)
                       if exposed_count is None:
                           raise RuntimeError("pi-bridge did not expose the live metadata")
                       ready.write_text(str(exposed_count) + "/" + str(len(model_ids)) + "\n", encoding="ascii")
