@@ -15,13 +15,15 @@ metadata:
     service.homer.rajsingh.info/name: "Infrastructure"
     service.homer.rajsingh.info/icon: "fas fa-server"
 spec:
-  # One parentRef lets Gateway select both matching hostname listeners; k8gb's
-  # Gslb resolver requires the referenced HTTPRoute to name exactly one Gateway.
+  # Pin the backend to HTTPS so it does not overlap the HTTP redirect route.
+  # k8gb's Gslb resolver requires the referenced HTTPRoute to name exactly one
+  # Gateway.
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: public
       namespace: home
+      sectionName: wildcard-keiretsu-top-https
   hostnames:
     - "grafana.${COMMON_DOMAIN}"
   rules:
