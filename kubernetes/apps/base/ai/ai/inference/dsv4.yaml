@@ -10,7 +10,8 @@
 # Model         : deepseek-ai/DeepSeek-V4-Flash-0731@9e165c30 (48 shards, FP8 weights)
 #
 # Tech2Wild-derived Stage-C NVFP4/B12X profile (upstream recipe commit 2d4820f):
-# - --max-num-seqs 6, --max-model-len 1048576 (the calibrated YaRN ceiling)
+# - --max-num-seqs 6, --max-model-len 786432 (this cluster's real ceiling, see below;
+#   the model's calibrated YaRN ceiling is 1048576 but this node can't fit it)
 # - --enable-chunked-prefill, --enable-prefix-caching, --async-scheduling
 # - --reasoning-config, --default-chat-template-kwargs '{"thinking":false}'
 # - --generation-config vllm (no server-side sampling override)
@@ -19,16 +20,26 @@
 #   (upstream DEFAULT-CONFIG.md measures an explicit --max-cudagraph-capture-size as
 #   neutral-to-worse and lists it under "Do not add these")
 # - gpu-memory-utilization MUST be 0.78, upstream's validated default for this exact
-#   max-model-len=1048576/max-num-seqs=6 profile. 0.76 (typo'd here 2026-08-14) leaves
-#   only ~5.07GiB for KV cache where 1M context needs ~7.3GiB, so EngineCore fails
-#   _initialize_kv_caches on every boot -> LWS RecreateGroup loop. 0.80 is explicitly
-#   flagged upstream as dangerous: it boots and passes smoke tests, then OOMs once
-#   DSpark's speculative-decode buffers allocate on the first real request (issue #8).
+#   profile. 0.76 (typo'd here 2026-08-14) leaves only ~5.07GiB for KV cache; even
+#   0.78 (upstream's own documented default) only yields ~6.97GiB here - both fail
+#   EngineCore's _initialize_kv_caches at max-model-len=1048576 (needs ~7.3GiB), which
+#   crash-loops the whole LWS group every ~10min. Upstream's own numbers evidently
+#   don't transfer 1:1 to this node (probably less free headroom from other pods
+#   sharing spark-0/spark-1's unified memory than upstream's dedicated bench rig).
+#   0.80 is explicitly flagged upstream as dangerous: it boots and passes smoke
+#   tests, then OOMs once DSpark's speculative-decode buffers allocate on the first
+#   real request (issue #8) - a mid-traffic crash, worse than a clean boot refusal.
 #   Do not raise past 0.78 without re-validating against upstream's issue #8 notes.
+#   Instead cap max-model-len below vLLM's own measured ceiling (962304 tokens at
+#   0.78 on this node, per the boot-time ValueError) with real margin: 786432 gives
+#   ~18% headroom rather than running the boot check right up against the wall.
 #
 # Memory guard  : 95Gi Guaranteed QoS, drop-caches init + loop sidecar,
 #                 GPU reset at startup. DSpark weights: ~79 GiB.
-#                 NVFP4 KV: 1M calibrated context at 0.78 utilization.
+#                 NVFP4 KV: 786432 context at 0.78 utilization (not the full 1M -
+#                 see above; freeing more of spark-0/spark-1's memory from
+#                 non-GPU pods, or accepting the issue #8 risk at 0.80, would be
+#                 required to reach 1048576 on this hardware).
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -240,7 +251,7 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 1048576 \
+              --max-model-len 786432 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
               --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
@@ -467,7 +478,7 @@ spec:
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 1048576 \
+              --max-model-len 786432 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
               --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
