@@ -9,6 +9,9 @@
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "platformAutomerge": true,
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
   "rebaseWhen": "behind-base-branch",
   "ignoreTests": false,
   "prConcurrentLimit": 0,
