@@ -570,7 +570,7 @@ spec:
                           models[model["id"]] = model
                   return document, models
 
-              def live_document(ids):
+              def bridge_snapshot(ids):
                   result = bridge_document()
                   if result is None:
                       return None
@@ -596,13 +596,20 @@ spec:
                   unmatched_ids = set(unmatched_ids)
                   if not unmatched_ids.issubset(exposed_ids):
                       return None
+                  return document, models, exposed_ids, unmatched_ids
+
+              def live_document(ids):
+                  snapshot = bridge_snapshot(ids)
+                  if snapshot is None:
+                      return None
+                  _, models, exposed_ids, _ = snapshot
                   if not all(
                       isinstance(models[model_id].get("contextWindow"), int)
                       and models[model_id]["contextWindow"] > 0
                       for model_id in exposed_ids
                   ):
                       return None
-                  return document, models, exposed_ids, unmatched_ids
+                  return snapshot
 
               def bridge_ready():
                   status, payload = request(
@@ -648,6 +655,15 @@ spec:
                       time.sleep(2)
                   return None
 
+              def wait_for_bridge_snapshot(ids, timeout):
+                  deadline = time.monotonic() + timeout
+                  while time.monotonic() < deadline:
+                      snapshot = bridge_snapshot(ids)
+                      if snapshot is not None:
+                          return snapshot
+                      time.sleep(2)
+                  return None
+
               def advanced_config():
                   config_status, plugin_config = request(
                       "GET",
@@ -686,14 +702,26 @@ spec:
                   try:
                       model_ids, aliases, rich_metadata = catalog()
                       aliases_only = apply_advanced(advanced_config(), aliases, {})
-                      baseline = wait_for_live_document(model_ids, 90)
+                      # The bridge reports unmatched aliases and some plugin-owned
+                      # models before an override supplies their metadata.  This
+                      # baseline is deliberately structural: requiring positive
+                      # context windows here would prevent us from discovering the
+                      # exact dynamic fallback set needed to make it live.
+                      baseline = wait_for_bridge_snapshot(model_ids, 90)
                       if baseline is None:
                           reload_bridge()
-                          baseline = wait_for_live_document(model_ids, 30)
+                          baseline = wait_for_bridge_snapshot(model_ids, 30)
                       if baseline is None:
-                          raise RuntimeError("pi-bridge did not expose the live metadata")
+                          raise RuntimeError("pi-bridge did not expose the bridge catalog")
 
-                      _, _, exposed_ids, fallback_ids = baseline
+                      _, baseline_models, exposed_ids, unmatched_ids = baseline
+                      invalid_ids = {
+                          model_id
+                          for model_id in exposed_ids
+                          if not isinstance(baseline_models[model_id].get("contextWindow"), int)
+                          or baseline_models[model_id]["contextWindow"] <= 0
+                      }
+                      fallback_ids = unmatched_ids | invalid_ids
                       missing_metadata = fallback_ids - set(rich_metadata)
                       if missing_metadata:
                           raise RuntimeError("rich catalog is missing bridge fallbacks")
