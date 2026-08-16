@@ -16,19 +16,54 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: aqua-checksums-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Renovate PRs are same-repository branches. Check out the head so a
+          # generated checksum commit can be pushed to that branch instead of
+          # attempting to push GitHub's synthetic merge ref.
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
 
       - name: Install Aqua
         uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e # v4.0.5
         with:
           aqua_version: v2.62.3
           enable_aqua_install: false
+
+      - name: Update generated checksums on Renovate branches
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          startsWith(github.event.pull_request.head.ref, 'renovate/')
+        run: aqua update-checksum --prune
+
+      - name: Commit generated checksums on Renovate branches
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          startsWith(github.event.pull_request.head.ref, 'renovate/')
+        env:
+          RENOVATE_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if git diff --quiet -- aqua-checksums.json; then
+            echo "Aqua checksums are already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add aqua-checksums.json
+          git commit -m "chore(deps): update aqua checksums"
+          git push origin "HEAD:${RENOVATE_HEAD_REF}"
 
       - name: Verify checksums
         run: |

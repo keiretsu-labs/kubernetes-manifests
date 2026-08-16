@@ -332,6 +332,7 @@
         "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/**"
       ],
       "groupName": "grafana-mimir",
+      "minimumGroupSize": 3,
       "automerge": false,
       "labels": ["Mimir"]
     },
@@ -345,6 +346,7 @@
         "kubernetes/apps/base/monitoring/kromgo/**"
       ],
       "groupName": "kromgo",
+      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["Monitoring"]
     },
@@ -357,18 +359,24 @@
         "kubernetes/apps/base/open-cluster-management-agent/ocm-agent/app/helmrelease.yaml"
       ],
       "groupName": "open-cluster-management",
+      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["OCM", "Critical-Infrastructure"]
     },
     {
       "description": "Keep Flux operator and instance charts on the same controlplane.io release.",
+      "matchManagers": ["flux"],
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["flux-operator", "flux-instance"],
+      "matchDepNames": ["flux-operator", "flux-instance"],
+      "matchPackageNames": [
+        "/^ghcr\\.io\\/controlplaneio-fluxcd\\/charts\\/flux-(operator|instance)$/"
+      ],
       "matchFileNames": [
         "kubernetes/apps/base/flux-system/flux-system-common/flux-operator/app/helmrelease.yaml",
         "kubernetes/apps/base/flux-system/flux-system-common/flux-instance/app/helmrelease.yaml"
       ],
       "groupName": "flux-operator-instance",
+      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["Flux", "Critical-Infrastructure"]
     },
@@ -382,6 +390,7 @@
         "kubernetes/apps/base/kube-system/cilium-*/app/**"
       ],
       "groupName": "multus-cni",
+      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["CNI", "Critical-Infrastructure"]
     },
@@ -392,6 +401,7 @@
         "kubernetes/apps/base/envoy-gateway-system/envoy-gw-common/install/**"
       ],
       "groupName": "envoy-gateway",
+      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["Envoy-Gateway", "Critical-Infrastructure"]
     },
@@ -403,6 +413,7 @@
         "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate/**"
       ],
       "groupName": "teslamate",
+      "minimumGroupSize": 2,
       "automerge": true,
       "labels": ["TeslaMate"]
     },
@@ -417,6 +428,7 @@
         "kubernetes/apps/base/csi-driver-smb/**/helmrelease.yaml"
       ],
       "groupName": "csi-driver-smb",
+      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["Storage", "Critical-Infrastructure"]
     },
@@ -441,6 +453,7 @@
         "kubernetes/apps/base/snapshot-controller/app/**"
       ],
       "groupName": "snapshot-controller",
+      "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["Storage", "Critical-Infrastructure"]
     },
