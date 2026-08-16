@@ -26,6 +26,47 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       initContainers:
+        - name: install-pi-bridge
+          image: python:3.14-alpine@sha256:05b2b8b732ecd268fee8727a369f936f022d1321b59befd13c30ede22769dcdc
+          command:
+            - python
+            - -c
+          args:
+            - |
+              import hashlib
+              import io
+              import pathlib
+              import urllib.request
+              import zipfile
+
+              url = "https://github.com/abix5/pi-cliproxyapi-bridge/releases/download/v0.9.1/pi-bridge_0.9.1_linux_amd64.zip"
+              expected = "7cfea7b47888c870acc8afca73d8f78cb8454559040c401a2aa08a870107db26"
+              archive = urllib.request.urlopen(url, timeout=60).read()
+              if hashlib.sha256(archive).hexdigest() != expected:
+                  raise RuntimeError("pi-bridge archive checksum mismatch")
+              with zipfile.ZipFile(io.BytesIO(archive)) as bundle:
+                  members = [member for member in bundle.namelist() if not member.endswith("/")]
+                  if members != ["pi-bridge.so"]:
+                      raise RuntimeError("unexpected pi-bridge archive contents")
+                  target = pathlib.Path("/plugins/pi-bridge-v0.9.1.so")
+                  target.write_bytes(bundle.read("pi-bridge.so"))
+                  target.chmod(0o755)
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugins
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
         - name: seed-management-panel
           image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
           command:
@@ -261,7 +302,7 @@ spec:
               drop:
                 - ALL
         - name: render-config
-          image: eceasy/cli-proxy-api:v7.2.131@sha256:52282964dca47d4978aaffd7dd72d6ed5fb5e5b72acfcbcd1785cfb087d6bd8e
+          image: eceasy/cli-proxy-api:v7.2.133@sha256:944f8b1f5d23981244b5d482290d411d2623bf685749a74c5bca849c865c0ac8
           command:
             - /bin/sh
             - -ec
@@ -287,6 +328,16 @@ spec:
               # live in auth metadata; the generated compatible providers
               # declare the Tailscale-backed routes below.
               force-model-prefix: true
+              plugins:
+                enabled: true
+                dir: "/CLIProxyAPI/plugins"
+                configs:
+                  pi-bridge:
+                    enabled: true
+                    priority: 3
+                    store:
+                      version: "0.9.1"
+                    allow_all_api_keys: true
               debug: false
               pprof:
                 enable: false
@@ -334,7 +385,7 @@ spec:
                 - ALL
       containers:
         - name: cliproxy
-          image: eceasy/cli-proxy-api:v7.2.131@sha256:52282964dca47d4978aaffd7dd72d6ed5fb5e5b72acfcbcd1785cfb087d6bd8e
+          image: eceasy/cli-proxy-api:v7.2.133@sha256:944f8b1f5d23981244b5d482290d411d2623bf685749a74c5bca849c865c0ac8
           command:
             - /CLIProxyAPI/CLIProxyAPI
           args:
@@ -347,6 +398,11 @@ spec:
               value: /var/lib/cliproxy
             - name: MANAGEMENT_STATIC_PATH
               value: /data/static
+            - name: MANAGEMENT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cliproxy-credentials
+                  key: management-key
           ports:
             - name: http
               containerPort: 8317
@@ -363,8 +419,11 @@ spec:
             periodSeconds: 2
             failureThreshold: 30
           readinessProbe:
-            tcpSocket:
-              port: http
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - test -s /var/run/pi-bridge/ready
             periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 3
@@ -389,11 +448,209 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-              readOnly: true
             - name: data
               mountPath: /data
             - name: logs
               mountPath: /var/lib/cliproxy
+            - name: plugin-dir
+              mountPath: /CLIProxyAPI/plugins
+              readOnly: true
+            - name: pi-bridge-state
+              mountPath: /var/run/pi-bridge
+              readOnly: true
+        - name: pi-bridge-sync
+          image: python:3.14-alpine@sha256:05b2b8b732ecd268fee8727a369f936f022d1321b59befd13c30ede22769dcdc
+          command:
+            - python
+            - -c
+          args:
+            - |
+              import json
+              import os
+              import pathlib
+              import time
+              import urllib.error
+              import urllib.request
+
+              base = "http://127.0.0.1:8317"
+              api_key = os.environ["API_KEY"]
+              management_key = os.environ["MANAGEMENT_KEY"]
+              state = pathlib.Path("/state")
+              ready = state / "ready"
+              interval = 300
+
+              def request(method, path, token, payload=None):
+                  body = None if payload is None else json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
+                  req = urllib.request.Request(
+                      base + path,
+                      data=body,
+                      method=method,
+                      headers={
+                          "Accept": "application/json",
+                          "Authorization": "Bearer " + token,
+                          "Content-Type": "application/json",
+                      },
+                  )
+                  try:
+                      with urllib.request.urlopen(req, timeout=20) as response:
+                          return response.status, json.load(response)
+                  except urllib.error.HTTPError as error:
+                      return error.code, None
+
+              def canonical(value):
+                  return json.dumps(value, separators=(",", ":"), sort_keys=True)
+
+              def catalog():
+                  plain_status, plain = request("GET", "/v1/models", api_key)
+                  rich_status, rich = request("GET", "/v1/models?client_version=1.0.0", api_key)
+                  if plain_status != 200 or rich_status != 200:
+                      raise RuntimeError("model catalog is not ready")
+                  plain_rows = plain.get("data", [])
+                  rich_rows = rich.get("models", [])
+                  plain_ids = {
+                      str(row.get("id", "")).strip()
+                      for row in plain_rows
+                      if isinstance(row, dict) and str(row.get("id", "")).strip()
+                  }
+                  rich_by_id = {
+                      str(row.get("slug", "")).strip(): row
+                      for row in rich_rows
+                      if isinstance(row, dict) and str(row.get("slug", "")).strip()
+                  }
+                  if not plain_ids or plain_ids != set(rich_by_id):
+                      raise RuntimeError("plain and rich model catalogs differ")
+
+                  aliases = {}
+                  overrides = {}
+                  for model_id in sorted(plain_ids):
+                      row = rich_by_id[model_id]
+                      context_window = int(row.get("context_window") or row.get("max_context_window") or 0)
+                      name = str(row.get("display_name", "")).strip()
+                      if context_window <= 0 or not name:
+                          raise RuntimeError("rich catalog has incomplete metadata")
+                      override = {
+                          "name": name,
+                          "context_window": context_window,
+                      }
+                      levels = row.get("supported_reasoning_levels")
+                      if isinstance(levels, list):
+                          override["reasoning"] = bool(levels)
+                      overrides[model_id] = override
+                      if "/" in model_id:
+                          aliases[model_id] = model_id.split("/", 1)[1]
+                  return plain_ids, aliases, overrides
+
+              def bridge_document():
+                  status, document = request(
+                      "GET",
+                      "/v0/resource/plugins/pi-bridge/well-known",
+                      api_key,
+                  )
+                  if status != 200 or not isinstance(document, dict):
+                      return None
+                  models = {}
+                  for provider in (document.get("builtinProviders") or {}).values():
+                      for model in provider.get("models", []):
+                          if isinstance(model, dict) and model.get("id"):
+                              models[model["id"]] = model
+                  for model in document.get("customModelPool", []):
+                      if isinstance(model, dict) and model.get("id"):
+                          models[model["id"]] = model
+                  return document, models
+
+              def synchronized(ids, overrides):
+                  result = bridge_document()
+                  if result is None:
+                      return False
+                  document, models = result
+                  if document.get("schemaVersion") != 1 or set(models) != ids:
+                      return False
+                  return all(
+                      models[model_id].get("contextWindow") == metadata["context_window"]
+                      and models[model_id].get("name") == metadata["name"]
+                      for model_id, metadata in overrides.items()
+                  )
+
+              ready.unlink(missing_ok=True)
+              while True:
+                  try:
+                      model_ids, aliases, overrides = catalog()
+                      desired_advanced = {
+                          "model_aliases": aliases,
+                          "model_overrides": overrides,
+                      }
+                      config_status, plugin_config = request(
+                          "GET",
+                          "/v0/management/plugins/pi-bridge/config",
+                          management_key,
+                      )
+                      if config_status != 200 or not isinstance(plugin_config, dict):
+                          raise RuntimeError("pi-bridge management config is not ready")
+                      current_advanced = plugin_config.get("advanced", "")
+                      try:
+                          current_advanced = json.loads(current_advanced) if current_advanced else {}
+                      except (TypeError, ValueError):
+                          current_advanced = {}
+                      if not isinstance(current_advanced, dict):
+                          current_advanced = {}
+                      merged_advanced = dict(current_advanced)
+                      merged_advanced.update(desired_advanced)
+                      if canonical(current_advanced) != canonical(merged_advanced):
+                          patch_status, _ = request(
+                              "PATCH",
+                              "/v0/management/plugins/pi-bridge/config",
+                              management_key,
+                              {"advanced": canonical(merged_advanced)},
+                          )
+                          if patch_status != 200:
+                              raise RuntimeError("pi-bridge metadata update failed")
+                      deadline = time.monotonic() + 90
+                      while time.monotonic() < deadline and not synchronized(model_ids, overrides):
+                          time.sleep(2)
+                      if not synchronized(model_ids, overrides):
+                          raise RuntimeError("pi-bridge did not expose the live metadata")
+                      ready.write_text(str(len(model_ids)) + "\n", encoding="ascii")
+                      print("pi-bridge metadata ready for " + str(len(model_ids)) + " models", flush=True)
+                  except Exception as error:
+                      ready.unlink(missing_ok=True)
+                      print("pi-bridge metadata waiting: " + str(error), flush=True)
+                  time.sleep(interval if ready.exists() else 5)
+          env:
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cliproxy-credentials
+                  key: api-key
+            - name: MANAGEMENT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cliproxy-credentials
+                  key: management-key
+          volumeMounts:
+            - name: pi-bridge-state
+              mountPath: /state
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - test -s /state/ready
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
         - name: log-forwarder
           image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
           command:
@@ -452,3 +709,11 @@ spec:
         - name: logs
           persistentVolumeClaim:
             claimName: cliproxy-logs
+        - name: plugin-dir
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+        - name: pi-bridge-state
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
