@@ -618,6 +618,36 @@ spec:
                       return None
                   return snapshot
 
+              def aliases_are_live(snapshot, aliases):
+                  _, models, _, _ = snapshot
+                  # A plugin reconfigure is asynchronous.  Before the aliases
+                  # are active the bridge reports its default metadata; after a
+                  # previous reconciliation it can instead report prior rich
+                  # fallbacks.  Custom models expose the active resolution
+                  # source, so one live alias and no stale override prove that
+                  # the aliases-only configuration is now in effect.
+                  return (
+                      not any(model.get("metadataSource") == "override" for model in models.values())
+                      and any(
+                          model_id in aliases and model.get("metadataSource") == "alias"
+                          for model_id, model in models.items()
+                      )
+                  )
+
+              def overrides_are_live(snapshot, fallback_ids):
+                  _, models, _, unmatched_ids = snapshot
+                  expected = {
+                      model_id
+                      for model_id in fallback_ids
+                      if model_id in models and "metadataSource" in models[model_id]
+                  }
+                  observed = {
+                      model_id
+                      for model_id, model in models.items()
+                      if model.get("metadataSource") == "override"
+                  }
+                  return not unmatched_ids and observed == expected
+
               def bridge_ready():
                   status, payload = request(
                       "GET",
@@ -653,21 +683,21 @@ spec:
                       time.sleep(1)
                   raise RuntimeError("pi-bridge reload did not become ready")
 
-              def wait_for_live_document(ids, timeout):
-                  deadline = time.monotonic() + timeout
-                  while time.monotonic() < deadline:
-                      document = live_document(ids)
-                      if document is not None:
-                          return document
-                      time.sleep(2)
-                  return None
-
-              def wait_for_bridge_snapshot(ids, timeout):
+              def wait_for_alias_snapshot(ids, aliases, timeout):
                   deadline = time.monotonic() + timeout
                   while time.monotonic() < deadline:
                       snapshot = bridge_snapshot(ids)
-                      if snapshot is not None:
+                      if snapshot is not None and aliases_are_live(snapshot, aliases):
                           return snapshot
+                      time.sleep(2)
+                  return None
+
+              def wait_for_synchronized_document(ids, fallback_ids, timeout):
+                  deadline = time.monotonic() + timeout
+                  while time.monotonic() < deadline:
+                      document = live_document(ids)
+                      if document is not None and overrides_are_live(document, fallback_ids):
+                          return document
                       time.sleep(2)
                   return None
 
@@ -714,12 +744,12 @@ spec:
                       # baseline is deliberately structural: requiring positive
                       # context windows here would prevent us from discovering the
                       # exact dynamic fallback set needed to make it live.
-                      baseline = wait_for_bridge_snapshot(model_ids, 90)
+                      baseline = wait_for_alias_snapshot(model_ids, aliases, 90)
                       if baseline is None:
                           reload_bridge()
-                          baseline = wait_for_bridge_snapshot(model_ids, 30)
+                          baseline = wait_for_alias_snapshot(model_ids, aliases, 30)
                       if baseline is None:
-                          raise RuntimeError("pi-bridge did not expose the bridge catalog")
+                          raise RuntimeError("pi-bridge did not apply the live aliases")
 
                       _, baseline_models, exposed_ids, unmatched_ids = baseline
                       invalid_ids = {
@@ -737,10 +767,10 @@ spec:
                           for model_id in sorted(fallback_ids)
                       }
                       apply_advanced(aliases_only, aliases, overrides)
-                      final = wait_for_live_document(model_ids, 90)
+                      final = wait_for_synchronized_document(model_ids, fallback_ids, 90)
                       if final is None:
                           reload_bridge()
-                          final = wait_for_live_document(model_ids, 30)
+                          final = wait_for_synchronized_document(model_ids, fallback_ids, 30)
                       if final is None:
                           raise RuntimeError("pi-bridge did not expose synchronized metadata")
 
