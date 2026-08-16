@@ -470,6 +470,7 @@ spec:
             - -c
           args:
             - |
+              import fnmatch
               import json
               import os
               import pathlib
@@ -566,15 +567,28 @@ spec:
               def synchronized(ids, overrides):
                   result = bridge_document()
                   if result is None:
-                      return False
+                      return None
                   document, models = result
-                  if document.get("schemaVersion") != 1 or set(models) != ids:
-                      return False
-                  return all(
+                  patterns = [
+                      pattern
+                      for pattern in document.get("discoveryExcludes", [])
+                      if isinstance(pattern, str)
+                  ]
+                  exposed_ids = {
+                      model_id
+                      for model_id in ids
+                      if not any(fnmatch.fnmatchcase(model_id, pattern) for pattern in patterns)
+                  }
+                  if document.get("schemaVersion") != 1 or set(models) != exposed_ids:
+                      return None
+                  if not all(
                       models[model_id].get("contextWindow") == metadata["context_window"]
                       and models[model_id].get("name") == metadata["name"]
                       for model_id, metadata in overrides.items()
-                  )
+                      if model_id in exposed_ids
+                  ):
+                      return None
+                  return len(exposed_ids)
 
               ready.unlink(missing_ok=True)
               while True:
@@ -610,12 +624,23 @@ spec:
                           if patch_status != 200:
                               raise RuntimeError("pi-bridge metadata update failed")
                       deadline = time.monotonic() + 90
-                      while time.monotonic() < deadline and not synchronized(model_ids, overrides):
+                      exposed_count = None
+                      while time.monotonic() < deadline:
+                          exposed_count = synchronized(model_ids, overrides)
+                          if exposed_count is not None:
+                              break
                           time.sleep(2)
-                      if not synchronized(model_ids, overrides):
+                      if exposed_count is None:
                           raise RuntimeError("pi-bridge did not expose the live metadata")
-                      ready.write_text(str(len(model_ids)) + "\n", encoding="ascii")
-                      print("pi-bridge metadata ready for " + str(len(model_ids)) + " models", flush=True)
+                      ready.write_text(str(exposed_count) + "/" + str(len(model_ids)) + "\n", encoding="ascii")
+                      print(
+                          "pi-bridge metadata ready for "
+                          + str(exposed_count)
+                          + " exposed models (of "
+                          + str(len(model_ids))
+                          + " live models)",
+                          flush=True,
+                      )
                   except Exception as error:
                       ready.unlink(missing_ok=True)
                       print("pi-bridge metadata waiting: " + str(error), flush=True)
