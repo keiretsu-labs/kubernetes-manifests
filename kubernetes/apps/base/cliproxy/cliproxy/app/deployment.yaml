@@ -243,28 +243,30 @@ spec:
             - |
               import json
               import pathlib
-              import time
               import urllib.request
 
-              upstream = "http://stpetersburg-vllm.keiretsu.ts.net/v1"
-              for attempt in range(30):
-                  try:
-                      with urllib.request.urlopen(upstream + "/models", timeout=10) as response:
-                          payload = json.load(response)
-                      models = []
-                      seen = set()
-                      for entry in payload.get("data", []):
-                          model = str(entry.get("id", "")).strip()
-                          if model and model not in seen:
-                              seen.add(model)
-                              models.append(model)
-                      if not models:
-                          raise RuntimeError("upstream returned no models")
-                      break
-                  except Exception:
-                      if attempt == 29:
-                          raise
-                      time.sleep(2)
+              # This external Service is the supported in-cluster route to the
+              # tailnet endpoint. The DSV4 rollout can take several minutes;
+              # retain the stable model while its live catalog is unavailable
+              # so a transient remote outage cannot keep CLIProxy in init.
+              upstream = "http://stpetersburg-vllm-upstream/v1"
+              fallback_models = ["deepseek-v4-flash"]
+              try:
+                  with urllib.request.urlopen(upstream + "/models", timeout=5) as response:
+                      payload = json.load(response)
+                  models = []
+                  seen = set()
+                  for entry in payload.get("data", []):
+                      model = str(entry.get("id", "")).strip()
+                      if model and model not in seen:
+                          seen.add(model)
+                          models.append(model)
+                  if not models:
+                      raise RuntimeError("upstream returned no models")
+              except Exception as error:
+                  models = fallback_models
+                  seen = set(models)
+                  print(f"vllm discovery unavailable; using stable fallback: {error}")
 
               lines = [
                   "openai-compatibility:",
