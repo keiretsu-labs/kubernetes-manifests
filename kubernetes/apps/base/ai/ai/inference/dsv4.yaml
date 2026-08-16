@@ -16,9 +16,15 @@
 # - --generation-config vllm (no server-side sampling override)
 # - DSpark k=5 probabilistic drafting; B12X MoE + WO projection enabled
 # - CUDA graphs are runtime-derived: do not use an explicit capture-size flag
-# - 0.76 is the first 95Gi-cgroup qualification setting; do not assume bare-metal 0.78 transfers
-# - The existing immutable internal NVFP4 image carries the prebuilt Stage-C path; the runtime
-#   changes below move to Tech2Wild's proven 1M configuration.
+#   (upstream DEFAULT-CONFIG.md measures an explicit --max-cudagraph-capture-size as
+#   neutral-to-worse and lists it under "Do not add these")
+# - gpu-memory-utilization MUST be 0.78, upstream's validated default for this exact
+#   max-model-len=1048576/max-num-seqs=6 profile. 0.76 (typo'd here 2026-08-14) leaves
+#   only ~5.07GiB for KV cache where 1M context needs ~7.3GiB, so EngineCore fails
+#   _initialize_kv_caches on every boot -> LWS RecreateGroup loop. 0.80 is explicitly
+#   flagged upstream as dangerous: it boots and passes smoke tests, then OOMs once
+#   DSpark's speculative-decode buffers allocate on the first real request (issue #8).
+#   Do not raise past 0.78 without re-validating against upstream's issue #8 notes.
 #
 # Memory guard  : 95Gi Guaranteed QoS, drop-caches init + loop sidecar,
 #                 GPU reset at startup. DSpark weights: ~79 GiB.
@@ -236,7 +242,7 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.76 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
@@ -463,7 +469,7 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.76 \
+              --gpu-memory-utilization 0.78 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
