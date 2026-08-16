@@ -552,9 +552,16 @@ spec:
                   return plain_ids, aliases, rich_metadata
 
               def bridge_document():
+                  # Config changes are applied asynchronously by CLIProxy, while
+                  # the bridge normally caches its discovery document.  A stale
+                  # document can describe the pre-alias/pre-override state and
+                  # make this reconciler install rich CLIProxy metadata for
+                  # models the bridge already knows.  Rebuild the document for
+                  # each reconciliation read; the bridge's models.dev catalogue
+                  # remains cached independently.
                   status, document = request(
                       "GET",
-                      "/v0/resource/plugins/pi-bridge/well-known",
+                      "/v0/resource/plugins/pi-bridge/well-known?refresh=true",
                       api_key,
                       extra_headers={"X-Pi-Contract": "2"},
                   )
