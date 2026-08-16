@@ -28,7 +28,7 @@ spec:
       containers:
         - name: omnibus
           # renovate: datasource=docker depName=ghcr.io/kbpersonal/omnibus
-          image: ghcr.io/kbpersonal/omnibus:v1.4.10@sha256:3f1fc9752096dddce1179014497eccc75f121dc88cef2bf7314790886320fc70
+          image: ghcr.io/kbpersonal/omnibus:v1.4.11@sha256:04418d4dde9da2490b2d776f5468f904bcfb10cff0f21a2f90222032316a1111
           ports:
             - name: http
               containerPort: 3000
