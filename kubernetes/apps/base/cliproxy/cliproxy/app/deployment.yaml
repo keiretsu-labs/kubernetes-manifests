@@ -470,10 +470,12 @@ spec:
             - -c
           args:
             - |
+              import collections
               import fnmatch
               import json
               import os
               import pathlib
+              import re
               import time
               import urllib.error
               import urllib.request
@@ -484,6 +486,12 @@ spec:
               state = pathlib.Path("/state")
               ready = state / "ready"
               interval = 300
+              models_dev_url = "https://models.dev/api.json"
+              upstreams = (
+                  ("ai", "http://ai.keiretsu.ts.net/v1/models"),
+                  ("ai-kartik", "http://ai-kartik.keiretsu.ts.net/v1/models"),
+                  ("vllm", "http://stpetersburg-vllm-upstream/v1/models"),
+              )
 
               def request(method, path, token, payload=None, extra_headers=None):
                   body = None if payload is None else json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
@@ -494,71 +502,285 @@ spec:
                   }
                   if extra_headers:
                       headers.update(extra_headers)
-                  req = urllib.request.Request(
-                      base + path,
-                      data=body,
-                      method=method,
-                      headers=headers,
-                  )
+                  req = urllib.request.Request(base + path, data=body, method=method, headers=headers)
                   try:
                       with urllib.request.urlopen(req, timeout=20) as response:
                           return response.status, json.load(response)
                   except urllib.error.HTTPError as error:
                       return error.code, None
 
+              def fetch_json(url):
+                  req = urllib.request.Request(
+                      url,
+                      headers={
+                          "Accept": "application/json",
+                          "User-Agent": "Bhaiya-CLIProxy/1.0",
+                      },
+                  )
+                  with urllib.request.urlopen(req, timeout=30) as response:
+                      return json.load(response)
+
               def canonical(value):
                   return json.dumps(value, separators=(",", ":"), sort_keys=True)
 
-              def catalog():
-                  plain_status, plain = request("GET", "/v1/models", api_key)
-                  rich_status, rich = request("GET", "/v1/models?client_version=1.0.0", api_key)
-                  if plain_status != 200 or rich_status != 200:
-                      raise RuntimeError("model catalog is not ready")
-                  plain_rows = plain.get("data", [])
-                  rich_rows = rich.get("models", [])
-                  plain_ids = {
-                      str(row.get("id", "")).strip()
-                      for row in plain_rows
-                      if isinstance(row, dict) and str(row.get("id", "")).strip()
-                  }
-                  rich_by_id = {
-                      str(row.get("slug", "")).strip(): row
-                      for row in rich_rows
-                      if isinstance(row, dict) and str(row.get("slug", "")).strip()
-                  }
-                  if not plain_ids or plain_ids != set(rich_by_id):
-                      raise RuntimeError("plain and rich model catalogs differ")
+              def positive(value):
+                  if isinstance(value, bool):
+                      return 0
+                  if isinstance(value, (int, float)) and value > 0:
+                      return int(value)
+                  return 0
 
-                  aliases = {}
-                  rich_metadata = {}
-                  for model_id in sorted(plain_ids):
-                      row = rich_by_id[model_id]
-                      context_window = int(row.get("context_window") or row.get("max_context_window") or 0)
-                      name = str(row.get("display_name", "")).strip()
-                      if context_window <= 0 or not name:
-                          raise RuntimeError("rich catalog has incomplete metadata")
-                      metadata = {
-                          "name": name,
-                          "context_window": context_window,
+              def first_positive(*values):
+                  for value in values:
+                      if result := positive(value):
+                          return result
+                  return 0
+
+              def words(value):
+                  return set(re.findall(r"[a-z0-9]{3,}", str(value).lower()))
+
+              def normalized(value):
+                  return re.sub(r"[^a-z0-9]", "", str(value).lower())
+
+              def model_forms(value):
+                  pending = [(str(value).strip(), 4)]
+                  forms = {}
+                  while pending:
+                      current, quality = pending.pop()
+                      key = normalized(current)
+                      if len(key) < 4 or forms.get(key, -1) >= quality:
+                          continue
+                      forms[key] = quality
+                      dated = re.sub(r"(?i)(?:[-_.]20\d{2}(?:[-_.]?\d{2}){2})$", "", current)
+                      if dated != current:
+                          pending.append((dated, quality - 1))
+                      for separator in ("@", ":"):
+                          if separator in current:
+                              pending.append((current.split(separator, 1)[0], quality - 1))
+                      for separator in ("/", "."):
+                          if separator in current:
+                              pending.append((current.split(separator, 1)[1], quality - 1))
+                  return forms
+
+              def string_values(value):
+                  if isinstance(value, dict):
+                      for child in value.values():
+                          yield from string_values(child)
+                  elif isinstance(value, list):
+                      for child in value:
+                          yield from string_values(child)
+                  elif isinstance(value, str):
+                      yield value
+
+              def model_catalog():
+                  status, payload = request("GET", "/v1/models", api_key)
+                  if status != 200 or not isinstance(payload, dict):
+                      raise RuntimeError("CLIProxy model catalog is not ready")
+                  owners = {}
+                  for row in payload.get("data", []):
+                      if not isinstance(row, dict):
+                          continue
+                      model_id = str(row.get("id", "")).strip()
+                      if model_id:
+                          owners[model_id] = str(row.get("owned_by", "")).strip()
+                  if not owners:
+                      raise RuntimeError("CLIProxy returned no models")
+                  return owners
+
+              def catalog_metadata(row):
+                  limit = row.get("limit") if isinstance(row.get("limit"), dict) else {}
+                  metadata = {}
+                  if name := str(row.get("name", "")).strip():
+                      metadata["name"] = name
+                  if context_window := positive(limit.get("context")):
+                      metadata["context_window"] = context_window
+                  if max_tokens := positive(limit.get("output")):
+                      metadata["max_tokens"] = max_tokens
+                  if isinstance(row.get("reasoning"), bool):
+                      metadata["reasoning"] = row["reasoning"]
+                  cost = row.get("cost")
+                  if isinstance(cost, dict):
+                      translated = {
+                          "input": cost.get("input"),
+                          "output": cost.get("output"),
+                          "cache_read": cost.get("cache_read"),
+                          "cache_write": cost.get("cache_write"),
                       }
-                      levels = row.get("supported_reasoning_levels")
-                      if isinstance(levels, list):
-                          metadata["reasoning"] = bool(levels)
-                      rich_metadata[model_id] = metadata
-                      # CLIProxy's prefix is an independently selectable route,
-                      # not part of the upstream model id that models.dev knows.
-                      if "/" in model_id:
-                          aliases[model_id] = model_id.split("/", 1)[1]
-                  return plain_ids, aliases, rich_metadata
+                      translated = {
+                          key: value
+                          for key, value in translated.items()
+                          if isinstance(value, (int, float)) and not isinstance(value, bool)
+                      }
+                      if translated:
+                          metadata["cost"] = translated
+                  return metadata
+
+              def load_models_dev():
+                  payload = fetch_json(models_dev_url)
+                  if not isinstance(payload, dict):
+                      raise RuntimeError("models.dev returned an invalid catalog")
+                  entries = []
+                  index = collections.defaultdict(list)
+                  for provider_id, provider in payload.items():
+                      if not isinstance(provider, dict):
+                          continue
+                      root = " ".join((str(provider_id), str(provider.get("name", ""))))
+                      models = provider.get("models")
+                      if not isinstance(models, dict):
+                          continue
+                      for model_id, row in models.items():
+                          if not isinstance(row, dict):
+                              continue
+                          entry = (
+                              str(provider_id),
+                              root,
+                              " ".join(string_values(row.get("provider"))),
+                              catalog_metadata(row),
+                          )
+                          entry_index = len(entries)
+                          entries.append(entry)
+                          for form, quality in model_forms(model_id).items():
+                              index[form].append((entry_index, quality))
+                  if not entries:
+                      raise RuntimeError("models.dev returned no model metadata")
+                  return entries, index
+
+              def direct_metadata(row):
+                  source_metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+                  source_limit = row.get("limit") if isinstance(row.get("limit"), dict) else {}
+                  metadata_limit = source_metadata.get("limit") if isinstance(source_metadata.get("limit"), dict) else {}
+                  metadata = {}
+                  if context_window := first_positive(
+                      row.get("context_window"),
+                      row.get("max_context_window"),
+                      row.get("max_model_len"),
+                      row.get("context_length"),
+                      source_metadata.get("context_window"),
+                      source_metadata.get("max_context_window"),
+                      source_metadata.get("max_model_len"),
+                      source_limit.get("context"),
+                      metadata_limit.get("context"),
+                  ):
+                      metadata["context_window"] = context_window
+                  if max_tokens := first_positive(
+                      row.get("max_tokens"),
+                      row.get("max_completion_tokens"),
+                      row.get("max_output_tokens"),
+                      source_metadata.get("max_tokens"),
+                      source_metadata.get("max_completion_tokens"),
+                      source_metadata.get("max_output_tokens"),
+                      source_limit.get("output"),
+                      metadata_limit.get("output"),
+                  ):
+                      metadata["max_tokens"] = max_tokens
+                  for name in (row.get("display_name"), row.get("name"), source_metadata.get("display_name"), source_metadata.get("name")):
+                      if isinstance(name, str) and name.strip():
+                          metadata["name"] = name.strip()
+                          break
+                  for reasoning in (row.get("reasoning"), source_metadata.get("reasoning")):
+                      if isinstance(reasoning, bool):
+                          metadata["reasoning"] = reasoning
+                          break
+                  return metadata
+
+              def route_sources(model_ids):
+                  sources = {}
+                  for prefix, url in upstreams:
+                      payload = fetch_json(url)
+                      rows = payload.get("data") if isinstance(payload, dict) else None
+                      if not isinstance(rows, list):
+                          raise RuntimeError(prefix + " returned an invalid model catalog")
+                      by_id = collections.defaultdict(list)
+                      by_normalized_id = collections.defaultdict(list)
+                      by_form = collections.defaultdict(list)
+                      for row in rows:
+                          if not isinstance(row, dict):
+                              continue
+                          model_id = str(row.get("id", "")).strip()
+                          if model_id:
+                              by_id[model_id].append(row)
+                              by_normalized_id[normalized(model_id)].append(row)
+                              for form, quality in model_forms(model_id).items():
+                                  by_form[form].append((model_id, row, quality))
+                      for model_id in model_ids:
+                          if not model_id.startswith(prefix + "/"):
+                              continue
+                          upstream_id = model_id[len(prefix) + 1:]
+                          exact = by_id.get(upstream_id, [])
+                          candidates = exact if len(exact) == 1 else by_normalized_id.get(normalized(upstream_id), [])
+                          if len(candidates) != 1:
+                              matched = {}
+                              for form, source_quality in model_forms(upstream_id).items():
+                                  for candidate_id, candidate, candidate_quality in by_form.get(form, []):
+                                      matched[candidate_id] = max(
+                                          matched.get(candidate_id, (0, None))[0],
+                                          source_quality + candidate_quality,
+                                      ), candidate
+                              ranked = sorted(matched.items(), key=lambda item: (-item[1][0], item[0]))
+                              if ranked and (len(ranked) == 1 or ranked[0][1][0] > ranked[1][1][0]):
+                                  candidates = [ranked[0][1][1]]
+                          if len(candidates) != 1:
+                              continue
+                          row = candidates[0]
+                          source_metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+                          provider = source_metadata.get("provider") if isinstance(source_metadata.get("provider"), dict) else {}
+                          sources[model_id] = {
+                              "id": str(row.get("id", "")).strip(),
+                              "provider": provider,
+                              "direct": direct_metadata(row),
+                          }
+                  return sources
+
+              def resolve_models_dev(entries, index, source):
+                  source_id = str(source.get("id", "")).strip()
+                  provider = source.get("provider") if isinstance(source.get("provider"), dict) else {}
+                  provider_text = " ".join((str(provider.get("id", "")), str(provider.get("name", ""))))
+                  source_provider_id = normalized(provider.get("id", ""))
+                  source_words = words(provider_text)
+                  route_words = source_words - words(source_id)
+                  if route_words:
+                      source_words = route_words
+                  candidates = {}
+                  for form, source_quality in model_forms(source_id).items():
+                      for entry_index, catalog_quality in index.get(form, []):
+                          candidates[entry_index] = max(candidates.get(entry_index, -1), source_quality + catalog_quality)
+                  rated = []
+                  for entry_index, id_quality in candidates.items():
+                      provider_id, root, model_provider, metadata = entries[entry_index]
+                      root_words = words(root)
+                      model_provider_words = words(model_provider)
+                      root_score = sum(len(word) * 1000 for word in source_words & root_words)
+                      if source_provider_id and source_provider_id == normalized(provider_id):
+                          root_score += 10000
+                      model_score = sum(len(word) * 100 for word in source_words & model_provider_words)
+                      rated.append((root_score + model_score, id_quality, provider_id, metadata))
+                  if not rated:
+                      return {}
+                  rated.sort(key=lambda item: (-item[0], -item[1], item[2]))
+                  source_score, _, _, metadata = rated[0]
+                  if source_score <= 0:
+                      shapes = {
+                          canonical({
+                              key: candidate[3].get(key)
+                              for key in ("context_window", "max_tokens", "reasoning")
+                          })
+                          for candidate in rated
+                      }
+                      if len(shapes) != 1:
+                          return {}
+                  return dict(metadata)
+
+              def resolved_metadata(model_id, owner, route_source, entries, index):
+                  if route_source is None:
+                      raw_id = model_id.split("/", 1)[1] if "/" in model_id else model_id
+                      route_source = {"id": raw_id, "provider": {"id": owner}, "direct": {}}
+                  metadata = resolve_models_dev(entries, index, route_source)
+                  metadata.update(route_source.get("direct", {}))
+                  if not positive(metadata.get("context_window")):
+                      return None
+                  return metadata
 
               def bridge_document():
-                  # Config changes are applied asynchronously by CLIProxy, while
-                  # the bridge normally caches its discovery document.  A stale
-                  # document can describe the pre-alias/pre-override state and
-                  # make this reconciler install rich CLIProxy metadata for
-                  # models the bridge already knows.  Rebuild the document for
-                  # each reconciliation read; the bridge's models.dev catalogue
-                  # remains cached independently.
                   status, document = request(
                       "GET",
                       "/v0/resource/plugins/pi-bridge/well-known?refresh=true",
@@ -592,80 +814,34 @@ spec:
                       for model_id in ids
                       if not any(fnmatch.fnmatchcase(model_id, pattern) for pattern in patterns)
                   }
-                  if document.get("schemaVersion") != 1 or set(models) != exposed_ids:
-                      return None
                   catalog = document.get("catalog")
-                  if not isinstance(catalog, dict) or int(catalog.get("entries") or 0) <= 0:
-                      return None
-                  unmatched_ids = catalog.get("unmatchedIds") or []
-                  if not isinstance(unmatched_ids, list) or not all(isinstance(item, str) for item in unmatched_ids):
+                  unmatched_ids = (catalog.get("unmatchedIds") or []) if isinstance(catalog, dict) else None
+                  if (
+                      document.get("schemaVersion") != 1
+                      or set(models) != exposed_ids
+                      or not isinstance(catalog, dict)
+                      or int(catalog.get("entries") or 0) <= 0
+                      or not isinstance(unmatched_ids, list)
+                      or not all(isinstance(item, str) for item in unmatched_ids)
+                  ):
                       return None
                   unmatched_ids = set(unmatched_ids)
                   if not unmatched_ids.issubset(exposed_ids):
                       return None
                   return document, models, exposed_ids, unmatched_ids
 
-              def live_document(ids):
-                  snapshot = bridge_snapshot(ids)
-                  if snapshot is None:
-                      return None
-                  _, models, exposed_ids, _ = snapshot
-                  if not all(
-                      isinstance(models[model_id].get("contextWindow"), int)
-                      and models[model_id]["contextWindow"] > 0
-                      for model_id in exposed_ids
-                  ):
-                      return None
-                  return snapshot
-
-              def aliases_are_live(snapshot, aliases):
-                  _, models, _, _ = snapshot
-                  # A plugin reconfigure is asynchronous.  Before the aliases
-                  # are active the bridge reports its default metadata; after a
-                  # previous reconciliation it can instead report prior rich
-                  # fallbacks.  Custom models expose the active resolution
-                  # source, so one live alias and no stale override prove that
-                  # the aliases-only configuration is now in effect.
-                  return (
-                      not any(model.get("metadataSource") == "override" for model in models.values())
-                      and any(
-                          model_id in aliases and model.get("metadataSource") == "alias"
-                          for model_id, model in models.items()
-                      )
-                  )
-
-              def overrides_are_live(snapshot, fallback_ids):
-                  _, models, _, unmatched_ids = snapshot
-                  expected = {
-                      model_id
-                      for model_id in fallback_ids
-                      if model_id in models and "metadataSource" in models[model_id]
-                  }
-                  observed = {
-                      model_id
-                      for model_id, model in models.items()
-                      if model.get("metadataSource") == "override"
-                  }
-                  return not unmatched_ids and observed == expected
-
               def bridge_ready():
-                  status, payload = request(
-                      "GET",
-                      "/v0/management/plugins",
-                      management_key,
-                  )
+                  status, payload = request("GET", "/v0/management/plugins", management_key)
                   if status != 200 or not isinstance(payload, dict) or not payload.get("plugins_enabled"):
                       return False
-                  for plugin in payload.get("plugins", []):
-                      if (
-                          isinstance(plugin, dict)
-                          and plugin.get("id") == "pi-bridge"
-                          and plugin.get("configured")
-                          and plugin.get("registered")
-                          and plugin.get("effective_enabled")
-                      ):
-                          return True
-                  return False
+                  return any(
+                      isinstance(plugin, dict)
+                      and plugin.get("id") == "pi-bridge"
+                      and plugin.get("configured")
+                      and plugin.get("registered")
+                      and plugin.get("effective_enabled")
+                      for plugin in payload.get("plugins", [])
+                  )
 
               def reload_bridge():
                   status, _ = request(
@@ -683,31 +859,9 @@ spec:
                       time.sleep(1)
                   raise RuntimeError("pi-bridge reload did not become ready")
 
-              def wait_for_alias_snapshot(ids, aliases, timeout):
-                  deadline = time.monotonic() + timeout
-                  while time.monotonic() < deadline:
-                      snapshot = bridge_snapshot(ids)
-                      if snapshot is not None and aliases_are_live(snapshot, aliases):
-                          return snapshot
-                      time.sleep(2)
-                  return None
-
-              def wait_for_synchronized_document(ids, fallback_ids, timeout):
-                  deadline = time.monotonic() + timeout
-                  while time.monotonic() < deadline:
-                      document = live_document(ids)
-                      if document is not None and overrides_are_live(document, fallback_ids):
-                          return document
-                      time.sleep(2)
-                  return None
-
               def advanced_config():
-                  config_status, plugin_config = request(
-                      "GET",
-                      "/v0/management/plugins/pi-bridge/config",
-                      management_key,
-                  )
-                  if config_status != 200 or not isinstance(plugin_config, dict):
+                  status, plugin_config = request("GET", "/v0/management/plugins/pi-bridge/config", management_key)
+                  if status != 200 or not isinstance(plugin_config, dict):
                       raise RuntimeError("pi-bridge management config is not ready")
                   current = plugin_config.get("advanced", "")
                   try:
@@ -716,92 +870,107 @@ spec:
                       current = {}
                   return current if isinstance(current, dict) else {}
 
-              def apply_advanced(current, aliases, overrides):
+              def apply_advanced(current, overrides):
                   desired = dict(current)
-                  desired.update({
-                      "model_aliases": aliases,
-                      "model_overrides": overrides,
-                  })
+                  desired.update({"model_aliases": {}, "model_overrides": overrides})
                   if canonical(current) != canonical(desired):
-                      patch_status, _ = request(
+                      status, _ = request(
                           "PATCH",
                           "/v0/management/plugins/pi-bridge/config",
                           management_key,
                           {"advanced": canonical(desired)},
                       )
-                      if patch_status != 200:
+                      if status != 200:
                           raise RuntimeError("pi-bridge metadata update failed")
                       reload_bridge()
-                  return desired
+
+              def metadata_matches(model, metadata):
+                  fields = {
+                      "context_window": "contextWindow",
+                      "max_tokens": "maxTokens",
+                      "name": "name",
+                      "reasoning": "reasoning",
+                  }
+                  for source_key, document_key in fields.items():
+                      if source_key in metadata and model.get(document_key) != metadata[source_key]:
+                          return False
+                  if "cost" in metadata:
+                      actual = model.get("cost") or {}
+                      expected = {
+                          "input": metadata["cost"].get("input"),
+                          "output": metadata["cost"].get("output"),
+                          "cacheRead": metadata["cost"].get("cache_read"),
+                          "cacheWrite": metadata["cost"].get("cache_write"),
+                      }
+                      for key, value in expected.items():
+                          if value is not None and actual.get(key) != value:
+                              return False
+                  return True
+
+              def wait_for_snapshot(ids, timeout):
+                  deadline = time.monotonic() + timeout
+                  while time.monotonic() < deadline:
+                      snapshot = bridge_snapshot(ids)
+                      if snapshot is not None:
+                          return snapshot
+                      time.sleep(2)
+                  return None
+
+              def wait_for_synchronized_document(ids, overrides, unresolved, timeout):
+                  deadline = time.monotonic() + timeout
+                  while time.monotonic() < deadline:
+                      snapshot = bridge_snapshot(ids)
+                      if snapshot is not None:
+                          _, models, exposed_ids, unmatched_ids = snapshot
+                          if (
+                              unmatched_ids == unresolved
+                              and all(
+                                  model_id in exposed_ids and metadata_matches(models[model_id], metadata)
+                                  for model_id, metadata in overrides.items()
+                              )
+                          ):
+                              return snapshot
+                      time.sleep(2)
+                  return None
 
               ready.unlink(missing_ok=True)
               while True:
                   try:
-                      model_ids, aliases, rich_metadata = catalog()
-                      aliases_only = apply_advanced(advanced_config(), aliases, {})
-                      # The bridge reports unmatched aliases and some plugin-owned
-                      # models before an override supplies their metadata.  This
-                      # baseline is deliberately structural: requiring positive
-                      # context windows here would prevent us from discovering the
-                      # exact dynamic fallback set needed to make it live.
-                      baseline = wait_for_alias_snapshot(model_ids, aliases, 90)
-                      if baseline is None:
-                          reload_bridge()
-                          baseline = wait_for_alias_snapshot(model_ids, aliases, 30)
-                      if baseline is None:
-                          raise RuntimeError("pi-bridge did not apply the live aliases")
-
-                      _, baseline_models, exposed_ids, unmatched_ids = baseline
-                      invalid_ids = {
-                          model_id
-                          for model_id in exposed_ids
-                          if not isinstance(baseline_models[model_id].get("contextWindow"), int)
-                          or baseline_models[model_id]["contextWindow"] <= 0
-                      }
-                      fallback_ids = unmatched_ids | invalid_ids
-                      missing_metadata = fallback_ids - set(rich_metadata)
-                      if missing_metadata:
-                          raise RuntimeError("rich catalog is missing bridge fallbacks")
-                      overrides = {
-                          model_id: rich_metadata[model_id]
-                          for model_id in sorted(fallback_ids)
-                      }
-                      apply_advanced(aliases_only, aliases, overrides)
-                      final = wait_for_synchronized_document(model_ids, fallback_ids, 90)
+                      owners = model_catalog()
+                      initial = wait_for_snapshot(set(owners), 90)
+                      if initial is None:
+                          raise RuntimeError("pi-bridge did not expose the live model catalog")
+                      _, _, exposed_ids, _ = initial
+                      entries, index = load_models_dev()
+                      sources = route_sources(exposed_ids)
+                      overrides = {}
+                      unresolved = set()
+                      for model_id in sorted(exposed_ids):
+                          metadata = resolved_metadata(model_id, owners[model_id], sources.get(model_id), entries, index)
+                          if metadata is None:
+                              unresolved.add(model_id)
+                          else:
+                              overrides[model_id] = metadata
+                      apply_advanced(advanced_config(), overrides)
+                      final = wait_for_synchronized_document(set(owners), overrides, unresolved, 90)
                       if final is None:
                           reload_bridge()
-                          final = wait_for_synchronized_document(model_ids, fallback_ids, 30)
+                          final = wait_for_synchronized_document(set(owners), overrides, unresolved, 30)
                       if final is None:
-                          raise RuntimeError("pi-bridge did not expose synchronized metadata")
-
-                      _, models, exposed_ids, unresolved = final
-                      if unresolved:
-                          raise RuntimeError("pi-bridge retained unresolved models")
-                      if not all(
-                          models[model_id].get("contextWindow") == metadata["context_window"]
-                          and models[model_id].get("name") == metadata["name"]
-                          and (
-                              "reasoning" not in metadata
-                              or bool(models[model_id].get("reasoning")) == metadata["reasoning"]
-                          )
-                          for model_id, metadata in overrides.items()
-                          if model_id in exposed_ids
-                      ):
-                          raise RuntimeError("pi-bridge fallback metadata differs from CLIProxy")
-
-                      (state / "fallback-ids.json").write_text(
-                          canonical({"ids": sorted(fallback_ids)}) + "\n",
+                          raise RuntimeError("pi-bridge did not expose source-resolved metadata")
+                      (state / "metadata.json").write_text(
+                          canonical({"resolved": sorted(overrides), "unresolved": sorted(unresolved)}) + "\n",
                           encoding="ascii",
                       )
-                      ready.write_text(str(len(exposed_ids)) + "/" + str(len(model_ids)) + "\n", encoding="ascii")
+                      ready.write_text(str(len(overrides)) + "/" + str(len(exposed_ids)) + "\n", encoding="ascii")
                       print(
                           "pi-bridge metadata ready for "
+                          + str(len(overrides))
+                          + " source-resolved models (of "
                           + str(len(exposed_ids))
-                          + " exposed models (of "
-                          + str(len(model_ids))
-                          + " live models; "
-                          + str(len(fallback_ids))
-                          + " rich metadata fallbacks)",
+                          + " exposed; "
+                          + str(len(unresolved))
+                          + " require Pi exclusion)",
                           flush=True,
                       )
                   except Exception as error:
@@ -828,7 +997,7 @@ spec:
               memory: 32Mi
             limits:
               cpu: 200m
-              memory: 128Mi
+              memory: 256Mi
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
