@@ -8,4 +8,4 @@ spec:
   storageClassName: ceph-block-replicated
   resources:
     requests:
-      storage: 40Gi
+      storage: 64Gi
