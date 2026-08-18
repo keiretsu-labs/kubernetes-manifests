@@ -25,6 +25,7 @@ spec:
       cp /patches/stage_a.py /workspace/
       cp /patches/stage_b.py /workspace/
       cp /patches/stage_c.py /workspace/
+      cp /patches/stage_d.py /workspace/
       echo "Setup done"
     volumeMounts:
     - name: workspace
@@ -49,7 +50,8 @@ spec:
       echo 'COPY stage_b.py /tmp/stage_b.py' >> /workspace/Dockerfile.combined
       echo 'RUN /opt/env/bin/python /tmp/stage_b.py' >> /workspace/Dockerfile.combined
       echo 'COPY stage_c.py /tmp/stage_c.py' >> /workspace/Dockerfile.combined
-      echo 'RUN /opt/env/bin/python /tmp/stage_c.py' >> /workspace/Dockerfile.combined
+      echo 'COPY stage_d.py /tmp/stage_d.py' >> /workspace/Dockerfile.combined
+      echo 'RUN /opt/env/bin/python /tmp/stage_a.py && /opt/env/bin/python /tmp/stage_b.py && /opt/env/bin/python /tmp/stage_c.py && /opt/env/bin/python /tmp/stage_d.py' >> /workspace/Dockerfile.combined
       echo 'RUN /opt/env/bin/python -c "import vllm.config.cache as c; assert chr(110)+chr(118)+chr(102)+chr(112)+chr(52)+chr(95)+chr(100)+chr(115)+chr(95)+chr(109)+chr(108)+chr(97) in c.CacheDType.__args__; import vllm; print(chr(111)+chr(107))"' >> /workspace/Dockerfile.combined
       echo "Dockerfile generated"
       cat /workspace/Dockerfile.combined
@@ -64,7 +66,7 @@ spec:
     args:
     - --dockerfile=/workspace/Dockerfile.combined
     - --context=dir:///workspace
-    - --destination=10.4.240.203:5000/dsv4-nvfp4:stage-c-20260705
+    - --destination=stpetersburg-zot.zot:5000/dsv4-nvfp4:v4flash-prod-20260818-stage-d
     - --cache=false
     - --skip-tls-verify
     - --insecure
@@ -78,3 +80,12 @@ spec:
   - name: patches
     configMap:
       name: dsv4-nvfp4-dockerfile
+      items:
+      - key: stage_a.py
+        path: stage_a.py
+      - key: stage_b.py
+        path: stage_b.py
+      - key: stage_c.py
+        path: stage_c.py
+      - key: stage_d.py
+        path: stage_d.py

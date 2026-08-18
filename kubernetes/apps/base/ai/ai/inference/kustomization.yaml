@@ -7,6 +7,8 @@ resources:
   - namespace.yaml
   - vllm.yaml
   - dsv4.yaml
+  - dsv4-dockerfile.yaml
+  - dsv4-kaniko-build.yaml
   - scrapeconfig.yaml
   - secret.yaml
   - probes.yaml

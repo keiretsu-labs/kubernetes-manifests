@@ -49,3 +49,17 @@ data:
         '        if self.cache_dtype_str == "nvfp4_ds_mla":\n            return self.storage_block_size * 416\n        if self.cache_dtype_str == "fp8_ds_mla":',
         '        if self.cache_dtype_str == "nvfp4_ds_mla":\n            if self.model_version == "deepseek_v4":\n                return self.storage_block_size * 584\n            return self.storage_block_size * 416\n        if self.cache_dtype_str == "fp8_ds_mla":')
     print("Stage C done")
+  stage_d.py: |
+    from pathlib import Path
+    root = Path("/opt/env/lib/python3.12/site-packages/vllm")
+    def rep(path, old, new):
+        p = root / path; t = p.read_text()
+        if new in t: return
+        if old not in t: raise SystemExit(f"missing: {p}")
+        p.write_text(t.replace(old, new, 1))
+    # Upstream DSpark issue #22: route the proven NVFP4 DS-MLA envelope
+    # through the fast FP8 dispatch path instead of the slow BF16 path.
+    rep("v1/attention/backends/mla/flashmla_sparse.py",
+        'use_fp8_cache = self.kv_cache_dtype == "fp8_ds_mla"',
+        'use_fp8_cache = self.kv_cache_dtype in ("fp8_ds_mla", "nvfp4_ds_mla")')
+    print("Stage D done")
