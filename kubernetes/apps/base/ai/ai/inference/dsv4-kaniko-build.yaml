@@ -66,7 +66,7 @@ spec:
     args:
     - --dockerfile=/workspace/Dockerfile.combined
     - --context=dir:///workspace
-    - --destination=stpetersburg-zot.zot:5000/dsv4-nvfp4:v4flash-prod-20260818-stage-d
+    - --destination=stpetersburg-zot:5000/dsv4-nvfp4:v4flash-prod-20260818-stage-d
     - --cache=false
     - --skip-tls-verify
     - --insecure
