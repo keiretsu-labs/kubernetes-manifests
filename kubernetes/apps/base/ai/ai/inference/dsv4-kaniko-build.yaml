@@ -66,17 +66,26 @@ spec:
     args:
     - --dockerfile=/workspace/Dockerfile.combined
     - --context=dir:///workspace
-    - --destination=stpetersburg-zot.zot:5000/dsv4-nvfp4:v4flash-prod-20260818-stage-d
+    - --destination=ghcr.io/rajsinghtechbot/dsv4-nvfp4:v4flash-prod-20260818-stage-d
     - --cache=false
     - --skip-tls-verify
     - --insecure
     - --verbosity=info
+    - --push-retry=3
     volumeMounts:
     - name: workspace
       mountPath: /workspace
+    - name: docker-config
+      mountPath: /kaniko/.docker
   volumes:
   - name: workspace
     emptyDir: {}
+  - name: docker-config
+    secret:
+      secretName: ghcr-push-secret
+      items:
+      - key: .dockerconfigjson
+        path: config.json
   - name: patches
     configMap:
       name: dsv4-nvfp4-dockerfile
