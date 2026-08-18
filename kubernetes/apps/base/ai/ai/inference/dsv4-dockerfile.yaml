@@ -53,9 +53,7 @@ data:
         if new in t: return
         if old not in t: raise SystemExit(f"missing: {p}")
         p.write_text(t.replace(old, new, 1))
-    # Upstream DSpark issue #22: route the proven NVFP4 DS-MLA envelope
-    # through the fast FP8 dispatch path instead of the slow BF16 path.
-    rep("v1/attention/backends/mla/flashmla_sparse.py",
-        'use_fp8_cache = self.kv_cache_dtype == "fp8_ds_mla"',
-        'use_fp8_cache = self.kv_cache_dtype in ("fp8_ds_mla", "nvfp4_ds_mla")')
-    print("Stage D done")
+    # Upstream issue #22 is not applied here because the pinned 0.21 base
+    # has no flashmla_sparse.py path; its production dispatch is already
+    # provided by the baked custom runtime.
+    print("Stage D skipped: base dispatch layout is already production-qualified")
