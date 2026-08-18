@@ -15,15 +15,15 @@ data:
   download-and-validate.sh: |
     #!/usr/bin/env bash
     set -euo pipefail
-    MODEL_DIR="${MODEL_DIR:-/models/dsv4}"
-    HF_REPO="${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-0731}"
-    HF_REVISION="${HF_REVISION:-9e165c30e2704aec5d9d593cce3eebd58bbef1cb}"
-    EXPECTED_MARKER="${HF_REPO}@${HF_REVISION}"
-    mkdir -p "$MODEL_DIR"
-    marker="$MODEL_DIR/.model-revision"
-    count=$(find "$MODEL_DIR" -maxdepth 1 -name 'model-*.safetensors' | wc -l)
-    current=$(cat "$marker" 2>/dev/null || true)
-    if [ "$count" -eq 48 ] && [ "$current" = "$EXPECTED_MARKER" ] && [ -f "$MODEL_DIR/encoding/encoding_dsv4.py" ]; then
+    MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
+    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-0731}"
+    HF_REVISION="$${HF_REVISION:-9e165c30e2704aec5d9d593cce3eebd58bbef1cb}"
+    EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
+    mkdir -p "$${MODEL_DIR}"
+    marker="$${MODEL_DIR}/.model-revision"
+    count="$$(find "$${MODEL_DIR}" -maxdepth 1 -name 'model-*.safetensors' | wc -l)"
+    current="$$(cat "$${marker}" 2>/dev/null || true)"
+    if [ "$${count}" -eq 48 ] && [ "$${current}" = "$${EXPECTED_MARKER}" ] && [ -f "$${MODEL_DIR}/encoding/encoding_dsv4.py" ]; then
       echo "[download] exact 0731 snapshot already present ($count shards)"
       exit 0
     fi
