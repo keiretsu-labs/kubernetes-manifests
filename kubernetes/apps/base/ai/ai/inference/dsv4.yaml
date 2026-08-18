@@ -238,7 +238,7 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.82 \
+              --gpu-memory-utilization 0.7866 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
@@ -467,7 +467,7 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.82 \
+              --gpu-memory-utilization 0.7866 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
