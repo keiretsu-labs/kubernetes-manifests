@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: dsv4-nvfp4-builder-ghcr
+  name: dsv4-nvfp4-builder-v3
   namespace: ai
 spec:
   restartPolicy: Never
