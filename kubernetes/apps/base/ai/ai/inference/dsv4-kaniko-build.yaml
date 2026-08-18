@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: dsv4-nvfp4-builder-v3
+  name: dsv4-nvfp4-builder-v4
   namespace: ai
 spec:
   restartPolicy: Never
@@ -64,7 +64,7 @@ spec:
     args:
     - --dockerfile=/workspace/Dockerfile.combined
     - --context=dir:///workspace
-    - --destination=ghcr.io/rajsinghtechbot/dsv4-nvfp4:v4flash-prod-20260818-stage-d
+    - --destination=ghcr.io/rajsinghtechbot/dsv4-nvfp4:v4flash-prod-20260818-stage-e
     - --cache=false
     - --skip-tls-verify
     - --insecure
