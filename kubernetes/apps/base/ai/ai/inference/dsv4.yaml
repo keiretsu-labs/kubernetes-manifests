@@ -1,45 +1,10 @@
 # SPDX-FileCopyrightText: © 2025 Raj Singh <raj@keiretsu.cloud>
 # SPDX-License-Identifier: MIT
 #
-# DeepSeek-V4-Flash on 2× DGX Spark — vLLM v1 engine (DSpark spec-decode)
-#
-# Architecture  : TP=2 via PyTorch mp backend, DSpark k=5 spec-decode,
-#                 NVFP4 sparse-MLA KV cache, LeaderWorkerSet gang scheduling.
-# Image         : ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
-#                 (custom arm64 vLLM 0.21+B12X runtime with NVFP4 patches)
-# Model         : deepseek-ai/DeepSeek-V4-Flash-0731@9e165c30 (48 shards, FP8 weights)
-#
-# Tech2Wild-derived Stage-C NVFP4/B12X profile (upstream recipe commit 2d4820f):
-# - --max-num-seqs 6, --max-model-len 786432 (this cluster's real ceiling, see below;
-#   the model's calibrated YaRN ceiling is 1048576 but this node can't fit it)
-# - --enable-chunked-prefill, --enable-prefix-caching, --async-scheduling
-# - --reasoning-config, --default-chat-template-kwargs '{"thinking":false}'
-# - --generation-config vllm (no server-side sampling override)
-# - DSpark k=5 probabilistic drafting; B12X MoE + WO projection enabled
-# - CUDA graphs are runtime-derived: do not use an explicit capture-size flag
-#   (upstream DEFAULT-CONFIG.md measures an explicit --max-cudagraph-capture-size as
-#   neutral-to-worse and lists it under "Do not add these")
-# - gpu-memory-utilization MUST be 0.78, upstream's validated default for this exact
-#   profile. 0.76 (typo'd here 2026-08-14) leaves only ~5.07GiB for KV cache; even
-#   0.78 (upstream's own documented default) only yields ~6.97GiB here - both fail
-#   EngineCore's _initialize_kv_caches at max-model-len=1048576 (needs ~7.3GiB), which
-#   crash-loops the whole LWS group every ~10min. Upstream's own numbers evidently
-#   don't transfer 1:1 to this node (probably less free headroom from other pods
-#   sharing spark-0/spark-1's unified memory than upstream's dedicated bench rig).
-#   0.80 is explicitly flagged upstream as dangerous: it boots and passes smoke
-#   tests, then OOMs once DSpark's speculative-decode buffers allocate on the first
-#   real request (issue #8) - a mid-traffic crash, worse than a clean boot refusal.
-#   Do not raise past 0.78 without re-validating against upstream's issue #8 notes.
-#   Instead cap max-model-len below vLLM's own measured ceiling (962304 tokens at
-#   0.78 on this node, per the boot-time ValueError) with real margin: 786432 gives
-#   ~18% headroom rather than running the boot check right up against the wall.
-#
-# Memory guard  : 95Gi Guaranteed QoS, drop-caches init + loop sidecar,
-#                 GPU reset at startup. DSpark weights: ~79 GiB.
-#                 NVFP4 KV: 786432 context at 0.78 utilization (not the full 1M -
-#                 see above; freeing more of spark-0/spark-1's memory from
-#                 non-GPU pods, or accepting the issue #8 risk at 0.80, would be
-#                 required to reach 1048576 on this hardware).
+# DeepSeek-V4-Flash-0731 DSpark on 2× DGX Spark.
+# Runtime: MiaAI/Anemll dspark-vllm-gx10 0.1.1, TP=2 over host-network RoCE.
+# Safety profile: 1M ceiling, DSpark k=5, NVFP4 DS-MLA KV, eager first boot,
+# 0.76 GPU utilization and 4096 prefill tokens to stay inside the 95Gi cgroup.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -48,59 +13,30 @@ metadata:
   namespace: ai
 data:
   download-and-validate.sh: |
-    #!/bin/bash
+    #!/usr/bin/env bash
     set -euo pipefail
-    MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
-    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-0731}"
-    HF_REVISION="$${HF_REVISION:-9e165c30e2704aec5d9d593cce3eebd58bbef1cb}"
-    MODEL_MARKER="$${MODEL_DIR}/.model-revision"
-    EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
-    EXPECTED=48
-
-    mkdir -p "$${MODEL_DIR}"
-    cd "$${MODEL_DIR}"
-
-    # Reuse only the exact pinned model revision. A shard-count-only check would
-    # incorrectly keep the superseded preview weights because both have 48 shards.
-    COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
-    CURRENT_MARKER="$$(cat "$${MODEL_MARKER}" 2>/dev/null || true)"
-    if [ "$${COUNT}" -eq "$${EXPECTED}" ] && [ "$${CURRENT_MARKER}" = "$${EXPECTED_MARKER}" ]; then
-      echo "[download] All $${EXPECTED} shards already present — skipping download."
-      echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
-      echo "[download] Done."
+    MODEL_DIR="${MODEL_DIR:-/models/dsv4}"
+    HF_REPO="${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-0731}"
+    HF_REVISION="${HF_REVISION:-9e165c30e2704aec5d9d593cce3eebd58bbef1cb}"
+    EXPECTED_MARKER="${HF_REPO}@${HF_REVISION}"
+    mkdir -p "$MODEL_DIR"
+    marker="$MODEL_DIR/.model-revision"
+    count=$(find "$MODEL_DIR" -maxdepth 1 -name 'model-*.safetensors' | wc -l)
+    current=$(cat "$marker" 2>/dev/null || true)
+    if [ "$count" -eq 48 ] && [ "$current" = "$EXPECTED_MARKER" ] && [ -f "$MODEL_DIR/encoding/encoding_dsv4.py" ]; then
+      echo "[download] exact 0731 snapshot already present ($count shards)"
       exit 0
     fi
-
-    if [ "$${CURRENT_MARKER}" != "$${EXPECTED_MARKER}" ]; then
-      echo "[download] Model revision changed ($${CURRENT_MARKER:-unmarked} -> $${EXPECTED_MARKER}); clearing old weights."
-      find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+    if [ "$current" != "$EXPECTED_MARKER" ]; then
+      echo "[download] snapshot changed: ${current:-unmarked} -> $EXPECTED_MARKER"
+      find "$MODEL_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
     fi
-
-    # Clean stale lock files from previous force-killed downloads
-    echo "[download] Cleaning stale lock files…"
-    rm -rf "$${MODEL_DIR}"/.cache/huggingface/download/*.lock 2>/dev/null || true
-
-    echo "[download] Starting model download with hf CLI ($${HF_REPO}@$${HF_REVISION})…"
-    hf download "$${HF_REPO}" --revision "$${HF_REVISION}" --local-dir "$${MODEL_DIR}" 2>&1
-
-    echo "[validate] Checking for $${EXPECTED} shards…"
-    COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
-    echo "[validate] Found $${COUNT} shard(s)"
-
-    if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
-      echo "[ERROR] Expected $${EXPECTED} shards, got $${COUNT}. Redownloading…"
-      find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-      hf download "$${HF_REPO}" --revision "$${HF_REVISION}" --local-dir "$${MODEL_DIR}" 2>&1
-      COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
-      if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
-        echo "[FATAL] Still only $${COUNT} shards after retry. Aborting."
-        exit 1
-      fi
-    fi
-
-    printf '%s\n' "$${EXPECTED_MARKER}" > "$${MODEL_MARKER}"
-    echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
-    echo "[download] Done."
+    hf download "$HF_REPO" --revision "$HF_REVISION" --local-dir "$MODEL_DIR"
+    count=$(find "$MODEL_DIR" -maxdepth 1 -name 'model-*.safetensors' | wc -l)
+    [ "$count" -eq 48 ] || { echo "[fatal] expected 48 shards, found $count" >&2; exit 1; }
+    [ -f "$MODEL_DIR/encoding/encoding_dsv4.py" ] || { echo "[fatal] missing encoding/encoding_dsv4.py" >&2; exit 1; }
+    printf '%s\n' "$EXPECTED_MARKER" > "$marker"
+    echo "[validate] 0731 snapshot OK ($count shards + encoder)"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -136,7 +72,6 @@ spec:
   leaderWorkerTemplate:
     size: 2
     restartPolicy: RecreateGroupOnPodRestart
-    # ---------- LEADER (rank 0 / API server) ----------
     leaderTemplate:
       metadata:
         labels: { app: dsv4, role: head }
@@ -156,13 +91,12 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
-          command:
-          - /bin/bash
-          args:
-          - /scripts/download-and-validate.sh
+          image: ghcr.io/anemll/dspark-vllm-gx10@sha256:a83948492cf13df455170fb42885f5ef4db54fefe0feff0f841ecbff464ac9d8
+          command: [/bin/bash, /scripts/download-and-validate.sh]
           env:
           - { name: MODEL_DIR, value: "/models/dsv4" }
+          - { name: HF_REPO, value: "deepseek-ai/DeepSeek-V4-Flash-0731" }
+          - { name: HF_REVISION, value: "9e165c30e2704aec5d9d593cce3eebd58bbef1cb" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "0" }
@@ -173,32 +107,6 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
-        - name: dspark-overlay
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
-          command: [bash, -c]
-          args:
-          - |
-            set -e
-            DSPARK_OVERLAY_COMMIT=0081289d92049d15aafa666ad155b173747b10d8
-            echo "[dspark-overlay] Fetching pinned DSpark overlay $DSPARK_OVERLAY_COMMIT…"
-            git init -q /tmp/dspark-repo
-            git -C /tmp/dspark-repo remote add origin \
-              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git
-            git -C /tmp/dspark-repo fetch -q --depth 1 origin "$DSPARK_OVERLAY_COMMIT"
-            git -C /tmp/dspark-repo checkout -q --detach FETCH_HEAD
-            echo "[dspark-overlay] Applying overlay files…"
-            mkdir -p /overlay/vllm
-            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
-            echo "[dspark-overlay] Overlay already has concurrency crash fix…"
-            # (overlay version has req_ids support, standalone would overwrite it)
-            echo "[dspark-overlay] Files applied: $(find /overlay/vllm -type f | wc -l)"
-            rm -rf /tmp/dspark-repo
-          volumeMounts:
-          - { name: overlay-files, mountPath: /overlay }
-          resources:
-            requests: { memory: "2Gi", cpu: "1000m" }
-            limits: { memory: "4Gi", cpu: "2000m" }
-
         containers:
         - name: drop-caches-loop
           image: busybox:1.38
@@ -208,105 +116,59 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
+          image: ghcr.io/anemll/dspark-vllm-gx10@sha256:a83948492cf13df455170fb42885f5ef4db54fefe0feff0f841ecbff464ac9d8
           command: [bash, -c]
           args:
           - |
-            # Drop page cache immediately before weight load
+            set -euo pipefail
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            # Apply Tony's DSpark overlay (Keys concurrency patch + req_ids support)
-            echo "[dspark] Applying overlay with concurrency fixes…"
-            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null)
-            cp -r /overlay/vllm/* "$VLLM_DIR/"
-            # DeepSeek-V4-Flash-0731 needs the DSpark draft shared-expert w1/w3
-            # projections mapped into gate_up_proj. The pinned overlay predates
-            # this upstream fix and otherwise silently drops 12 draft tensors,
-            # collapsing speculative acceptance without affecting output quality.
-            python3 - "$VLLM_DIR/v1/spec_decode/dspark.py" <<'PY'
-            import sys
-
-            path = sys.argv[1]
-            text = open(path).read()
-            marker = '("shared_experts.gate_up_proj", ".shared_experts.w1", 0)'
-            anchor = '    ("attn.fused_wqa_wkv", ".attn.wkv", 1),\n'
-            addition = (
-                '    ("shared_experts.gate_up_proj", ".shared_experts.w1", 0),\n'
-                '    ("shared_experts.gate_up_proj", ".shared_experts.w3", 1),\n'
-            )
-            if marker not in text:
-                if anchor not in text:
-                    raise RuntimeError("DSpark stacked-parameter mapping anchor not found")
-                text = text.replace(anchor, anchor + addition, 1)
-                open(path, "w").write(text)
-            print("[ok] DSpark 0731 shared-expert w1/w3 mapping enabled")
+            encoding=/models/dsv4/encoding/encoding_dsv4.py
+            if [ -f "$encoding" ]; then
+              cp "$encoding" /usr/local/lib/python3.12/dist-packages/vllm/tokenizers/deepseek_v4_encoding.py
+            fi
+            python3 - <<'PY'
+            from pathlib import Path
+            p = Path('/usr/local/lib/python3.12/dist-packages/vllm/tokenizers/deepseek_v4.py')
+            if p.exists():
+                s = p.read_text()
+                s = s.replace('reasoning_effort = "high"', 'reasoning_effort = "low"', 1)
+                p.write_text(s)
             PY
-            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('def validate_nvfp4_kv_cache_with_mla(self)','def _disabled_validate_nvfp4_kv_cache_with_mla(self)');t=t.replace('if self.cache_dtype == \"nvfp4_ds_mla\" and self.use_mla:','if False:');open(p,'w').write(t);print('[ok] VllmConfig nvfp4_ds_mla validator disabled')"
-            python3 -c "p='$VLLM_DIR/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[ok] attention')"
-            python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
-            echo "[dspark] Patches applied. Starting vLLM with correct 5-token DSpark block in memory-safe eager mode…"
-            exec vllm serve /models/dsv4 \
-              --served-model-name deepseek-v4-flash deepseek-v4-flash-0731 deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
+            exec /usr/local/bin/vllm serve /models/dsv4 \
+              --revision 9e165c30e2704aec5d9d593cce3eebd58bbef1cb \
+              --served-model-name deepseek-v4-flash-0731 deepseek-v4-flash deepseek-v4-flash-dspark \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
               --tensor-parallel-size 2 --pipeline-parallel-size 1 \
               --distributed-executor-backend mp \
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 786432 \
-              --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.78 \
-              --enable-prefix-caching \
-              --enable-flashinfer-autotune \
-              --async-scheduling \
-              --enable-chunked-prefill \
+              --max-model-len 1048576 \
+              --max-num-seqs 6 --max-num-batched-tokens 4096 \
+              --long-prefill-token-threshold 1024 \
+              --gpu-memory-utilization 0.76 --enforce-eager \
+              --enable-prefix-caching --enable-chunked-prefill \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
               --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' \
-              --generation-config vllm \
+              --generation-config vllm --enable-flashinfer-autotune \
               --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
-              --nnodes 2 --node-rank 0 \
-              --master-addr 192.168.74.1 --master-port 25002
-          ports:
-          - { containerPort: 8000, name: http, protocol: TCP }
+              --moe-backend flashinfer_b12x \
+              --nnodes 2 --node-rank 0 --master-addr 192.168.74.1 --master-port 25002
           env:
           - { name: NODE_RANK, value: "0" }
           - { name: VLLM_HOST_IP, value: "192.168.74.1" }
           - { name: MASTER_ADDR, value: "192.168.74.1" }
           - { name: VLLM_ENGINE_READY_TIMEOUT_S, value: "3600" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
-          - { name: VLLM_TRITON_MLA_SPARSE, value: "1" }
-          - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
-          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
-          - { name: VLLM_USE_B12X_MOE, value: "1" }
-          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
-          - { name: VLLM_USE_NVFP4_DSPARK, value: "1" }
           - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
-          - { name: B12X_W4A16_TC_DECODE, value: "0" }
-          - { name: DSPARK_SLOT_CLAMP, value: "1" }
-          # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
-          # patch). Required for --max-num-seqs > 1.
+          - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_BREAKABLE_CUDAGRAPH, value: "0" }
+          - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
-          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
-          # DSpark agent-stability env vars (from Tony's 2026-07-03 garble-fix profile)
-          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
-          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
-          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
-          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
-          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
-          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
-          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
-          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
-          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
-          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
-          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
-          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
-          - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-          - { name: NCCL_NVLS_ENABLE, value: "0" }
           - { name: NCCL_NET, value: "IB" }
-          - { name: VLLM_PORT, value: "25100" }
-          - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: NCCL_IB_HCA, value: "mlx5_1" }
@@ -318,16 +180,16 @@ spec:
           - { name: NCCL_CROSS_NIC, value: "1" }
           - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
           - { name: NCCL_CUMEM_ENABLE, value: "0" }
-          - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
+          - { name: NCCL_NVLS_ENABLE, value: "0" }
+          - { name: VLLM_PORT, value: "25100" }
+          - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: HF_HOME, value: "/models/huggingface" }
-          - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
           - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
+          - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           securityContext:
             privileged: true
-            capabilities:
-              add: ["IPC_LOCK", "SYS_RESOURCE"]
+            capabilities: { add: ["IPC_LOCK", "SYS_RESOURCE"] }
           volumeMounts:
-          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -335,27 +197,11 @@ spec:
           resources:
             requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
             limits: { memory: "95Gi", nvidia.com/gpu: "1" }
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 900
-            periodSeconds: 30
-            timeoutSeconds: 10
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 900
-            periodSeconds: 15
-            timeoutSeconds: 10
+          livenessProbe: { httpGet: { path: /health, port: 8000 }, initialDelaySeconds: 1800, periodSeconds: 30, timeoutSeconds: 10 }
+          readinessProbe: { httpGet: { path: /health, port: 8000 }, initialDelaySeconds: 1800, periodSeconds: 15, timeoutSeconds: 10 }
         volumes:
-        - name: overlay-files
-          emptyDir: {}
         - name: shm
-          emptyDir:
-            medium: Memory
-            sizeLimit: "64Gi"
+          emptyDir: { medium: Memory, sizeLimit: "64Gi" }
         - name: infiniband
           hostPath: { path: /dev/infiniband, type: "" }
         - name: sys-ib
@@ -363,9 +209,7 @@ spec:
         - name: models
           persistentVolumeClaim: { claimName: dsv4-head-models }
         - name: download-script
-          configMap:
-            name: dsv4-download-script
-    # ---------- WORKER (rank 1 / headless) ----------
+          configMap: { name: dsv4-download-script }
     workerTemplate:
       metadata:
         labels: { app: dsv4, role: worker }
@@ -385,13 +229,12 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
-          command:
-          - /bin/bash
-          args:
-          - /scripts/download-and-validate.sh
+          image: ghcr.io/anemll/dspark-vllm-gx10@sha256:a83948492cf13df455170fb42885f5ef4db54fefe0feff0f841ecbff464ac9d8
+          command: [/bin/bash, /scripts/download-and-validate.sh]
           env:
           - { name: MODEL_DIR, value: "/models/dsv4" }
+          - { name: HF_REPO, value: "deepseek-ai/DeepSeek-V4-Flash-0731" }
+          - { name: HF_REVISION, value: "9e165c30e2704aec5d9d593cce3eebd58bbef1cb" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "0" }
@@ -402,32 +245,6 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
-        - name: dspark-overlay
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
-          command: [bash, -c]
-          args:
-          - |
-            set -e
-            DSPARK_OVERLAY_COMMIT=0081289d92049d15aafa666ad155b173747b10d8
-            echo "[dspark-overlay] Fetching pinned DSpark overlay $DSPARK_OVERLAY_COMMIT…"
-            git init -q /tmp/dspark-repo
-            git -C /tmp/dspark-repo remote add origin \
-              https://github.com/tonyd2wild/DeepSeek-v4-Flash-DSpark-1M-NVFP4-KV-2x-DGX-Spark.git
-            git -C /tmp/dspark-repo fetch -q --depth 1 origin "$DSPARK_OVERLAY_COMMIT"
-            git -C /tmp/dspark-repo checkout -q --detach FETCH_HEAD
-            echo "[dspark-overlay] Applying overlay files…"
-            mkdir -p /overlay/vllm
-            cp -r /tmp/dspark-repo/recipe/overlay/vllm/* /overlay/vllm/
-            echo "[dspark-overlay] Overlay already has concurrency crash fix…"
-            # (overlay version has req_ids support, standalone would overwrite it)
-            echo "[dspark-overlay] Files applied: $(find /overlay/vllm -type f | wc -l)"
-            rm -rf /tmp/dspark-repo
-          volumeMounts:
-          - { name: overlay-files, mountPath: /overlay }
-          resources:
-            requests: { memory: "2Gi", cpu: "1000m" }
-            limits: { memory: "4Gi", cpu: "2000m" }
-
         containers:
         - name: drop-caches-loop
           image: busybox:1.38
@@ -437,64 +254,38 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
+          image: ghcr.io/anemll/dspark-vllm-gx10@sha256:a83948492cf13df455170fb42885f5ef4db54fefe0feff0f841ecbff464ac9d8
           command: [bash, -c]
           args:
           - |
+            set -euo pipefail
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            VLLM_DIR=$(python3 -c "import vllm; print(vllm.__path__[0])" 2>/dev/null)
-            echo "[dspark] Applying overlay with concurrency fixes…"
-            cp -r /overlay/vllm/* "$VLLM_DIR/"
-            # DeepSeek-V4-Flash-0731 needs the DSpark draft shared-expert w1/w3
-            # projections mapped into gate_up_proj. The pinned overlay predates
-            # this upstream fix and otherwise silently drops 12 draft tensors,
-            # collapsing speculative acceptance without affecting output quality.
-            python3 - "$VLLM_DIR/v1/spec_decode/dspark.py" <<'PY'
-            import sys
-
-            path = sys.argv[1]
-            text = open(path).read()
-            marker = '("shared_experts.gate_up_proj", ".shared_experts.w1", 0)'
-            anchor = '    ("attn.fused_wqa_wkv", ".attn.wkv", 1),\n'
-            addition = (
-                '    ("shared_experts.gate_up_proj", ".shared_experts.w1", 0),\n'
-                '    ("shared_experts.gate_up_proj", ".shared_experts.w3", 1),\n'
-            )
-            if marker not in text:
-                if anchor not in text:
-                    raise RuntimeError("DSpark stacked-parameter mapping anchor not found")
-                text = text.replace(anchor, anchor + addition, 1)
-                open(path, "w").write(text)
-            print("[ok] DSpark 0731 shared-expert w1/w3 mapping enabled")
+            encoding=/models/dsv4/encoding/encoding_dsv4.py
+            if [ -f "$encoding" ]; then
+              cp "$encoding" /usr/local/lib/python3.12/dist-packages/vllm/tokenizers/deepseek_v4_encoding.py
+            fi
+            python3 - <<'PY'
+            from pathlib import Path
+            p = Path('/usr/local/lib/python3.12/dist-packages/vllm/tokenizers/deepseek_v4.py')
+            if p.exists():
+                s = p.read_text()
+                s = s.replace('reasoning_effort = "high"', 'reasoning_effort = "low"', 1)
+                p.write_text(s)
             PY
-            python3 -c "p='$VLLM_DIR/config/vllm.py';t=open(p).read();t=t.replace('def validate_nvfp4_kv_cache_with_mla(self)','def _disabled_validate_nvfp4_kv_cache_with_mla(self)');t=t.replace('if self.cache_dtype == \"nvfp4_ds_mla\" and self.use_mla:','if False:');open(p,'w').write(t);print('[ok] VllmConfig nvfp4_ds_mla validator disabled')"
-            python3 -c "p='$VLLM_DIR/models/deepseek_v4/attention.py';t=open(p).read();t=t.replace('kv_cache_dtype.startswith(\"fp8\")','kv_cache_dtype.startswith(\"fp8\") or kv_cache_dtype == \"nvfp4\"');open(p,'w').write(t);print('[ok] attention')"
-            python3 -c "import re;p='$VLLM_DIR/v1/kv_cache_interface.py';t=open(p).read();t=re.sub(r'batch_idx\s*=\s*slot_mapping\s*//\s*kv_block_size','batch_idx = (slot_mapping // kv_block_size).to(torch.int64)',t);t=re.sub(r'(batch_idx\s*=\s*)(slot_mapping\s*/\s*kv_block_size)\.to\(torch\.int32\)',r'\1\2.to(torch.int64)',t);open(p,'w').write(t);print('[ok] cache_utils')"
-            echo "[dspark] Patches applied. Starting vLLM worker…"
-            exec vllm serve /models/dsv4 \
-              --served-model-name deepseek-v4-flash deepseek-v4-flash-0731 deepseek-v4-flash-dspark vllm/deepseek-v4-flash \
+            exec /usr/local/bin/vllm serve /models/dsv4 \
+              --revision 9e165c30e2704aec5d9d593cce3eebd58bbef1cb \
+              --served-model-name deepseek-v4-flash-0731 deepseek-v4-flash deepseek-v4-flash-dspark \
               --host 0.0.0.0 --port 8000 --trust-remote-code \
-              --tensor-parallel-size 2 --pipeline-parallel-size 1 \
-              --distributed-executor-backend mp \
-              --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
-              --max-model-len 786432 \
-              --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.78 \
-              --enable-prefix-caching \
-              --enable-flashinfer-autotune \
-              --async-scheduling \
-              --enable-chunked-prefill \
-              --tokenizer-mode deepseek_v4 \
-              --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
-              --reasoning-parser deepseek_v4 \
-              --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
-              --default-chat-template-kwargs '{"thinking":false}' \
-              --generation-config vllm \
+              --tensor-parallel-size 2 --pipeline-parallel-size 1 --distributed-executor-backend mp \
+              --kv-cache-dtype nvfp4_ds_mla --block-size 256 --max-model-len 1048576 \
+              --max-num-seqs 6 --max-num-batched-tokens 4096 --long-prefill-token-threshold 1024 \
+              --gpu-memory-utilization 0.76 --enforce-eager --enable-prefix-caching --enable-chunked-prefill \
+              --tokenizer-mode deepseek_v4 --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
+              --reasoning-parser deepseek_v4 --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
+              --default-chat-template-kwargs '{"thinking":false}' --generation-config vllm --enable-flashinfer-autotune \
               --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
-              --nnodes 2 --node-rank 1 \
-              --master-addr 192.168.74.1 --master-port 25002 \
-              --headless
+              --moe-backend flashinfer_b12x --nnodes 2 --node-rank 1 --master-addr 192.168.74.1 --master-port 25002 --headless
           env:
           - { name: NODE_RANK, value: "1" }
           - { name: VLLM_HOST_IP, value: "192.168.74.2" }
@@ -502,35 +293,13 @@ spec:
           - { name: HEADLESS, value: "1" }
           - { name: VLLM_ENGINE_READY_TIMEOUT_S, value: "3600" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
-          - { name: VLLM_TRITON_MLA_SPARSE, value: "1" }
-          - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
-          - { name: VLLM_SKIP_INIT_MEMORY_CHECK, value: "1" }
-          - { name: VLLM_USE_B12X_MOE, value: "1" }
-          - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
-          - { name: VLLM_USE_NVFP4_DSPARK, value: "1" }
           - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
-          - { name: B12X_W4A16_TC_DECODE, value: "0" }
-          - { name: DSPARK_SLOT_CLAMP, value: "1" }
+          - { name: VLLM_USE_B12X_MOE, value: "1" }
+          - { name: VLLM_USE_BREAKABLE_CUDAGRAPH, value: "0" }
+          - { name: VLLM_SPARSE_INDEXER_MAX_LOGITS_MB, value: "256" }
           - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
-          - { name: VLLM_DSPARK_GPU_REJECTED_CONTEXT_MASK, value: "1" }
-          - { name: VLLM_DSPARK_CONFIDENCE_THRESHOLD, value: "0.0" }
-          - { name: VLLM_DSPARK_CONFIDENCE_SCHEDULER, value: "off" }
-          - { name: VLLM_DSPARK_LOCAL_ARGMAX, value: "1" }
-          - { name: VLLM_DSPARK_REPLICATE_MARKOV_W1, value: "1" }
-          - { name: VLLM_DSPARK_FUSED_MARKOV_ARGMAX, value: "0" }
-          - { name: VLLM_DSPARK_REFERENCE_KV_QUANT_DEQUANT, value: "0" }
-          - { name: VLLM_DSPARK_HARDWARE_SCHEDULER_EARLY_STOP, value: "1" }
-          - { name: VLLM_DSV4_B12X_COMPRESSED_MLA, value: "0" }
-          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE, value: "0" }
-          - { name: VLLM_DSV4_DSPARK_DEFER_TARGET_CAPTURE_EXACT, value: "0" }
-          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_PER_SM, value: "0" }
-          - { name: VLLM_B12X_W4A16_FORCE_BLOCKS_MAX_M, value: "16" }
-          - { name: VLLM_B12X_W4A16_FORCE_TILE_CONFIG, value: "" }
           - { name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True" }
-          - { name: NCCL_NVLS_ENABLE, value: "0" }
           - { name: NCCL_NET, value: "IB" }
-          - { name: VLLM_PORT, value: "25100" }
-          - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: NCCL_IB_HCA, value: "mlx5_1" }
@@ -542,16 +311,16 @@ spec:
           - { name: NCCL_CROSS_NIC, value: "1" }
           - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
           - { name: NCCL_CUMEM_ENABLE, value: "0" }
-          - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
+          - { name: NCCL_NVLS_ENABLE, value: "0" }
+          - { name: VLLM_PORT, value: "25100" }
+          - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: HF_HOME, value: "/models/huggingface" }
-          - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
           - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
+          - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           securityContext:
             privileged: true
-            capabilities:
-              add: ["IPC_LOCK", "SYS_RESOURCE"]
+            capabilities: { add: ["IPC_LOCK", "SYS_RESOURCE"] }
           volumeMounts:
-          - { name: overlay-files, mountPath: /overlay }
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
@@ -560,12 +329,8 @@ spec:
             requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
             limits: { memory: "95Gi", nvidia.com/gpu: "1" }
         volumes:
-        - name: overlay-files
-          emptyDir: {}
         - name: shm
-          emptyDir:
-            medium: Memory
-            sizeLimit: "64Gi"
+          emptyDir: { medium: Memory, sizeLimit: "64Gi" }
         - name: infiniband
           hostPath: { path: /dev/infiniband, type: "" }
         - name: sys-ib
@@ -573,8 +338,7 @@ spec:
         - name: models
           persistentVolumeClaim: { claimName: dsv4-worker-models }
         - name: download-script
-          configMap:
-            name: dsv4-download-script
+          configMap: { name: dsv4-download-script }
 ---
 apiVersion: v1
 kind: Service
@@ -607,8 +371,6 @@ spec:
       replacement: talos-stpetersburg
       targetLabel: cluster
   selector:
-    matchLabels:
-      app: dsv4
+    matchLabels: { app: dsv4 }
   namespaceSelector:
-    matchNames:
-    - ai
+    matchNames: [ai]
