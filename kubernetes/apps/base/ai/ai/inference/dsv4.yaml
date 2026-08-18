@@ -238,11 +238,12 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.7866 \
+              --gpu-memory-utilization 0.82 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
               --enable-chunked-prefill \
+              --long-prefill-token-threshold 1024 \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
@@ -267,6 +268,7 @@ spec:
           - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
           - { name: VLLM_USE_NVFP4_DSPARK, value: "1" }
           - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
+          - { name: VLLM_USE_BREAKABLE_CUDAGRAPH, value: "0" }
           - { name: B12X_W4A16_TC_DECODE, value: "0" }
           - { name: DSPARK_SLOT_CLAMP, value: "1" }
           # Enables the DSpark ragged mixed prefill+decode path (Keys' concurrency
@@ -465,11 +467,12 @@ spec:
               --kv-cache-dtype nvfp4_ds_mla --block-size 256 \
               --max-model-len 1048576 \
               --max-num-seqs 6 --max-num-batched-tokens 8192 \
-              --gpu-memory-utilization 0.7866 \
+              --gpu-memory-utilization 0.82 \
               --enable-prefix-caching \
               --enable-flashinfer-autotune \
               --async-scheduling \
               --enable-chunked-prefill \
+              --long-prefill-token-threshold 1024 \
               --tokenizer-mode deepseek_v4 \
               --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 \
@@ -494,6 +497,7 @@ spec:
           - { name: VLLM_USE_B12X_WO_PROJECTION, value: "1" }
           - { name: VLLM_USE_NVFP4_DSPARK, value: "1" }
           - { name: VLLM_USE_FLASHINFER_SAMPLER, value: "1" }
+          - { name: VLLM_USE_BREAKABLE_CUDAGRAPH, value: "0" }
           - { name: B12X_W4A16_TC_DECODE, value: "0" }
           - { name: DSPARK_SLOT_CLAMP, value: "1" }
           - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
