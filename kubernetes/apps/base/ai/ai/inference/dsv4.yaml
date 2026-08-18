@@ -141,7 +141,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:67a0f4443851b3d674dd4d0369fcfb779367cf65d16ccf750d64e5c899d10250
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command:
           - /bin/bash
           args:
@@ -159,7 +159,7 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: dspark-overlay
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:67a0f4443851b3d674dd4d0369fcfb779367cf65d16ccf750d64e5c899d10250
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
@@ -193,7 +193,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:67a0f4443851b3d674dd4d0369fcfb779367cf65d16ccf750d64e5c899d10250
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
@@ -370,7 +370,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:67a0f4443851b3d674dd4d0369fcfb779367cf65d16ccf750d64e5c899d10250
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command:
           - /bin/bash
           args:
@@ -388,7 +388,7 @@ spec:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: dspark-overlay
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:67a0f4443851b3d674dd4d0369fcfb779367cf65d16ccf750d64e5c899d10250
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
@@ -422,7 +422,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:67a0f4443851b3d674dd4d0369fcfb779367cf65d16ccf750d64e5c899d10250
+          image: ghcr.io/rajsinghtechbot/dsv4-nvfp4@sha256:cd2cd35874c27d20d77f295c473b8ef0cdaa7182553304917147a2bf4d800b0e
           command: [bash, -c]
           args:
           - |
