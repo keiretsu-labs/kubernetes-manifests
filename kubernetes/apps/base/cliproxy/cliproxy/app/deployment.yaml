@@ -686,10 +686,16 @@ spec:
               def route_sources(model_ids):
                   sources = {}
                   for prefix, url in upstreams:
-                      payload = fetch_json(url)
-                      rows = payload.get("data") if isinstance(payload, dict) else None
-                      if not isinstance(rows, list):
-                          raise RuntimeError(prefix + " returned an invalid model catalog")
+                      if not any(model_id.startswith(prefix + "/") for model_id in model_ids):
+                          continue
+                      try:
+                          payload = fetch_json(url)
+                          rows = payload.get("data") if isinstance(payload, dict) else None
+                          if not isinstance(rows, list):
+                              raise RuntimeError(prefix + " returned an invalid model catalog")
+                      except Exception as error:
+                          print("pi-bridge metadata source unavailable for " + prefix + ": " + str(error), flush=True)
+                          continue
                       by_id = collections.defaultdict(list)
                       by_normalized_id = collections.defaultdict(list)
                       by_form = collections.defaultdict(list)
