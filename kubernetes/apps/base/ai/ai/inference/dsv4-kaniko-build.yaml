@@ -46,9 +46,7 @@ spec:
       done
       echo 'RUN /opt/env/bin/python -c "import vllm.v1.spec_decode.dspark as d; print(chr(111)+chr(107))"' >> /workspace/Dockerfile.combined
       echo 'COPY stage_a.py /tmp/stage_a.py' >> /workspace/Dockerfile.combined
-      echo 'RUN /opt/env/bin/python /tmp/stage_a.py' >> /workspace/Dockerfile.combined
       echo 'COPY stage_b.py /tmp/stage_b.py' >> /workspace/Dockerfile.combined
-      echo 'RUN /opt/env/bin/python /tmp/stage_b.py' >> /workspace/Dockerfile.combined
       echo 'COPY stage_c.py /tmp/stage_c.py' >> /workspace/Dockerfile.combined
       echo 'COPY stage_d.py /tmp/stage_d.py' >> /workspace/Dockerfile.combined
       echo 'RUN /opt/env/bin/python /tmp/stage_a.py && /opt/env/bin/python /tmp/stage_b.py && /opt/env/bin/python /tmp/stage_c.py && /opt/env/bin/python /tmp/stage_d.py' >> /workspace/Dockerfile.combined
