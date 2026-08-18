@@ -14,7 +14,6 @@ spec:
     metadata:
       annotations:
         backup.velero.io/backup-volumes-excludes: logs
-        kubectl.kubernetes.io/restartedAt: "2026-08-18T06:36:00Z"
       labels:
         app.kubernetes.io/name: cliproxy
     spec:
