@@ -27,7 +27,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: rules-ottawa
-          image: &mt docker.io/grafana/mimirtool:3.1.4
+          image: &mt docker.io/grafana/mimirtool:3.2.0
           args:
             - rules
             - sync
