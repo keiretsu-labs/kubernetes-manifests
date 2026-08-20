@@ -1,3 +1,10 @@
+# PARKED — every line below is commented out, so this pointer renders to
+# nothing and Strimzi/Kafka is NOT deployed on Robbinsdale, even though the
+# namespace directory and its kustomization.yaml still list this file.
+# Uncomment to re-enable; delete the directory to decommission. Kept as-is so
+# the Kafka topology (KRaft, node pools, TLSRoutes on the private gateway) is
+# not lost. The architecture diagram in README.md shows it in amber for this
+# reason.
 # ---
 # apiVersion: kustomize.toolkit.fluxcd.io/v1
 # kind: Kustomization
