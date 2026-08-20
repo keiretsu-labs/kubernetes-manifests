@@ -96,7 +96,7 @@ diff and greppable from a terminal. To look at it:
 awk '/^```dot$/{f=1;next} /^```$/{f=0} f' README.md > architecture.dot
 dot -Tsvg architecture.dot -o architecture.svg
 
-# or just check it the way the gate does
+# or just check it, which is what CI does
 tools/check-diagram.sh
 ~~~
 
@@ -161,7 +161,7 @@ digraph keiretsu {
 
     d_change [label="Change author\l\lhuman, or a pi build agent driven by\ltools/agent/pi-task.sh (aperture/deepseek-v4-flash)\l", fillcolor="#ffffff"];
     d_local  [label="Local gate — must pass before commit\l\ltools/check.sh [cluster]   CI-pinned Flate render of all 3 clusters\ltools/check-versions.sh     talconfig<->tuppr, CephCluster<->toolbox\ltools/orphans.sh            kustomization <-> disk drift\ltools/check-diagram.sh      this diagram: syntax, secrets, coverage\ltools/tests/run.sh          offline self-tests for tools/\lmake diff                   rendered diff vs origin/main\l", fillcolor="#ffffff"];
-    d_ci     [label="GitHub Actions\l\lflate.yaml            render matrix + sticky rendered-diff comment per cluster\lvalidate.yaml         YAML parse gate on Renovate PRs\lversion-sync.yaml     coupled-version enforcement\ldiagram.yaml          tools/check-diagram.sh + SVG artifact (add with `workflow` scope)\ltailscale.yml         syncs policy.hujson to the tailnet\lapi-tailnet-k8s-test.yml  ephemeral-tailnet operator E2E\ldelete-inactive-tailnet-nodes.yml  tag-filtered device reaping\ltoken.yml, release.yaml, label-sync.yaml, devcontainer.yaml\lgarage-webadmin-build.yaml, garage-webadmin-sidecar-build.yaml\laqua-checksums.yaml, swarm-test.yaml, test-arc-runner.yaml\l", fillcolor="#ffffff"];
+    d_ci     [label="GitHub Actions\l\lflate.yaml            render matrix + sticky rendered-diff comment per cluster\lvalidate.yaml         YAML parse gate on Renovate PRs\lversion-sync.yaml     coupled-version enforcement\ldiagram.yaml          tools/check-diagram.sh + rendered SVG artifact\ltailscale.yml         syncs policy.hujson to the tailnet\lapi-tailnet-k8s-test.yml  ephemeral-tailnet operator E2E\ldelete-inactive-tailnet-nodes.yml  tag-filtered device reaping\ltoken.yml, release.yaml, label-sync.yaml, devcontainer.yaml\lgarage-webadmin-build.yaml, garage-webadmin-sidecar-build.yaml\laqua-checksums.yaml, swarm-test.yaml, test-arc-runner.yaml\l", fillcolor="#ffffff"];
     d_renovate [label="Renovate\l\l.renovate/ groups: talos-<loc>, rook-<loc>, ceph-<loc>, ...\lone PR per cluster per subsystem so two sites never roll at once\l", fillcolor="#ffffff"];
 
     d_gitrepo [label="GitRepository kubernetes-manifests\l\lbranch main, interval 30m\lignore filter admits only clusters/common,\lclusters/talos-<location> and kubernetes/\l", fillcolor="#ddf4ff"];
