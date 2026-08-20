@@ -1,0 +1,11 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Robbinsdale-only issuer. Everything shared (keiretsu-top, killinit-cc,
+# lukehouge-com, rajsingh-info, internal) comes from
+# cert-manager-common/issuers, which this cluster also deploys. Listing the
+# files explicitly means tools/orphans.sh can see this directory instead of
+# relying on Flux's implicit all-YAML behaviour.
+resources:
+  - secret.yaml
+  - luke-clusterissuer.yaml
