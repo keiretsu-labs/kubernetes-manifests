@@ -281,7 +281,7 @@
 <!-- w_cf&#45;&gt;n_zones -->
 <g id="edge2" class="edge">
 <title>w_cf&#45;&gt;n_zones</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M338.75,-5754.21C359.04,-5733.58 388.83,-5707.85 421,-5695.56 583.91,-5633.29 1040.36,-5717.11 1205,-5659.56 1339.67,-5612.49 1329.89,-5517.11 1465,-5471.32 1570.9,-5435.43 2359.93,-5457.2 2471,-5444.32 2523.3,-5438.26 2550.41,-5458.18 2587,-5420.32 2661.91,-5342.81 2545.85,-5251.07 2628,-5181.28 2662.04,-5152.36 5799.34,-5157.71 5844,-5156.88 6393.48,-5146.66 6539.3,-5218.63 7080,-5120.28 7465.98,-5050.07 7538.88,-4945.58 7915,-4834.04 8431.25,-4680.94 8559.15,-4628.94 9090,-4538.6 9178.43,-4523.55 9831.66,-4529.9 9894,-4465.4 9912.73,-4446.02 9940.03,-4000.01 9921,-3980.92 9879.14,-3938.92 1440.92,-3960.64 1382,-3953.92 1359.29,-3951.33 1335.53,-3947.35 1312.3,-3942.73"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M338.75,-5754.21C359.04,-5733.58 388.83,-5707.85 421,-5695.56 583.91,-5633.29 1040.36,-5717.11 1205,-5659.56 1339.67,-5612.49 1329.89,-5517.11 1465,-5471.32 1570.9,-5435.43 2359.93,-5457.2 2471,-5444.32 2523.3,-5438.26 2550.41,-5458.18 2587,-5420.32 2661.91,-5342.81 2545.85,-5251.07 2628,-5181.28 2662.04,-5152.36 5799.34,-5157.71 5844,-5156.88 6393.48,-5146.66 6539.3,-5218.63 7080,-5120.28 7465.98,-5050.07 7538.88,-4945.58 7915,-4834.04 8431.25,-4680.94 8559.15,-4628.91 9090,-4538.6 9178.54,-4523.54 9832.65,-4530.04 9895,-4465.4 9932.43,-4426.6 9959.06,-4019.1 9921,-3980.92 9879.14,-3938.92 1440.92,-3960.64 1382,-3953.92 1359.29,-3951.33 1335.53,-3947.35 1312.3,-3942.73"/>
 <polygon fill="#57606a" stroke="#57606a" points="1312.95,-3940.36 1305.6,-3941.37 1311.97,-3945.16 1312.95,-3940.36"/>
 </g>
 <!-- w_ts_cp -->
@@ -297,27 +297,27 @@
 <!-- n_cert -->
 <g id="node63" class="node">
 <title>n_cert</title>
-<path fill="#ffffff" stroke="#8c959f" d="M746.27,-5380.32C746.27,-5380.32 449.73,-5380.32 449.73,-5380.32 443.73,-5380.32 437.73,-5374.32 437.73,-5368.32 437.73,-5368.32 437.73,-5223.28 437.73,-5223.28 437.73,-5217.28 443.73,-5211.28 449.73,-5211.28 449.73,-5211.28 746.27,-5211.28 746.27,-5211.28 752.27,-5211.28 758.27,-5217.28 758.27,-5223.28 758.27,-5223.28 758.27,-5368.32 758.27,-5368.32 758.27,-5374.32 752.27,-5380.32 746.27,-5380.32"/>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5367.9" font-family="Helvetica,sans-Serif" font-size="9.00">cert&#45;manager — ACME DNS&#45;01 through Cloudflare, exclusively</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5347.1" font-family="Helvetica,sans-Serif" font-size="9.00">ClusterIssuers in the shared base:</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5336.3" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;keiretsu&#45;top &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cnameStrategy Follow</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5325.5" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;keiretsu&#45;top&#45;nofollow &#160;&#160;no CNAME follow, to work around bhaiya wildcard</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5314.7" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;shadowing</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5303.9" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;killinit&#45;cc, lukehouge&#45;com, rajsingh&#45;info</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5293.1" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;internal &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;self&#45;signed CA (kubernetes&#45;internal&#45;ca&#45;key&#45;pair)</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5282.3" font-family="Helvetica,sans-Serif" font-size="9.00">Robbinsdale adds its own set, including a differently&#45;named luke&#45;issuer</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5271.5" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;backed by a differently&#45;named Cloudflare token secret — naming drift</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5260.7" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;against the shared lukehouge&#45;com issuer</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5239.9" font-family="Helvetica,sans-Serif" font-size="9.00">Wildcard Certificates back every listener secret named above, plus the Kafka</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5229.1" font-family="Helvetica,sans-Serif" font-size="9.00">server certificate. All Cloudflare API tokens and ACME account keys are</text>
-<text xml:space="preserve" text-anchor="start" x="444.93" y="-5218.3" font-family="Helvetica,sans-Serif" font-size="9.00">SOPS&#45;encrypted.</text>
+<path fill="#ffffff" stroke="#8c959f" d="M803.27,-5380.32C803.27,-5380.32 506.73,-5380.32 506.73,-5380.32 500.73,-5380.32 494.73,-5374.32 494.73,-5368.32 494.73,-5368.32 494.73,-5223.28 494.73,-5223.28 494.73,-5217.28 500.73,-5211.28 506.73,-5211.28 506.73,-5211.28 803.27,-5211.28 803.27,-5211.28 809.27,-5211.28 815.27,-5217.28 815.27,-5223.28 815.27,-5223.28 815.27,-5368.32 815.27,-5368.32 815.27,-5374.32 809.27,-5380.32 803.27,-5380.32"/>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5367.9" font-family="Helvetica,sans-Serif" font-size="9.00">cert&#45;manager — ACME DNS&#45;01 through Cloudflare, exclusively</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5347.1" font-family="Helvetica,sans-Serif" font-size="9.00">ClusterIssuers in the shared base:</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5336.3" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;keiretsu&#45;top &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cnameStrategy Follow</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5325.5" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;keiretsu&#45;top&#45;nofollow &#160;&#160;no CNAME follow, to work around bhaiya wildcard</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5314.7" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;shadowing</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5303.9" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;killinit&#45;cc, lukehouge&#45;com, rajsingh&#45;info</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5293.1" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;internal &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;self&#45;signed CA (kubernetes&#45;internal&#45;ca&#45;key&#45;pair)</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5282.3" font-family="Helvetica,sans-Serif" font-size="9.00">Robbinsdale adds its own set, including a differently&#45;named luke&#45;issuer</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5271.5" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;backed by a differently&#45;named Cloudflare token secret — naming drift</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5260.7" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;against the shared lukehouge&#45;com issuer</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5239.9" font-family="Helvetica,sans-Serif" font-size="9.00">Wildcard Certificates back every listener secret named above, plus the Kafka</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5229.1" font-family="Helvetica,sans-Serif" font-size="9.00">server certificate. All Cloudflare API tokens and ACME account keys are</text>
+<text xml:space="preserve" text-anchor="start" x="501.93" y="-5218.3" font-family="Helvetica,sans-Serif" font-size="9.00">SOPS&#45;encrypted.</text>
 </g>
 <!-- w_acme&#45;&gt;n_cert -->
 <g id="edge18" class="edge">
 <title>w_acme&#45;&gt;n_cert</title>
-<path fill="none" stroke="#57606a" d="M340.21,-5524.89C376.51,-5492.76 441.54,-5435.23 497.21,-5385.98"/>
-<polygon fill="#57606a" stroke="#57606a" points="498.5,-5388.1 502.12,-5381.63 495.25,-5384.43 498.5,-5388.1"/>
-<text xml:space="preserve" text-anchor="middle" x="470.34" y="-5437.12" font-family="Helvetica,sans-Serif" font-size="8.00">DNS&#45;01 challenge</text>
+<path fill="none" stroke="#57606a" d="M345.83,-5524.89C389.45,-5492.7 467.68,-5434.99 534.52,-5385.68"/>
+<polygon fill="#57606a" stroke="#57606a" points="535.97,-5387.65 540.15,-5381.53 533.06,-5383.71 535.97,-5387.65"/>
+<text xml:space="preserve" text-anchor="middle" x="495.43" y="-5437.12" font-family="Helvetica,sans-Serif" font-size="8.00">DNS&#45;01 challenge</text>
 </g>
 <!-- w_github -->
 <g id="node5" class="node">
@@ -343,10 +343,10 @@
 <!-- w_ts_cp&#45;&gt;t_operator -->
 <g id="edge200" class="edge">
 <title>w_ts_cp&#45;&gt;t_operator</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M321.12,-5264.46C340.47,-5230.55 370.46,-5173.41 386,-5120.28 404,-5058.75 374.35,-4876.93 422,-4834.04 449.86,-4808.97 1733.56,-4808.73 1771,-4807.04 2063.87,-4793.84 2140.96,-4815.44 2429,-4760.84 2752.62,-4699.5 2810.85,-4591.24 3136,-4538.6 4112.09,-4380.57 6602.14,-4573.6 7585,-4465.4 7845.35,-4436.74 9655.61,-4099.03 9894,-3990.52 10395.5,-3762.25 10304.91,-3228.1 10019,-2757.08 9922.04,-2597.34 9825.91,-2613.56 9646,-2563.04 9407.21,-2495.98 8668.64,-2474.83 8363.26,-2468.85"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M321.12,-5264.46C340.47,-5230.55 370.46,-5173.41 386,-5120.28 404,-5058.75 374.35,-4876.93 422,-4834.04 449.86,-4808.97 1733.56,-4808.73 1771,-4807.04 2063.87,-4793.84 2140.96,-4815.44 2429,-4760.84 2752.62,-4699.5 2810.85,-4591.24 3136,-4538.6 4111.87,-4380.6 6601.35,-4573.53 7584,-4465.4 7844.46,-4436.74 9655.5,-4099.06 9894,-3990.52 10395.51,-3762.28 10304.91,-3228.1 10019,-2757.08 9922.04,-2597.34 9825.91,-2613.56 9646,-2563.04 9407.21,-2495.98 8668.64,-2474.83 8363.26,-2468.85"/>
 <polygon fill="#57606a" stroke="#57606a" points="8363.36,-2466.41 8356.31,-2468.72 8363.26,-2471.3 8363.36,-2466.41"/>
 <text xml:space="preserve" text-anchor="start" x="10191.65" y="-3756.76" font-family="Helvetica,sans-Serif" font-size="8.00">OAuth client authorises</text>
-<text xml:space="preserve" text-anchor="middle" x="10233" y="-3747.16" font-family="Helvetica,sans-Serif" font-size="8.00">device creation</text>
+<text xml:space="preserve" text-anchor="middle" x="10233.01" y="-3747.16" font-family="Helvetica,sans-Serif" font-size="8.00">device creation</text>
 </g>
 <!-- w_upstream -->
 <g id="node6" class="node">
@@ -477,33 +477,33 @@
 <!-- d_ks_common -->
 <g id="node14" class="node">
 <title>d_ks_common</title>
-<path fill="#ddf4ff" stroke="#8c959f" d="M2083.85,-3785.28C2083.85,-3785.28 1948.15,-3785.28 1948.15,-3785.28 1942.15,-3785.28 1936.15,-3779.28 1936.15,-3773.28 1936.15,-3773.28 1936.15,-3735.44 1936.15,-3735.44 1936.15,-3729.44 1942.15,-3723.44 1948.15,-3723.44 1948.15,-3723.44 2083.85,-3723.44 2083.85,-3723.44 2089.85,-3723.44 2095.85,-3729.44 2095.85,-3735.44 2095.85,-3735.44 2095.85,-3773.28 2095.85,-3773.28 2095.85,-3779.28 2089.85,-3785.28 2083.85,-3785.28"/>
-<text xml:space="preserve" text-anchor="start" x="1943.35" y="-3772.86" font-family="Helvetica,sans-Serif" font-size="9.00">Kustomization common&#45;cluster</text>
-<text xml:space="preserve" text-anchor="start" x="1943.35" y="-3752.06" font-family="Helvetica,sans-Serif" font-size="9.00">&#45;&gt; clusters/common/flux</text>
-<text xml:space="preserve" text-anchor="start" x="1943.35" y="-3741.26" font-family="Helvetica,sans-Serif" font-size="9.00">Helm/OCI/Git sources,</text>
-<text xml:space="preserve" text-anchor="start" x="1943.35" y="-3730.46" font-family="Helvetica,sans-Serif" font-size="9.00">common&#45;settings + common&#45;secrets</text>
+<path fill="#ddf4ff" stroke="#8c959f" d="M2076.85,-3785.28C2076.85,-3785.28 1941.15,-3785.28 1941.15,-3785.28 1935.15,-3785.28 1929.15,-3779.28 1929.15,-3773.28 1929.15,-3773.28 1929.15,-3735.44 1929.15,-3735.44 1929.15,-3729.44 1935.15,-3723.44 1941.15,-3723.44 1941.15,-3723.44 2076.85,-3723.44 2076.85,-3723.44 2082.85,-3723.44 2088.85,-3729.44 2088.85,-3735.44 2088.85,-3735.44 2088.85,-3773.28 2088.85,-3773.28 2088.85,-3779.28 2082.85,-3785.28 2076.85,-3785.28"/>
+<text xml:space="preserve" text-anchor="start" x="1936.35" y="-3772.86" font-family="Helvetica,sans-Serif" font-size="9.00">Kustomization common&#45;cluster</text>
+<text xml:space="preserve" text-anchor="start" x="1936.35" y="-3752.06" font-family="Helvetica,sans-Serif" font-size="9.00">&#45;&gt; clusters/common/flux</text>
+<text xml:space="preserve" text-anchor="start" x="1936.35" y="-3741.26" font-family="Helvetica,sans-Serif" font-size="9.00">Helm/OCI/Git sources,</text>
+<text xml:space="preserve" text-anchor="start" x="1936.35" y="-3730.46" font-family="Helvetica,sans-Serif" font-size="9.00">common&#45;settings + common&#45;secrets</text>
 </g>
 <!-- d_gitrepo&#45;&gt;d_ks_common -->
 <g id="edge181" class="edge">
 <title>d_gitrepo&#45;&gt;d_ks_common</title>
-<path fill="none" stroke="#57606a" d="M1936.19,-4038.74C1944.09,-3994.66 1960.53,-3910.5 1982,-3840.88 1986.93,-3824.89 1993.52,-3807.67 1999.58,-3792.9"/>
-<polygon fill="#57606a" stroke="#57606a" points="2001.69,-3794.22 2002.11,-3786.82 1997.16,-3792.34 2001.69,-3794.22"/>
+<path fill="none" stroke="#57606a" d="M1936.87,-4038.94C1945.61,-3995.1 1963.07,-3911.23 1982,-3840.88 1986.2,-3825.28 1991.43,-3808.27 1996.17,-3793.56"/>
+<polygon fill="#57606a" stroke="#57606a" points="1998.44,-3794.5 1998.27,-3787.09 1993.78,-3792.99 1998.44,-3794.5"/>
 </g>
 <!-- d_ks_apps -->
 <g id="node15" class="node">
 <title>d_ks_apps</title>
-<path fill="#ddf4ff" stroke="#8c959f" d="M2006.24,-3650.24C2006.24,-3650.24 1843.76,-3650.24 1843.76,-3650.24 1837.76,-3650.24 1831.76,-3644.24 1831.76,-3638.24 1831.76,-3638.24 1831.76,-3589.6 1831.76,-3589.6 1831.76,-3583.6 1837.76,-3577.6 1843.76,-3577.6 1843.76,-3577.6 2006.24,-3577.6 2006.24,-3577.6 2012.24,-3577.6 2018.24,-3583.6 2018.24,-3589.6 2018.24,-3589.6 2018.24,-3638.24 2018.24,-3638.24 2018.24,-3644.24 2012.24,-3650.24 2006.24,-3650.24"/>
-<text xml:space="preserve" text-anchor="start" x="1838.96" y="-3637.82" font-family="Helvetica,sans-Serif" font-size="9.00">Kustomization kubernetes&#45;apps</text>
-<text xml:space="preserve" text-anchor="start" x="1838.96" y="-3617.02" font-family="Helvetica,sans-Serif" font-size="9.00">&#45;&gt; kubernetes/apps/&lt;location&gt;</text>
-<text xml:space="preserve" text-anchor="start" x="1838.96" y="-3606.22" font-family="Helvetica,sans-Serif" font-size="9.00">prune true, wait false, interval 30m</text>
-<text xml:space="preserve" text-anchor="start" x="1838.96" y="-3595.42" font-family="Helvetica,sans-Serif" font-size="9.00">patches every child Kustomization with the</text>
-<text xml:space="preserve" text-anchor="start" x="1838.96" y="-3584.62" font-family="Helvetica,sans-Serif" font-size="9.00">substituteFrom stack and SOPS decryption</text>
+<path fill="#ddf4ff" stroke="#8c959f" d="M1999.24,-3650.24C1999.24,-3650.24 1836.76,-3650.24 1836.76,-3650.24 1830.76,-3650.24 1824.76,-3644.24 1824.76,-3638.24 1824.76,-3638.24 1824.76,-3589.6 1824.76,-3589.6 1824.76,-3583.6 1830.76,-3577.6 1836.76,-3577.6 1836.76,-3577.6 1999.24,-3577.6 1999.24,-3577.6 2005.24,-3577.6 2011.24,-3583.6 2011.24,-3589.6 2011.24,-3589.6 2011.24,-3638.24 2011.24,-3638.24 2011.24,-3644.24 2005.24,-3650.24 1999.24,-3650.24"/>
+<text xml:space="preserve" text-anchor="start" x="1831.96" y="-3637.82" font-family="Helvetica,sans-Serif" font-size="9.00">Kustomization kubernetes&#45;apps</text>
+<text xml:space="preserve" text-anchor="start" x="1831.96" y="-3617.02" font-family="Helvetica,sans-Serif" font-size="9.00">&#45;&gt; kubernetes/apps/&lt;location&gt;</text>
+<text xml:space="preserve" text-anchor="start" x="1831.96" y="-3606.22" font-family="Helvetica,sans-Serif" font-size="9.00">prune true, wait false, interval 30m</text>
+<text xml:space="preserve" text-anchor="start" x="1831.96" y="-3595.42" font-family="Helvetica,sans-Serif" font-size="9.00">patches every child Kustomization with the</text>
+<text xml:space="preserve" text-anchor="start" x="1831.96" y="-3584.62" font-family="Helvetica,sans-Serif" font-size="9.00">substituteFrom stack and SOPS decryption</text>
 </g>
 <!-- d_gitrepo&#45;&gt;d_ks_apps -->
 <g id="edge182" class="edge">
 <title>d_gitrepo&#45;&gt;d_ks_apps</title>
-<path fill="none" stroke="#57606a" d="M1930.35,-4038.8C1929.26,-3986.94 1927.08,-3877.66 1926,-3785.28 1925.5,-3742.34 1925.24,-3693.31 1925.12,-3658.9"/>
-<polygon fill="#57606a" stroke="#57606a" points="1927.57,-3658.99 1925.09,-3652 1922.67,-3659.01 1927.57,-3658.99"/>
+<path fill="none" stroke="#57606a" d="M1929.36,-4038.82C1926.63,-3986.96 1921.22,-3877.71 1919,-3785.28 1917.97,-3742.35 1917.78,-3693.31 1917.82,-3658.91"/>
+<polygon fill="#57606a" stroke="#57606a" points="1920.27,-3659.01 1917.83,-3652 1915.37,-3659 1920.27,-3659.01"/>
 </g>
 <!-- d_sops -->
 <g id="node12" class="node">
@@ -517,24 +517,24 @@
 <!-- d_sops&#45;&gt;d_ks_cluster -->
 <g id="edge183" class="edge">
 <title>d_sops&#45;&gt;d_ks_cluster</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M2154.38,-4038.83C2147.63,-4024.54 2140.27,-4007.02 2135.77,-3990.52 2131.42,-3974.59 2128.82,-3956.55 2127.28,-3940.97"/>
-<polygon fill="#57606a" stroke="#57606a" points="2129.73,-3940.85 2126.66,-3934.1 2124.85,-3941.29 2129.73,-3940.85"/>
-<text xml:space="preserve" text-anchor="middle" x="2148.88" y="-3983.32" font-family="Helvetica,sans-Serif" font-size="8.00">decrypt</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M2153.82,-4038.91C2146.85,-4024.63 2139.28,-4007.1 2134.77,-3990.52 2130.43,-3974.61 2128.01,-3956.58 2126.67,-3940.99"/>
+<polygon fill="#57606a" stroke="#57606a" points="2129.12,-3940.91 2126.14,-3934.12 2124.23,-3941.29 2129.12,-3940.91"/>
+<text xml:space="preserve" text-anchor="middle" x="2147.88" y="-3983.32" font-family="Helvetica,sans-Serif" font-size="8.00">decrypt</text>
 </g>
 <!-- d_sops&#45;&gt;d_ks_cluster -->
 <!-- d_sops&#45;&gt;d_ks_common -->
 <g id="edge184" class="edge">
 <title>d_sops&#45;&gt;d_ks_common</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M2105.35,-4038.66C2072.39,-4019.41 2035.42,-3991.09 2016.77,-3953.92 1991.3,-3903.19 1998.28,-3835.58 2006.5,-3793.78"/>
-<polygon fill="#57606a" stroke="#57606a" points="2008.88,-3794.36 2007.9,-3787.01 2004.08,-3793.37 2008.88,-3794.36"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M2106.25,-4038.63C2073.36,-4019.3 2036.15,-3990.91 2016.77,-3953.92 1990.39,-3903.61 1994.73,-3835.87 2001.19,-3793.94"/>
+<polygon fill="#57606a" stroke="#57606a" points="2003.59,-3794.45 2002.3,-3787.15 1998.75,-3793.66 2003.59,-3794.45"/>
 <text xml:space="preserve" text-anchor="middle" x="2029.88" y="-3899" font-family="Helvetica,sans-Serif" font-size="8.00">decrypt</text>
 </g>
 <!-- d_sops&#45;&gt;d_ks_apps -->
 <g id="edge185" class="edge">
 <title>d_sops&#45;&gt;d_ks_apps</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M2184.23,-4038.97C2203.25,-3994.44 2231.82,-3908.93 2207,-3840.88 2175.06,-3753.31 2085.2,-3691.27 2015.41,-3654.63"/>
-<polygon fill="#57606a" stroke="#57606a" points="2016.55,-3652.46 2009.21,-3651.42 2014.3,-3656.81 2016.55,-3652.46"/>
-<text xml:space="preserve" text-anchor="middle" x="2211.44" y="-3814.68" font-family="Helvetica,sans-Serif" font-size="8.00">decrypt</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M2184.53,-4038.86C2203.91,-3994.2 2232.94,-3908.51 2207,-3840.88 2173.15,-3752.63 2081.42,-3690.77 2010.3,-3654.35"/>
+<polygon fill="#57606a" stroke="#57606a" points="2011.75,-3652.34 2004.4,-3651.37 2009.54,-3656.71 2011.75,-3652.34"/>
+<text xml:space="preserve" text-anchor="middle" x="2210.97" y="-3814.68" font-family="Helvetica,sans-Serif" font-size="8.00">decrypt</text>
 </g>
 <!-- d_ks_cluster&#45;&gt;d_ks_common -->
 <!-- d_subst -->
@@ -565,17 +565,17 @@
 <!-- d_ks_common&#45;&gt;w_upstream -->
 <g id="edge191" class="edge">
 <title>d_ks_common&#45;&gt;w_upstream</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M1935.91,-3747.21C1670.79,-3726.85 816.11,-3661.23 419.15,-3630.75"/>
-<polygon fill="#57606a" stroke="#57606a" points="419.41,-3628.31 412.24,-3630.22 419.03,-3633.2 419.41,-3628.31"/>
-<text xml:space="preserve" text-anchor="start" x="1222.45" y="-3689.24" font-family="Helvetica,sans-Serif" font-size="8.00">HelmRepository / OCIRepository /</text>
-<text xml:space="preserve" text-anchor="middle" x="1282.69" y="-3679.64" font-family="Helvetica,sans-Serif" font-size="8.00">GitRepository definitions</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M1928.93,-3747.19C1664.65,-3726.82 814.56,-3661.29 419.01,-3630.8"/>
+<polygon fill="#57606a" stroke="#57606a" points="419.29,-3628.36 412.12,-3630.27 418.92,-3633.25 419.29,-3628.36"/>
+<text xml:space="preserve" text-anchor="start" x="1218.53" y="-3689.24" font-family="Helvetica,sans-Serif" font-size="8.00">HelmRepository / OCIRepository /</text>
+<text xml:space="preserve" text-anchor="middle" x="1278.77" y="-3679.64" font-family="Helvetica,sans-Serif" font-size="8.00">GitRepository definitions</text>
 </g>
 <!-- d_ks_common&#45;&gt;d_ks_apps -->
 <!-- d_ks_common&#45;&gt;d_subst -->
 <g id="edge186" class="edge">
 <title>d_ks_common&#45;&gt;d_subst</title>
-<path fill="none" stroke="#57606a" d="M2026.69,-3722.96C2040.04,-3686.59 2064.67,-3624.43 2093.52,-3575 2102.39,-3559.8 2112.74,-3544.3 2123.33,-3529.55"/>
-<polygon fill="#57606a" stroke="#57606a" points="2125.19,-3531.16 2127.32,-3524.05 2121.23,-3528.28 2125.19,-3531.16"/>
+<path fill="none" stroke="#57606a" d="M2021.12,-3723.05C2036.14,-3686.77 2063.43,-3624.68 2093.52,-3575 2102.63,-3559.94 2113.11,-3544.52 2123.75,-3529.8"/>
+<polygon fill="#57606a" stroke="#57606a" points="2125.61,-3531.41 2127.76,-3524.31 2121.66,-3528.52 2125.61,-3531.41"/>
 <text xml:space="preserve" text-anchor="start" x="2093.52" y="-3616.32" font-family="Helvetica,sans-Serif" font-size="8.00">supplies common&#45;settings</text>
 <text xml:space="preserve" text-anchor="middle" x="2139.76" y="-3606.72" font-family="Helvetica,sans-Serif" font-size="8.00">and common&#45;secrets</text>
 </g>
@@ -593,7 +593,7 @@
 <!-- d_ks_apps&#45;&gt;d_pointer -->
 <g id="edge188" class="edge">
 <title>d_ks_apps&#45;&gt;d_pointer</title>
-<path fill="none" stroke="#57606a" stroke-width="2" d="M1889.64,-3577.45C1876.61,-3561.96 1863.38,-3542.74 1856.62,-3522.6 1834.23,-3455.93 1818.05,-3423.17 1856.62,-3364.36 1881.39,-3326.59 1982.26,-3285.78 2066.97,-3256.98"/>
+<path fill="none" stroke="#57606a" stroke-width="2" d="M1886.54,-3577.32C1874.72,-3561.66 1862.69,-3542.35 1856.62,-3522.6 1835.94,-3455.38 1818.05,-3423.17 1856.62,-3364.36 1881.39,-3326.59 1982.26,-3285.78 2066.97,-3256.98"/>
 <polygon fill="#57606a" stroke="#57606a" stroke-width="2" points="2066.13,-3259.85 2071.98,-3255.29 2064.56,-3255.21 2066.13,-3259.85"/>
 <text xml:space="preserve" text-anchor="start" x="1856.62" y="-3445.88" font-family="Helvetica,sans-Serif" font-size="8.00">reconciles every namespace</text>
 <text xml:space="preserve" text-anchor="middle" x="1907.31" y="-3436.28" font-family="Helvetica,sans-Serif" font-size="8.00">directory it lists</text>
@@ -610,7 +610,7 @@
 <!-- d_ks_apps&#45;&gt;d_notify -->
 <g id="edge193" class="edge">
 <title>d_ks_apps&#45;&gt;d_notify</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M1871.58,-3577.12C1854.33,-3562.46 1837.27,-3543.91 1828,-3522.6 1799.93,-3458.11 1793.97,-3425.91 1828,-3364.36 1838.92,-3344.61 1859.67,-3356.87 1871,-3337.36 1897.52,-3291.69 1876,-3271.45 1876,-3218.64 1876,-3218.64 1876,-3218.64 1876,-2649.56 1876,-2582.49 1938.26,-2532.06 1991.12,-2501.33"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M1869.84,-3577.18C1853.69,-3562.3 1837.6,-3543.58 1829,-3522.6 1802.33,-3457.53 1795.3,-3426.09 1829,-3364.36 1839.63,-3344.88 1859.96,-3356.61 1871,-3337.36 1897.28,-3291.55 1876,-3271.45 1876,-3218.64 1876,-3218.64 1876,-3218.64 1876,-2649.56 1876,-2582.49 1938.26,-2532.06 1991.12,-2501.33"/>
 <polygon fill="#57606a" stroke="#57606a" points="1992.32,-2503.47 1997.2,-2497.88 1989.9,-2499.21 1992.32,-2503.47"/>
 </g>
 <!-- d_subst&#45;&gt;d_pointer -->
@@ -651,25 +651,25 @@
 <!-- ot_facts -->
 <g id="node84" class="node">
 <title>ot_facts</title>
-<path fill="#ffffff" stroke="#8c959f" d="M3689.38,-2724.68C3689.38,-2724.68 3346.62,-2724.68 3346.62,-2724.68 3340.62,-2724.68 3334.62,-2718.68 3334.62,-2712.68 3334.62,-2712.68 3334.62,-2588.44 3334.62,-2588.44 3334.62,-2582.44 3340.62,-2576.44 3346.62,-2576.44 3346.62,-2576.44 3689.38,-2576.44 3689.38,-2576.44 3695.38,-2576.44 3701.38,-2582.44 3701.38,-2588.44 3701.38,-2588.44 3701.38,-2712.68 3701.38,-2712.68 3701.38,-2718.68 3695.38,-2724.68 3689.38,-2724.68"/>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2712.26" font-family="Helvetica,sans-Serif" font-size="9.00">Cluster facts</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2691.46" font-family="Helvetica,sans-Serif" font-size="9.00">clusterName k8s.killinit.internal, endpoint :6443</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2680.66" font-family="Helvetica,sans-Serif" font-size="9.00">Talos v1.13.7 &#160;· &#160;Kubernetes v1.36.3 &#160;(tuppr targets match)</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2669.86" font-family="Helvetica,sans-Serif" font-size="9.00">CNI none in Talos — Cilium installed by Flux; kube&#45;proxy disabled</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2659.06" font-family="Helvetica,sans-Serif" font-size="9.00">scheduling allowed on control planes</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2648.26" font-family="Helvetica,sans-Serif" font-size="9.00">LAN_CIDR 192.168.169.0/24 &#160;· &#160;KUBERNETES_API_VIP 192.168.169.25</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2637.46" font-family="Helvetica,sans-Serif" font-size="9.00">CLUSTER_POD_CIDR 10.3.0.0/16 &#160;· &#160;CLUSTER_SERVICE_CIDR 10.2.0.0/16</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2626.66" font-family="Helvetica,sans-Serif" font-size="9.00">CLUSTER_LOAD_BALANCER_CIDR 10.169.0.0/16</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2615.86" font-family="Helvetica,sans-Serif" font-size="9.00">4via6 fd7a:115c:a1e0:b1a:0:2::/96</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2605.06" font-family="Helvetica,sans-Serif" font-size="9.00">STORAGECLASS_DEFAULT + _METADATA ceph&#45;block&#45;replicated, _LONGTERM smb</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2594.26" font-family="Helvetica,sans-Serif" font-size="9.00">COMMON_S3_ENDPOINT garage&#45;gateway.garage.svc.cluster.local:3900</text>
-<text xml:space="preserve" text-anchor="start" x="3341.82" y="-2583.46" font-family="Helvetica,sans-Serif" font-size="9.00">kernel logs shipped to 10.169.69.51:5170 (json_lines, tag cluster=ottawa)</text>
+<path fill="#ffffff" stroke="#8c959f" d="M3690.38,-2724.68C3690.38,-2724.68 3347.62,-2724.68 3347.62,-2724.68 3341.62,-2724.68 3335.62,-2718.68 3335.62,-2712.68 3335.62,-2712.68 3335.62,-2588.44 3335.62,-2588.44 3335.62,-2582.44 3341.62,-2576.44 3347.62,-2576.44 3347.62,-2576.44 3690.38,-2576.44 3690.38,-2576.44 3696.38,-2576.44 3702.38,-2582.44 3702.38,-2588.44 3702.38,-2588.44 3702.38,-2712.68 3702.38,-2712.68 3702.38,-2718.68 3696.38,-2724.68 3690.38,-2724.68"/>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2712.26" font-family="Helvetica,sans-Serif" font-size="9.00">Cluster facts</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2691.46" font-family="Helvetica,sans-Serif" font-size="9.00">clusterName k8s.killinit.internal, endpoint :6443</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2680.66" font-family="Helvetica,sans-Serif" font-size="9.00">Talos v1.13.7 &#160;· &#160;Kubernetes v1.36.3 &#160;(tuppr targets match)</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2669.86" font-family="Helvetica,sans-Serif" font-size="9.00">CNI none in Talos — Cilium installed by Flux; kube&#45;proxy disabled</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2659.06" font-family="Helvetica,sans-Serif" font-size="9.00">scheduling allowed on control planes</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2648.26" font-family="Helvetica,sans-Serif" font-size="9.00">LAN_CIDR 192.168.169.0/24 &#160;· &#160;KUBERNETES_API_VIP 192.168.169.25</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2637.46" font-family="Helvetica,sans-Serif" font-size="9.00">CLUSTER_POD_CIDR 10.3.0.0/16 &#160;· &#160;CLUSTER_SERVICE_CIDR 10.2.0.0/16</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2626.66" font-family="Helvetica,sans-Serif" font-size="9.00">CLUSTER_LOAD_BALANCER_CIDR 10.169.0.0/16</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2615.86" font-family="Helvetica,sans-Serif" font-size="9.00">4via6 fd7a:115c:a1e0:b1a:0:2::/96</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2605.06" font-family="Helvetica,sans-Serif" font-size="9.00">STORAGECLASS_DEFAULT + _METADATA ceph&#45;block&#45;replicated, _LONGTERM smb</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2594.26" font-family="Helvetica,sans-Serif" font-size="9.00">COMMON_S3_ENDPOINT garage&#45;gateway.garage.svc.cluster.local:3900</text>
+<text xml:space="preserve" text-anchor="start" x="3342.82" y="-2583.46" font-family="Helvetica,sans-Serif" font-size="9.00">kernel logs shipped to 10.169.69.51:5170 (json_lines, tag cluster=ottawa)</text>
 </g>
 <!-- d_base&#45;&gt;ot_facts -->
 <g id="edge196" class="edge">
 <title>d_base&#45;&gt;ot_facts</title>
-<path fill="none" stroke="#1a7f37" stroke-width="2" d="M2273.74,-2910.81C2265.92,-2869.71 2259.5,-2796.96 2300.05,-2757.08 2318.12,-2739.31 2987.39,-2689.31 3325.95,-2665.07"/>
-<polygon fill="#1a7f37" stroke="#1a7f37" stroke-width="2" points="3324.55,-2667.62 3331.36,-2664.68 3324.2,-2662.74 3324.55,-2667.62"/>
+<path fill="none" stroke="#1a7f37" stroke-width="2" d="M2273.74,-2910.81C2265.91,-2869.71 2259.5,-2796.96 2300.05,-2757.08 2318.14,-2739.3 2987.95,-2689.3 3326.79,-2665.07"/>
+<polygon fill="#1a7f37" stroke="#1a7f37" stroke-width="2" points="3325.4,-2667.62 3332.21,-2664.68 3325.05,-2662.73 3325.4,-2667.62"/>
 <text xml:space="preserve" text-anchor="middle" x="2342.53" y="-2764.28" font-family="Helvetica,sans-Serif" font-size="8.00">kubernetes/apps/ottawa</text>
 </g>
 <!-- rb_facts -->
@@ -678,10 +678,10 @@
 <path fill="#ffffff" stroke="#8c959f" d="M5358.88,-2730.08C5358.88,-2730.08 4991.12,-2730.08 4991.12,-2730.08 4985.12,-2730.08 4979.12,-2724.08 4979.12,-2718.08 4979.12,-2718.08 4979.12,-2583.04 4979.12,-2583.04 4979.12,-2577.04 4985.12,-2571.04 4991.12,-2571.04 4991.12,-2571.04 5358.88,-2571.04 5358.88,-2571.04 5364.88,-2571.04 5370.88,-2577.04 5370.88,-2583.04 5370.88,-2583.04 5370.88,-2718.08 5370.88,-2718.08 5370.88,-2724.08 5364.88,-2730.08 5358.88,-2730.08"/>
 <text xml:space="preserve" text-anchor="start" x="4986.32" y="-2717.66" font-family="Helvetica,sans-Serif" font-size="9.00">Cluster facts</text>
 <text xml:space="preserve" text-anchor="start" x="4986.32" y="-2696.86" font-family="Helvetica,sans-Serif" font-size="9.00">clusterName k8s.robbinsdale.local, endpoint :6443</text>
-<text xml:space="preserve" text-anchor="start" x="4986.32" y="-2686.06" font-family="Helvetica,sans-Serif" font-size="9.00">Talos v1.13.8 declared &#160;· &#160;Kubernetes HELD at v1.36.1</text>
-<text xml:space="preserve" text-anchor="start" x="4986.32" y="-2675.26" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;the KubernetesUpgrade carries a committed hold with</text>
-<text xml:space="preserve" text-anchor="start" x="4986.32" y="-2664.46" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;# version&#45;sync: ignore and Renovate tracking removed, because the</text>
-<text xml:space="preserve" text-anchor="start" x="4986.32" y="-2653.66" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;TalosUpgrade must recover before Kubernetes may move</text>
+<text xml:space="preserve" text-anchor="start" x="4986.32" y="-2686.06" font-family="Helvetica,sans-Serif" font-size="9.00">Talos v1.13.8 &#160;· &#160;Kubernetes v1.36.3, matching talconfig and both siblings</text>
+<text xml:space="preserve" text-anchor="start" x="4986.32" y="-2675.26" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;it was pinned at v1.36.1 while the TalosUpgrade was failing; that upgrade</text>
+<text xml:space="preserve" text-anchor="start" x="4986.32" y="-2664.46" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;now reports Completed with all three nodes on v1.13.8, so the hold and its</text>
+<text xml:space="preserve" text-anchor="start" x="4986.32" y="-2653.66" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;version&#45;sync: ignore marker were lifted and Renovate tracking restored</text>
 <text xml:space="preserve" text-anchor="start" x="4986.32" y="-2642.86" font-family="Helvetica,sans-Serif" font-size="9.00">three machines, ALL control plane — no dedicated workers</text>
 <text xml:space="preserve" text-anchor="start" x="4986.32" y="-2632.06" font-family="Helvetica,sans-Serif" font-size="9.00">LAN_CIDR 192.168.50.0/24 &#160;· &#160;KUBERNETES_API_VIP 192.168.50.25</text>
 <text xml:space="preserve" text-anchor="start" x="4986.32" y="-2621.26" font-family="Helvetica,sans-Serif" font-size="9.00">CLUSTER_POD_CIDR 10.1.0.0/16 &#160;· &#160;CLUSTER_SERVICE_CIDR 10.0.0.0/16</text>
@@ -734,9 +734,9 @@
 <!-- d_notify&#45;&gt;w_github -->
 <g id="edge194" class="edge">
 <title>d_notify&#45;&gt;w_github</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M2214.2,-2466.57C3002.37,-2466.1 6667.44,-2467.61 7801,-2534.44 8267.92,-2561.97 9577.5,-2412.69 9894,-2757.08 10084.42,-2964.27 10046.19,-3778.12 9895,-3953.92 9616.82,-4277.39 9374.43,-4079.21 8950,-4122.56 8728.63,-4145.17 8165.4,-4097.71 7949,-4149.56 7630.81,-4225.8 7602.63,-4391 7284,-4465.4 7026.61,-4525.5 2768.41,-4430.98 2527,-4538.6 2403.99,-4593.44 2444.04,-4706.08 2321,-4760.84 2224.61,-4803.74 517.09,-4742.12 422,-4787.84 388.01,-4804.18 326.28,-4888.95 291.87,-4939.02"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M2214.2,-2466.57C3002.37,-2466.1 6667.44,-2467.61 7801,-2534.44 8267.92,-2561.97 9577.5,-2412.69 9894,-2757.08 10087,-2967.08 10044.56,-3779.43 9895,-3953.92 9617.35,-4277.85 9374.43,-4079.21 8950,-4122.56 8728.63,-4145.17 8165.4,-4097.71 7949,-4149.56 7630.81,-4225.8 7602.63,-4391 7284,-4465.4 7026.61,-4525.5 2768.41,-4430.98 2527,-4538.6 2403.99,-4593.44 2444.04,-4706.08 2321,-4760.84 2224.61,-4803.74 517.09,-4742.12 422,-4787.84 388.01,-4804.18 326.28,-4888.95 291.87,-4939.02"/>
 <polygon fill="#57606a" stroke="#57606a" points="289.99,-4937.43 288.06,-4944.59 294.03,-4940.2 289.99,-4937.43"/>
-<text xml:space="preserve" text-anchor="middle" x="10018.6" y="-3684.44" font-family="Helvetica,sans-Serif" font-size="8.00">commit status</text>
+<text xml:space="preserve" text-anchor="middle" x="10018.34" y="-3684.44" font-family="Helvetica,sans-Serif" font-size="8.00">commit status</text>
 </g>
 <!-- d_bootstrap -->
 <g id="node21" class="node">
@@ -842,18 +842,18 @@
 <!-- t_pg_api -->
 <g id="node28" class="node">
 <title>t_pg_api</title>
-<path fill="#ffffff" stroke="#8c959f" d="M8602.49,-1858.72C8602.49,-1858.72 8373.51,-1858.72 8373.51,-1858.72 8367.51,-1858.72 8361.51,-1852.72 8361.51,-1846.72 8361.51,-1846.72 8361.51,-1798.08 8361.51,-1798.08 8361.51,-1792.08 8367.51,-1786.08 8373.51,-1786.08 8373.51,-1786.08 8602.49,-1786.08 8602.49,-1786.08 8608.49,-1786.08 8614.49,-1792.08 8614.49,-1798.08 8614.49,-1798.08 8614.49,-1846.72 8614.49,-1846.72 8614.49,-1852.72 8608.49,-1858.72 8602.49,-1858.72"/>
-<text xml:space="preserve" text-anchor="start" x="8368.71" y="-1846.3" font-family="Helvetica,sans-Serif" font-size="9.00">ProxyGroup ${LOCATION}&#45;k8s &#160;(kube&#45;apiserver, 2 replicas)</text>
-<text xml:space="preserve" text-anchor="start" x="8368.71" y="-1825.5" font-family="Helvetica,sans-Serif" font-size="9.00">kubeAPIServer.mode auth — this is what serves</text>
-<text xml:space="preserve" text-anchor="start" x="8368.71" y="-1814.7" font-family="Helvetica,sans-Serif" font-size="9.00">&lt;location&gt;&#45;k8s&#45;operator.keiretsu.ts.net:443</text>
-<text xml:space="preserve" text-anchor="start" x="8368.71" y="-1803.9" font-family="Helvetica,sans-Serif" font-size="9.00">tailnet identity is the credential; the repo kubeconfig</text>
-<text xml:space="preserve" text-anchor="start" x="8368.71" y="-1793.1" font-family="Helvetica,sans-Serif" font-size="9.00">carries no keys, only operator URLs and token: unused</text>
+<path fill="#ffffff" stroke="#8c959f" d="M8603.49,-1858.72C8603.49,-1858.72 8374.51,-1858.72 8374.51,-1858.72 8368.51,-1858.72 8362.51,-1852.72 8362.51,-1846.72 8362.51,-1846.72 8362.51,-1798.08 8362.51,-1798.08 8362.51,-1792.08 8368.51,-1786.08 8374.51,-1786.08 8374.51,-1786.08 8603.49,-1786.08 8603.49,-1786.08 8609.49,-1786.08 8615.49,-1792.08 8615.49,-1798.08 8615.49,-1798.08 8615.49,-1846.72 8615.49,-1846.72 8615.49,-1852.72 8609.49,-1858.72 8603.49,-1858.72"/>
+<text xml:space="preserve" text-anchor="start" x="8369.71" y="-1846.3" font-family="Helvetica,sans-Serif" font-size="9.00">ProxyGroup ${LOCATION}&#45;k8s &#160;(kube&#45;apiserver, 2 replicas)</text>
+<text xml:space="preserve" text-anchor="start" x="8369.71" y="-1825.5" font-family="Helvetica,sans-Serif" font-size="9.00">kubeAPIServer.mode auth — this is what serves</text>
+<text xml:space="preserve" text-anchor="start" x="8369.71" y="-1814.7" font-family="Helvetica,sans-Serif" font-size="9.00">&lt;location&gt;&#45;k8s&#45;operator.keiretsu.ts.net:443</text>
+<text xml:space="preserve" text-anchor="start" x="8369.71" y="-1803.9" font-family="Helvetica,sans-Serif" font-size="9.00">tailnet identity is the credential; the repo kubeconfig</text>
+<text xml:space="preserve" text-anchor="start" x="8369.71" y="-1793.1" font-family="Helvetica,sans-Serif" font-size="9.00">carries no keys, only operator URLs and token: unused</text>
 </g>
 <!-- t_operator&#45;&gt;t_pg_api -->
 <g id="edge205" class="edge">
 <title>t_operator&#45;&gt;t_pg_api</title>
-<path fill="none" stroke="#57606a" d="M8301.66,-2423.69C8392.47,-2367.51 8542.68,-2257.07 8598,-2113.76 8623.46,-2047.82 8622.15,-2021.15 8598,-1954.72 8585.5,-1920.32 8559.59,-1888.65 8536.06,-1865.03"/>
-<polygon fill="#57606a" stroke="#57606a" points="8537.93,-1863.42 8531.22,-1860.26 8534.49,-1866.92 8537.93,-1863.42"/>
+<path fill="none" stroke="#57606a" d="M8301.66,-2423.69C8392.47,-2367.51 8542.68,-2257.07 8598,-2113.76 8623.46,-2047.82 8622,-2021.21 8598,-1954.72 8585.57,-1920.29 8559.76,-1888.51 8536.37,-1864.84"/>
+<polygon fill="#57606a" stroke="#57606a" points="8538.26,-1863.26 8531.56,-1860.07 8534.8,-1866.74 8538.26,-1863.26"/>
 </g>
 <!-- t_dns -->
 <g id="node30" class="node">
@@ -956,16 +956,16 @@
 <!-- t_proxyclass&#45;&gt;t_pg_ingress -->
 <g id="edge210" class="edge">
 <title>t_proxyclass&#45;&gt;t_pg_ingress</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M8347.38,-1674.23C8331.14,-1696.74 8314.11,-1725.06 8305.76,-1753.68 8288.67,-1812.32 8283.41,-1834.27 8305.76,-1891.12 8325.28,-1940.75 8371.2,-1983.33 8403.42,-2008.61"/>
-<polygon fill="#57606a" stroke="#57606a" points="8401.83,-2010.48 8408.87,-2012.81 8404.82,-2006.6 8401.83,-2010.48"/>
-<text xml:space="preserve" text-anchor="middle" x="8328.88" y="-1820" font-family="Helvetica,sans-Serif" font-size="8.00">common&#45;dev</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M8347.86,-1674.3C8331.82,-1696.83 8314.99,-1725.14 8306.76,-1753.68 8289.83,-1812.37 8284.51,-1834.23 8306.76,-1891.12 8326.12,-1940.61 8371.69,-1983.22 8403.67,-2008.55"/>
+<polygon fill="#57606a" stroke="#57606a" points="8402.05,-2010.39 8409.08,-2012.76 8405.06,-2006.52 8402.05,-2010.39"/>
+<text xml:space="preserve" text-anchor="middle" x="8329.88" y="-1820" font-family="Helvetica,sans-Serif" font-size="8.00">common&#45;dev</text>
 </g>
 <!-- t_proxyclass&#45;&gt;t_pg_api -->
 <g id="edge211" class="edge">
 <title>t_proxyclass&#45;&gt;t_pg_api</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M8398.47,-1674.25C8403.84,-1691.21 8410.85,-1710.25 8419.32,-1726.68 8428.69,-1744.85 8441.31,-1763.36 8453.17,-1779.15"/>
-<polygon fill="#57606a" stroke="#57606a" points="8451.08,-1780.46 8457.27,-1784.54 8454.98,-1777.49 8451.08,-1780.46"/>
-<text xml:space="preserve" text-anchor="middle" x="8434.66" y="-1719.48" font-family="Helvetica,sans-Serif" font-size="8.00">common</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M8408.58,-1674.32C8416.81,-1690.94 8426.31,-1709.74 8435.32,-1726.68 8444.41,-1743.75 8454.81,-1762.31 8464.02,-1778.44"/>
+<polygon fill="#57606a" stroke="#57606a" points="8461.8,-1779.5 8467.41,-1784.35 8466.05,-1777.06 8461.8,-1779.5"/>
+<text xml:space="preserve" text-anchor="middle" x="8450.66" y="-1719.48" font-family="Helvetica,sans-Serif" font-size="8.00">common</text>
 </g>
 <!-- t_proxyclass&#45;&gt;t_dns -->
 <!-- t_dns&#45;&gt;t_relay -->
@@ -980,10 +980,10 @@
 <!-- t_csi -->
 <g id="node33" class="node">
 <title>t_csi</title>
-<path fill="#ffffff" stroke="#8c959f" d="M8873.76,-1847.92C8873.76,-1847.92 8646.24,-1847.92 8646.24,-1847.92 8640.24,-1847.92 8634.24,-1841.92 8634.24,-1835.92 8634.24,-1835.92 8634.24,-1808.88 8634.24,-1808.88 8634.24,-1802.88 8640.24,-1796.88 8646.24,-1796.88 8646.24,-1796.88 8873.76,-1796.88 8873.76,-1796.88 8879.76,-1796.88 8885.76,-1802.88 8885.76,-1808.88 8885.76,-1808.88 8885.76,-1835.92 8885.76,-1835.92 8885.76,-1841.92 8879.76,-1847.92 8873.76,-1847.92"/>
-<text xml:space="preserve" text-anchor="start" x="8641.44" y="-1835.5" font-family="Helvetica,sans-Serif" font-size="9.00">tailscale&#45;csi&#45;provider &#160;(DaemonSet)</text>
-<text xml:space="preserve" text-anchor="start" x="8641.44" y="-1814.7" font-family="Helvetica,sans-Serif" font-size="9.00">Secrets Store CSI provider + SecretProviderClass tailscale</text>
-<text xml:space="preserve" text-anchor="start" x="8641.44" y="-1803.9" font-family="Helvetica,sans-Serif" font-size="9.00">lets pods mount tailnet auth material instead of K8s Secrets</text>
+<path fill="#ffffff" stroke="#8c959f" d="M8874.76,-1847.92C8874.76,-1847.92 8647.24,-1847.92 8647.24,-1847.92 8641.24,-1847.92 8635.24,-1841.92 8635.24,-1835.92 8635.24,-1835.92 8635.24,-1808.88 8635.24,-1808.88 8635.24,-1802.88 8641.24,-1796.88 8647.24,-1796.88 8647.24,-1796.88 8874.76,-1796.88 8874.76,-1796.88 8880.76,-1796.88 8886.76,-1802.88 8886.76,-1808.88 8886.76,-1808.88 8886.76,-1835.92 8886.76,-1835.92 8886.76,-1841.92 8880.76,-1847.92 8874.76,-1847.92"/>
+<text xml:space="preserve" text-anchor="start" x="8642.44" y="-1835.5" font-family="Helvetica,sans-Serif" font-size="9.00">tailscale&#45;csi&#45;provider &#160;(DaemonSet)</text>
+<text xml:space="preserve" text-anchor="start" x="8642.44" y="-1814.7" font-family="Helvetica,sans-Serif" font-size="9.00">Secrets Store CSI provider + SecretProviderClass tailscale</text>
+<text xml:space="preserve" text-anchor="start" x="8642.44" y="-1803.9" font-family="Helvetica,sans-Serif" font-size="9.00">lets pods mount tailnet auth material instead of K8s Secrets</text>
 </g>
 <!-- t_recorder&#45;&gt;t_csi -->
 <!-- t_syscompanion -->
@@ -1144,20 +1144,20 @@
 <!-- s_snapshot -->
 <g id="node45" class="node">
 <title>s_snapshot</title>
-<path fill="#ffffff" stroke="#8c959f" d="M9440.99,-377.48C9440.99,-377.48 9205.01,-377.48 9205.01,-377.48 9199.01,-377.48 9193.01,-371.48 9193.01,-365.48 9193.01,-365.48 9193.01,-316.84 9193.01,-316.84 9193.01,-310.84 9199.01,-304.84 9205.01,-304.84 9205.01,-304.84 9440.99,-304.84 9440.99,-304.84 9446.99,-304.84 9452.99,-310.84 9452.99,-316.84 9452.99,-316.84 9452.99,-365.48 9452.99,-365.48 9452.99,-371.48 9446.99,-377.48 9440.99,-377.48"/>
-<text xml:space="preserve" text-anchor="start" x="9200.21" y="-365.06" font-family="Helvetica,sans-Serif" font-size="9.00">snapshot&#45;controller (chart 5.2.0, piraeus&#45;charts)</text>
-<text xml:space="preserve" text-anchor="start" x="9200.21" y="-344.26" font-family="Helvetica,sans-Serif" font-size="9.00">volumeSnapshotClasses intentionally empty here —</text>
-<text xml:space="preserve" text-anchor="start" x="9200.21" y="-333.46" font-family="Helvetica,sans-Serif" font-size="9.00">the classes are owned by Rook&#45;Ceph</text>
-<text xml:space="preserve" text-anchor="start" x="9200.21" y="-322.66" font-family="Helvetica,sans-Serif" font-size="9.00">csi&#45;addons adds RBD network fencing (Ottawa, Robbinsdale)</text>
-<text xml:space="preserve" text-anchor="start" x="9200.21" y="-311.86" font-family="Helvetica,sans-Serif" font-size="9.00">secrets&#45;store&#45;csi&#45;driver 1.5.4 backs the Tailscale CSI provider</text>
+<path fill="#ffffff" stroke="#8c959f" d="M9428.99,-377.48C9428.99,-377.48 9193.01,-377.48 9193.01,-377.48 9187.01,-377.48 9181.01,-371.48 9181.01,-365.48 9181.01,-365.48 9181.01,-316.84 9181.01,-316.84 9181.01,-310.84 9187.01,-304.84 9193.01,-304.84 9193.01,-304.84 9428.99,-304.84 9428.99,-304.84 9434.99,-304.84 9440.99,-310.84 9440.99,-316.84 9440.99,-316.84 9440.99,-365.48 9440.99,-365.48 9440.99,-371.48 9434.99,-377.48 9428.99,-377.48"/>
+<text xml:space="preserve" text-anchor="start" x="9188.21" y="-365.06" font-family="Helvetica,sans-Serif" font-size="9.00">snapshot&#45;controller (chart 5.2.0, piraeus&#45;charts)</text>
+<text xml:space="preserve" text-anchor="start" x="9188.21" y="-344.26" font-family="Helvetica,sans-Serif" font-size="9.00">volumeSnapshotClasses intentionally empty here —</text>
+<text xml:space="preserve" text-anchor="start" x="9188.21" y="-333.46" font-family="Helvetica,sans-Serif" font-size="9.00">the classes are owned by Rook&#45;Ceph</text>
+<text xml:space="preserve" text-anchor="start" x="9188.21" y="-322.66" font-family="Helvetica,sans-Serif" font-size="9.00">csi&#45;addons adds RBD network fencing (Ottawa, Robbinsdale)</text>
+<text xml:space="preserve" text-anchor="start" x="9188.21" y="-311.86" font-family="Helvetica,sans-Serif" font-size="9.00">secrets&#45;store&#45;csi&#45;driver 1.5.4 backs the Tailscale CSI provider</text>
 </g>
 <!-- s_ceph_ot&#45;&gt;s_snapshot -->
 <g id="edge42" class="edge">
 <title>s_ceph_ot&#45;&gt;s_snapshot</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M9567.27,-462.38C9511,-434.68 9449.98,-404.65 9403.01,-381.53"/>
-<polygon fill="#57606a" stroke="#57606a" points="9404.31,-379.45 9396.95,-378.55 9402.15,-383.84 9404.31,-379.45"/>
-<text xml:space="preserve" text-anchor="start" x="9487.99" y="-416.48" font-family="Helvetica,sans-Serif" font-size="8.00">owns the</text>
-<text xml:space="preserve" text-anchor="middle" x="9518.68" y="-406.88" font-family="Helvetica,sans-Serif" font-size="8.00">snapshot classes</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M9567.3,-464.64C9508.08,-436.34 9443.13,-405.3 9393.43,-381.55"/>
+<polygon fill="#57606a" stroke="#57606a" points="9394.64,-379.41 9387.27,-378.61 9392.53,-383.84 9394.64,-379.41"/>
+<text xml:space="preserve" text-anchor="start" x="9480.92" y="-416.48" font-family="Helvetica,sans-Serif" font-size="8.00">owns the</text>
+<text xml:space="preserve" text-anchor="middle" x="9511.6" y="-406.88" font-family="Helvetica,sans-Serif" font-size="8.00">snapshot classes</text>
 </g>
 <!-- s_ceph_rb -->
 <g id="node42" class="node">
@@ -1193,8 +1193,8 @@
 <!-- s_ceph_rb&#45;&gt;s_snapshot -->
 <g id="edge43" class="edge">
 <title>s_ceph_rb&#45;&gt;s_snapshot</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M9232.26,-5205.61C9210.14,-5180.25 9189.28,-5151.08 9176,-5120.28 9150.88,-5062.04 9163,-5041.59 9163,-4978.16 9163,-4978.16 9163,-4978.16 9163,-540 9163,-499.67 9158.96,-485.68 9179,-450.68 9194.93,-422.88 9221.14,-399.96 9246.86,-382.46"/>
-<polygon fill="#57606a" stroke="#57606a" points="9248,-384.65 9252.48,-378.74 9245.29,-380.57 9248,-384.65"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M9232.26,-5205.61C9210.14,-5180.25 9189.28,-5151.08 9176,-5120.28 9150.88,-5062.04 9163,-5041.59 9163,-4978.16 9163,-4978.16 9163,-4978.16 9163,-540 9163,-499.67 9159.81,-486.15 9179,-450.68 9193.71,-423.49 9218.32,-400.46 9242.33,-382.7"/>
+<polygon fill="#57606a" stroke="#57606a" points="9243.6,-384.8 9247.85,-378.72 9240.73,-380.83 9243.6,-384.8"/>
 </g>
 <!-- s_localpath -->
 <g id="node44" class="node">
@@ -1211,35 +1211,35 @@
 <!-- s_velero -->
 <g id="node46" class="node">
 <title>s_velero</title>
-<path fill="#ffffff" stroke="#8c959f" d="M9528.06,-249.84C9528.06,-249.84 9215.94,-249.84 9215.94,-249.84 9209.94,-249.84 9203.94,-243.84 9203.94,-237.84 9203.94,-237.84 9203.94,-28 9203.94,-28 9203.94,-22 9209.94,-16 9215.94,-16 9215.94,-16 9528.06,-16 9528.06,-16 9534.06,-16 9540.06,-22 9540.06,-28 9540.06,-28 9540.06,-237.84 9540.06,-237.84 9540.06,-243.84 9534.06,-249.84 9528.06,-249.84"/>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-237.42" font-family="Helvetica,sans-Serif" font-size="9.00">Velero &#160;(chart 12.1.0, velero v1.18.2, aws plugin v1.14.2)</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-216.62" font-family="Helvetica,sans-Serif" font-size="9.00">BackupStorageLocation garage — provider aws, bucket velero,</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-205.82" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;prefix ${LOCATION}, region garage, s3Url http://${COMMON_S3_ENDPOINT},</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-195.02" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;s3ForcePathStyle. The prefix MUST be a sibling of bucket; nested under</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-184.22" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;config it is silently ignored and every cluster shares one kopia repo.</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-173.42" font-family="Helvetica,sans-Serif" font-size="9.00">volumeSnapshotLocation is empty — PV data is captured by kopia fs&#45;backup</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-162.62" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;through the node agent, not by CSI snapshots</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-151.82" font-family="Helvetica,sans-Serif" font-size="9.00">node&#45;agent&#45;config sets loadConcurrency 2 and prepareQueueLength 8, because</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-141.02" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;the default of 1 lets one wedged PodVolumeBackup fail the whole node</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-130.22" font-family="Helvetica,sans-Serif" font-size="9.00">credentials come from a GarageKey&#45;populated Secret, not the chart&#39;s file</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-119.42" font-family="Helvetica,sans-Serif" font-size="9.00">velero&#45;ui (Ottawa) exposes it; a bhaiya&#45;velero Role lets the bhaiya</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-108.62" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;ServiceAccount manage its own backups</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-87.82" font-family="Helvetica,sans-Serif" font-size="9.00">Schedules, all TTL 168h:</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-77.02" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;ottawa &#160;&#160;&#160;&#160;&#160;&#160;bhaiya 08:00 · cliproxy 09:00 · hermes 07:00 ·</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-66.22" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;home+tinyauth 09:00 · media&#45;config 06:00 (config only)</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-55.42" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;robbinsdale &#160;home 09:00 · media&#45;config 06:00 (config only)</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-44.62" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;stpetersburg home&#45;assistant 09:00</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-33.82" font-family="Helvetica,sans-Serif" font-size="9.00">media&#45;config deliberately sets defaultVolumesToFsBackup false — the bulk</text>
-<text xml:space="preserve" text-anchor="start" x="9211.14" y="-23.02" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;data lives on Ceph/SMB and relies on storage&#45;layer durability</text>
+<path fill="#ffffff" stroke="#8c959f" d="M9591.06,-249.84C9591.06,-249.84 9278.94,-249.84 9278.94,-249.84 9272.94,-249.84 9266.94,-243.84 9266.94,-237.84 9266.94,-237.84 9266.94,-28 9266.94,-28 9266.94,-22 9272.94,-16 9278.94,-16 9278.94,-16 9591.06,-16 9591.06,-16 9597.06,-16 9603.06,-22 9603.06,-28 9603.06,-28 9603.06,-237.84 9603.06,-237.84 9603.06,-243.84 9597.06,-249.84 9591.06,-249.84"/>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-237.42" font-family="Helvetica,sans-Serif" font-size="9.00">Velero &#160;(chart 12.1.0, velero v1.18.2, aws plugin v1.14.2)</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-216.62" font-family="Helvetica,sans-Serif" font-size="9.00">BackupStorageLocation garage — provider aws, bucket velero,</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-205.82" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;prefix ${LOCATION}, region garage, s3Url http://${COMMON_S3_ENDPOINT},</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-195.02" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;s3ForcePathStyle. The prefix MUST be a sibling of bucket; nested under</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-184.22" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;config it is silently ignored and every cluster shares one kopia repo.</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-173.42" font-family="Helvetica,sans-Serif" font-size="9.00">volumeSnapshotLocation is empty — PV data is captured by kopia fs&#45;backup</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-162.62" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;through the node agent, not by CSI snapshots</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-151.82" font-family="Helvetica,sans-Serif" font-size="9.00">node&#45;agent&#45;config sets loadConcurrency 2 and prepareQueueLength 8, because</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-141.02" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;the default of 1 lets one wedged PodVolumeBackup fail the whole node</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-130.22" font-family="Helvetica,sans-Serif" font-size="9.00">credentials come from a GarageKey&#45;populated Secret, not the chart&#39;s file</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-119.42" font-family="Helvetica,sans-Serif" font-size="9.00">velero&#45;ui (Ottawa) exposes it; a bhaiya&#45;velero Role lets the bhaiya</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-108.62" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;ServiceAccount manage its own backups</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-87.82" font-family="Helvetica,sans-Serif" font-size="9.00">Schedules, all TTL 168h:</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-77.02" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;ottawa &#160;&#160;&#160;&#160;&#160;&#160;bhaiya 08:00 · cliproxy 09:00 · hermes 07:00 ·</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-66.22" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;home+tinyauth 09:00 · media&#45;config 06:00 (config only)</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-55.42" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;robbinsdale &#160;home 09:00 · media&#45;config 06:00 (config only)</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-44.62" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;stpetersburg home&#45;assistant 09:00</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-33.82" font-family="Helvetica,sans-Serif" font-size="9.00">media&#45;config deliberately sets defaultVolumesToFsBackup false — the bulk</text>
+<text xml:space="preserve" text-anchor="start" x="9274.14" y="-23.02" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;data lives on Ceph/SMB and relies on storage&#45;layer durability</text>
 </g>
 <!-- s_snapshot&#45;&gt;s_velero -->
 <!-- s_velero&#45;&gt;s_garage -->
 <g id="edge35" class="edge">
 <title>s_velero&#45;&gt;s_garage</title>
-<path fill="none" stroke="#57606a" stroke-width="2" d="M9463.2,-250.33C9493.87,-295.88 9524.68,-350.18 9542,-404.48 9560.9,-463.72 9561.49,-901.58 9562,-963.76 9562.78,-1059.08 9563.3,-1166.91 9563.61,-1247.85"/>
+<path fill="none" stroke="#57606a" stroke-width="2" d="M9490.45,-250.21C9510.27,-297.07 9530.52,-352.31 9542,-404.48 9556.35,-469.7 9556.72,-637.78 9559,-704.52 9562.93,-819.68 9561.05,-848.54 9562,-963.76 9562.78,-1059.08 9563.3,-1166.91 9563.61,-1247.85"/>
 <polygon fill="#57606a" stroke="#57606a" stroke-width="2" points="9561.15,-1246.07 9563.63,-1253.06 9566.05,-1246.05 9561.15,-1246.07"/>
-<text xml:space="preserve" text-anchor="start" x="9558.75" y="-670.32" font-family="Helvetica,sans-Serif" font-size="8.00">backups &#45;&gt; bucket velero,</text>
-<text xml:space="preserve" text-anchor="middle" x="9604.44" y="-660.72" font-family="Helvetica,sans-Serif" font-size="8.00">prefix ${LOCATION}</text>
+<text xml:space="preserve" text-anchor="start" x="9558.26" y="-670.32" font-family="Helvetica,sans-Serif" font-size="8.00">backups &#45;&gt; bucket velero,</text>
+<text xml:space="preserve" text-anchor="middle" x="9603.95" y="-660.72" font-family="Helvetica,sans-Serif" font-size="8.00">prefix ${LOCATION}</text>
 </g>
 <!-- s_cnpg -->
 <g id="node47" class="node">
@@ -1264,10 +1264,10 @@
 <!-- s_cnpg&#45;&gt;s_garage -->
 <g id="edge36" class="edge">
 <title>s_cnpg&#45;&gt;s_garage</title>
-<path fill="none" stroke="#57606a" stroke-width="2" d="M9550.39,-5200.09C9536.35,-5193.12 9522.09,-5186.71 9508,-5181.28 9381.86,-5132.65 9304.26,-5217.19 9210,-5120.28 9165.28,-5074.3 9185,-5042.29 9185,-4978.16 9185,-4978.16 9185,-4978.16 9185,-4501 9185,-4357.17 9179.85,-4320.48 9196,-4177.56 9222.81,-3940.36 9270.47,-3887.36 9298,-3650.24 9358.69,-3127.55 9330,-2992.92 9330,-2466.72 9330,-2466.72 9330,-2466.72 9330,-1921.92 9330,-1783.49 9483.24,-1817.22 9538,-1690.08 9552.51,-1656.39 9558.96,-1572.11 9561.81,-1499.1"/>
-<polygon fill="#57606a" stroke="#57606a" stroke-width="2" points="9564.19,-1500.82 9562.01,-1493.73 9559.3,-1500.64 9564.19,-1500.82"/>
-<text xml:space="preserve" text-anchor="start" x="9325.53" y="-3445.88" font-family="Helvetica,sans-Serif" font-size="8.00">barman&#45;cloud WAL + base</text>
-<text xml:space="preserve" text-anchor="middle" x="9374.34" y="-3436.28" font-family="Helvetica,sans-Serif" font-size="8.00">&#45;&gt; one bucket per database</text>
+<path fill="none" stroke="#57606a" stroke-width="2" d="M9550.39,-5200.09C9536.35,-5193.12 9522.09,-5186.71 9508,-5181.28 9381.86,-5132.65 9304.26,-5217.19 9210,-5120.28 9165.28,-5074.3 9185,-5042.29 9185,-4978.16 9185,-4978.16 9185,-4978.16 9185,-4501 9185,-4357.17 9176.69,-4320.09 9196,-4177.56 9249.23,-3784.71 9313.89,-3696.22 9404,-3310.16 9427.73,-3208.51 9443.27,-3184.73 9456,-3081.12 9517.08,-2584.12 9420.79,-2451.94 9480,-1954.72 9494.24,-1835.16 9520.13,-1809.16 9538,-1690.08 9547.41,-1627.35 9553.62,-1557.05 9557.6,-1498.74"/>
+<polygon fill="#57606a" stroke="#57606a" stroke-width="2" points="9559.92,-1500.77 9557.95,-1493.62 9555.03,-1500.44 9559.92,-1500.77"/>
+<text xml:space="preserve" text-anchor="start" x="9390.91" y="-3445.88" font-family="Helvetica,sans-Serif" font-size="8.00">barman&#45;cloud WAL + base</text>
+<text xml:space="preserve" text-anchor="middle" x="9439.72" y="-3436.28" font-family="Helvetica,sans-Serif" font-size="8.00">&#45;&gt; one bucket per database</text>
 </g>
 <!-- s_cache -->
 <g id="node48" class="node">
@@ -1409,7 +1409,7 @@
 <!-- n_ddns&#45;&gt;w_cf -->
 <g id="edge6" class="edge">
 <title>n_ddns&#45;&gt;w_cf</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M1664.72,-3932.75C1697.6,-3941.37 1734.57,-3949.58 1769,-3953.92 1825.35,-3961.02 9907.9,-3940.69 9948,-3980.92 9992.45,-4025.52 9947.55,-4059.65 9945,-4122.56 9938.82,-4275.07 10021.45,-4347.11 9925,-4465.4 9815.54,-4599.64 9317.71,-4499.35 9149,-4538.6 8908.97,-4594.44 8871.59,-4673.9 8641,-4760.84 8149.06,-4946.33 8032.11,-5030.97 7514,-5120.28 7023.2,-5204.88 6891.95,-5147.12 6394,-5156.88 6368.12,-5157.39 2685.77,-5164.57 2666,-5181.28 2583.62,-5250.91 2696.67,-5340.61 2624,-5420.32 2541.94,-5510.33 1640.21,-5421.65 1529,-5471.32 1423.87,-5518.28 1455.44,-5611.08 1351,-5659.56 1285.99,-5689.74 1261.59,-5665.3 1190,-5668.56 1104.59,-5672.45 501.03,-5665.47 421,-5695.56 391.79,-5706.54 364.58,-5728.72 344.66,-5748.17"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M1664.72,-3932.75C1697.6,-3941.37 1734.57,-3949.58 1769,-3953.92 1825.35,-3961.02 9907.9,-3940.69 9948,-3980.92 10024.04,-4057.21 10000.76,-4381.67 9933,-4465.4 9881.04,-4529.6 9834.69,-4499.42 9753,-4511.6 9487.22,-4551.21 9410.73,-4477.72 9149,-4538.6 8908.97,-4594.43 8871.59,-4673.9 8641,-4760.84 8149.06,-4946.33 8032.11,-5030.98 7514,-5120.28 7022.76,-5204.95 6891.39,-5147.11 6393,-5156.88 6367.12,-5157.39 2685.77,-5164.57 2666,-5181.28 2583.62,-5250.91 2696.67,-5340.61 2624,-5420.32 2541.94,-5510.33 1640.21,-5421.65 1529,-5471.32 1423.87,-5518.28 1455.44,-5611.08 1351,-5659.56 1285.99,-5689.74 1261.59,-5665.3 1190,-5668.56 1104.59,-5672.45 501.03,-5665.47 421,-5695.56 391.79,-5706.54 364.58,-5728.72 344.66,-5748.17"/>
 <polygon fill="#57606a" stroke="#57606a" points="343.01,-5746.36 339.78,-5753.04 346.47,-5749.83 343.01,-5746.36"/>
 <text xml:space="preserve" text-anchor="middle" x="8599.58" y="-4795.04" font-family="Helvetica,sans-Serif" font-size="8.00">site WAN address</text>
 </g>
@@ -1638,29 +1638,29 @@
 <!-- n_routes&#45;&gt;s_garage -->
 <g id="edge26" class="edge">
 <title>n_routes&#45;&gt;s_garage</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M1223.68,-4279.26C1369.82,-4247.14 1581.75,-4203.73 1769,-4177.56 2060.52,-4136.81 2136.6,-4156.43 2429,-4122.56 2744.56,-4086.01 2819.26,-4041.85 3136,-4017.52 4155.9,-3939.16 6718.75,-4064.22 7739,-3990.52 8152.22,-3960.67 9211.81,-3886.38 9580,-3696.44 10059.61,-3449.02 9951,-3079.91 9951,-2540.24 9951,-2540.24 9951,-2540.24 9951,-1625.76 9951,-1517.22 9842.63,-1453.14 9740.58,-1416.86"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M1223.68,-4279.26C1369.82,-4247.14 1581.75,-4203.73 1769,-4177.56 2060.52,-4136.81 2136.6,-4156.43 2429,-4122.56 2744.56,-4086.01 2819.26,-4041.85 3136,-4017.52 4155.9,-3939.16 6718.75,-4064.22 7739,-3990.52 7945.61,-3975.59 9409.43,-3813.99 9580,-3696.44 10024.37,-3390.21 9951,-3079.91 9951,-2540.24 9951,-2540.24 9951,-2540.24 9951,-1625.76 9951,-1517.22 9842.63,-1453.14 9740.58,-1416.86"/>
 <polygon fill="#57606a" stroke="#57606a" points="9741.46,-1414.58 9734.05,-1414.58 9739.85,-1419.2 9741.46,-1414.58"/>
-<text xml:space="preserve" text-anchor="start" x="9958.59" y="-3120.12" font-family="Helvetica,sans-Serif" font-size="8.00">CDN tier serves static</text>
-<text xml:space="preserve" text-anchor="middle" x="9997.26" y="-3110.52" font-family="Helvetica,sans-Serif" font-size="8.00">sites from Garage</text>
+<text xml:space="preserve" text-anchor="start" x="9946.75" y="-3120.12" font-family="Helvetica,sans-Serif" font-size="8.00">CDN tier serves static</text>
+<text xml:space="preserve" text-anchor="middle" x="9985.42" y="-3110.52" font-family="Helvetica,sans-Serif" font-size="8.00">sites from Garage</text>
 </g>
 <!-- n_cert&#45;&gt;n_gw_public -->
 <g id="edge19" class="edge">
 <title>n_cert&#45;&gt;n_gw_public</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M758.56,-5273.11C899.43,-5249.53 1106.83,-5203.53 1271,-5120.28 1271.46,-5120.05 1271.92,-5119.81 1272.39,-5119.57"/>
-<polygon fill="#57606a" stroke="#57606a" points="1273.48,-5121.77 1278.52,-5116.32 1271.18,-5117.44 1273.48,-5121.77"/>
-<text xml:space="preserve" text-anchor="middle" x="1231.46" y="-5149.68" font-family="Helvetica,sans-Serif" font-size="8.00">wildcard secrets</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M815.47,-5268.03C943.88,-5242.29 1125.86,-5195.93 1271,-5120.28 1271.46,-5120.04 1271.92,-5119.8 1272.38,-5119.56"/>
+<polygon fill="#57606a" stroke="#57606a" points="1273.49,-5121.74 1278.48,-5116.25 1271.16,-5117.43 1273.49,-5121.74"/>
+<text xml:space="preserve" text-anchor="middle" x="1237.22" y="-5149.68" font-family="Helvetica,sans-Serif" font-size="8.00">wildcard secrets</text>
 </g>
 <!-- n_cert&#45;&gt;n_gw_private -->
 <g id="edge20" class="edge">
 <title>n_cert&#45;&gt;n_gw_private</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M619.97,-5211.04C626.09,-5190.03 633.14,-5167.67 640.65,-5147.28 650.73,-5119.9 663.23,-5090.73 675.18,-5064.46"/>
-<polygon fill="#57606a" stroke="#57606a" points="677.38,-5065.53 678.07,-5058.15 672.93,-5063.49 677.38,-5065.53"/>
-<text xml:space="preserve" text-anchor="middle" x="669.32" y="-5149.68" font-family="Helvetica,sans-Serif" font-size="8.00">wildcard secrets</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M671.37,-5211.19C680.22,-5165.99 691.14,-5110.25 700.07,-5064.62"/>
+<polygon fill="#57606a" stroke="#57606a" points="702.43,-5065.34 701.37,-5058 697.62,-5064.4 702.43,-5065.34"/>
+<text xml:space="preserve" text-anchor="middle" x="710.96" y="-5149.68" font-family="Helvetica,sans-Serif" font-size="8.00">wildcard secrets</text>
 </g>
 <!-- n_cert&#45;&gt;n_gw_ts -->
 <g id="edge21" class="edge">
 <title>n_cert&#45;&gt;n_gw_ts</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M537.96,-5210.84C521.57,-5183.3 506.03,-5151.68 497.65,-5120.28 464.83,-4997.37 444.29,-4949.53 497.65,-4834.04 513.16,-4800.47 538.17,-4770.79 565.77,-4745.62"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M556.87,-5210.81C532.89,-5184.53 510.45,-5153.6 497.65,-5120.28 452.02,-5001.53 444.29,-4949.53 497.65,-4834.04 513.16,-4800.47 538.17,-4770.79 565.77,-4745.62"/>
 <polygon fill="#57606a" stroke="#57606a" points="567.35,-4747.48 570.94,-4740.99 564.09,-4743.83 567.35,-4747.48"/>
 <text xml:space="preserve" text-anchor="middle" x="526.32" y="-4974.76" font-family="Helvetica,sans-Serif" font-size="8.00">wildcard secrets</text>
 </g>
@@ -1756,10 +1756,10 @@
 <!-- o_mimir&#45;&gt;s_garage -->
 <g id="edge29" class="edge">
 <title>o_mimir&#45;&gt;s_garage</title>
-<path fill="none" stroke="#57606a" stroke-width="2" d="M10955.32,-1599.15C10660.32,-1551.48 10044.26,-1451.93 9740.74,-1402.88"/>
-<polygon fill="#57606a" stroke="#57606a" stroke-width="2" points="9743.03,-1400.77 9735.73,-1402.07 9742.25,-1405.61 9743.03,-1400.77"/>
-<text xml:space="preserve" text-anchor="start" x="10527.13" y="-1529.24" font-family="Helvetica,sans-Serif" font-size="8.00">blocks + ruler &#45;&gt;</text>
-<text xml:space="preserve" text-anchor="middle" x="10555.8" y="-1519.64" font-family="Helvetica,sans-Serif" font-size="8.00">bucket mimir</text>
+<path fill="none" stroke="#57606a" stroke-width="2" d="M10955.11,-1598.79C10820.35,-1576.76 10624.87,-1544.88 10454,-1517.24 10206.57,-1477.22 9920.38,-1431.33 9740.77,-1402.58"/>
+<polygon fill="#57606a" stroke="#57606a" stroke-width="2" points="9742.86,-1400.44 9735.56,-1401.75 9742.08,-1405.28 9742.86,-1400.44"/>
+<text xml:space="preserve" text-anchor="start" x="10563" y="-1529.24" font-family="Helvetica,sans-Serif" font-size="8.00">blocks + ruler &#45;&gt;</text>
+<text xml:space="preserve" text-anchor="middle" x="10591.68" y="-1519.64" font-family="Helvetica,sans-Serif" font-size="8.00">bucket mimir</text>
 </g>
 <!-- o_vl -->
 <g id="node68" class="node">
@@ -1902,40 +1902,40 @@
 <!-- k_media_ot -->
 <g id="node75" class="node">
 <title>k_media_ot</title>
-<path fill="#ffffff" stroke="#8c959f" d="M10702.51,-5875.4C10702.51,-5875.4 10413.49,-5875.4 10413.49,-5875.4 10407.49,-5875.4 10401.49,-5869.4 10401.49,-5863.4 10401.49,-5863.4 10401.49,-5707.56 10401.49,-5707.56 10401.49,-5701.56 10407.49,-5695.56 10413.49,-5695.56 10413.49,-5695.56 10702.51,-5695.56 10702.51,-5695.56 10708.51,-5695.56 10714.51,-5701.56 10714.51,-5707.56 10714.51,-5707.56 10714.51,-5863.4 10714.51,-5863.4 10714.51,-5869.4 10708.51,-5875.4 10702.51,-5875.4"/>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5862.98" font-family="Helvetica,sans-Serif" font-size="9.00">media&#45;apps — Ottawa &#160;(Flux Kustomization media&#45;apps, ns media)</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5842.18" font-family="Helvetica,sans-Serif" font-size="9.00">plex &#160;· &#160;overseerr &#160;· &#160;tautulli &#160;· &#160;wizarr &#160;· &#160;maintainerr &#160;· &#160;kometa</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5831.38" font-family="Helvetica,sans-Serif" font-size="9.00">sonarr&#45;1080p &#160;sonarr&#45;4k &#160;sonarr&#45;anime</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5820.58" font-family="Helvetica,sans-Serif" font-size="9.00">radarr&#45;1080p &#160;radarr&#45;4k &#160;radarr&#45;4kremux &#160;radarr&#45;anime</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5809.78" font-family="Helvetica,sans-Serif" font-size="9.00">bazarr&#45;1080p &#160;bazarr&#45;4k &#160;bazarr&#45;4kremux &#160;bazarr&#45;anime</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5798.98" font-family="Helvetica,sans-Serif" font-size="9.00">prowlarr &#160;· &#160;autobrr &#160;· &#160;configarr &#160;· &#160;flaresolverr &#160;· &#160;feedcord</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5788.18" font-family="Helvetica,sans-Serif" font-size="9.00">sabnzbd &#160;· &#160;qb &#160;· &#160;qb&#45;pvt &#160;&#160;&#160;&#160;&#160;&#160;&#160;(usenet + two torrent clients)</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5777.38" font-family="Helvetica,sans-Serif" font-size="9.00">lidarr &#160;· &#160;audiobookshelf &#160;· &#160;komga &#160;· &#160;suwayomi &#160;· &#160;bookorbit &#160;· &#160;shelfmark</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5766.58" font-family="Helvetica,sans-Serif" font-size="9.00">omnibus &#160;· &#160;tracearr</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5745.78" font-family="Helvetica,sans-Serif" font-size="9.00">Ottawa&#45;only titles: audiobookshelf, komga, suwayomi, bookorbit,</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5734.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;shelfmark, omnibus</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5724.18" font-family="Helvetica,sans-Serif" font-size="9.00">bulk libraries live on the nagato&#45;smb share; databases on Ceph RBD</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5713.38" font-family="Helvetica,sans-Serif" font-size="9.00">qBittorrent is private+ts only. Its public CDN route was removed: the</text>
-<text xml:space="preserve" text-anchor="start" x="10408.69" y="-5702.58" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;pod&#45;CIDR auth whitelist made Envoy traffic bypass qBittorrent login</text>
+<path fill="#ffffff" stroke="#8c959f" d="M10659.51,-5875.4C10659.51,-5875.4 10370.49,-5875.4 10370.49,-5875.4 10364.49,-5875.4 10358.49,-5869.4 10358.49,-5863.4 10358.49,-5863.4 10358.49,-5707.56 10358.49,-5707.56 10358.49,-5701.56 10364.49,-5695.56 10370.49,-5695.56 10370.49,-5695.56 10659.51,-5695.56 10659.51,-5695.56 10665.51,-5695.56 10671.51,-5701.56 10671.51,-5707.56 10671.51,-5707.56 10671.51,-5863.4 10671.51,-5863.4 10671.51,-5869.4 10665.51,-5875.4 10659.51,-5875.4"/>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5862.98" font-family="Helvetica,sans-Serif" font-size="9.00">media&#45;apps — Ottawa &#160;(Flux Kustomization media&#45;apps, ns media)</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5842.18" font-family="Helvetica,sans-Serif" font-size="9.00">plex &#160;· &#160;overseerr &#160;· &#160;tautulli &#160;· &#160;wizarr &#160;· &#160;maintainerr &#160;· &#160;kometa</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5831.38" font-family="Helvetica,sans-Serif" font-size="9.00">sonarr&#45;1080p &#160;sonarr&#45;4k &#160;sonarr&#45;anime</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5820.58" font-family="Helvetica,sans-Serif" font-size="9.00">radarr&#45;1080p &#160;radarr&#45;4k &#160;radarr&#45;4kremux &#160;radarr&#45;anime</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5809.78" font-family="Helvetica,sans-Serif" font-size="9.00">bazarr&#45;1080p &#160;bazarr&#45;4k &#160;bazarr&#45;4kremux &#160;bazarr&#45;anime</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5798.98" font-family="Helvetica,sans-Serif" font-size="9.00">prowlarr &#160;· &#160;autobrr &#160;· &#160;configarr &#160;· &#160;flaresolverr &#160;· &#160;feedcord</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5788.18" font-family="Helvetica,sans-Serif" font-size="9.00">sabnzbd &#160;· &#160;qb &#160;· &#160;qb&#45;pvt &#160;&#160;&#160;&#160;&#160;&#160;&#160;(usenet + two torrent clients)</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5777.38" font-family="Helvetica,sans-Serif" font-size="9.00">lidarr &#160;· &#160;audiobookshelf &#160;· &#160;komga &#160;· &#160;suwayomi &#160;· &#160;bookorbit &#160;· &#160;shelfmark</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5766.58" font-family="Helvetica,sans-Serif" font-size="9.00">omnibus &#160;· &#160;tracearr</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5745.78" font-family="Helvetica,sans-Serif" font-size="9.00">Ottawa&#45;only titles: audiobookshelf, komga, suwayomi, bookorbit,</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5734.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;shelfmark, omnibus</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5724.18" font-family="Helvetica,sans-Serif" font-size="9.00">bulk libraries live on the nagato&#45;smb share; databases on Ceph RBD</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5713.38" font-family="Helvetica,sans-Serif" font-size="9.00">qBittorrent is private+ts only. Its public CDN route was removed: the</text>
+<text xml:space="preserve" text-anchor="start" x="10365.69" y="-5702.58" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;pod&#45;CIDR auth whitelist made Envoy traffic bypass qBittorrent login</text>
 </g>
 <!-- k_media_ot&#45;&gt;s_ceph_ot -->
 <g id="edge46" class="edge">
 <title>k_media_ot&#45;&gt;s_ceph_ot</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10714.94,-5742.99C10805.26,-5708.58 10901,-5649.16 10901,-5551.84 10901,-5551.84 10901,-5551.84 10901,-809.64 10901,-604.91 10214.81,-556.79 9890.75,-545.48"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10672,-5754.55C10778.87,-5724.04 10901,-5664.51 10901,-5551.84 10901,-5551.84 10901,-5551.84 10901,-809.64 10901,-604.91 10214.81,-556.79 9890.75,-545.48"/>
 <polygon fill="#57606a" stroke="#57606a" points="9891.28,-543.04 9884.2,-545.25 9891.11,-547.94 9891.28,-543.04"/>
 <text xml:space="preserve" text-anchor="middle" x="10927.24" y="-3325.36" font-family="Helvetica,sans-Serif" font-size="8.00">app databases</text>
 </g>
 <!-- k_media_ot&#45;&gt;s_smb -->
 <g id="edge44" class="edge">
 <title>k_media_ot&#45;&gt;s_smb</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10653.5,-5695.29C10777.17,-5569.12 10961.9,-5336.63 10828,-5181.28 10761.11,-5103.68 10701.96,-5157.35 10600,-5147.28 10355.56,-5123.14 10287.19,-5176.14 10048,-5120.28 9960.21,-5099.78 9866.48,-5056.61 9801.97,-5023.19"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10622.36,-5695.18C10759.94,-5570.16 10965.21,-5340.46 10828,-5181.28 10761.11,-5103.68 10701.96,-5157.35 10600,-5147.28 10355.56,-5123.14 10287.19,-5176.14 10048,-5120.28 9960.21,-5099.78 9866.48,-5056.61 9801.97,-5023.19"/>
 <polygon fill="#57606a" stroke="#57606a" points="9803.33,-5021.14 9795.99,-5020.08 9801.07,-5025.48 9803.33,-5021.14"/>
-<text xml:space="preserve" text-anchor="middle" x="10856.77" y="-5437.12" font-family="Helvetica,sans-Serif" font-size="8.00">libraries</text>
+<text xml:space="preserve" text-anchor="middle" x="10850.35" y="-5437.12" font-family="Helvetica,sans-Serif" font-size="8.00">libraries</text>
 </g>
 <!-- k_media_ot&#45;&gt;s_cnpg -->
 <g id="edge48" class="edge">
 <title>k_media_ot&#45;&gt;s_cnpg</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10539.07,-5695.35C10518.83,-5623.08 10479.24,-5524.74 10406,-5471.32 10276.16,-5376.61 10204.06,-5458.72 10048,-5420.32 9986.78,-5405.26 9921.25,-5383.54 9863.75,-5362.5"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10508.6,-5695.38C10498.46,-5623.63 10472.45,-5526.01 10406,-5471.32 10343.96,-5420.25 10126.03,-5439.52 10048,-5420.32 9986.78,-5405.26 9921.25,-5383.54 9863.75,-5362.5"/>
 <polygon fill="#57606a" stroke="#57606a" points="9864.89,-5360.31 9857.47,-5360.2 9863.2,-5364.91 9864.89,-5360.31"/>
 </g>
 <!-- k_media_rb -->
@@ -1997,7 +1997,7 @@
 <!-- k_home&#45;&gt;n_gw_ts -->
 <g id="edge57" class="edge">
 <title>k_home&#45;&gt;n_gw_ts</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10336.9,-5232.49C10377.32,-5206.48 10416.23,-5177.57 10427,-5156.88 10493.29,-5029.55 10509.99,-4943.4 10417,-4834.04 10347.76,-4752.62 10287.37,-4798.31 10181,-4787.84 10053.17,-4775.26 1057.96,-4790.56 933,-4760.84 914.64,-4756.47 896.06,-4750.33 877.89,-4743.16"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10336.9,-5232.49C10377.32,-5206.48 10416.23,-5177.57 10427,-5156.88 10493.29,-5029.55 10511.79,-4941.84 10417,-4834.04 10331.97,-4737.35 10259.33,-4798.33 10131,-4787.84 10003.67,-4777.43 1057.28,-4790.4 933,-4760.84 914.64,-4756.47 896.06,-4750.33 877.89,-4743.16"/>
 <polygon fill="#57606a" stroke="#57606a" points="878.94,-4740.94 871.53,-4740.59 877.11,-4745.49 878.94,-4740.94"/>
 </g>
 <!-- k_ai -->
@@ -2025,9 +2025,9 @@
 <!-- k_ai&#45;&gt;s_localpath -->
 <g id="edge51" class="edge">
 <title>k_ai&#45;&gt;s_localpath</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10182.66,-4876.05C10162.37,-4844.3 10136.53,-4811.37 10106,-4787.84 10083.85,-4770.76 9943.64,-4723.28 9838.08,-4688.97"/>
-<polygon fill="#57606a" stroke="#57606a" points="9839.08,-4686.72 9831.66,-4686.89 9837.56,-4691.38 9839.08,-4686.72"/>
-<text xml:space="preserve" text-anchor="middle" x="10150.18" y="-4795.04" font-family="Helvetica,sans-Serif" font-size="8.00">model weights</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10151.92,-4876.14C10122.75,-4844.95 10088.12,-4812.34 10052,-4787.84 9989.07,-4745.15 9910.77,-4712.13 9845.81,-4689.2"/>
+<polygon fill="#57606a" stroke="#57606a" points="9846.8,-4686.95 9839.38,-4686.95 9845.18,-4691.57 9846.8,-4686.95"/>
+<text xml:space="preserve" text-anchor="middle" x="10100.44" y="-4795.04" font-family="Helvetica,sans-Serif" font-size="8.00">model weights</text>
 </g>
 <!-- sp_rdma -->
 <g id="node83" class="node">
@@ -2080,109 +2080,109 @@
 <!-- k_ottawa_apps -->
 <g id="node80" class="node">
 <title>k_ottawa_apps</title>
-<path fill="#ffffff" stroke="#8c959f" d="M10562.41,-3081.12C10562.41,-3081.12 10259.59,-3081.12 10259.59,-3081.12 10253.59,-3081.12 10247.59,-3075.12 10247.59,-3069.12 10247.59,-3069.12 10247.59,-2815.28 10247.59,-2815.28 10247.59,-2809.28 10253.59,-2803.28 10259.59,-2803.28 10259.59,-2803.28 10562.41,-2803.28 10562.41,-2803.28 10568.41,-2803.28 10574.41,-2809.28 10574.41,-2815.28 10574.41,-2815.28 10574.41,-3069.12 10574.41,-3069.12 10574.41,-3075.12 10568.41,-3081.12 10562.41,-3081.12"/>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-3068.7" font-family="Helvetica,sans-Serif" font-size="9.00">Ottawa&#45;only services</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-3047.9" font-family="Helvetica,sans-Serif" font-size="9.00">bhaiya &#160;&#160;&#160;&#160;&#160;workspace/sandbox control plane. Reconciled from its OWN</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-3037.1" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GitRepository (Forgejo) via a Flux Receiver, not from this repo.</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-3026.3" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;dependsOn garage, garage&#45;keys, cnpg&#45;system, agent&#45;sandbox,</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-3015.5" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cert&#45;manager, buzz. Owns a Velero Role so it can back itself up,</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-3004.7" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;plus gateway RBAC and a *.bhaiya.keiretsu.top wildcard.</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2993.9" font-family="Helvetica,sans-Serif" font-size="9.00">hermes &#160;&#160;&#160;&#160;&#160;agent runtime (hermes&#45;agent); egresses to stpetersburg&#45;vllm</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2983.1" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;and aperture on the tailnet</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2972.3" font-family="Helvetica,sans-Serif" font-size="9.00">buzz &#160;&#160;&#160;&#160;&#160;&#160;&#160;app + infra split: Postgres, Dragonfly, MinIO&#45;compatible bits</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2961.5" font-family="Helvetica,sans-Serif" font-size="9.00">firecrawl &#160;&#160;web&#45;scraping stack, reconciled straight from the upstream</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2950.7" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GitHub repo&#39;s examples/kubernetes/cluster&#45;install path</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2939.9" font-family="Helvetica,sans-Serif" font-size="9.00">cliproxy &#160;&#160;&#160;LLM API proxy (cli&#45;proxy&#45;api); egress to stpetersburg&#45;vllm</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2929.1" font-family="Helvetica,sans-Serif" font-size="9.00">forgejo &#160;&#160;&#160;&#160;self&#45;hosted Git — and the source of truth for bhaiya.</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2918.3" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;SSH on :22 through the private and ts Gateways.</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2907.5" font-family="Helvetica,sans-Serif" font-size="9.00">woodpecker &#160;CI paired with Forgejo, with a persistent Nix cache workspace</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2896.7" font-family="Helvetica,sans-Serif" font-size="9.00">searxng &#160;&#160;&#160;&#160;metasearch, backed by the one real Valkey in the repo</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2885.9" font-family="Helvetica,sans-Serif" font-size="9.00">teslamate &#160;&#160;vehicle telemetry + a secret&#45;sync helper and a Grafana datasource</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2875.1" font-family="Helvetica,sans-Serif" font-size="9.00">immich &#160;&#160;&#160;&#160;&#160;photos (also on Robbinsdale); vectorchord Postgres + Dragonfly</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2864.3" font-family="Helvetica,sans-Serif" font-size="9.00">zot &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;OCI registry, plus zot&#45;cache&#45;ottawa for the shared Dragonfly</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2853.5" font-family="Helvetica,sans-Serif" font-size="9.00">lan &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ExternalName entries for LAN appliances</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2842.7" font-family="Helvetica,sans-Serif" font-size="9.00">tempvm &#160;&#160;&#160;&#160;&#160;on&#45;demand VM gateway, published as a Tailscale Service</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2831.9" font-family="Helvetica,sans-Serif" font-size="9.00">headlamp &#160;&#160;&#160;Kubernetes UI &#160;· &#160;opencost &#160;cost attribution</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2821.1" font-family="Helvetica,sans-Serif" font-size="9.00">grafana&#45;mcp MCP bridge in front of Grafana</text>
-<text xml:space="preserve" text-anchor="start" x="10254.79" y="-2810.3" font-family="Helvetica,sans-Serif" font-size="9.00">monz &#160;&#160;&#160;&#160;&#160;&#160;&#160;the parallel VictoriaMetrics/VictoriaLogs/Grafana stack</text>
+<path fill="#ffffff" stroke="#8c959f" d="M10579.41,-3081.12C10579.41,-3081.12 10276.59,-3081.12 10276.59,-3081.12 10270.59,-3081.12 10264.59,-3075.12 10264.59,-3069.12 10264.59,-3069.12 10264.59,-2815.28 10264.59,-2815.28 10264.59,-2809.28 10270.59,-2803.28 10276.59,-2803.28 10276.59,-2803.28 10579.41,-2803.28 10579.41,-2803.28 10585.41,-2803.28 10591.41,-2809.28 10591.41,-2815.28 10591.41,-2815.28 10591.41,-3069.12 10591.41,-3069.12 10591.41,-3075.12 10585.41,-3081.12 10579.41,-3081.12"/>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-3068.7" font-family="Helvetica,sans-Serif" font-size="9.00">Ottawa&#45;only services</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-3047.9" font-family="Helvetica,sans-Serif" font-size="9.00">bhaiya &#160;&#160;&#160;&#160;&#160;workspace/sandbox control plane. Reconciled from its OWN</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-3037.1" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GitRepository (Forgejo) via a Flux Receiver, not from this repo.</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-3026.3" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;dependsOn garage, garage&#45;keys, cnpg&#45;system, agent&#45;sandbox,</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-3015.5" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cert&#45;manager, buzz. Owns a Velero Role so it can back itself up,</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-3004.7" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;plus gateway RBAC and a *.bhaiya.keiretsu.top wildcard.</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2993.9" font-family="Helvetica,sans-Serif" font-size="9.00">hermes &#160;&#160;&#160;&#160;&#160;agent runtime (hermes&#45;agent); egresses to stpetersburg&#45;vllm</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2983.1" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;and aperture on the tailnet</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2972.3" font-family="Helvetica,sans-Serif" font-size="9.00">buzz &#160;&#160;&#160;&#160;&#160;&#160;&#160;app + infra split: Postgres, Dragonfly, MinIO&#45;compatible bits</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2961.5" font-family="Helvetica,sans-Serif" font-size="9.00">firecrawl &#160;&#160;web&#45;scraping stack, reconciled straight from the upstream</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2950.7" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GitHub repo&#39;s examples/kubernetes/cluster&#45;install path</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2939.9" font-family="Helvetica,sans-Serif" font-size="9.00">cliproxy &#160;&#160;&#160;LLM API proxy (cli&#45;proxy&#45;api); egress to stpetersburg&#45;vllm</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2929.1" font-family="Helvetica,sans-Serif" font-size="9.00">forgejo &#160;&#160;&#160;&#160;self&#45;hosted Git — and the source of truth for bhaiya.</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2918.3" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;SSH on :22 through the private and ts Gateways.</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2907.5" font-family="Helvetica,sans-Serif" font-size="9.00">woodpecker &#160;CI paired with Forgejo, with a persistent Nix cache workspace</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2896.7" font-family="Helvetica,sans-Serif" font-size="9.00">searxng &#160;&#160;&#160;&#160;metasearch, backed by the one real Valkey in the repo</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2885.9" font-family="Helvetica,sans-Serif" font-size="9.00">teslamate &#160;&#160;vehicle telemetry + a secret&#45;sync helper and a Grafana datasource</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2875.1" font-family="Helvetica,sans-Serif" font-size="9.00">immich &#160;&#160;&#160;&#160;&#160;photos (also on Robbinsdale); vectorchord Postgres + Dragonfly</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2864.3" font-family="Helvetica,sans-Serif" font-size="9.00">zot &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;OCI registry, plus zot&#45;cache&#45;ottawa for the shared Dragonfly</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2853.5" font-family="Helvetica,sans-Serif" font-size="9.00">lan &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ExternalName entries for LAN appliances</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2842.7" font-family="Helvetica,sans-Serif" font-size="9.00">tempvm &#160;&#160;&#160;&#160;&#160;on&#45;demand VM gateway, published as a Tailscale Service</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2831.9" font-family="Helvetica,sans-Serif" font-size="9.00">headlamp &#160;&#160;&#160;Kubernetes UI &#160;· &#160;opencost &#160;cost attribution</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2821.1" font-family="Helvetica,sans-Serif" font-size="9.00">grafana&#45;mcp MCP bridge in front of Grafana</text>
+<text xml:space="preserve" text-anchor="start" x="10271.79" y="-2810.3" font-family="Helvetica,sans-Serif" font-size="9.00">monz &#160;&#160;&#160;&#160;&#160;&#160;&#160;the parallel VictoriaMetrics/VictoriaLogs/Grafana stack</text>
 </g>
 <!-- k_gpu&#45;&gt;k_ottawa_apps -->
 <!-- k_ottawa_apps&#45;&gt;d_extra_git -->
 <g id="edge55" class="edge">
 <title>k_ottawa_apps&#45;&gt;d_extra_git</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M10247.34,-2804.81C10246.23,-2804.29 10245.11,-2803.78 10244,-2803.28 10122.56,-2748.67 10080.73,-2767.62 9948,-2757.08 9140.54,-2692.94 3465.45,-2794.35 2658,-2730.08 2544.03,-2721.01 2416.79,-2701 2318.93,-2683.45"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M10264.35,-2804.8C10263.23,-2804.28 10262.12,-2803.78 10261,-2803.28 10132.51,-2746.14 10088.22,-2767.63 9948,-2757.08 9140.28,-2696.29 3465.45,-2794.35 2658,-2730.08 2544.03,-2721.01 2416.79,-2701 2318.93,-2683.45"/>
 <polygon fill="#57606a" stroke="#57606a" points="2319.56,-2681.07 2312.24,-2682.24 2318.69,-2685.89 2319.56,-2681.07"/>
-<text xml:space="preserve" text-anchor="start" x="10167.96" y="-2769.08" font-family="Helvetica,sans-Serif" font-size="8.00">bhaiya&#39;s own</text>
-<text xml:space="preserve" text-anchor="middle" x="10190.96" y="-2759.48" font-family="Helvetica,sans-Serif" font-size="8.00">GitOps loop</text>
+<text xml:space="preserve" text-anchor="start" x="10186.51" y="-2769.08" font-family="Helvetica,sans-Serif" font-size="8.00">bhaiya&#39;s own</text>
+<text xml:space="preserve" text-anchor="middle" x="10209.51" y="-2759.48" font-family="Helvetica,sans-Serif" font-size="8.00">GitOps loop</text>
 </g>
 <!-- k_ottawa_apps&#45;&gt;s_garage -->
 <g id="edge54" class="edge">
 <title>k_ottawa_apps&#45;&gt;s_garage</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10411,-2803.08C10411,-2755.11 10411,-2700.96 10411,-2651.56 10411,-2651.56 10411,-2651.56 10411,-1625.76 10411,-1487.27 9989.58,-1419.05 9741.25,-1390.87"/>
-<polygon fill="#57606a" stroke="#57606a" points="9741.59,-1388.45 9734.36,-1390.1 9741.05,-1393.31 9741.59,-1388.45"/>
-<text xml:space="preserve" text-anchor="start" x="10411" y="-2036.64" font-family="Helvetica,sans-Serif" font-size="8.00">S3 via</text>
-<text xml:space="preserve" text-anchor="middle" x="10464.57" y="-2027.04" font-family="Helvetica,sans-Serif" font-size="8.00">${COMMON_S3_ENDPOINT}</text>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10434.71,-2803.11C10436.53,-2755.15 10438,-2700.99 10438,-2651.56 10438,-2651.56 10438,-2651.56 10438,-1625.76 10438,-1482.11 9996.44,-1415.64 9741.03,-1389.2"/>
+<polygon fill="#57606a" stroke="#57606a" points="9741.49,-1386.79 9734.28,-1388.51 9740.99,-1391.66 9741.49,-1386.79"/>
+<text xml:space="preserve" text-anchor="start" x="10438" y="-2036.64" font-family="Helvetica,sans-Serif" font-size="8.00">S3 via</text>
+<text xml:space="preserve" text-anchor="middle" x="10491.57" y="-2027.04" font-family="Helvetica,sans-Serif" font-size="8.00">${COMMON_S3_ENDPOINT}</text>
 </g>
 <!-- k_ottawa_apps&#45;&gt;s_ceph_ot -->
 <g id="edge53" class="edge">
 <title>k_ottawa_apps&#45;&gt;s_ceph_ot</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10521.59,-2802.89C10526.23,-2794.14 10530.42,-2785.24 10534,-2776.28 10554.72,-2724.44 10549,-2707.39 10549,-2651.56 10549,-2651.56 10549,-2651.56 10549,-809.64 10549,-672.54 10131.13,-594.98 9890.54,-561.68"/>
-<polygon fill="#57606a" stroke="#57606a" points="9891.18,-559.3 9883.91,-560.77 9890.51,-564.15 9891.18,-559.3"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10547.89,-2802.87C10552.78,-2794.15 10557.21,-2785.26 10561,-2776.28 10582.7,-2724.84 10576,-2707.39 10576,-2651.56 10576,-2651.56 10576,-2651.56 10576,-809.64 10576,-667.51 10138.57,-591.61 9890.94,-560.03"/>
+<polygon fill="#57606a" stroke="#57606a" points="9891.33,-557.61 9884.08,-559.16 9890.71,-562.47 9891.33,-557.61"/>
 </g>
 <!-- k_other_apps -->
 <g id="node81" class="node">
 <title>k_other_apps</title>
-<path fill="#ffffff" stroke="#8c959f" d="M10368.25,-2730.08C10368.25,-2730.08 10087.75,-2730.08 10087.75,-2730.08 10081.75,-2730.08 10075.75,-2724.08 10075.75,-2718.08 10075.75,-2718.08 10075.75,-2583.04 10075.75,-2583.04 10075.75,-2577.04 10081.75,-2571.04 10087.75,-2571.04 10087.75,-2571.04 10368.25,-2571.04 10368.25,-2571.04 10374.25,-2571.04 10380.25,-2577.04 10380.25,-2583.04 10380.25,-2583.04 10380.25,-2718.08 10380.25,-2718.08 10380.25,-2724.08 10374.25,-2730.08 10368.25,-2730.08"/>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2717.66" font-family="Helvetica,sans-Serif" font-size="9.00">Elsewhere</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2696.86" font-family="Helvetica,sans-Serif" font-size="9.00">Robbinsdale &#160;speedtest (openspeedtest), cloudflared tunnel,</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2686.06" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cert&#45;manager&#45;issuers (its own extra issuer set),</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2675.26" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;grafana&#45;redirect, tinyauth&#45;egress, strimzi (disabled)</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2664.46" font-family="Helvetica,sans-Serif" font-size="9.00">St. Petersburg &#160;home&#45;assistant, grafana&#45;redirect,</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2653.66" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cloudflare&#45;cluster&#45;app, flux&#45;system&#45;stpetersburg,</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2642.86" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;tinyauth&#45;egress</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2632.06" font-family="Helvetica,sans-Serif" font-size="9.00">All three &#160;&#160;&#160;actions&#45;runner&#45;controller + runner scale sets that dial out to</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2621.26" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GitHub, spegel peer&#45;to&#45;peer image mirroring, default&#45;debug and</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2610.46" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;default&#45;kubernetes helpers, goldpinger mesh probes,</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2599.66" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;kro + its ResourceGraphDefinitions, vpa, memory&#45;request&#45;floor,</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2588.86" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;priority&#45;classes, irqbalance (Ottawa + St. Petersburg),</text>
-<text xml:space="preserve" text-anchor="start" x="10082.95" y="-2578.06" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;node&#45;feature&#45;discovery, tuppr, external&#45;secrets, csi&#45;secrets&#45;store</text>
+<path fill="#ffffff" stroke="#8c959f" d="M10394.51,-2730.08C10394.51,-2730.08 10073.49,-2730.08 10073.49,-2730.08 10067.49,-2730.08 10061.49,-2724.08 10061.49,-2718.08 10061.49,-2718.08 10061.49,-2583.04 10061.49,-2583.04 10061.49,-2577.04 10067.49,-2571.04 10073.49,-2571.04 10073.49,-2571.04 10394.51,-2571.04 10394.51,-2571.04 10400.51,-2571.04 10406.51,-2577.04 10406.51,-2583.04 10406.51,-2583.04 10406.51,-2718.08 10406.51,-2718.08 10406.51,-2724.08 10400.51,-2730.08 10394.51,-2730.08"/>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2717.66" font-family="Helvetica,sans-Serif" font-size="9.00">Elsewhere</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2696.86" font-family="Helvetica,sans-Serif" font-size="9.00">Robbinsdale &#160;speedtest (openspeedtest), cloudflared tunnel,</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2686.06" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cert&#45;manager&#45;issuers (luke&#45;issuer only; the rest come from the shared set),</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2675.26" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;grafana&#45;redirect, tinyauth&#45;egress, strimzi (disabled)</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2664.46" font-family="Helvetica,sans-Serif" font-size="9.00">St. Petersburg &#160;home&#45;assistant, grafana&#45;redirect,</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2653.66" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cloudflare&#45;cluster&#45;app, flux&#45;system&#45;stpetersburg,</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2642.86" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;tinyauth&#45;egress</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2632.06" font-family="Helvetica,sans-Serif" font-size="9.00">All three &#160;&#160;&#160;actions&#45;runner&#45;controller + runner scale sets that dial out to</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2621.26" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GitHub, spegel peer&#45;to&#45;peer image mirroring, default&#45;debug and</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2610.46" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;default&#45;kubernetes helpers, goldpinger mesh probes,</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2599.66" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;kro + its ResourceGraphDefinitions, vpa, memory&#45;request&#45;floor,</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2588.86" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;priority&#45;classes, irqbalance (Ottawa + St. Petersburg),</text>
+<text xml:space="preserve" text-anchor="start" x="10068.69" y="-2578.06" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;node&#45;feature&#45;discovery, tuppr, external&#45;secrets, csi&#45;secrets&#45;store</text>
 </g>
 <!-- k_ottawa_apps&#45;&gt;k_other_apps -->
 <!-- k_platform -->
 <g id="node82" class="node">
 <title>k_platform</title>
-<path fill="#ffffff" stroke="#8c959f" d="M10382.89,-2397C10382.89,-2397 10073.11,-2397 10073.11,-2397 10067.11,-2397 10061.11,-2391 10061.11,-2385 10061.11,-2385 10061.11,-2152.76 10061.11,-2152.76 10061.11,-2146.76 10067.11,-2140.76 10073.11,-2140.76 10073.11,-2140.76 10382.89,-2140.76 10382.89,-2140.76 10388.89,-2140.76 10394.89,-2146.76 10394.89,-2152.76 10394.89,-2152.76 10394.89,-2385 10394.89,-2385 10394.89,-2391 10388.89,-2397 10382.89,-2397"/>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2384.58" font-family="Helvetica,sans-Serif" font-size="9.00">Platform primitives worth naming</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2363.78" font-family="Helvetica,sans-Serif" font-size="9.00">priority&#45;classes &#160;&#160;infra&#45;critical 1000000000 &#160;Tailscale proxies, CNI,</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2352.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cert&#45;manager, Flux, Garage pools</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2342.18" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;infra&#45;high &#160;&#160;&#160;&#160;&#160;800000000 &#160;Garage, monitoring, gateways,</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2331.38" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;database operators</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2320.58" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;infra&#45;default &#160;&#160;500000000 &#160;everything else that must not</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2309.78" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;preempt infrastructure</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2298.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;none is globalDefault</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2288.18" font-family="Helvetica,sans-Serif" font-size="9.00">memory&#45;request&#45;floor &#160;&#160;raises implausibly small memory requests</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2277.38" font-family="Helvetica,sans-Serif" font-size="9.00">vpa &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;right&#45;sizes requests over time</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2266.58" font-family="Helvetica,sans-Serif" font-size="9.00">kro &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ResourceGraphDefinitions turn repeated shapes into one</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2255.78" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;custom resource — including ServiceEgress, which</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2244.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;generates the tailnet egress pattern</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2234.18" font-family="Helvetica,sans-Serif" font-size="9.00">spegel &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;nodes serve image layers to each other; this is why</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2223.38" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;containerd keeps discard_unpacked_layers=false</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2212.58" font-family="Helvetica,sans-Serif" font-size="9.00">tuppr &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;drives Talos and Kubernetes upgrades, gated on Node</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2201.78" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Ready plus (where present) CephCluster, GarageCluster</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2190.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;and CNPG health</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2180.18" font-family="Helvetica,sans-Serif" font-size="9.00">external&#45;secrets &#160;&#160;&#160;&#160;&#160;&#160;ClusterSecretStore&#45;backed secret projection</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2169.38" font-family="Helvetica,sans-Serif" font-size="9.00">open&#45;cluster&#45;management &#160;Ottawa is the hub (ocm + ocm&#45;grpc&#45;lb); every cluster</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2158.58" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;runs ocm&#45;agent and registers through</text>
-<text xml:space="preserve" text-anchor="start" x="10068.31" y="-2147.78" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ocm&#45;grpc&#45;hub.keiretsu.ts.net:443</text>
+<path fill="#ffffff" stroke="#8c959f" d="M10384.89,-2397C10384.89,-2397 10075.11,-2397 10075.11,-2397 10069.11,-2397 10063.11,-2391 10063.11,-2385 10063.11,-2385 10063.11,-2152.76 10063.11,-2152.76 10063.11,-2146.76 10069.11,-2140.76 10075.11,-2140.76 10075.11,-2140.76 10384.89,-2140.76 10384.89,-2140.76 10390.89,-2140.76 10396.89,-2146.76 10396.89,-2152.76 10396.89,-2152.76 10396.89,-2385 10396.89,-2385 10396.89,-2391 10390.89,-2397 10384.89,-2397"/>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2384.58" font-family="Helvetica,sans-Serif" font-size="9.00">Platform primitives worth naming</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2363.78" font-family="Helvetica,sans-Serif" font-size="9.00">priority&#45;classes &#160;&#160;infra&#45;critical 1000000000 &#160;Tailscale proxies, CNI,</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2352.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cert&#45;manager, Flux, Garage pools</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2342.18" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;infra&#45;high &#160;&#160;&#160;&#160;&#160;800000000 &#160;Garage, monitoring, gateways,</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2331.38" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;database operators</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2320.58" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;infra&#45;default &#160;&#160;500000000 &#160;everything else that must not</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2309.78" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;preempt infrastructure</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2298.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;none is globalDefault</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2288.18" font-family="Helvetica,sans-Serif" font-size="9.00">memory&#45;request&#45;floor &#160;&#160;raises implausibly small memory requests</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2277.38" font-family="Helvetica,sans-Serif" font-size="9.00">vpa &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;right&#45;sizes requests over time</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2266.58" font-family="Helvetica,sans-Serif" font-size="9.00">kro &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ResourceGraphDefinitions turn repeated shapes into one</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2255.78" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;custom resource — including ServiceEgress, which</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2244.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;generates the tailnet egress pattern</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2234.18" font-family="Helvetica,sans-Serif" font-size="9.00">spegel &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;nodes serve image layers to each other; this is why</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2223.38" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;containerd keeps discard_unpacked_layers=false</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2212.58" font-family="Helvetica,sans-Serif" font-size="9.00">tuppr &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;drives Talos and Kubernetes upgrades, gated on Node</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2201.78" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Ready plus (where present) CephCluster, GarageCluster</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2190.98" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;and CNPG health</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2180.18" font-family="Helvetica,sans-Serif" font-size="9.00">external&#45;secrets &#160;&#160;&#160;&#160;&#160;&#160;ClusterSecretStore&#45;backed secret projection</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2169.38" font-family="Helvetica,sans-Serif" font-size="9.00">open&#45;cluster&#45;management &#160;Ottawa is the hub (ocm + ocm&#45;grpc&#45;lb); every cluster</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2158.58" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;runs ocm&#45;agent and registers through</text>
+<text xml:space="preserve" text-anchor="start" x="10070.31" y="-2147.78" font-family="Helvetica,sans-Serif" font-size="9.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ocm&#45;grpc&#45;hub.keiretsu.ts.net:443</text>
 </g>
 <!-- k_other_apps&#45;&gt;k_platform -->
 <!-- k_platform&#45;&gt;t_pg_egress -->
 <g id="edge58" class="edge">
 <title>k_platform&#45;&gt;t_pg_egress</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10207.85,-2140.51C10174.46,-1976.34 10090.75,-1696.26 9895,-1563.44 9760.31,-1472.05 9326.59,-1524.88 9164,-1517.24 9066.51,-1512.66 8377.42,-1524.41 8286,-1490.24 8239.16,-1472.73 8196.33,-1433.05 8170.23,-1405.01"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="1,5" d="M10209.48,-2140.48C10175.62,-1976.29 10091.12,-1696.18 9895,-1563.44 9760.2,-1472.21 9326.59,-1524.88 9164,-1517.24 9066.51,-1512.66 8377.42,-1524.41 8286,-1490.24 8239.16,-1472.73 8196.33,-1433.05 8170.23,-1405.01"/>
 <polygon fill="#57606a" stroke="#57606a" points="8172.15,-1403.48 8165.62,-1399.98 8168.54,-1406.79 8172.15,-1403.48"/>
-<text xml:space="preserve" text-anchor="start" x="10133.48" y="-1824.8" font-family="Helvetica,sans-Serif" font-size="8.00">kro generates</text>
-<text xml:space="preserve" text-anchor="middle" x="10159.27" y="-1815.2" font-family="Helvetica,sans-Serif" font-size="8.00">ServiceEgress</text>
+<text xml:space="preserve" text-anchor="start" x="10134.4" y="-1824.8" font-family="Helvetica,sans-Serif" font-size="8.00">kro generates</text>
+<text xml:space="preserve" text-anchor="middle" x="10160.19" y="-1815.2" font-family="Helvetica,sans-Serif" font-size="8.00">ServiceEgress</text>
 </g>
 <!-- sp_ext -->
 <g id="node201" class="node">
@@ -2211,8 +2211,8 @@
 <!-- ot_facts&#45;&gt;t_operator -->
 <g id="edge214" class="edge">
 <title>ot_facts&#45;&gt;t_operator</title>
-<path fill="none" stroke="#1a7f37" stroke-dasharray="1,5" d="M3701.58,-2627.02C3875.28,-2606.66 4143.45,-2577.7 4377,-2563.04 5831.76,-2471.72 7600.69,-2466.07 8095.07,-2466.42"/>
-<polygon fill="#1a7f37" stroke="#1a7f37" points="8094.8,-2468.87 8101.81,-2466.42 8094.81,-2463.97 8094.8,-2468.87"/>
+<path fill="none" stroke="#1a7f37" stroke-dasharray="1,5" d="M3702.78,-2626.97C3876.29,-2606.61 4143.91,-2577.69 4377,-2563.04 5831.76,-2471.63 7600.69,-2466.05 8095.07,-2466.41"/>
+<polygon fill="#1a7f37" stroke="#1a7f37" points="8094.8,-2468.86 8101.81,-2466.42 8094.81,-2463.96 8094.8,-2468.86"/>
 <text xml:space="preserve" text-anchor="middle" x="4828.78" y="-2536.84" font-family="Helvetica,sans-Serif" font-size="8.00">LOCATION=ottawa</text>
 </g>
 <!-- ot_rei -->
@@ -3620,4 +3620,4 @@
 <!-- sp_ns_home_assistant&#45;&gt;sp_ns_homer_operator -->
 </g>
 </svg>
-<!-- diagram-source-sha256: aa350ddd8f1bc5786085240e8a6fa9e6f50652c3a0ad31a052025a0e9044e225 -->
+<!-- diagram-source-sha256: fbadc62563c42c02aba02a4d7facdbd86aa36cb209eee4802ccf30ea32d60e5f -->
