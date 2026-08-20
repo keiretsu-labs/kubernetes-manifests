@@ -5,11 +5,8 @@ metadata:
   name: kubernetes
 spec:
   kubernetes:
-    # version-sync: ignore
-    # HOLD at current v1.36.1: robbinsdale TalosUpgrade is Failed; do not upgrade k8s until Talos recovers.
-    # Renovate tracking intentionally removed so the version stays pinned; restore the
-    # "# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet" line to resume.
-    version: v1.36.1
+    # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+    version: v1.36.3
   healthChecks:
     - apiVersion: v1
       kind: Node
