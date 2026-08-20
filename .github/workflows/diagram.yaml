@@ -1,0 +1,49 @@
+name: architecture diagram
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "clusters/**"
+      - "kubernetes/**"
+      - "tools/check-diagram.sh"
+  workflow_dispatch:
+
+concurrency:
+  group: diagram-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagram:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      # ubuntu-latest ships graphviz, but install explicitly so the gate always
+      # reports syntax=dot rather than silently falling back to the structural
+      # checker when the runner image changes.
+      - name: Install graphviz
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq graphviz
+
+      - name: Check the embedded architecture diagram
+        run: tools/check-diagram.sh
+
+      # A rendered copy is handy on the PR when the diagram itself changed.
+      - name: Render SVG
+        if: always()
+        run: |
+          awk '/^[[:space:]]*```dot[[:space:]]*$/{f=1;next} /^[[:space:]]*```[[:space:]]*$/{f=0} f' \
+            README.md > architecture.dot
+          dot -Tsvg architecture.dot -o architecture.svg || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: architecture-diagram
+          path: |
+            architecture.dot
+            architecture.svg
+          if-no-files-found: ignore
