@@ -378,6 +378,67 @@ refute "timeout -> grandchild reaped"   kill -0 "$wedge_pid" 2>/dev/null
 rm -f "$wedge_pid_file"
 rm -rf "$mstub"
 
+# ---------------------------------------------------------------- check-diagram.sh
+section "check-diagram.sh"
+dtmp="$(mktemp -d)"
+
+printf '# no diagram here\n' >"$dtmp/none.md"
+exits  "markdown without a dot block -> exit 2" 2 "$T/check-diagram.sh" "$dtmp/none.md"
+exits  "missing file -> exit 2"                 2 "$T/check-diagram.sh" "$dtmp/nope.md"
+
+# Syntax: a broken graph must be rejected even though it has no secrets and no
+# coverage duty (coverage findings are additive, so assert on the SYNTAX line).
+printf '# t\n\n```dot\ndigraph g { a -> ; }\n```\n' >"$dtmp/badsyntax.md"
+assert "broken graph -> SYNTAX finding" \
+  grep -q '^SYNTAX' <<<"$("$T/check-diagram.sh" "$dtmp/badsyntax.md" 2>&1)"
+
+# Secrets: each of these must be caught on its own.
+leak() { printf '# t\n\n```dot\ndigraph g { n [label="%s"]; }\n```\n' "$1" >"$dtmp/leak.md"
+         grep -q '^SECRETS' <<<"$("$T/check-diagram.sh" "$dtmp/leak.md" 2>&1)"; }
+assert "catches tailscale auth key"  leak 'tskey-auth-kXaBcDeFgH-1234567890abcdef'
+assert "catches AWS access key id"   leak 'AKIAIOSFODNN7EXAMPLE'
+assert "catches GitHub token"        leak 'ghp_0123456789abcdefghijklmnopqrstuvwxyz'
+assert "catches JWT"                 leak 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0'
+assert "catches bcrypt hash"         leak '$2y$10$abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUV'
+assert "catches e-mail address"      leak 'operator@example.com'
+assert "catches MAC address"         leak '38:05:25:36:56:39'
+assert "catches disk serial"         leak 'serial: 50026B7686F78587'
+assert "catches public IP"           leak '203.0.113.9 is fine but 8.8.8.8 is not'
+assert "catches tailnet CGNAT IP"    leak 'peer at 100.101.102.103'
+assert "catches SOPS ciphertext"     leak 'ENC[AES256_GCM,data:abc]'
+refute "allows RFC1918 addresses"    leak '192.168.169.25 and 10.3.0.0/16'
+refute "allows image digests"        leak 'sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+refute "allows the documented SOPS fingerprint" \
+                                     leak 'FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5'
+
+# The allow escape hatch suppresses a finding on that line only.
+printf '# t\n\n```dot\ndigraph g { n [label="ops@example.com"]; // diagram-check: allow\n}\n```\n' \
+  >"$dtmp/allow.md"
+refute "diagram-check: allow suppresses a finding" \
+  grep -q '^SECRETS' <<<"$("$T/check-diagram.sh" "$dtmp/allow.md" 2>&1)"
+
+# Coverage: an empty graph must be told about every cluster on disk.
+printf '# t\n\n```dot\ndigraph g { x }\n```\n' >"$dtmp/empty.md"
+cov="$("$T/check-diagram.sh" "$dtmp/empty.md" 2>&1)"
+assert "empty graph -> COVERAGE findings" grep -q '^COVERAGE' <<<"$cov"
+for loc in ottawa robbinsdale stpetersburg; do
+  assert "requires location $loc" grep -q "location not in diagram: $loc" <<<"$cov"
+done
+assert "requires Talos node hostnames"  grep -q 'node not in diagram:' <<<"$cov"
+assert "requires namespaces"            grep -q 'namespace not in diagram:' <<<"$cov"
+assert "requires Flux app names"        grep -q 'app not in diagram:' <<<"$cov"
+
+# Reverse direction: an app_<name> node for something undeployed is stale.
+printf '# t\n\n```dot\ndigraph g { app_definitely_not_deployed; }\n```\n' >"$dtmp/stale.md"
+assert "flags stale app_ node" \
+  grep -q 'names app that is not deployed' <<<"$("$T/check-diagram.sh" "$dtmp/stale.md" 2>&1)"
+
+# The real README must pass all three checks.
+exits  "README.md passes the gate"      0 "$T/check-diagram.sh"
+assert "README success prints one ✓ line" \
+  grep -q '^✓ diagram OK:' <<<"$("$T/check-diagram.sh" 2>/dev/null)"
+rm -rf "$dtmp"
+
 # ---------------------------------------------------------------- summary
 printf '\n== %d passed, %d failed ==\n' "$pass" "$fail"
 [ "$fail" = 0 ]
