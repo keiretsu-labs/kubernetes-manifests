@@ -88,13 +88,24 @@ planes, the federated object store, the observability flow, and every namespace
 with the Flux Kustomizations it owns. Where a design looks surprising, the node
 also records why — those notes are the parts that took an outage to learn.
 
-It is Graphviz source rather than a picture so that it stays reviewable in a
-diff and greppable from a terminal. To look at it:
+[![Architecture](docs/architecture.svg)](docs/architecture.svg)
+
+GitHub renders that PNG-scale view far smaller than the drawing really is —
+**open [`docs/architecture.svg`](docs/architecture.svg) to read it**, where the
+panel labels and per-node notes are legible. The SVG is a render; the Graphviz
+source below is the thing under review, kept in the README so it stays
+reviewable in a diff and greppable from a terminal. To work with it:
 
 ~~~bash
 # extract and render (needs graphviz)
-awk '/^```dot$/{f=1;next} /^```$/{f=0} f' README.md > architecture.dot
+awk '/^<details>
+<summary><b>Graphviz source</b> — 675 lines, the reviewed artefact</summary>
+
+```dot$/{f=1;next} /^```$/{f=0} f' README.md > architecture.dot
 dot -Tsvg architecture.dot -o architecture.svg
+
+# after editing the DOT, re-render the committed picture
+tools/render-diagram.sh
 
 # or just check it, which is what CI does
 tools/check-diagram.sh
@@ -793,6 +804,8 @@ digraph keiretsu {
 }
 ```
 
+</details>
+
 ## Clusters
 
 | Cluster | Site and nodes | Primary role | Storage | <code>${CLUSTER_DOMAIN}</code> |
@@ -1206,6 +1219,7 @@ tools/check.sh
 make diff
 tools/check-versions.sh
 tools/check-diagram.sh
+tools/render-diagram.sh
 tools/orphans.sh
 tools/tests/run.sh
 ~~~
@@ -1215,8 +1229,10 @@ process group was killed by the timeout and should be retried; a render that
 exits with its own diagnostics is a real failure. The version checker enforces
 coupled Talos/tuppr and Rook/Ceph/toolbox versions,
 <code>tools/check-diagram.sh</code> holds the architecture graph above to the
-tree on disk, and <code>tools/orphans.sh</code> detects Kustomization-to-disk
-drift.
+tree on disk and verifies <code>docs/architecture.svg</code> was rendered from
+the DOT currently in this file (re-render with
+<code>tools/render-diagram.sh</code>), and <code>tools/orphans.sh</code>
+detects Kustomization-to-disk drift.
 
 ## Networking Reference
 

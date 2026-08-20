@@ -44,6 +44,24 @@ esac
 rc=0
 note() { printf '%s\n' "$*"; rc=1; }
 
+# ---------------------------------------------------------------- staleness
+# GitHub cannot render Graphviz, so the README shows a committed SVG. That is
+# only trustworthy if the picture matches the source it claims to depict, so
+# tools/render-diagram.sh stamps the source hash into the SVG and we check it
+# here. Engine-independent: no renderer needed, just the stamp.
+SVG="$ROOT/docs/architecture.svg"
+if [ -f "$SVG" ]; then
+  want="$(sha256sum "$DOT" | cut -d' ' -f1)"
+  got="$(sed -n 's/.*diagram-source-sha256: \([0-9a-f]\{64\}\).*/\1/p' "$SVG" | tail -1)"
+  if [ -z "$got" ]; then
+    note "STALE     docs/architecture.svg carries no source stamp — run tools/render-diagram.sh"
+  elif [ "$got" != "$want" ]; then
+    note "STALE     docs/architecture.svg was rendered from different source"
+    note "          embedded DOT is ${want:0:12}, SVG claims ${got:0:12}"
+    note "          run tools/render-diagram.sh to re-render"
+  fi
+fi
+
 # ---------------------------------------------------------------- syntax
 engine=""
 if command -v dot >/dev/null 2>&1; then

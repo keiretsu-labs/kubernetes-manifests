@@ -433,7 +433,26 @@ printf '# t\n\n```dot\ndigraph g { app_definitely_not_deployed; }\n```\n' >"$dtm
 assert "flags stale app_ node" \
   grep -q 'names app that is not deployed' <<<"$("$T/check-diagram.sh" "$dtmp/stale.md" 2>&1)"
 
-# The real README must pass all three checks.
+# Staleness: the committed SVG must prove which source it came from, because
+# GitHub shows the picture and nobody diffs an SVG by eye.
+svgdir="$dtmp/docs"; mkdir -p "$svgdir"
+printf '# t\n\n```dot\ndigraph g { a -> b; }\n```\n' >"$dtmp/withsvg.md"
+# check-diagram resolves docs/architecture.svg from the repo root, so exercise
+# the stamp logic directly against a copy of the real pair.
+stale="$(mktemp)"; sed 's/diagram-source-sha256: ./diagram-source-sha256: 0/' \
+  "$ROOT/docs/architecture.svg" >"$stale" 2>/dev/null || true
+if [ -s "$stale" ]; then
+  cp "$ROOT/docs/architecture.svg" "$dtmp/good.svg"
+  cp "$stale" "$ROOT/docs/architecture.svg"
+  assert "mismatched SVG stamp -> STALE finding" \
+    grep -q '^STALE' <<<"$("$T/check-diagram.sh" 2>&1)"
+  cp "$dtmp/good.svg" "$ROOT/docs/architecture.svg"
+  assert "restored SVG passes again" test -z \
+    "$("$T/check-diagram.sh" 2>&1 | grep '^STALE' || true)"
+fi
+rm -f "$stale"
+
+# The real README must pass all four checks.
 exits  "README.md passes the gate"      0 "$T/check-diagram.sh"
 assert "README success prints one ✓ line" \
   grep -q '^✓ diagram OK:' <<<"$("$T/check-diagram.sh" 2>/dev/null)"

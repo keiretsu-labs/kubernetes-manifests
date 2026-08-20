@@ -111,7 +111,8 @@ values, and an HTTPRoute example. The checklist below is the summary.
 4. List the pointer (and `namespace.yaml` if owned) in
    `kubernetes/apps/<location>/<ns>/kustomization.yaml`.
 5. Add the app to the architecture diagram in `README.md` — find the cluster's
-   namespace node and add the pointer's `metadata.name` to its label.
+   namespace node and add the pointer's `metadata.name` to its label, then run
+   `tools/render-diagram.sh` so the committed SVG matches.
 6. Verify with `tools/check.sh` and `tools/check-diagram.sh` before committing.
 
 ### Variable substitution
@@ -250,9 +251,12 @@ tools/check.sh [cluster]   # CI render gate — the sole verify command
                            #  scope by cluster if only one changed)
 tools/check-versions.sh    # talconfig↔tuppr and CephCluster↔toolbox version sync
 tools/check-diagram.sh     # README architecture diagram: Graphviz syntax, secret
-                           # scan, and coverage of every cluster/node/namespace/app
-                           # on disk (adding or removing an app fails until the
-                           # diagram in README.md is updated to match)
+                           # scan, coverage of every cluster/node/namespace/app on
+                           # disk, and whether docs/architecture.svg is current
+                           # (adding or removing an app fails until the diagram in
+                           # README.md is updated to match)
+tools/render-diagram.sh    # re-render docs/architecture.svg from the README's DOT
+                           # and stamp it with the source hash the gate checks
 tools/flate.sh <args…>     # flate at the CI-pinned version (bootstraps if needed)
 tools/tests/run.sh         # offline self-tests for the tools/ helpers
 tools/app.sh <name> | --list   # locate an app / full deploy inventory
