@@ -13,7 +13,6 @@ resources:
   - ./cnames.yaml
   - ./prometheusrules.yaml
   - ./gslb-zot-public.yaml
-  - ./gslb-qbittorrent.yaml
   - ./gslb-garage-s3.yaml
   - ./gslb-dashboard-cdn.yaml
   - ./gslb-forgejo.yaml

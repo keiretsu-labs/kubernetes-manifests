@@ -9,4 +9,3 @@ resources:
   - secret.yaml
   - pvc-config.yaml
   - pvc-downloads.yaml
-  - referencegrant.yaml

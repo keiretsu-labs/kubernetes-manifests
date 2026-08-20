@@ -9,6 +9,12 @@ spec:
     group: cert-manager.io
     kind: ClusterIssuer
     name: keiretsu-top
+  # The name says ottawa but the contents are per-cluster: dnsNames above is
+  # parameterised, so on Robbinsdale this Secret holds *.robbinsdale.keiretsu.top.
+  # Gateway public's wildcard-location-keiretsu-top-https listener references this
+  # literal name. Renaming either side alone points the listener at a Secret
+  # nothing writes; rename both together and expect a short TLS gap on that one
+  # listener while cert-manager issues into the new Secret.
   secretName: wildcard-ottawa-${COMMON_DOMAIN//./-}
   usages:
     - digital signature

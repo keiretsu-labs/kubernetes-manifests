@@ -104,6 +104,10 @@ spec:
       tls:
         mode: Terminate
         certificateRefs:
+        # Not a copy-paste bug: certificate-location.yaml writes this fixed name
+        # from a ${LOCATION}-parameterised dnsNames, so each cluster serves its
+        # own *.<location>.keiretsu.top from a Secret that happens to be called
+        # ottawa. Rename here only together with that Certificate.
         - group: ''
           kind: Secret
           name: wildcard-ottawa-keiretsu-top
