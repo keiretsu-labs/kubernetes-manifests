@@ -40,8 +40,54 @@ case "${flate_args[0]:-}" in
     ;;
 esac
 
+# Flate releases are UPX-packed. The self-extraction stub walks argv/envp/auxv
+# and, once that block grows past what it assumes, jumps into the environment
+# strings themselves — a segfault with error 15 (instruction fetch from a
+# writable page) and an ip inside the env block. Agent workspaces inject
+# hundreds of variables and cross that line, which makes the binary look
+# broken: every `flate --version` probe below returns nothing, so a
+# correctly-downloaded release is rejected as "does not report Flate <v>".
+#
+# So run flate with only the variables it needs. Small environments (CI, a
+# normal shell) are left completely alone, so this cannot change how CI
+# behaves. Set KMAN_FLATE_KEEP_ENV=1 to disable the pruning entirely.
+flate_env=()
+if [ -z "${KMAN_FLATE_KEEP_ENV:-}" ]; then
+  env_count=$(env | wc -l | tr -d ' ')
+  env_bytes=$(env | wc -c | tr -d ' ')
+  if [ "$env_count" -gt 192 ] || [ "$env_bytes" -gt 24576 ]; then
+    for _v in PATH HOME TMPDIR TMP TEMP USER LOGNAME LANG LC_ALL TERM \
+              SSL_CERT_FILE SSL_CERT_DIR CURL_CA_BUNDLE GIT_SSL_CAINFO \
+              NIX_SSL_CERT_FILE XDG_CACHE_HOME XDG_CONFIG_HOME XDG_DATA_HOME \
+              DOCKER_CONFIG GNUPGHOME \
+              HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy \
+              GITHUB_TOKEN GH_TOKEN; do
+      [ -n "${!_v+x}" ] && flate_env+=("$_v=${!_v}")
+    done
+    # Anything the caller set for flate, SOPS or this repo's own helpers.
+    while IFS= read -r _v; do
+      [ -n "${!_v+x}" ] && flate_env+=("$_v=${!_v}")
+    done < <(compgen -v | grep -E '^(FLATE_|SOPS_|KMAN_)' || true)
+    unset _v
+  fi
+fi
+
+# Run flate, pruning the environment when it is large enough to break the stub.
+run_flate() {
+  local bin="$1"; shift
+  if [ "${#flate_env[@]}" -eq 0 ]; then
+    exec "$bin" "$@"
+  fi
+  exec env -i "${flate_env[@]}" "$bin" "$@"
+}
+
 flate_version() {
-  "$1" --version 2>/dev/null | sed -n 's/^flate version //p' | head -1
+  if [ "${#flate_env[@]}" -eq 0 ]; then
+    "$1" --version 2>/dev/null | sed -n 's/^flate version //p' | head -1
+  else
+    env -i "${flate_env[@]}" "$1" --version 2>/dev/null \
+      | sed -n 's/^flate version //p' | head -1
+  fi
 }
 
 if [ -n "${KMAN_FLATE_BIN:-}" ]; then
@@ -50,13 +96,13 @@ if [ -n "${KMAN_FLATE_BIN:-}" ]; then
     echo "error: KMAN_FLATE_BIN is Flate ${actual:-unknown}; CI requires $version" >&2
     exit 2
   fi
-  exec "$KMAN_FLATE_BIN" "${flate_args[@]}"
+  run_flate "$KMAN_FLATE_BIN" "${flate_args[@]}"
 fi
 
 if command -v flate >/dev/null 2>&1; then
   system_flate="$(command -v flate)"
   if [ "$(flate_version "$system_flate" || true)" = "$version" ]; then
-    exec "$system_flate" "${flate_args[@]}"
+    run_flate "$system_flate" "${flate_args[@]}"
   fi
 fi
 
@@ -84,7 +130,7 @@ fi
 install_dir="$cache_root/kubernetes-manifests/flate/$version/$platform"
 cached_flate="$install_dir/flate"
 if [ -x "$cached_flate" ] && [ "$(flate_version "$cached_flate" || true)" = "$version" ]; then
-  exec "$cached_flate" "${flate_args[@]}"
+  run_flate "$cached_flate" "${flate_args[@]}"
 fi
 
 mkdir -p "$install_dir"
@@ -134,4 +180,4 @@ fi
 mv -f -- "$stage/flate" "$cached_flate"
 cleanup
 trap - EXIT INT TERM
-exec "$cached_flate" "${flate_args[@]}"
+run_flate "$cached_flate" "${flate_args[@]}"

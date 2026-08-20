@@ -378,6 +378,43 @@ refute "timeout -> grandchild reaped"   kill -0 "$wedge_pid" 2>/dev/null
 rm -f "$wedge_pid_file"
 rm -rf "$mstub"
 
+# ---------------------------------------------------------------- flate.sh env pruning
+section "flate.sh environment pruning"
+fstub="$(mktemp -d)"
+pinned="$(sed -n 's|.*home-operations/flate/action@v\([0-9][0-9.]*\).*|\1|p' \
+  "$ROOT/.github/workflows/flate.yaml" | sort -u | head -1)"
+# A stand-in for the UPX-packed release: it refuses to run once the environment
+# grows past what the real stub tolerates, which is exactly the failure mode.
+cat >"$fstub/flate" <<EOF
+#!/usr/bin/env bash
+if [ "\$(env | wc -l | tr -d ' ')" -gt 120 ]; then exit 139; fi
+if [ "\$1" = "--version" ]; then echo "flate version $pinned"; exit 0; fi
+echo "flate ran with \$(env | wc -l | tr -d ' ') env vars"
+EOF
+chmod +x "$fstub/flate"
+
+# Build an environment big enough to trip the threshold in flate.sh.
+bigenv() {
+  local -a e=()
+  local i
+  for i in $(seq 1 400); do e+=("PAD$i=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"); done
+  env "${e[@]}" KMAN_FLATE_BIN="$fstub/flate" "$@"
+}
+
+assert "huge env -> flate.sh still resolves the version" \
+  grep -q 'flate ran with' <<<"$(bigenv "$T/flate.sh" test --path x 2>&1)"
+assert "huge env -> child sees a pruned environment" \
+  test "$(bigenv "$T/flate.sh" test --path x 2>&1 | grep -oE '[0-9]+ env vars' | grep -oE '^[0-9]+')" -le 120
+assert "KMAN_FLATE_KEEP_ENV=1 disables pruning" \
+  grep -q 'does not report\|unknown' \
+  <<<"$(bigenv KMAN_FLATE_KEEP_ENV=1 "$T/flate.sh" test --path x 2>&1)"
+# A normal-sized environment must be passed through untouched.
+assert "small env -> no pruning applied" \
+  grep -q 'flate ran with' \
+  <<<"$(env -i PATH="$PATH" HOME="$HOME" KMAN_FLATE_BIN="$fstub/flate" \
+        "$T/flate.sh" test --path x 2>&1)"
+rm -rf "$fstub"
+
 # ---------------------------------------------------------------- check-diagram.sh
 section "check-diagram.sh"
 dtmp="$(mktemp -d)"
