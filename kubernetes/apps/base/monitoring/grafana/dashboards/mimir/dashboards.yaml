@@ -9,7 +9,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: Mimir
-  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.1.4/operations/mimir-mixin-compiled/dashboards/mimir-overview.json
+  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.2.0/operations/mimir-mixin-compiled/dashboards/mimir-overview.json
   datasources:
     - inputName: datasource
       datasourceName: mimir-local
@@ -24,7 +24,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: Mimir
-  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.1.4/operations/mimir-mixin-compiled/dashboards/mimir-writes.json
+  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.2.0/operations/mimir-mixin-compiled/dashboards/mimir-writes.json
   datasources:
     - inputName: datasource
       datasourceName: mimir-local
@@ -39,7 +39,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: Mimir
-  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.1.4/operations/mimir-mixin-compiled/dashboards/mimir-reads.json
+  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.2.0/operations/mimir-mixin-compiled/dashboards/mimir-reads.json
   datasources:
     - inputName: datasource
       datasourceName: mimir-local
@@ -54,7 +54,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: Mimir
-  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.1.4/operations/mimir-mixin-compiled/dashboards/mimir-queries.json
+  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.2.0/operations/mimir-mixin-compiled/dashboards/mimir-queries.json
   datasources:
     - inputName: datasource
       datasourceName: mimir-local
@@ -69,7 +69,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: Mimir
-  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.1.4/operations/mimir-mixin-compiled/dashboards/mimir-compactor.json
+  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.2.0/operations/mimir-mixin-compiled/dashboards/mimir-compactor.json
   datasources:
     - inputName: datasource
       datasourceName: mimir-local
@@ -84,7 +84,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: Mimir
-  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.1.4/operations/mimir-mixin-compiled/dashboards/mimir-object-store.json
+  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.2.0/operations/mimir-mixin-compiled/dashboards/mimir-object-store.json
   datasources:
     - inputName: datasource
       datasourceName: mimir-local
@@ -99,7 +99,7 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   folder: Mimir
-  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.1.4/operations/mimir-mixin-compiled/dashboards/mimir-config.json
+  url: https://raw.githubusercontent.com/grafana/mimir/mimir-3.2.0/operations/mimir-mixin-compiled/dashboards/mimir-config.json
   datasources:
     - inputName: datasource
       datasourceName: mimir-local
