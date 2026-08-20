@@ -33,20 +33,20 @@ Feature gap analysis vs desired target state. Status: ✅ done · 🔶 partial �
 | --- | --- | --- |
 | Ottawa (talos-ottawa) | ✅ | Primary: media, databases, Rook-Ceph |
 | Robbinsdale (talos-robbinsdale) | ✅ | Home automation, Rook-Ceph |
-| St. Petersburg (talos-stpetersburg) | ✅ | AI/ML: GPU operator, KServe, Ray |
+| St. Petersburg (talos-stpetersburg) | ✅ | AI/ML: GPU operator, vLLM on LeaderWorkerSet |
 
 ## Tier 4: App categories
 
 | Category | Status | Notes |
 | --- | --- | --- |
 | Platform/GitOps (flux, cert-manager, external-secrets) | ✅ | Core infra |
-| Networking (Cilium, Envoy Gateway, k8gb, spiderpool) | ✅ | Multi-cluster networking |
+| Networking (Cilium, Envoy Gateway, k8gb) | ✅ | Multi-cluster networking; no spiderpool |
 | Storage (Rook-Ceph, Garage, CNPG, Dragonfly) | ✅ | Persistent + object + DB |
-| Observability (Prometheus, Grafana, Mimir, Tempo, Loki) | ✅ | Metrics + traces + logs |
+| Observability (Prometheus, Grafana, Mimir, VictoriaLogs) | 🔶 | Metrics + logs; no tracing backend |
 | Registry/CI (Zot, Forgejo, Woodpecker, GHA runners) | ✅ | Container registry + CI |
-| Media (Jellyfin, Plex, *arr, qBittorrent, etc.) | ✅ | Full media stack all locations |
+| Media (Plex, *arr, qBittorrent, etc.) | ✅ | Ottawa + Robbinsdale; no Jellyfin |
 | Home (Homer, Home Assistant, Immich, TeslaMate) | ✅ | Home automation |
-| AI/ML (Ollama, KServe, Ray, GPU Operator) | ✅ | St. Petersburg only |
+| AI/ML (vLLM, LeaderWorkerSet, GPU Operator) | ✅ | St. Petersburg only; no Ollama/KServe/Ray |
 | Tailscale (operator, Connector, Recorder, DNSConfig) | ✅ | Full operator integration |
 
 ## Tier 5: Build-agent workflow maturity
