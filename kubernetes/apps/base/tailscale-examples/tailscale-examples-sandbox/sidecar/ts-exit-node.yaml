@@ -23,7 +23,7 @@ spec:
         command:
         - /bin/sh
         - -c
-        image: "ghcr.io/tailscale/tailscale:v1.102.2"
+        image: "ghcr.io/tailscale/tailscale:v1.102.3"
         imagePullPolicy: Always
         name: sysctler
         securityContext:
@@ -31,7 +31,7 @@ spec:
       containers:
       - name: tailscale
         imagePullPolicy: Always
-        image: "ghcr.io/tailscale/tailscale:v1.102.2"
+        image: "ghcr.io/tailscale/tailscale:v1.102.3"
         securityContext:
           privileged: true
         env:
