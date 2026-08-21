@@ -1,0 +1,19 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./nrr-crds.yaml
+  - ./nrr-install.yaml
+  - ./nrr-rule.yaml
+  - ./npd-rbac.yaml
+  - ./npd-daemonset.yaml
+configMapGenerator:
+  - name: node-problem-detector-config
+    files:
+      - kernel-monitor.json
+      - health-checker-kubelet.json
+    options:
+      disableNameSuffixHash: true
+      labels:
+        app.kubernetes.io/name: node-problem-detector
+        app.kubernetes.io/component: config

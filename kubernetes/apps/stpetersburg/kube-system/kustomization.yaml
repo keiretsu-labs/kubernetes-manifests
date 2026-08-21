@@ -8,3 +8,4 @@ resources:
   - ./irqbalance.yaml
   - ./memory-request-floor.yaml
   - ./priority-classes.yaml
+  - ./node-health.yaml
