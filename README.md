@@ -462,9 +462,15 @@ spec:
     substituteFrom:
       - { kind: ConfigMap, name: common-settings }
       - { kind: Secret, name: common-secrets }
-      - { kind: ConfigMap, name: cluster-settings, optional: true }
-      - { kind: Secret, name: cluster-secrets, optional: true }
+      - { kind: ConfigMap, name: cluster-settings }
+      - { kind: Secret, name: cluster-secrets }
 ~~~
+
+<code>postBuild</code> can be omitted entirely: the parent
+<code>kubernetes-apps</code> Kustomization patches the full seven-entry stack
+listed above into every child, overriding whatever a pointer declares. Only the
+last three entries are optional; a missing <code>cluster-settings</code> or
+<code>cluster-secrets</code> is a hard failure.
 
 List the pointer in
 <code>kubernetes/apps/&lt;location&gt;/&lt;namespace&gt;/kustomization.yaml</code>.
