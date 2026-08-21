@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 60 | 122 |
-| `robbinsdale` | 3 | 43 | 86 |
-| `stpetersburg` | 3 | 39 | 78 |
-| **total** | **10** | **142** | **286** |
+| `ottawa` | 4 | 60 | 123 |
+| `robbinsdale` | 3 | 43 | 87 |
+| `stpetersburg` | 3 | 39 | 79 |
+| **total** | **10** | **142** | **289** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -74,7 +74,7 @@ diagram in the [README](../../README.md#architecture).
 | Node runtime, scheduling and sandboxing | `default` | `default-debug`, `default-kubernetes` |
 | Node runtime, scheduling and sandboxing | `gvisor` | `gvisor` |
 | Node runtime, scheduling and sandboxing | `kata-containers` | `kata-containers` |
-| Node runtime, scheduling and sandboxing | `kube-system` | `cilium`, `cilium-config`, `core-dns-app`, `csi-secrets-store-install`, `headlamp-install`, `irqbalance`, `memory-request-floor`, `priority-classes` |
+| Node runtime, scheduling and sandboxing | `kube-system` | `cilium`, `cilium-config`, `core-dns-app`, `csi-secrets-store-install`, `headlamp-install`, `irqbalance`, `memory-request-floor`, `node-health`, `priority-classes` |
 | Node runtime, scheduling and sandboxing | `node-feature-discovery` | `nfd-install`, `nfd-rules` |
 | Node runtime, scheduling and sandboxing | `spegel` | `spegel` |
 | Node runtime, scheduling and sandboxing | `vpa-system` | `vpa` |
@@ -185,7 +185,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Node runtime, scheduling and sandboxing | `arc-systems` | `actions-runner-controller`, `actions-runner-controller-runners` → ns `arc-runners` |
 | Node runtime, scheduling and sandboxing | `default` | `default-debug`, `default-kubernetes` |
 | Node runtime, scheduling and sandboxing | `gvisor` | `gvisor` |
-| Node runtime, scheduling and sandboxing | `kube-system` | `cilium`, `cilium-config`, `core-dns-app`, `csi-secrets-store-install`, `memory-request-floor`, `priority-classes` |
+| Node runtime, scheduling and sandboxing | `kube-system` | `cilium`, `cilium-config`, `core-dns-app`, `csi-secrets-store-install`, `memory-request-floor`, `node-health`, `priority-classes` |
 | Node runtime, scheduling and sandboxing | `node-feature-discovery` | `nfd-install`, `nfd-rules` |
 | Node runtime, scheduling and sandboxing | `spegel` | `spegel` |
 | Node runtime, scheduling and sandboxing | `vpa-system` | `vpa` |
@@ -273,7 +273,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Node runtime, scheduling and sandboxing | `arc-systems` | `actions-runner-controller`, `actions-runner-controller-runners` → ns `arc-runners` |
 | Node runtime, scheduling and sandboxing | `default` | `default-debug`, `default-kubernetes` |
 | Node runtime, scheduling and sandboxing | `gvisor` | `gvisor` |
-| Node runtime, scheduling and sandboxing | `kube-system` | `cilium`, `cilium-config`, `core-dns-app`, `csi-secrets-store-install`, `irqbalance`, `memory-request-floor`, `priority-classes` |
+| Node runtime, scheduling and sandboxing | `kube-system` | `cilium`, `cilium-config`, `core-dns-app`, `csi-secrets-store-install`, `irqbalance`, `memory-request-floor`, `node-health`, `priority-classes` |
 | Node runtime, scheduling and sandboxing | `node-feature-discovery` | `nfd-install`, `nfd-rules` |
 | Node runtime, scheduling and sandboxing | `spegel` | `spegel` |
 | Node runtime, scheduling and sandboxing | `vpa-system` | `vpa` |
