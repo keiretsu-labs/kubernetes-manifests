@@ -52,15 +52,12 @@ spec:
           volumeMounts:
             - {name: kmsg, mountPath: /dev/kmsg, readOnly: true}
             - {name: log, mountPath: /var/log, readOnly: true}
-            - {name: localtime, mountPath: /etc/localtime, readOnly: true}
             - {name: config, mountPath: /config, readOnly: true}
       volumes:
         - name: kmsg
           hostPath: {path: /dev/kmsg}
         - name: log
           hostPath: {path: /var/log}
-        - name: localtime
-          hostPath: {path: /etc/localtime, type: File}
         - name: config
           configMap:
             name: node-problem-detector-config
