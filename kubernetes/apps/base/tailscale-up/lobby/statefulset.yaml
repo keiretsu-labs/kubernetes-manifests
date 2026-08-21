@@ -21,16 +21,12 @@ spec:
       terminationGracePeriodSeconds: 35
       containers:
         - name: lobby
-          image: ghcr.io/rajsinghtech/tailscale-up-prompt-to-prod/lobby:latest
-          imagePullPolicy: Always
-          ports:
-            - name: http
-              containerPort: 8080
+          image: ghcr.io/rajsinghtech/tailscale-up-lobby:0.1.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - -state-dir=/var/lib/lobby
+            - -tailnet-name=sheep-adder
           env:
-            - name: LISTEN_ADDR
-              value: ":8080"
-            - name: TAILNET_NAME
-              value: sheep-adder
             - name: TS_TAILNET
               value: "-"
             - name: DATABASE_URL
@@ -53,66 +49,23 @@ spec:
                 secretKeyRef:
                   name: lobby-ts-oauth
                   key: TS_API_KEY
-            - name: TS_SOCKS_PROXY
-              value: socks5://127.0.0.1:1055
-            - name: ALL_PROXY
-              value: socks5://127.0.0.1:1055
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 3
-            periodSeconds: 5
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              memory: 256Mi
-        - name: tailscale
-          image: ghcr.io/tailscale/tailscale:v1.102.3
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: TS_KUBE_SECRET
-              value: ""
-            - name: TS_USERSPACE
-              value: "true"
-            - name: TS_SOCKS5_SERVER
-              value: ":1055"
-            - name: TS_STATE_DIR
-              value: /var/lib/tailscale
-            - name: TS_HOSTNAME
-              value: lobby
-            - name: TS_ACCEPT_DNS
-              value: "false"
-            - name: TS_AUTH_ONCE
-              value: "true"
-            - name: TS_EXTRA_ARGS
-              value: --advertise-tags=tag:lobby
-            # Non-ephemeral reusable auth key (OAuth defaults to ephemeral).
             - name: TS_AUTHKEY
               valueFrom:
                 secretKeyRef:
                   name: lobby-ts-oauth
                   key: TS_AUTHKEY
-            - name: TS_SERVE_CONFIG
-              value: /config/serve.json
           volumeMounts:
-            - name: serve-config
-              mountPath: /config
-              readOnly: true
             - name: ts-state
-              mountPath: /var/lib/tailscale
+              mountPath: /var/lib/lobby
           resources:
             requests:
               cpu: 50m
               memory: 64Mi
             limits:
               memory: 256Mi
-      volumes:
-        - name: serve-config
-          configMap:
-            name: lobby-serve-config
+      securityContext:
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
   volumeClaimTemplates:
     - metadata:
         name: ts-state
