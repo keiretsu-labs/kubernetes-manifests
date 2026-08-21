@@ -19,10 +19,3 @@ groups:
           severity: critical
         annotations:
           summary: Read-only filesystem reported on node {{ $labels.node }}
-      - alert: NodeKubeletUnhealthy
-        expr: kube_node_status_condition{condition="KubeletUnhealthy",status="true"} == 1
-        for: 10m
-        labels:
-          severity: critical
-        annotations:
-          summary: Kubelet unhealthy condition reported on node {{ $labels.node }}
