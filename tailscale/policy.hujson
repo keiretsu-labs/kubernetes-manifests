@@ -29,6 +29,7 @@
 		"tag:ssh-granted":      ["group:superuser",],
 		"tag:raj":              ["tag:k8s-operator", "rajsinghtech@github",],
 		"tag:kartik":           ["tag:k8s-operator", "kbpersonal@github",],
+		"tag:border0-managed":  ["tag:k8s-operator", "tag:infra", "group:superuser",],
 	},
 	"ipsets": {
 		"ipset:robbinsdale": [
@@ -70,6 +71,7 @@
 			"svc:test": ["tag:k8s"],
 			"svc:tsdnsproxy": ["tag:k8s"],
 			"svc:tempvm": ["tag:k8s"],
+			"tag:border0-managed": ["tag:border0-managed"],
 		},
 	},
 	"ssh": [
@@ -97,6 +99,11 @@
 		},
 	],
 	"grants": [
+		{
+			"src": ["group:superuser"],
+			"dst": ["tag:border0-managed"],
+			"ip":  ["*"],
+		},
 		{
 			"src": ["autogroup:member"],
 			"dst": ["autogroup:self"],

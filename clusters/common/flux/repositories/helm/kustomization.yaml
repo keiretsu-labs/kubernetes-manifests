@@ -42,6 +42,7 @@ resources:
   - ./k8gb.yaml
   - ./kro.yaml
   - ./ocm.yaml
+  - ./border0.yaml
   - ./vmware-tanzu.yaml
   - ./otwld.yaml
   - ./victoriametrics.yaml
