@@ -110,10 +110,16 @@ values, and an HTTPRoute example. The checklist below is the summary.
    `postBuild.substitute`. The CR `metadata.name` is the app's identity.
 4. List the pointer (and `namespace.yaml` if owned) in
    `kubernetes/apps/<location>/<ns>/kustomization.yaml`.
-5. Add the app to the architecture diagram in `README.md` — find the cluster's
-   namespace node and add the pointer's `metadata.name` to its label, then run
-   `tools/render-diagram.sh` so the committed SVG matches.
-6. Verify with `tools/check.sh` and `tools/check-diagram.sh` before committing.
+5. Run `tools/gen-inventory.sh` to refresh `docs/reference/inventory.md`. The
+   inventory is derived from the pointer files, so this is a regeneration, not
+   an edit — never hand-write entries into it.
+6. Only touch `docs/diagrams/*.dot` if the app changes how the system *works*
+   (a new ingress tier, a new cross-cluster dependency). Ordinary apps belong
+   in the inventory, not in a picture. If you do edit a diagram, re-run
+   `tools/render-diagram.sh`, which rewrites both the light and dark SVGs.
+   Anything worth explaining rather than listing goes in
+   `docs/reference/architecture.md`.
+7. Verify with `tools/check.sh` and `tools/check-diagram.sh` before committing.
 
 ### Variable substitution
 
@@ -124,9 +130,19 @@ postBuild:
   substituteFrom:
     - { kind: ConfigMap, name: common-settings }
     - { kind: Secret,    name: common-secrets }
-    - { kind: ConfigMap, name: cluster-settings, optional: true }
-    - { kind: Secret,    name: cluster-secrets,  optional: true }
+    - { kind: ConfigMap, name: cluster-settings }
+    - { kind: Secret,    name: cluster-secrets }
+    - { kind: ConfigMap, name: cluster-user-settings,  optional: true }
+    - { kind: Secret,    name: cluster-user-secrets,   optional: true }
+    - { kind: Secret,    name: garage-keiretsu-bucket, optional: true }
 ```
+
+All seven come from the `kubernetes-apps` Kustomization in
+`clusters/talos-<location>/flux/config/cluster.yaml`, which **patches this stack
+into every child** — so a pointer that declares a shorter list of its own still
+gets all seven. Only the last three are `optional`; a missing `cluster-settings`
+or `cluster-secrets` is a hard failure, not a silent skip. Opt out entirely with
+the label `substitution.flux.home.arpa/disabled=true`.
 
 ## Critical gotchas
 
@@ -190,14 +206,17 @@ postBuild:
   from workspace and subnet-router traffic; source workspace policy cannot see
   final destinations carried inside accepted Tailscale routes.
 - **Adding Kata workers:** give each new Talos machine the
-  `siderolabs/kata-containers` system extension and the node label
-  `runtime.keiretsu.top/kata: "true"` in `talconfig.yaml`. Both
-  `kata-workspace` and `kata-tailscale` select that label, so capacity expands
-  without changing Bhaiya or carving per-node scheduling rules. For an
-  existing node, install and boot the extension image before adding the label;
+  `siderolabs/kata-containers` system extension in `talconfig.yaml`, and install
+  and boot that extension image before scheduling Kata work onto the node —
   a staged machine config can make labels effective on a plain reboot without
-  installing the new OS image. Remove the RuntimeClass selectors and labels
-  only after `talosctl get extensions` confirms Kata on every eligible node.
+  installing the new OS image. Confirm with `talosctl get extensions` before
+  relying on the node. Note that the RuntimeClasses (`kata-clh`,
+  `kata-workspace`, `kata-tailscale`) currently carry **no** `scheduling` or
+  `nodeSelector` block and no `runtime.keiretsu.top/kata` label exists in the
+  repo, so nothing constrains Kata pods to Kata-capable nodes: a Kata pod
+  scheduled onto a node without the extension will fail to start rather than be
+  kept away. If you add such a selector, add the matching node label in the same
+  change.
 - **SOPS:** run `sops` from the directory whose `.sops.yaml` carries the
   creation rules. Edit with `sops <file>.sops.yaml`.
 
@@ -250,13 +269,15 @@ tools/check.sh [cluster]   # CI render gate — the sole verify command
                            # (one ✓ line on success; accepts ot/rb/sp aliases;
                            #  scope by cluster if only one changed)
 tools/check-versions.sh    # talconfig↔tuppr and CephCluster↔toolbox version sync
-tools/check-diagram.sh     # README architecture diagram: Graphviz syntax, secret
-                           # scan, coverage of every cluster/node/namespace/app on
-                           # disk, and whether docs/architecture.svg is current
-                           # (adding or removing an app fails until the diagram in
-                           # README.md is updated to match)
-tools/render-diagram.sh    # re-render docs/architecture.svg from the README's DOT
-                           # and stamp it with the source hash the gate checks
+tools/check-diagram.sh     # architecture docs gate: Graphviz syntax + secret scan
+                           # over docs/diagrams/*.dot, SVG-matches-source stamps,
+                           # inventory freshness, coverage of every cluster / node /
+                           # namespace / app on disk, and README↔diagram links
+                           # (adding an app fails until the inventory is regenerated)
+tools/gen-inventory.sh     # regenerate docs/reference/inventory.md from the tree
+                           # (--check just reports whether it is stale)
+tools/render-diagram.sh    # re-render docs/diagrams/*.svg (light + dark) from the
+                           # .dot sources and stamp the hash the gate checks
 tools/flate.sh <args…>     # flate at the CI-pinned version (bootstraps if needed)
 tools/tests/run.sh         # offline self-tests for the tools/ helpers
 tools/app.sh <name> | --list   # locate an app / full deploy inventory
@@ -271,6 +292,13 @@ flux reconcile kustomization <app> -n flux-system
 
 ## Deeper reference
 
+- `docs/reference/architecture.md` — the whole system explained: delivery,
+  tailnet, ingress, storage, observability, per-cluster facts, blast radius and
+  upgrade ordering. Start here for *why* something is the way it is. The three
+  diagrams it accompanies are in the README's Architecture section.
+- `docs/reference/inventory.md` — generated by `tools/gen-inventory.sh`: every
+  cluster, machine, pointer directory and Flux Kustomization, plus the pointers
+  whose objects land in a different namespace than their directory suggests.
 - `kubernetes/README.md` — authoritative layout description
 - `docs/reference/talos.md` — Talos/talhelper bootstrap structure
 - `docs/reference/tailscale-integration.md` — operator resources, ACL policy,

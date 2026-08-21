@@ -125,12 +125,35 @@ spec:
     substituteFrom:
       - { kind: ConfigMap, name: common-settings }
       - { kind: Secret,    name: common-secrets }
-      - { kind: ConfigMap, name: cluster-settings, optional: true }
-      - { kind: Secret,    name: cluster-secrets,  optional: true }
+      - { kind: ConfigMap, name: cluster-settings }
+      - { kind: Secret,    name: cluster-secrets }
 ```
 
-Then add `- ./myapp.yaml` to `kubernetes/apps/<location>/<ns>/kustomization.yaml`
-and verify with `tools/check.sh <location>` (e.g. `tools/check.sh talos-ottawa`).
+You can leave `postBuild` out altogether: the parent `kubernetes-apps`
+Kustomization patches the full seven-entry substitution stack into every child,
+overriding whatever a pointer declares. It is written here only so the example
+reads completely. See the AGENTS.md "Variable substitution" section for the
+authoritative list.
+
+Then add `- ./myapp.yaml` to `kubernetes/apps/<location>/<ns>/kustomization.yaml`.
+
+Finally, regenerate the deployment inventory and run both gates:
+
+```bash
+tools/gen-inventory.sh                       # docs/reference/inventory.md
+tools/check.sh <location>                    # e.g. tools/check.sh talos-ottawa
+tools/check-diagram.sh                       # fails until the inventory is fresh
+```
+
+`tools/gen-inventory.sh` is not optional. `docs/reference/inventory.md` is
+derived from exactly the pointer file you just added, and
+`.github/workflows/diagram.yaml` fails the PR if the committed copy does not
+match the tree. You do **not** need to touch the architecture diagrams for an
+ordinary app — those describe mechanism, not inventory. Edit a
+`docs/diagrams/*.dot` only if the app changes how the system works (a new
+ingress tier, a new cross-cluster dependency), and if you name it there, add it
+to that file's `// diagram-apps:` list so a future decommission cannot leave a
+stale name in the picture.
 
 ## Helm instead of raw
 

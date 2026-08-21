@@ -1,0 +1,149 @@
+// ===========================================================================
+//  Diagram 1 of 3 — How a commit becomes running infrastructure
+//
+//  Answers: where does durable state live, what turns it into Kubernetes
+//  objects, and what decides which cluster gets which app.
+//
+//  Companions: 2-ingress.dot (how a request reaches a service)
+//              3-fabric.dot  (tailnet, storage, observability)
+//
+//  Rendered by tools/render-diagram.sh, gated by tools/check-diagram.sh.
+//  Scope rule: mechanism only. Settings and versions live in
+//  docs/reference/architecture.md; the app inventory in
+//  docs/reference/inventory.md, which is generated from the tree.
+//
+//  Do not use inline <b> inside a text line — this Graphviz build mis-measures
+//  the run and the glyphs overlap. Whole-line <b> is fine.
+//
+//  Apps this diagram names by their Flux Kustomization identity. The gate
+//  fails if any of them stops being deployed, so a decommission cannot leave
+//  a lie in the picture:
+//  diagram-apps: bhaiya, firecrawl, csi-addons
+// ===========================================================================
+digraph delivery {
+  graph [
+    rankdir=TB, compound=true, newrank=true, splines=spline,
+    nodesep=0.38, ranksep=0.60, fontname="Helvetica", fontsize=11,
+    labelloc="t", bgcolor="transparent",
+    label=<<b>1 · Delivery — how a commit becomes running infrastructure</b><br/><font point-size="10">the main branch is the only durable state; everything below is derived from it</font>>
+  ];
+  node [fontname="Helvetica", fontsize=9, shape=box, style="filled,rounded",
+        fillcolor="#ffffff", color="#8c959f", margin="0.22,0.10"];
+  edge [fontname="Helvetica", fontsize=8, color="#57606a", arrowsize=0.7];
+
+  // The node margin is deliberately roomier than Graphviz's default. When
+  // rendered by the @hpcc-js wasm fallback there is no real Helvetica present,
+  // so label widths get measured with substituted metrics while the browser
+  // draws true Helvetica — long lines can then sit right against the border.
+  // Prefer rendering with a real `dot` (which CI installs) for the canonical
+  // SVG; the padding just keeps the fallback output presentable too.
+
+  // ---------------------------------------------------------------- author
+  subgraph cluster_author {
+    label=<<b>Authoring, and what guards the merge</b>>;
+    style="rounded,filled"; fillcolor="#fff1e5"; color="#bc4c00"; fontsize=11;
+
+    a_change [label=<<b>Change author</b><br align="left"/>a human, or a pi build agent driven by<br align="left"/>tools/agent/pi-task.sh<br align="left"/>>];
+
+    a_gate [label=<<b>Local gate — must pass before commit</b><br align="left"/>tools/check.sh — CI-pinned render of all three clusters<br align="left"/>tools/check-versions.sh — coupled version pairs<br align="left"/>tools/orphans.sh — kustomization against disk<br align="left"/>tools/check-diagram.sh — these diagrams<br align="left"/>tools/tests/run.sh — offline tool self-tests<br align="left"/>>];
+
+    a_ci [label=<<b>GitHub Actions — the merge gate</b><br align="left"/>a render matrix posts a sticky rendered-diff<br align="left"/>comment per cluster, alongside the YAML,<br align="left"/>version-sync and diagram gates<br align="left"/>>];
+
+    a_renovate [label=<<b>Renovate</b><br align="left"/>grouped per cluster per subsystem, so that<br align="left"/>two sites never roll the same component at once<br align="left"/>>];
+
+    g_repo [label=<<b>GitHub — keiretsu-labs/kubernetes-manifests</b><br align="left"/>THE MAIN BRANCH IS THE ONLY DURABLE STATE.<br align="left"/>Nothing is real until it is committed and reconciled.<br align="left"/>>,
+            color="#bc4c00", penwidth=1.8];
+  }
+
+  a_change   -> a_gate  [label="writes"];
+  a_gate     -> g_repo  [label="push, then pull request", style=bold];
+  a_renovate -> g_repo  [label="dependency PRs"];
+  a_ci       -> g_repo  [label="blocks the merge\luntil it is green", style=dashed];
+
+  // ---------------------------------------------------------------- flux
+  subgraph cluster_flux {
+    label=<<b>Flux, in each cluster independently</b>>;
+    style="rounded,filled"; fillcolor="#eef7ff"; color="#0969da"; fontsize=11;
+
+    f_src [label=<<b>GitRepository kubernetes-manifests</b><br align="left"/>source-controller polls main every 30m<br align="left"/>an ignore filter admits only the paths that site<br align="left"/>needs: clusters/common, clusters/talos-&lt;location&gt;<br align="left"/>and kubernetes/, plus a couple of extras at two<br align="left"/>of the sites<br align="left"/>Only Ottawa authenticates — the other two fetch<br align="left"/>this public repo anonymously<br align="left"/>>,
+           fillcolor="#ddf4ff"];
+
+    f_sops [label=<<b>SOPS decryption</b><br align="left"/>PGP, with the private key held in-cluster<br align="left"/>encrypts only data and stringData in *.sops.yaml<br align="left"/>>,
+            fillcolor="#ddf4ff"];
+
+    f_ks [label=<<b>Three top-level Kustomizations</b><br align="left"/>cluster — this cluster's own Flux config and vars<br align="left"/>common-cluster — shared sources and vars<br align="left"/>kubernetes-apps — kubernetes/apps/&lt;location&gt;<br align="left"/>>,
+          fillcolor="#ddf4ff", penwidth=1.4];
+
+    f_subst [label=<<b>The substituteFrom stack</b><br align="left"/>common-settings, common-secrets,<br align="left"/>cluster-settings, cluster-secrets, then three<br align="left"/>optional user and bucket layers.<br align="left"/>kubernetes-apps patches this into every child,<br align="left"/>and it is the whole reason one base directory<br align="left"/>can serve three different clusters.<br align="left"/>Substitution is SINGLE PASS: a $ inside a<br align="left"/>substituted value is not expanded again.<br align="left"/>>,
+             fillcolor="#fff8c5", color="#9a6700"];
+
+    f_pointer [label=<<b>Pointer — apps/&lt;location&gt;/&lt;ns&gt;/&lt;app&gt;.yaml</b><br align="left"/>THE EXISTENCE OF THIS FILE IS THE DEPLOY DECISION.<br align="left"/>An app in base with no pointer anywhere is not<br align="left"/>deployed. metadata.name is the app identity.<br align="left"/>Carries any dependsOn, wait and timeout.<br align="left"/>>,
+               fillcolor="#ddf4ff", penwidth=1.4];
+
+    f_base [label=<<b>Base — apps/base/&lt;ns&gt;/&lt;app&gt;/</b><br align="left"/>the real manifests, written exactly once<br align="left"/>split into &lt;app&gt;-&lt;location&gt; only when the config<br align="left"/>genuinely differs, never merely to reorder keys<br align="left"/>>,
+            fillcolor="#ddf4ff"];
+
+    f_notify [label=<<b>Notifications</b><br align="left"/>Providers and Alerts, plus a GitHub commit<br align="left"/>status written back per Kustomization<br align="left"/>>,
+              fillcolor="#ddf4ff"];
+  }
+
+  // Structural edges inside the panel constrain ranks, so that each node sits
+  // beside the step it belongs to. A node reachable only by constraint=false
+  // edges floats to the top of its cluster, which is what to check first if
+  // this panel ever renders as a fan of long curves.
+  g_repo    -> f_src     [label="HTTPS; Ottawa uses a token,\lwhich is itself SOPS-encrypted", style=bold];
+  f_src     -> f_ks      [style=bold];
+  f_sops    -> f_ks      [label="decrypt", style=dashed];
+  f_ks      -> f_pointer [label="reconciles every namespace\ldirectory it lists", style=bold];
+  f_ks      -> f_subst   [label="cluster + common vars"];
+  f_ks      -> f_notify  [style=dotted];
+  f_subst   -> f_pointer [label="postBuild patch", style=dashed, constraint=false];
+  f_pointer -> f_base    [label="spec.path", style=bold];
+  f_notify  -> g_repo    [label="commit status", style=dotted, constraint=false];
+
+  // ---------------------------------------------------------------- sources
+  subgraph cluster_other {
+    label=<<b>Everything else a cluster pulls</b>>;
+    style="rounded,filled"; fillcolor="#f6f8fa"; color="#8c959f"; fontsize=11;
+
+    o_upstream [label=<<b>Upstream artifacts</b><br align="left"/>Helm, OCI and Git sources, every one of them<br align="left"/>declared in clusters/common/flux/repositories<br align="left"/>>];
+
+    o_foreign [label=<<b>Three apps are not delivered from this repo</b><br align="left"/>bhaiya — its own GitRepository pointing at a<br align="left"/>self-hosted Forgejo, with a Flux Receiver so that<br align="left"/>a push triggers a reconcile without waiting for<br align="left"/>the poll interval<br align="left"/>firecrawl — straight from the upstream project<br align="left"/>csi-addons — upstream deploy/controller, in Ottawa<br align="left"/>AND Robbinsdale; only its config lives here, so an<br align="left"/>upstream bump needs no commit in this repo<br align="left"/>>,
+               fillcolor="#fff8c5", color="#9a6700"];
+
+    o_bootstrap [label=<<b>One-time bootstrap, never reconciled</b><br align="left"/>clusters/common/bootstrap/flux installs the<br align="left"/>controllers. After that, the cluster's own Flux<br align="left"/>config takes over and Flux manages itself.<br align="left"/>>];
+  }
+
+  f_ks        -> o_upstream [label="chart and image sources", style=dotted, constraint=false];
+  o_foreign   -> f_pointer  [label="reconciled from other sources", style=dotted, constraint=false];
+  o_bootstrap -> f_src      [label="once, at cluster birth", style=dashed, constraint=false];
+
+  // ---------------------------------------------------------------- clusters
+  subgraph cluster_sites {
+    label=<<b>The same pipeline lands in three clusters</b>>;
+    style="rounded,filled"; fillcolor="#f6f8fa"; color="#8c959f"; fontsize=11;
+
+    s_ot [label=<<b>talos-ottawa</b><br align="left"/>Ontario, Canada · amd64<br align="left"/>3 control planes and 1 worker<br align="left"/>killinit.cc<br align="left"/>>,
+          fillcolor="#dafbe1", color="#1a7f37", penwidth=1.6];
+    s_rb [label=<<b>talos-robbinsdale</b><br align="left"/>Minnesota, USA · amd64<br align="left"/>3 control planes, no workers<br align="left"/>lukehouge.com<br align="left"/>>,
+          fillcolor="#dbeafe", color="#0550ae", penwidth=1.6];
+    s_sp [label=<<b>talos-stpetersburg</b><br align="left"/>Florida, USA · arm64<br align="left"/>1 tainted control plane, 2 GPU workers<br align="left"/>rajsingh.info<br align="left"/>>,
+          fillcolor="#ffe3ea", color="#a40e26", penwidth=1.6];
+  }
+
+  f_base -> s_ot [label="apps/ottawa", style=bold, color="#1a7f37"];
+  f_base -> s_rb [label="apps/robbinsdale", style=bold, color="#0550ae"];
+  f_base -> s_sp [label="apps/stpetersburg", style=bold, color="#a40e26"];
+
+  s_note [label=<<b>What each cluster actually ends up running</b><br align="left"/>is listed in docs/reference/inventory.md — every machine,<br align="left"/>namespace and Flux Kustomization, generated from this tree<br align="left"/>by tools/gen-inventory.sh, so it cannot disagree with it.<br align="left"/>>,
+          shape=note, fillcolor="#f6f8fa", color="#57606a"];
+
+  s_rb -> s_note [style=invis];
+
+  // ---------------------------------------------------------------- layout
+  // Invisible chains only; no semantic meaning.
+  a_change -> a_ci -> a_renovate [style=invis];
+  f_src -> f_sops        [style=invis];
+  f_subst -> f_notify    [style=invis];
+  o_upstream -> o_foreign -> o_bootstrap [style=invis];
+}
