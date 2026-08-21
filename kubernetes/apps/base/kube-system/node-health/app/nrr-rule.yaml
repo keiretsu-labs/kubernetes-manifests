@@ -1,0 +1,27 @@
+---
+apiVersion: readiness.node.x-k8s.io/v1alpha1
+kind: NodeReadinessRule
+metadata:
+  name: node-health
+  labels:
+    app.kubernetes.io/name: node-health
+    app.kubernetes.io/component: readiness
+spec:
+  conditions:
+    - type: KernelDeadlock
+      requiredStatus: "False"
+      defaultStatus: "False"
+    - type: ReadonlyFilesystem
+      requiredStatus: "False"
+      defaultStatus: "False"
+    - type: KubeletUnhealthy
+      requiredStatus: "False"
+      defaultStatus: "False"
+  taint:
+    key: readiness.k8s.io/node-health
+    value: unhealthy
+    effect: NoSchedule
+  enforcementMode: continuous
+  nodeSelector:
+    matchLabels:
+      kubernetes.io/os: linux

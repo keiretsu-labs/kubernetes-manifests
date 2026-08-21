@@ -1,0 +1,28 @@
+# Node health alerts for the NPD conditions written by the v0.8.19
+# node-problem-detector DaemonSet. These rules are evaluated by Mimir ruler;
+# node-readiness-controller independently applies only a NoSchedule taint.
+namespace: monitoring
+groups:
+  - name: node-health.rules
+    rules:
+      - alert: NodeKernelDeadlock
+        expr: kube_node_status_condition{condition="KernelDeadlock",status="true"} == 1
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kernel deadlock reported on node {{ $labels.node }}
+      - alert: NodeReadonlyFilesystem
+        expr: kube_node_status_condition{condition="ReadonlyFilesystem",status="true"} == 1
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Read-only filesystem reported on node {{ $labels.node }}
+      - alert: NodeKubeletUnhealthy
+        expr: kube_node_status_condition{condition="KubeletUnhealthy",status="true"} == 1
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kubelet unhealthy condition reported on node {{ $labels.node }}

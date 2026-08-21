@@ -136,6 +136,47 @@ groups:
         labels:
           severity: critical
 
+  # GPU rules are inert on Ottawa/Robbinsdale because DCGM families are absent.
+  # St. Petersburg is the only current NVIDIA/DCGM cluster; do not add GPU
+  # scrape requirements to CPU-only nodes or to the Intel-plugin cluster.
+  - name: gpu.rules
+    rules:
+      - record: node_gpu_temperature_celsius:max
+        expr: max by (cluster, instance, gpu, UUID, modelName) (DCGM_FI_DEV_GPU_TEMP)
+
+      - record: node_gpu_pcie_replay_errors:rate5m
+        expr: sum by (cluster, instance, gpu, UUID, modelName) (rate(DCGM_FI_DEV_PCIE_REPLAY_COUNTER[5m]))
+
+      - record: node_gpu_nvlink_bandwidth_bytes_per_second:rate5m
+        expr: sum by (cluster, instance, gpu, UUID, modelName) (rate(DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL[5m]))
+
+      - alert: NvidiaGpuTemperatureHigh
+        expr: node_gpu_temperature_celsius:max > 85
+        for: 10m
+        annotations:
+          summary: >-
+            NVIDIA GPU {{ $labels.gpu }} on {{ $labels.instance }} is hot
+            ({{ printf "%.0f" $value }}°C).
+        labels:
+          severity: warning
+
+      - alert: NvidiaGpuPcieReplayErrors
+        expr: node_gpu_pcie_replay_errors:rate5m > 0
+        for: 10m
+        annotations:
+          summary: >-
+            NVIDIA GPU {{ $labels.gpu }} on {{ $labels.instance }} is reporting
+            PCIe replay errors.
+        labels:
+          severity: warning
+
+  # Packet loss is derived only for configured blackbox targets. It does not
+  # invent a node-level signal where no probe path exists.
+  - name: packet-loss.rules
+    rules:
+      - record: blackbox:packet_loss_ratio5m
+        expr: 1 - avg_over_time(probe_success[5m])
+
   - name: kubernetes.rules
     rules:
       - alert: KubeAPILatencyHigh
