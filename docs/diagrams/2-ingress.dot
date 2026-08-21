@@ -1,0 +1,185 @@
+// ===========================================================================
+//  Diagram 2 of 3 — How a request reaches a service
+//
+//  Answers: the three gateway tiers, which DNS plane writes records for each,
+//  where certificates come from, and who is allowed through.
+//
+//  The organising idea, and the reason the tiers are boxed the way they are:
+//  a tier is a Gateway PLUS the ExternalDNS instance that publishes it. The
+//  pairing is by label — gateway=public, external-dns=private, external-dns=ts
+//  — so a route lands in a tier by which Gateway it attaches to, and gets DNS
+//  because that tier's writer is watching for exactly that label.
+//
+//  Companions: 1-delivery.dot (how a commit becomes running infrastructure)
+//              3-fabric.dot   (tailnet, storage, observability)
+//
+//  Rendered by tools/render-diagram.sh, gated by tools/check-diagram.sh.
+//  Full listener tables, issuer names and the CNAME list live in
+//  docs/reference/architecture.md.
+//
+//  Do not use inline <b> inside a text line — this Graphviz build mis-measures
+//  the run and the glyphs overlap. Whole-line <b> is fine.
+//
+//  Apps this diagram names by their Flux Kustomization identity. The gate
+//  fails if any of them stops being deployed, so a decommission cannot leave
+//  a lie in the picture:
+//  diagram-apps: cloudflared, tinyauth, tinyauth-egress, k8gb-app, k8gb-config
+// ===========================================================================
+digraph ingress {
+  graph [
+    rankdir=TB, compound=true, newrank=true, splines=spline,
+    nodesep=0.34, ranksep=0.58, fontname="Helvetica", fontsize=11,
+    labelloc="t", bgcolor="transparent",
+    label=<<b>2 · North-south — how a request reaches a service</b><br/><font point-size="10">three tiers, each a Gateway paired with its own DNS writer; instantiated identically in every cluster</font>>
+  ];
+  node [fontname="Helvetica", fontsize=9, shape=box, style="filled,rounded",
+        fillcolor="#ffffff", color="#8c959f", margin="0.22,0.10"];
+  edge [fontname="Helvetica", fontsize=8, color="#57606a", arrowsize=0.7];
+
+  // The node margin is deliberately roomier than Graphviz's default. When
+  // rendered by the @hpcc-js wasm fallback there is no real Helvetica present,
+  // so label widths get measured with substituted metrics while the browser
+  // draws true Helvetica — long lines can then sit right against the border.
+  // Prefer rendering with a real `dot` (which CI installs) for the canonical
+  // SVG; the padding just keeps the fallback output presentable too.
+
+  // ---------------------------------------------------------------- clients
+  subgraph cluster_clients {
+    label=<<b>Clients, and the zones they resolve</b>>;
+    style="rounded,filled"; fillcolor="#fff1e5"; color="#bc4c00"; fontsize=11;
+
+    c_people [label=<<b>People</b><br align="left"/>browsers on the public internet<br align="left"/>tailnet devices<br align="left"/>LAN clients at each site<br align="left"/>>];
+
+    c_cf [label=<<b>Cloudflare</b><br align="left"/>authoritative for every zone<br align="left"/>proxied for public names,<br align="left"/>DNS-only for tailnet and GSLB<br align="left"/>>];
+
+    c_zones [label=<<b>The zones</b><br align="left"/>killinit.cc — Ottawa<br align="left"/>lukehouge.com — Robbinsdale<br align="left"/>rajsingh.info — St. Petersburg<br align="left"/>keiretsu.top — shared<br align="left"/>cdn. and ts.keiretsu.top —<br align="left"/>delegated away to k8gb<br align="left"/>>];
+  }
+
+  c_people -> c_cf   [label="resolve"];
+  c_cf -> c_zones    [style=dotted];
+
+  // ---------------------------------------------------------------- envoy
+  g_envoy [label=<<b>Envoy Gateway</b><br align="left"/>Three GatewayClasses per cluster, each with its own<br align="left"/>EnvoyProxy — but the one for home-ts is named ts.<br align="left"/>Only TWO ClientTrafficPolicies, and neither is<br align="left"/>named after a class: wildcard-lan covers Gateways<br align="left"/>public and private whole, while wildcard-ts covers<br align="left"/>ONE listener section of ts — so the other ts<br align="left"/>listeners get no client-IP detection or timeouts.<br align="left"/>The Gateways themselves are defined ONCE, in<br align="left"/>apps/base/home, and reused unmodified through<br align="left"/>${CLUSTER_DOMAIN} substitution — no per-cluster<br align="left"/>overlay.<br align="left"/>>,
+           fillcolor="#ddf4ff", color="#0969da", penwidth=1.8];
+
+  // Anchor from the LAST node of the clients box, not the first. Graphviz
+  // will happily overlap two cluster boxes when their nodes share ranks, so
+  // the clients panel has to finish before the tier panels begin.
+  c_zones -> g_envoy [style=invis];
+
+  // ---------------------------------------------------------------- tiers
+  //  One box per tier: the Gateway and the ExternalDNS instance that
+  //  publishes it, together, because that pairing is the whole design.
+  subgraph cluster_tier_public {
+    label=<<b>Public tier</b>>;
+    style="rounded,filled"; fillcolor="#f0fff4"; color="#1a7f37"; fontsize=11;
+
+    p_gw [label=<<b>Gateway public</b> — reachable from the internet<br align="left"/>14 listeners: four wildcard domains,<br align="left"/>the hermes, bhaiya, cdn and s3<br align="left"/>sub-tiers, Forgejo SSH on :22 and<br align="left"/>Frigate's WebRTC pair<br align="left"/>label gateway=public<br align="left"/>>,
+           fillcolor="#dafbe1"];
+
+    p_dns [label=<<b>DNS writer · Cloudflare</b><br align="left"/>four ExternalDNS instances per<br align="left"/>cluster: one per cluster domain,<br align="left"/>plus one for keiretsu.top that reads<br align="left"/>CRD sources only<br align="left"/>filter: gateway=public<br align="left"/>>];
+  }
+
+  subgraph cluster_tier_private {
+    label=<<b>Private tier</b>>;
+    style="rounded,filled"; fillcolor="#eef4fb"; color="#0550ae"; fontsize=11;
+
+    v_gw [label=<<b>Gateway private</b> — LAN only<br align="left"/>6 listeners. Narrower than public<br align="left"/>on purpose: no hermes, bhaiya, cdn<br align="left"/>or s3 sub-tiers and no WebRTC,<br align="left"/>because LAN traffic never needs them.<br align="left"/>Not published to Cloudflare.<br align="left"/>>,
+           fillcolor="#dbeafe"];
+
+    v_dns [label=<<b>DNS writer · UniFi</b><br align="left"/>external-dns-unifi through a webhook<br align="left"/>sidecar, writing the LAN view<br align="left"/>filter: external-dns=private, plus<br align="left"/>dns-scope!=public-only, because the<br align="left"/>UniFi API rejects wildcard hostnames<br align="left"/>>];
+  }
+
+  subgraph cluster_tier_ts {
+    label=<<b>Tailnet tier</b>>;
+    style="rounded,filled"; fillcolor="#f5f0ff"; color="#8250df"; fontsize=11;
+
+    s_gw [label=<<b>Gateway ts</b> — tailnet overlay only<br align="left"/>8 listeners, including Pi-hole DNS<br align="left"/>on :53 over both TCP and UDP.<br align="left"/>It serves *.ts.keiretsu.top and<br align="left"/>NOT *.keiretsu.top.<br align="left"/>>,
+           fillcolor="#ece9fd"];
+
+    s_dns [label=<<b>DNS writer · Pi-hole</b><br align="left"/>ts-external-dns, writing the<br align="left"/>tailnet view<br align="left"/>filter: external-dns=ts<br align="left"/>>];
+  }
+
+  g_envoy -> p_gw [style=bold];
+  g_envoy -> v_gw [style=bold];
+  g_envoy -> s_gw [style=bold];
+
+  p_gw -> p_dns [label="gateway=public", style=dashed];
+  v_gw -> v_dns [label="external-dns=private", style=dashed];
+  s_gw -> s_dns [label="external-dns=ts", style=dashed];
+
+  c_people -> p_gw [label="internet", style=bold, constraint=false];
+  c_people -> v_gw [label="LAN", style=bold, constraint=false];
+  c_people -> s_gw [label="tailnet", style=bold, constraint=false];
+
+  p_dns -> c_cf [label="writes A, CNAME and TXT", style=dashed, constraint=false];
+
+  // ---------------------------------------------------------------- routes
+  subgraph cluster_routes {
+    label=<<b>Where a route ends up</b>>;
+    style="rounded,filled"; fillcolor="#f6f8fa"; color="#8c959f"; fontsize=11;
+
+    r_dist [label=<<b>How routes are distributed</b><br align="left"/>private and ts together are the default for admin<br align="left"/>consoles. A handful of user-facing apps add public.<br align="left"/>The CDN tier is public only, and rewrites the Host<br align="left"/>header onto the Garage gateway.<br align="left"/>Three separate dashboard deployments share one<br align="left"/>hostname, one per tier.<br align="left"/>>];
+
+    r_listener [label=<<b>Check the listeners before adding a route</b><br align="left"/>A route whose hostname matches no listener reports<br align="left"/>NoMatchingListenerHostname and silently serves<br align="left"/>nothing. The three tiers do not carry the same<br align="left"/>hostname sets, so confirm against the live Gateway<br align="left"/>rather than assuming.<br align="left"/>>,
+                fillcolor="#fff8c5", color="#9a6700"];
+
+    r_trap [label=<<b>The DNS trap</b><br align="left"/>A ${CLUSTER_DOMAIN} route gets DNS FOR FREE the<br align="left"/>moment it attaches to a gateway labelled<br align="left"/>gateway=public.<br align="left"/>A ${COMMON_DOMAIN} name does NOT. It needs a<br align="left"/>hand-written entry in the k8gb CNAME config, or the<br align="left"/>route reports Accepted=True forever and never<br align="left"/>resolves for anyone.<br align="left"/>>,
+             fillcolor="#fff8c5", color="#9a6700", penwidth=1.6];
+  }
+
+  p_dns -> r_dist [style=bold];
+  v_dns -> r_dist;
+  s_dns -> r_dist;
+  r_dist -> r_listener [style=invis];
+  r_dist -> r_trap     [style=invis];
+
+  // ------------------------------------------------- shared-zone machinery
+  subgraph cluster_shared {
+    label=<<b>The shared zone needs extra machinery</b>>;
+    style="rounded,filled"; fillcolor="#eef7ff"; color="#0969da"; fontsize=11;
+
+    h_ddns [label=<<b>cloudflare-ddns</b><br align="left"/>keeps &lt;location&gt;.&lt;domain&gt; pointed at the site's<br align="left"/>current WAN address. Every ExternalDNS CNAME and<br align="left"/>every GSLB pool member resolves to that record in<br align="left"/>the end.<br align="left"/>>,
+            fillcolor="#ddf4ff"];
+
+    h_k8gb [label=<<b>k8gb</b> — GSLB for the shared zone<br align="left"/>cdn. and ts.keiretsu.top are delegated to it. It runs<br align="left"/>13 named Gslb objects, plus one per CDN site generated<br align="left"/>from the components/cdn-site template, with the<br align="left"/>failover pairs taken from cluster-settings.<br align="left"/>An ABSENT HTTPRoute reads as healthy, so an inert<br align="left"/>route is deployed to every cluster to make per-cluster<br align="left"/>health actually drive pool membership.<br align="left"/>>,
+            fillcolor="#ddf4ff"];
+  }
+
+  h_ddns -> c_cf [label="the site's WAN address", style=dashed, constraint=false];
+  h_k8gb -> c_cf [label="answers the delegated\lcdn. and ts. subzones", style=dashed, constraint=false];
+  h_k8gb -> p_gw [label="pool members are\lthe site edges", style=dotted, constraint=false];
+  r_trap -> h_k8gb [style=dotted, constraint=false];
+
+  // ---------------------------------------------------------------- trust
+  subgraph cluster_trust {
+    label=<<b>Certificates and authorization</b>>;
+    style="rounded,filled"; fillcolor="#fffbe6"; color="#9a6700"; fontsize=11;
+
+    x_acme [label=<<b>Let's Encrypt</b><br align="left"/>reached by ACME DNS-01 through the<br align="left"/>Cloudflare API, exclusively — there<br align="left"/>is no HTTP-01 path anywhere<br align="left"/>>];
+
+    x_cert [label=<<b>cert-manager</b><br align="left"/>ClusterIssuers per zone, plus a<br align="left"/>self-signed internal CA. One wildcard<br align="left"/>Certificate backs each listener secret.<br align="left"/>Every API token and account key is<br align="left"/>SOPS-encrypted.<br align="left"/>>];
+
+    x_auth [label=<<b>Tinyauth authenticates, SecurityPolicy authorises</b><br align="left"/>Tinyauth only proves WHO you are, then injects the<br align="left"/>Remote-User, Remote-Email, Remote-Name and<br align="left"/>Remote-Groups headers.<br align="left"/>Authorization is a separate thing: each protected<br align="left"/>route carries its own Envoy SecurityPolicy with<br align="left"/>extAuth, defaultAction Deny and an explicit allow-list.<br align="left"/>THERE IS NO CENTRAL ROLE MODEL. Access is per-route<br align="left"/>and per-person, and visible in the manifest.<br align="left"/>>,
+             fillcolor="#fff8c5", penwidth=1.6];
+
+    x_borrow [label=<<b>Only Ottawa runs Tinyauth</b><br align="left"/>Robbinsdale and St. Petersburg reach it across the<br align="left"/>tailnet rather than running a second copy, so their<br align="left"/>protected routes depend on the overlay being up.<br align="left"/>Tailnet-only routes lean on tailnet policy instead<br align="left"/>of Tinyauth altogether.<br align="left"/>>];
+
+    x_tunnel [label=<<b>cloudflared</b> — Robbinsdale only<br align="left"/>an outbound-only tunnel, so that site can publish<br align="left"/>without an inbound port forward. A second ingress<br align="left"/>path that bypasses the Envoy public tier entirely.<br align="left"/>>];
+  }
+
+  x_acme -> x_cert [label="DNS-01 challenge"];
+  x_cert -> x_auth [style=invis];
+  x_auth -> x_borrow [style=dashed];
+  x_borrow -> x_tunnel [style=invis];
+
+  x_cert -> p_gw   [label="wildcard listener secrets", style=dotted, constraint=false];
+  x_cert -> v_gw   [style=dotted, constraint=false];
+  x_cert -> s_gw   [style=dotted, constraint=false];
+  x_auth -> r_dist [label="ext-auth on\lprotected routes", style=dashed, constraint=false];
+  x_tunnel -> c_cf [style=dotted, constraint=false];
+
+  // ---------------------------------------------------------------- layout
+  c_people -> c_zones [style=invis];
+  h_ddns -> h_k8gb    [style=invis];
+}

@@ -5,20 +5,26 @@ on:
     branches: [main]
     paths:
       - "README.md"
-      - "docs/architecture.svg"
+      - "docs/diagrams/**"
+      - "docs/reference/architecture.md"
+      - "docs/reference/inventory.md"
       - "clusters/**"
       - "kubernetes/**"
       - "tools/check-diagram.sh"
       - "tools/render-diagram.sh"
+      - "tools/gen-inventory.sh"
   push:
     branches: [main]
     paths:
       - "README.md"
-      - "docs/architecture.svg"
+      - "docs/diagrams/**"
+      - "docs/reference/architecture.md"
+      - "docs/reference/inventory.md"
       - "clusters/**"
       - "kubernetes/**"
       - "tools/check-diagram.sh"
       - "tools/render-diagram.sh"
+      - "tools/gen-inventory.sh"
   workflow_dispatch:
 
 concurrency:
@@ -39,14 +45,14 @@ jobs:
       - name: Install graphviz
         run: sudo apt-get update -qq && sudo apt-get install -y -qq graphviz
 
-      # Syntax, secret scan, on-disk coverage, and whether the committed SVG
-      # was rendered from the DOT currently in the README.
-      - name: Check the embedded architecture diagram
+      # Syntax, secret scan, SVG-matches-source stamps, inventory freshness,
+      # on-disk coverage, and README-to-diagram links.
+      - name: Check the architecture diagrams
         run: tools/check-diagram.sh
 
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: architecture-diagram
-          path: docs/architecture.svg
+          name: architecture-diagrams
+          path: docs/diagrams/*.svg
           if-no-files-found: warn
