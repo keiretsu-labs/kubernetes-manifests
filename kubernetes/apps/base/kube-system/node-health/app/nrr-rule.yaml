@@ -2,7 +2,7 @@
 apiVersion: readiness.node.x-k8s.io/v1alpha1
 kind: NodeReadinessRule
 metadata:
-  name: node-health
+  name: node-health-workers
   labels:
     app.kubernetes.io/name: node-health
     app.kubernetes.io/component: readiness
