@@ -1,0 +1,30 @@
+apiVersion: platform.keiretsu.top/v1alpha1
+kind: CgroupV2SupportPolicy
+metadata:
+  name: infrastack-cgroup-v2
+spec:
+  required: true
+  host:
+    filesystem: cgroup2
+    init: systemd
+    kubeletDriver: systemd
+    runtimeDriver: systemd
+  requiredControllers: [cpu, cpuset, io, memory, pids]
+  kubernetes:
+    enforcePodRequestsAndLimits: true
+    preserveCgroupPathCompatibility: true
+    rejectCgroupV1Nodes: true
+  hardwareExceptions:
+    nvidia:
+      requirements:
+        - NVIDIA container toolkit must expose CDI devices
+        - DCGM exporter must scrape without host cgroup v1 paths
+    intelGpu:
+      requirements:
+        - Intel GPU plugin must remain schedulable under cgroup2
+  validation:
+    nodeMetric: node_cgroup_version
+    requiredChecks:
+      - kubelet reports cgroup driver systemd
+      - /sys/fs/cgroup is mounted as cgroup2
+      - cpu and memory controllers are delegated to pod cgroups

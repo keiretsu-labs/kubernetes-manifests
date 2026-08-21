@@ -8,7 +8,10 @@ metadata:
     tailscale.com/tailnet-fqdn: victoria-logs.keiretsu.ts.net
 spec:
   type: ExternalName
-  externalName: ts-victoria-logs-victoria-logs-single-server-egress-v2rr5.tailscale.svc.cluster.local
+  # The Tailscale operator owns the generated `ts-*` service name. A checked-in
+  # generated suffix becomes stale after proxy-group reconciliation and leaves
+  # Fluent Bit Running but not Ready with CoreDNS NOERROR/NODATA errors.
+  externalName: placeholder
   ports:
     - name: http
       port: 9428
