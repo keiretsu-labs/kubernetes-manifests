@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sheep-adder-tsflow
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sheep-adder-tsflow
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sheep-adder-tsflow
+    spec:
+      containers:
+        - name: tsflow
+          image: ghcr.io/rajsinghtech/tsflow:v1.6.2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: ENVIRONMENT
+              value: production
+            - name: TAILSCALE_TAILNET
+              value: sheep-adder.ts.net
+            - name: TAILSCALE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lobby-ts-oauth
+                  key: TS_API_KEY
+            - name: TSFLOW_FLOW_BACKEND
+              value: s3
+            - name: TSFLOW_S3_BUCKET
+              value: tailscale-logs
+            - name: TSFLOW_S3_PREFIX
+              value: sheep-adder/network/
+            - name: TSFLOW_S3_ENDPOINT
+              value: "http://${COMMON_S3_ENDPOINT}"
+            - name: TSFLOW_S3_REGION
+              value: garage
+            - name: TSFLOW_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sheep-adder-tsflow-s3-auth
+                  key: TSFLOW_S3_ACCESS_KEY_ID
+            - name: TSFLOW_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sheep-adder-tsflow-s3-auth
+                  key: TSFLOW_S3_SECRET_ACCESS_KEY
+            - name: TSFLOW_INITIAL_BACKFILL
+              value: 6h
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: sheep-adder-tsflow-data

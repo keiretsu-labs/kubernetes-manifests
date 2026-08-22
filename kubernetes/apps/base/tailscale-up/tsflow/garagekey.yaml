@@ -1,0 +1,18 @@
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: sheep-adder-tsflow-key
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Sheep Adder TSFlow Key"
+  secretTemplate:
+    name: sheep-adder-tsflow-s3-auth
+    accessKeyIdKey: TSFLOW_S3_ACCESS_KEY_ID
+    secretAccessKeyKey: TSFLOW_S3_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: tailscale-logs
+        namespace: garage
+      read: true

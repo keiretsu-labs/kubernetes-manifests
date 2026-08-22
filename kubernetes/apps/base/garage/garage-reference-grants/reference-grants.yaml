@@ -67,3 +67,16 @@ spec:
   to:
     - kind: GarageKey
       name: tailscale-recorder-key
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-bucket-to-sheep-adder-tsflow-key
+  namespace: tailscale-up
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: sheep-adder-tsflow-key

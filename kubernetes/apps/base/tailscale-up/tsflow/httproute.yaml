@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sheep-adder-tsflow
+spec:
+  parentRefs:
+    - name: private
+      namespace: home
+    - name: public
+      namespace: home
+    - name: ts
+      namespace: home
+  hostnames:
+    - "sheep-adder-tsflow.${CLUSTER_DOMAIN}"
+  rules:
+    - backendRefs:
+        - name: sheep-adder-tsflow
+          port: 8080
