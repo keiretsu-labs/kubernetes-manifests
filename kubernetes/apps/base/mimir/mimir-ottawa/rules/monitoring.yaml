@@ -139,6 +139,25 @@ groups:
   # GPU rules are inert on Ottawa/Robbinsdale because DCGM families are absent.
   # St. Petersburg is the only current NVIDIA/DCGM cluster; do not add GPU
   # scrape requirements to CPU-only nodes or to the Intel-plugin cluster.
+  # Node-health rules live in this file too so mimirtool receives one namespace
+  # per tenant and cannot reject a repeated namespace file.
+  - name: node-health.rules
+    rules:
+      - alert: NodeKernelDeadlock
+        expr: kube_node_status_condition{condition="KernelDeadlock",status="true"} == 1
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kernel deadlock reported on node {{ $labels.node }}
+      - alert: NodeReadonlyFilesystem
+        expr: kube_node_status_condition{condition="ReadonlyFilesystem",status="true"} == 1
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Read-only filesystem reported on node {{ $labels.node }}
+
   - name: gpu.rules
     rules:
       - record: node_gpu_temperature_celsius:max
