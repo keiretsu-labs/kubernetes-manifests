@@ -14,6 +14,9 @@ spec:
       labels:
         app.kubernetes.io/name: sheep-adder-tsflow
     spec:
+      securityContext:
+        fsGroup: 65532
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: tsflow
           image: ghcr.io/rajsinghtech/tsflow:v1.6.2
