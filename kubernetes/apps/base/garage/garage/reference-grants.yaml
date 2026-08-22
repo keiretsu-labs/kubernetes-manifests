@@ -40,6 +40,8 @@ spec:
     - kind: GarageKey
       namespace: tailscale-system
     - kind: GarageKey
+      namespace: tailscale-up
+    - kind: GarageKey
       namespace: bhaiya
     - kind: GarageBucket
       namespace: bhaiya
