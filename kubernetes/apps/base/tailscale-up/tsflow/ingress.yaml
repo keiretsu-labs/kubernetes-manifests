@@ -3,6 +3,7 @@ kind: Ingress
 metadata:
   name: sheep-adder-tsflow
   annotations:
+    tailscale.com/funnel: "true"
     tailscale.com/proxy-group: common-ingress
     tailscale.com/tags: tag:k8s
 spec:
