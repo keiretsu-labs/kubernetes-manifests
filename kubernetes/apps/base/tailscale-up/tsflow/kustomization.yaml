@@ -5,9 +5,6 @@ resources:
   - garagekey.yaml
   - pvc.yaml
   - deployment.yaml
-  - service.yaml
-  - httproute.yaml
-  - ingress.yaml
 labels:
   - pairs:
       app.kubernetes.io/part-of: tailscale-up
