@@ -16,3 +16,4 @@ spec:
         name: tailscale-logs
         namespace: garage
       read: true
+      write: true
