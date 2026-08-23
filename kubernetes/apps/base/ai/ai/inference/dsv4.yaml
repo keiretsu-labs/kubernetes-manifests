@@ -309,6 +309,13 @@ spec:
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
           - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
+          # Keep runtime JIT artifacts on the node-local model PVC. Recreating a
+          # rank must not trigger mid-serve Triton/TileLang compilation.
+          - { name: TRITON_CACHE_DIR, value: "/models/triton-cache" }
+          - { name: TILELANG_CACHE_DIR, value: "/models/tilelang-cache" }
+          # Allow long model execution/JIT work to finish before EngineCore is
+          # declared failed; NCCL watchdogs still remain the hard failure bound.
+          - { name: VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS, value: "1800" }
           securityContext:
             privileged: true
             capabilities:
@@ -535,6 +542,13 @@ spec:
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: VLLM_COMPILE_CACHE_DIR, value: "/models/compile-cache" }
           - { name: VLLM_CACHE_ROOT, value: "/models/vllm-cache" }
+          # Keep runtime JIT artifacts on the node-local model PVC. Recreating a
+          # rank must not trigger mid-serve Triton/TileLang compilation.
+          - { name: TRITON_CACHE_DIR, value: "/models/triton-cache" }
+          - { name: TILELANG_CACHE_DIR, value: "/models/tilelang-cache" }
+          # Allow long model execution/JIT work to finish before EngineCore is
+          # declared failed; NCCL watchdogs still remain the hard failure bound.
+          - { name: VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS, value: "1800" }
           securityContext:
             privileged: true
             capabilities:
