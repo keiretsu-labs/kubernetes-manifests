@@ -4,7 +4,7 @@ metadata:
   name: teslamate-internal-charge-details
   namespace: monitoring
   annotations:
-    monitoring.keiretsu.top/source-url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/internal/charge-details.json
+    monitoring.keiretsu.top/source-url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.2.0/grafana/dashboards/internal/charge-details.json
     monitoring.keiretsu.top/local-patch: assign the determine_phases variable to the TeslaMate datasource
 spec:
   allowCrossNamespaceImport: true
@@ -29,7 +29,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/internal/drive-details.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.2.0/grafana/dashboards/internal/drive-details.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -43,7 +43,7 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/internal/home.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.2.0/grafana/dashboards/internal/home.json
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -57,4 +57,4 @@ spec:
       grafana.internal/instance: grafana
   resyncPeriod: "168h"
   folder: TeslaMate
-  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.1.1/grafana/dashboards/reports/dutch-tax.json
+  url: https://raw.githubusercontent.com/teslamate-org/teslamate/v4.2.0/grafana/dashboards/reports/dutch-tax.json
