@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ../garage-keys
   - bhaiya-postgres-key.yaml
+  - firefly-postgres-key.yaml

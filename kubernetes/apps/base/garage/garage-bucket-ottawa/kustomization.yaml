@@ -5,3 +5,4 @@ namespace: garage
 resources:
   - ../garage-bucket
   - bucket.yaml
+  - firefly-postgres.yaml

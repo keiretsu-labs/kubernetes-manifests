@@ -11,6 +11,9 @@ spec:
   dependsOn:
     - {name: cnpg-system}
     - {name: rook-ceph-cluster-config}
+    - {name: garage}
+    - {name: garage-bucket}
+    - {name: garage-keys}
   path: ./kubernetes/apps/base/firefly/firefly/app
   prune: true
   sourceRef: {kind: GitRepository, name: kubernetes-manifests}
