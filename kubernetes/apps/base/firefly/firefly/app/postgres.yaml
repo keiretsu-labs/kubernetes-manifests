@@ -23,18 +23,11 @@ spec:
         serverName: firefly-postgres
   backup:
     retentionPolicy: "30d"
-  externalClusters:
-    - name: keiretsu
-      plugin:
-        name: barman-cloud.cloudnative-pg.io
-        parameters:
-          barmanObjectName: firefly-s3-store
-          serverName: firefly-postgres
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
-  name: firefly-postgres-s3
+  name: firefly-postgres-scheduled
 spec:
   schedule: "0 0 1 * * *"
   immediate: true

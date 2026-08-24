@@ -14,14 +14,11 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: private
+      name: public
       namespace: home
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: ts
-      namespace: home
+      sectionName: wildcard-keiretsu-top-https
   hostnames:
-    - "firefly.${CLUSTER_DOMAIN}"
+    - "firefly.${COMMON_DOMAIN}"
   rules:
     - matches:
         - path:
@@ -30,6 +27,12 @@ spec:
       backendRefs:
         - name: firefly
           port: 8080
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
@@ -79,3 +82,27 @@ spec:
             - name: Remote-Email
               values:
                 - kartikbharath@gmail.com
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: firefly-tinyauth-redirect
+  namespace: firefly
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: firefly
+  lua:
+    - inline: |
+        function envoy_on_response(response_handle)
+          local headers = response_handle:headers()
+          if headers:get(":status") == "401" then
+            local location = headers:get("x-tinyauth-location")
+            if location then
+              headers:replace(":status", "302")
+              headers:add("Location", location)
+              headers:remove("x-tinyauth-location")
+            end
+          end
+        end
