@@ -29,6 +29,12 @@ The Deployment maps the URL to the upstream-required variable:
 `FIREFLY_TOKEN` is intentionally not set: upstream v0.4.2 ignores it in HTTP
 mode. Bhaiya injects the PAT as `Authorization: Bearer <token>` on each request.
 
+Bhaiya exposes the upstream as the `firefly` MCP channel at `/mcp/firefly` when
+both `BHAIYA_FIREFLY_MCP_URL` and `BHAIYA_FIREFLY_MCP_TOKEN` are present. The
+channel is compiled as administrator-only because its shared PAT can read
+personal financial data; a missing PAT fails closed and does not surface the
+toggle.
+
 The Bhaiya edge receives the same PAT through
 `kubernetes/apps/ottawa/bhaiya/firefly-mcp-bhaiya-secret.yaml`, an
 `ExternalSecret` that merges `FIREFLY_III_TOKEN` into Bhaiya's existing
@@ -59,10 +65,8 @@ A real local upstream HTTP smoke test also verified `/health`, 401 without a
 bearer token, and MCP `initialize` returning server `firefly-iii-mcp` version
 `0.4.2` over SSE.
 
-The Kubernetes manifest files pass YAML parsing and `git diff --check`.
-The repository's canonical `./tools/check.sh ot` could not complete in this
-workspace because its Flate bootstrap requires `tar`, which is absent; this is
-a host-tooling blocker, not a manifest diagnostic.
+The Kubernetes manifest files pass YAML parsing and `git diff --check`. The
+repository's canonical `./tools/check.sh ot` render gate passes.
 
 The ExternalSecret prerequisite is an existing backend record named `firefly-iii`
 with the two properties above. It must be provisioned separately by the cluster
