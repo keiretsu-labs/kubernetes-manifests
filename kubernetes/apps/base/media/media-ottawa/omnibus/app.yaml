@@ -28,7 +28,7 @@ spec:
       containers:
         - name: omnibus
           # renovate: datasource=docker depName=ghcr.io/kbpersonal/omnibus
-          image: ghcr.io/kbpersonal/omnibus:v1.4.4.3@sha256:e3a912877ebf76705f9db8f24bcfa2cd08ab703169f4dc71fc4c11e7876a16d0
+          image: ghcr.io/kbpersonal/omnibus:v1.4.4.4@sha256:f3747ab9aafd10beaaa16fe54c6ae84f312893b38dc0f0b001dae508208c1e1d
           ports:
             - name: http
               containerPort: 3000
@@ -68,7 +68,7 @@ spec:
               value: "2048"
             # Manga acquisition (killinit fork): requests detected as manga are resolved against
             # Suwayomi's configured sources instead of the comic indexers, then Komga is told which
-            # way the series reads. See docs/manga-fork.md in the fork.
+            # way the series reads. See docs/stack-evaluation.md in the fork.
             - name: SUWAYOMI_URL
               value: http://suwayomi.media.svc:4567
             - name: SUWAYOMI_DOWNLOADS_PATH
@@ -89,7 +89,7 @@ spec:
               mountPath: /media-share
         - name: omnibus-engine
           # renovate: datasource=docker depName=ghcr.io/kbpersonal/omnibus-engine
-          image: ghcr.io/kbpersonal/omnibus-engine:v1.4.4.3@sha256:38de3a4092227f52deb13a0d36a84c8917a37433345c54a8af519ef590e09eaa
+          image: ghcr.io/kbpersonal/omnibus-engine:v1.4.4.4@sha256:22c39a2be463298247a667b12c2724469bd75d9b875b649a465f00b0bc70175f
           env:
             - name: DATABASE_URL
               valueFrom:
