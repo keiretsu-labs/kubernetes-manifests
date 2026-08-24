@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 60 | 124 |
+| `ottawa` | 4 | 61 | 126 |
 | `robbinsdale` | 3 | 43 | 87 |
 | `stpetersburg` | 3 | 39 | 79 |
-| **total** | **10** | **142** | **290** |
+| **total** | **10** | **143** | **292** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -117,6 +117,7 @@ diagram in the [README](../../README.md#architecture).
 | Application workloads | `buzz` | `buzz`, `buzz-infra` |
 | Application workloads | `cliproxy` | `cliproxy` |
 | Application workloads | `firecrawl` | `firecrawl` |
+| Application workloads | `firefly` | `firefly`, `firefly-mcp` |
 | Application workloads | `forgejo` | `forgejo` |
 | Application workloads | `hermes` | `hermes` |
 | Application workloads | `homer-operator` | `homer-operator-install` |

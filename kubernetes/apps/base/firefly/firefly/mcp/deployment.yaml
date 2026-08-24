@@ -1,0 +1,79 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefly-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: firefly-mcp
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: firefly-mcp
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: firefly-mcp
+          image: ghcr.io/daften/fireflyiii-mcp:0.4.2@sha256:2e756227c8b4298196c33a1090a96b4952405e9dbe83cd4255efb1407c103f1e
+          imagePullPolicy: IfNotPresent
+          args:
+            - --transport
+            - http
+            - --host
+            - 0.0.0.0
+            - --port
+            - "3000"
+            - --read-only
+          env:
+            - name: FIREFLY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: firefly-mcp
+                  key: FIREFLY_III_URL
+            - name: FIREFLY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: firefly-mcp
+                  key: FIREFLY_III_TOKEN
+            - name: MCP_READ_ONLY
+              value: "true"
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 2
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
