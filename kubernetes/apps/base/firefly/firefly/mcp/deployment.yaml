@@ -26,12 +26,6 @@ spec:
           image: ghcr.io/daften/fireflyiii-mcp:0.4.2@sha256:2e756227c8b4298196c33a1090a96b4952405e9dbe83cd4255efb1407c103f1e
           imagePullPolicy: IfNotPresent
           args:
-            - --transport
-            - http
-            - --host
-            - 0.0.0.0
-            - --port
-            - "3000"
             - --read-only
           env:
             - name: FIREFLY_URL
@@ -39,6 +33,11 @@ spec:
                 secretKeyRef:
                   name: firefly-mcp
                   key: FIREFLY_III_URL
+            - name: FIREFLY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: firefly-mcp
+                  key: FIREFLY_III_TOKEN
             - name: MCP_READ_ONLY
               value: "true"
           ports:
