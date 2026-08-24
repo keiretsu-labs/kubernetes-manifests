@@ -492,6 +492,9 @@ spec:
                   ("ai-kartik", "http://ai-kartik.keiretsu.ts.net/v1/models"),
                   ("vllm", "http://stpetersburg-vllm-upstream/v1/models"),
               )
+              metadata_alias_sources = {
+                  "codex-subscription/vllm-fallback": "codex-subscription/gpt-5.6-luna",
+              }
 
               def request(method, path, token, payload=None, extra_headers=None):
                   body = None if payload is None else json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
@@ -778,7 +781,8 @@ spec:
 
               def resolved_metadata(model_id, owner, route_source, entries, index):
                   if route_source is None:
-                      raw_id = model_id.split("/", 1)[1] if "/" in model_id else model_id
+                      source_model_id = metadata_alias_sources.get(model_id, model_id)
+                      raw_id = source_model_id.split("/", 1)[1] if "/" in source_model_id else source_model_id
                       route_source = {"id": raw_id, "provider": {"id": owner}, "direct": {}}
                   metadata = resolve_models_dev(entries, index, route_source)
                   metadata.update(route_source.get("direct", {}))

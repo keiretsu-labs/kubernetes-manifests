@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Assert the source-level Pi bridge alias contract without contacting a cluster.
+set -euo pipefail
+
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd -- "$ROOT"
+
+if ! python3 -c "import yaml" 2>/dev/null; then
+  yaml_site="$(find /workspace/.local/share/nix/root/nix/store -maxdepth 1 -name "*pyyaml*" -not -name "*.drv" -type d 2>/dev/null | head -1)"
+  if [ -n "$yaml_site" ]; then
+    export PYTHONPATH="$yaml_site/lib/python3.14/site-packages${PYTHONPATH:+:$PYTHONPATH}"
+  fi
+fi
+
+python3 - <<'PY'
+import os
+import pathlib
+import re
+
+import yaml
+
+path = pathlib.Path("kubernetes/apps/base/cliproxy/cliproxy/app/deployment.yaml")
+documents = list(yaml.safe_load_all(path.read_text()))
+deployment = next(
+    document
+    for document in documents
+    if document.get("kind") == "Deployment" and document["metadata"]["name"] == "cliproxy"
+)
+containers = deployment["spec"]["template"]["spec"]["containers"]
+sync = next(container for container in containers if container["name"] == "pi-bridge-sync")
+script = sync["args"][0]
+sentinel = "ready.unlink(missing_ok=True)"
+if sentinel not in script:
+    raise SystemExit("pi-bridge-sync bootstrap sentinel is missing")
+
+os.environ["API_KEY"] = "test-api-key"
+os.environ["MANAGEMENT_KEY"] = "test-management-key"
+namespace = {"__name__": "cliproxy_pi_bridge_contract"}
+exec(compile(script.split(sentinel, 1)[0], str(path), "exec"), namespace)
+
+fallback = "codex-subscription/vllm-fallback"
+source = "codex-subscription/gpt-5.6-luna"
+if namespace["metadata_alias_sources"].get(fallback) != source:
+    raise SystemExit(f"{fallback} must resolve metadata from {source}")
+
+if not re.search(
+    r'(?ms)oauth-model-alias:\s*\n\s*codex:\s*\n\s*- name: "gpt-5\.6-luna"\s*\n\s*alias: "vllm-fallback"',
+    path.read_text(),
+):
+    raise SystemExit("CLIProxy fallback alias and metadata source are no longer aligned")
+
+seen = []
+def resolve_models_dev(entries, index, route_source):
+    seen.append(route_source)
+    return {"context_window": 1050000, "max_tokens": 128000, "reasoning": True}
+
+namespace["resolve_models_dev"] = resolve_models_dev
+metadata = namespace["resolved_metadata"](fallback, "codex", None, [], {})
+if metadata != {"context_window": 1050000, "max_tokens": 128000, "reasoning": True}:
+    raise SystemExit(f"fallback metadata was not resolved: {metadata!r}")
+if seen != [{"id": "gpt-5.6-luna", "provider": {"id": "codex"}, "direct": {}}]:
+    raise SystemExit(f"fallback metadata used the wrong source: {seen!r}")
+
+print("✓ cliproxy Pi bridge fallback metadata contract")
+PY
