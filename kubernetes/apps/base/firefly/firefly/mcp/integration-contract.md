@@ -22,10 +22,12 @@ ClusterSecretStore key `firefly-iii`, properties:
 - `FIREFLY_III_URL`: Firefly III origin, without an `/api/v1` suffix.
 - `FIREFLY_III_TOKEN`: Firefly III Personal Access Token.
 
-The Deployment maps these to the upstream-required variables:
+The Deployment maps the URL to the upstream-required variable:
 
 - `FIREFLY_URL` <- `FIREFLY_III_URL`
-- `FIREFLY_TOKEN` <- `FIREFLY_III_TOKEN`
+
+`FIREFLY_TOKEN` is intentionally not set: upstream v0.4.2 ignores it in HTTP
+mode. Bhaiya injects the PAT as `Authorization: Bearer <token>` on each request.
 
 No plaintext or SOPS token value is added by this change.
 

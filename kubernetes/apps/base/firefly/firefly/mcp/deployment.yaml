@@ -39,11 +39,6 @@ spec:
                 secretKeyRef:
                   name: firefly-mcp
                   key: FIREFLY_III_URL
-            - name: FIREFLY_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: firefly-mcp
-                  key: FIREFLY_III_TOKEN
             - name: MCP_READ_ONLY
               value: "true"
           ports:
