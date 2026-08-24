@@ -29,6 +29,12 @@ The Deployment maps the URL to the upstream-required variable:
 `FIREFLY_TOKEN` is intentionally not set: upstream v0.4.2 ignores it in HTTP
 mode. Bhaiya injects the PAT as `Authorization: Bearer <token>` on each request.
 
+The Bhaiya edge receives the same PAT through
+`kubernetes/apps/ottawa/bhaiya/firefly-mcp-bhaiya-secret.yaml`, an
+`ExternalSecret` that merges `FIREFLY_III_TOKEN` into Bhaiya's existing
+`bhaiya-mcp` Secret. The value remains sourced from the `firefly-iii` backend
+record and is never stored in this repository.
+
 No plaintext or SOPS token value is added by this change.
 
 ## Network and client contract
