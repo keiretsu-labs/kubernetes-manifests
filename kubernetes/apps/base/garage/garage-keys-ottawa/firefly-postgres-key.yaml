@@ -1,0 +1,24 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: firefly-postgres-key
+  namespace: firefly
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: Firefly PostgreSQL Backup Key
+  secretTemplate:
+    name: firefly-postgres-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: firefly-postgres
+        namespace: garage
+      read: true
+      write: true
+      owner: true

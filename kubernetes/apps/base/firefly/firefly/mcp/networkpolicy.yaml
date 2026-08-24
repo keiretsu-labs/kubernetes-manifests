@@ -1,0 +1,41 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: firefly-mcp-ingress
+spec:
+  description: Only Bhaiya may use the Firefly III MCP listener; host and remote-node receive health checks.
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: firefly-mcp
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: bhaiya
+            app.kubernetes.io/name: bhaiya
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: /health$
+  egress:
+    - toEntities:
+        - cluster
+    - toFQDNs:
+        - matchPattern: "*"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "80"
+              protocol: TCP

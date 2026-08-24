@@ -1,0 +1,114 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: firefly-postgres
+spec:
+  instances: 2
+  bootstrap:
+    initdb:
+      database: firefly
+      owner: firefly
+      dataChecksums: true
+  storage:
+    size: 10Gi
+    storageClass: ceph-block-replicated
+  monitoring:
+    enablePodMonitor: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: firefly-s3-store
+        serverName: firefly-postgres
+  backup:
+    retentionPolicy: "30d"
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: firefly-postgres-scheduled
+spec:
+  schedule: "0 0 1 * * *"
+  immediate: true
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: firefly-postgres
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: firefly-s3-store
+spec:
+  configuration:
+    destinationPath: s3://firefly-postgres/${LOCATION}/
+    endpointURL: http://${COMMON_S3_ENDPOINT}
+    s3Credentials:
+      accessKeyId:
+        name: firefly-postgres-s3
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: firefly-postgres-s3
+        key: AWS_SECRET_ACCESS_KEY
+  instanceSidecarConfiguration:
+    env:
+      - name: AWS_DEFAULT_REGION
+        value: garage
+  retentionPolicy: "30d"
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: firefly-postgres-key
+  namespace: firefly
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: Firefly PostgreSQL Backup Key
+  secretTemplate:
+    name: firefly-postgres-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: firefly-postgres
+        namespace: garage
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: firefly-postgres
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: firefly-postgres
+  quotas:
+    maxSize: 200Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef:
+        name: firefly-postgres-key
+        namespace: firefly
+      read: true
+      write: true
+      owner: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-bucket-to-firefly-key
+  namespace: firefly
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: firefly-postgres-key
