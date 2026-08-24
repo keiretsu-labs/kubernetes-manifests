@@ -29,9 +29,9 @@ diagram in the [README](../../README.md#architecture).
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
 | `ottawa` | 4 | 61 | 126 |
-| `robbinsdale` | 3 | 43 | 87 |
-| `stpetersburg` | 3 | 39 | 79 |
-| **total** | **10** | **143** | **292** |
+| `robbinsdale` | 3 | 44 | 87 |
+| `stpetersburg` | 3 | 40 | 79 |
+| **total** | **10** | **145** | **292** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -198,6 +198,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Networking, ingress and identity | `tailscale` | `tailscale-csi-provider`, `tailscale-operator`, `tailscale-operator-resources` |
 | Networking, ingress and identity | `tailscale-examples` | `tailscale-examples-sandbox` |
 | Networking, ingress and identity | `tailscale-system` | `tailscale-system-app` |
+| Networking, ingress and identity | `tailscale-up` | — |
 | Networking, ingress and identity | `tinyauth-egress` | `tinyauth-egress` → ns `tinyauth` |
 | Storage and data services | `cnpg-system` | `cnpg-system` |
 | Storage and data services | `csi-addons` | `csi-addons`, `csi-addons-config` |
@@ -285,6 +286,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Networking, ingress and identity | `k8gb` | `k8gb-app`, `k8gb-config` |
 | Networking, ingress and identity | `tailscale` | `tailscale-csi-provider`, `tailscale-operator`, `tailscale-operator-resources` |
 | Networking, ingress and identity | `tailscale-system` | `tailscale-system-app` |
+| Networking, ingress and identity | `tailscale-up` | — |
 | Networking, ingress and identity | `tinyauth-egress` | `tinyauth-egress` → ns `tinyauth` |
 | Storage and data services | `cnpg-system` | `cnpg-system` |
 | Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-keys`, `garage-nodes-stpetersburg`, `garage-reference-grants`, `garage-velero-bucket`, `garage-webui` |

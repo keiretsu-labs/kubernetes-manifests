@@ -34,6 +34,7 @@ resources:
   - ./node-feature-discovery
   - ./tailscale-examples
   - ./tailscale-system
+  - ./tailscale-up
   - ./tailscale
   - ./local-path-storage
   - ./csi-addons
