@@ -30,6 +30,9 @@ spec:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
       namespace: media
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: firefly
   to:
     - group: ""
       kind: Service
