@@ -25,6 +25,7 @@ spec:
         - name: firefly-mcp
           image: ghcr.io/daften/fireflyiii-mcp:0.4.2@sha256:2e756227c8b4298196c33a1090a96b4952405e9dbe83cd4255efb1407c103f1e
           imagePullPolicy: IfNotPresent
+          command: [node, dist/index.js]
           args:
             - --read-only
           env:
