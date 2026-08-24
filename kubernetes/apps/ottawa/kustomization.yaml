@@ -63,3 +63,4 @@ resources:
   - ./victoria-logs
   - ./victoria-logs/victoria-logs.yaml
   - ./woodpecker
+  - ./firefly

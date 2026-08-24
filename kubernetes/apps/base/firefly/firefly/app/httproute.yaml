@@ -1,0 +1,108 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: firefly
+  annotations:
+    item.homer.rajsingh.info/name: "Firefly III"
+    item.homer.rajsingh.info/subtitle: "Personal Finance Manager"
+    item.homer.rajsingh.info/logo: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/firefly-iii.svg"
+    item.homer.rajsingh.info/keywords: "finance, budgeting, accounting"
+    service.homer.rajsingh.info/name: "Personal"
+    service.homer.rajsingh.info/icon: "fas fa-wallet"
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+  hostnames:
+    - "firefly.${COMMON_DOMAIN}"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: firefly
+          port: 8080
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Proto
+                value: https
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: firefly-tinyauth
+  namespace: firefly
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: firefly
+  extAuth:
+    failOpen: false
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-proto
+      - x-forwarded-for
+      - user-agent
+    http:
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: tinyauth
+          namespace: tinyauth
+          port: 3000
+          weight: 1
+      headersToBackend:
+        - remote-user
+        - remote-email
+        - remote-name
+        - remote-groups
+      path: /api/auth/envoy?path=
+  authorization:
+    defaultAction: Deny
+    rules:
+      - action: Allow
+        name: allow-raj
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - rajsinghcpre@gmail.com
+      - action: Allow
+        name: allow-kartik
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - kartikbharath@gmail.com
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: firefly-tinyauth-redirect
+  namespace: firefly
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: firefly
+  lua:
+    - inline: |
+        function envoy_on_response(response_handle)
+          local headers = response_handle:headers()
+          if headers:get(":status") == "401" then
+            local location = headers:get("x-tinyauth-location")
+            if location then
+              headers:replace(":status", "302")
+              headers:add("Location", location)
+              headers:remove("x-tinyauth-location")
+            end
+          end
+        end

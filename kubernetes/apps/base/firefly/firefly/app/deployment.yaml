@@ -1,0 +1,49 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefly
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app.kubernetes.io/name: firefly}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: firefly}
+    spec:
+      containers:
+        - name: firefly
+          image: fireflyiii/core:version-6.6.6@sha256:ae69fdd95cdef9038cd7a460a5aec731f14813973e4f096511d5a4ea9ff0e972
+          ports: [{name: http, containerPort: 8080}]
+          env:
+            - {name: APP_ENV, value: production}
+            - {name: APP_DEBUG, value: "false"}
+            - {name: APP_URL, value: "https://firefly.${COMMON_DOMAIN}"}
+            - {name: TRUSTED_PROXIES, value: "**"}
+            - {name: TZ, value: "${TIMEZONE}"}
+            - {name: DEFAULT_LANGUAGE, value: en_US}
+            - {name: DEFAULT_LOCALE, value: equal}
+            - {name: DB_CONNECTION, value: pgsql}
+            - {name: DB_HOST, value: firefly-postgres-rw}
+            - {name: DB_PORT, value: "5432"}
+            - {name: DB_DATABASE, value: firefly}
+            - name: DB_USERNAME
+              valueFrom: {secretKeyRef: {name: firefly-postgres-app, key: username}}
+            - name: DB_PASSWORD
+              valueFrom: {secretKeyRef: {name: firefly-postgres-app, key: password}}
+            - name: APP_KEY
+              valueFrom: {secretKeyRef: {name: firefly-secret, key: APP_KEY}}
+            - name: SITE_OWNER
+              valueFrom: {secretKeyRef: {name: firefly-secret, key: SITE_OWNER}}
+            - name: STATIC_CRON_TOKEN
+              valueFrom: {secretKeyRef: {name: firefly-secret, key: STATIC_CRON_TOKEN}}
+            - {name: CACHE_DRIVER, value: file}
+            - {name: SESSION_DRIVER, value: file}
+            - {name: LOG_CHANNEL, value: stderr}
+          volumeMounts: [{name: uploads, mountPath: /var/www/html/storage/upload}]
+          readinessProbe: {httpGet: {path: /login, port: http}, initialDelaySeconds: 30, periodSeconds: 10}
+          livenessProbe: {httpGet: {path: /login, port: http}, initialDelaySeconds: 60, periodSeconds: 20}
+      volumes:
+        - name: uploads
+          persistentVolumeClaim: {claimName: firefly-upload}

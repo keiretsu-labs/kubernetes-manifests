@@ -142,6 +142,7 @@ run_capped() {
 
 run_capped "version-sync" tools/check-versions.sh
 run_capped "notification-scope" tools/check-notification-scope.sh
+run_capped "cliproxy-pi-bridge" tools/check-cliproxy-pi-bridge.sh
 
 if [ "$QUICK" = 1 ]; then
   # Quick syntax check: validate kustomize build on a representative sample
