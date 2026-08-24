@@ -38,7 +38,7 @@ Anthropic-compatible APIs.
   omits that dead route rather than blocking startup; clients use the available
   Codex subscription model instead.
 - `codex-subscription/vllm-fallback` is the GitOps-owned fallback model. It
-  maps to the live `gpt-5.3-codex-spark` Codex subscription model and remains
+  maps to the live `gpt-5.6-luna` Codex subscription model and remains
   available whether or not the DeepSeek vLLM endpoint is healthy.
 - `force-model-prefix` is enabled and every route owns its client-visible
   prefix: `codex-subscription/<model>` for the logged-in Codex subscription,

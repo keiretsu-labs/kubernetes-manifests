@@ -332,7 +332,7 @@ spec:
               # pool while the DeepSeek route is omitted during a DSV4 outage.
               oauth-model-alias:
                 codex:
-                  - name: "gpt-5.3-codex-spark"
+                  - name: "gpt-5.6-luna"
                     alias: "vllm-fallback"
                     display-name: "Codex subscription fallback"
                     fork: true
