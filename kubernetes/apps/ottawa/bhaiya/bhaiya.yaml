@@ -18,7 +18,7 @@ spec:
     - name: agent-sandbox
     - name: cert-manager
     - name: buzz
-  path: ./deploy
+  path: ./gitops/provider-fence-zero
   prune: true
   sourceRef:
     kind: GitRepository
