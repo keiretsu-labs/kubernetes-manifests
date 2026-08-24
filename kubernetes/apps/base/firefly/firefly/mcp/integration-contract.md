@@ -34,8 +34,11 @@ No plaintext or SOPS token value is added by this change.
 ## Network and client contract
 
 - Service: `firefly-mcp.firefly.svc.cluster.local:3000`
-- Only Bhaiya may access the MCP listener; host/remote-node access is limited to
-  `GET /health` for probes.
+- Only the Bhaiya control plane and the separately deployed `bhaiya-mcp` edge may
+  access the MCP listener; host/remote-node access is limited to `GET /health`
+  for probes. The control-plane identity remains during additive cutover because
+  the legacy in-process MCP proxy is still configured; remove it only after that
+  proxy and its provider URLs are retired.
 - Bhaiya sends `Authorization: Bearer <Firefly III PAT>` to the Streamable HTTP
   endpoint. The upstream resolves the bearer token per request and uses it for
   Firefly III API calls.
