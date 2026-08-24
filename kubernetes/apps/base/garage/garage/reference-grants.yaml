@@ -51,3 +51,5 @@ spec:
       namespace: buzz
     - kind: GarageBucket
       namespace: buzz
+    - kind: GarageKey
+      namespace: firefly
