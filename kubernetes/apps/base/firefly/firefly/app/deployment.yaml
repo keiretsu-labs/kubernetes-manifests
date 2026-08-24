@@ -19,7 +19,7 @@ spec:
           env:
             - {name: APP_ENV, value: production}
             - {name: APP_DEBUG, value: "false"}
-            - {name: APP_URL, value: "https://firefly.${CLUSTER_DOMAIN}"}
+            - {name: APP_URL, value: "https://firefly.${COMMON_DOMAIN}"}
             - {name: TRUSTED_PROXIES, value: "**"}
             - {name: TZ, value: "${TIMEZONE}"}
             - {name: DEFAULT_LANGUAGE, value: en_US}
@@ -42,8 +42,8 @@ spec:
             - {name: SESSION_DRIVER, value: file}
             - {name: LOG_CHANNEL, value: stderr}
           volumeMounts: [{name: uploads, mountPath: /var/www/html/storage/upload}]
-          readinessProbe: {httpGet: {path: /api/v1/about, port: http}, initialDelaySeconds: 30, periodSeconds: 10}
-          livenessProbe: {httpGet: {path: /api/v1/about, port: http}, initialDelaySeconds: 60, periodSeconds: 20}
+          readinessProbe: {httpGet: {path: /login, port: http}, initialDelaySeconds: 30, periodSeconds: 10}
+          livenessProbe: {httpGet: {path: /login, port: http}, initialDelaySeconds: 60, periodSeconds: 20}
       volumes:
         - name: uploads
           persistentVolumeClaim: {claimName: firefly-upload}
