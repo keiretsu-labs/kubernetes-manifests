@@ -23,7 +23,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: grafana-mcp
-          image: docker.io/grafana/mcp-grafana:1.1.0-alpine@sha256:e0eb29cdf8effbbebf115ea99a5f654a44681dfd293661b0991498d651ca6cb4
+          image: docker.io/grafana/mcp-grafana:1.2.0-alpine@sha256:5ef5ed658b4b8d2f0754a24eea91e67563a321cfd65b1b7abd1038959f3523f2
           imagePullPolicy: IfNotPresent
           command:
             - /app/mcp-grafana
