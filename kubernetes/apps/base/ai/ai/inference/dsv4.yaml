@@ -70,17 +70,16 @@ data:
     test -d "$${SNAPSHOT}"
     # Validate the complete content-addressed snapshot before replacing the
     # serving tree. Then dereference its symlinks directly into the model root;
-    # the snapshot is complete, so no partial local-dir metadata can be copied.
+    # The model root is a dedicated local directory; replace it with the
+    # complete resolved snapshot only after the snapshot itself is validated.
     test -f "$${SNAPSHOT}/config.json"
-    test "$$(find "$${SNAPSHOT}" -maxdepth 1 -type f -name '*.safetensors' | wc -l)" -ge "$${EXPECTED}"
+    test "$$(find "$${SNAPSHOT}" -maxdepth 1 -name '*.safetensors' | wc -l)" -ge "$${EXPECTED}"
     rm -rf "$${MODEL_DIR}.incoming"
     mkdir -p "$${MODEL_DIR}.incoming"
-    # Copy the complete snapshot with links dereferenced, but do not remove the
-    # current model tree until the full copy has succeeded.
     cp -rL "$${SNAPSHOT}"/. "$${MODEL_DIR}.incoming/"
     test -f "$${MODEL_DIR}.incoming/config.json"
-    test "$$(find "$${MODEL_DIR}.incoming" -maxdepth 1 -type f -name '*.safetensors' | wc -l)" -ge "$${EXPECTED}"
-    find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+    test "$$(find "$${MODEL_DIR}.incoming" -maxdepth 1 -name '*.safetensors' | wc -l)" -ge "$${EXPECTED}"
+    rm -rf "$${MODEL_DIR}"/*
     cp -rL "$${MODEL_DIR}.incoming"/. "$${MODEL_DIR}/"
     rm -rf "$${MODEL_DIR}.incoming"
     cd "$${MODEL_DIR}"
