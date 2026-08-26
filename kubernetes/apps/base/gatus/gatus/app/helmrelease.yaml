@@ -58,6 +58,16 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
+        - name: DSV4 vLLM (StPetersburg)
+          group: AI
+          url: http://dsv4.ai:8000/health
+          interval: 60s
+          conditions:
+            - "[STATUS] == 200"
+            - "[RESPONSE_TIME] < 2000"
+          alerts:
+            - type: discord
+              send-on-resolved: true
         # === Storage: Garage Cross-Cluster ===
         - name: Garage Local (StPetersburg)
           group: storage
