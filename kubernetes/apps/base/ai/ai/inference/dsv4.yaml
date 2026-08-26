@@ -47,10 +47,12 @@ data:
 
     # Reuse only the exact pinned model revision. A shard-count-only check would
     # incorrectly keep the superseded preview weights because both have 48 shards.
-    COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
+    COUNT="$$(find . -maxdepth 1 -type f -name '*.safetensors' | wc -l)"
     CURRENT_MARKER="$$(cat "$${MODEL_MARKER}" 2>/dev/null || true)"
-    if [ "$${COUNT}" -eq "$${EXPECTED}" ] && [ "$${CURRENT_MARKER}" = "$${EXPECTED_MARKER}" ]; then
-      echo "[download] All $${EXPECTED} shards already present — skipping download."
+    CONFIG_OK=0
+    [ -f "$${MODEL_DIR}/config.json" ] && CONFIG_OK=1
+    if [ "$${COUNT}" -eq "$${EXPECTED}" ] && [ "$${CONFIG_OK}" -eq 1 ] && [ "$${CURRENT_MARKER}" = "$${EXPECTED_MARKER}" ]; then
+      echo "[download] All $${EXPECTED} regular shards and config.json already present — skipping download."
       echo "[validate] Shard validation OK ($${COUNT}/$${EXPECTED})"
       echo "[download] Done."
       exit 0
@@ -70,21 +72,21 @@ data:
     # serving tree. Then dereference its symlinks directly into the model root;
     # the snapshot is complete, so no partial local-dir metadata can be copied.
     test -f "$${SNAPSHOT}/config.json"
-    test "$$(find "$${SNAPSHOT}" -maxdepth 1 -name '*.safetensors' | wc -l)" -ge "$${EXPECTED}"
+    test "$$(find "$${SNAPSHOT}" -maxdepth 1 -type f -name '*.safetensors' | wc -l)" -ge "$${EXPECTED}"
     rm -rf "$${MODEL_DIR}.incoming"
     mkdir -p "$${MODEL_DIR}.incoming"
     # Copy the complete snapshot with links dereferenced, but do not remove the
     # current model tree until the full copy has succeeded.
     cp -rL "$${SNAPSHOT}"/. "$${MODEL_DIR}.incoming/"
     test -f "$${MODEL_DIR}.incoming/config.json"
-    test "$$(find "$${MODEL_DIR}.incoming" -maxdepth 1 -name '*.safetensors' | wc -l)" -ge "$${EXPECTED}"
+    test "$$(find "$${MODEL_DIR}.incoming" -maxdepth 1 -type f -name '*.safetensors' | wc -l)" -ge "$${EXPECTED}"
     find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
     cp -rL "$${MODEL_DIR}.incoming"/. "$${MODEL_DIR}/"
     rm -rf "$${MODEL_DIR}.incoming"
     cd "$${MODEL_DIR}"
     echo "[validate] Checking for $${EXPECTED} shards…"
-    COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
-    echo "[validate] Found $${COUNT} shard(s)"
+    COUNT="$$(find . -maxdepth 1 -type f -name '*.safetensors' | wc -l)"
+    echo "[validate] Found $${COUNT} regular shard(s)"
     if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
       echo "[FATAL] Expected $${EXPECTED} shards, got $${COUNT}. Aborting."
       exit 1
