@@ -1,0 +1,20 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app tailscale-up-golink
+  namespace: flux-system
+spec:
+  targetNamespace: tailscale-up
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: tailscale-up-lobby
+  path: ./kubernetes/apps/base/tailscale-up/golink
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
