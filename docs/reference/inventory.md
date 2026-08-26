@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 126 |
+| `ottawa` | 4 | 61 | 127 |
 | `robbinsdale` | 3 | 44 | 87 |
 | `stpetersburg` | 3 | 40 | 79 |
-| **total** | **10** | **145** | **292** |
+| **total** | **10** | **145** | **293** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -88,7 +88,7 @@ diagram in the [README](../../README.md#architecture).
 | Networking, ingress and identity | `tailscale` | `tailscale-csi-provider`, `tailscale-operator`, `tailscale-operator-resources` |
 | Networking, ingress and identity | `tailscale-examples` | `tailscale-examples-sandbox`, `tailscale-service-repro` |
 | Networking, ingress and identity | `tailscale-system` | `tailscale-system-app` |
-| Networking, ingress and identity | `tailscale-up` | `tailscale-up-lobby`, `tailscale-up-tsflow` |
+| Networking, ingress and identity | `tailscale-up` | `tailscale-up-golink`, `tailscale-up-lobby`, `tailscale-up-tsflow` |
 | Storage and data services | `cnpg-system` | `cnpg-system` |
 | Storage and data services | `csi-addons` | `csi-addons`, `csi-addons-config` |
 | Storage and data services | `csi-driver-smb` | `csi-driver-smb` → ns `kube-system` |
