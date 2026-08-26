@@ -61,9 +61,10 @@ data:
       find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
     fi
 
-    # Clean stale lock files from previous force-killed downloads
+    # Clean stale lock files from previous force-killed downloads. The HF
+    # downloader also locks files directly under the local-dir cache root.
     echo "[download] Cleaning stale lock files…"
-    rm -rf "$${MODEL_DIR}"/.cache/huggingface/download/*.lock 2>/dev/null || true
+    find "$${MODEL_DIR}/.cache/huggingface" -type f -name '*.lock' -delete 2>/dev/null || true
 
     echo "[download] Starting model download with hf CLI ($${HF_REPO}@$${HF_REVISION})…"
     hf download "$${HF_REPO}" --revision "$${HF_REVISION}" --local-dir "$${MODEL_DIR}" 2>&1
