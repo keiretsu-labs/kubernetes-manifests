@@ -61,27 +61,20 @@ data:
       find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
     fi
 
-    # Clean stale lock files from previous force-killed downloads. The HF
-    # downloader also locks files directly under the local-dir cache root.
-    echo "[download] Cleaning stale lock files…"
-    find "$${MODEL_DIR}/.cache/huggingface" -type f -name '*.lock' -delete 2>/dev/null || true
-
-    echo "[download] Starting model download with hf CLI ($${HF_REPO}@$${HF_REVISION})…"
-    hf download "$${HF_REPO}" --revision "$${HF_REVISION}" --local-dir "$${MODEL_DIR}" 2>&1
-
+    # Use the content-addressed HF cache rather than --local-dir, whose
+    # interrupted metadata writes can leave a persistent .gitignore lock.
+    echo "[download] Starting snapshot download ($${HF_REPO}@$${HF_REVISION})…"
+    SNAPSHOT="$$(python3 -c 'import os,sys; from huggingface_hub import snapshot_download; print(snapshot_download(repo_id=sys.argv[1], revision=sys.argv[2], cache_dir="/models/hf-cache"))' "$${HF_REPO}" "$${HF_REVISION}")"
+    test -d "$${SNAPSHOT}"
+    find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+    cp -a "$${SNAPSHOT}"/. "$${MODEL_DIR}/"
+    cd "$${MODEL_DIR}"
     echo "[validate] Checking for $${EXPECTED} shards…"
     COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
     echo "[validate] Found $${COUNT} shard(s)"
-
     if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
-      echo "[ERROR] Expected $${EXPECTED} shards, got $${COUNT}. Redownloading…"
-      find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-      hf download "$${HF_REPO}" --revision "$${HF_REVISION}" --local-dir "$${MODEL_DIR}" 2>&1
-      COUNT="$$(find . -maxdepth 1 -name '*.safetensors' | wc -l)"
-      if [ "$${COUNT}" -lt "$${EXPECTED}" ]; then
-        echo "[FATAL] Still only $${COUNT} shards after retry. Aborting."
-        exit 1
-      fi
+      echo "[FATAL] Expected $${EXPECTED} shards, got $${COUNT}. Aborting."
+      exit 1
     fi
 
     printf '%s\n' "$${EXPECTED_MARKER}" > "$${MODEL_MARKER}"
