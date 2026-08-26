@@ -68,7 +68,9 @@ data:
     test -d "$${SNAPSHOT}"
     rm -rf "$${MODEL_DIR}.incoming"
     mkdir -p "$${MODEL_DIR}.incoming"
-    cp -a "$${SNAPSHOT}"/. "$${MODEL_DIR}.incoming/"
+    # Dereference HF snapshot symlinks: copying links alone leaves
+    # /models/dsv4/config.json and weights pointing back into the cache tree.
+    cp -aL "$${SNAPSHOT}"/. "$${MODEL_DIR}.incoming/"
     test -f "$${MODEL_DIR}.incoming/config.json"
     test "$$(find "$${MODEL_DIR}.incoming" -maxdepth 1 -name '*.safetensors' | wc -l)" -ge "$${EXPECTED}"
     find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
