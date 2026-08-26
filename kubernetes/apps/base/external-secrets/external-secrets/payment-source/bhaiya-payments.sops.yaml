@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: bhaiya-payments
+    namespace: external-secrets
+type: Opaque
+stringData:
+    BHAIYA_PAYMENTS_IDENTITY_KEY: ENC[AES256_GCM,data:QJlGDftysvKhKnJnZdXvF53ONwNjvLg5ZHp8/NPTp6hvs8gxXIPfkutCrO4+XBuuABuXdYtxa3BK9I1PJ+JJ4w==,iv:Z6lpEF6OpvfTLp6e87r3b+jrx8cRhr7ELdDnsriCtPQ=,tag:89XoXBjm5JRh0312Jkfpjw==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-08-26T17:06:16Z"
+    mac: ENC[AES256_GCM,data:obI/iN7c8nh7bJM0Ptm5HQAnGxOAJDsLDAoNk2bkLBKp+efcH/jXg/jDack4ZmbaZHLycoKwait+5PnAqoYSi2ayKkhEG07+oy8gu2BQ9AMicqmQ+XxckSBUCj4zfbn+CIgk3aVPE+qksOojjekEVFf1RDNZLjZtM0vp5W+CWuk=,iv:amTrIn24l29BAmaV4wrWsCsil59LDPKMWA4gNQDYIJs=,tag:c4iMzEhwEYKNICTqb8YzAg==,type:str]
+    pgp:
+        - created_at: "2026-08-26T17:06:15Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveAQ/+NrDnQ7MZbwTjygP7BJ6RIkrHUkSvzMw37BZmcuGjd8ke
+            Dq7TfP2tvthrVG0UFXbGA6/ElSHZLlF6bulf7cLEaQPXyBn65qNYGVpruxoTeSZZ
+            O+mcySKqJ0b2EF0WPmD74ClMiOVe2WT/G+y+PSZAsKKZCl+dF2DnhFWolLUBMfLu
+            CYysLmLTIR6G9lqAuHuU8MgI9x1As9kkfaMqTMEEItkl7ObK874IMyJ1m9JdeLtB
+            XU413oxTGzaObCzS0THSL4RQEQb9E8iNciPHt9wsqAJDeqhiQOWQvmjrlYM+8qQc
+            OA+C9sgQAOf83bjJr6qnK1LWSLK/uMvqHxP6XvjpX6tLzAV2s8R4Vh989m8V4kAd
+            QmYUnh+2A7Mo39zbikgWJ4+8C7gFxIYsifR/TbtDnbnbBbxOYuu/11O8iLF2otNH
+            CU6p8hS3KlLDfbuPa4yN/PzttYHtM1Ij8YbLwopYM+hF6oNypzHXfawl8wnkrubu
+            KtgMMazndQynlCHbG3NQgfv6eWu5Ug/gzdSn+ueic3lKdnojQcvysYn9mGhnPzHd
+            +oUPre2eJ17Fxl1xJomA3cpI+TjXaL/jHXo+tckg4yBJbNVVim2g0zWY6IHGAcf+
+            s0gG0vJoguq5teQRROgMBlTtLNRIIApypE+b0SsGBs/RmnMtCsQYFjzOhzuQ4VLS
+            XgE/pKekoe8BWM8W/ddl4/i6SfIsgqYvke6pBrALbuaq3CCDtdxMh7ZjllKdm2sa
+            Xt04LhyaQEbrQ1wlFZh9gCfYvXRUMNJ0C/BpceLWWeuOD/f31Bc4nhBO07ryqPE=
+            =/6IS
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.3

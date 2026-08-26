@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./external-secrets.yaml
+  - ../../base/external-secrets/external-secrets/payment-source

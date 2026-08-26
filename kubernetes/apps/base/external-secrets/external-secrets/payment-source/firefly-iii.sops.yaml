@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: firefly-iii
+    namespace: external-secrets
+type: Opaque
+stringData:
+    FIREFLY_SOURCE_ACCOUNT_ID: ENC[AES256_GCM,data:uQ==,iv:PwtN6ExGHkbkzzU8j9+duYqWyzUY3B9G0x/WbKov1Q8=,tag:7Yem4Xge93JlWccc9NSRTg==,type:str]
+    FIREFLY_DESTINATION_ACCOUNT_ID: ENC[AES256_GCM,data:WQ==,iv:phQcQ2JmP3abZyxN1TMR8JL4JKKj0Lf67PVahh7o2Qo=,tag:BvE8DbUyBdTDPpZHJpsgQw==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-08-26T17:06:28Z"
+    mac: ENC[AES256_GCM,data:K2l+p/s9nRsuv8vX3jd4ltQRtPiQ7N8Dd62GVuydNvgInnWjHM+kky4HlOtWUQDw+xUp2A7zCK/8aX91jFpOS79kvjPewWnSi9l4jiOwJzDkg/2DuMbRrky/TJ9UCS6VPRT9B7baSIJLOStBeQBlcBSn6smI+oagnqgU3wVmqNg=,iv:Dj7eIm02Q4YwGwcvjkZCB3vcSnphkcrQbImKPTVA/Tc=,tag:NHA7WqjRBOXjbrRHx4HmeQ==,type:str]
+    pgp:
+        - created_at: "2026-08-26T17:06:28Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveARAAl6Xv7ItQz7L2gXUZ42xVyGw4fAp+XFJSfE2pNaeEwq/A
+            Z5qIeyOh1ElhWNlnceIko6g/jE4t7O91/AN7uK9IfJ8psVxGfs1Tp9+0MQ0kFcv2
+            TqZI8WCf5q55qCye/DtX0divTfl8kxuu+6Hgi6+PRL2eJcao9WCqov1FqWn52sAB
+            4qHOoz7FlIt68KROiQ2TvBvSbK8IJ2ky8sbUkMUSyq940YH3HrXx12Dji7YWFwVE
+            Mmd6mIFCE3dw0bWO7jpx3ZG6QFK+b3Bf20ub3kGlwKvJXNK2QcU47wiXLNHvVkvb
+            YLC01oCuiudQSRSDYs/I6CDyGmyJgACXYceWuNzxW1rBDCaIQJNYMMrKT/M7OO8k
+            OocTOk0tJKpUABpYoILlo6Hcf8qvqYxCLdUO242/PPxtR4OBjRDmgWbIJg15YIMJ
+            CjGzoLadMS04NUJyXoDvNca1sRdl6S/TjLqMH7VlISW6AoMYopm9S/331Devv31p
+            tjJ2Ek8RGVBwosD7z9oT44Visd6WXS2vbAgDkYo5zYdvPXivUn0aVC/myveYKue8
+            TOt6mwMvm1+LyKlo/MxgQZVIh19yi0e8mkTk+1+s9+Uu8EuG1sSjaPCDmKvdf1xN
+            G/XW9a7cwc5/Ktaw0XZe6MDsU3GzMrgWVTpg7oWSSCD58ouvrY+05xZ0bzH463jS
+            XAEJuepdNBvFoGaiv9CgUgLLJch6i4TZwZQ5mlYVysG9SmiwJhXTmLShUcsKfDs9
+            n4Uui3T1GNtyHV1LDX8IhYOfjRvbL3AoNfRfLVD5ZWinqDP1GbCSgkoCb1RJ
+            =gepM
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.3
