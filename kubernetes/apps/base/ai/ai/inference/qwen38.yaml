@@ -165,7 +165,7 @@ spec:
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             # The draft model is resident alongside the 76-GiB target weights;
-            # leave enough static-pool headroom for the hybrid state cache.
+            # reserve enough static-pool budget for the hybrid state cache.
             exec python3 -m sglang.launch_server \
               --model-path /models/qwen38 \
               --served-model-name Qwen3.8-Flash-Next-NVFP4 \
@@ -178,9 +178,9 @@ spec:
               --mamba-radix-cache-strategy extra_buffer \
               --mamba-track-interval 64 \
               --mamba-full-memory-ratio 0.3 \
-              --mem-fraction-static 0.86 \
+              --mem-fraction-static 0.90 \
               --chunked-prefill-size 1024 \
-              --max-running-requests 16 \
+              --max-running-requests 8 \
               --context-length 1048576 \
               --speculative-algorithm NEXTN \
               --speculative-num-steps 2 \
@@ -344,9 +344,9 @@ spec:
               --mamba-radix-cache-strategy extra_buffer \
               --mamba-track-interval 64 \
               --mamba-full-memory-ratio 0.3 \
-              --mem-fraction-static 0.86 \
+              --mem-fraction-static 0.90 \
               --chunked-prefill-size 1024 \
-              --max-running-requests 16 \
+              --max-running-requests 8 \
               --context-length 1048576 \
               --speculative-algorithm NEXTN \
               --speculative-num-steps 2 \
