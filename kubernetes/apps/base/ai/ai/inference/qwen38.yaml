@@ -1,0 +1,470 @@
+# SPDX-FileCopyrightText: © 2026 Raj Singh <raj@keiretsu.cloud>
+# SPDX-License-Identifier: MIT
+#
+# Qwen3.8-Flash-Next-NVFP4 on 2× DGX Spark — SGLang TP=2.
+#
+# The model and serving recipe are from:
+# https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks
+# Target checkpoint: RadixArk/Qwen3.8-Flash-Next-NVFP4@7b719225
+# Target recipe: f87d586e (SM121 QSA fallback + NVFP4 KV patches)
+# The custom image is built by qwen38-build.yaml from the target's exact patch
+# sources and is pinned to a digest after the first successful build.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qwen38-download-script
+  namespace: ai
+data:
+  download-and-validate.sh: |
+    #!/bin/bash
+    set -euo pipefail
+    MODEL_DIR="$${MODEL_DIR:-/models/qwen38}"
+    HF_REPO="$${HF_REPO:-RadixArk/Qwen3.8-Flash-Next-NVFP4}"
+    HF_REVISION="$${HF_REVISION:-7b719225242aacd3dbd3f9407468c2ee9a9d2594}"
+    MODEL_MARKER="$${MODEL_DIR}/.model-revision"
+    EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
+    EXPECTED_SHARDS=206
+
+    mkdir -p "$${MODEL_DIR}"
+    COUNT="$$(find "$${MODEL_DIR}" -maxdepth 1 -name '*.safetensors' | wc -l)"
+    CURRENT_MARKER="$$(cat "$${MODEL_MARKER}" 2>/dev/null || true)"
+    if [ "$${COUNT}" -eq "$${EXPECTED_SHARDS}" ] && [ "$${CURRENT_MARKER}" = "$${EXPECTED_MARKER}" ] \
+      && [ -f "$${MODEL_DIR}/config.json" ] \
+      && [ -f "$${MODEL_DIR}/model.safetensors.index.json" ]; then
+      echo "[download] All $${EXPECTED_SHARDS} safetensor files already present — skipping download."
+      echo "[validate] Model validation OK ($${COUNT}/$${EXPECTED_SHARDS})"
+      exit 0
+    fi
+
+    if [ "$${CURRENT_MARKER}" != "$${EXPECTED_MARKER}" ]; then
+      echo "[download] Model revision changed ($${CURRENT_MARKER:-unmarked} -> $${EXPECTED_MARKER}); clearing old weights."
+      find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+      mkdir -p "$${MODEL_DIR}"
+    fi
+
+    echo "[download] Downloading $${HF_REPO}@$${HF_REVISION} (~135 GB)…"
+    python3 - "$${MODEL_DIR}" "$${HF_REPO}" "$${HF_REVISION}" <<'PY'
+    import os
+    import sys
+
+    from huggingface_hub import snapshot_download
+
+    path, repo, revision = sys.argv[1:]
+    snapshot_download(
+        repo_id=repo,
+        revision=revision,
+        local_dir=path,
+        token=os.environ.get("HUGGING_FACE_HUB_TOKEN") or None,
+        max_workers=8,
+    )
+    PY
+
+    COUNT="$$(find "$${MODEL_DIR}" -maxdepth 1 -name '*.safetensors' | wc -l)"
+    if [ "$${COUNT}" -ne "$${EXPECTED_SHARDS}" ]; then
+      echo "[FATAL] Expected $${EXPECTED_SHARDS} safetensor files, got $${COUNT}."
+      exit 1
+    fi
+    test -f "$${MODEL_DIR}/config.json"
+    test -f "$${MODEL_DIR}/model.safetensors.index.json"
+    printf '%s\n' "$${EXPECTED_MARKER}" > "$${MODEL_MARKER}"
+    echo "[validate] Model validation OK ($${COUNT}/$${EXPECTED_SHARDS})"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qwen38-head-models
+  namespace: ai
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 200Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qwen38-worker-models
+  namespace: ai
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 200Gi
+---
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: qwen38
+  namespace: ai
+  labels:
+    app: qwen38
+spec:
+  replicas: 1
+  startupPolicy: LeaderCreated
+  leaderWorkerTemplate:
+    size: 2
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          app: qwen38
+          role: head
+      spec:
+        terminationGracePeriodSeconds: 120
+        hostNetwork: true
+        hostIPC: true
+        dnsPolicy: ClusterFirstWithHostNet
+        enableServiceLinks: false
+        nodeSelector:
+          kubernetes.io/hostname: spark-0
+        initContainers:
+        - name: drop-caches
+          image: busybox:1.38
+          command: [sh, -c, "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"]
+          securityContext:
+            privileged: true
+          resources:
+            requests: { memory: "64Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+        - name: download-models
+          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark:20260827-f87d586e
+          command: [/bin/bash]
+          args: [/scripts/download-and-validate.sh]
+          env:
+          - { name: MODEL_DIR, value: "/models/qwen38" }
+          - { name: HF_REPO, value: "RadixArk/Qwen3.8-Flash-Next-NVFP4" }
+          - { name: HF_REVISION, value: "7b719225242aacd3dbd3f9407468c2ee9a9d2594" }
+          - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
+          - { name: HF_HOME, value: "/models/huggingface" }
+          - { name: HF_HUB_OFFLINE, value: "0" }
+          - { name: TRANSFORMERS_OFFLINE, value: "0" }
+          volumeMounts:
+          - { name: models, mountPath: /models }
+          - { name: download-script, mountPath: /scripts }
+          resources:
+            requests: { memory: "4Gi", cpu: "2000m" }
+            limits: { memory: "8Gi", cpu: "4000m" }
+        containers:
+        - name: drop-caches-loop
+          image: busybox:1.38
+          command: [sh, -c, "while true; do sleep 15; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true; done"]
+          securityContext:
+            privileged: true
+          resources:
+            requests: { memory: "64Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+        - name: sglang
+          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark:20260827-f87d586e
+          command: [bash, -c]
+          args:
+          - |
+            set -e
+            echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            exec python3 -m sglang.launch_server \
+              --model-path /models/qwen38 \
+              --served-model-name Qwen3.8-Flash-Next-NVFP4 \
+              --trust-remote-code \
+              --tp-size 2 \
+              --quantization modelopt_fp4 \
+              --attention-backend flashinfer \
+              --page-size 64 \
+              --mamba-ssm-dtype bfloat16 \
+              --mamba-radix-cache-strategy extra_buffer \
+              --mamba-track-interval 64 \
+              --mamba-full-memory-ratio 0.3 \
+              --mem-fraction-static 0.82 \
+              --chunked-prefill-size 1024 \
+              --max-running-requests 28 \
+              --context-length 1048576 \
+              --speculative-algorithm NEXTN \
+              --speculative-num-steps 3 \
+              --speculative-eagle-topk 1 \
+              --speculative-num-draft-tokens 4 \
+              --reasoning-parser auto \
+              --tool-call-parser auto \
+              --enable-metrics \
+              --enable-cache-report \
+              --disable-prefill-cuda-graph \
+              --host 0.0.0.0 \
+              --port 8000 \
+              --kv-cache-dtype nvfp4 \
+              --json-model-override-args '{"text_config":{"rope_scaling":{"rope_type":"yarn","factor":4.0,"original_max_position_embeddings":262144},"max_position_embeddings":1048576}}' \
+              --max-prefill-tokens 2048 \
+              --cuda-graph-bs-decode 1 2 3 4 5 6 7 8 10 12 14 16 \
+              --nnodes 2 \
+              --node-rank 0 \
+              --dist-init-addr 192.168.74.1:26400
+          ports:
+          - { containerPort: 8000, name: http, protocol: TCP }
+          env:
+          - { name: SGLANG_HOST_IP, value: "192.168.74.1" }
+          - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
+          - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
+          - { name: TP_SOCKET_IFNAME, value: "eth2" }
+          - { name: NCCL_IB_HCA, value: "mlx5_1" }
+          - { name: NCCL_IB_GID_INDEX, value: "3" }
+          - { name: NCCL_IB_DISABLE, value: "0" }
+          - { name: NCCL_IB_ROCE_VERSION_NUM, value: "2" }
+          - { name: NCCL_NET, value: "IB" }
+          - { name: NCCL_NET_PLUGIN, value: "none" }
+          - { name: NCCL_NVLS_ENABLE, value: "0" }
+          - { name: NCCL_CUMEM_ENABLE, value: "0" }
+          - { name: NCCL_CROSS_NIC, value: "0" }
+          - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
+          - { name: NCCL_DEBUG, value: "WARN" }
+          - { name: TORCH_CUDA_ARCH_LIST, value: "12.1a" }
+          - { name: FLASHINFER_CUDA_ARCH_LIST, value: "12.1a" }
+          - { name: HF_HOME, value: "/models/huggingface" }
+          - { name: HF_HUB_OFFLINE, value: "1" }
+          - { name: TRANSFORMERS_OFFLINE, value: "1" }
+          - { name: TRITON_CACHE_DIR, value: "/models/triton-cache" }
+          - { name: FLASHINFER_CACHE_DIR, value: "/models/flashinfer-cache" }
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["IPC_LOCK", "SYS_RESOURCE"]
+          resources:
+            requests: { memory: "94Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "96Gi", cpu: "12000m", nvidia.com/gpu: "1" }
+          volumeMounts:
+          - { name: models, mountPath: /models }
+          - { name: shm, mountPath: /dev/shm }
+          - { name: infiniband, mountPath: /dev/infiniband }
+          - { name: sys-ib, mountPath: /sys/class/infiniband }
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 180
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 15
+            timeoutSeconds: 10
+        volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 32Gi
+        - name: infiniband
+          hostPath: { path: /dev/infiniband, type: Directory }
+        - name: sys-ib
+          hostPath: { path: /sys/class/infiniband, type: Directory }
+        - name: models
+          persistentVolumeClaim: { claimName: qwen38-head-models }
+        - name: download-script
+          configMap:
+            name: qwen38-download-script
+    workerTemplate:
+      metadata:
+        labels:
+          app: qwen38
+          role: worker
+      spec:
+        terminationGracePeriodSeconds: 120
+        hostNetwork: true
+        hostIPC: true
+        dnsPolicy: ClusterFirstWithHostNet
+        enableServiceLinks: false
+        nodeSelector:
+          kubernetes.io/hostname: spark-1
+        initContainers:
+        - name: drop-caches
+          image: busybox:1.38
+          command: [sh, -c, "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"]
+          securityContext:
+            privileged: true
+          resources:
+            requests: { memory: "64Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+        - name: download-models
+          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark:20260827-f87d586e
+          command: [/bin/bash]
+          args: [/scripts/download-and-validate.sh]
+          env:
+          - { name: MODEL_DIR, value: "/models/qwen38" }
+          - { name: HF_REPO, value: "RadixArk/Qwen3.8-Flash-Next-NVFP4" }
+          - { name: HF_REVISION, value: "7b719225242aacd3dbd3f9407468c2ee9a9d2594" }
+          - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
+          - { name: HF_HOME, value: "/models/huggingface" }
+          - { name: HF_HUB_OFFLINE, value: "0" }
+          - { name: TRANSFORMERS_OFFLINE, value: "0" }
+          volumeMounts:
+          - { name: models, mountPath: /models }
+          - { name: download-script, mountPath: /scripts }
+          resources:
+            requests: { memory: "4Gi", cpu: "2000m" }
+            limits: { memory: "8Gi", cpu: "4000m" }
+        containers:
+        - name: drop-caches-loop
+          image: busybox:1.38
+          command: [sh, -c, "while true; do sleep 15; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true; done"]
+          securityContext:
+            privileged: true
+          resources:
+            requests: { memory: "64Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+        - name: sglang
+          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark:20260827-f87d586e
+          command: [bash, -c]
+          args:
+          - |
+            set -e
+            echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            exec python3 -m sglang.launch_server \
+              --model-path /models/qwen38 \
+              --served-model-name Qwen3.8-Flash-Next-NVFP4 \
+              --trust-remote-code \
+              --tp-size 2 \
+              --quantization modelopt_fp4 \
+              --attention-backend flashinfer \
+              --page-size 64 \
+              --mamba-ssm-dtype bfloat16 \
+              --mamba-radix-cache-strategy extra_buffer \
+              --mamba-track-interval 64 \
+              --mamba-full-memory-ratio 0.3 \
+              --mem-fraction-static 0.82 \
+              --chunked-prefill-size 1024 \
+              --max-running-requests 28 \
+              --context-length 1048576 \
+              --speculative-algorithm NEXTN \
+              --speculative-num-steps 3 \
+              --speculative-eagle-topk 1 \
+              --speculative-num-draft-tokens 4 \
+              --reasoning-parser auto \
+              --tool-call-parser auto \
+              --enable-metrics \
+              --enable-cache-report \
+              --disable-prefill-cuda-graph \
+              --host 0.0.0.0 \
+              --port 8000 \
+              --kv-cache-dtype nvfp4 \
+              --json-model-override-args '{"text_config":{"rope_scaling":{"rope_type":"yarn","factor":4.0,"original_max_position_embeddings":262144},"max_position_embeddings":1048576}}' \
+              --max-prefill-tokens 2048 \
+              --cuda-graph-bs-decode 1 2 3 4 5 6 7 8 10 12 14 16 \
+              --nnodes 2 \
+              --node-rank 1 \
+              --dist-init-addr 192.168.74.1:26400
+          env:
+          - { name: SGLANG_HOST_IP, value: "192.168.74.2" }
+          - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
+          - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
+          - { name: TP_SOCKET_IFNAME, value: "eth2" }
+          - { name: NCCL_IB_HCA, value: "mlx5_1" }
+          - { name: NCCL_IB_GID_INDEX, value: "3" }
+          - { name: NCCL_IB_DISABLE, value: "0" }
+          - { name: NCCL_IB_ROCE_VERSION_NUM, value: "2" }
+          - { name: NCCL_NET, value: "IB" }
+          - { name: NCCL_NET_PLUGIN, value: "none" }
+          - { name: NCCL_NVLS_ENABLE, value: "0" }
+          - { name: NCCL_CUMEM_ENABLE, value: "0" }
+          - { name: NCCL_CROSS_NIC, value: "0" }
+          - { name: NCCL_IGNORE_CPU_AFFINITY, value: "1" }
+          - { name: NCCL_DEBUG, value: "WARN" }
+          - { name: TORCH_CUDA_ARCH_LIST, value: "12.1a" }
+          - { name: FLASHINFER_CUDA_ARCH_LIST, value: "12.1a" }
+          - { name: HF_HOME, value: "/models/huggingface" }
+          - { name: HF_HUB_OFFLINE, value: "1" }
+          - { name: TRANSFORMERS_OFFLINE, value: "1" }
+          - { name: TRITON_CACHE_DIR, value: "/models/triton-cache" }
+          - { name: FLASHINFER_CACHE_DIR, value: "/models/flashinfer-cache" }
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["IPC_LOCK", "SYS_RESOURCE"]
+          resources:
+            requests: { memory: "94Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "96Gi", cpu: "12000m", nvidia.com/gpu: "1" }
+          volumeMounts:
+          - { name: models, mountPath: /models }
+          - { name: shm, mountPath: /dev/shm }
+          - { name: infiniband, mountPath: /dev/infiniband }
+          - { name: sys-ib, mountPath: /sys/class/infiniband }
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 180
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 15
+            timeoutSeconds: 10
+        volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 32Gi
+        - name: infiniband
+          hostPath: { path: /dev/infiniband, type: Directory }
+        - name: sys-ib
+          hostPath: { path: /sys/class/infiniband, type: Directory }
+        - name: models
+          persistentVolumeClaim: { claimName: qwen38-worker-models }
+        - name: download-script
+          configMap:
+            name: qwen38-download-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qwen38
+  namespace: ai
+  labels:
+    app: qwen38
+spec:
+  selector:
+    app: qwen38
+    role: head
+  ports:
+  - { name: http, port: 8000, protocol: TCP, targetPort: http }
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: qwen38
+  namespace: ai
+  labels:
+    app: qwen38
+    release: kube-prometheus-stack
+spec:
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+    metricRelabelings:
+    - action: replace
+      replacement: talos-stpetersburg
+      targetLabel: cluster
+  selector:
+    matchLabels:
+      app: qwen38
+  namespaceSelector:
+    matchNames:
+    - ai

@@ -30,13 +30,13 @@ Anthropic-compatible APIs.
   configs override CLIProxy's generic compatibility user agent because the
   upstream gateways reject that agent while accepting the Bhaiya-specific
   identifier.
-- OpenAI-compatible provider `vllm` points at the St. Petersburg DeepSeek V4
-  vLLM service through `Service/stpetersburg-vllm-upstream`. Startup discovery
+- OpenAI-compatible provider `vllm` points at the St. Petersburg Qwen3.8
+  inference service through `Service/stpetersburg-vllm-upstream`. Startup discovery
   exposes its live catalog under the `vllm/` prefix. The stable
-  `vllm/DeepSeek-V4-Flash` client alias maps to the upstream
-  `deepseek-v4-flash` model. If the upstream catalog is unavailable, CLIProxy
-  omits that dead route rather than blocking startup; clients use the available
-  Codex subscription model instead.
+  `vllm/Qwen3.8-Flash-Next` client alias maps to the upstream
+  `Qwen3.8-Flash-Next-NVFP4` model. If the upstream catalog is unavailable,
+  CLIProxy omits that dead route rather than blocking startup; clients use the
+  available Codex subscription model instead.
 - `codex-subscription/vllm-fallback` is the GitOps-owned fallback model. It
   maps to the live `gpt-5.6-luna` Codex subscription model and remains
   available whether or not the DeepSeek vLLM endpoint is healthy.

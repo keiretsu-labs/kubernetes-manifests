@@ -246,9 +246,8 @@ spec:
               import urllib.request
 
               # This external Service is the supported in-cluster route to the
-              # tailnet endpoint. Do not advertise a vLLM model during a DSV4
-              # rollout: it cannot accept requests, while the Codex
-              # subscription remains the available fallback provider.
+              # tailnet endpoint. If the St. Petersburg model is unavailable,
+              # omit this provider while the Codex subscription remains available.
               upstream = "http://stpetersburg-vllm-upstream/v1"
               try:
                   with urllib.request.urlopen(upstream + "/models", timeout=5) as response:
@@ -278,6 +277,8 @@ spec:
                       lines.append("      - name: " + json.dumps(model))
                       if model == "deepseek-v4-flash" and "DeepSeek-V4-Flash" not in seen:
                           lines.append('        alias: "DeepSeek-V4-Flash"')
+                      if model == "Qwen3.8-Flash-Next-NVFP4" and "Qwen3.8-Flash-Next" not in seen:
+                          lines.append('        alias: "Qwen3.8-Flash-Next"')
                   pathlib.Path("/provider/vllm.yaml").write_text(
                       "\n".join(lines) + "\n", encoding="utf-8"
                   )

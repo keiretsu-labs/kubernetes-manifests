@@ -124,7 +124,8 @@ metadata:
   namespace: ai
   labels: { app: dsv4 }
 spec:
-  replicas: 1
+  # Cold rollback only: qwen38 owns both DGX Spark GPUs now.
+  replicas: 0
   startupPolicy: LeaderCreated
   leaderWorkerTemplate:
     size: 2

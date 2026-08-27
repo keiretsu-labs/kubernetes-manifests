@@ -1,0 +1,113 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qwen38-build-context
+  namespace: ai
+data:
+  Dockerfile: |
+    # Qwen3.8-Flash-Next SM121 image, built from the target recipe's pinned patches.
+    FROM lmsysorg/sglang:qwen38flashnext@sha256:14ed582518584c5c830206b5318a2c2769e68229c3422e48a28b952b3a888bd4
+
+    COPY qsa_fa_fallback.py /sgl-workspace/sglang/python/sglang/srt/layers/attention/qsa_fa_fallback.py
+    COPY qsa_nvfp4_kv.py /sgl-workspace/sglang/python/sglang/srt/layers/attention/qsa_nvfp4_kv.py
+    COPY apply_nvfp4_patches.py /tmp/apply_nvfp4_patches.py
+    RUN python3 - <<'PYEOF'
+    from pathlib import Path
+
+    path = Path("/sgl-workspace/sglang/python/sglang/srt/layers/attention/qwen_sparse_attn_backend.py")
+    text = path.read_text()
+    anchor = "    try:\n        from flash_attn import flash_attn_varlen_func"
+    patch = (
+        "    from sglang.srt.utils import is_sm100_supported\n"
+        "    if not is_sm100_supported():\n"
+        "        from sglang.srt.layers.attention.qsa_fa_fallback import triton_varlen_attn_func\n"
+        "        return triton_varlen_attn_func\n"
+    ) + anchor
+    if "qsa_fa_fallback" in text:
+        raise SystemExit("qwen_sparse_attn_backend.py is already patched")
+    if anchor not in text:
+        raise SystemExit("qwen_sparse_attn_backend.py anchor not found")
+    path.write_text(text.replace(anchor, patch, 1))
+    print("qwen_sparse_attn_backend.py patched for SM121")
+    PYEOF
+    RUN python3 /tmp/apply_nvfp4_patches.py && rm -f /tmp/apply_nvfp4_patches.py
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: qwen38-dspark-builder
+  namespace: ai
+  labels:
+    app: qwen38-dspark-builder
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: qwen38-dspark-builder
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        kubernetes.io/hostname: orin-0
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      initContainers:
+      - name: extract-patches
+        image: alpine/git:latest
+        command: [/bin/sh, -c]
+        args:
+        - |
+          set -eu
+          git init -q /workspace/recipe
+          git -C /workspace/recipe remote add origin https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks.git
+          git -C /workspace/recipe fetch -q --depth 1 origin f87d586e269df171089a879ee33a5356c0570e70
+          git -C /workspace/recipe checkout -q --detach FETCH_HEAD
+          awk '/cat > .*\/qsa_fa_fallback.py.*QSA_EOF/{on=1;next} /^QSA_EOF/{exit} on' \
+            /workspace/recipe/start.sh > /workspace/qsa_fa_fallback.py
+          awk '/cat > .*\/qsa_nvfp4_kv.py.*NVP4_EOF/{on=1;next} /^NVP4_EOF/{exit} on' \
+            /workspace/recipe/start.sh > /workspace/qsa_nvfp4_kv.py
+          awk '/cat > .*\/apply_nvfp4_patches.py.*APPLY_EOF/{on=1;next} /^APPLY_EOF/{exit} on' \
+            /workspace/recipe/start.sh > /workspace/apply_nvfp4_patches.py
+          cp /input/Dockerfile /workspace/Dockerfile
+          echo '4546423216fbf51f1763753c0865c0fb9eff670db566e83987268918a86b993a  /workspace/qsa_fa_fallback.py' | sha256sum -c -
+          echo '3aa1139774f2de8a345d59da0ac85e5e8cd47896fc618c7db298939506686580  /workspace/qsa_nvfp4_kv.py' | sha256sum -c -
+          echo '128ff089a4e10452a0d9d77b086060e58853e877849d2c2a2d61808506c47548  /workspace/apply_nvfp4_patches.py' | sha256sum -c -
+          test -s /workspace/Dockerfile
+          rm -rf /workspace/recipe
+        volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+        - name: build-context
+          mountPath: /input
+      containers:
+      - name: kaniko
+        image: gcr.io/kaniko-project/executor:latest
+        args:
+        - --dockerfile=/workspace/Dockerfile
+        - --context=dir:///workspace
+        - --destination=ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark:20260827-f87d586e
+        - --cache=false
+        - --skip-tls-verify
+        - --insecure
+        - --verbosity=info
+        - --push-retry=3
+        volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+        - name: docker-config
+          mountPath: /kaniko/.docker
+      volumes:
+      - name: workspace
+        emptyDir: {}
+      - name: build-context
+        configMap:
+          name: qwen38-build-context
+      - name: docker-config
+        secret:
+          secretName: ghcr-push-secret
+          items:
+          - key: .dockerconfigjson
+            path: config.json

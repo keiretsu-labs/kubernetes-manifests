@@ -1260,22 +1260,24 @@ St. Petersburg runs `home-assistant` as its own namespace instead.
 
 ### `ai` namespace — inference on the DGX Sparks (St. Petersburg)
 
-**`LeaderWorkerSet dsv4`** — replicas 1, size 2. The leader is pinned to
-`spark-0` and the worker to `spark-1`. It serves DeepSeek V4 Flash under vLLM,
-NVFP4 quantized, with `--tensor-parallel-size 2 --pipeline-parallel-size 1`, so
-**one model spans both machines** and the two halves talk over the
-`192.168.74.0/30` RDMA rail (`VLLM_HOST_IP` / `MASTER_ADDR` are the RDMA
-addresses, not the LAN ones). Served aliases: `deepseek-v4-flash`,
-`deepseek-v4-flash-0731`, `deepseek-v4-flash-dspark`,
-`vllm/deepseek-v4-flash`. Head and worker have separate model PVCs, and a
-drop-caches loop keeps page cache from starving the GPU allocation.
+**`LeaderWorkerSet qwen38`** — replicas 1, size 2. The leader is pinned to
+`spark-0` and the worker to `spark-1`. It serves
+`RadixArk/Qwen3.8-Flash-Next-NVFP4` under SGLang, with TP=2, NEXTN speculative
+decoding, NVFP4 KV, and a 1M-token YaRN context, so **one model spans both
+machines**. The ranks talk over the `192.168.74.0/30` RDMA rail
+(`SGLANG_HOST_IP` and `--dist-init-addr` are the RDMA addresses, not the LAN
+ones). The served model is `Qwen3.8-Flash-Next-NVFP4`; the `vllm` provider also
+offers the `Qwen3.8-Flash-Next` alias. Head and worker have separate 200Gi
+model PVCs, and a drop-caches loop keeps unified memory available. The custom
+ARM64 image carries the target repository's pinned SM121 QSA fallback and
+NVFP4-KV patches.
 
-**`Deployment vllm`** — replicas 0, a standby Qwen3.6-27B image with modelopt
-quantization, 200k context and dflash speculative decoding.
+**`LeaderWorkerSet dsv4` and `Deployment vllm`** — both are retained at
+replicas 0 as cold rollback artifacts. They do not claim the DGX Spark GPUs.
 
 Two different things watch it, at two different paths. `ScrapeConfig vllm`
-scrapes `dsv4.ai.svc.cluster.local:8000` at **`/metrics`** every 15s — that is
-where vLLM's own counters come from. The blackbox `Probe app-vllm` is the one
+scrapes `qwen38.ai.svc.cluster.local:8000` at **`/metrics`** every 15s — that is
+where SGLang's own counters come from. The blackbox `Probe app-vllm` is the one
 that hits `/health` **and** `/v1/models`, because a served-model list proves the
 weights actually loaded, which `/health` alone does not.
 `HUGGING_FACE_HUB_TOKEN` comes from a SOPS-encrypted secret.
@@ -1307,7 +1309,8 @@ Consumers reach it as `stpetersburg-vllm.keiretsu.ts.net`; `hermes` and
 Companions:
 
 - `rdma-shared-dp` — exposes the spark-to-spark RDMA devices to pods
-- `lws-system` — the LeaderWorkerSet controller that `dsv4` depends on
+- `lws-system` — the LeaderWorkerSet controller that `qwen38` and the rollback
+  `dsv4` resource depend on
 - `k8s-gpu-dra-driver` — DRA-based GPU allocation, Ottawa
 - `kata-containers` — RuntimeClasses `kata-clh`, `kata-workspace`,
   `kata-tailscale` (Ottawa). `kata-tailscale` is the only one with the Talos

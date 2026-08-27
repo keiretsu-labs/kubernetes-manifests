@@ -1,5 +1,5 @@
 # vLLM Deployment for DGX Spark (GB10/ARM/Blackwell) — OPTIMIZED DATA-PARALLEL
-# Model: AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS + DFlash speculative decoding
+# Legacy standalone Qwen3.6 deployment, retained at replicas: 0 as a rollback artifact.
 # Image: ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4 (ARM64/SBSA, patched vLLM)
 # Reference: https://github.com/AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-DFlash
 #
@@ -22,8 +22,8 @@ metadata:
     app: vllm
 spec:
   serviceName: vllm-headless
-  # Scaled to 0: both DGX Spark GPUs are now claimed by the DeepSeek-V4-Flash TP=2
-  # instance (dsv4.yaml). Kept in-repo for rollback — set back to 2 to restore Qwen.
+  # Scaled to 0: both DGX Spark GPUs are claimed by the Qwen3.8-Flash-Next TP=2
+  # instance (qwen38.yaml). Kept in-repo for rollback only.
   replicas: 0
   podManagementPolicy: Parallel
   selector:
@@ -221,7 +221,7 @@ spec:
     port: 8000
     targetPort: http
 ---
-# Cluster-internal Service — round-robins across both replicas
+# Cluster-internal compatibility Service for the active qwen38 head.
 apiVersion: v1
 kind: Service
 metadata:
@@ -237,7 +237,8 @@ spec:
     protocol: TCP
     targetPort: http
   selector:
-    app: vllm
+    app: qwen38
+    role: head
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -287,5 +288,5 @@ spec:
     protocol: TCP
     targetPort: 8000
   selector:
-    app: dsv4
+    app: qwen38
     role: head

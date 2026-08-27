@@ -11,7 +11,26 @@
 - **CUDA**: Requires CUDA 13.0+
 - **OS**: Talos Linux v1.12.2
 
-## Current Setup: llama.cpp (Q4 GGUF)
+## Active Setup: SGLang Qwen3.8-Flash-Next
+
+**Model**: `RadixArk/Qwen3.8-Flash-Next-NVFP4` (176B total / ~6B active,
+~135GB, NVFP4 MoE)
+**Image**: `ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark` (ARM64/SM121,
+derived from `lmsysorg/sglang:qwen38flashnext` with the target recipe's QSA
+fallback and NVFP4-KV patches)
+**Deployment**: `qwen38.yaml`, a two-member LeaderWorkerSet pinned to
+`spark-0` and `spark-1`, with SGLang TP=2 over the RDMA rail.
+**Serving profile**: 1M-token YaRN context, NVFP4 KV cache, and NEXTN
+speculative decoding (3 steps / top-k 1 / 4 draft tokens).
+**Endpoint**: `stpetersburg-vllm` (port 80 → 8000), also exposed internally as
+the `qwen38` Service.
+
+The source recipe and patch provenance are pinned in the manifests to
+[`MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks`](https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks).
+The build Job extracts and verifies the three patch files before pushing the
+serving image.
+
+## Other inference notes: llama.cpp (Q4 GGUF)
 
 **Model**: `unsloth/Qwen3-Coder-Next-GGUF` (UD-Q4_K_XL, ~46GB)
 **Image**: `ghcr.io/ardge-labs/llama-cpp-dgx-spark:server`
@@ -32,13 +51,13 @@
 ### Sampling (per Unsloth docs)
 - `--temp 1.0`, `--top-p 0.95`, `--top-k 40`, `--min-p 0.01`
 
-## Previous Setup: vLLM (DFlash) — currently disabled (replicas: 0)
+## Retained rollback: vLLM (DFlash) — currently disabled (replicas: 0)
 
 **Model**: `AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS` (~90GB)
 **Image**: `ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4`
 **Decode**: speculative decoding via DFlash (15 draft tokens)
-**Status**: `replicas: 0` — both DGX Spark GPUs are claimed by the DeepSeek-V4-Flash
-TP=2 instance (`dsv4.yaml`). Kept in-repo for rollback.
+**Status**: `replicas: 0` — both DGX Spark GPUs are claimed by the Qwen3.8
+TP=2 instance (`qwen38.yaml`). Kept in-repo for rollback.
 
 Config lives in `vllm.yaml` but the StatefulSet is scaled to zero.
 
@@ -52,7 +71,7 @@ Config lives in `vllm.yaml` but the StatefulSet is scaled to zero.
 - `MMProcessor` cache on `/dev/shm` (`--mm-processor-cache-type shm`)
 - `VLLM_CPU_KV_TRANSFER_CHUNK_SIZE=16`, `VLLM_BLOCK_SIZE=32` — CPU/KV cache tuning
 
-## Comparison: vLLM (DFlash, disabled) vs llama.cpp (Q4, active)
+## Historical comparison: vLLM (DFlash) vs llama.cpp (Q4)
 
 | | vLLM DFlash (disabled) | llama.cpp Q4 (active) |
 |---|---|---|
