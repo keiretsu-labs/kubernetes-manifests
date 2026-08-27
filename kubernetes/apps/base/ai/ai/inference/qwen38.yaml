@@ -130,7 +130,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark@sha256:ff1c8f59069a965958065d158d61f56f794618b0ed9b5fd67dcb6f96a82bdbf9
+          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark@sha256:f7d9612320d6c3b4dd3b4d8018fc8edaf759e8d0d4a991ffb54dad44911272d9
           command: [/bin/bash]
           args: [/scripts/download-and-validate.sh]
           env:
@@ -157,7 +157,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: sglang
-          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark@sha256:ff1c8f59069a965958065d158d61f56f794618b0ed9b5fd67dcb6f96a82bdbf9
+          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark@sha256:f7d9612320d6c3b4dd3b4d8018fc8edaf759e8d0d4a991ffb54dad44911272d9
           command: [bash, -c]
           args:
           - |
@@ -300,7 +300,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark@sha256:ff1c8f59069a965958065d158d61f56f794618b0ed9b5fd67dcb6f96a82bdbf9
+          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark@sha256:f7d9612320d6c3b4dd3b4d8018fc8edaf759e8d0d4a991ffb54dad44911272d9
           command: [/bin/bash]
           args: [/scripts/download-and-validate.sh]
           env:
@@ -327,7 +327,7 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: sglang
-          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark@sha256:ff1c8f59069a965958065d158d61f56f794618b0ed9b5fd67dcb6f96a82bdbf9
+          image: ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark@sha256:f7d9612320d6c3b4dd3b4d8018fc8edaf759e8d0d4a991ffb54dad44911272d9
           command: [bash, -c]
           args:
           - |
