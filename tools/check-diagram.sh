@@ -135,6 +135,16 @@ for entry in "${SOURCES[@]}"; do
 import re, sys
 src = open(sys.argv[1], encoding="utf-8").read()
 label = sys.argv[2]
+
+def hash_starts_comment(s, k):
+    # DOT honours '#' as a comment only where a cpp directive could sit —
+    # first non-blank on the line. Mid-line it is ordinary label text.
+    j = k - 1
+    while j >= 0 and s[j] != "\n":
+        if not s[j].isspace(): return False
+        j -= 1
+    return True
+
 i, n, out, depth, brack, quotes = 0, len(src), [], 0, 0, 0
 while i < n:
     c = src[i]
@@ -147,7 +157,23 @@ while i < n:
             i += 1
         out.append(' ')
         continue
-    if src.startswith("//", i) or src.startswith("#", i):
+    if c == '<':
+        # HTML-like label. Its body is markup, not DOT, so '#', brackets and
+        # quotes inside carry no structural meaning. Tags nest, so match on
+        # angle-bracket depth rather than the first '>'.
+        d = 0
+        while i < n:
+            if src[i] == '<': d += 1
+            elif src[i] == '>':
+                d -= 1
+                if d == 0: i += 1; break
+            i += 1
+        if d:
+            print(f"SYNTAX    {label}: unclosed HTML-like label")
+            sys.exit(1)
+        out.append(' ')
+        continue
+    if src.startswith("//", i) or (c == '#' and hash_starts_comment(src, i)):
         j = src.find("\n", i); i = n if j < 0 else j; continue
     if src.startswith("/*", i):
         j = src.find("*/", i + 2); i = n if j < 0 else j + 2; continue
