@@ -1,4 +1,0 @@
-resources:
-  - ./bhaiya-payments.sops.yaml
-  - ./stripe-payments.sops.yaml
-  - ./firefly-iii.sops.yaml
