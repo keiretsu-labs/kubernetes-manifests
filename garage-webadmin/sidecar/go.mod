@@ -3,7 +3,7 @@ module garage-webadmin-sidecar
 go 1.24
 
 require (
-	github.com/aws/aws-sdk-go-v2/config v1.32.39
-	github.com/aws/aws-sdk-go-v2/credentials v1.19.38
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.107.4
+	github.com/aws/aws-sdk-go-v2/config v1.32.40
+	github.com/aws/aws-sdk-go-v2/credentials v1.19.39
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.108.0
 )
