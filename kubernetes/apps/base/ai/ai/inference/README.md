@@ -21,16 +21,24 @@ fallback and NVFP4-KV patches)
 **Deployment**: `qwen38.yaml`, a two-member LeaderWorkerSet pinned to
 `spark-0` and `spark-1`, with SGLang TP=2 over the RDMA rail.
 **Serving profile**: 1M-token YaRN context, NVFP4 KV cache, and NEXTN
-speculative decoding (3 steps / top-k 1 / 4 draft tokens).
+speculative decoding (2 steps / top-k 1 / 2 draft tokens).
 **Endpoint**: `stpetersburg-vllm` (port 80 → 8000), also exposed internally as
 the `qwen38` Service.
+
+The OpenAI-compatible model ID is `Qwen3.8-Flash-Next-NVFP4`. CLIProxy exposes
+the stable client ID `vllm/Qwen3.8-Flash-Next` and uses the upstream ID for
+routing. The effective serving context is `1048576` tokens. Qwen's tokenizer
+enables thinking by default and accepts `low`, `medium`, and `xhigh` reasoning
+effort; SGLang uses `--reasoning-parser auto` to preserve the reasoning stream.
+The Bhaiya default is the CLIProxy alias, so clients remain on the managed
+gateway instead of dialing the DGX endpoint directly.
 
 The source recipe and patch provenance are pinned in the manifests to
 [`MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks`](https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks).
 The build Job extracts and verifies the three patch files before pushing the
 serving image.
 
-## Other inference notes: llama.cpp (Q4 GGUF)
+## Reference only: llama.cpp (Q4 GGUF)
 
 **Model**: `unsloth/Qwen3-Coder-Next-GGUF` (UD-Q4_K_XL, ~46GB)
 **Image**: `ghcr.io/ardge-labs/llama-cpp-dgx-spark:server`
@@ -153,7 +161,7 @@ Config lives at `~/.config/opencode/config.json`:
 
 Tailscale MagicDNS hostnames:
 - `stpetersburg-llama-cpp` → llama.cpp server (port 80 → 8000)
-- `stpetersburg-vllm` → vLLM server (port 80 → 8000) [currently disabled]
+- `stpetersburg-vllm` → active SGLang Qwen3.8 server (port 80 → 8000)
 
 ## References
 

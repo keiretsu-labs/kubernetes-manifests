@@ -330,7 +330,7 @@ spec:
               # declare the Tailscale-backed routes below.
               force-model-prefix: true
               # Keep a stable, GitOps-owned fallback in the Codex subscription
-              # pool while the DeepSeek route is omitted during a DSV4 outage.
+              # pool while the Qwen route is unavailable.
               oauth-model-alias:
                 codex:
                   - name: "gpt-5.6-luna"
@@ -495,6 +495,24 @@ spec:
               )
               metadata_alias_sources = {
                   "codex-subscription/vllm-fallback": "codex-subscription/gpt-5.6-luna",
+                  "vllm/Qwen3.8-Flash-Next": "vllm/Qwen3.8-Flash-Next-NVFP4",
+              }
+              # SGLang exposes the effective context length but not the model's
+              # thinking capability in /v1/models. Keep these facts explicit so
+              # the Pi catalog and Bhaiya's generated OpenCode config describe
+              # the active serving profile accurately. No output limit is
+              # asserted because the upstream does not publish one.
+              metadata_overrides = {
+                  "vllm/Qwen3.8-Flash-Next-NVFP4": {
+                      "context_window": 1048576,
+                      "name": "Qwen3.8 Flash Next (NVFP4)",
+                      "reasoning": True,
+                  },
+                  "vllm/Qwen3.8-Flash-Next": {
+                      "context_window": 1048576,
+                      "name": "Qwen3.8 Flash Next (NVFP4)",
+                      "reasoning": True,
+                  },
               }
 
               def request(method, path, token, payload=None, extra_headers=None):
@@ -739,6 +757,9 @@ spec:
                               "provider": provider,
                               "direct": direct_metadata(row),
                           }
+                  for alias, source_id in metadata_alias_sources.items():
+                      if alias in model_ids and source_id in sources:
+                          sources[alias] = sources[source_id]
                   return sources
 
               def resolve_models_dev(entries, index, source):
@@ -787,6 +808,7 @@ spec:
                       route_source = {"id": raw_id, "provider": {"id": owner}, "direct": {}}
                   metadata = resolve_models_dev(entries, index, route_source)
                   metadata.update(route_source.get("direct", {}))
+                  metadata.update(metadata_overrides.get(model_id, {}))
                   if not positive(metadata.get("context_window")):
                       return None
                   return metadata

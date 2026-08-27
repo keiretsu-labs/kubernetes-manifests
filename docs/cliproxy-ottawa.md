@@ -6,7 +6,7 @@ Anthropic-compatible APIs.
 
 ## Architecture and endpoints
 
-- Image: `eceasy/cli-proxy-api:v7.2.109`, pinned by digest in Git.
+- Image: `eceasy/cli-proxy-api:v7.2.133`, pinned by digest in Git.
 - The image and command were smoke-tested from the official amd64 OCI rootfs: port 8317 opened, `/management.html` returned 200, `/v1/models` returned 401 without the API key and 200 with it.
 - State: `cliproxy-data`, a 2 Gi `ceph-block-replicated` RWO PVC mounted at
   `/data`; OAuth files live in `/data/auth`.
@@ -37,9 +37,13 @@ Anthropic-compatible APIs.
   `Qwen3.8-Flash-Next-NVFP4` model. If the upstream catalog is unavailable,
   CLIProxy omits that dead route rather than blocking startup; clients use the
   available Codex subscription model instead.
+- The Pi metadata synchronizer resolves both Qwen client IDs to the canonical
+  upstream entry, records the effective `1048576`-token context and reasoning
+  support, and leaves the output limit unknown because SGLang does not publish
+  one in its model catalog.
 - `codex-subscription/vllm-fallback` is the GitOps-owned fallback model. It
   maps to the live `gpt-5.6-luna` Codex subscription model and remains
-  available whether or not the DeepSeek vLLM endpoint is healthy.
+  available whether or not the St. Petersburg Qwen endpoint is healthy.
 - `force-model-prefix` is enabled and every route owns its client-visible
   prefix: `codex-subscription/<model>` for the logged-in Codex subscription,
   `anthropic-subscription/<model>` for the logged-in Claude subscription,
