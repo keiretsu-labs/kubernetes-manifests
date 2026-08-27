@@ -164,6 +164,8 @@ spec:
             set -e
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            # The draft model is resident alongside the 76-GiB target weights;
+            # leave enough static-pool headroom for the hybrid state cache.
             exec python3 -m sglang.launch_server \
               --model-path /models/qwen38 \
               --served-model-name Qwen3.8-Flash-Next-NVFP4 \
@@ -176,14 +178,14 @@ spec:
               --mamba-radix-cache-strategy extra_buffer \
               --mamba-track-interval 64 \
               --mamba-full-memory-ratio 0.3 \
-              --mem-fraction-static 0.82 \
+              --mem-fraction-static 0.86 \
               --chunked-prefill-size 1024 \
-              --max-running-requests 28 \
+              --max-running-requests 16 \
               --context-length 1048576 \
               --speculative-algorithm NEXTN \
-              --speculative-num-steps 3 \
+              --speculative-num-steps 2 \
               --speculative-eagle-topk 1 \
-              --speculative-num-draft-tokens 4 \
+              --speculative-num-draft-tokens 2 \
               --reasoning-parser auto \
               --tool-call-parser auto \
               --enable-metrics \
@@ -329,6 +331,7 @@ spec:
             set -e
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
+            # Keep the worker's memory profile identical to the head rank.
             exec python3 -m sglang.launch_server \
               --model-path /models/qwen38 \
               --served-model-name Qwen3.8-Flash-Next-NVFP4 \
@@ -341,14 +344,14 @@ spec:
               --mamba-radix-cache-strategy extra_buffer \
               --mamba-track-interval 64 \
               --mamba-full-memory-ratio 0.3 \
-              --mem-fraction-static 0.82 \
+              --mem-fraction-static 0.86 \
               --chunked-prefill-size 1024 \
-              --max-running-requests 28 \
+              --max-running-requests 16 \
               --context-length 1048576 \
               --speculative-algorithm NEXTN \
-              --speculative-num-steps 3 \
+              --speculative-num-steps 2 \
               --speculative-eagle-topk 1 \
-              --speculative-num-draft-tokens 4 \
+              --speculative-num-draft-tokens 2 \
               --reasoning-parser auto \
               --tool-call-parser auto \
               --enable-metrics \
