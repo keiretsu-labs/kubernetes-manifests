@@ -166,6 +166,8 @@ spec:
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             # The draft model is resident alongside the 76-GiB target weights;
             # reserve enough static-pool budget for the hybrid state cache.
+            # FlashInfer autotune reaches the SM121 FA4 CuTe path, which
+            # currently fails compilation with a weak-congruence error.
             exec python3 -m sglang.launch_server \
               --model-path /models/qwen38 \
               --served-model-name Qwen3.8-Flash-Next-NVFP4 \
@@ -173,6 +175,7 @@ spec:
               --tp-size 2 \
               --quantization modelopt_fp4 \
               --attention-backend flashinfer \
+              --disable-flashinfer-autotune \
               --page-size 64 \
               --mamba-ssm-dtype bfloat16 \
               --mamba-radix-cache-strategy extra_buffer \
@@ -332,6 +335,7 @@ spec:
             echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             # Keep the worker's memory profile identical to the head rank.
+            # The SM121 FA4 CuTe autotune warmup is not usable in this image.
             exec python3 -m sglang.launch_server \
               --model-path /models/qwen38 \
               --served-model-name Qwen3.8-Flash-Next-NVFP4 \
@@ -339,6 +343,7 @@ spec:
               --tp-size 2 \
               --quantization modelopt_fp4 \
               --attention-backend flashinfer \
+              --disable-flashinfer-autotune \
               --page-size 64 \
               --mamba-ssm-dtype bfloat16 \
               --mamba-radix-cache-strategy extra_buffer \
@@ -401,27 +406,9 @@ spec:
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
           - { name: sys-ib, mountPath: /sys/class/infiniband }
-          startupProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 30
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 180
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: http
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 5
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: http
-            periodSeconds: 15
-            timeoutSeconds: 10
+          # The node-rank 1 process is headless and does not expose HTTP.
+          # Keep health probes on the leader only; probing this container with
+          # the leader's named port prevents the LWS group from becoming ready.
         volumes:
         - name: shm
           emptyDir:
