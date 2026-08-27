@@ -352,8 +352,12 @@ spec:
                 enable: false
                 addr: "127.0.0.1:8316"
               logging-to-file: true
-              logs-max-total-size-mb: 0
-              request-log: true
+              # Keep operational logs bounded on the dedicated PVC. Full
+              # request-body logging produced one multi-megabyte artifact per
+              # request and exhausted the 20Gi claim before the old age-based
+              # cleanup could catch up.
+              logs-max-total-size-mb: 256
+              request-log: false
               usage-statistics-enabled: false
               ws-auth: true
               routing:
@@ -508,12 +512,15 @@ spec:
                       "name": "Qwen3.8 Flash Next (NVFP4)",
                       "reasoning": True,
                   },
-                  "vllm/Qwen3.8-Flash-Next": {
-                      "context_window": 1048576,
-                      "name": "Qwen3.8 Flash Next (NVFP4)",
-                      "reasoning": True,
-                  },
               }
+
+              def metadata_override(model_id):
+                  # Keep alias metadata derived from its canonical route. A
+                  # future serving-model change therefore updates one facts
+                  # record plus the alias mapping, not two copies of limits.
+                  source_id = metadata_alias_sources.get(model_id, model_id)
+                  override = metadata_overrides.get(source_id)
+                  return dict(override) if override else {}
 
               def request(method, path, token, payload=None, extra_headers=None):
                   body = None if payload is None else json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
@@ -808,7 +815,7 @@ spec:
                       route_source = {"id": raw_id, "provider": {"id": owner}, "direct": {}}
                   metadata = resolve_models_dev(entries, index, route_source)
                   metadata.update(route_source.get("direct", {}))
-                  metadata.update(metadata_overrides.get(model_id, {}))
+                  metadata.update(metadata_override(model_id))
                   if not positive(metadata.get("context_window")):
                       return None
                   return metadata
@@ -1046,7 +1053,29 @@ spec:
             - |
               mkdir -p /var/lib/cliproxy/logs
 
+              max_main_log_bytes=67108864
+
+              trim_main_log() {
+                main_log=/var/lib/cliproxy/logs/main.log
+                if [ -f "$${main_log}" ] && [ "$$(wc -c < "$${main_log}")" -gt "$${max_main_log_bytes}" ]; then
+                  # Truncate in place: this needs no temporary allocation and
+                  # therefore still recovers a completely full PVC.
+                  : > "$${main_log}"
+                  echo "log-forwarder: truncated main.log above 64MiB"
+                fi
+              }
+
               cleanup_request_logs() {
+                # request-log is disabled above. Purge artifacts from the
+                # previous unbounded configuration on startup and thereafter;
+                # this is intentionally independent of age so a full claim can
+                # recover on the first new Pod.
+                find /var/lib/cliproxy/logs -maxdepth 1 -type f \
+                  \( -name 'v1-*.log' -o -name 'request-body-*.tmp' \) \
+                  -exec rm -f -- {} \;
+                find /var/lib/cliproxy/logs -maxdepth 1 -type d \
+                  -name 'request-log-parts-*' \
+                  -exec rm -rf -- {} \;
                 find /var/lib/cliproxy/logs -maxdepth 1 -type f \
                   -mmin +5760 ! -name main.log \
                   -exec rm -f -- {} \;
@@ -1055,8 +1084,10 @@ spec:
                   -exec rm -rf -- {} \;
               }
 
+              trim_main_log
               cleanup_request_logs
               while sleep 3600; do
+                trim_main_log
                 cleanup_request_logs
               done &
 

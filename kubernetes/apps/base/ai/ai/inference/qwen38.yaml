@@ -26,12 +26,49 @@ data:
     EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
     EXPECTED_SHARDS=206
 
+    # The checkpoint's tokenizer_config.json still advertises the original
+    # 262144-token window. SGLang is deliberately launched with the extended
+    # 1048576-token RoPE/context configuration below, but Transformers checks
+    # the tokenizer limit before handing a long prompt to the server. Normalize
+    # the small metadata file on every start so long Pi/OpenAI requests do not
+    # fail at 262144 while leaving the weight files untouched.
+    patch_tokenizer_context() {
+      python3 - "$${MODEL_DIR}/tokenizer_config.json" <<'PY'
+    import json
+    import os
+    import pathlib
+    import tempfile
+
+    path = pathlib.Path(__import__("sys").argv[1])
+    desired = 1048576
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if data.get("model_max_length") != desired:
+        data["model_max_length"] = desired
+        fd, temporary = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", text=True)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as output:
+                json.dump(data, output, ensure_ascii=False, indent=2)
+                output.write("\n")
+            os.replace(temporary, path)
+        except Exception:
+            try:
+                os.unlink(temporary)
+            except FileNotFoundError:
+                pass
+            raise
+        print(f"[validate] Set tokenizer model_max_length={desired}")
+    else:
+        print(f"[validate] Tokenizer model_max_length={desired}")
+    PY
+    }
+
     mkdir -p "$${MODEL_DIR}"
     COUNT="$$(find "$${MODEL_DIR}" -maxdepth 1 -name '*.safetensors' | wc -l)"
     CURRENT_MARKER="$$(cat "$${MODEL_MARKER}" 2>/dev/null || true)"
     if [ "$${COUNT}" -eq "$${EXPECTED_SHARDS}" ] && [ "$${CURRENT_MARKER}" = "$${EXPECTED_MARKER}" ] \
       && [ -f "$${MODEL_DIR}/config.json" ] \
       && [ -f "$${MODEL_DIR}/model.safetensors.index.json" ]; then
+      patch_tokenizer_context
       echo "[download] All $${EXPECTED_SHARDS} safetensor files already present — skipping download."
       echo "[validate] Model validation OK ($${COUNT}/$${EXPECTED_SHARDS})"
       exit 0
@@ -67,6 +104,7 @@ data:
     fi
     test -f "$${MODEL_DIR}/config.json"
     test -f "$${MODEL_DIR}/model.safetensors.index.json"
+    patch_tokenizer_context
     printf '%s\n' "$${EXPECTED_MARKER}" > "$${MODEL_MARKER}"
     echo "[validate] Model validation OK ($${COUNT}/$${EXPECTED_SHARDS})"
 ---
@@ -107,6 +145,8 @@ spec:
     restartPolicy: RecreateGroupOnPodRestart
     leaderTemplate:
       metadata:
+        annotations:
+          keiretsu.top/restarted-for: tokenizer-context-1048576-v1
         labels:
           app: qwen38
           role: head
@@ -277,6 +317,8 @@ spec:
             name: qwen38-download-script
     workerTemplate:
       metadata:
+        annotations:
+          keiretsu.top/restarted-for: tokenizer-context-1048576-v1
         labels:
           app: qwen38
           role: worker

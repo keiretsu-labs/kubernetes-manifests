@@ -41,6 +41,8 @@ Anthropic-compatible APIs.
   upstream entry, records the effective `1048576`-token context and reasoning
   support, and leaves the output limit unknown because SGLang does not publish
   one in its model catalog.
+- Bhaiya serializes that unknown output as `0` in the OpenCode limit object
+  because OpenCode requires both `context` and `output`.
 - `codex-subscription/vllm-fallback` is the GitOps-owned fallback model. It
   maps to the live `gpt-5.6-luna` Codex subscription model and remains
   available whether or not the St. Petersburg Qwen endpoint is healthy.
@@ -52,6 +54,10 @@ Anthropic-compatible APIs.
   service. The two OAuth prefixes live
   in native per-credential metadata, so CLIProxyAPI itself owns listing,
   request routing, and subscription pooling.
+- File logging is capped at `256MiB` and full request-body logging is disabled.
+  On startup the sidecar removes legacy request-body artifacts and truncates an
+  oversized `main.log` in place, so a full `cliproxy-logs` claim can recover
+  during the next GitOps Recreate rollout without a manual PVC edit.
 - The pinned OCI digest is `sha256:f8c2f64a…b586311b`; Ottawa currently
   schedules the amd64 image on `asuka`.
 
