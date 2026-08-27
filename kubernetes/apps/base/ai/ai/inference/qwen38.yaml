@@ -116,6 +116,8 @@ spec:
         hostIPC: true
         dnsPolicy: ClusterFirstWithHostNet
         enableServiceLinks: false
+        imagePullSecrets:
+        - name: ghcr-push-secret
         nodeSelector:
           kubernetes.io/hostname: spark-0
         initContainers:
@@ -279,6 +281,8 @@ spec:
         hostIPC: true
         dnsPolicy: ClusterFirstWithHostNet
         enableServiceLinks: false
+        imagePullSecrets:
+        - name: ghcr-push-secret
         nodeSelector:
           kubernetes.io/hostname: spark-1
         initContainers:
