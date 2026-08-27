@@ -11,8 +11,11 @@ data:
 
     COPY qsa_fa_fallback.py /sgl-workspace/sglang/python/sglang/srt/layers/attention/qsa_fa_fallback.py
     COPY qsa_nvfp4_kv.py /sgl-workspace/sglang/python/sglang/srt/layers/attention/qsa_nvfp4_kv.py
+    COPY qsa-wire.py /tmp/qsa-wire.py
     COPY apply_nvfp4_patches.py /tmp/apply_nvfp4_patches.py
-    RUN python3 - <<'PYEOF'
+    RUN python3 /tmp/qsa-wire.py && rm -f /tmp/qsa-wire.py
+    RUN python3 /tmp/apply_nvfp4_patches.py && rm -f /tmp/apply_nvfp4_patches.py
+  qsa-wire.py: |
     from pathlib import Path
 
     path = Path("/sgl-workspace/sglang/python/sglang/srt/layers/attention/qwen_sparse_attn_backend.py")
@@ -30,13 +33,11 @@ data:
         raise SystemExit("qwen_sparse_attn_backend.py anchor not found")
     path.write_text(text.replace(anchor, patch, 1))
     print("qwen_sparse_attn_backend.py patched for SM121")
-    PYEOF
-    RUN python3 /tmp/apply_nvfp4_patches.py && rm -f /tmp/apply_nvfp4_patches.py
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: qwen38-dspark-builder
+  name: qwen38-dspark-builder-v2
   namespace: ai
   labels:
     app: qwen38-dspark-builder
@@ -72,6 +73,7 @@ spec:
           awk '/cat > .*\/apply_nvfp4_patches.py.*APPLY_EOF/{on=1;next} /^APPLY_EOF/{exit} on' \
             /workspace/recipe/start.sh > /workspace/apply_nvfp4_patches.py
           cp /input/Dockerfile /workspace/Dockerfile
+          cp /input/qsa-wire.py /workspace/qsa-wire.py
           echo '4546423216fbf51f1763753c0865c0fb9eff670db566e83987268918a86b993a  /workspace/qsa_fa_fallback.py' | sha256sum -c -
           echo '3aa1139774f2de8a345d59da0ac85e5e8cd47896fc618c7db298939506686580  /workspace/qsa_nvfp4_kv.py' | sha256sum -c -
           echo '128ff089a4e10452a0d9d77b086060e58853e877849d2c2a2d61808506c47548  /workspace/apply_nvfp4_patches.py' | sha256sum -c -
@@ -88,7 +90,7 @@ spec:
         args:
         - --dockerfile=/workspace/Dockerfile
         - --context=dir:///workspace
-        - --destination=ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark:20260827-f87d586e
+        - --destination=ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark:20260827-f87d586e-sm121-fallback
         - --cache=false
         - --skip-tls-verify
         - --insecure
