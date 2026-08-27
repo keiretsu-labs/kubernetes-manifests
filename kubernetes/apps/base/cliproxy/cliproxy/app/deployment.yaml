@@ -14,6 +14,10 @@ spec:
     metadata:
       annotations:
         backup.velero.io/backup-volumes-excludes: logs
+        # Re-run the one-shot vLLM catalog discovery after the Qwen LWS became
+        # available; the previous CLIProxy pod started while that endpoint was
+        # still loading and correctly fell back to the subscription route.
+        keiretsu.top/restarted-for: qwen38-lws-available-v1
       labels:
         app.kubernetes.io/name: cliproxy
     spec:
