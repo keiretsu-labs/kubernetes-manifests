@@ -1,0 +1,56 @@
+# Payment alerts are evaluated by the per-cluster Mimir ruler. The Bhaiya
+# PrometheusAgent remote-writes these metrics but does not evaluate
+# PrometheusRule resources itself.
+namespace: bhaiya
+groups:
+  - name: bhaiya.payments
+    rules:
+      - alert: BhaiyaPaymentsUnavailable
+        expr: |
+          kube_deployment_spec_replicas{namespace="bhaiya",deployment="bhaiya-payments"} > 0
+          and
+          kube_deployment_status_replicas_available{namespace="bhaiya",deployment="bhaiya-payments"} < 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments has no available replica
+          description: The payments Deployment is configured to run but has no available replica.
+
+      - alert: BhaiyaPaymentsMetricsAbsent
+        expr: |
+          absent(up{namespace="bhaiya",service="bhaiya-payments"} == 1)
+          and on() kube_deployment_spec_replicas{namespace="bhaiya",deployment="bhaiya-payments"} > 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments metrics are absent
+          description: The payments service has not exposed a healthy scrape target for 10 minutes.
+
+      - alert: BhaiyaPaymentsWebhookFailures
+        expr: increase(bhaiya_payments_webhook_failures_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Bhaiya payments webhook failures detected
+          description: Stripe webhook processing has failed at least once in the last 15 minutes.
+
+      - alert: BhaiyaPaymentsReconciliationFailures
+        expr: increase(bhaiya_payments_reconciliation_failures_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments reconciliation failure detected
+          description: A payments reconciliation operation failed in the last 15 minutes.
+
+      - alert: BhaiyaPaymentsChargeFailures
+        expr: increase(bhaiya_payments_payment_failures_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Bhaiya payments charge failure detected
+          description: At least one payment reached a failed state in the last 15 minutes.
