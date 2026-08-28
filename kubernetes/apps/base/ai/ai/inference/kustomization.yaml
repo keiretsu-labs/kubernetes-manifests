@@ -11,6 +11,5 @@ resources:
   - dsv4-kaniko-build.yaml
   - qwen38-build.yaml
   - qwen38.yaml
-  - scrapeconfig.yaml
   - secret.yaml
   - probes.yaml

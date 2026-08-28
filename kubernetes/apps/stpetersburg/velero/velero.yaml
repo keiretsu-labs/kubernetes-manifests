@@ -46,13 +46,14 @@ spec:
                 repositoryConfigData:
                   # All kopia-maintain jobs were landing on spark-0 every cycle
                   # (default scheduler behavior, not an explicit affinity), stacking
-                  # transient limits onto the same node dsv4 runs on. agents-garage-kopia
+                  # transient limits onto a GPU inference node. agents-garage-kopia
                   # and bhaiya-garage-kopia were also stale BackupRepository objects left
                   # over from before the per-cluster S3 prefix split (2026-07-25) - neither
                   # "agents" nor "bhaiya" namespace, Schedule, or Backup exists in this
                   # cluster - so those were deleted outright rather than node-pinned.
-                  # Pin two of the three real repos to spark-1 so worst-case concurrent
-                  # maintenance splits across both GPU nodes instead of one.
+                  # Pin two of the three real repos to spark-1 so maintenance is spread
+                  # across the worker nodes instead of stacking on spark-0. qwen38 now
+                  # spans both GPUs; the namespace LimitRange bounds each job at 2Gi.
                   repositories:
                     home-assistant-garage-kopia:
                       loadAffinity:

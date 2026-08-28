@@ -1268,9 +1268,13 @@ machines**. The ranks talk over the `192.168.74.0/30` RDMA rail
 (`SGLANG_HOST_IP` and `--dist-init-addr` are the RDMA addresses, not the LAN
 ones). The served model is `Qwen3.8-Flash-Next-NVFP4`; the `vllm` provider also
 offers the `Qwen3.8-Flash-Next` alias. Head and worker have separate 200Gi
-model PVCs, and a drop-caches loop keeps unified memory available. The custom
-ARM64 image carries the target repository's pinned SM121 QSA fallback and
-NVFP4-KV patches.
+model PVCs, and a drop-caches loop keeps unified memory available. Each SGLang
+rank requests `94Gi` and is limited to `96Gi`; its memory guard is
+`--mem-fraction-static 0.90` plus `--mamba-full-memory-ratio 0.3`. NEXTN is
+limited to two steps and two draft tokens, and the effective context is
+`1048576` tokens. The custom ARM64 image carries the target repository's pinned
+SM121 QSA fallback and NVFP4-KV patches. No unrelated GPU workload should be
+scheduled on either Spark without a fresh load qualification.
 
 **`LeaderWorkerSet dsv4` and `Deployment vllm`** — both are retained at
 replicas 0 as cold rollback artifacts. They do not claim the DGX Spark GPUs.

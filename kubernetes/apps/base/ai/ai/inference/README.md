@@ -28,8 +28,9 @@ the `qwen38` Service.
 The OpenAI-compatible model ID is `Qwen3.8-Flash-Next-NVFP4`. CLIProxy exposes
 the stable client ID `vllm/Qwen3.8-Flash-Next` and uses the upstream ID for
 routing. The effective serving context is `1048576` tokens. Qwen's tokenizer
-enables thinking by default and accepts `low`, `medium`, and `xhigh` reasoning
-effort; SGLang uses `--reasoning-parser auto` to preserve the reasoning stream.
+enables thinking by default and the deployed route advertises `low`, `medium`,
+and `high` reasoning effort, with `high` as the current maximum; SGLang uses
+`--reasoning-parser auto` to preserve the reasoning stream.
 The Bhaiya default is the CLIProxy alias, so clients remain on the managed
 gateway instead of dialing the DGX endpoint directly.
 
@@ -38,7 +39,33 @@ The source recipe and patch provenance are pinned in the manifests to
 The build Job extracts and verifies the three patch files before pushing the
 serving image.
 
-## Reference only: llama.cpp (Q4 GGUF)
+### Operational guardrails
+
+- This is one TP=2 LWS group spanning both Sparks: `spark-0` is rank 0 and
+  `spark-1` is rank 1. There is no spare GPU for test workloads.
+- Each SGLang rank requests `94Gi` and is limited to `96Gi`; the model PVCs are
+  separate per rank. The cache-drop init container and bounded cache-drop loop
+  reclaim unified memory before and during serving.
+- The memory-sensitive serving settings are `--mem-fraction-static 0.90`,
+  `--mamba-full-memory-ratio 0.3`, a `1048576` context, and NEXTN with two
+  speculative steps and two draft tokens. Do not raise these ratios or place
+  unrelated GPU workloads on either Spark without a new load qualification.
+- Metrics are scraped once by the `qwen38` ServiceMonitor at 15-second
+  intervals and stored in the St. Petersburg Mimir tenant. Do not add a second
+  static ScrapeConfig for this Service; duplicate scrapes double-count counter
+  rates and waste the agent's remote-write budget.
+- The shared Grafana `SGLang Inference` dashboard is model-selector driven and
+  includes the scrape target, throughput, queue/KV headroom, latency,
+  speculative acceptance, and DCGM Spark GPU panels.
+- The model-download init step normalizes the checkpoint tokenizer metadata from
+  its source `262144` value to `1048576` on each start. This is metadata-only;
+  it prevents long prompts from being rejected by the tokenizer before SGLang's
+  configured extended context is used and does not increase the GPU allocation.
+- Velero's bounded repository-maintenance jobs are deliberately spread across
+  the two worker nodes; they have a `2Gi` memory ceiling and must not be
+  changed to unbounded batch workloads.
+
+## Historical alternative: llama.cpp (not deployed)
 
 **Model**: `unsloth/Qwen3-Coder-Next-GGUF` (UD-Q4_K_XL, ~46GB)
 **Image**: `ghcr.io/ardge-labs/llama-cpp-dgx-spark:server`
@@ -79,9 +106,9 @@ Config lives in `vllm.yaml` but the StatefulSet is scaled to zero.
 - `MMProcessor` cache on `/dev/shm` (`--mm-processor-cache-type shm`)
 - `VLLM_CPU_KV_TRANSFER_CHUNK_SIZE=16`, `VLLM_BLOCK_SIZE=32` — CPU/KV cache tuning
 
-## Historical comparison: vLLM (DFlash) vs llama.cpp (Q4)
+## Historical comparison: retired alternatives
 
-| | vLLM DFlash (disabled) | llama.cpp Q4 (active) |
+| | vLLM DFlash (disabled) | llama.cpp Q4 (not deployed) |
 |---|---|---|
 | Model | Qwen3.6-27B NVFP4-MTP-XS | Qwen3-Coder-Next UD-Q4_K_XL |
 | Model size | ~90GB | ~46GB |
@@ -90,7 +117,7 @@ Config lives in `vllm.yaml` but the StatefulSet is scaled to zero.
 | Context | 200K | 131K |
 | Parallel requests | 64/replica | 1 |
 | Tool calling | Native auto-tool-choice | Jinja templates |
-| Status | `replicas: 0` (disabled) | Active |
+| Status | `replicas: 0` (disabled) | No current manifest |
 | Speculative decode | DFlash (15 tokens) | None |
 
 ## Quantization Options for DGX Spark
@@ -136,22 +163,25 @@ Config lives in `vllm.yaml` but the StatefulSet is scaled to zero.
 
 ## OpenCode Configuration
 
-Config lives at `~/.config/opencode/config.json`:
+For Bhaiya-managed workspaces, the generated config lives at
+`~/.config/opencode/config.json` and stays on the CLIProxy route:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "llama-cpp/Qwen3-Coder-Next",
+  "model": "cliproxy/vllm/Qwen3.8-Flash-Next",
   "provider": {
-    "llama-cpp": {
+    "cliproxy": {
       "npm": "@ai-sdk/openai-compatible",
       "options": {
-        "baseURL": "http://stpetersburg-llama-cpp/v1"
+        "baseURL": "http://cliproxy.cliproxy.svc.cluster.local:8317/v1",
+        "apiKey": "{env:OPENAI_API_KEY}"
       },
       "models": {
-        "Qwen3-Coder-Next": {
-          "name": "Qwen3-Coder-Next",
-          "limit": { "context": 131072, "output": 16384 }
+        "vllm/Qwen3.8-Flash-Next": {
+          "name": "vllm/Qwen3.8-Flash-Next",
+          "reasoning": true,
+          "limit": { "context": 1048576, "output": 0 }
         }
       }
     }
@@ -160,8 +190,9 @@ Config lives at `~/.config/opencode/config.json`:
 ```
 
 Tailscale MagicDNS hostnames:
-- `stpetersburg-llama-cpp` → llama.cpp server (port 80 → 8000)
 - `stpetersburg-vllm` → active SGLang Qwen3.8 server (port 80 → 8000)
+- There is no current `stpetersburg-llama-cpp` Service; the llama.cpp route
+  described above is historical reference material only.
 
 ## References
 
