@@ -25,5 +25,6 @@ configMapGenerator:
       - rules/k8gb.yaml
       - rules/media.yaml
       - rules/monitoring.yaml
+      - rules/payments.yaml
       - rules/smartctl.yaml
       - rules/zot.yaml
