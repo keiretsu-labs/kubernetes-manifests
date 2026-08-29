@@ -6,7 +6,13 @@
 #
 # Covers the control plane, the MCP and SSH edges, payments, CNPG, and the
 # OpenCost cost pipeline.
-namespace: bhaiya
+#
+# The Mimir rule namespace below must be unique across every file listed in
+# loader-job.yaml: mimirtool rejects the whole sync with "repeated namespace
+# attempted to be loaded" if two files declare the same one, which takes down
+# rule syncing for all tenants, not just this file. rules/payments.yaml
+# already owns "bhaiya", so the fleet rules use "bhaiya-fleet".
+namespace: bhaiya-fleet
 groups:
 - name: bhaiya.fleet.availability
   rules:
