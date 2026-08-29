@@ -225,11 +225,11 @@ spec:
           - --max-model-len
           - "1000000"
           # The published recipe uses 0.87, but Spark's Kubernetes CUDA
-          # runtime reserves about 28Gi on each 128Gi UMA device. vLLM's
-          # CUDA-graph estimate consumes another 0.0238 of utilization, so
-          # 0.765 leaves startup headroom while retaining KV-cache blocks.
+          # runtime reserves about 28Gi on each 128Gi UMA device. Rank 1's
+          # free-memory preflight caps this at 0.75; disable the graph estimate
+          # so vLLM can allocate KV-cache blocks within that cap.
           - --gpu-memory-utilization
-          - "0.765"
+          - "0.75"
           - --max-num-seqs
           - "4"
           - --max-num-batched-tokens
@@ -284,7 +284,7 @@ spec:
           - { name: VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS, value: "1800" }
           - { name: VLLM_NO_USAGE_STATS, value: "1" }
           - { name: DO_NOT_TRACK, value: "1" }
-          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "1" }
+          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
           - { name: GLM53_SUPPRESS_STOPS_IN_REASONING, value: "1" }
           - { name: GLM53_MIXED_PREFILL_CHUNK, value: "skip" }
           - { name: EXL3_FUSED_MOE, value: "1" }
@@ -429,7 +429,7 @@ spec:
           - --max-model-len
           - "1000000"
           - --gpu-memory-utilization
-          - "0.765"
+          - "0.75"
           - --max-num-seqs
           - "4"
           - --max-num-batched-tokens
@@ -482,7 +482,7 @@ spec:
           - { name: VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS, value: "1800" }
           - { name: VLLM_NO_USAGE_STATS, value: "1" }
           - { name: DO_NOT_TRACK, value: "1" }
-          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "1" }
+          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
           - { name: GLM53_SUPPRESS_STOPS_IN_REASONING, value: "1" }
           - { name: GLM53_MIXED_PREFILL_CHUNK, value: "skip" }
           - { name: EXL3_FUSED_MOE, value: "1" }

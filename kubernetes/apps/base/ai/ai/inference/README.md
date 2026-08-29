@@ -45,14 +45,15 @@ downloaded files before vLLM starts.
   reclaim unified memory before and during serving.
 - The published image's GB10 overlay is applied in the serving container before
   vLLM starts, disabling the known `persistent_topk` SMEM path on this GPU.
-- The memory-sensitive serving settings are `--gpu-memory-utilization 0.765`
-  (vLLM's CUDA-graph estimate makes that an effective `0.7412` cache budget),
-  a `1000000` context, `--max-num-seqs 4`, `--max-num-batched-tokens 2048`, and
-  DFlash2 with seven speculative tokens. The upstream recipe's `0.87` budget
-  fails vLLM's startup preflight under the Spark Kubernetes CUDA reservation;
-  `0.765` leaves startup headroom and is the current load-qualification target.
-  Do not change these settings or place unrelated GPU workloads on either
-  Spark without a new load qualification.
+- The memory-sensitive serving settings are `--gpu-memory-utilization 0.75`
+  with `VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0`, a `1000000` context,
+  `--max-num-seqs 4`, `--max-num-batched-tokens 2048`, and DFlash2 with seven
+  speculative tokens. Rank 1's free-memory preflight caps the utilization at
+  `0.75`; the graph estimate is disabled so vLLM can allocate KV-cache blocks
+  within that cap. The upstream recipe's `0.87` budget fails the same preflight
+  under the Spark Kubernetes CUDA reservation. Do not change these settings or
+  place unrelated GPU workloads on either Spark without a new load
+  qualification.
 - Metrics are scraped once by the `glm53` ServiceMonitor at 15-second
   intervals and stored in the St. Petersburg Mimir tenant. Do not add a second
   static ScrapeConfig for this Service; duplicate scrapes double-count counter
