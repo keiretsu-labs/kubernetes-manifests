@@ -233,7 +233,9 @@ spec:
           - --max-num-seqs
           - "4"
           - --max-num-batched-tokens
-          - "2048"
+          # Keep the startup profile below the GB10's narrow post-weight
+          # headroom; this controls transient activations, not max context.
+          - "1024"
           - --enable-prefix-caching
           - --no-enable-flashinfer-autotune
           - --enforce-eager
@@ -426,7 +428,9 @@ spec:
           - --max-num-seqs
           - "4"
           - --max-num-batched-tokens
-          - "2048"
+          # Keep the startup profile below the GB10's narrow post-weight
+          # headroom; this controls transient activations, not max context.
+          - "1024"
           - --enable-prefix-caching
           - --no-enable-flashinfer-autotune
           - --enforce-eager

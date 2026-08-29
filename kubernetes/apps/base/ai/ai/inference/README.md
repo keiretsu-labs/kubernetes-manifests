@@ -47,13 +47,14 @@ downloaded files before vLLM starts.
   vLLM starts, disabling the known `persistent_topk` SMEM path on this GPU.
 - The memory-sensitive serving settings are `--gpu-memory-utilization 0.75`,
   `--enforce-eager`, and `VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0`, with a
-  `1000000` context, `--max-num-seqs 4`, `--max-num-batched-tokens 2048`, and
+  `1000000` context, `--max-num-seqs 4`, `--max-num-batched-tokens 1024`, and
   DFlash2 with seven speculative tokens. The two ranks' free-memory preflight
   caps utilization at `0.75`; eager mode leaves that budget for KV-cache
-  blocks instead of CUDA graph capture. The upstream recipe's `0.87` budget
-  fails the same preflight under the Spark Kubernetes CUDA reservation. Do not
-  change these settings or place unrelated GPU workloads on either Spark
-  without a new load qualification.
+  blocks instead of CUDA graph capture, while the 1024-token batch cap keeps
+  the post-weight activation profile inside the remaining headroom. The
+  upstream recipe's `0.87` budget fails the same preflight under the Spark
+  Kubernetes CUDA reservation. Do not change these settings or place
+  unrelated GPU workloads on either Spark without a new load qualification.
 - Metrics are scraped once by the `glm53` ServiceMonitor at 15-second
   intervals and stored in the St. Petersburg Mimir tenant. Do not add a second
   static ScrapeConfig for this Service; duplicate scrapes double-count counter
