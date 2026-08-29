@@ -33,6 +33,7 @@ spec:
             - sync
             - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
             - --id=talos-ottawa
+            - /rules/bhaiya.yaml
             - /rules/blackbox.yaml
             - /rules/buzz.yaml
             - /rules/flux.yaml
@@ -56,6 +57,7 @@ spec:
             - sync
             - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
             - --id=talos-robbinsdale
+            - /rules/bhaiya.yaml
             - /rules/blackbox.yaml
             - /rules/buzz.yaml
             - /rules/flux.yaml
@@ -75,6 +77,7 @@ spec:
             - sync
             - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
             - --id=talos-stpetersburg
+            - /rules/bhaiya.yaml
             - /rules/blackbox.yaml
             - /rules/buzz.yaml
             - /rules/flux.yaml
