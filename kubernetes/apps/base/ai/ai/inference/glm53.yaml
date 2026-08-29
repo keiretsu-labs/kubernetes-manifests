@@ -225,9 +225,9 @@ spec:
           - --max-model-len
           - "1000000"
           # The published recipe uses 0.87, but Spark's Kubernetes CUDA
-          # runtime reserves about 28Gi on each 128Gi UMA device. Rank 1's
-          # free-memory preflight caps this at 0.75; disable the graph estimate
-          # so vLLM can allocate KV-cache blocks within that cap.
+          # runtime reserves about 28Gi on each 128Gi UMA device. Both ranks
+          # are capped at 0.75 by startup preflight; eager mode leaves that
+          # scarce budget for KV-cache blocks instead of CUDA graph capture.
           - --gpu-memory-utilization
           - "0.75"
           - --max-num-seqs
@@ -236,14 +236,7 @@ spec:
           - "2048"
           - --enable-prefix-caching
           - --no-enable-flashinfer-autotune
-          - --cudagraph-capture-sizes
-          - "1"
-          - "2"
-          - "4"
-          - "8"
-          - "16"
-          - "24"
-          - "32"
+          - --enforce-eager
           - --speculative-config
           - '{"method":"dflash","model":"/models/dflash2","num_speculative_tokens":7,"kv_cache_dtype":"auto","draft_sample_method":"probabilistic","rejection_sample_method":"standard","draft_tensor_parallel_size":1}'
           - --chat-template
@@ -436,14 +429,7 @@ spec:
           - "2048"
           - --enable-prefix-caching
           - --no-enable-flashinfer-autotune
-          - --cudagraph-capture-sizes
-          - "1"
-          - "2"
-          - "4"
-          - "8"
-          - "16"
-          - "24"
-          - "32"
+          - --enforce-eager
           - --speculative-config
           - '{"method":"dflash","model":"/models/dflash2","num_speculative_tokens":7,"kv_cache_dtype":"auto","draft_sample_method":"probabilistic","rejection_sample_method":"standard","draft_tensor_parallel_size":1}'
           - --chat-template
