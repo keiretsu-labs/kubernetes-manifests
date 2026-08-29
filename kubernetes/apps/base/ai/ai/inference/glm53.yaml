@@ -190,8 +190,15 @@ spec:
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
           image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks@sha256:9bb1557a4234fce63d59599e44d10747eabd742beb337eebf9e7070be8a0fd58
-          command: [vllm, serve]
+          command: [/bin/sh, -ec]
           args:
+          - |
+            # The published image ships this GB10 overlay, but does not run
+            # it in its entrypoint. Apply it in the serving container so the
+            # persistent_topk path is disabled before vLLM imports the model.
+            python3 /opt/glm53/patch_glm_video_placeholders.py
+            exec vllm serve "$${@}"
+          - glm53-exl3
           - /models/glm53
           - --served-model-name
           - GLM-5.3-Flash-EXL3
@@ -386,8 +393,14 @@ spec:
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
           image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks@sha256:9bb1557a4234fce63d59599e44d10747eabd742beb337eebf9e7070be8a0fd58
-          command: [vllm, serve]
+          command: [/bin/sh, -ec]
           args:
+          - |
+            # Keep the published image's GB10 persistent_topk fix active on
+            # the headless rank as well as the API rank.
+            python3 /opt/glm53/patch_glm_video_placeholders.py
+            exec vllm serve "$${@}"
+          - glm53-exl3
           - /models/glm53
           - --served-model-name
           - GLM-5.3-Flash-EXL3

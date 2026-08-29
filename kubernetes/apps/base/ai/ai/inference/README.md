@@ -43,6 +43,8 @@ downloaded files before vLLM starts.
 - Each vLLM rank requests `94Gi` and is limited to `96Gi`; the model PVCs are
   separate per rank. The cache-drop init container and bounded cache-drop loop
   reclaim unified memory before and during serving.
+- The published image's GB10 overlay is applied in the serving container before
+  vLLM starts, disabling the known `persistent_topk` SMEM path on this GPU.
 - The memory-sensitive serving settings are `--gpu-memory-utilization 0.75`,
   a `1000000` context, `--max-num-seqs 4`, `--max-num-batched-tokens 2048`,
   and DFlash2 with seven speculative tokens. The upstream recipe's `0.87`
