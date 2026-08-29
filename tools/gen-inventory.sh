@@ -186,7 +186,7 @@ ROLES = [
         "default"}),
     ("Networking, ingress and identity", {
         "envoy-gateway-system", "cloudflare", "k8gb", "home", "tailscale",
-        "tailscale-system", "tailscale-examples", "tailscale-up", "auth",
+        "tailscale-system", "tailscale-examples", "auth",
         "lan", "hubble-ui", "tinyauth-egress"}),
     ("Storage and data services", {
         "rook-ceph", "csi-addons", "csi-driver-smb", "local-path-storage",

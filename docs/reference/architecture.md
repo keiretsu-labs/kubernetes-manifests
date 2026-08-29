@@ -314,17 +314,15 @@ instead of Kubernetes Secrets.
 - `rbac` and `secret` provide supporting RBAC; the per-node DaemonSet stays
   disabled.
 
-**`tailscale-examples` / `tailscale-up`:**
+**`tailscale-examples`:**
 
 - `tailscale-examples-sandbox` — the Kustomization runs in **Ottawa and
   Robbinsdale**, not Ottawa alone. What it actually renders is `tsflow`,
   `tsk9s` and a secret: `tsidp` (OIDC identity provider, hostname
-  `${LOCATION}-idp`), `golink` (short-link service), `derper`, `proxyt`,
-  `tsddns`, `egress` and `vector` are all **commented out** of its
-  `kustomization.yaml`, so their manifests are on disk and in neither cluster.
+  `${LOCATION}-idp`), `golink`, `derper`, `proxyt`, `tsddns`, `egress` and
+  `vector` are all **commented out** of its `kustomization.yaml`, so their
+  manifests are on disk and in neither cluster.
 - `tailscale-service-repro` — operator reproduction case (Ottawa)
-- `lobby` — under `tailscale-up`, Ottawa. Runs on a **separate personal
-  tailnet** and is published to the public internet through Tailscale Funnel
 
 `tempvm` is **not** part of this group — it lives in its own namespace at
 `kubernetes/apps/base/tempvm/tempvm/app/` (Ottawa), and it is not a Tailscale
