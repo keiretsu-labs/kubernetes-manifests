@@ -29,13 +29,16 @@ groups:
           description: The payments service has not exposed a healthy scrape target for 10 minutes.
 
       - alert: BhaiyaPaymentsWebhookFailures
-        expr: increase(bhaiya_payments_webhook_failures_total[15m]) > 0
+        expr: increase(bhaiya_payments_webhook_failures_total[10m]) > 0
         for: 5m
         labels:
-          severity: warning
+          severity: critical
         annotations:
-          summary: Bhaiya payments webhook failures detected
-          description: Stripe webhook processing has failed at least once in the last 15 minutes.
+          summary: Bhaiya payments webhook processing is failing
+          description: >-
+            At least one Stripe webhook failed in the last 10 minutes and
+            should be retried by Stripe. Inspect the service logs and
+            provider/accounting dependencies before acknowledging the alert.
 
       - alert: BhaiyaPaymentsReconciliationFailures
         expr: increase(bhaiya_payments_reconciliation_failures_total[15m]) > 0
@@ -43,8 +46,53 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: Bhaiya payments reconciliation failure detected
-          description: A payments reconciliation operation failed in the last 15 minutes.
+          summary: Bhaiya payments reconciliation is failing
+          description: >-
+            A payment reconciliation operation failed in the last 15 minutes.
+            Check reconciliation holds and Firefly/Stripe reachability; do not
+            manually create a second ledger entry.
+
+      - alert: BhaiyaPaymentsReconciliationQueueStalled
+        expr: |
+          increase(bhaiya_payments_reconciliation_operations_skipped_total[15m]) > 0
+            and on()
+          sum(bhaiya_payments_reconciliation_queue_depth{state=~"pending|processing|retry_scheduled"}) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments reconciliation queue is stalled
+          description: >-
+            Due reconciliation operations were skipped because the financial
+            accounting accounts are not configured. The queue is not idle;
+            configure the fee, dispute, and payout accounts and verify that
+            reconciliation resumes.
+
+      - alert: BhaiyaPaymentsReconciliationManualReviewBacklog
+        expr: bhaiya_payments_reconciliation_queue_depth{state="manual_review"} > 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Bhaiya payments has a reconciliation manual-review backlog
+          description: >-
+            Reconciliation operations have remained in manual review for 15
+            minutes. Verify the Firefly posting evidence and resolve the
+            cases before acknowledging the alert; do not create a second
+            ledger entry.
+
+      - alert: BhaiyaPaymentsReconciliationDeadLetterBacklog
+        expr: bhaiya_payments_reconciliation_queue_depth{state="dead_letter"} > 0
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments has a reconciliation dead-letter backlog
+          description: >-
+            Reconciliation operations have exhausted their retries and
+            remained in dead-letter state for 15 minutes. Inspect the
+            provider and accounting failures, then use the verified manual
+            repair workflow; do not create a second ledger entry.
 
       - alert: BhaiyaPaymentsChargeFailures
         expr: increase(bhaiya_payments_payment_failures_total[15m]) > 0
