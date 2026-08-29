@@ -28,6 +28,40 @@ groups:
           summary: Bhaiya payments metrics are absent
           description: The payments service has not exposed a healthy scrape target for 10 minutes.
 
+      - alert: BhaiyaPaymentsRolloutStalled
+        expr: |
+          kube_deployment_status_condition{
+            namespace="bhaiya",
+            deployment="bhaiya-payments",
+            condition="Progressing",
+            status="false",
+            reason="ProgressDeadlineExceeded"
+          } == 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments rollout is stalled
+          description: >-
+            Kubernetes has not observed progress for the bhaiya-payments
+            rollout within its deadline. Check image availability, required
+            ExternalSecrets, PostgreSQL connectivity, and migration logs.
+
+      - alert: BhaiyaPaymentsPDBAtRisk
+        expr: |
+          kube_poddisruptionbudget_status_current_healthy{
+            namespace="bhaiya",
+            poddisruptionbudget="bhaiya-payments"
+          } < 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments disruption budget is unavailable
+          description: >-
+            The bhaiya-payments PDB has had no healthy pod for 5 minutes;
+            voluntary disruption protection cannot preserve webhook service.
+
       - alert: BhaiyaPaymentsWebhookFailures
         expr: increase(bhaiya_payments_webhook_failures_total[10m]) > 0
         for: 5m
