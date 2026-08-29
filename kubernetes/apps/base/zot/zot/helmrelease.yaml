@@ -20,6 +20,26 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  # OCI upload UUIDs must remain on one Zot process for the POST/PATCH/PUT
+  # sequence. With S3 storage, sending a later request to the other replica can
+  # hit its zero-size upload view and make a valid client digest fail. The chart
+  # does not expose Service affinity, so retain two replicas and patch it after
+  # rendering instead of reducing availability to one replica.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Service
+              name: zot
+            patch: |
+              - op: add
+                path: /spec/sessionAffinity
+                value: ClientIP
+              - op: add
+                path: /spec/sessionAffinityConfig
+                value:
+                  clientIP:
+                    timeoutSeconds: 10800
   values:
     replicaCount: 2
     image:

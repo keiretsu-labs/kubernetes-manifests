@@ -1047,7 +1047,9 @@ Valkey has one genuine instance: searxng's local chart, storage disabled.
 
 Chart 0.1.122, zot v2.1.20, Ottawa.
 
-- 2 replicas, persistence **false** — all state in Garage S3 plus Dragonfly
+- 2 replicas, persistence **false** — all state in Garage S3 plus Dragonfly;
+  the Service uses three-hour ClientIP affinity so each resumable OCI upload
+  stays on one Zot process through its POST/PATCH/PUT sequence
 - `storageDriver: s3`, bucket `zot`, region `garage`, `forcepathstyle`
 - retention keeps the 10 most recently pushed and pulled tags, 720h windows
 - gc on (delay 1h, interval 6h); dedupe off
