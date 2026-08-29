@@ -17,7 +17,7 @@ spec:
         # Re-run the one-shot vLLM catalog discovery after the GLM LWS became
         # available; the previous CLIProxy pod started while that endpoint was
         # still loading and correctly fell back to the subscription route.
-        keiretsu.top/restarted-for: glm53-lws-available-v1
+        keiretsu.top/restarted-for: glm53-lws-available-v2
       labels:
         app.kubernetes.io/name: cliproxy
     spec:
