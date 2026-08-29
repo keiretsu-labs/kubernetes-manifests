@@ -18,6 +18,7 @@ configMapGenerator:
   # (its volume ref changes), forcing a re-sync into the Mimir ruler.
   - name: mimir-rules
     files:
+      - rules/bhaiya.yaml
       - rules/blackbox.yaml
       - rules/buzz.yaml
       - rules/flux.yaml

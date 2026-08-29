@@ -1,0 +1,263 @@
+# Bhaiya fleet alerts are evaluated by the per-cluster Mimir ruler. The
+# Bhaiya PrometheusAgent remote-writes these metrics but does not evaluate
+# PrometheusRule resources itself, so alerts shipped as PrometheusRule CRs
+# in the bhaiya namespace apply cleanly and then never fire. They live here
+# instead, alongside rules/payments.yaml which already followed this pattern.
+#
+# Covers the control plane, the MCP and SSH edges, payments, CNPG, and the
+# OpenCost cost pipeline.
+namespace: bhaiya
+groups:
+- name: bhaiya.fleet.availability
+  rules:
+  - alert: BhaiyaServiceNoReadyReplicas
+    expr: |
+      (
+        kube_deployment_spec_replicas{
+          namespace="bhaiya",
+          deployment=~"bhaiya(-mcp|-ssh|-payments)?"
+        } > 0
+      )
+      and on(namespace, deployment)
+      (
+        kube_deployment_status_replicas_ready{
+          namespace="bhaiya",
+          deployment=~"bhaiya(-mcp|-ssh|-payments)?"
+        } == 0
+      )
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya Deployment {{ $labels.deployment }} has no ready replicas
+      description: The active {{ $labels.deployment }} Deployment has desired replicas but
+        none are ready. Check the Deployment events, pod readiness probes, and the most recent
+        rollout before traffic is lost.
+  - alert: BhaiyaScrapeTargetDown
+    expr: up{namespace="bhaiya"} == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya scrape target {{ $labels.job }} is down
+      description: Prometheus has been unable to scrape {{ $labels.job }} for five minutes.
+        Inspect the ServiceMonitor target, Service endpoints, and the target pod before relying
+        on its dashboard signals.
+  - alert: BhaiyaPodCrashLooping
+    expr: |
+      max by (namespace, pod, container) (
+        kube_pod_container_status_waiting_reason{
+          namespace="bhaiya",
+          reason="CrashLoopBackOff"
+        }
+      ) > 0
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya pod {{ $labels.pod }} is crash-looping
+      description: Container {{ $labels.container }} in {{ $labels.pod }} has been in CrashLoopBackOff
+        for ten minutes. Inspect its logs and previous container termination reason, then
+        roll back or fix the failing configuration.
+  - alert: BhaiyaServiceHigh5xxRatio
+    expr: |
+      (
+        sum by (service) (
+          rate(
+            bhaiya_http_requests_total{
+              service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments",
+              code=~"5.."
+            }[10m]
+          )
+        )
+        /
+        sum by (service) (
+          rate(
+            bhaiya_http_requests_total{
+              service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments"
+            }[10m]
+          )
+        )
+      ) > 0.05
+      and on(service)
+      sum by (service) (
+        rate(
+          bhaiya_http_requests_total{
+            service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments"
+          }[10m]
+        )
+      ) > 0.1
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya service {{ $labels.service }} has a sustained 5xx ratio
+      description: More than five percent of {{ $labels.service }} requests have returned
+        5xx for ten minutes with meaningful traffic. Inspect the service logs and route-level
+        errors, then compare the current rollout with the last known good image.
+  - alert: BhaiyaServiceP99LatencyRegression
+    expr: |
+      histogram_quantile(
+        0.99,
+        sum by (service, le) (
+          rate(
+            bhaiya_http_request_duration_seconds_bucket{
+              service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments"
+            }[10m]
+          )
+        )
+      ) > 2
+      and on(service)
+      sum by (service) (
+        rate(
+          bhaiya_http_requests_total{
+            service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments"
+          }[10m]
+        )
+      ) > 0.1
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya service {{ $labels.service }} p99 latency is high
+      description: The p99 request latency for {{ $labels.service }} has stayed above two
+        seconds for fifteen minutes. Inspect the route breakdown, downstream dependencies,
+        CPU throttling, and the active rollout.
+- name: bhaiya.fleet.resources
+  rules:
+  - alert: BhaiyaContainerOOMKilled
+    expr: |
+      sum by (namespace, pod, container) (
+        increase(
+          container_oom_events_total{
+            namespace="bhaiya",
+            container!="",
+            container!="POD"
+          }[10m]
+        )
+      ) > 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya container {{ $labels.container }} was OOM-killed
+      description: '{{ $labels.container }} in {{ $labels.pod }} has recorded an OOM kill
+        in the last ten minutes. Check memory working set versus its limit, inspect the workload
+        logs, and raise the limit or fix the leak before restarting it.'
+  - alert: BhaiyaPVCNearFull
+    expr: |
+      (
+        kubelet_volume_stats_used_bytes{namespace="bhaiya"}
+        / on(namespace, persistentvolumeclaim)
+        kubelet_volume_stats_capacity_bytes{namespace="bhaiya"}
+      ) > 0.85
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya PVC {{ $labels.persistentvolumeclaim }} is near full
+      description: PVC {{ $labels.persistentvolumeclaim }} is above 85 percent used for fifteen
+        minutes. Inspect the owning workload and storage class, remove safe data or expand
+        the claim before writes fail.
+  - alert: BhaiyaNamespaceQuotaNearExhaustion
+    expr: |
+      (
+        kube_resourcequota{namespace="bhaiya", type="used"}
+        / on(namespace, resourcequota, resource)
+        kube_resourcequota{namespace="bhaiya", type="hard"}
+      ) > 0.85
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya quota {{ $labels.resource }} is near exhaustion
+      description: ResourceQuota {{ $labels.resourcequota }} is above 85 percent for {{ $labels.resource
+        }}. Identify the largest consumers and remove or resize safe workloads before namespace
+        admission is rejected.
+- name: bhaiya.postgresql
+  rules:
+  - alert: BhaiyaPostgresReplicationLag
+    expr: |
+      max by (namespace, cluster, pod) (
+        cnpg_pg_replication_lag{
+          namespace="bhaiya",
+          cluster="bhaiya-postgres"
+        }
+      ) > 60
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya PostgreSQL replica {{ $labels.pod }} is lagging
+      description: The bhaiya-postgres replica has been more than 60 seconds behind for ten
+        minutes. Check CNPG pod health, WAL/archive pressure, and node or storage latency
+        before a failover is required.
+  - alert: BhaiyaPostgresClusterDown
+    expr: |
+      (
+        min by (namespace, cluster) (
+          cnpg_collector_up{
+            namespace="bhaiya",
+            cluster="bhaiya-postgres"
+          }
+        ) == 0
+      )
+      or
+      (
+        up{
+          namespace="bhaiya",
+          job="bhaiya/bhaiya-postgres"
+        } == 0
+      )
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya PostgreSQL cluster is down
+      description: CNPG has not reported a healthy collector for bhaiya-postgres for five
+        minutes. Check the primary and replica pods, CNPG events, storage, and the PostgreSQL
+        Service before restarting anything.
+- name: bhaiya.opencost
+  rules:
+  - alert: BhaiyaOpenCostCacheStale
+    expr: |
+      (time() - bhaiya_opencost_cache_last_success_timestamp_seconds{window="24h"} > 7200)
+      or
+      (time() - bhaiya_opencost_cache_last_success_timestamp_seconds{window="7d"} > 43200)
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya OpenCost {{ $labels.window }} snapshot is stale
+      description: The latest successful OpenCost {{ $labels.window }} snapshot is older than
+        two normal refresh intervals. Bhaiya is serving stale cost data; check its refresh
+        errors and the OpenCost/Mimir path.
+  - alert: BhaiyaOpenCostRepeatedRefreshFailures
+    expr: increase(bhaiya_opencost_refresh_total{result="error"}[1h]) >= 2
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya OpenCost {{ $labels.window }} refresh is failing
+      description: At least two OpenCost refresh attempts failed in the last hour. The last
+        durable snapshot remains available to users.
+  - alert: BhaiyaOpenCostRefreshCadenceRegression
+    expr: sum(increase(bhaiya_opencost_refresh_total{result="success"}[1h])) > 4
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya is refreshing OpenCost too frequently
+      description: Bhaiya performed more than four successful OpenCost refreshes in one hour.
+        Expected failure retries are excluded; this guard detects a return to the high-frequency
+        query pattern that caused sustained Mimir and Garage reads.
+  - alert: BhaiyaOpenCostSnapshotPersistenceFailing
+    expr: increase(bhaiya_opencost_snapshot_operations_total{operation="save",result="error"}[1h])
+      > 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya cannot persist OpenCost snapshots
+      description: A successful OpenCost response could not be saved to PostgreSQL. Restarts
+        may lose the warm cache until persistence recovers.
