@@ -33,15 +33,19 @@ spec:
             - 0.0.0.0
             - --port
             - "3000"
-            - --read-only
+            # Write access is required to manage the Bhaiya chart of accounts and
+            # to correct ledger entries. Filtering is group-level only, so this
+            # is the narrowest available scope: every other group is dropped
+            # entirely, reads included. Reachable only from administrator-owned
+            # workspaces via Bhaiya's compiled MCPRequiresAdmin boundary.
+            - --groups
+            - accounts,transactions
           env:
             - name: FIREFLY_URL
               valueFrom:
                 secretKeyRef:
                   name: firefly-mcp
                   key: FIREFLY_III_URL
-            - name: MCP_READ_ONLY
-              value: "true"
           ports:
             - name: http
               containerPort: 3000
