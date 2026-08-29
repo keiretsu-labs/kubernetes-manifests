@@ -225,10 +225,11 @@ spec:
           - --max-model-len
           - "1000000"
           # The published recipe uses 0.87, but Spark's Kubernetes CUDA
-          # runtime reserves about 28Gi on each 128Gi UMA device. 0.75 is
-          # the qualified budget that clears vLLM's startup preflight.
+          # runtime reserves about 28Gi on each 128Gi UMA device. vLLM's
+          # CUDA-graph estimate consumes another 0.0238 of utilization, so
+          # 0.7738 provides the qualified 0.75 effective cache budget.
           - --gpu-memory-utilization
-          - "0.75"
+          - "0.7738"
           - --max-num-seqs
           - "4"
           - --max-num-batched-tokens
@@ -428,7 +429,7 @@ spec:
           - --max-model-len
           - "1000000"
           - --gpu-memory-utilization
-          - "0.75"
+          - "0.7738"
           - --max-num-seqs
           - "4"
           - --max-num-batched-tokens
