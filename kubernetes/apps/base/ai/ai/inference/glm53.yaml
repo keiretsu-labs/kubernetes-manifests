@@ -217,8 +217,11 @@ spec:
           - fp8
           - --max-model-len
           - "1000000"
+          # The published recipe uses 0.87, but Spark's Kubernetes CUDA
+          # runtime reserves about 28Gi on each 128Gi UMA device. 0.75 is
+          # the qualified budget that clears vLLM's startup preflight.
           - --gpu-memory-utilization
-          - "0.87"
+          - "0.75"
           - --max-num-seqs
           - "4"
           - --max-num-batched-tokens
@@ -412,7 +415,7 @@ spec:
           - --max-model-len
           - "1000000"
           - --gpu-memory-utilization
-          - "0.87"
+          - "0.75"
           - --max-num-seqs
           - "4"
           - --max-num-batched-tokens

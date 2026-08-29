@@ -43,11 +43,13 @@ downloaded files before vLLM starts.
 - Each vLLM rank requests `94Gi` and is limited to `96Gi`; the model PVCs are
   separate per rank. The cache-drop init container and bounded cache-drop loop
   reclaim unified memory before and during serving.
-- The memory-sensitive serving settings are `--gpu-memory-utilization 0.87`,
+- The memory-sensitive serving settings are `--gpu-memory-utilization 0.75`,
   a `1000000` context, `--max-num-seqs 4`, `--max-num-batched-tokens 2048`,
-  and DFlash2 with seven speculative tokens. Do not change these settings or
-  place unrelated GPU workloads on either Spark without a new load
-  qualification.
+  and DFlash2 with seven speculative tokens. The upstream recipe's `0.87`
+  budget fails vLLM's startup preflight under the Spark Kubernetes CUDA
+  reservation; `0.75` is the qualified cluster budget. Do not change these
+  settings or place unrelated GPU workloads on either Spark without a new
+  load qualification.
 - Metrics are scraped once by the `glm53` ServiceMonitor at 15-second
   intervals and stored in the St. Petersburg Mimir tenant. Do not add a second
   static ScrapeConfig for this Service; duplicate scrapes double-count counter
