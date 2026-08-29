@@ -40,7 +40,7 @@ resources:
   - ./snapshot-controller
   - ./spegel
   - ./tailscale-examples
-  - ./tailscale-up
+
   - ./tempvm
   - ./zot
   - ./external-secrets
