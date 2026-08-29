@@ -48,7 +48,7 @@ downloaded files before vLLM starts.
 - The memory-sensitive serving settings are `--gpu-memory-utilization 0.76` on
   the leader and `0.75` on the worker, plus `--enforce-eager` and
   `VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0`, with a
-  `8192` context, `--max-num-seqs 4`, `--max-num-batched-tokens 512`, and
+  `2048` context, `--max-num-seqs 4`, `--max-num-batched-tokens 512`, and
   DFlash2 with seven speculative tokens. The worker's free-memory preflight
   caps it at `0.75`; eager mode leaves the budget for KV-cache blocks instead
   of CUDA graph capture, while the 512-token batch cap keeps the post-weight

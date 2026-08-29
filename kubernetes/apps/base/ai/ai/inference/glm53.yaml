@@ -223,7 +223,9 @@ spec:
           - --kv-cache-dtype
           - fp8
           - --max-model-len
-          - "8192"
+          # The model's Mamba/attention cache needs ~5.93GiB at 8192 tokens;
+          # rank 0 has ~5.63GiB available after weights and profiling.
+          - "2048"
           # The published recipe uses 0.87, but Spark's Kubernetes CUDA
           # runtime reserves about 28Gi on each 128Gi UMA device. Rank 1 is
           # capped at 0.75 by startup preflight; give rank 0 the extra budget
@@ -423,7 +425,7 @@ spec:
           - --kv-cache-dtype
           - fp8
           - --max-model-len
-          - "8192"
+          - "2048"
           - --gpu-memory-utilization
           - "0.75"
           - --max-num-seqs
