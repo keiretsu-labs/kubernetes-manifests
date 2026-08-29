@@ -135,7 +135,10 @@ spec:
   startupPolicy: LeaderCreated
   leaderWorkerTemplate:
     size: 2
-    restartPolicy: RecreateGroupOnPodRestart
+    # The two independent 200Gi caches can take many minutes to initialize.
+    # Keep a pending member alive while the other rank retries rendezvous;
+    # once the group has started, restore whole-group restart semantics.
+    restartPolicy: RecreateGroupAfterStart
     leaderTemplate:
       metadata:
         annotations:
