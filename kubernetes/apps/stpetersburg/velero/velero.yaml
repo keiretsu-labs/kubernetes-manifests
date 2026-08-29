@@ -52,7 +52,7 @@ spec:
                   # "agents" nor "bhaiya" namespace, Schedule, or Backup exists in this
                   # cluster - so those were deleted outright rather than node-pinned.
                   # Pin two of the three real repos to spark-1 so maintenance is spread
-                  # across the worker nodes instead of stacking on spark-0. qwen38 now
+                  # across the worker nodes instead of stacking on spark-0. glm53 now
                   # spans both GPUs; the namespace LimitRange bounds each job at 2Gi.
                   repositories:
                     home-assistant-garage-kopia:

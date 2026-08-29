@@ -30,22 +30,22 @@ Anthropic-compatible APIs.
   configs override CLIProxy's generic compatibility user agent because the
   upstream gateways reject that agent while accepting the Bhaiya-specific
   identifier.
-- OpenAI-compatible provider `vllm` points at the St. Petersburg Qwen3.8
+- OpenAI-compatible provider `vllm` points at the St. Petersburg GLM-5.3
   inference service through `Service/stpetersburg-vllm-upstream`. Startup discovery
   exposes its live catalog under the `vllm/` prefix. The stable
-  `vllm/Qwen3.8-Flash-Next` client alias maps to the upstream
-  `Qwen3.8-Flash-Next-NVFP4` model. If the upstream catalog is unavailable,
+  `vllm/GLM-5.3-Flash` client alias maps to the upstream
+  `GLM-5.3-Flash-EXL3` model. If the upstream catalog is unavailable,
   CLIProxy omits that dead route rather than blocking startup; clients use the
   available Codex subscription model instead.
-- The Pi metadata synchronizer resolves both Qwen client IDs to the canonical
-  upstream entry, records the effective `1048576`-token context and reasoning
-  support, and leaves the output limit unknown because SGLang does not publish
+- The Pi metadata synchronizer resolves the GLM client alias to the canonical
+  upstream entry, records the effective `1000000`-token context and reasoning
+  support, and leaves the output limit unknown because vLLM does not publish
   one in its model catalog.
 - Bhaiya serializes that unknown output as `0` in the OpenCode limit object
   because OpenCode requires both `context` and `output`.
 - `codex-subscription/vllm-fallback` is the GitOps-owned fallback model. It
   maps to the live `gpt-5.6-luna` Codex subscription model and remains
-  available whether or not the St. Petersburg Qwen endpoint is healthy.
+  available whether or not the St. Petersburg GLM endpoint is healthy.
 - `force-model-prefix` is enabled and every route owns its client-visible
   prefix: `codex-subscription/<model>` for the logged-in Codex subscription,
   `anthropic-subscription/<model>` for the logged-in Claude subscription,

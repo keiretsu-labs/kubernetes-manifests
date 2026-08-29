@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - dashboards.yaml
   - gpu-dcgm.yaml
-  - sglang.yaml

@@ -1260,30 +1260,25 @@ St. Petersburg runs `home-assistant` as its own namespace instead.
 
 ### `ai` namespace — inference on the DGX Sparks (St. Petersburg)
 
-**`LeaderWorkerSet qwen38`** — replicas 1, size 2. The leader is pinned to
-`spark-0` and the worker to `spark-1`. It serves
-`RadixArk/Qwen3.8-Flash-Next-NVFP4` under SGLang, with TP=2, NEXTN speculative
-decoding, NVFP4 KV, and a 1M-token YaRN context, so **one model spans both
-machines**. The ranks talk over the `192.168.74.0/30` RDMA rail
-(`SGLANG_HOST_IP` and `--dist-init-addr` are the RDMA addresses, not the LAN
-ones). The served model is `Qwen3.8-Flash-Next-NVFP4`; the `vllm` provider also
-offers the `Qwen3.8-Flash-Next` alias. Head and worker have separate 200Gi
-model PVCs, and a drop-caches loop keeps unified memory available. Each SGLang
-rank requests `94Gi` and is limited to `96Gi`; its memory guard is
-`--mem-fraction-static 0.90` plus `--mamba-full-memory-ratio 0.3`. NEXTN is
-limited to two steps and two draft tokens, and the effective context is
-`1048576` tokens. The custom ARM64 image carries the target repository's pinned
-SM121 QSA fallback and NVFP4-KV patches. No unrelated GPU workload should be
+**`LeaderWorkerSet glm53`** — replicas 1, size 2. The leader is pinned to
+`spark-0` and the worker to `spark-1`. It serves the
+`Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw` checkpoint under vLLM with TP=2,
+DFlash2 k=7 speculative decoding, packed FP8 MLA KV, and a 1M-token context,
+so **one model spans both machines**. The ranks talk over the
+`192.168.74.0/30` RDMA rail (`VLLM_HOST_IP` and `--master-addr` are the RDMA
+addresses, not the LAN ones). The served model is
+`GLM-5.3-Flash-EXL3`; the `vllm` provider also offers the
+`GLM-5.3-Flash` alias. Head and worker have separate 200Gi model PVCs, and a
+drop-caches loop keeps unified memory available. Each vLLM rank requests
+`94Gi` and is limited to `96Gi`; the target image supplies the SM121 sparse-MLA
+and EXL3 runtime. The image is consumed at its pinned MiaAI-Lab arm64 digest;
+there is no in-repo serving-image build. No unrelated GPU workload should be
 scheduled on either Spark without a fresh load qualification.
 
-**`LeaderWorkerSet dsv4` and `Deployment vllm`** — both are retained at
-replicas 0 as cold rollback artifacts. They do not claim the DGX Spark GPUs.
-
-Two different things watch it, at two different paths. `ScrapeConfig vllm`
-scrapes `qwen38.ai.svc.cluster.local:8000` at **`/metrics`** every 15s — that is
-where SGLang's own counters come from. The blackbox `Probe app-vllm` is the one
-that hits `/health` **and** `/v1/models`, because a served-model list proves the
-weights actually loaded, which `/health` alone does not.
+The `glm53` ServiceMonitor scrapes the vLLM endpoint at
+`glm53.ai.svc.cluster.local:8000/metrics` every 15s. The blackbox `Probe
+app-vllm` hits `/health` **and** `/v1/models`, because a served-model list proves
+the weights actually loaded, which `/health` alone does not.
 `HUGGING_FACE_HUB_TOKEN` comes from a SOPS-encrypted secret.
 
 Consumers reach it as `stpetersburg-vllm.keiretsu.ts.net`; `hermes` and
@@ -1313,8 +1308,7 @@ Consumers reach it as `stpetersburg-vllm.keiretsu.ts.net`; `hermes` and
 Companions:
 
 - `rdma-shared-dp` — exposes the spark-to-spark RDMA devices to pods
-- `lws-system` — the LeaderWorkerSet controller that `qwen38` and the rollback
-  `dsv4` resource depend on
+- `lws-system` — the LeaderWorkerSet controller that `glm53` depends on
 - `k8s-gpu-dra-driver` — DRA-based GPU allocation, Ottawa
 - `kata-containers` — RuntimeClasses `kata-clh`, `kata-workspace`,
   `kata-tailscale` (Ottawa). `kata-tailscale` is the only one with the Talos

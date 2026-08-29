@@ -14,10 +14,10 @@ spec:
     metadata:
       annotations:
         backup.velero.io/backup-volumes-excludes: logs
-        # Re-run the one-shot vLLM catalog discovery after the Qwen LWS became
+        # Re-run the one-shot vLLM catalog discovery after the GLM LWS became
         # available; the previous CLIProxy pod started while that endpoint was
         # still loading and correctly fell back to the subscription route.
-        keiretsu.top/restarted-for: qwen38-lws-available-v1
+        keiretsu.top/restarted-for: glm53-lws-available-v1
       labels:
         app.kubernetes.io/name: cliproxy
     spec:
@@ -281,8 +281,8 @@ spec:
                       lines.append("      - name: " + json.dumps(model))
                       if model == "deepseek-v4-flash" and "DeepSeek-V4-Flash" not in seen:
                           lines.append('        alias: "DeepSeek-V4-Flash"')
-                      if model == "Qwen3.8-Flash-Next-NVFP4" and "Qwen3.8-Flash-Next" not in seen:
-                          lines.append('        alias: "Qwen3.8-Flash-Next"')
+                      if model == "GLM-5.3-Flash-EXL3" and "GLM-5.3-Flash" not in seen:
+                          lines.append('        alias: "GLM-5.3-Flash"')
                   pathlib.Path("/provider/vllm.yaml").write_text(
                       "\n".join(lines) + "\n", encoding="utf-8"
                   )
@@ -334,7 +334,7 @@ spec:
               # declare the Tailscale-backed routes below.
               force-model-prefix: true
               # Keep a stable, GitOps-owned fallback in the Codex subscription
-              # pool while the Qwen route is unavailable.
+              # pool while the GLM route is unavailable.
               oauth-model-alias:
                 codex:
                   - name: "gpt-5.6-luna"
@@ -503,17 +503,17 @@ spec:
               )
               metadata_alias_sources = {
                   "codex-subscription/vllm-fallback": "codex-subscription/gpt-5.6-luna",
-                  "vllm/Qwen3.8-Flash-Next": "vllm/Qwen3.8-Flash-Next-NVFP4",
+                  "vllm/GLM-5.3-Flash": "vllm/GLM-5.3-Flash-EXL3",
               }
-              # SGLang exposes the effective context length but not the model's
+              # vLLM exposes the model catalog but not all serving-profile
               # thinking capability in /v1/models. Keep these facts explicit so
               # the Pi catalog and Bhaiya's generated OpenCode config describe
               # the active serving profile accurately. No output limit is
               # asserted because the upstream does not publish one.
               metadata_overrides = {
-                  "vllm/Qwen3.8-Flash-Next-NVFP4": {
-                      "context_window": 1048576,
-                      "name": "Qwen3.8 Flash Next (NVFP4)",
+                  "vllm/GLM-5.3-Flash-EXL3": {
+                      "context_window": 1000000,
+                      "name": "GLM-5.3 Flash EXL3",
                       "reasoning": True,
                   },
               }
