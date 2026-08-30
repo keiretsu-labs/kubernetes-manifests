@@ -17,7 +17,7 @@ spec:
         # Re-run the one-shot catalog discovery only after the Qwen LWS is
         # healthy; a pod started during GPU warm-up must retain the safe
         # subscription fallback rather than advertising an unavailable route.
-        keiretsu.top/restarted-for: qwen38-ready-v3
+        keiretsu.top/restarted-for: qwen38-ready-v4
       labels:
         app.kubernetes.io/name: cliproxy
     spec:
@@ -717,9 +717,17 @@ spec:
                   return metadata
 
               def route_sources(model_ids):
+                  # CLIProxy can expose only a stable alias while its upstream
+                  # lists the canonical ID. Resolve that canonical source too;
+                  # otherwise an alias-only catalog falls through to generic
+                  # metadata despite its live upstream being healthy.
+                  source_ids = set(model_ids)
+                  for alias, source_id in metadata_alias_sources.items():
+                      if alias in model_ids:
+                          source_ids.add(source_id)
                   sources = {}
                   for prefix, url in upstreams:
-                      if not any(model_id.startswith(prefix + "/") for model_id in model_ids):
+                      if not any(model_id.startswith(prefix + "/") for model_id in source_ids):
                           continue
                       try:
                           payload = fetch_json(url)
@@ -741,7 +749,7 @@ spec:
                               by_normalized_id[normalized(model_id)].append(row)
                               for form, quality in model_forms(model_id).items():
                                   by_form[form].append((model_id, row, quality))
-                      for model_id in model_ids:
+                      for model_id in sorted(source_ids):
                           if not model_id.startswith(prefix + "/"):
                               continue
                           upstream_id = model_id[len(prefix) + 1:]

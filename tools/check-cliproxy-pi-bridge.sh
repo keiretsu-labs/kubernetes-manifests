@@ -54,6 +54,13 @@ if namespace["metadata_override"](qwen_alias) != {
 }:
     raise SystemExit("Qwen alias metadata must describe the active serving profile")
 
+namespace["fetch_json"] = lambda url: {
+    "data": [{"id": "Qwen3.8-Flash-Next-NVFP4"}]
+}
+qwen_sources = namespace["route_sources"]({qwen_alias})
+if qwen_sources.get(qwen_alias, {}).get("id") != "Qwen3.8-Flash-Next-NVFP4":
+    raise SystemExit("alias-only Qwen catalog did not resolve its canonical upstream source")
+
 if not re.search(
     r'(?ms)oauth-model-alias:\s*\n\s*codex:\s*\n\s*- name: "gpt-5\.6-luna"\s*\n\s*alias: "vllm-fallback"',
     path.read_text(),
