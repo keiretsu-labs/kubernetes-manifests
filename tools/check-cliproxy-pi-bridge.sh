@@ -43,6 +43,17 @@ source = "codex-subscription/gpt-5.6-luna"
 if namespace["metadata_alias_sources"].get(fallback) != source:
     raise SystemExit(f"{fallback} must resolve metadata from {source}")
 
+qwen_alias = "vllm/Qwen3.8-Flash-Next"
+qwen_source = "vllm/Qwen3.8-Flash-Next-NVFP4"
+if namespace["metadata_alias_sources"].get(qwen_alias) != qwen_source:
+    raise SystemExit(f"{qwen_alias} must resolve metadata from {qwen_source}")
+if namespace["metadata_override"](qwen_alias) != {
+    "context_window": 1048576,
+    "name": "Qwen3.8 Flash Next",
+    "reasoning": True,
+}:
+    raise SystemExit("Qwen alias metadata must describe the active serving profile")
+
 if not re.search(
     r'(?ms)oauth-model-alias:\s*\n\s*codex:\s*\n\s*- name: "gpt-5\.6-luna"\s*\n\s*alias: "vllm-fallback"',
     path.read_text(),
@@ -64,7 +75,7 @@ if seen != [{"id": "gpt-5.6-luna", "provider": {"id": "codex"}, "direct": {}}]:
 # A configured compatible-provider route must not inherit an old alias
 # override when its live upstream source is unavailable. Otherwise a stale
 # vLLM route remains selectable even after the serving workload disappears.
-if namespace["resolved_metadata"]("vllm/GLM-5.3-Flash", "vllm", None, [], {}) is not None:
+if namespace["resolved_metadata"](qwen_alias, "vllm", None, [], {}) is not None:
     raise SystemExit("unavailable vLLM route inherited stale metadata")
 
 print("✓ cliproxy Pi bridge fallback metadata contract")
