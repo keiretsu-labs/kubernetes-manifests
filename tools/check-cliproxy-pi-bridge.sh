@@ -61,5 +61,11 @@ if metadata != {"context_window": 1050000, "max_tokens": 128000, "reasoning": Tr
 if seen != [{"id": "gpt-5.6-luna", "provider": {"id": "codex"}, "direct": {}}]:
     raise SystemExit(f"fallback metadata used the wrong source: {seen!r}")
 
+# A configured compatible-provider route must not inherit an old alias
+# override when its live upstream source is unavailable. Otherwise a stale
+# vLLM route remains selectable even after the serving workload disappears.
+if namespace["resolved_metadata"]("vllm/GLM-5.3-Flash", "vllm", None, [], {}) is not None:
+    raise SystemExit("unavailable vLLM route inherited stale metadata")
+
 print("✓ cliproxy Pi bridge fallback metadata contract")
 PY

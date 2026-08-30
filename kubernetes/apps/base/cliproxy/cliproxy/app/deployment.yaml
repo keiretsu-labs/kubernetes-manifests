@@ -814,6 +814,8 @@ spec:
 
               def resolved_metadata(model_id, owner, route_source, entries, index):
                   if route_source is None:
+                      if any(model_id.startswith(prefix + "/") for prefix, _ in upstreams):
+                          return None
                       source_model_id = metadata_alias_sources.get(model_id, model_id)
                       raw_id = source_model_id.split("/", 1)[1] if "/" in source_model_id else source_model_id
                       route_source = {"id": raw_id, "provider": {"id": owner}, "direct": {}}
