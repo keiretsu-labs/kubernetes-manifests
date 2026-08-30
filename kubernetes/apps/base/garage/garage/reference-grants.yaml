@@ -47,8 +47,4 @@ spec:
     - kind: GarageKey
       namespace: velero-system
     - kind: GarageKey
-      namespace: buzz
-    - kind: GarageBucket
-      namespace: buzz
-    - kind: GarageKey
       namespace: firefly

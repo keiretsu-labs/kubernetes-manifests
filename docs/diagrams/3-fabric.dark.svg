@@ -505,7 +505,7 @@
 <title>k_ott</title>
 <path fill="#161b22" stroke="#6e7681" d="M1029.62,-163.8C1029.62,-163.8 818.38,-163.8 818.38,-163.8 812.38,-163.8 806.38,-157.8 806.38,-151.8 806.38,-151.8 806.38,-125.4 806.38,-125.4 806.38,-119.4 812.38,-113.4 818.38,-113.4 818.38,-113.4 1029.62,-113.4 1029.62,-113.4 1035.62,-113.4 1041.62,-119.4 1041.62,-125.4 1041.62,-125.4 1041.62,-151.8 1041.62,-151.8 1041.62,-157.8 1035.62,-163.8 1029.62,-163.8"/>
 <text xml:space="preserve" text-anchor="start" x="822.22" y="-149.5" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">Ottawa&#45;only services</text>
-<text xml:space="preserve" text-anchor="start" x="822.22" y="-140.5" font-family="Helvetica,sans-Serif" font-size="9.00">bhaiya · hermes · buzz · forgejo · woodpecker</text>
+<text xml:space="preserve" text-anchor="start" x="822.22" y="-140.5" font-family="Helvetica,sans-Serif" font-size="9.00">bhaiya · hermes · forgejo · woodpecker</text>
 <text xml:space="preserve" text-anchor="start" x="822.22" y="-131.5" font-family="Helvetica,sans-Serif" font-size="9.00">immich · teslamate · searxng · firecrawl · cliproxy</text>
 <text xml:space="preserve" text-anchor="start" x="822.22" y="-122.5" font-family="Helvetica,sans-Serif" font-size="9.00">zot registry · headlamp · opencost · tempvm</text>
 </g>
@@ -537,4 +537,4 @@
 </g>
 </g>
 </svg>
-<!-- diagram-source-sha256: f83aee7cd5cfe0694484ba7c81b636fa844246cf4adad1173552cc0b9fbf0431 -->
+<!-- diagram-source-sha256: 24b40bd00f7041d6697ecb99e1a5bff6ceacfe033ba90622dc4b28ca6fa2589a -->

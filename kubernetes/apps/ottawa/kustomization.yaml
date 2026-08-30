@@ -7,7 +7,6 @@ resources:
   - ./arc-systems
   - ./bhaiya
   - ./border0
-  - ./buzz
   - ./cloudflare
   - ./cnpg-system
   - ./dragonfly-operator-system
