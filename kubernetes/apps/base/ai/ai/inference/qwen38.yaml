@@ -138,7 +138,10 @@ metadata:
   labels:
     app: qwen38
 spec:
-  replicas: 1
+  # GLM is the active TP=2 workload. Retain this definition and its two PVCs
+  # at zero replicas so a rollback does not require another 126GiB download
+  # per Spark.
+  replicas: 0
   startupPolicy: LeaderCreated
   leaderWorkerTemplate:
     size: 2
