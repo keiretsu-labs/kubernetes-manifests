@@ -5,7 +5,6 @@ resources:
   - ./gitrepository.yaml
   - ./firefly-mcp-bhaiya-secret.yaml
   - ./forgejo-auth.sops.yaml
-  - ./buzz-connector.sops.yaml
   - ./receiver.yaml
   - ./webhook-secret.yaml
   - ./bhaiya.yaml

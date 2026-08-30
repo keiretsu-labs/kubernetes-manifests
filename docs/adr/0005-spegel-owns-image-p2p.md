@@ -12,7 +12,7 @@ The one real gap Dragonfly would have closed is that model weights are not an im
 
 The current GLM manifest deliberately keeps this path simple: both init containers download their pinned public Hugging Face snapshots directly. Garage remains the repository's existing object-storage option for a future shared-download path, but it is not wired into this manifest. No containerd change, no new control plane, no release-candidate images. The decisive point is that Dragonfly would buy nothing more here — peer-to-peer accelerates fan-out across *many* nodes, and at two nodes it saves exactly one copy, which a shared bucket could save as well.
 
-Note also that "dragonfly" is thoroughly taken in this tree. Seven `dragonflydb.io` CRs across `media`, `zot`, `buzz` and `immich` are DragonflyDB, the Redis-compatible datastore, with a `dragonfly-operator-system` namespace on Ottawa and Robbinsdale. One of them backs zot's cache.
+Note also that "dragonfly" is thoroughly taken in this tree. `dragonflydb.io` CRs across `media`, `zot`, and `immich` are DragonflyDB, the Redis-compatible datastore, with a `dragonfly-operator-system` namespace on Ottawa and Robbinsdale. One of them backs zot's cache.
 
 ## Consequences
 

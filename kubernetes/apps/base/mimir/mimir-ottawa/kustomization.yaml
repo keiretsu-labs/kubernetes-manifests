@@ -20,7 +20,6 @@ configMapGenerator:
     files:
       - rules/bhaiya.yaml
       - rules/blackbox.yaml
-      - rules/buzz.yaml
       - rules/flux.yaml
       - rules/garage.yaml
       - rules/k8gb.yaml

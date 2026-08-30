@@ -15,18 +15,12 @@ spec:
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageReferenceGrant
 metadata:
-  name: garage-keys-to-buzz-buckets
-  namespace: buzz
+  name: garage-bucket-to-sheep-adder-tsflow-key
+  namespace: tailscale-up
 spec:
   from:
-    - kind: GarageKey
+    - kind: GarageBucket
       namespace: garage
-    - kind: GarageKey
-      namespace: hermes
   to:
-    - kind: GarageBucket
-      name: buzz
-    - kind: GarageBucket
-      name: buzz-postgres
-    - kind: GarageBucket
-      name: buzz-backup
+    - kind: GarageKey
+      name: sheep-adder-tsflow-key

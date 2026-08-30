@@ -188,13 +188,6 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
-    - dnsName: "buzz.ottawa.${COMMON_DOMAIN}"
-      recordType: CNAME
-      targets:
-        - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "frigate.${LOCATION}.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:

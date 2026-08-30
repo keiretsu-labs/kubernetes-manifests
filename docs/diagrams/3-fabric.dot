@@ -18,7 +18,7 @@
 //  Apps this diagram names by their Flux Kustomization identity. The gate
 //  fails if any of them stops being deployed, so a decommission cannot leave
 //  a lie in the picture:
-//  diagram-apps: bhaiya, hermes, buzz, forgejo, woodpecker, immich, teslamate,
+//  diagram-apps: bhaiya, hermes, forgejo, woodpecker, immich, teslamate,
 //  diagram-apps: searxng, firecrawl, cliproxy, zot, opencost, tempvm,
 //  diagram-apps: headlamp-install, velero, mimir, mimir-egress, victoria-logs,
 //  diagram-apps: fluent-bit, gatus, kromgo, garage, spegel, tuppr, vpa, kro,
@@ -166,7 +166,7 @@ digraph fabric {
     k_ai [label=<<b>Inference</b> — St. Petersburg<br align="left"/>ONE vLLM model spans BOTH DGX Sparks through a<br align="left"/>LeaderWorkerSet, and the two halves talk over a<br align="left"/>private RDMA rail rather than the LAN.<br align="left"/>hermes and cliproxy in Ottawa consume it over the<br align="left"/>tailnet, like any other cross-site dependency.<br align="left"/>>,
            fillcolor="#ffe3ea"];
 
-    k_ott [label=<<b>Ottawa-only services</b><br align="left"/>bhaiya · hermes · buzz · forgejo · woodpecker<br align="left"/>immich · teslamate · searxng · firecrawl · cliproxy<br align="left"/>zot registry · headlamp · opencost · tempvm<br align="left"/>>];
+    k_ott [label=<<b>Ottawa-only services</b><br align="left"/>bhaiya · hermes · forgejo · woodpecker<br align="left"/>immich · teslamate · searxng · firecrawl · cliproxy<br align="left"/>zot registry · headlamp · opencost · tempvm<br align="left"/>>];
 
     k_plat [label=<<b>Platform primitives</b><br align="left"/>priority classes · kro · spegel · tuppr · VPA<br align="left"/>external-secrets · Open Cluster Management<br align="left"/>the gVisor, Kata and agent-sandbox runtimes<br align="left"/>>];
   }

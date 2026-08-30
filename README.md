@@ -339,8 +339,8 @@ the app-to-base-to-cluster mapping.
 
 ### Location workloads
 
-- **Ottawa:** media, Immich, Forgejo, Woodpecker, Hermes, agents, Buzz,
-  Firecrawl, CLIProxy, TeslaMate, SearXNG, Bhaiya integration, Monz,
+- **Ottawa:** media, Immich, Forgejo, Woodpecker, Hermes, agents, Firecrawl,
+  CLIProxy, TeslaMate, SearXNG, Bhaiya integration, Monz,
   Headlamp, OpenCost, the GPU DRA driver, Kata, and LAN services.
 - **Robbinsdale:** media, Immich, Speedtest, and Strimzi/Kafka workloads,
   alongside the shared home and storage platform.

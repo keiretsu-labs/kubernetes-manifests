@@ -17,7 +17,6 @@ spec:
     - name: garage-keys
     - name: agent-sandbox
     - name: cert-manager
-    - name: buzz
   path: ./gitops/provider-fence-activation
   prune: true
   sourceRef:

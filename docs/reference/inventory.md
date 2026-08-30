@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 60 | 124 |
+| `ottawa` | 4 | 59 | 122 |
 | `robbinsdale` | 3 | 43 | 87 |
 | `stpetersburg` | 3 | 39 | 79 |
-| **total** | **10** | **142** | **290** |
+| **total** | **10** | **141** | **288** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -113,7 +113,6 @@ diagram in the [README](../../README.md#architecture).
 | GPU, RDMA and inference | `k8s-gpu-dra-driver` | `k8s-gpu-dra-driver` → ns `kube-system` |
 | Application workloads | `bhaiya` | `bhaiya` |
 | Application workloads | `border0` | `border0` |
-| Application workloads | `buzz` | `buzz`, `buzz-infra` |
 | Application workloads | `cliproxy` | `cliproxy` |
 | Application workloads | `firecrawl` | `firecrawl` |
 | Application workloads | `firefly` | `firefly`, `firefly-mcp` |

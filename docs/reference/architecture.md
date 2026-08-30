@@ -448,7 +448,7 @@ Both live in `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml`.
   `status`, `s3`, `tailscale-logs.s3`.
 - Pointed at `ottawa.keiretsu.top`, i.e. straight to the Ottawa edge and
   bypassing GSLB: `auth`, `home`, `bhaiya`, `grafana`, `teslamate`, `litellm`,
-  `woodpecker`, `infisical`, `frigate`, `monz`, `cliproxy`, `buzz.ottawa`,
+  `woodpecker`, `infisical`, `frigate`, `monz`, `cliproxy`,
   `frigate.${LOCATION}`. `bhaiya` is pinned here on purpose — through the GSLB
   the second WAN edge 404s about half the time.
 
@@ -794,12 +794,6 @@ Two things follow:
 
 One federated object store, two Ceph clusters.
 
-One exception worth knowing before you assume all S3 traffic is Garage: `buzz`
-runs its own single-replica MinIO (`kubernetes/apps/base/buzz/buzz/infra/minio.yaml`,
-listed in that directory's `kustomization.yaml`). It is app-local, not part of
-the federated estate, and being single-replica it has none of the multi-zone
-durability described below.
-
 ### garage-operator
 
 Chart 0.7.5, all three clusters. CRDs: `GarageCluster` v1beta2, `GarageNode`
@@ -868,7 +862,7 @@ All *pools* live under `/var/local-path-provisioner/garage-node-local/…` with
 
 ### Garage buckets and access
 
-Thirteen `GarageBucket` CRs:
+Ten `GarageBucket` CRs:
 
 | Bucket | Contents |
 |---|---|
@@ -877,16 +871,10 @@ Thirteen `GarageBucket` CRs:
 | `mimir` | long-term metrics blocks |
 | `tailscale-logs` | tailnet audit log stream |
 | `forgejo` | Forgejo attachments and LFS objects |
-| `buzz`, `buzz-backup` | buzz application objects and its own backup target, declared alongside its Postgres in `buzz/infra/object-storage.yaml` |
-| `bhaiya-postgres`, `buzz-postgres`, `immich-postgres`, `tracearr-postgres`, `omnibus-postgres`, `bookorbit-postgres` | CNPG barman-cloud WAL and base backups — one bucket per database, prefix `${LOCATION}`, so federated sites never share a Barman catalog |
+| `bhaiya-postgres`, `immich-postgres`, `tracearr-postgres`, `omnibus-postgres`, `bookorbit-postgres` | CNPG barman-cloud WAL and base backups — one bucket per database, prefix `${LOCATION}`, so federated sites never share a Barman catalog |
 
-Two footnotes on that last row, because both break the pattern it states:
+One footnote on that last row, because it breaks the pattern it states:
 
-- **`buzz-postgres` hard-codes its prefix.** Its barman `destinationPath` is
-  `s3://buzz-postgres/ottawa/`, a literal, not `${LOCATION}`. Harmless while
-  buzz is Ottawa-only; the moment it is deployed anywhere else that cluster
-  would write into Ottawa's catalog, which is exactly the collision the
-  per-`${LOCATION}` prefix exists to prevent.
 - **`bhaiya-postgres` has a bucket but no database.** No CNPG `Cluster` of that
   name exists in this repo — bhaiya's Postgres is defined in bhaiya's own
   GitRepository. The bucket and its `GarageKey` are provisioned here so the
@@ -1006,14 +994,13 @@ data lives on Ceph/SMB and relies on storage-layer durability.
 
 ### CloudNativePG
 
-Chart 0.29.0, all three clusters. Ten Postgres Clusters, two instances each
+Chart 0.29.0, all three clusters. Nine Postgres Clusters, two instances each
 except `lobby-postgres` (1):
 
 | Cluster | Storage | Notes |
 |---|---|---|
 | `forgejo-postgres` | `ceph-block-replicated` 10Gi | |
 | `woodpecker-postgres` | `ceph-block-replicated` 10Gi | |
-| `buzz-postgres` | `ceph-block-replicated` 20Gi | plus a PDB |
 | `lobby-postgres` | `ceph-block-replicated` 5Gi | database conference; 1 instance |
 | `teslamate-postgres` | default class 8Gi | `postgresql:18` |
 | `suwayomi-postgres` | default class 10Gi | no backup wired |
@@ -1032,9 +1019,9 @@ The Dragonfly operator is a vendored upstream release manifest v1.6.1 pulled by
 Kustomize — the only storage operator not delivered as a HelmRelease.
 
 Dragonfly CRs (2 replicas each): `dragonfly-tracearr`, `dragonfly-omnibus`,
-`dragonfly-buzz`, `dragonfly-immich`, `dragonfly-zot`. Note that `buzz` and
-`immich` name the file `redis.yaml` but the kind is `Dragonfly` — there is no
-real Redis anywhere in the repo.
+`dragonfly-immich`, `dragonfly-zot`. Note that `immich` names the file
+`redis.yaml` but the kind is `Dragonfly` — there is no real Redis anywhere in
+the repo.
 
 Valkey has one genuine instance: searxng's local chart, storage disabled.
 
@@ -1321,10 +1308,9 @@ Companions:
 
 | App | Notes |
 |---|---|
-| `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo) via a Flux Receiver, not from this repo. `dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, cert-manager, buzz. Owns a Velero Role so it can back itself up, plus gateway RBAC and a `*.bhaiya.keiretsu.top` wildcard. |
+| `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo) via a Flux Receiver, not from this repo. `dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, and cert-manager. Owns a Velero Role so it can back itself up, plus gateway RBAC and a `*.bhaiya.keiretsu.top` wildcard. |
 | `border0` | Border0 `tailzero-connector`, device `ottawa-tailzero`. Runs with `clusterRoleMode: api-admin` because it proxies the Kubernetes API, which makes it a second admin-level route into Ottawa's API outside the tailnet operator's identity model — see [What breaks when a site goes down](#what-breaks-when-a-site-goes-down). Credentials come from a `tailzero-connector-credentials` Secret. |
 | `hermes` | agent runtime (`hermes-agent`); egresses to `stpetersburg-vllm` and `aperture` on the tailnet |
-| `buzz` | app + infra split: Postgres, Dragonfly, MinIO-compatible bits |
 | `firecrawl` | web-scraping stack, reconciled straight from the upstream GitHub repo's `examples/kubernetes/cluster-install` path |
 | `cliproxy` | LLM API proxy (`cli-proxy-api`); egress to `stpetersburg-vllm` |
 | `forgejo` | self-hosted Git — and the source of truth for bhaiya. SSH on `:22` through the `private` and `ts` Gateways. |

@@ -43,27 +43,6 @@ spec:
             preferred_ip_protocol: ip4
             tls_config:
               insecure_skip_verify: true
-        http_buzz_push_gateway:
-          prober: http
-          timeout: 5s
-          http:
-            # An unauthenticated request is intentionally rejected. Any of
-            # these client-error responses proves DNS, TLS, and the exact push
-            # delivery route are reachable; redirects and 5xx do not.
-            valid_status_codes: [400, 401, 403, 405]
-            follow_redirects: false
-            preferred_ip_protocol: ip4
-        buzz_pairing_websocket:
-          prober: tcp
-          timeout: 5s
-          tcp:
-            preferred_ip_protocol: ip4
-            tls: true
-            tls_config:
-              server_name: buzz.ottawa.keiretsu.top
-            query_response:
-              - send: "GET /pair HTTP/1.1\r\nHost: buzz.ottawa.keiretsu.top\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n"
-              - expect: "^HTTP/1\\.1 101"
         icmp:
           prober: icmp
           timeout: 5s
