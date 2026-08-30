@@ -5,8 +5,7 @@ namespace: ai
 
 resources:
   - namespace.yaml
-  - glm53.yaml
-  # Keep the downloaded Qwen checkpoint as a zero-replica rollback cache.
+  - vllm.yaml
   - qwen38.yaml
   - secret.yaml
   - probes.yaml
