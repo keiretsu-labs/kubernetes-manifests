@@ -26,6 +26,20 @@ spec:
   interval: 10m
   retryInterval: 1m
   timeout: 5m
+  wait: true
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: bhaiya-payments
+      namespace: bhaiya
+    - apiVersion: external-secrets.io/v1
+      kind: ExternalSecret
+      name: bhaiya-payments
+      namespace: bhaiya
+    - apiVersion: external-secrets.io/v1
+      kind: ExternalSecret
+      name: bhaiya-payments-firefly
+      namespace: bhaiya
   decryption:
     provider: sops
     secretRef:

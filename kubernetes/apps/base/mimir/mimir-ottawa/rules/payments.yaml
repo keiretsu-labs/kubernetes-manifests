@@ -74,6 +74,30 @@ groups:
             should be retried by Stripe. Inspect the service logs and
             provider/accounting dependencies before acknowledging the alert.
 
+      - alert: BhaiyaPaymentsStripeBackfillFailures
+        expr: increase(bhaiya_payments_stripe_backfill_failures_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments Stripe backfill is failing
+          description: >-
+            Authenticated Stripe event recovery failed to advance a durable
+            stream cursor in the last 15 minutes. Inspect the stream and
+            reconciliation state before accepting new payment recovery.
+
+      - alert: BhaiyaPaymentsStripeBackfillManualHold
+        expr: increase(bhaiya_payments_stripe_backfill_manual_holds_total[1h]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments Stripe backfill requires manual review
+          description: >-
+            A Stripe event was held during authenticated backfill because its
+            identity, lifecycle, or accounting facts require operator review.
+            Resolve the hold before treating payment recovery as complete.
+
       - alert: BhaiyaPaymentsReconciliationFailures
         expr: increase(bhaiya_payments_reconciliation_failures_total[15m]) > 0
         for: 5m
