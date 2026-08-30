@@ -1,6 +1,6 @@
 # AI Inference on DGX Spark (GB10 Blackwell)
 
-## Hardware: NVIDIA DGX Spark / SM121 / GB10
+## Hardware: NVIDIA DGX Spark / SM120 / GB10
 
 - **GPU**: NVIDIA GB10 Grace Blackwell Superchip (SM_121, compute capability 12.1)
 - **Memory**: 128GB LPDDR5X **unified** (shared between CPU and GPU — no dedicated VRAM)
@@ -11,61 +11,56 @@
 - **CUDA**: Requires CUDA 13.0+
 - **OS**: Talos Linux v1.12.2
 
-## Active Setup: vLLM GLM-5.3-Flash EXL3
+## Active Setup: SGLang Qwen3.8-Flash-Next
 
-**Model**: `Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw` (~164GiB, 120 safetensor
-shards, EXL3 MoE)
-**Image**: `ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks@sha256:9bb1557a4234fce63d59599e44d10747eabd742beb337eebf9e7070be8a0fd58`
-(published ARM64/SM121 runtime; no in-repo image build)
-**Deployment**: `glm53.yaml`, a two-member LeaderWorkerSet pinned to `spark-0`
-and `spark-1`, with vLLM TP=2 over the RDMA rail.
-**Serving profile**: 1,000,000-token context, packed FP8 sparse-MLA KV cache,
-and DFlash2 speculative decoding (k=7).
+**Model**: `RadixArk/Qwen3.8-Flash-Next-NVFP4` (176B total / ~6B active,
+~135GB, NVFP4 MoE)
+**Image**: `ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark` (ARM64/SM121,
+derived from `lmsysorg/sglang:qwen38flashnext` with MiaAI-Lab's published QSA
+fallback and NVFP4-KV patches)
+**Deployment**: `qwen38.yaml`, a two-member LeaderWorkerSet pinned to
+`spark-0` and `spark-1`, with SGLang TP=2 over the RDMA rail.
+**Serving profile**: 1M-token YaRN context, NVFP4 KV cache, and NEXTN
+speculative decoding (2 steps / top-k 1 / 2 draft tokens).
 **Endpoint**: `stpetersburg-vllm` (port 80 → 8000), also exposed internally as
-the `glm53` Service and the compatibility `vllm` Service.
+the `qwen38` Service.
 
-The OpenAI-compatible model ID is `GLM-5.3-Flash-EXL3`. CLIProxy exposes the
-canonical `vllm/GLM-5.3-Flash-EXL3` route and the stable client alias
-`vllm/GLM-5.3-Flash`. The route advertises a 1,000,000-token context and
-reasoning support through the GLM parsers (`glm47` tool calls and `glm45`
-reasoning). The Bhaiya default is the CLIProxy alias, so clients remain on the
-managed gateway instead of dialing the DGX endpoint directly.
+The OpenAI-compatible model ID is `Qwen3.8-Flash-Next-NVFP4`. CLIProxy exposes
+the stable client ID `vllm/Qwen3.8-Flash-Next` and uses the upstream ID for
+routing. The effective serving context is `1048576` tokens. Qwen's tokenizer
+enables thinking by default and the deployed route advertises `low`, `medium`,
+and `high` reasoning effort, with `high` as the current maximum; SGLang uses
+`--reasoning-parser auto` to preserve the reasoning stream.
+The Bhaiya default is the CLIProxy alias, so clients remain on the managed
+gateway instead of dialing the DGX endpoint directly.
 
-The model recipe and image are published by
-[`MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks`](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks).
-The manifest pins both the model and DFlash2 revisions and validates the
-downloaded files before vLLM starts.
+The source recipe and patch provenance are pinned in the manifests to
+[`MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks`](https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks).
+The deployment reuses the already-published, digest-pinned serving image;
+there is no in-repo image build in this rollback.
 
 ### Operational guardrails
 
 - This is one TP=2 LWS group spanning both Sparks: `spark-0` is rank 0 and
   `spark-1` is rank 1. There is no spare GPU for test workloads.
-- Each vLLM rank requests `94Gi` and is limited to `96Gi`; the model PVCs are
+- Each SGLang rank requests `94Gi` and is limited to `96Gi`; the model PVCs are
   separate per rank. The cache-drop init container and bounded cache-drop loop
   reclaim unified memory before and during serving.
-- The published image's GB10 overlay is applied in the serving container before
-  vLLM starts, disabling the known `persistent_topk` SMEM path on this GPU.
-- The memory-sensitive serving settings are `--gpu-memory-utilization 0.76` on
-  the leader and `0.75` on the worker, plus `--enforce-eager` and
-  `VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0`, with a
-  `2048` context, `--max-num-seqs 4`, `--max-num-batched-tokens 512`, and
-  DFlash2 with seven speculative tokens. The worker's free-memory preflight
-  caps it at `0.75`; eager mode leaves the budget for KV-cache blocks instead
-  of CUDA graph capture, while the 512-token batch cap keeps the post-weight
-  activation profile inside the remaining headroom. The
-  upstream recipe's `0.87` budget fails the same preflight under the Spark
-  Kubernetes CUDA reservation. Do not change these settings or place
+- The memory-sensitive serving settings are `--mem-fraction-static 0.90`,
+  `--mamba-full-memory-ratio 0.3`, a `1048576` context, and NEXTN with two
+  speculative steps and two draft tokens. Do not raise these ratios or place
   unrelated GPU workloads on either Spark without a new load qualification.
-- Metrics are scraped once by the `glm53` ServiceMonitor at 15-second
+- Metrics are scraped once by the `qwen38` ServiceMonitor at 15-second
   intervals and stored in the St. Petersburg Mimir tenant. Do not add a second
   static ScrapeConfig for this Service; duplicate scrapes double-count counter
   rates and waste the agent's remote-write budget.
-- The shared Grafana vLLM dashboards cover throughput, queue/KV headroom,
-  latency, and DCGM Spark GPU panels. The vLLM metrics endpoint is scraped only
-  by the ServiceMonitor above.
-- The model-download init step validates the pinned GLM revision and DFlash2
-  revision on each start. It uses separate local-path PVCs because the two
-  Spark nodes cannot mount one ReadWriteOnce volume.
+- The shared Grafana `SGLang Inference` dashboard is model-selector driven and
+  includes the scrape target, throughput, queue/KV headroom, latency,
+  speculative acceptance, and DCGM Spark GPU panels.
+- The model-download init step normalizes the checkpoint tokenizer metadata from
+  its source `262144` value to `1048576` on each start. This is metadata-only;
+  it prevents long prompts from being rejected by the tokenizer before SGLang's
+  configured extended context is used and does not increase the GPU allocation.
 - Velero's bounded repository-maintenance jobs are deliberately spread across
   the two worker nodes; they have a `2Gi` memory ceiling and must not be
   changed to unbounded batch workloads.
@@ -91,14 +86,15 @@ downloaded files before vLLM starts.
 ### Sampling (per Unsloth docs)
 - `--temp 1.0`, `--top-p 0.95`, `--top-k 40`, `--min-p 0.01`
 
-## Historical vLLM DFlash experiment (not deployed)
+## Retained rollback: vLLM (DFlash) — currently disabled (replicas: 0)
 
 **Model**: `AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS` (~90GB)
 **Image**: `ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4`
 **Decode**: speculative decoding via DFlash (15 draft tokens)
-The old StatefulSet manifest was removed when GLM-5.3 became the active
-deployment. These settings are reference material only, not a GitOps rollback
-path.
+**Status**: `replicas: 0` — both DGX Spark GPUs are claimed by the Qwen3.8
+TP=2 instance (`qwen38.yaml`). Kept in-repo for rollback.
+
+Config lives in `vllm.yaml` but the StatefulSet is scaled to zero.
 
 ### vLLM Tuning Notes (for future use)
 - `--gpu-memory-utilization 0.60` (conservative for unified memory buffer cache)
@@ -112,7 +108,7 @@ path.
 
 ## Historical comparison: retired alternatives
 
-| | Historical vLLM DFlash | llama.cpp Q4 (not deployed) |
+| | vLLM DFlash (disabled) | llama.cpp Q4 (not deployed) |
 |---|---|---|
 | Model | Qwen3.6-27B NVFP4-MTP-XS | Qwen3-Coder-Next UD-Q4_K_XL |
 | Model size | ~90GB | ~46GB |
@@ -121,7 +117,7 @@ path.
 | Context | 200K | 131K |
 | Parallel requests | 64/replica | 1 |
 | Tool calling | Native auto-tool-choice | Jinja templates |
-| Status | No current manifest | No current manifest |
+| Status | `replicas: 0` (disabled) | No current manifest |
 | Speculative decode | DFlash (15 tokens) | None |
 
 ## Quantization Options for DGX Spark
@@ -173,7 +169,7 @@ For Bhaiya-managed workspaces, the generated config lives at
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "cliproxy/vllm/GLM-5.3-Flash",
+  "model": "cliproxy/vllm/Qwen3.8-Flash-Next",
   "provider": {
     "cliproxy": {
       "npm": "@ai-sdk/openai-compatible",
@@ -182,10 +178,10 @@ For Bhaiya-managed workspaces, the generated config lives at
         "apiKey": "{env:OPENAI_API_KEY}"
       },
       "models": {
-        "vllm/GLM-5.3-Flash": {
-          "name": "vllm/GLM-5.3-Flash",
+        "vllm/Qwen3.8-Flash-Next": {
+          "name": "vllm/Qwen3.8-Flash-Next",
           "reasoning": true,
-          "limit": { "context": 1000000, "output": 0 }
+          "limit": { "context": 1048576, "output": 0 }
         }
       }
     }
@@ -194,7 +190,7 @@ For Bhaiya-managed workspaces, the generated config lives at
 ```
 
 Tailscale MagicDNS hostnames:
-- `stpetersburg-vllm` → active vLLM GLM-5.3-Flash EXL3 server (port 80 → 8000)
+- `stpetersburg-vllm` → active SGLang Qwen3.8 server (port 80 → 8000)
 - There is no current `stpetersburg-llama-cpp` Service; the llama.cpp route
   described above is historical reference material only.
 
@@ -203,8 +199,6 @@ Tailscale MagicDNS hostnames:
 - [Unsloth Qwen3-Coder-Next Guide](https://unsloth.ai/docs/models/qwen3-coder-next)
 - [NVIDIA DGX Spark Hardware Docs](https://docs.nvidia.com/dgx/dgx-spark/hardware.html)
 - [vLLM Quantization Docs](https://docs.vllm.ai/en/latest/features/quantization/)
-- [MiaAI-Lab GLM-5.3-Flash EXL3 recipe](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks)
-- [IncoAI GLM-5.3-Flash DFlash2](https://huggingface.co/incoai/GLM-5.3-Flash-DFlash2)
 - [llama.cpp Qwen3-Next PR #16095](https://github.com/ggml-org/llama.cpp/pull/16095)
 - [key_gdiff Fix PR #19324](https://github.com/ggml-org/llama.cpp/pull/19324)
 - [ardge-labs DGX Spark images](https://github.com/ardge-labs/llama-cpp-dgx-spark)
