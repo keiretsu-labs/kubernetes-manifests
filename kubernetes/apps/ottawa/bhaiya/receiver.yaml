@@ -4,6 +4,8 @@ kind: Receiver
 metadata:
   name: bhaiya
   namespace: bhaiya
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   type: generic-hmac
   interval: 10m

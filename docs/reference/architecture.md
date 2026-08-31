@@ -177,8 +177,10 @@ Three apps are reconciled from a `sourceRef` other than `kubernetes-manifests`,
 which is why a change here can be perfectly committed and still not move them:
 
 - `GitRepository bhaiya` → `forgejo.keiretsu.top/corp/bhaiya.git` (self-hosted
-  Forgejo), driven by a Flux `Receiver bhaiya` plus a webhook token, so Forgejo
-  pushes trigger a reconcile. Ottawa only.
+  Forgejo). This repo owns only the GitRepository, `forgejo-bhaiya` credentials,
+  and the Flux Kustomization pointer (no `targetNamespace`). The Receiver,
+  webhook token, Firefly MCP ExternalSecret, and home Gateway editor RBAC live
+  in `corp/bhaiya`'s activation overlay. Ottawa only.
 - `GitRepository firecrawl` → `github.com/firecrawl/firecrawl`, path
   `./examples/kubernetes/cluster-install`. Ottawa only.
 - `GitRepository csi-addons` → the upstream project, path `./deploy/controller`,
@@ -1308,7 +1310,7 @@ Companions:
 
 | App | Notes |
 |---|---|
-| `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo) via a Flux Receiver, not from this repo. `dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, and cert-manager. Owns a Velero Role so it can back itself up, plus gateway RBAC and a `*.bhaiya.keiretsu.top` wildcard. |
+| `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo), not from this repo. This repo keeps the GitRepository, Forgejo credentials, and the Flux pointer (`dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, cert-manager). The Receiver, Firefly MCP secret, and home Gateway editor Role live in `corp/bhaiya`. Platform TLS (`*.bhaiya`), k8gb apex route, GarageKey, Velero schedule, and Mimir rules stay here. |
 | `border0` | Border0 `tailzero-connector`, device `ottawa-tailzero`. Runs with `clusterRoleMode: api-admin` because it proxies the Kubernetes API, which makes it a second admin-level route into Ottawa's API outside the tailnet operator's identity model — see [What breaks when a site goes down](#what-breaks-when-a-site-goes-down). Credentials come from a `tailzero-connector-credentials` Secret. |
 | `hermes` | agent runtime (`hermes-agent`); egresses to `stpetersburg-vllm` and `aperture` on the tailnet |
 | `firecrawl` | web-scraping stack, reconciled straight from the upstream GitHub repo's `examples/kubernetes/cluster-install` path |
