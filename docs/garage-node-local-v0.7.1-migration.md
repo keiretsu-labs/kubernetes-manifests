@@ -31,13 +31,20 @@ and fall back to the `${GARAGE_CONSISTENCY_MODE:=degraded}` /
 Their absence is the finished state, not an abandoned rollout — a reading
 that is easy to get wrong from `git log` alone.
 
-Remaining step 6 items:
+Step 6 marker-Job cleanup is done: the ten `garage-hostpath-prep-*` Jobs were
+removed from `kubernetes/apps/base/garage/garage-nodes-*/`. They had already run
+to `Complete` on 2026-08-08 and only ever `touch`ed
+`.garage-volume-id` markers into the node-local HostPath directories. Those
+directories and markers live on the nodes and are unaffected by removing the
+Jobs.
 
-- The ten `garage-hostpath-prep-*` Jobs are still present and `Complete`
-  (`kubernetes/apps/base/garage/garage-nodes-*/`). They are one-shot, idempotent,
-  and carry `kustomize.toolkit.fluxcd.io/force: enabled`, so they now double as
-  node directory preparation if a node is ever rebuilt. Removing them is a
-  judgement call rather than a pure cleanup.
+If a node is ever rebuilt or its HostPath wiped, re-add an equivalent one-shot
+Job for that node before its pool member starts; the directories are declared
+`DirectoryOrCreate`, but the `.garage-volume-id` markers are not recreated
+automatically.
+
+Remaining step 6 item:
+
 - Old PVCs/PVs are deliberately retained pending the separate reviewed cleanup
   described in step 6.
 

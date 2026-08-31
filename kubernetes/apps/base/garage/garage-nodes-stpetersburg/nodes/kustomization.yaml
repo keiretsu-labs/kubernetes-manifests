@@ -6,5 +6,4 @@ kind: Kustomization
 # namespace and fails ("namespace not specified").
 namespace: garage
 resources:
-  - hostpath-prep.yaml
   - service-ts-storage.yaml
