@@ -26,6 +26,7 @@ data:
     EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
     EXPECTED_SHARDS=206
     EXPECTED_CONFIG_ARCHITECTURE="Qwen4ExpForConditionalGeneration"
+    export EXPECTED_SHARDS EXPECTED_CONFIG_ARCHITECTURE
 
     # The checkpoint's tokenizer_config.json still advertises the original
     # 262144-token window. SGLang is deliberately launched with the extended
