@@ -23,6 +23,7 @@ fallback and NVFP4-KV patches)
 **Serving profile**: 1M-token YaRN context, NVFP4 KV cache, no NEXTN
 speculative decoding. `--max-running-requests 3` matches the mamba state
 cache cap (19 slots, 5 per request). Do not advertise a higher value.
+Decode CUDA graphs are disabled as containment pending a SGLang #36418 image.
 **Endpoint**: `stpetersburg-vllm` (port 80 → 8000), also exposed internally as
 the `qwen38` Service.
 
