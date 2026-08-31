@@ -247,46 +247,63 @@ spec:
             - |
               import json
               import pathlib
+              import time
               import urllib.request
 
-              # This external Service is the supported in-cluster route to the
-              # tailnet endpoint. If the St. Petersburg model is unavailable,
-              # omit this provider while the Codex subscription remains available.
+              # This ExternalName is the supported in-cluster route to the
+              # tailnet endpoint. A single 5s timeout during St. Petersburg
+              # LWS rolls used to omit the vllm/ prefix entirely, so Pi and
+              # Hermes 400 unknown provider even after the GPU is healthy.
+              # Retry like the other discover inits, then pin the known
+              # serving ID so the catalog still advertises the GPU route.
+              # Completions fail closed against the live upstream.
               upstream = "http://stpetersburg-vllm-upstream/v1"
-              try:
-                  with urllib.request.urlopen(upstream + "/models", timeout=5) as response:
-                      payload = json.load(response)
-                  models = []
-                  seen = set()
-                  for entry in payload.get("data", []):
-                      model = str(entry.get("id", "")).strip()
-                      if model and model not in seen:
-                          seen.add(model)
-                          models.append(model)
-                  if not models:
-                      raise RuntimeError("upstream returned no models")
-              except Exception as error:
-                  pathlib.Path("/provider/vllm.yaml").write_text("", encoding="utf-8")
-                  print(f"vllm discovery unavailable; using Codex subscription fallback: {error}")
-              else:
-                  lines = [
-                      "openai-compatibility:",
-                      '  - name: "vllm"',
-                      '    prefix: "vllm"',
-                      f'    base-url: "{upstream}"',
-                      "    disable-cooling: false",
-                      "    models:",
-                  ]
-                  for model in models:
-                      lines.append("      - name: " + json.dumps(model))
-                      if model == "deepseek-v4-flash" and "DeepSeek-V4-Flash" not in seen:
-                          lines.append('        alias: "DeepSeek-V4-Flash"')
-                      if model == "Qwen3.8-Flash-Next-NVFP4" and "Qwen3.8-Flash-Next" not in seen:
-                          lines.append('        alias: "Qwen3.8-Flash-Next"')
-                  pathlib.Path("/provider/vllm.yaml").write_text(
-                      "\n".join(lines) + "\n", encoding="utf-8"
+              models = []
+              seen = set()
+              last_error = None
+              for attempt in range(30):
+                  try:
+                      with urllib.request.urlopen(upstream + "/models", timeout=15) as response:
+                          payload = json.load(response)
+                      for entry in payload.get("data", []):
+                          model = str(entry.get("id", "")).strip()
+                          if model and model not in seen:
+                              seen.add(model)
+                              models.append(model)
+                      if not models:
+                          raise RuntimeError("upstream returned no models")
+                      last_error = None
+                      break
+                  except Exception as error:
+                      last_error = error
+                      if attempt == 29:
+                          break
+                      time.sleep(2)
+              if not models:
+                  models = ["Qwen3.8-Flash-Next-NVFP4"]
+                  seen = set(models)
+                  print(
+                      "vllm discovery unavailable after retries; "
+                      f"pinning known route: {last_error}"
                   )
-                  print(f"discovered {len(models)} vllm models")
+              lines = [
+                  "openai-compatibility:",
+                  '  - name: "vllm"',
+                  '    prefix: "vllm"',
+                  f'    base-url: "{upstream}"',
+                  "    disable-cooling: false",
+                  "    models:",
+              ]
+              for model in models:
+                  lines.append("      - name: " + json.dumps(model))
+                  if model == "deepseek-v4-flash" and "DeepSeek-V4-Flash" not in seen:
+                      lines.append('        alias: "DeepSeek-V4-Flash"')
+                  if model == "Qwen3.8-Flash-Next-NVFP4" and "Qwen3.8-Flash-Next" not in seen:
+                      lines.append('        alias: "Qwen3.8-Flash-Next"')
+              pathlib.Path("/provider/vllm.yaml").write_text(
+                  "\n".join(lines) + "\n", encoding="utf-8"
+              )
+              print(f"discovered {len(models)} vllm models")
           env:
             - name: PYTHONDONTWRITEBYTECODE
               value: "1"
