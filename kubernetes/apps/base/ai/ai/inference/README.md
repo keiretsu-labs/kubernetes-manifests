@@ -36,6 +36,8 @@ The Bhaiya default is the CLIProxy alias, so clients remain on the managed
 gateway instead of dialing the DGX endpoint directly.
 
 The source recipe and patch provenance are pinned in the manifests to
+upstream revision `169fbad266f2791335a3102f0d3d625e7c295563`; the model revision is
+`7b719225242aacd3dbd3f9407468c2ee9a9d2594`.
 [`MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks`](https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks).
 The deployment reuses the already-published, digest-pinned serving image;
 there is no in-repo image build in this rollback.
