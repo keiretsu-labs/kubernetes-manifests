@@ -82,8 +82,8 @@ data:
     print(f"[validate] Architecture confirmed: {actual}")
     PY
       patch_tokenizer_context
-      echo "[download] All ${EXPECTED_SHARDS} safetensor files already present — skipping download."
-      echo "[validate] Model validation OK (${COUNT}/${EXPECTED_SHARDS})"
+      echo "[download] All $$$${EXPECTED_SHARDS} safetensor files already present — skipping download."
+      echo "[validate] Model validation OK ($$$${COUNT}/$$$${EXPECTED_SHARDS})"
       exit 0
     fi
 
@@ -112,14 +112,14 @@ data:
 
     COUNT="$$(find "$${MODEL_DIR}" -maxdepth 1 -name '*.safetensors' | wc -l)"
     if [ "$${COUNT}" -ne "$${EXPECTED_SHARDS}" ]; then
-      echo "[FATAL] Expected $${EXPECTED_SHARDS} safetensor files, got $${COUNT}."
+      echo "[FATAL] Expected $$$${EXPECTED_SHARDS} safetensor files, got $$$${COUNT}."
       exit 1
     fi
     test -f "$${MODEL_DIR}/config.json"
     test -f "$${MODEL_DIR}/model.safetensors.index.json"
     patch_tokenizer_context
     printf '%s\n' "$${EXPECTED_MARKER}" > "$${MODEL_MARKER}"
-    echo "[validate] Model validation OK ($${COUNT}/$${EXPECTED_SHARDS})"
+    echo "[validate] Model validation OK ($$$${COUNT}/$$$${EXPECTED_SHARDS})"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
