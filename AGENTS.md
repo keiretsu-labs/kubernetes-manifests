@@ -85,6 +85,12 @@ common-secrets + cluster-settings/cluster-secrets) into every pointer.
 **Deploy-to-some-clusters** = the pointer file exists only in those location
 trees. An app in `base/` with no pointer anywhere is not deployed.
 
+**Bhaiya is a foreign GitRepository.** `kubernetes/apps/ottawa/bhaiya/` is the
+Flux pointer only (`GitRepository`, `forgejo-bhaiya` credentials, and the
+Kustomization CR with no `targetNamespace`). Application objects, the Flux
+Receiver, Firefly MCP ExternalSecret, and home Gateway editor RBAC live in
+`corp/bhaiya`. Do not add those objects back under this pointer.
+
 ## Adding a new app
 
 **Copy the worked example in `docs/reference/app-template.md`** — complete
