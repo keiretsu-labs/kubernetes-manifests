@@ -446,13 +446,20 @@ Both live in `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml`.
 - Proxied through Cloudflare: the apex and `www` →
   `keiretsu.cdn.keiretsu.top`.
 - Pointed at `<name>.cdn.keiretsu.top`, i.e. answered by k8gb GSLB:
-  `forgejo`, `velero`, `hubble`, `logs`, `prometheus`, `opencost`, `oci`,
+  `velero`, `hubble`, `logs`, `prometheus`, `opencost`, `oci`,
   `status`, `s3`, `tailscale-logs.s3`.
 - Pointed at `ottawa.keiretsu.top`, i.e. straight to the Ottawa edge and
-  bypassing GSLB: `auth`, `home`, `bhaiya`, `grafana`, `teslamate`, `litellm`,
+  bypassing GSLB: `auth`, `home`, `bhaiya`, `forgejo`, `grafana`, `teslamate`, `litellm`,
   `woodpecker`, `infisical`, `frigate`, `monz`, `cliproxy`,
   `frigate.${LOCATION}`. `bhaiya` is pinned here on purpose — through the GSLB
-  the second WAN edge 404s about half the time.
+  the second WAN edge 404s about half the time. `forgejo` is pinned for the
+  same class of failure: public CNAME → `forgejo.cdn` follows k8gb NS
+  `ns1.dns.cdn.keiretsu.top` which has no A glue, so in-cluster lookups via
+  CoreDNS/NodeLocal (the `keiretsu.top` stub forwarded to a public recursor)
+  NXDOMAIN and Woodpecker cannot POST `/login/oauth/access_token`. Ottawa
+  CoreDNS/NodeLocal also answer `forgejo.keiretsu.top` as the public Envoy
+  Gateway VIP and forward `cdn.keiretsu.top` to the site k8gb CoreDNS VIP so
+  pods never wait on that glue.
 
 **`keiretsu-top-wildcards`** (labels `dns-target=cloudflare`,
 `dns-scope=public-only`):

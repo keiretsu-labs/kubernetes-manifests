@@ -38,10 +38,14 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    # Pin to the Ottawa edge, not forgejo.cdn (k8gb). Recursors cache
+    # NS ns1.dns.cdn.keiretsu.top with no A glue, so the CNAME hop
+    # NXDOMAINs in-cluster and breaks Woodpecker's Forgejo OAuth token
+    # exchange. forgejo.cdn.keiretsu.top remains the GSLB name.
     - dnsName: "forgejo.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
-        - "forgejo.cdn.${COMMON_DOMAIN}"
+        - "ottawa.${COMMON_DOMAIN}"
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"

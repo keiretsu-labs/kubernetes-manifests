@@ -40,6 +40,11 @@ data:
       cache 30
       forward . 10.50.69.51
     }
+    cdn.keiretsu.top:53 {
+      errors
+      cache 30
+      forward . 10.50.10.53
+    }
     keiretsu.top:53 {
       errors
       cache 30
