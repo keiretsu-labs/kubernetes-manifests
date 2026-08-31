@@ -10,6 +10,41 @@ StatefulSets remain online until the replacements are healthy and the operator
 has prepared each old identity for deletion. An old LocalPath `node_key` is
 never mounted by a pool pod.
 
+## Status: complete as of 2026-08-09
+
+This runbook was executed end to end. It is retained as a reference for the
+next node-local migration, **not** as outstanding work.
+
+| Step | State | Evidence |
+|---|---|---|
+| 1-3. Operator upgrade, endpoints, add replacement members | done | 10 `garage-node-local-*` GarageNodes, created 2026-08-08, all Connected/InLayout |
+| 4. Enter drain-safe consistency mode | done, then unwound by step 6 | `consistent` / `AssumeConsistent` set per site, then removed |
+| 5. Retire each old identity | done | 10 `chore(garage): retire <site> <node> legacy identity` commits, 2026-08-08 |
+| 6. Stabilize and clean up | mostly done | `fix(garage): restore degraded read quorum` (f97103df8, 2026-08-09) |
+
+**Read step 4 together with step 6 before acting on either.** Step 6 prescribes
+restoring `degraded` consistency and the default peer policy once no drain or
+layout change remains. That is why `GARAGE_CONSISTENCY_MODE` and
+`GARAGE_DRAIN_PEER_POLICY` are absent from every `cluster-settings.yaml` today
+and fall back to the `${GARAGE_CONSISTENCY_MODE:=degraded}` /
+`${GARAGE_DRAIN_PEER_POLICY:=Block}` defaults in `garagecluster.yaml`.
+Their absence is the finished state, not an abandoned rollout — a reading
+that is easy to get wrong from `git log` alone.
+
+Remaining step 6 items:
+
+- The ten `garage-hostpath-prep-*` Jobs are still present and `Complete`
+  (`kubernetes/apps/base/garage/garage-nodes-*/`). They are one-shot, idempotent,
+  and carry `kustomize.toolkit.fluxcd.io/force: enabled`, so they now double as
+  node directory preparation if a node is ever rebuilt. Removing them is a
+  judgement call rather than a pure cleanup.
+- Old PVCs/PVs are deliberately retained pending the separate reviewed cleanup
+  described in step 6.
+
+Old RPC Services are gone, no GarageNode carries a drain annotation, and the only
+remaining StatefulSets are the gateways and SMB members, which this migration
+explicitly leaves unchanged.
+
 ## Baseline captured 2026-08-08
 
 - Garage v2.3.0 and garage-operator v0.6.29 are running in all three clusters.
