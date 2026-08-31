@@ -358,6 +358,16 @@ spec:
                     alias: "vllm-fallback"
                     display-name: "Codex subscription fallback"
                     fork: true
+              # St. Petersburg's Qwen SGLang endpoint accepts system messages
+              # but rejects OpenAI's developer role, which Pi sends by default.
+              # Keep this compatibility translation scoped to the Qwen alias.
+              payload:
+                override:
+                  - models:
+                      - name: "vllm/Qwen3.8-Flash-Next"
+                        protocol: "openai"
+                    params:
+                      'messages.#(role=="developer")#.role': system
               plugins:
                 enabled: true
                 dir: "/CLIProxyAPI/plugins"

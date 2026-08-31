@@ -27,6 +27,23 @@ deployment = next(
     if document.get("kind") == "Deployment" and document["metadata"]["name"] == "cliproxy"
 )
 containers = deployment["spec"]["template"]["spec"]["containers"]
+init_containers = deployment["spec"]["template"]["spec"].get("initContainers", [])
+render_config = next(container for container in init_containers if container["name"] == "render-config")
+render_script = render_config["args"][0]
+rendered_config_match = re.search(
+    r"(?ms)^[ \t]*cat > /config/config\.yaml <<EOF\n(.*?)^[ \t]*EOF[ \t]*$",
+    render_script,
+)
+if rendered_config_match is None:
+    raise SystemExit("render-config must write the CLIProxy configuration heredoc")
+rendered_config = yaml.safe_load(rendered_config_match.group(1))
+qwen_payload_override = {
+    "models": [{"name": "vllm/Qwen3.8-Flash-Next", "protocol": "openai"}],
+    "params": {"messages.#(role==\"developer\")#.role": "system"},
+}
+if qwen_payload_override not in (rendered_config.get("payload") or {}).get("override", []):
+    raise SystemExit("Qwen must rewrite every developer message to system before its OpenAI route")
+
 sync = next(container for container in containers if container["name"] == "pi-bridge-sync")
 script = sync["args"][0]
 sentinel = "ready.unlink(missing_ok=True)"
@@ -86,5 +103,5 @@ if seen != [{"id": "gpt-5.6-luna", "provider": {"id": "codex"}, "direct": {}}]:
 if namespace["resolved_metadata"](qwen_alias, "vllm", None, [], {}) is not None:
     raise SystemExit("unavailable vLLM route inherited stale metadata")
 
-print("✓ cliproxy Pi bridge fallback metadata contract")
+print("✓ cliproxy Pi bridge metadata and Qwen payload contract")
 PY
