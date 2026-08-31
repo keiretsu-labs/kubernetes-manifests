@@ -159,7 +159,7 @@ spec:
     leaderTemplate:
       metadata:
         annotations:
-          keiretsu.top/restarted-for: tokenizer-context-1048576-v1
+          keiretsu.top/restarted-for: qwen38-no-decode-graph-v1
         labels:
           app: qwen38
           role: head
@@ -247,12 +247,12 @@ spec:
               --enable-metrics \
               --enable-cache-report \
               --disable-prefill-cuda-graph \
+              --disable-decode-cuda-graph \
               --host 0.0.0.0 \
               --port 8000 \
               --kv-cache-dtype nvfp4 \
               --json-model-override-args '{"text_config":{"rope_scaling":{"rope_type":"yarn","factor":4.0,"original_max_position_embeddings":262144},"max_position_embeddings":1048576}}' \
               --max-prefill-tokens 2048 \
-              --cuda-graph-bs-decode 1 2 3 4 5 6 7 8 10 12 14 16 \
               --nnodes 2 \
               --node-rank 0 \
               --dist-init-addr 192.168.74.1:26400
@@ -331,7 +331,7 @@ spec:
     workerTemplate:
       metadata:
         annotations:
-          keiretsu.top/restarted-for: tokenizer-context-1048576-v1
+          keiretsu.top/restarted-for: qwen38-no-decode-graph-v1
         labels:
           app: qwen38
           role: worker
@@ -415,12 +415,12 @@ spec:
               --enable-metrics \
               --enable-cache-report \
               --disable-prefill-cuda-graph \
+              --disable-decode-cuda-graph \
               --host 0.0.0.0 \
               --port 8000 \
               --kv-cache-dtype nvfp4 \
               --json-model-override-args '{"text_config":{"rope_scaling":{"rope_type":"yarn","factor":4.0,"original_max_position_embeddings":262144},"max_position_embeddings":1048576}}' \
               --max-prefill-tokens 2048 \
-              --cuda-graph-bs-decode 1 2 3 4 5 6 7 8 10 12 14 16 \
               --nnodes 2 \
               --node-rank 1 \
               --dist-init-addr 192.168.74.1:26400
