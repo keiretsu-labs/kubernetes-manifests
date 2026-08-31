@@ -5,10 +5,10 @@
 #
 # The model and serving recipe are from:
 # https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks
+# Upstream recipe revision: 169fbad266f2791335a3102f0d3d625e7c295563
 # Target checkpoint: RadixArk/Qwen3.8-Flash-Next-NVFP4@7b719225
-# Target recipe: f87d586e (SM121 QSA fallback + NVFP4 KV patches)
-# The custom image is built by qwen38-build.yaml from the target's exact patch
-# sources and is pinned to a digest after the first successful build.
+# Target runtime: SGLang SM121 fallback image, with the upstream model/download
+# contract and current cluster-qualified guardrails preserved below.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -25,6 +25,7 @@ data:
     MODEL_MARKER="$${MODEL_DIR}/.model-revision"
     EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
     EXPECTED_SHARDS=206
+    EXPECTED_CONFIG_ARCHITECTURE="Qwen4ExpForConditionalGeneration"
 
     # The checkpoint's tokenizer_config.json still advertises the original
     # 262144-token window. SGLang is deliberately launched with the extended
@@ -68,9 +69,20 @@ data:
     if [ "$${COUNT}" -eq "$${EXPECTED_SHARDS}" ] && [ "$${CURRENT_MARKER}" = "$${EXPECTED_MARKER}" ] \
       && [ -f "$${MODEL_DIR}/config.json" ] \
       && [ -f "$${MODEL_DIR}/model.safetensors.index.json" ]; then
+      python3 - "$${MODEL_DIR}/config.json" "$${EXPECTED_CONFIG_ARCHITECTURE}" <<'PY'
+    import json
+    import sys
+    with open(sys.argv[1]) as f:
+        config = json.load(f)
+    expected = sys.argv[2]
+    actual = config.get("architectures", [None])[0]
+    if actual != expected:
+        raise SystemExit(f"[FATAL] Expected architecture {expected}, got {actual}")
+    print(f"[validate] Architecture confirmed: {actual}")
+    PY
       patch_tokenizer_context
-      echo "[download] All $${EXPECTED_SHARDS} safetensor files already present — skipping download."
-      echo "[validate] Model validation OK ($${COUNT}/$${EXPECTED_SHARDS})"
+      echo "[download] All ${EXPECTED_SHARDS} safetensor files already present — skipping download."
+      echo "[validate] Model validation OK (${COUNT}/${EXPECTED_SHARDS})"
       exit 0
     fi
 
