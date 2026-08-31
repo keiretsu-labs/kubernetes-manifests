@@ -208,6 +208,10 @@ spec:
             # reserve enough static-pool budget for the hybrid state cache.
             # FlashInfer autotune reaches the SM121 FA4 CuTe path, which
             # currently fails compilation with a weak-congruence error.
+            # NEXTN speculative decode is intentionally off: the target-verify
+            # logits kernel races under huge prompts and can collapse output
+            # to a single token forever. max-running-requests is the real
+            # mamba-cache cap (19 slots / 5 per request = 3), not 8.
             exec python3 -m sglang.launch_server \
               --model-path /models/qwen38 \
               --served-model-name Qwen3.8-Flash-Next-NVFP4 \
@@ -223,12 +227,8 @@ spec:
               --mamba-full-memory-ratio 0.3 \
               --mem-fraction-static 0.90 \
               --chunked-prefill-size 1024 \
-              --max-running-requests 8 \
+              --max-running-requests 3 \
               --context-length 1048576 \
-              --speculative-algorithm NEXTN \
-              --speculative-num-steps 2 \
-              --speculative-eagle-topk 1 \
-              --speculative-num-draft-tokens 2 \
               --reasoning-parser auto \
               --tool-call-parser auto \
               --enable-metrics \
@@ -378,6 +378,8 @@ spec:
             nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
             # Keep the worker's memory profile identical to the head rank.
             # The SM121 FA4 CuTe autotune warmup is not usable in this image.
+            # NEXTN off and max-running-requests 3 must stay in lockstep with
+            # the head rank (mamba state cache silently caps 8 to 3).
             exec python3 -m sglang.launch_server \
               --model-path /models/qwen38 \
               --served-model-name Qwen3.8-Flash-Next-NVFP4 \
@@ -393,12 +395,8 @@ spec:
               --mamba-full-memory-ratio 0.3 \
               --mem-fraction-static 0.90 \
               --chunked-prefill-size 1024 \
-              --max-running-requests 8 \
+              --max-running-requests 3 \
               --context-length 1048576 \
-              --speculative-algorithm NEXTN \
-              --speculative-num-steps 2 \
-              --speculative-eagle-topk 1 \
-              --speculative-num-draft-tokens 2 \
               --reasoning-parser auto \
               --tool-call-parser auto \
               --enable-metrics \

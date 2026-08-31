@@ -20,8 +20,9 @@ derived from `lmsysorg/sglang:qwen38flashnext` with MiaAI-Lab's published QSA
 fallback and NVFP4-KV patches)
 **Deployment**: `qwen38.yaml`, a two-member LeaderWorkerSet pinned to
 `spark-0` and `spark-1`, with SGLang TP=2 over the RDMA rail.
-**Serving profile**: 1M-token YaRN context, NVFP4 KV cache, and NEXTN
-speculative decoding (2 steps / top-k 1 / 2 draft tokens).
+**Serving profile**: 1M-token YaRN context, NVFP4 KV cache, no NEXTN
+speculative decoding. `--max-running-requests 3` matches the mamba state
+cache cap (19 slots, 5 per request). Do not advertise a higher value.
 **Endpoint**: `stpetersburg-vllm` (port 80 → 8000), also exposed internally as
 the `qwen38` Service.
 
@@ -47,16 +48,21 @@ there is no in-repo image build in this rollback.
   separate per rank. The cache-drop init container and bounded cache-drop loop
   reclaim unified memory before and during serving.
 - The memory-sensitive serving settings are `--mem-fraction-static 0.90`,
-  `--mamba-full-memory-ratio 0.3`, a `1048576` context, and NEXTN with two
-  speculative steps and two draft tokens. Do not raise these ratios or place
-  unrelated GPU workloads on either Spark without a new load qualification.
+  `--mamba-full-memory-ratio 0.3`, a `1048576` context, and
+  `--max-running-requests 3`. Do not raise the mamba ratio (or the advertised
+  running-request cap) or place unrelated GPU workloads on either Spark
+  without a new load qualification. NEXTN speculative decoding is disabled:
+  the target-verify logits kernel can race on huge prompts and pin generation
+  on a single token with `spec_accept_length=1` while GPUs stay busy.
 - Metrics are scraped once by the `qwen38` ServiceMonitor at 15-second
   intervals and stored in the St. Petersburg Mimir tenant. Do not add a second
   static ScrapeConfig for this Service; duplicate scrapes double-count counter
   rates and waste the agent's remote-write budget.
 - The shared Grafana `SGLang Inference` dashboard is model-selector driven and
   includes the scrape target, throughput, queue/KV headroom, latency,
-  speculative acceptance, and DCGM Spark GPU panels.
+  speculative acceptance, and DCGM Spark GPU panels. PrometheusRule
+  `sglang-rules` in this directory alerts when `num_running_reqs>0` while
+  generation tokens are flat, or when `spec_accept_length` is pinned at 1.0.
 - The model-download init step normalizes the checkpoint tokenizer metadata from
   its source `262144` value to `1048576` on each start. This is metadata-only;
   it prevents long prompts from being rejected by the tokenizer before SGLang's

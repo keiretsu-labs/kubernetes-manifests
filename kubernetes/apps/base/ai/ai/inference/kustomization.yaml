@@ -9,3 +9,4 @@ resources:
   - qwen38.yaml
   - secret.yaml
   - probes.yaml
+  - prometheusrule.yaml

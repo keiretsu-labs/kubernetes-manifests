@@ -508,11 +508,12 @@ spec:
               # The St. Petersburg SGLang catalog does not publish all Qwen
               # serving-profile facts in /v1/models. Keep those facts explicit
               # so the Pi catalog and Bhaiya's generated OpenCode config describe
-              # the active route accurately. No output limit is asserted because
-              # the upstream does not publish one.
+              # the active route accurately. Assert an 8k output cap so a stuck
+              # stream cannot legally decode for the full 1,048,576 context.
               metadata_overrides = {
                   "vllm/Qwen3.8-Flash-Next-NVFP4": {
                       "context_window": 1048576,
+                      "max_tokens": 8192,
                       "name": "Qwen3.8 Flash Next",
                       "reasoning": True,
                   },

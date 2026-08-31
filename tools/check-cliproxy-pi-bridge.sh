@@ -49,6 +49,7 @@ if namespace["metadata_alias_sources"].get(qwen_alias) != qwen_source:
     raise SystemExit(f"{qwen_alias} must resolve metadata from {qwen_source}")
 if namespace["metadata_override"](qwen_alias) != {
     "context_window": 1048576,
+    "max_tokens": 8192,
     "name": "Qwen3.8 Flash Next",
     "reasoning": True,
 }:
