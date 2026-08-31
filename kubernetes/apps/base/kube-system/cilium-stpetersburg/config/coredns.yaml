@@ -35,6 +35,11 @@ data:
             response set ra
         }
     }
+    cdn.keiretsu.top:53 {
+      errors
+      cache 30
+      forward . 10.73.10.53
+    }
     keiretsu.top:53 {
       errors
       cache 30

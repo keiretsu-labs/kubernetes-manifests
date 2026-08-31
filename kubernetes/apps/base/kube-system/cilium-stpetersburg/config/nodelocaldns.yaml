@@ -70,6 +70,15 @@ data:
         }
         prometheus :9253
         }
+    cdn.keiretsu.top:53 {
+      errors
+      cache 30
+      reload
+      loop
+      bind 0.0.0.0
+      forward . 10.73.10.53
+      prometheus :9253
+    }
     keiretsu.top:53 {
       errors
       cache 30
