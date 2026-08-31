@@ -14,6 +14,8 @@ kind: Role
 metadata:
   name: bhaiya-gateway-editor
   namespace: home
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 rules:
   - apiGroups: ["gateway.networking.k8s.io"]
     resources: ["gateways"]
@@ -28,6 +30,8 @@ kind: RoleBinding
 metadata:
   name: bhaiya-gateway-editor
   namespace: home
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role

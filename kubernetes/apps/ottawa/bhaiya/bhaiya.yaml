@@ -7,7 +7,9 @@ metadata:
   labels:
     notifications.keiretsu.top/github-status: disabled
 spec:
-  targetNamespace: bhaiya
+  # Do not set targetNamespace. The activation overlay already namespaces
+  # every namespaced object, including home/bhaiya-gateway-editor. A Flux
+  # targetNamespace would rewrite that Role/RoleBinding into bhaiya.
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
