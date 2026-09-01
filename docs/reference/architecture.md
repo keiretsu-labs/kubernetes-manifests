@@ -1141,9 +1141,13 @@ One per cluster.
   `talconfig.yaml`, and **Robbinsdale does not** — so Robbinsdale contributes
   service logs but no kernel logs, and an empty kernel view for those nodes is
   expected rather than a broken collector
-- **filters** — kubernetes metadata, then `nest`
+- **filters** — kubernetes metadata, then `nest`; for `syslogd` records, the
+  existing `content` field is copied to `msg` so the normal Talos output can
+  select it without re-emitting the record
 - **outputs** — two loki-protocol outputs to `${VICTORIA_LOGS_HOST}:9428`,
-  gzip, with `VL-Msg-Field log` for `kube.*` and `msg` for `talos.*`
+  gzip, with `VL-Msg-Field log` for `kube.*` and `msg` for `talos.*`; the
+  Talos output promotes its existing `tag` field (such as `kata` or
+  `virtiofsd`) as a stream label
 
 ### Grafana — single pane, Ottawa only
 
