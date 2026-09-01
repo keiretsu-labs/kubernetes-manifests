@@ -54,7 +54,7 @@ spec:
             Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
             Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
             Merge_Log           On
-            Keep_Log            Off
+            Keep_Log            On
             K8S-Logging.Parser  On
             K8S-Logging.Exclude On
             Labels              On
@@ -66,6 +66,33 @@ spec:
             Operation    lift
             Nested_under kubernetes
             Add_prefix   kubernetes.
+
+        # The nest filter keeps the existing kubernetes.* field names, but
+        # those are literal dotted keys rather than a nested map. Copy the
+        # metadata needed for stream labels to temporary root keys before the
+        # Loki output reads them.
+        [FILTER]
+            Name         modify
+            Match        kube.*
+            Hard_copy    kubernetes.namespace_name __fluentbit_namespace
+            Hard_copy    kubernetes.pod_name       __fluentbit_pod
+            Hard_copy    kubernetes.container_name __fluentbit_container
+
+        # Merge_Log puts structured application messages in `msg`. For a
+        # record that could not be parsed, preserve its original `log` value
+        # as the message instead of sending a record with no message field.
+        [FILTER]
+            Name         modify
+            Match        kube.*
+            Condition    Key_Does_Not_Exist msg
+            Hard_copy    log msg
+
+        # The output uses `msg` for every Kubernetes record; the raw input
+        # field is no longer needed after the fallback above.
+        [FILTER]
+            Name         modify
+            Match        kube.*
+            Remove       log
 
         # Most Talos JSON records put their body in `msg`, but syslogd wraps
         # the original syslog body in `content`. Copy it only for syslogd so
@@ -84,10 +111,10 @@ spec:
             Host                   ${VICTORIA_LOGS_HOST}
             Port                   9428
             Uri                    /insert/loki/api/v1/push
-            header                 VL-Msg-Field log
-            labels                 cluster=${CLUSTER_NAME}, job=fluent-bit
-            label_keys             $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name'],$stream
-            remove_keys            kubernetes,stream
+            header                 VL-Msg-Field msg
+            labels                 namespace=$__fluentbit_namespace, pod=$__fluentbit_pod, container=$__fluentbit_container, cluster=${CLUSTER_NAME}, job=fluent-bit
+            label_keys             $stream
+            remove_keys            kubernetes,stream,__fluentbit_namespace,__fluentbit_pod,__fluentbit_container
             auto_kubernetes_labels off
             line_format            json
             compress               gzip

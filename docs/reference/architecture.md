@@ -1141,13 +1141,23 @@ One per cluster.
   `talconfig.yaml`, and **Robbinsdale does not** — so Robbinsdale contributes
   service logs but no kernel logs, and an empty kernel view for those nodes is
   expected rather than a broken collector
-- **filters** — kubernetes metadata, then `nest`; for `syslogd` records, the
-  existing `content` field is copied to `msg` so the normal Talos output can
-  select it without re-emitting the record
+- **filters** — Kubernetes metadata is merged into the record and its
+  `kubernetes.*` fields are retained; unparsed container lines fall back from
+  `log` to `msg`, while temporary Kubernetes label aliases are removed before
+  shipping. Talos `syslogd` records likewise copy `content` to `msg`
 - **outputs** — two loki-protocol outputs to `${VICTORIA_LOGS_HOST}:9428`,
-  gzip, with `VL-Msg-Field log` for `kube.*` and `msg` for `talos.*`; the
-  Talos output promotes its existing `tag` field (such as `kata` or
+  gzip, with `VL-Msg-Field msg` for both `kube.*` and `talos.*`; Kubernetes
+  streams are labelled `namespace`, `pod`, `container`, and `stream`, while
+  the Talos output promotes its existing `tag` field (such as `kata` or
   `virtiofsd`) as a stream label
+
+**Historical Kubernetes log query:** records ingested before the Kubernetes
+message/label mapping was corrected may have their body in the structured
+`msg` field but no `_msg` value or stream labels. Search those records by their
+retained fields, for example
+`kubernetes.namespace_name:bhaiya and msg:"ensure workspace routes"`.
+Fixing the pipeline does not rewrite VictoriaLogs history, so old records do
+not acquire `_msg`, `namespace`, `pod`, `container`, or `stream` labels.
 
 ### Grafana — single pane, Ottawa only
 
