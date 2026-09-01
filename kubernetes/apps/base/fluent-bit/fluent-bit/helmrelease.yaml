@@ -67,6 +67,16 @@ spec:
             Nested_under kubernetes
             Add_prefix   kubernetes.
 
+        # Most Talos JSON records put their body in `msg`, but syslogd wraps
+        # the original syslog body in `content`. Copy it only for syslogd so
+        # the existing Loki output can select the right field without
+        # re-emitting or dropping the original record.
+        [FILTER]
+            Name         modify
+            Match        talos.*
+            Condition    Key_Value_Equals talos-service syslogd
+            Hard_copy    content msg
+
       outputs: |
         [OUTPUT]
             Name                   loki
@@ -90,7 +100,7 @@ spec:
             Uri                    /insert/loki/api/v1/push
             header                 VL-Msg-Field msg
             labels                 cluster=${CLUSTER_NAME}, job=talos
-            label_keys             $talos-service,$node_address
+            label_keys             $talos-service,$node_address,$tag
             line_format            json
             compress               gzip
     extraPorts:
