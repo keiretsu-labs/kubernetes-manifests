@@ -44,8 +44,10 @@ groups:
   - name: kata-virtiofs.rules
     rules:
       # A fixed Nix workspace image can legitimately use roughly 30% of the
-      # daemon's FD limit for its overlay-backed rootfs. The thresholds leave
-      # that bounded baseline alone while detecting the old unbounded PVC path.
+      # daemon's FD limit for its overlay-backed rootfs. A level-only signal is
+      # deliberately warning: the incident data showed a steady ~57% plateau
+      # without proving that the level caused the sandbox loss. Growth and an
+      # observed termination are the high-salience signals below.
       - alert: KataVirtioFSFileDescriptorPressure
         expr: |
           (
@@ -62,8 +64,55 @@ groups:
           summary: >-
             Kata virtio-fs for {{ $labels.namespace }}/{{ $labels.pod }} is using
             {{ printf "%.0f" $value }}% of its file-descriptor limit.
+          description: >-
+            This is a level-only signal, not proof of an imminent sandbox loss.
+            Check KataVirtioFSFileDescriptorGrowth for a rising signal and
+            inspect the sandbox/node before it becomes unavailable. If the
+            workspace is degraded, restart-to-remount is the recovery; do not
+            reset or recreate the workspace because those paths can discard the
+            PVC.
         labels:
           severity: warning
+
+      - alert: KataVirtioFSFileDescriptorGrowth
+        expr: |
+          (
+            deriv(
+              (
+                max by (cluster, namespace, pod) (
+                  container_file_descriptors{namespace="bhaiya",pod=~"sandbox-.+"}
+                )
+                /
+                max by (cluster, namespace, pod) (
+                  container_ulimits_soft{namespace="bhaiya",pod=~"sandbox-.+",ulimit="max_open_files"}
+                )
+              )[30m:]
+            ) * 100 * 60 > 1
+          )
+          and
+          (
+            (
+              max by (cluster, namespace, pod) (
+                container_file_descriptors{namespace="bhaiya",pod=~"sandbox-.+"}
+              )
+              /
+              max by (cluster, namespace, pod) (
+                container_ulimits_soft{namespace="bhaiya",pod=~"sandbox-.+",ulimit="max_open_files"}
+              )
+            ) * 100 > 25
+          )
+        for: 5m
+        annotations:
+          summary: >-
+            Kata virtio-fs for {{ $labels.namespace }}/{{ $labels.pod }} is
+            climbing at {{ printf "%.1f" $value }} percentage points per minute.
+          description: >-
+            Inspect the sandbox and its node now; this alert detects sustained
+            growth rather than a steady file-descriptor level. If the workspace
+            is degraded, restart-to-remount is the recovery; do not reset or
+            recreate the workspace because those paths can discard the PVC.
+        labels:
+          severity: critical
 
       - alert: KataVirtioFSFileDescriptorCritical
         expr: |
@@ -81,6 +130,57 @@ groups:
           summary: >-
             Kata virtio-fs for {{ $labels.namespace }}/{{ $labels.pod }} is using
             {{ printf "%.0f" $value }}% of its file-descriptor limit.
+          description: >-
+            Treat this sustained high level as urgent and inspect the Kata
+            runtime/node. If the workspace is degraded, restart-to-remount is
+            the recovery; do not reset or recreate the workspace because those
+            paths can discard the PVC.
+        labels:
+          severity: critical
+
+      # kube-state-metrics and the event exporter do not expose SandboxChanged,
+      # Dead agent, or missing clh.sock as Prometheus metrics. The observed
+      # failure did leave an actionable proxy: the Kata workspace container's
+      # last termination became Error/exit 255. Keep this bounded to recent
+      # terminations so the last-termination gauge does not page forever.
+      - alert: KataSandboxExit255
+        expr: |
+          (
+            (
+              kube_pod_container_status_last_terminated_exitcode{
+                namespace="bhaiya",pod=~"sandbox-.+",container="workspace"
+              } == 255
+            )
+            and on (cluster, namespace, pod, uid)
+            kube_pod_container_status_last_terminated_reason{
+              namespace="bhaiya",pod=~"sandbox-.+",container="workspace",reason="Error"
+            }
+          )
+          and on (cluster, namespace, pod, uid)
+          max by (cluster, namespace, pod, uid) (
+            kube_pod_runtimeclass_name_info{
+              namespace="bhaiya",pod=~"sandbox-.+",runtimeclass_name=~"kata-.*"
+            }
+          )
+          and on (cluster, namespace, pod, uid)
+          (
+            time()
+            - kube_pod_container_status_last_terminated_timestamp{
+                namespace="bhaiya",pod=~"sandbox-.+",container="workspace"
+              }
+            < 15 * 60
+          )
+        for: 0m
+        annotations:
+          summary: >-
+            Kata sandbox {{ $labels.namespace }}/{{ $labels.pod }} terminated
+            its workspace container with exit code 255.
+          description: >-
+            kube-state-metrics does not retain the exact SandboxChanged, Dead
+            agent, or missing clh.sock event name; inspect pod events and
+            Kata/containerd logs to identify the cause. Restart-to-remount is
+            the recovery; do not reset or recreate the workspace because those
+            paths can discard the PVC.
         labels:
           severity: critical
 
