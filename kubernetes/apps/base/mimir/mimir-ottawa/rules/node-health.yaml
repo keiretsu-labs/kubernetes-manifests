@@ -1,7 +1,8 @@
 # Node health alerts for the NPD conditions written by the v0.8.19
 # node-problem-detector DaemonSet. These rules are evaluated by Mimir ruler;
 # node-readiness-controller independently applies only a NoSchedule taint.
-namespace: monitoring
+# Keep this namespace unique across every file passed to mimirtool.
+namespace: node-health
 groups:
   - name: node-health.rules
     rules:

@@ -40,7 +40,9 @@ spec:
             - /rules/garage.yaml
             - /rules/k8gb.yaml
             - /rules/media.yaml
+            - /rules/mimir-loader.yaml
             - /rules/monitoring.yaml
+            - /rules/node-health.yaml
             - /rules/payments.yaml
             - /rules/smartctl.yaml
             - /rules/zot.yaml
@@ -64,7 +66,9 @@ spec:
             - /rules/garage.yaml
             - /rules/k8gb.yaml
             - /rules/media.yaml
+            - /rules/mimir-loader.yaml
             - /rules/monitoring.yaml
+            - /rules/node-health.yaml
             - /rules/payments.yaml
             - /rules/smartctl.yaml
             - /rules/zot.yaml
@@ -84,7 +88,9 @@ spec:
             - /rules/garage.yaml
             - /rules/k8gb.yaml
             - /rules/media.yaml
+            - /rules/mimir-loader.yaml
             - /rules/monitoring.yaml
+            - /rules/node-health.yaml
             - /rules/payments.yaml
             - /rules/smartctl.yaml
             - /rules/zot.yaml
