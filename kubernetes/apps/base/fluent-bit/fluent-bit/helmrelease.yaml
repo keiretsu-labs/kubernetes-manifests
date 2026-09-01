@@ -41,6 +41,10 @@ spec:
             Format      json
             Chunk_Size  32KB
             Buffer_Size 128KB
+            # Talos JSON does not include a hostname. Fluent Bit 5.1.1's TCP
+            # input records the peer address without changing collection or
+            # applying a relabel/drop rule.
+            Source_Address_Key node_address
 
       filters: |
         [FILTER]
@@ -86,7 +90,7 @@ spec:
             Uri                    /insert/loki/api/v1/push
             header                 VL-Msg-Field msg
             labels                 cluster=${CLUSTER_NAME}, job=talos
-            label_keys             $talos-service
+            label_keys             $talos-service,$node_address
             line_format            json
             compress               gzip
     extraPorts:
