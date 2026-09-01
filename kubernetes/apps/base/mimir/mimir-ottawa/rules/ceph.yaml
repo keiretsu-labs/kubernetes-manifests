@@ -2,7 +2,11 @@
 # BLUESTORE_SLOW_OP_ALERT is currently latched at HEALTH_WARN while slow ops,
 # OSD availability, and PG health remain clear, so ceph_health_status > 0 would
 # create a permanently firing alert without identifying an active failure.
-namespace: monitoring
+#
+# The namespace must be unique across every file listed in loader-job.yaml.
+# mimirtool rejects the ENTIRE sync with "repeated namespace attempted to be
+# loaded" if two loaded files share one, which silently blocks all rule updates.
+namespace: ceph
 groups:
   - name: ceph.rules
     rules:
