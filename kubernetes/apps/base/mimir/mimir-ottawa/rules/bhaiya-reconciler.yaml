@@ -1,0 +1,74 @@
+# The reconciler emits cycle-level results: success, blocked, or error. These
+# alerts intentionally stay at that level because the metric has no workspace
+# label. A workspace-specific page needs a separate bounded metric from Bhaiya;
+# inspect the reconciler logs for the slug while resolving the alert.
+#
+# Keep this namespace unique across every file passed to mimirtool. A repeated
+# namespace aborts the complete sync for every Mimir tenant.
+namespace: bhaiya-reconciler
+groups:
+  - name: bhaiya-reconciler.rules
+    rules:
+      - alert: BhaiyaReconcileBlocked
+        expr: |
+          sum by (cluster) (
+            increase(
+              bhaiya_reconcile_cycles_total{
+                job="bhaiya",
+                container="bhaiya",
+                result="blocked"
+              }[5m]
+            )
+          ) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya reconciliation is blocked pending operator review
+          description: >-
+            At least one review-blocked reconciliation cycle was recorded in
+            the last five minutes. Blocked cycles do not advance the last
+            successful-cycle timestamp and will not clear without operator
+            action; inspect the reconciler logs for the affected workspace and
+            the provider object that needs review.
+
+      - alert: BhaiyaReconcileErrors
+        expr: |
+          sum by (cluster) (
+            increase(
+              bhaiya_reconcile_cycles_total{
+                job="bhaiya",
+                container="bhaiya",
+                result="error"
+              }[15m]
+            )
+          ) > 2
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Bhaiya reconciliation has sustained cycle errors
+          description: >-
+            More than two ordinary or mixed-error reconciliation cycles were
+            recorded in every sustained fifteen-minute window. Inspect the
+            reconciler logs and the affected provider or workspace operation;
+            this is distinct from a review-only blocked cycle.
+
+      - alert: BhaiyaReconcileLastSuccessStale
+        expr: |
+          time() - max by (cluster) (
+            bhaiya_reconcile_last_success_timestamp_seconds{
+              job="bhaiya",
+              container="bhaiya"
+            }
+          ) > 6 * 60 * 60
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya has not completed a clean reconciliation cycle in six hours
+          description: >-
+            The latest successful reconciliation cycle is more than six hours
+            old. The reconciler may still be running while repeatedly failing
+            or blocking on a workspace, so inspect both its cycle result and
+            the per-workspace logs before relying on desired-state convergence.
