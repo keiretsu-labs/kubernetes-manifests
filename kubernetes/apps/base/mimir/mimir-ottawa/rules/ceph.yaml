@@ -60,7 +60,7 @@ groups:
           ) > 0.80
         for: 15m
         annotations:
-          summary: Ceph cluster is above 80% used ({{ printf "%.1f" ($value * 100) }}%)
+          summary: Ceph cluster is above 80% used ({{ $value | humanizePercentage }})
           description: >-
             Ceph storage has been above 80% used for 15 minutes. This is an
             early warning ahead of the configured nearfull boundary; account
