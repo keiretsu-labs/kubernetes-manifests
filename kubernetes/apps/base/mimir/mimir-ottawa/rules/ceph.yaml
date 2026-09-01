@@ -1,0 +1,139 @@
+# Ceph alerts use actionable conditions rather than the aggregate health status.
+# BLUESTORE_SLOW_OP_ALERT is currently latched at HEALTH_WARN while slow ops,
+# OSD availability, and PG health remain clear, so ceph_health_status > 0 would
+# create a permanently firing alert without identifying an active failure.
+namespace: monitoring
+groups:
+  - name: ceph.rules
+    rules:
+      - alert: CephSlowOps
+        expr: |
+          max by (cluster) (ceph_healthcheck_slow_ops) > 0
+        for: 10m
+        annotations:
+          summary: Ceph is reporting blocked slow operations
+          description: >-
+            Ceph has reported one or more slow operations for 10 minutes.
+            Inspect ceph health detail, the affected clients, and OSD latency.
+            This is the actionable slow-operation signal; do not infer it from
+            the latched BLUESTORE_SLOW_OP_ALERT warning.
+        labels:
+          severity: critical
+
+      - alert: CephOSDDown
+        expr: |
+          min by (cluster, ceph_daemon) (ceph_osd_up) == 0
+        for: 10m
+        annotations:
+          summary: Ceph OSD {{ $labels.ceph_daemon }} is down
+          description: >-
+            OSD {{ $labels.ceph_daemon }} has been reported down for 10
+            minutes. Check Ceph quorum, the OSD pod, and the underlying disk
+            before recovery or replacement actions.
+        labels:
+          severity: critical
+
+      - alert: CephPGsUnhealthy
+        expr: |
+          (
+            sum by (cluster) (ceph_pg_down)
+            + sum by (cluster) (ceph_pg_incomplete)
+            + sum by (cluster) (ceph_pg_inconsistent)
+          ) > 0
+        for: 10m
+        annotations:
+          summary: Ceph has unhealthy placement groups
+          description: >-
+            Ceph has reported one or more down, incomplete, or inconsistent
+            placement groups for 10 minutes. Check Ceph health detail and PG
+            state before treating workspace or stateful-workload errors as
+            application failures.
+        labels:
+          severity: critical
+
+      - alert: CephClusterNearFull
+        expr: |
+          (
+            max by (cluster) (ceph_cluster_total_used_bytes)
+            /
+            max by (cluster) (ceph_cluster_total_bytes)
+          ) > 0.80
+        for: 15m
+        annotations:
+          summary: Ceph cluster is above 80% used ({{ $value | humanizePercentage }})
+          description: >-
+            Ceph storage has been above 80% used for 15 minutes. This is an
+            early warning ahead of the configured nearfull boundary; account
+            for stranded or undeletable PVC data when planning reclamation.
+        labels:
+          severity: warning
+
+      - alert: CephHealthError
+        expr: |
+          max by (cluster) (ceph_health_status) == 2
+        for: 5m
+        annotations:
+          summary: Ceph health is HEALTH_ERR
+          description: >-
+            Ceph has reported HEALTH_ERR for 5 minutes. Inspect ceph health
+            detail and the active failure before acknowledging the alert. The
+            HEALTH_WARN state is intentionally not paged because the current
+            warning includes a known latched check.
+        labels:
+          severity: critical
+
+  - name: bhaiya-sandbox.rules
+    rules:
+      # kube_pod_labels is exported by two opencost targets in this tenant, so
+      # deduplicate it before joining to kube_pod_info. Alert only on a drop
+      # from at least two nodes to one; the current one-node exposure is known
+      # and should not create a permanently firing alert on first load.
+      - alert: BhaiyaSandboxNodeConcentration
+        expr: |
+          (
+            count by (cluster) (
+              count by (cluster, node) (
+                kube_pod_info{
+                  namespace="bhaiya",
+                  created_by_kind="Sandbox",
+                  node!=""
+                }
+                * on (cluster, namespace, pod, uid) group_left()
+                max by (cluster, namespace, pod, uid) (
+                  kube_pod_labels{
+                    namespace="bhaiya",
+                    label_bhaiya_corp_workload="workspace"
+                  }
+                )
+              )
+            ) < 2
+          )
+          and on (cluster)
+          (
+            count by (cluster) (
+              count by (cluster, node) (
+                kube_pod_info{
+                  namespace="bhaiya",
+                  created_by_kind="Sandbox",
+                  node!=""
+                } offset 1h
+                * on (cluster, namespace, pod, uid) group_left()
+                max by (cluster, namespace, pod, uid) (
+                  kube_pod_labels{
+                    namespace="bhaiya",
+                    label_bhaiya_corp_workload="workspace"
+                  } offset 1h
+                )
+              )
+            ) >= 2
+          )
+        for: 10m
+        annotations:
+          summary: Bhaiya workspace sandboxes are concentrated on one node
+          description: >-
+            The distinct-node count for workspace Sandboxes dropped below two
+            after being at least two an hour earlier. Check scheduler placement
+            and restore node diversity before a single-node event takes down
+            the fleet.
+        labels:
+          severity: warning
