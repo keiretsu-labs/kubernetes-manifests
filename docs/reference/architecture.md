@@ -1318,7 +1318,6 @@ Companions:
 | App | Notes |
 |---|---|
 | `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo), not from this repo. This repo keeps the GitRepository, Forgejo credentials, and the Flux pointer (`dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, cert-manager). The Receiver, Firefly MCP secret, and home Gateway editor Role live in `corp/bhaiya`. Platform TLS (`*.bhaiya`), k8gb apex route, GarageKey, Velero schedule, and Mimir rules stay here. |
-| `border0` | Border0 `tailzero-connector`, device `ottawa-tailzero`. Runs with `clusterRoleMode: api-admin` because it proxies the Kubernetes API, which makes it a second admin-level route into Ottawa's API outside the tailnet operator's identity model — see [What breaks when a site goes down](#what-breaks-when-a-site-goes-down). Credentials come from a `tailzero-connector-credentials` Secret. |
 | `hermes` | agent runtime (`hermes-agent`); egresses to `stpetersburg-vllm` and `aperture` on the tailnet |
 | `firecrawl` | web-scraping stack, reconciled straight from the upstream GitHub repo's `examples/kubernetes/cluster-install` path |
 | `cliproxy` | LLM API proxy (`cli-proxy-api`); egress to `stpetersburg-vllm` |
@@ -1442,21 +1441,6 @@ against the machine addresses, or the `KUBERNETES_API_VIP` from inside the LAN.
 Both are listed per cluster under [Per-cluster facts](#per-cluster-facts). Treat
 knowing which of those you can reach from where you are as part of on-call
 readiness, not something to work out during an incident.
-
-Ottawa, and only Ottawa, has a second in-band path. It runs a Border0 tailzero
-connector (`kubernetes/apps/base/border0/border0-ottawa`, chart
-`tailzero-connector`, device `ottawa-tailzero`) configured with
-`rbac.clusterRoleMode: api-admin` — the repo's own comment says that level is
-"required for Kubernetes API proxying". Two consequences, and they point in
-opposite directions:
-
-- it is a genuine fallback when the Tailscale operator path is down, but only
-  for Ottawa, and only if you already have credentials for it;
-- it is also an **admin-level route into the API that does not go through the
-  tailnet operator**, so it sits outside the identity model the rest of this
-  document describes. Its invite code is seeded from a
-  `tailzero-connector-credentials` Secret rather than being committed. Treat it
-  with the same care as any other cluster-admin credential.
 
 ### If Ottawa is down
 
