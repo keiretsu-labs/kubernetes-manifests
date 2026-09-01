@@ -4,8 +4,8 @@
 # in the bhaiya namespace apply cleanly and then never fire. They live here
 # instead, alongside rules/payments.yaml which already followed this pattern.
 #
-# Covers the control plane, the MCP and SSH edges, payments, CNPG, and the
-# OpenCost cost pipeline.
+# Covers the control plane, provider-fence, the MCP and SSH edges, payments,
+# CNPG, and the OpenCost cost pipeline.
 #
 # The Mimir rule namespace below must be unique across every file listed in
 # loader-job.yaml: mimirtool rejects the whole sync with "repeated namespace
@@ -16,6 +16,58 @@ namespace: bhaiya-fleet
 groups:
 - name: bhaiya.fleet.availability
   rules:
+  - alert: BhaiyaProviderFenceUnavailable
+    expr: |
+      kube_deployment_spec_replicas{
+        namespace="bhaiya",
+        deployment="bhaiya-provider-fence"
+      } > 0
+      and on(namespace, deployment)
+      kube_deployment_status_replicas_available{
+        namespace="bhaiya",
+        deployment="bhaiya-provider-fence"
+      } < 1
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya provider fence has no available replica
+      description: >-
+        The provider-fence Deployment is configured to run but has no
+        available replica. Its fail-closed webhook can reject Bhaiya mutations;
+        inspect pod readiness, Deployment events, and the active rollout.
+  - alert: BhaiyaProviderFenceRolloutStalled
+    expr: |
+      kube_deployment_status_condition{
+        namespace="bhaiya",
+        deployment="bhaiya-provider-fence",
+        condition="Progressing",
+        status="false",
+        reason="ProgressDeadlineExceeded"
+      } == 1
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya provider-fence rollout is stalled
+      description: >-
+        Kubernetes has not observed progress for the provider-fence rollout
+        within its deadline. Because its webhook fails closed, inspect image
+        availability, readiness, TLS, and Deployment events immediately.
+  - alert: BhaiyaProviderFencePDBAtRisk
+    expr: |
+      kube_poddisruptionbudget_status_current_healthy{
+        namespace="bhaiya",
+        poddisruptionbudget="bhaiya-provider-fence"
+      } < 1
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya provider-fence disruption budget is unavailable
+      description: >-
+        The provider-fence PDB has had no healthy pod for 5 minutes; voluntary
+        disruption protection cannot preserve the fail-closed admission path.
   - alert: BhaiyaServiceNoReadyReplicas
     expr: |
       (
