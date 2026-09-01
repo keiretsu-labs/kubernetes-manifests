@@ -24,6 +24,22 @@ groups:
         labels:
           severity: critical
 
+      - alert: CephOSDWatchTimeouts
+        expr: |
+          sum by (cluster) (increase(ceph_osd_watch_timeouts[5m])) > 0
+        annotations:
+          summary: Ceph OSD watch timeouts or blocklists detected
+          description: >-
+            The Ceph OSD watch-timeout counter increased by {{ $value | humanize
+            }} in the last 5 minutes. This detects a storage/runtime event
+            already in progress; it cannot prevent the first Kata sandbox
+            timeout. Check whether workspaces are being torn down and inspect
+            Ceph, RBD, and node runtime logs. Restart an affected workspace to
+            remount its volumes; never reset or recreate it, because that can
+            discard the PVC.
+        labels:
+          severity: critical
+
       - alert: CephOSDDown
         expr: |
           min by (cluster, ceph_daemon) (ceph_osd_up) == 0
