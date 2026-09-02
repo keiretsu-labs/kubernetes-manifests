@@ -17,7 +17,7 @@ spec:
           containers:
           - name: probe
             # renovate: datasource=docker depName=curlimages/curl
-            image: curlimages/curl:8.21.0
+            image: curlimages/curl:8.22.0
             env:
             - name: API
               value: "http://qbittorrent:8000"
