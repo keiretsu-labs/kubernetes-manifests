@@ -1,7 +1,8 @@
-# The reconciler emits cycle-level results: success, blocked, or error. These
-# alerts intentionally stay at that level because the metric has no workspace
-# label. A workspace-specific page needs a separate bounded metric from Bhaiya;
-# inspect the reconciler logs for the slug while resolving the alert.
+# The reconciler emits cycle-level results: success, blocked, or error. Keep the
+# cycle alert for compatibility while the bounded workspace gauge provides the
+# actionable page. The gauge identifies the workspace whose reconcile operation
+# returned ErrPendingReview; related stale provider objects can belong to other
+# workspaces and must not be attributed to this label.
 #
 # Keep this namespace unique across every file passed to mimirtool. A repeated
 # namespace aborts the complete sync for every Mimir tenant.
@@ -31,6 +32,47 @@ groups:
             successful-cycle timestamp and will not clear without operator
             action; inspect the reconciler logs for the affected workspace and
             the provider object that needs review.
+
+      - alert: BhaiyaReconcileWorkspaceBlocked
+        expr: |
+          max by (cluster, workspace) (
+            bhaiya_reconcile_blocked_workspaces{
+              job="bhaiya",
+              container="bhaiya",
+              workspace!="__overflow__"
+            }
+          ) > 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya reconciliation is blocked for workspace {{ $labels.workspace }}
+          description: >-
+            Workspace {{ $labels.workspace }} returned ErrPendingReview during
+            its reconcile operation. This label names the blocked workspace;
+            stale provider objects observed while reconciling another workspace
+            can be a separate failure and are not attributed to this label.
+            The block requires operator review and will not clear on its own.
+
+      - alert: BhaiyaReconcileBlockedOverflow
+        expr: |
+          max by (cluster) (
+            bhaiya_reconcile_blocked_workspaces{
+              job="bhaiya",
+              container="bhaiya",
+              workspace="__overflow__"
+            }
+          ) > 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya has more blocked workspaces than the alert can name
+          description: >-
+            More than 64 workspaces returned ErrPendingReview in the current
+            reconcile pass. The workspace gauge intentionally exposes only a
+            bounded set of names plus this overflow signal; inspect Bhaiya
+            logs and metrics to enumerate the affected workspaces.
 
       - alert: BhaiyaReconcileErrors
         expr: |
