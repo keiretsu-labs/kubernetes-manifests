@@ -67,12 +67,29 @@ groups:
           unless on (cluster)
           (
             sum by (cluster) (
-              max by (cluster, pod) (
-                kube_pod_container_status_waiting_reason{
-                  namespace="bhaiya",
-                  container="workspace",
-                  reason=~"ContainerCreating|PodInitializing|ErrImagePull|ImagePullBackOff"
-                } > 0
+              max by (cluster, namespace, pod, uid) (
+                max by (cluster, namespace, pod, uid, reason) (
+                  kube_pod_container_status_waiting_reason{
+                    namespace="bhaiya",
+                    container="workspace",
+                    reason=~"ContainerCreating|PodInitializing|ErrImagePull|ImagePullBackOff"
+                  } > 0
+                )
+                * on (cluster, namespace, pod, uid) group_left(node)
+                max by (cluster, namespace, pod, uid, node) (
+                  kube_pod_info{
+                    namespace="bhaiya",
+                    created_by_kind="Sandbox",
+                    node!=""
+                  }
+                  * on (cluster, namespace, pod, uid) group_left()
+                  max by (cluster, namespace, pod, uid) (
+                    kube_pod_labels{
+                      namespace="bhaiya",
+                      label_bhaiya_corp_workload="workspace"
+                    }
+                  )
+                )
               )
             )
             >= on (cluster)
@@ -96,3 +113,53 @@ groups:
             known 4.1 GB image case; inspect the Sandbox, Pod events, and
             reconciler logs for a provisioning path that is no longer making
             progress.
+
+      - alert: BhaiyaWorkspaceProvisioningImagePullSlow
+        expr: |
+          (
+            max by (cluster, node, reason) (
+              max by (cluster, namespace, pod, uid, node, reason) (
+                max by (cluster, namespace, pod, uid, reason) (
+                  kube_pod_container_status_waiting_reason{
+                    namespace="bhaiya",
+                    container="workspace",
+                    reason=~"ContainerCreating|PodInitializing|ErrImagePull|ImagePullBackOff"
+                  } > 0
+                )
+                * on (cluster, namespace, pod, uid) group_left(node)
+                max by (cluster, namespace, pod, uid, node) (
+                  kube_pod_info{
+                    namespace="bhaiya",
+                    created_by_kind="Sandbox",
+                    node!=""
+                  }
+                  * on (cluster, namespace, pod, uid) group_left()
+                  max by (cluster, namespace, pod, uid) (
+                    kube_pod_labels{
+                      namespace="bhaiya",
+                      label_bhaiya_corp_workload="workspace"
+                    }
+                  )
+                )
+              )
+            ) > 0
+          )
+          and on (cluster)
+          max by (cluster) (
+            bhaiya_workspaces{
+              namespace="bhaiya",
+              service="bhaiya",
+              state="provisioning"
+            } > 0
+          )
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Workspace image pull is slow on node {{ $labels.node }}
+          description: >-
+            A Bhaiya workspace is still waiting for image/container creation on
+            node {{ $labels.node }} ({{ $labels.reason }}) after ten minutes.
+            This is intentionally a node-scoped warning, not a stuck
+            provisioning page; correlate it with KubeletDown and node health
+            before treating a cold pull as a control-plane failure.
