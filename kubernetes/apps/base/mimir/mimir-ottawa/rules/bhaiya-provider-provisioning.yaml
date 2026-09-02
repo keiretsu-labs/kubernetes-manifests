@@ -1,0 +1,165 @@
+# These Bhaiya signals are evaluated by the per-cluster Mimir ruler. The
+# PrometheusAgent remote-writes the source metrics but does not evaluate
+# PrometheusRule resources in the bhaiya namespace.
+#
+# Keep this namespace unique across every file passed to mimirtool. A repeated
+# namespace aborts the complete sync for all Mimir tenants.
+namespace: bhaiya-provider-provisioning
+groups:
+  - name: bhaiya.provider-fence
+    rules:
+      - alert: BhaiyaProviderFenceDirectDenial
+        expr: |
+          sum by (cluster, reason) (
+            increase(
+              bhaiya_provider_fence_denials_total{
+                namespace="bhaiya"
+              }[15m]
+            )
+          ) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya provider fence is denying mutations ({{ $labels.reason }})
+          description: >-
+            The provider-fence admission sidecar has denied at least one Bhaiya
+            mutation in the last fifteen minutes. Reason {{ $labels.reason }}
+            is a direct fail-closed decision; inspect the activation barrier,
+            durable lease state, and affected reconciliation before accepting
+            stale provider objects.
+
+  - name: bhaiya.workspace-provisioning
+    rules:
+      - alert: BhaiyaWorkspaceProvisioningFailed
+        expr: |
+          sum by (cluster) (
+            increase(
+              bhaiya_workspace_operations_total{
+                namespace="bhaiya",
+                service="bhaiya",
+                operation="provision",
+                result="error"
+              }[15m]
+            )
+          ) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya workspace provisioning failed
+          description: >-
+            Bhaiya recorded a failed workspace provisioning operation in the
+            last fifteen minutes. Inspect the provisioning error and the
+            affected Sandbox/Pod before retrying or acknowledging the alert.
+
+      - alert: BhaiyaWorkspaceProvisioningStuck
+        expr: |
+          (
+            max by (cluster) (
+              bhaiya_workspaces{
+                namespace="bhaiya",
+                service="bhaiya",
+                state="provisioning"
+              }
+            ) > 0
+          )
+          unless on (cluster)
+          (
+            sum by (cluster) (
+              max by (cluster, namespace, pod, uid) (
+                max by (cluster, namespace, pod, uid, reason) (
+                  kube_pod_container_status_waiting_reason{
+                    namespace="bhaiya",
+                    container="workspace",
+                    reason=~"ContainerCreating|PodInitializing|ErrImagePull|ImagePullBackOff"
+                  } > 0
+                )
+                * on (cluster, namespace, pod, uid) group_left(node)
+                max by (cluster, namespace, pod, uid, node) (
+                  kube_pod_info{
+                    namespace="bhaiya",
+                    created_by_kind="Sandbox",
+                    node!=""
+                  }
+                  * on (cluster, namespace, pod, uid) group_left()
+                  max by (cluster, namespace, pod, uid) (
+                    kube_pod_labels{
+                      namespace="bhaiya",
+                      label_bhaiya_corp_workload="workspace"
+                    }
+                  )
+                )
+              )
+            )
+            >= on (cluster)
+            max by (cluster) (
+              bhaiya_workspaces{
+                namespace="bhaiya",
+                service="bhaiya",
+                state="provisioning"
+              }
+            )
+          )
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya workspace provisioning is stuck
+          description: >-
+            At least one Bhaiya workspace has remained in provisioning for ten
+            minutes after accounting for active workspace image-pull or
+            initialization waits. This excludes a cold-node pull such as the
+            known 4.1 GB image case; inspect the Sandbox, Pod events, and
+            reconciler logs for a provisioning path that is no longer making
+            progress.
+
+      - alert: BhaiyaWorkspaceProvisioningImagePullSlow
+        expr: |
+          (
+            max by (cluster, node, reason) (
+              max by (cluster, namespace, pod, uid, node, reason) (
+                max by (cluster, namespace, pod, uid, reason) (
+                  kube_pod_container_status_waiting_reason{
+                    namespace="bhaiya",
+                    container="workspace",
+                    reason=~"ContainerCreating|PodInitializing|ErrImagePull|ImagePullBackOff"
+                  } > 0
+                )
+                * on (cluster, namespace, pod, uid) group_left(node)
+                max by (cluster, namespace, pod, uid, node) (
+                  kube_pod_info{
+                    namespace="bhaiya",
+                    created_by_kind="Sandbox",
+                    node!=""
+                  }
+                  * on (cluster, namespace, pod, uid) group_left()
+                  max by (cluster, namespace, pod, uid) (
+                    kube_pod_labels{
+                      namespace="bhaiya",
+                      label_bhaiya_corp_workload="workspace"
+                    }
+                  )
+                )
+              )
+            ) > 0
+          )
+          and on (cluster)
+          max by (cluster) (
+            bhaiya_workspaces{
+              namespace="bhaiya",
+              service="bhaiya",
+              state="provisioning"
+            } > 0
+          )
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Workspace image pull is slow on node {{ $labels.node }}
+          description: >-
+            A Bhaiya workspace is still waiting for image/container creation on
+            node {{ $labels.node }} ({{ $labels.reason }}) after ten minutes.
+            This is intentionally a node-scoped warning, not a stuck
+            provisioning page; correlate it with KubeletDown and node health
+            before treating a cold pull as a control-plane failure.
