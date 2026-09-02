@@ -13,7 +13,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: cron
-              image: curlimages/curl:8.16.0
+              image: curlimages/curl:8.22.0
               env:
                 - name: STATIC_CRON_TOKEN
                   valueFrom:
