@@ -26,7 +26,11 @@ spec:
     name: bhaiya
   interval: 10m
   retryInterval: 1m
-  timeout: 5m
+  # Bhaiya's MCP and SSH edges may legitimately drain for 930 seconds. Keep
+  # enough room for their 1053-second Deployment progress budget plus Flux
+  # apply/status propagation; the previous 5-minute timeout failed the whole
+  # Kustomization before a healthy long-lived-session rollout could finish.
+  timeout: 20m
   wait: true
   healthChecks:
     - apiVersion: apps/v1
