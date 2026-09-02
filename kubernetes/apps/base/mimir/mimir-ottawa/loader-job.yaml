@@ -35,6 +35,7 @@ spec:
             - --id=talos-ottawa
             - /rules/bhaiya.yaml
             - /rules/bhaiya-reconciler.yaml
+            - /rules/bhaiya-provider-provisioning.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
@@ -63,6 +64,7 @@ spec:
             - --id=talos-robbinsdale
             - /rules/bhaiya.yaml
             - /rules/bhaiya-reconciler.yaml
+            - /rules/bhaiya-provider-provisioning.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
@@ -87,6 +89,7 @@ spec:
             - --id=talos-stpetersburg
             - /rules/bhaiya.yaml
             - /rules/bhaiya-reconciler.yaml
+            - /rules/bhaiya-provider-provisioning.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
