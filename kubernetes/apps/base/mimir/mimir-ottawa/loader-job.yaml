@@ -34,6 +34,7 @@ spec:
             - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
             - --id=talos-ottawa
             - /rules/bhaiya.yaml
+            - /rules/bhaiya-deployment-currency.yaml
             - /rules/bhaiya-reconciler.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
@@ -62,6 +63,7 @@ spec:
             - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
             - --id=talos-robbinsdale
             - /rules/bhaiya.yaml
+            - /rules/bhaiya-deployment-currency.yaml
             - /rules/bhaiya-reconciler.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
@@ -86,6 +88,7 @@ spec:
             - --address=http://mimir-gateway.mimir.svc.cluster.local:8080
             - --id=talos-stpetersburg
             - /rules/bhaiya.yaml
+            - /rules/bhaiya-deployment-currency.yaml
             - /rules/bhaiya-reconciler.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml

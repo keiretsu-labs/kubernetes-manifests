@@ -1,0 +1,46 @@
+# Deployment currency is a control-plane signal: it compares the running
+# immutable source SHA with the current corp/bhaiya main SHA. Keep the alert
+# scoped to the service that PR #483 currently wires instead of aggregating
+# unrelated service processes. A future catalog-aware exporter should replace
+# the raw main-head target so documentation-only commits are not considered a
+# release target for this service.
+#
+# `probe_error` is deliberately not an alert for deployment lag. A Forgejo
+# outage, authentication failure, malformed response, or oversized response
+# means the answer is unknown, not that the deployment is behind.
+#
+# The 30-minute pending period is based on observed delivery: pipeline 2310
+# took 857 seconds end to end, and Flux's documented ten-minute polling
+# fallback gives a 24m17s normal budget. The remaining 5m43s is headroom for
+# scrape and status propagation.
+#
+# Keep this namespace unique across every file passed to mimirtool. A repeated
+# namespace aborts the complete sync for every Mimir tenant.
+namespace: bhaiya-deployment-currency
+groups:
+  - name: bhaiya-deployment-currency.rules
+    rules:
+      - alert: BhaiyaDeploymentCurrencyBehind
+        expr: |
+          max by (cluster, service) (
+            bhaiya_deployment_currency_status{
+              job="bhaiya",
+              container="bhaiya",
+              service="bhaiya",
+              status="behind"
+            }
+          ) == 1
+        for: 30m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya control plane is behind main
+          description: >-
+            The running Bhaiya control plane has reported a definitive
+            deployment-currency mismatch with corp/bhaiya main for at least
+            thirty minutes. A main commit may be stranded before
+            publish-and-deploy, or Flux may not have converged. Inspect the
+            latest Woodpecker main pipeline, the image bookkeeping commit,
+            Flux Kustomization status, and the running image SHA. This alert
+            is intentionally scoped to service={{ $labels.service }} and does
+            not treat an unavailable Forgejo probe as deployment lag.

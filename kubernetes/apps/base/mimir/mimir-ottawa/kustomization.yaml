@@ -19,6 +19,7 @@ configMapGenerator:
   - name: mimir-rules
     files:
       - rules/bhaiya.yaml
+      - rules/bhaiya-deployment-currency.yaml
       - rules/bhaiya-reconciler.yaml
       - rules/bhaiya-workspace-image.yaml
       - rules/blackbox.yaml
