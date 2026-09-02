@@ -1,8 +1,14 @@
 # The reconciler emits cycle-level results: success, blocked, or error. Keep the
-# cycle alert for compatibility while the bounded workspace gauge provides the
+# cycle alerts for compatibility while the bounded workspace gauge provides the
 # actionable page. The gauge identifies the workspace whose reconcile operation
 # returned ErrPendingReview; related stale provider objects can belong to other
 # workspaces and must not be attributed to this label.
+#
+# last_success_timestamp is updated only after a complete successful pass. Take
+# the newest value across replicas: the non-leader's value is harmless, and the
+# maximum remains the last real success during a leader transfer. Do not gate
+# this alert on bhaiya_reconcile_leader; no leader is itself a no-success
+# condition and must not suppress the signal.
 #
 # Keep this namespace unique across every file passed to mimirtool. A repeated
 # namespace aborts the complete sync for every Mimir tenant.
@@ -42,7 +48,7 @@ groups:
               workspace!="__overflow__"
             }
           ) > 0
-        for: 30s
+        for: 5m
         labels:
           severity: critical
         annotations:
@@ -103,14 +109,15 @@ groups:
               job="bhaiya",
               container="bhaiya"
             }
-          ) > 6 * 60 * 60
-        for: 15m
+          ) > 10 * 60
+        for: 5m
         labels:
           severity: critical
         annotations:
-          summary: Bhaiya has not completed a clean reconciliation cycle in six hours
+          summary: Bhaiya reconciliation has stopped completing successful cycles
           description: >-
-            The latest successful reconciliation cycle is more than six hours
-            old. The reconciler may still be running while repeatedly failing
-            or blocking on a workspace, so inspect both its cycle result and
-            the per-workspace logs before relying on desired-state convergence.
+            No successful reconciliation cycle has completed for more than ten
+            minutes. Check `kubectl logs -n bhaiya deploy/bhaiya | grep
+            'reconcile workspace resources'` for the aggregated error, then
+            inspect the cycle result and affected workspace before relying on
+            desired-state convergence.
