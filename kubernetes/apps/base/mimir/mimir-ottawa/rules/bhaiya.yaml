@@ -5,7 +5,7 @@
 # instead, alongside rules/payments.yaml which already followed this pattern.
 #
 # Covers the control plane, provider-fence, the MCP and SSH edges, payments,
-# CNPG, and the OpenCost cost pipeline.
+# CNPG, the OpenCost cost pipeline, and release-path freshness.
 #
 # The Mimir rule namespace below must be unique across every file listed in
 # loader-job.yaml: mimirtool rejects the whole sync with "repeated namespace
@@ -181,6 +181,110 @@ groups:
       description: The p99 request latency for {{ $labels.service }} has stayed above two
         seconds for fifteen minutes. Inspect the route breakdown, downstream dependencies,
         CPU throttling, and the active rollout.
+- name: bhaiya.fleet.ssh
+  rules:
+  - alert: BhaiyaSSHAuthorizationBackendUnavailable
+    expr: |
+      (
+        sum by (cluster) (
+          increase(
+            bhaiya_ssh_authorization_unavailable_total{
+              namespace="bhaiya",
+              job="bhaiya-ssh"
+            }[15m]
+          )
+        ) > 0
+      )
+      or
+      (
+        sum by (cluster) (
+          increase(
+            bhaiya_ssh_authentication_attempts_total{
+              namespace="bhaiya",
+              job="bhaiya-ssh",
+              result="unavailable"
+            }[15m]
+          )
+        ) > 0
+      )
+      or
+      (
+        sum by (cluster) (
+          increase(
+            bhaiya_ssh_reauthorization_attempts_total{
+              namespace="bhaiya",
+              job="bhaiya-ssh",
+              result="unavailable"
+            }[15m]
+          )
+        ) > 0
+      )
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya SSH authorization backend is unavailable
+      description: >-
+        The SSH edge has recorded an authorization or reauthorization request
+        that could not reach the authoritative Bhaiya control plane in the last
+        fifteen minutes. New logins and established sessions may be rejected;
+        inspect the SSH edge and its private control-plane path.
+  - alert: BhaiyaSSHSessionTerminationErrors
+    expr: |
+      (
+        sum by (cluster) (
+          increase(
+            bhaiya_ssh_session_terminations_total{
+              namespace="bhaiya",
+              job="bhaiya-ssh",
+              reason=~"authorization_unavailable|session_start_timeout|protocol_error|terminal_error"
+            }[15m]
+          )
+        ) > 0
+      )
+      or
+      (
+        sum by (cluster) (
+          increase(
+            bhaiya_ssh_session_disconnects_total{
+              namespace="bhaiya",
+              job="bhaiya-ssh",
+              cause="transport"
+            }[15m]
+          )
+        ) > 0
+      )
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya SSH sessions are terminating unexpectedly
+      description: >-
+        The SSH edge has recorded an authorization, startup-timeout, protocol,
+        terminal, or transport failure in the last fifteen minutes. Routine
+        command completion, ordinary connection closure, drain shutdowns, and
+        expected client disconnects are excluded; inspect the affected edge,
+        session agent, and workspace stream.
+- name: bhaiya.fleet.release
+  rules:
+  - alert: BhaiyaDeploymentCurrencyStale
+    expr: |
+      bhaiya_deployment_currency_status{
+        namespace="bhaiya",
+        service="bhaiya",
+        status="behind"
+      } == 1
+    for: 75m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya control plane is behind the main branch
+      description: >-
+        The running Bhaiya control-plane source SHA has differed from Forgejo's
+        main branch for 75 minutes after a definitive probe. This is the
+        independent release-path guard; inspect the Woodpecker publish and
+        bookkeeping handoff plus Flux convergence. A probe_error is deliberately
+        not treated as deployment lag.
 - name: bhaiya.fleet.resources
   rules:
   - alert: BhaiyaContainerOOMKilled
