@@ -228,6 +228,9 @@ spec:
     kubeEtcd:
       enabled: false
       serviceMonitor:
+        # Talos exposes this endpoint over plaintext without authentication;
+        # do not send the Prometheus service-account token to the node.
+        bearerTokenFile: ""
         metricRelabelings:
           - targetLabel: cluster
             replacement: ${CLUSTER_NAME}
