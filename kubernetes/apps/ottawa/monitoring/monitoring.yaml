@@ -17,6 +17,22 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 15m
+  patches:
+    - target:
+        group: helm.toolkit.fluxcd.io
+        version: v2
+        kind: HelmRelease
+        name: kube-prometheus-stack
+      patch: |-
+        - op: replace
+          path: /spec/values/kubeEtcd/enabled
+          value: true
+        - op: add
+          path: /spec/values/kubeEtcd/endpoints
+          value:
+            - 192.168.169.117 # asuka
+            - 192.168.169.119 # kaji
+            - 192.168.169.118 # rei
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

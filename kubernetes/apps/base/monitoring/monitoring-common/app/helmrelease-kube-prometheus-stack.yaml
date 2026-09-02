@@ -227,6 +227,10 @@ spec:
 
     kubeEtcd:
       enabled: false
+      serviceMonitor:
+        metricRelabelings:
+          - targetLabel: cluster
+            replacement: ${CLUSTER_NAME}
 
     kube-state-metrics:
       enabled: true
