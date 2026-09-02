@@ -62,6 +62,47 @@ groups:
             The bhaiya-payments PDB has had no healthy pod for 5 minutes;
             voluntary disruption protection cannot preserve webhook service.
 
+      - alert: BhaiyaPaymentsStripeUnavailable
+        expr: |
+          min by (provider) (
+            bhaiya_payments_provider_health{provider="stripe"}
+          ) < 1
+          and on() kube_deployment_spec_replicas{
+            namespace="bhaiya",
+            deployment="bhaiya-payments"
+          } > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments cannot reach Stripe
+          description: >-
+            Stripe has failed the payments service's bounded provider-health
+            check for 5 minutes. The payments replicas remain Ready for
+            webhooks and API traffic, but Stripe-dependent mutations are
+            failing closed; inspect the payments egress path and provider
+            status.
+
+      - alert: BhaiyaPaymentsFireflyUnavailable
+        expr: |
+          min by (provider) (
+            bhaiya_payments_provider_health{provider="firefly"}
+          ) < 1
+          and on() kube_deployment_spec_replicas{
+            namespace="bhaiya",
+            deployment="bhaiya-payments"
+          } > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya payments cannot reach Firefly
+          description: >-
+            Firefly has failed the payments service's bounded provider-health
+            check for 5 minutes. Webhooks remain reachable for provider retry,
+            while accounting-dependent operations fail closed until the
+            accounting path recovers.
+
       - alert: BhaiyaPaymentsWebhookFailures
         expr: increase(bhaiya_payments_webhook_failures_total[10m]) > 0
         for: 5m
