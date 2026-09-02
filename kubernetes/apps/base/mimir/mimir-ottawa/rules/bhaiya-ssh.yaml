@@ -1,0 +1,82 @@
+# SSH session metrics are emitted by internal/sshgateway and scraped from the
+# bhaiya-ssh Service. These alerts deliberately use the gateway's bounded
+# result labels rather than the service package's private health-listener
+# counters: the public /metrics endpoint exposes the former to Mimir.
+#
+# Expected client disconnects, orderly command completion, authorization
+# denials, and planned drains are excluded. A nonzero increase is enough to
+# report the first genuine backend or unexpected transport failure; the
+# lookback plus `for` period prevents a single scrape from becoming an alert.
+# Keep this namespace unique across every file passed to mimirtool.
+namespace: bhaiya-ssh
+groups:
+  - name: bhaiya-ssh.rules
+    rules:
+      - alert: BhaiyaSSHBackendUnavailable
+        expr: |
+          (
+            sum by (cluster) (
+              increase(
+                bhaiya_ssh_authentication_attempts_total{
+                  job="bhaiya-ssh",
+                  result="unavailable"
+                }[5m]
+              )
+            ) > 0
+          )
+          or
+          (
+            sum by (cluster) (
+              increase(
+                bhaiya_ssh_reauthorization_attempts_total{
+                  job="bhaiya-ssh",
+                  result="unavailable"
+                }[5m]
+              )
+            ) > 0
+          )
+          or
+          (
+            sum by (cluster) (
+              increase(
+                bhaiya_ssh_session_terminations_total{
+                  job="bhaiya-ssh",
+                  reason=~"authorization_unavailable|terminal_error"
+                }[5m]
+              )
+            ) > 0
+          )
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya SSH backend failure detected in {{ $labels.cluster }}
+          description: >-
+            The SSH edge recorded an authorization backend outage or a
+            workspace session-stream failure in the last five minutes. This
+            excludes ordinary command exits, explicit authorization denials,
+            and expected client disconnects. Inspect bhaiya-ssh logs and the
+            authorization and workspace-session backends before users lose
+            established sessions.
+
+      - alert: BhaiyaSSHUnexpectedDisconnect
+        expr: |
+          sum by (cluster) (
+            increase(
+              bhaiya_ssh_session_disconnects_total{
+                job="bhaiya-ssh",
+                cause="transport"
+              }[5m]
+            )
+          ) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Bhaiya SSH session lost unexpectedly in {{ $labels.cluster }}
+          description: >-
+            The SSH edge recorded a session terminated by a transport failure
+            in the last five minutes. Planned drains and orderly client closes
+            are excluded. Check the SSH edge, its network path, and the client
+            session before treating this as an authorization or workspace
+            backend failure.
