@@ -189,14 +189,23 @@ spec:
           # Keep the per-pod FD ceiling and current count. Kata's virtiofsd
           # lives in the pod cgroup, so this is the low-cardinality signal
           # before a single VM loses its virtio-fs-backed mounts.
+          # Keep named-container block-I/O device counters. Despite the legacy
+          # blkio name, cAdvisor sources these from cgroup v2 io.stat; retaining
+          # them gives per-workload attribution for node-device write spikes.
+          # The rows without a container name are aggregate cgroup rows and would
+          # double-count the named-container samples, so discard only those.
+          - action: drop
+            sourceLabels: [__name__, container]
+            regex: container_blkio_device_usage_total;
           # Drop high-cardinality, low-value cadvisor series that bloat the agent
-          # WAL (root of the OOM crashloop). container_fs_*/blkio_* are per-device
-          # and explode on these Ceph rbd-heavy nodes — they were also the source
-          # of the err-mimir-sample-duplicate-timestamp rejections on /dev/rbd*.
-          # Kept: container_cpu_*, container_memory_working_set_bytes, network.
+          # WAL (root of the OOM crashloop). container_fs_* are per-device and
+          # explode on these Ceph rbd-heavy nodes — they were also the source of
+          # the err-mimir-sample-duplicate-timestamp rejections on /dev/rbd*.
+          # Kept: container_cpu_*, container_memory_working_set_bytes, network,
+          # and the named-container block-I/O series above.
           - action: drop
             sourceLabels: [__name__]
-            regex: container_(fs|blkio|spec|tasks_state|memory_failures_total|sockets|threads|threads_max|processes|start_time_seconds|last_seen).*
+            regex: container_(fs|spec|tasks_state|memory_failures_total|sockets|threads|threads_max|processes|start_time_seconds|last_seen).*
           # Redundant cadvisor container variants no dashboard uses. Kept:
           # container_cpu_usage_seconds_total, container_cpu_cfs_throttled_seconds_total,
           # container_memory_working_set_bytes/rss/cache/swap, container_network_*.
