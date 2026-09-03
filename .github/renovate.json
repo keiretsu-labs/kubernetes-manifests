@@ -8,7 +8,7 @@
   ],
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
-  "platformAutomerge": true,
+  "platformAutomerge": false,
   "gitIgnoredAuthors": [
     "41898282+github-actions[bot]@users.noreply.github.com"
   ],
@@ -54,26 +54,19 @@
     {
       "description": "Auto merge Docker tags in CI and app Dockerfiles",
       "matchManagers": ["dockerfile", "docker-compose"],
-      "matchFileNames": [
-        ".github/**"
-      ],
+      "matchFileNames": [".github/**"],
       "automerge": true
     },
     {
       "description": "Auto merge npm updates in .github",
       "matchManagers": ["npm"],
-      "matchFileNames": [
-        ".github/**"
-      ],
+      "matchFileNames": [".github/**"],
       "automerge": true
     },
     {
       "description": "Auto merge non-critical-infrastructure cluster updates",
       "matchManagers": ["flux", "helm-values", "kubernetes", "kustomize"],
-      "matchFileNames": [
-        "clusters/**",
-        "kubernetes/**"
-      ],
+      "matchFileNames": ["clusters/**", "kubernetes/**"],
       "automerge": true
     },
     {
