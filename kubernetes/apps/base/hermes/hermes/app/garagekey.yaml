@@ -8,8 +8,6 @@ spec:
     name: garage
     namespace: garage
   name: "Hermes S3 Reader Key"
-  allBuckets:
-    read: true
   secretTemplate:
     name: hermes-s3
     accessKeyIdKey: AWS_ACCESS_KEY_ID
