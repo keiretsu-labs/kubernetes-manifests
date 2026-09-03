@@ -11,8 +11,8 @@ data:
     set -eu
 
     root=/probe
-    state="$${root}/state"
-    work="$${root}/work-$${HOSTNAME}"
+    state="$${root}/state/run-v2"
+    work="$${root}/work-v2-$${HOSTNAME}"
     host="$${HOSTNAME}"
     small_count=2000
     small_bytes=4096
@@ -24,18 +24,15 @@ data:
       printf '%s probe=%s %s\n' "$$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$${host}" "$${1}"
     }
 
-    now_ns() {
-      value=$$(date +%s%N)
-      case "$${value}" in
-        *[!0-9]*) date +%s000000000 ;;
-        *) printf '%s' "$${value}" ;;
-      esac
+    now_cs() {
+      awk '{ printf "%d", $1 * 100 }' /proc/uptime
     }
 
     elapsed_ms() {
       start="$${1}"
-      end="$$(now_ns)"
-      value=$$(awk "BEGIN { printf \"%d\", ($${end} - $${start}) / 1000000 }")
+      end="$$(now_cs)"
+      value=$$(($${end} - $${start}))
+      value=$$(($${value} * 10))
       if [ "$${value}" -lt 1 ]; then
         value=1
       fi
@@ -86,7 +83,7 @@ data:
       done
       log "PASS cross-pod-visibility writers=2"
 
-      start=$$(now_ns)
+      start=$$(now_cs)
       index=1
       while [ "$${index}" -le "$${small_count}" ]; do
         dd if=/dev/zero of="$${work}/small-$${index}.tmp" bs="$${small_bytes}" count=1 conv=fsync status=none
@@ -104,7 +101,7 @@ data:
       small_avg=$$(awk "BEGIN { printf \"%.3f\", $${small_ms} / $${small_count} }")
       log "MEASURE small_files count=$${small_count} bytes=$${small_total_bytes} elapsed_ms=$${small_ms} throughput_MiB_s=$${small_rate} avg_write_latency_ms=$${small_avg}"
 
-      start=$$(now_ns)
+      start=$$(now_cs)
       dd if=/dev/zero of="$${work}/large-$${host}.tmp" bs=1M count=482 conv=fsync status=none
       mv "$${work}/large-$${host}.tmp" "$${work}/large-$${host}.blob"
       large_ms=$$(elapsed_ms "$${start}")
