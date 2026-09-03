@@ -27,6 +27,7 @@ spec:
       securityContext:
         fsGroup: 65532
         runAsNonRoot: true
+        runAsUser: 65532
         seccompProfile:
           type: RuntimeDefault
       affinity:
