@@ -15,14 +15,16 @@ place, appends records to a shared journal, writes and hashes a 482 MiB file,
 then deletes the test files. The shared journal is checked for all records from
 both writers, which tests concurrent visibility and detects lost appends. The
 probe prints measured small-file and sequential throughput plus average
-per-file latency in its pod logs.
+per-file latency in its pod logs. It records a durable marker before the
+second revision so the remount check has a discriminating control.
 
 The first revision leaves both pods ready after the workload. Change the
 `cephfs-proof.keiretsu.top/rollout` value in the Deployment pod template through
 GitOps for the second revision. The resulting replacement pods validate the
 marker from the first revision after a fresh volume mount and report
 `remount-validated`. This two-revision sequence is intentional: a container
-restart alone would not prove a CSI unmount/remount.
+restart alone would not prove a CSI unmount/remount, while a GitOps Deployment
+rollout replaces pods and forces a fresh mount.
 
 The phase request supplies the current Garage S3 comparison points: about
 `42 ms` average HTTP latency and `47 MiB/s` registry reads. Record those beside

@@ -25,7 +25,11 @@ data:
     }
 
     now_ns() {
-      date +%s%N
+      value=$$(date +%s%N)
+      case "$${value}" in
+        *[!0-9]*) date +%s000000000 ;;
+        *) printf '%s' "$${value}" ;;
+      esac
     }
 
     elapsed_ms() {
