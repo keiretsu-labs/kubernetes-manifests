@@ -7,9 +7,31 @@ spec:
   clusterRef:
     name: garage
   name: "WebUI Sidecar Key"
-  allBuckets:
-    read: true
-    write: true
+  bucketPermissions:
+    - bucketRef:
+        name: tracearr-postgres
+      read: true
+      write: true
+    - bucketRef:
+        name: immich-postgres
+      read: true
+      write: true
+    - bucketRef:
+        name: tailscale-logs
+      read: true
+      write: true
+    - bucketRef:
+        name: mimir
+      read: true
+      write: true
+    - bucketRef:
+        name: bookorbit-postgres
+      read: true
+      write: true
+    - bucketRef:
+        name: omnibus-postgres
+      read: true
+      write: true
   secretTemplate:
     name: garage-webui-sidecar
     accessKeyIdKey: AWS_ACCESS_KEY_ID
