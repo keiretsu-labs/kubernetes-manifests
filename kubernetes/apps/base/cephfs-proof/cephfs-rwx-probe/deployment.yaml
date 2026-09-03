@@ -18,7 +18,7 @@ spec:
       labels:
         app.kubernetes.io/name: cephfs-rwx-disposable-probe
       annotations:
-        cephfs-proof.keiretsu.top/rollout: "initial"
+        cephfs-proof.keiretsu.top/rollout: "second"
     spec:
       terminationGracePeriodSeconds: 5
       securityContext:
