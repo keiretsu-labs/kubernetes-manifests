@@ -36,6 +36,7 @@ spec:
             - /rules/bhaiya.yaml
             - /rules/bhaiya-reconciler.yaml
             - /rules/bhaiya-provider-provisioning.yaml
+            - /rules/bhaiya-ssh.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
@@ -65,6 +66,7 @@ spec:
             - /rules/bhaiya.yaml
             - /rules/bhaiya-reconciler.yaml
             - /rules/bhaiya-provider-provisioning.yaml
+            - /rules/bhaiya-ssh.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
@@ -90,6 +92,7 @@ spec:
             - /rules/bhaiya.yaml
             - /rules/bhaiya-reconciler.yaml
             - /rules/bhaiya-provider-provisioning.yaml
+            - /rules/bhaiya-ssh.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
