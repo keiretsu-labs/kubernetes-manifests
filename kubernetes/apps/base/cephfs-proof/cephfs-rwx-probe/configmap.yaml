@@ -1,0 +1,157 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cephfs-rwx-disposable-probe-script
+  labels:
+    app.kubernetes.io/name: cephfs-rwx-disposable-probe
+data:
+  probe.sh: |
+    #!/bin/sh
+    set -eu
+
+    root=/probe
+    state="$${root}/state"
+    work="$${root}/work-$${HOSTNAME}"
+    host="$${HOSTNAME}"
+    small_count=2000
+    small_bytes=4096
+    large_bytes=505413632
+
+    mkdir -p "$${state}" "$${work}" "$${root}/status"
+
+    log() {
+      printf '%s probe=%s %s\n' "$$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$${host}" "$${1}"
+    }
+
+    now_ns() {
+      value=$$(date +%s%N)
+      case "$${value}" in
+        *[!0-9]*) date +%s000000000 ;;
+        *) printf '%s' "$${value}" ;;
+      esac
+    }
+
+    elapsed_ms() {
+      start="$${1}"
+      end="$$(now_ns)"
+      value=$$(awk "BEGIN { printf \"%d\", ($${end} - $${start}) / 1000000 }")
+      if [ "$${value}" -lt 1 ]; then
+        value=1
+      fi
+      printf '%s' "$${value}"
+    }
+
+    mib_per_second() {
+      bytes="$${1}"
+      milliseconds="$${2}"
+      awk "BEGIN { printf \"%.2f\", ($${bytes} / 1048576) / ($${milliseconds} / 1000) }"
+    }
+
+    wait_for_peer() {
+      deadline=$$(date +%s)
+      deadline=$$(($${deadline} + 180))
+      while [ "$$(date +%s)" -lt "$${deadline}" ]; do
+        if [ "$$(find "$${state}" -maxdepth 1 -name 'writer-*' -type f | wc -l)" -ge 2 ]; then
+          return 0
+        fi
+        sleep 1
+      done
+      log "FAIL peer-writer-timeout"
+      exit 1
+    }
+
+    verify_journal() {
+      expected=$$(($${small_count} / 20 * 2))
+      actual=$$(wc -l < "$${state}/journal")
+      unique=$$(sort -u "$${state}/journal" | wc -l)
+      if [ "$${actual}" -ne "$${expected}" ] || [ "$${unique}" -ne "$${expected}" ]; then
+        log "FAIL journal-lines expected=$${expected} actual=$${actual} unique=$${unique}"
+        exit 1
+      fi
+      log "PASS concurrent-journal lines=$${actual} unique=$${unique}"
+    }
+
+    marker="$${state}/probe-complete"
+    ready="$${root}/status/ready-$${host}"
+
+    if [ ! -f "$${marker}" ]; then
+      log "START rwx=ReadWriteMany claim=cephfs-rwx-disposable-probe"
+
+      printf 'writer=%s\nwritten-before-restart=true\n' "$${host}" > "$${state}/writer-$${host}"
+      sync
+      wait_for_peer
+      for writer in "$${state}"/writer-*; do
+        grep -q '^written-before-restart=true$' "$${writer}"
+      done
+      log "PASS cross-pod-visibility writers=2"
+
+      start=$$(now_ns)
+      index=1
+      while [ "$${index}" -le "$${small_count}" ]; do
+        dd if=/dev/zero of="$${work}/small-$${index}.tmp" bs="$${small_bytes}" count=1 conv=fsync status=none
+        printf '%s:%s\n' "$${host}" "$${index}" >> "$${work}/small-$${index}.tmp"
+        mv "$${work}/small-$${index}.tmp" "$${work}/small-$${index}.blob"
+        if [ $$(($${index} % 20)) -eq 0 ]; then
+          printf '%s:%s\n' "$${host}" "$${index}" >> "$${state}/journal"
+        fi
+        index=$$(($${index} + 1))
+      done
+      sync
+      small_ms=$$(elapsed_ms "$${start}")
+      small_total_bytes=$$(($${small_count} * $${small_bytes}))
+      small_rate=$$(mib_per_second "$${small_total_bytes}" "$${small_ms}")
+      small_avg=$$(awk "BEGIN { printf \"%.3f\", $${small_ms} / $${small_count} }")
+      log "MEASURE small_files count=$${small_count} bytes=$${small_total_bytes} elapsed_ms=$${small_ms} throughput_MiB_s=$${small_rate} avg_write_latency_ms=$${small_avg}"
+
+      start=$$(now_ns)
+      dd if=/dev/zero of="$${work}/large-$${host}.tmp" bs=1M count=482 conv=fsync status=none
+      mv "$${work}/large-$${host}.tmp" "$${work}/large-$${host}.blob"
+      large_ms=$$(elapsed_ms "$${start}")
+      large_rate=$$(mib_per_second "$${large_bytes}" "$${large_ms}")
+      large_hash=$$(sha256sum "$${work}/large-$${host}.blob" | cut -d ' ' -f 1)
+      log "MEASURE sequential_large_file bytes=$${large_bytes} size_MiB=482 elapsed_ms=$${large_ms} throughput_MiB_s=$${large_rate} sha256=$${large_hash}"
+
+      if [ "$$(wc -c < "$${work}/large-$${host}.blob")" -ne "$${large_bytes}" ]; then
+        log "FAIL large-file-size"
+        exit 1
+      fi
+      rm -f "$${work}/large-$${host}.blob"
+      find "$${work}" -name 'small-*.blob' -delete
+      if [ -n "$$(find "$${work}" -type f -print -quit)" ]; then
+        log "FAIL small-file-delete"
+        exit 1
+      fi
+      log "PASS rename-and-delete small_files=$${small_count} large_file_bytes=$${large_bytes}"
+
+      touch "$${state}/completed-$${host}"
+      deadline=$$(date +%s)
+      deadline=$$(($${deadline} + 180))
+      while [ "$$(find "$${state}" -maxdepth 1 -name 'completed-*' -type f | wc -l)" -lt 2 ]; do
+        if [ "$$(date +%s)" -ge "$${deadline}" ]; then
+          log "FAIL peer-completion-timeout"
+          exit 1
+        fi
+        sleep 1
+      done
+      verify_journal
+      printf 'written-before-restart=true\ncompleted-by=%s\n' "$${host}" > "$${marker}"
+      sync
+      log "PASS pre-restart-persistence-marker marker=$${marker}"
+      touch "$${ready}"
+      log "READY initial-pass-complete awaiting-GitOps-rollout=true"
+      while :; do
+        sleep 3600
+      done
+    fi
+
+    if ! grep -q '^written-before-restart=true$' "$${marker}"; then
+      log "FAIL pre-restart-marker-content"
+      exit 1
+    fi
+    log "PASS restart-persistence remount-validated marker=$${marker}"
+    touch "$${ready}"
+    log "READY all-probes-passed restart_count_expected_at_least_one=true"
+    while :; do
+      sleep 3600
+    done
