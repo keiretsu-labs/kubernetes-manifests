@@ -6,7 +6,15 @@ groups:
   - name: container.rules
     rules:
       - alert: BhaiyaPodEvicted
-        expr: kube_pod_status_reason{namespace="bhaiya",reason="Evicted"} == 1
+        expr: |
+          max by (cluster, namespace, pod, uid, reason) (
+            kube_pod_status_reason{namespace="bhaiya",reason="Evicted"}
+          )
+          * on (cluster, namespace, pod, uid) group_left(node)
+          max by (cluster, namespace, pod, uid, node) (
+            kube_pod_info{namespace="bhaiya",node!=""}
+          )
+          == 1
         labels:
           severity: critical
         annotations:
