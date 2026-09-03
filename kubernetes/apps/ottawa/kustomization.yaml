@@ -56,7 +56,6 @@ resources:
   - ./tuppr
   - ./k8s-gpu-dra-driver
   - ./rook-ceph
-  - ./cephfs-proof
   - ./velero
   - ./vpa-system
   - ./victoria-logs
