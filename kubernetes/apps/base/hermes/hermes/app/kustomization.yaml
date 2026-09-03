@@ -5,5 +5,4 @@ namespace: hermes
 resources:
   - app.yaml
   - egress.yaml
-  - garagekey.yaml
   - secret.sops.yaml

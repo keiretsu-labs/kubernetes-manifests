@@ -60,8 +60,6 @@ check_flux_ready garage-bucket
 check_flux_ready hermes
 
 web_key="$(kube -n garage get garagekey webui-sidecar-key -o json)"
-hermes_key="$(kube -n hermes get garagekey hermes-s3-key -o json)"
 check_web_ui_scope "$web_key"
-check_no_cluster_wide_access hermes hermes-s3-key "$hermes_key"
 
 echo "GarageKey scope verification passed without mutating Garage or Kubernetes."
