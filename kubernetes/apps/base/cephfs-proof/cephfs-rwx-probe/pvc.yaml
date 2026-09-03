@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cephfs-rwx-disposable-probe
+  labels:
+    app.kubernetes.io/name: cephfs-rwx-disposable-probe
+    cephfs-proof.keiretsu.top/disposable: "true"
+  annotations:
+    cephfs-proof.keiretsu.top/purpose: "Phase 2 RWX filesystem probe; safe to delete after measurements"
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: rook-cephfs
+  resources:
+    requests:
+      storage: 3Gi

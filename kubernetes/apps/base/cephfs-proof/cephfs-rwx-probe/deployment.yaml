@@ -1,0 +1,84 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cephfs-rwx-disposable-probe
+  labels:
+    app.kubernetes.io/name: cephfs-rwx-disposable-probe
+    cephfs-proof.keiretsu.top/disposable: "true"
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cephfs-rwx-disposable-probe
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cephfs-rwx-disposable-probe
+      annotations:
+        cephfs-proof.keiretsu.top/rollout: "initial"
+    spec:
+      terminationGracePeriodSeconds: 5
+      securityContext:
+        fsGroup: 65532
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - shiro
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: cephfs-rwx-disposable-probe
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: cephfs-rwx-probe
+          image: alpine:3.24
+          command: ["/bin/sh", "/scripts/probe.sh"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          readinessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "test -f /probe/status/ready-$${HOSTNAME}"]
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "test -d /probe/state"]
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: probe-volume
+              mountPath: /probe
+            - name: probe-script
+              mountPath: /scripts
+              readOnly: true
+      volumes:
+        - name: probe-volume
+          persistentVolumeClaim:
+            claimName: cephfs-rwx-disposable-probe
+        - name: probe-script
+          configMap:
+            name: cephfs-rwx-disposable-probe-script
+            defaultMode: 0755
