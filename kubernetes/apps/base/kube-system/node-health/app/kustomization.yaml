@@ -7,10 +7,14 @@ resources:
   - ./nrr-rule.yaml
   - ./npd-rbac.yaml
   - ./npd-daemonset.yaml
+  - ./npd-service.yaml
+  - ./npd-servicemonitor.yaml
+  - ./npd-networkpolicy.yaml
 configMapGenerator:
   - name: node-problem-detector-config
     files:
       - kernel-monitor.json
+      - health-checker-kubelet.json
     options:
       disableNameSuffixHash: true
       labels:
