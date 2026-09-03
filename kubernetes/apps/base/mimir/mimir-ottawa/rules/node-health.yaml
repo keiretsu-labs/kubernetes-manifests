@@ -1,4 +1,4 @@
-# Node health alerts for the NPD conditions written by the v0.8.19
+# Node health alerts for the NPD conditions written by node-problem-detector.
 # node-problem-detector DaemonSet. These rules are evaluated by Mimir ruler;
 # node-readiness-controller independently applies only a NoSchedule taint.
 # Keep this namespace unique across every file passed to mimirtool.
@@ -20,3 +20,32 @@ groups:
           severity: critical
         annotations:
           summary: Read-only filesystem reported on node {{ $labels.node }}
+
+      - alert: NodeKubeletUnhealthyWhileReady
+        expr: |
+          kube_node_status_condition{condition="KubeletUnhealthy",status="true"} == 1
+          and on (cluster, node)
+          kube_node_status_condition{condition="Ready",status="true"} == 1
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Node {{ $labels.node }} reports KubeletUnhealthy while remaining Ready.
+          description: >-
+            The Kubernetes node condition is inconsistent. Inspect the node's
+            lastHeartbeatTime and Kubelet/containerd/Kata logs; this alert is
+            intentionally independent of Ready so a stale KubeletUnhealthy
+            condition is not hidden by generic node-readiness alerts.
+
+      - alert: NodeKernelOOMKill
+        expr: increase(problem_counter{reason="OOMKilling"}[10m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Node {{ $labels.node }} recorded a kernel OOM kill.
+          description: >-
+            Node-problem-detector observed the kernel OOM-kill signature. This
+            distinguishes host-level memory pressure from a Kata sandbox
+            teardown; correlate it with the affected pod's termination reason
+            and node memory metrics.

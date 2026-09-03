@@ -5,6 +5,27 @@ namespace: monitoring
 groups:
   - name: container.rules
     rules:
+      - alert: BhaiyaPodEvicted
+        expr: |
+          max by (cluster, namespace, pod, uid, reason) (
+            kube_pod_status_reason{namespace="bhaiya",reason="Evicted"}
+          )
+          * on (cluster, namespace, pod, uid) group_left(node)
+          max by (cluster, namespace, pod, uid, node) (
+            kube_pod_info{namespace="bhaiya",node!=""}
+          )
+          == 1
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya pod {{ $labels.pod }} was evicted from node {{ $labels.node }}.
+          description: >-
+            This is a kubelet eviction signal, distinct from a container
+            OOMKilled termination or a Kata sandbox exit. Correlate the pod
+            event with pod info, node pressure, and
+            NodeKubeletUnhealthyWhileReady.
+
       - alert: OomKilled
         expr: |
           (kube_pod_container_status_restarts_total - kube_pod_container_status_restarts_total offset 10m >= 1)

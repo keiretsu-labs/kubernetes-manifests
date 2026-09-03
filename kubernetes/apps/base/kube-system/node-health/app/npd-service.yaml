@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-problem-detector
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: node-problem-detector
+    app.kubernetes.io/component: metrics
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/component: detector
+  ports:
+    - name: metrics
+      port: 20257
+      targetPort: metrics
+      protocol: TCP
