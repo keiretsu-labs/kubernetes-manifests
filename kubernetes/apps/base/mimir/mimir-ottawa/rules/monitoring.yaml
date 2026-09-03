@@ -15,6 +15,7 @@ groups:
             kube_pod_info{namespace="bhaiya",node!=""}
           )
           == 1
+        for: 0m
         labels:
           severity: critical
         annotations:

@@ -39,6 +39,7 @@ groups:
 
       - alert: NodeKernelOOMKill
         expr: increase(problem_counter{reason="OOMKilling"}[10m]) > 0
+        for: 0m
         labels:
           severity: critical
         annotations:
