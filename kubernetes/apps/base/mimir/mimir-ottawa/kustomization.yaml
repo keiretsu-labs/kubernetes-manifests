@@ -34,4 +34,5 @@ configMapGenerator:
       - rules/node-health.yaml
       - rules/payments.yaml
       - rules/smartctl.yaml
+      - rules/velero.yaml
       - rules/zot.yaml
