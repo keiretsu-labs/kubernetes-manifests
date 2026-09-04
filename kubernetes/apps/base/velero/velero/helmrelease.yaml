@@ -25,6 +25,12 @@ spec:
       repository: docker.io/velero/velero
       tag: v1.18.2
 
+    # Flux commonMetadata owns app.kubernetes.io/name on the child objects.
+    # Keep the pod and metrics Service discoverable through a stable component
+    # label instead of relying on that shared name label.
+    podLabels:
+      app.kubernetes.io/component: server
+
     initContainers:
       - name: velero-plugin-for-aws
         image: velero/velero-plugin-for-aws:v1.14.2
@@ -82,3 +88,6 @@ spec:
 
     metrics:
       enabled: true
+      service:
+        labels:
+          app.kubernetes.io/component: metrics

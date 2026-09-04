@@ -1,0 +1,74 @@
+# Velero's named backup schedules are evaluated by the Mimir ruler. The
+# Prometheus agents only scrape and remote-write these metrics; their
+# PrometheusRule objects are not evaluated in agent mode.
+#
+# The two event alerts use Velero's counters, not velero_backup_last_status:
+# the latter remained 1 during a real Failed Backup in Ottawa. A matching item
+# count is not a volume-integrity signal; the annotations intentionally direct
+# the operator to the Backup and PodVolumeBackup objects.
+#
+# Keep this namespace unique across every file passed to mimirtool.
+namespace: velero-backups
+groups:
+  - name: velero-backups.rules
+    rules:
+      - alert: VeleroBackupPartiallyFailed
+        expr: |
+          sum by (cluster, schedule) (
+            increase(
+              velero_backup_partial_failure_total{schedule!=""}[5m]
+            )
+          ) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Velero schedule {{ $labels.schedule }} reported a partially failed backup
+          description: >-
+            Velero reported a PartiallyFailed backup for schedule
+            {{ $labels.schedule }}. This detects Velero's failure report only;
+            itemsBackedUp matching totalItems does not establish filesystem or
+            volume integrity. Inspect the Backup status and its failed
+            PodVolumeBackup objects, then correlate the Velero and node-agent
+            logs.
+
+      - alert: VeleroBackupFailed
+        expr: |
+          sum by (cluster, schedule) (
+            increase(
+              velero_backup_failure_total{schedule!=""}[5m]
+            )
+          ) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Velero schedule {{ $labels.schedule }} reported a failed backup
+          description: >-
+            Velero's failed-backup counter increased for schedule
+            {{ $labels.schedule }}. Do not substitute
+            velero_backup_last_status for this signal: that gauge can remain
+            successful while a later Backup object is Failed. Inspect the
+            Backup status and error details; this alert does not establish that
+            a backup which completed is complete or restorable.
+
+      - alert: VeleroBackupStale
+        expr: |
+          (
+            time()
+            - max by (cluster, schedule) (
+                velero_backup_last_successful_timestamp{schedule!=""}
+              )
+          ) > 129600
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Velero schedule {{ $labels.schedule }} has no recent successful backup
+          description: >-
+            Schedule {{ $labels.schedule }} has not reported a successful
+            backup for more than 36 hours (the daily schedule's expected period
+            plus margin). Check the Schedule, BackupStorageLocation, Velero
+            server, and node-agent pods. This is a freshness/reporting guard;
+            it cannot detect a backup that completes while silently missing
+            data, and it also needs the Velero metric to remain scrapeable.

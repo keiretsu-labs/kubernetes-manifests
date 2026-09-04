@@ -50,6 +50,7 @@ spec:
             - /rules/node-health.yaml
             - /rules/payments.yaml
             - /rules/smartctl.yaml
+            - /rules/velero.yaml
             - /rules/zot.yaml
           volumeMounts: &rulesmount
             - { name: rules, mountPath: /rules }
@@ -81,6 +82,7 @@ spec:
             - /rules/node-health.yaml
             - /rules/payments.yaml
             - /rules/smartctl.yaml
+            - /rules/velero.yaml
             - /rules/zot.yaml
           volumeMounts: *rulesmount
           securityContext: *sc
@@ -108,6 +110,7 @@ spec:
             - /rules/node-health.yaml
             - /rules/payments.yaml
             - /rules/smartctl.yaml
+            - /rules/velero.yaml
             - /rules/zot.yaml
           volumeMounts: *rulesmount
           securityContext: *sc

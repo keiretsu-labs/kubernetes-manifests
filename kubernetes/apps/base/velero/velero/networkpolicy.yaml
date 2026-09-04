@@ -1,0 +1,37 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: velero-metrics
+  namespace: velero-system
+spec:
+  description: Allow only the monitoring Prometheus agent to scrape Velero metrics.
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: velero
+      app.kubernetes.io/component: server
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: prometheus-agent
+            app.kubernetes.io/instance: kube-prometheus-stack
+            operator.prometheus.io/name: kube-prometheus-stack
+      toPorts:
+        - ports:
+            - port: "8085"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: /metrics$
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "8085"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: /metrics$

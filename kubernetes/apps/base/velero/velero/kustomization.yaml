@@ -8,7 +8,7 @@ resources:
   - ./node-agent-config.yaml
   - ./limitrange.yaml
   - ./servicemonitor.yaml
-  - ./prometheusrule.yaml
+  - ./networkpolicy.yaml
   - ./dashboard-configmap.yaml
   - ./grafana-dashboard.yaml
   - ./referencegrant.yaml
