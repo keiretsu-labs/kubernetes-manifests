@@ -1,0 +1,98 @@
+# These alerts are evaluated by the per-cluster Mimir tenants. The native
+# k8gb_gslb_errors_total metric is a generic reconciliation-error counter in
+# v0.20.0: it has no error-reason label, so it cannot identify an
+# ExposedIPResolutionError on its own.
+#
+# k8gb_endpoint_status_num is the final published target count. The common
+# replicated GSLBs below should contain all three clusters; the Ottawa-only
+# GSLBs should contain only Ottawa's one target. dashboard-ts-cdn and ts-gateway
+# are intentionally excluded: they read direct Gateway addresses rather than
+# the exposed-hostname resolution path and need separate target semantics.
+#
+# Keep this namespace unique across every file passed to mimirtool.
+namespace: k8gb-dns
+groups:
+  - name: k8gb-dns.rules
+    rules:
+      - alert: K8gbReplicatedTargetSetIncomplete
+        expr: |
+          min_over_time(
+            k8gb_endpoint_status_num{
+              namespace="k8gb",
+              name=~"gatus-status|garage-s3-cdn|hubble|keiretsu-web",
+              dns_name!~"localtargets-.*"
+            }[5m]
+          ) < 3
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: >-
+            k8gb GSLB {{ $labels.name }} has an incomplete published target set
+          description: >-
+            {{ $labels.name }} ({{ $labels.dns_name }}) published fewer than
+            three targets during the last five minutes; the expected set is
+            Ottawa, Robbinsdale, and St. Petersburg. This is the user-visible
+            GSLB failure signal even when the k8gb pod and CoreDNS remain Ready.
+
+      - alert: K8gbOttawaOnlyTargetMissing
+        expr: |
+          min_over_time(
+            k8gb_endpoint_status_num{
+              namespace="k8gb",
+              name=~"dashboard-cdn|forgejo|opencost|velero|zot-public",
+              dns_name!~"localtargets-.*"
+            }[5m]
+          ) < 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: >-
+            k8gb GSLB {{ $labels.name }} lost its published target
+          description: >-
+            {{ $labels.name }} ({{ $labels.dns_name }}) published no target
+            during the last five minutes; the expected Ottawa-only set contains
+            one target. This is the user-visible GSLB failure signal even when
+            the k8gb pod and CoreDNS remain Ready.
+
+      - alert: K8gbPossibleExposedIPResolutionError
+        expr: |
+          (
+            sum by (namespace, name) (
+              increase(
+                k8gb_gslb_errors_total{namespace="k8gb"}[5m]
+              )
+            ) >= 2
+          )
+          and on (namespace, name)
+          (
+            min_over_time(
+              k8gb_endpoint_status_num{
+                namespace="k8gb",
+                name=~"gatus-status|garage-s3-cdn|hubble|keiretsu-web",
+                dns_name!~"localtargets-.*"
+              }[5m]
+            ) < 3
+            or
+            min_over_time(
+              k8gb_endpoint_status_num{
+                namespace="k8gb",
+                name=~"dashboard-cdn|forgejo|opencost|velero|zot-public",
+                dns_name!~"localtargets-.*"
+              }[5m]
+            ) < 1
+          )
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            k8gb {{ $labels.name }} has repeated reconciliation errors with
+            target loss
+          description: >-
+            k8gb recorded at least two reconciliation errors for {{ $labels.name
+            }} in the last five minutes while its published target set was
+            incomplete. v0.20.0 does not label k8gb_gslb_errors_total by reason,
+            so confirm ExposedIPResolutionError in the k8gb events/logs; the
+            authoritative impact signal is the corresponding target-set alert.
