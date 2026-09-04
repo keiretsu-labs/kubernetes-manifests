@@ -14,7 +14,11 @@ metadata:
   name: garage
 spec:
   zone: "${LOCATION}"
-  image: dxflrs/garage:v2.3.0
+  # Default is the upstream multi-arch image. A cluster may override GARAGE_IMAGE
+  # in its cluster-settings to run a patched build; any override must cover every
+  # node architecture in that cluster, since a single-arch image will not run on
+  # a mixed-arch cluster.
+  image: ${GARAGE_IMAGE:=dxflrs/garage:v2.3.0}
 
   replication:
     factor: 3
