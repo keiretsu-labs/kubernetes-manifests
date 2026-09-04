@@ -5,6 +5,44 @@ metadata:
   name: public
 spec:
   telemetry:
+    accessLog:
+      settings:
+        # A custom accessLog settings list replaces Envoy Gateway's default
+        # route logger. Keep that logger for HTTP routes while adding the
+        # bounded TCP listener record below.
+        - type: Route
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
+        # Gateway port 22 is shifted to Envoy's unprivileged port 10022.
+        # Envoy Gateway 1.9.1 has no listener-name selector; this listener
+        # CEL match is therefore the bounded forgejo-ssh selector.
+        - type: Listener
+          matches:
+            - "destination.port == 10022"
+          format:
+            type: JSON
+            json:
+              listener: "forgejo-ssh"
+              gateway: "public"
+              connection_id: "%CONNECTION_ID%"
+              start_time: "%START_TIME%"
+              duration: "%DURATION%"
+              connection_termination_details: "%CONNECTION_TERMINATION_DETAILS%"
+              downstream_transport_failure_reason: "%DOWNSTREAM_TRANSPORT_FAILURE_REASON%"
+              upstream_transport_failure_reason: "%UPSTREAM_TRANSPORT_FAILURE_REASON%"
+              downstream_remote_address: "%DOWNSTREAM_REMOTE_ADDRESS%"
+              downstream_local_address: "%DOWNSTREAM_LOCAL_ADDRESS%"
+              upstream_host: "%UPSTREAM_HOST%"
+              upstream_local_address: "%UPSTREAM_LOCAL_ADDRESS%"
+              bytes_received: "%BYTES_RECEIVED%"
+              bytes_sent: "%BYTES_SENT%"
+              response_flags: "%RESPONSE_FLAGS%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
     metrics:
       prometheus:
         compression:
