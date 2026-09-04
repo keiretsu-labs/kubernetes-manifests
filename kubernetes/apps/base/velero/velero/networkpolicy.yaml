@@ -24,3 +24,14 @@ spec:
             http:
               - method: GET
                 path: /metrics$
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "8085"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: /metrics$
