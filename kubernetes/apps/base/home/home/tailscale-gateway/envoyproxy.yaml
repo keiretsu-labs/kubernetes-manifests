@@ -8,10 +8,9 @@ spec:
     accessLog:
       settings:
         # A custom accessLog settings list replaces Envoy Gateway's default
-        # route logger. Keep that logger for HTTP routes while adding the
-        # bounded TCP listener record below.
-        - type: Route
-          sinks:
+        # setting. Keep it untyped so the default JSON route logger and its
+        # unmatched-listener (NR) fallback remain in place.
+        - sinks:
             - type: File
               file:
                 path: /dev/stdout
