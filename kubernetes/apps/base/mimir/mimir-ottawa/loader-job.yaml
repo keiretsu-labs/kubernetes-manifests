@@ -43,6 +43,7 @@ spec:
             - /rules/flux.yaml
             - /rules/garage.yaml
             - /rules/k8gb.yaml
+            - /rules/k8gb-dns.yaml
             - /rules/media.yaml
             - /rules/mimir-loader.yaml
             - /rules/monitoring.yaml
@@ -73,6 +74,7 @@ spec:
             - /rules/flux.yaml
             - /rules/garage.yaml
             - /rules/k8gb.yaml
+            - /rules/k8gb-dns.yaml
             - /rules/media.yaml
             - /rules/mimir-loader.yaml
             - /rules/monitoring.yaml
@@ -99,6 +101,7 @@ spec:
             - /rules/flux.yaml
             - /rules/garage.yaml
             - /rules/k8gb.yaml
+            - /rules/k8gb-dns.yaml
             - /rules/media.yaml
             - /rules/mimir-loader.yaml
             - /rules/monitoring.yaml
