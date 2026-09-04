@@ -76,7 +76,7 @@ The local gate must pass before commit:
 
 | Command | What it checks |
 |---|---|
-| `tools/check.sh [cluster]` | CI-pinned Flate render of all three clusters |
+| `tools/check.sh [cluster]` | CI-pinned Flate changed-only render of all three clusters |
 | `tools/check-versions.sh` | `talconfig` ↔ tuppr, `CephCluster` ↔ toolbox |
 | `tools/orphans.sh` | kustomization ↔ disk drift |
 | `tools/check-diagram.sh` | the architecture docs: syntax, secrets, staleness, coverage, links |

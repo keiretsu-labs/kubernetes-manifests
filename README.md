@@ -603,9 +603,12 @@ consumed by Flux envsubst. In raw manifests, write
 
 ### Validation and diagnostics
 
-Every PR touching <code>clusters/**</code> or <code>kubernetes/**</code> runs
-the Flate matrix and per-cluster rendered-diff workflow. The local gate uses
-the same CI-pinned Flate release:
+Every PR touching <code>clusters/**</code>, <code>kubernetes/**</code>, the
+render helpers, or the Flate workflow runs the Flate matrix and per-cluster
+rendered-diff workflow. The local gate uses the same CI-pinned Flate release
+and compares the render with the default-remote merge-base, so stable
+failures from a cold cache do not make a clean tree red. Set
+<code>KMAN_CHECK_FULL_TREE=1</code> for a full-tree diagnostic:
 
 ~~~bash
 tools/check.sh

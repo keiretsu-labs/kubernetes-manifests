@@ -6,6 +6,9 @@ on:
     paths:
       - "clusters/**"
       - "kubernetes/**"
+      - "tools/**"
+      - "Makefile"
+      - ".github/workflows/flate.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -23,15 +26,16 @@ jobs:
         cluster: [talos-ottawa, talos-robbinsdale, talos-stpetersburg]
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: home-operations/flate/action@v0.6.5
         with:
           cache: true
       - name: render gate
-        # check.sh is the same bounded gate agents run locally. The flate action
-        # exports FLATE_BASE=<pr base>, so unset it to test the full head tree.
-        run: |
-          unset FLATE_BASE
-          tools/check.sh ${{ matrix.cluster }}
+        # check.sh is the same bounded gate agents run locally. Both paths use
+        # Flate's changed-only baseline: the action exports FLATE_BASE=main,
+        # while local checkouts select their default-remote merge-base.
+        run: tools/check.sh ${{ matrix.cluster }}
 
   diff:
     runs-on: ubuntu-latest

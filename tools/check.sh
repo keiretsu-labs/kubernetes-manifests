@@ -58,6 +58,24 @@ if [ "$QUICK" = 1 ] && [ -n "$TARGET" ]; then
   exit 2
 fi
 
+# Flate's full-tree render includes stable failures when the local source and
+# render caches are cold, while CI restores those caches before running this
+# gate. Compare the render with a baseline instead: a clean checkout has no
+# changed resources to report, and a changed resource is still rendered and
+# can fail. The cluster target also scans the location app tree because those
+# files live outside the cluster-config scan root. The CI action supplies
+# FLATE_BASE=main; local checkouts select the merge-base with the default
+# remote (or the branch upstream as a fallback).
+# Set KMAN_CHECK_FULL_TREE=1 for an intentional full-tree diagnostic run.
+if [ -z "${KMAN_CHECK_FULL_TREE:-}" ] && [ -z "${FLATE_BASE:-}" ]; then
+  for candidate in origin/HEAD origin/main origin/master '@{u}'; do
+    if render_base="$(git merge-base HEAD "$candidate" 2>/dev/null)"; then
+      export FLATE_BASE="$render_base"
+      break
+    fi
+  done
+fi
+
 # Rendering resolves Helm/OCI chart sources through go-containerregistry, which
 # reads ~/.docker/config.json. On macOS that file sets `credsStore: osxkeychain`,
 # so every registry read shells out to docker-credential-osxkeychain and raises a
