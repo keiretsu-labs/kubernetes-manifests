@@ -12,6 +12,12 @@ test: ## Render-test all clusters with flate
 
 test-%: ## Render-test one cluster, e.g. make test-talos-ottawa
 	@$(FLATE) test all --path clusters/$*/flux/config $(FLATE_FLAGS)
+# The app tree is a second scan only in changed-only mode: its files sit
+# outside the cluster-config scan root, but must still be able to fail the
+# bounded gate when an application manifest changes.
+ifneq ($(strip $(FLATE_BASE)),)
+	@$(FLATE) test all --path kubernetes/apps/$(patsubst talos-%,%,$*) $(FLATE_FLAGS)
+endif
 
 diff: ## Show rendered diff vs origin/main for all clusters
 	@for c in $(CLUSTERS); do \

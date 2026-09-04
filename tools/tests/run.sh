@@ -295,14 +295,16 @@ exits  "missing file -> exit 1"     1 "$T/where.sh" foo /no/such/file.xyz
 # ---------------------------------------------------------------- flate.sh (pinned binary; no network)
 section "flate.sh (stubbed binary)"
 fstub="$(mktemp -d)"
+flate_pin="$(sed -n 's|.*home-operations/flate/action@v\([0-9][0-9.]*\).*|\1|p' \
+  "$ROOT/.github/workflows/flate.yaml" | sort -u | head -1)"
 flate_calls="$fstub/calls"
-cat >"$fstub/flate" <<'EOF'
+cat >"$fstub/flate" <<EOF
 #!/usr/bin/env bash
-if [ "${1:-}" = "--version" ]; then
-  echo "flate version 0.5.0"
+if [ "\${1:-}" = "--version" ]; then
+  echo "flate version $flate_pin"
   exit 0
 fi
-printf '%s\n' "$*" >>"$FLATE_CALLS"
+printf '%s\n' "\$*" >>"\$FLATE_CALLS"
 EOF
 chmod +x "$fstub/flate"
 
@@ -316,7 +318,7 @@ KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" \
   "$T/flate.sh" diff all --allow-missing-secrets
 assert "explicit missing-secret flag -> no duplicate" \
   grep -q '^diff all --allow-missing-secrets$' "$flate_calls"
-assert "CI action pin matches wrapper fixture" grep -q 'home-operations/flate/action@v0.5.0' "$ROOT/.github/workflows/flate.yaml"
+assert "CI action pin matches wrapper fixture" grep -q "home-operations/flate/action@v$flate_pin" "$ROOT/.github/workflows/flate.yaml"
 
 cat >"$fstub/old-flate" <<'EOF'
 #!/usr/bin/env bash
@@ -325,13 +327,21 @@ EOF
 chmod +x "$fstub/old-flate"
 oldout="$(KMAN_FLATE_BIN="$fstub/old-flate" "$T/flate.sh" test all 2>&1)"; oldec=$?
 assert "mismatched override -> exit 2" test "$oldec" = 2
-assert "mismatch names required version" grep -q 'CI requires 0.5.0' <<<"$oldout"
+assert "mismatch names required version" grep -q "CI requires $flate_pin" <<<"$oldout"
 
 : >"$flate_calls"
 KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" make -s -C "$ROOT" test
 assert "full make gate -> three renders" test "$(wc -l <"$flate_calls" | tr -d ' ')" = 3
+
+: >"$flate_calls"
+KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" FLATE_BASE=baseline \
+  make -s -C "$ROOT" test
+assert "baseline make gate -> six renders" test "$(wc -l <"$flate_calls" | tr -d ' ')" = 6
 for cluster in talos-ottawa talos-robbinsdale talos-stpetersburg; do
   assert "full make gate -> $cluster" grep -q -- "--path clusters/$cluster/flux/config" "$flate_calls"
+  location="${cluster#talos-}"
+  assert "baseline make gate -> $location app tree" \
+    grep -q -- "--path kubernetes/apps/$location" "$flate_calls"
 done
 rm -rf "$fstub"
 
@@ -381,8 +391,7 @@ rm -rf "$mstub"
 # ---------------------------------------------------------------- flate.sh env pruning
 section "flate.sh environment pruning"
 fstub="$(mktemp -d)"
-pinned="$(sed -n 's|.*home-operations/flate/action@v\([0-9][0-9.]*\).*|\1|p' \
-  "$ROOT/.github/workflows/flate.yaml" | sort -u | head -1)"
+pinned="$flate_pin"
 # A stand-in for the UPX-packed release: it refuses to run once the environment
 # grows past what the real stub tolerates, which is exactly the failure mode.
 cat >"$fstub/flate" <<EOF
