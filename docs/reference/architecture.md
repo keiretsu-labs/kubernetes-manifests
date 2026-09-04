@@ -221,6 +221,22 @@ anything there.
 Namespaces owned by an app keep the same annotation, which is why the add-app
 checklist says to leave it alone.
 
+Retiring a protected namespace takes one extra reconciliation. First leave the
+Namespace in the rendered output and remove its
+`kustomize.toolkit.fluxcd.io/prune: disabled` guard; let Flux apply that change.
+Only a later revision should remove the Namespace manifest and its location
+pointer, so the parent `kubernetes-apps` Kustomization can prune the now-
+unprotected object. If both were removed in one revision, Flux cannot clear a
+guard from an object that is no longer in its desired set. After verifying an
+orphan is empty, the operator must perform the one-time deletion with the
+cluster helper and must not strip finalizers:
+
+~~~bash
+tools/kc.sh ot get namespace border0
+tools/kc.sh ot -n border0 get all
+tools/kc.sh ot delete namespace border0
+~~~
+
 ## Tailnet overlay
 
 The tailnet `keiretsu.ts.net` is the only path between clusters. Every
