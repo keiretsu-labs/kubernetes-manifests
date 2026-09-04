@@ -19,7 +19,8 @@ groups:
           min_over_time(
             k8gb_endpoint_status_num{
               namespace="k8gb",
-              name=~"gatus-status|garage-s3-cdn|hubble|keiretsu-web"
+              name=~"gatus-status|garage-s3-cdn|hubble|keiretsu-web",
+              dns_name!~"localtargets-.*"
             }[5m]
           ) < 3
         for: 1m
@@ -39,7 +40,8 @@ groups:
           min_over_time(
             k8gb_endpoint_status_num{
               namespace="k8gb",
-              name=~"dashboard-cdn|forgejo|opencost|velero|zot-public"
+              name=~"dashboard-cdn|forgejo|opencost|velero|zot-public",
+              dns_name!~"localtargets-.*"
             }[5m]
           ) < 1
         for: 1m
@@ -68,14 +70,16 @@ groups:
             min_over_time(
               k8gb_endpoint_status_num{
                 namespace="k8gb",
-                name=~"gatus-status|garage-s3-cdn|hubble|keiretsu-web"
+                name=~"gatus-status|garage-s3-cdn|hubble|keiretsu-web",
+                dns_name!~"localtargets-.*"
               }[5m]
             ) < 3
             or
             min_over_time(
               k8gb_endpoint_status_num{
                 namespace="k8gb",
-                name=~"dashboard-cdn|forgejo|opencost|velero|zot-public"
+                name=~"dashboard-cdn|forgejo|opencost|velero|zot-public",
+                dns_name!~"localtargets-.*"
               }[5m]
             ) < 1
           )
