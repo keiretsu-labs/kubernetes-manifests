@@ -15,10 +15,10 @@ data:
   download-and-validate.sh: |
     #!/usr/bin/env bash
     set -euo pipefail
-    MODEL_DIR="${MODEL_DIR:-/models/dsv4}"
-    HF_REPO="${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-Vision-Exp}"
-    HF_REVISION="${HF_REVISION:-6821d6ad3681a4b137b066b76094fa82ebd0a380}"
-    EXPECTED_MARKER="${HF_REPO}@${HF_REVISION}"
+    MODEL_DIR="$${MODEL_DIR:-/models/dsv4}"
+    HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-Vision-Exp}"
+    HF_REVISION="$${HF_REVISION:-6821d6ad3681a4b137b066b76094fa82ebd0a380}"
+    EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
     mkdir -p "$MODEL_DIR"
     marker="$MODEL_DIR/.model-revision"
     count=$(find "$MODEL_DIR" -maxdepth 1 -name 'model-*.safetensors' | wc -l)
