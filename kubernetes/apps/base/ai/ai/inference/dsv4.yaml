@@ -100,6 +100,7 @@ spec:
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "0" }
+          - { name: HF_HUB_DISABLE_XET, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "0" }
           volumeMounts:
           - { name: models, mountPath: /models }
@@ -253,6 +254,7 @@ spec:
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "0" }
+          - { name: HF_HUB_DISABLE_XET, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "0" }
           volumeMounts:
           - { name: models, mountPath: /models }
