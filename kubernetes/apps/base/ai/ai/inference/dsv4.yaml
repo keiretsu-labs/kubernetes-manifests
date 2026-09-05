@@ -208,8 +208,8 @@ spec:
           - { name: sys-ib, mountPath: /sys/class/infiniband }
           - { name: vision-exp, mountPath: /vision-exp }
           resources:
-            requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-            limits: { memory: "95Gi", nvidia.com/gpu: "1" }
+            requests: { memory: "90Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "90Gi", nvidia.com/gpu: "1" }
           livenessProbe: { httpGet: { path: /health, port: 8000 }, initialDelaySeconds: 1800, periodSeconds: 30, timeoutSeconds: 10 }
           readinessProbe: { httpGet: { path: /health, port: 8000 }, initialDelaySeconds: 1800, periodSeconds: 15, timeoutSeconds: 10 }
         volumes:
@@ -353,8 +353,8 @@ spec:
           - { name: sys-ib, mountPath: /sys/class/infiniband }
           - { name: vision-exp, mountPath: /vision-exp }
           resources:
-            requests: { memory: "95Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-            limits: { memory: "95Gi", nvidia.com/gpu: "1" }
+            requests: { memory: "90Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "90Gi", nvidia.com/gpu: "1" }
         volumes:
         - name: shm
           emptyDir: { medium: Memory, sizeLimit: "64Gi" }
