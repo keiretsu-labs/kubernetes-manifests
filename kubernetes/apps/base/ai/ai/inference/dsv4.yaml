@@ -166,7 +166,7 @@ spec:
               --default-chat-template-kwargs '{"thinking":false}' \
               --limit-mm-per-prompt '{"image":8}' \
               --generation-config vllm --enable-flashinfer-autotune \
-              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":6,"draft_sample_method":"probabilistic"}' \
               --moe-backend flashinfer_b12x \
               --nnodes 2 --node-rank 0 --master-addr 192.168.74.1 --master-port 25002
           env:
@@ -312,7 +312,7 @@ spec:
               --tokenizer-mode deepseek_v4 --tool-call-parser deepseek_v4 --enable-auto-tool-choice \
               --reasoning-parser deepseek_v4 --reasoning-config '{"reasoning_parser":"deepseek_v4","reasoning_start_str":"","reasoning_end_str":""}' \
               --default-chat-template-kwargs '{"thinking":false}' --limit-mm-per-prompt '{"image":8}' --generation-config vllm --enable-flashinfer-autotune \
-              --speculative-config '{"method":"dspark","num_speculative_tokens":5,"draft_sample_method":"probabilistic"}' \
+              --speculative-config '{"method":"dspark","num_speculative_tokens":6,"draft_sample_method":"probabilistic"}' \
               --moe-backend flashinfer_b12x --nnodes 2 --node-rank 1 --master-addr 192.168.74.1 --master-port 25002 --headless
           env:
           - { name: NODE_RANK, value: "1" }
