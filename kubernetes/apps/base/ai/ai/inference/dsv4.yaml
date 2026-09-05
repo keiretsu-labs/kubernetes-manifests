@@ -19,24 +19,24 @@ data:
     HF_REPO="$${HF_REPO:-deepseek-ai/DeepSeek-V4-Flash-Vision-Exp}"
     HF_REVISION="$${HF_REVISION:-6821d6ad3681a4b137b066b76094fa82ebd0a380}"
     EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
-    mkdir -p "$MODEL_DIR"
-    marker="$MODEL_DIR/.model-revision"
-    count=$(find "$MODEL_DIR" -maxdepth 1 -name 'model-*.safetensors' | wc -l)
-    current=$(cat "$marker" 2>/dev/null || true)
-    if [ "$count" -eq 48 ] && [ "$current" = "$EXPECTED_MARKER" ] && [ -f "$MODEL_DIR/encoding/encoding_dsv4.py" ]; then
-      echo "[download] exact Vision-Exp snapshot already present ($count shards)"
+    mkdir -p "$${MODEL_DIR}"
+    marker="$${MODEL_DIR}/.model-revision"
+    count="$$(find "$${MODEL_DIR}" -maxdepth 1 -name 'model-*.safetensors' | wc -l)"
+    current="$$(cat "$${marker}" 2>/dev/null || true)"
+    if [ "$${count}" -eq 48 ] && [ "$${current}" = "$${EXPECTED_MARKER}" ] && [ -f "$${MODEL_DIR}/encoding/encoding_dsv4.py" ]; then
+      echo "[download] exact Vision-Exp snapshot already present ($${count} shards)"
       exit 0
     fi
-    if [ "$current" != "$EXPECTED_MARKER" ]; then
-      echo "[download] snapshot changed: ${current:-unmarked} -> $EXPECTED_MARKER"
-      find "$MODEL_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+    if [ "$${current}" != "$${EXPECTED_MARKER}" ]; then
+      echo "[download] snapshot changed: $${current:-unmarked} -> $${EXPECTED_MARKER}"
+      find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
     fi
-    hf download "$HF_REPO" --revision "$HF_REVISION" --local-dir "$MODEL_DIR"
-    count=$(find "$MODEL_DIR" -maxdepth 1 -name 'model-*.safetensors' | wc -l)
-    [ "$count" -eq 48 ] || { echo "[fatal] expected 48 shards, found $count" >&2; exit 1; }
-    [ -f "$MODEL_DIR/encoding/encoding_dsv4.py" ] || { echo "[fatal] missing encoding/encoding_dsv4.py" >&2; exit 1; }
-    printf '%s\n' "$EXPECTED_MARKER" > "$marker"
-    echo "[validate] Vision-Exp snapshot OK ($count shards + encoder)"
+    hf download "$${HF_REPO}" --revision "$${HF_REVISION}" --local-dir "$${MODEL_DIR}"
+    count="$$(find "$${MODEL_DIR}" -maxdepth 1 -name 'model-*.safetensors' | wc -l)"
+    [ "$${count}" -eq 48 ] || { echo "[fatal] expected 48 shards, found $${count}" >&2; exit 1; }
+    [ -f "$${MODEL_DIR}/encoding/encoding_dsv4.py" ] || { echo "[fatal] missing encoding/encoding_dsv4.py" >&2; exit 1; }
+    printf '%s\n' "$${EXPECTED_MARKER}" > "$${marker}"
+    echo "[validate] Vision-Exp snapshot OK ($${count} shards + encoder)"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
