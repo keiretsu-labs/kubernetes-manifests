@@ -58,9 +58,9 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-        - name: Qwen3.8 Flash Next SGLang (StPetersburg)
+        - name: DeepSeek V4 Flash Vision-Exp DSpark (StPetersburg)
           group: AI
-          url: http://qwen38.ai:8000/health
+          url: http://dsv4.ai:8000/health
           interval: 60s
           conditions:
             - "[STATUS] == 200"

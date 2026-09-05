@@ -298,6 +298,8 @@ spec:
                   lines.append("      - name: " + json.dumps(model))
                   if model == "deepseek-v4-flash" and "DeepSeek-V4-Flash" not in seen:
                       lines.append('        alias: "DeepSeek-V4-Flash"')
+                  if model == "deepseek-v4-flash-vision-exp" and "DeepSeek-V4-Flash-Vision-Exp" not in seen:
+                      lines.append('        alias: "DeepSeek-V4-Flash-Vision-Exp"')
                   if model == "Qwen3.8-Flash-Next-NVFP4" and "Qwen3.8-Flash-Next" not in seen:
                       lines.append('        alias: "Qwen3.8-Flash-Next"')
               pathlib.Path("/provider/vllm.yaml").write_text(
@@ -351,23 +353,13 @@ spec:
               # declare the Tailscale-backed routes below.
               force-model-prefix: true
               # Keep a stable, GitOps-owned fallback in the Codex subscription
-              # pool while the GLM route is unavailable.
+              # pool while the Vision-Exp route is unavailable.
               oauth-model-alias:
                 codex:
                   - name: "gpt-5.6-luna"
                     alias: "vllm-fallback"
                     display-name: "Codex subscription fallback"
                     fork: true
-              # St. Petersburg's Qwen SGLang endpoint accepts system messages
-              # but rejects OpenAI's developer role, which Pi sends by default.
-              # Keep this compatibility translation scoped to the Qwen alias.
-              payload:
-                override:
-                  - models:
-                      - name: "vllm/Qwen3.8-Flash-Next"
-                        protocol: "openai"
-                    params:
-                      'messages.#(role=="developer")#.role': system
               plugins:
                 enabled: true
                 dir: "/CLIProxyAPI/plugins"
@@ -530,18 +522,18 @@ spec:
               )
               metadata_alias_sources = {
                   "codex-subscription/vllm-fallback": "codex-subscription/gpt-5.6-luna",
-                  "vllm/Qwen3.8-Flash-Next": "vllm/Qwen3.8-Flash-Next-NVFP4",
+                  "vllm/DeepSeek-V4-Flash-Vision-Exp": "vllm/deepseek-v4-flash-vision-exp",
               }
-              # The St. Petersburg SGLang catalog does not publish all Qwen
+              # The St. Petersburg Vision-Exp catalog does not publish all
               # serving-profile facts in /v1/models. Keep those facts explicit
               # so the Pi catalog and Bhaiya's generated OpenCode config describe
               # the active route accurately. Assert an 8k output cap so a stuck
               # stream cannot legally decode for the full 1,048,576 context.
               metadata_overrides = {
-                  "vllm/Qwen3.8-Flash-Next-NVFP4": {
+                  "vllm/deepseek-v4-flash-vision-exp": {
                       "context_window": 1048576,
                       "max_tokens": 8192,
-                      "name": "Qwen3.8 Flash Next",
+                      "name": "DeepSeek V4 Flash Vision-Exp",
                       "reasoning": True,
                   },
               }

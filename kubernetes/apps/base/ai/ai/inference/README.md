@@ -11,14 +11,13 @@
 - **CUDA**: Requires CUDA 13.0+
 - **OS**: Talos Linux v1.12.2
 
-## Active Setup: SGLang Qwen3.8-Flash-Next
+## Active Setup: DeepSeek-V4-Flash-Vision-Exp DSpark
 
-**Model**: `RadixArk/Qwen3.8-Flash-Next-NVFP4` (176B total / ~6B active,
-~135GB, NVFP4 MoE)
-**Image**: `ghcr.io/rajsinghtechbot/qwen38-flashnext-dspark` (ARM64/SM121,
-derived from `lmsysorg/sglang:qwen38flashnext` with MiaAI-Lab's published QSA
-fallback and NVFP4-KV patches)
-**Deployment**: `qwen38.yaml`, a two-member LeaderWorkerSet pinned to
+**Model**: `deepseek-ai/DeepSeek-V4-Flash-Vision-Exp@6821d6ad` (48 shards,
+Vision-Exp with native image support)
+**Image**: `ghcr.io/anemll/dspark-vllm-gx10@sha256:a83948492cf13df455170fb42885f5ef4db54fefe0feff0f841ecbff464ac9d8`
+(ARM64/SM121, with the pinned upstream Vision-Exp hotfix)
+**Deployment**: `dsv4.yaml`, a two-member LeaderWorkerSet pinned to
 `spark-0` and `spark-1`, with SGLang TP=2 over the RDMA rail.
 **Serving profile**: 1M-token YaRN context, NVFP4 KV cache, no NEXTN
 speculative decoding. `--max-running-requests 3` matches the mamba state

@@ -5,8 +5,19 @@ namespace: ai
 
 resources:
   - namespace.yaml
-  - vllm.yaml
-  - qwen38.yaml
+  - dsv4.yaml
   - secret.yaml
   - probes.yaml
   - prometheusrule.yaml
+
+configMapGenerator:
+  - name: dsv4-vision-exp
+    options:
+      disableNameSuffixHash: true
+    files:
+      - hotfix-dsv4-vision-exp.py=vision-exp/hotfix-dsv4-vision-exp.py
+      - vision_exp/__init__.py=vision-exp/vision_exp/__init__.py
+      - vision_exp/apply.py=vision-exp/vision_exp/apply.py
+      - vision_exp/image_processor.py=vision-exp/vision_exp/image_processor.py
+      - vision_exp/processor.py=vision-exp/vision_exp/processor.py
+      - vision_exp/vision.py=vision-exp/vision_exp/vision.py
