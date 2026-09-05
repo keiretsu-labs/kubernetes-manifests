@@ -16,8 +16,8 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - hotfix-dsv4-vision-exp.py=vision-exp/hotfix-dsv4-vision-exp.py
-      - vision_exp/__init__.py=vision-exp/vision_exp/__init__.py
-      - vision_exp/apply.py=vision-exp/vision_exp/apply.py
-      - vision_exp/image_processor.py=vision-exp/vision_exp/image_processor.py
-      - vision_exp/processor.py=vision-exp/vision_exp/processor.py
-      - vision_exp/vision.py=vision-exp/vision_exp/vision.py
+      - vision_exp__init__.py=vision-exp/vision_exp/__init__.py
+      - vision_exp__apply.py=vision-exp/vision_exp/apply.py
+      - vision_exp__image_processor.py=vision-exp/vision_exp/image_processor.py
+      - vision_exp__processor.py=vision-exp/vision_exp/processor.py
+      - vision_exp__vision.py=vision-exp/vision_exp/vision.py

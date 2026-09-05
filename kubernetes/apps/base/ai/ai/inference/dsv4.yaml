@@ -129,7 +129,12 @@ spec:
               cp "$encoding" /usr/local/lib/python3.12/dist-packages/vllm/tokenizers/deepseek_v4_encoding.py
             fi
             mkdir -p /opt/dspark-patches
-            cp -r /vision-exp/vision_exp /opt/dspark-patches/
+            mkdir -p /opt/dspark-patches/vision_exp
+            cp /vision-exp/vision_exp__init__.py /opt/dspark-patches/vision_exp/__init__.py
+            cp /vision-exp/vision_exp__apply.py /opt/dspark-patches/vision_exp/apply.py
+            cp /vision-exp/vision_exp__image_processor.py /opt/dspark-patches/vision_exp/image_processor.py
+            cp /vision-exp/vision_exp__processor.py /opt/dspark-patches/vision_exp/processor.py
+            cp /vision-exp/vision_exp__vision.py /opt/dspark-patches/vision_exp/vision.py
             cp /vision-exp/hotfix-dsv4-vision-exp.py /opt/dspark-patches/
             python3 /opt/dspark-patches/hotfix-dsv4-vision-exp.py
             python3 /opt/dspark-patches/hotfix-dsv4-vision-exp.py --status
@@ -277,7 +282,12 @@ spec:
               cp "$encoding" /usr/local/lib/python3.12/dist-packages/vllm/tokenizers/deepseek_v4_encoding.py
             fi
             mkdir -p /opt/dspark-patches
-            cp -r /vision-exp/vision_exp /opt/dspark-patches/
+            mkdir -p /opt/dspark-patches/vision_exp
+            cp /vision-exp/vision_exp__init__.py /opt/dspark-patches/vision_exp/__init__.py
+            cp /vision-exp/vision_exp__apply.py /opt/dspark-patches/vision_exp/apply.py
+            cp /vision-exp/vision_exp__image_processor.py /opt/dspark-patches/vision_exp/image_processor.py
+            cp /vision-exp/vision_exp__processor.py /opt/dspark-patches/vision_exp/processor.py
+            cp /vision-exp/vision_exp__vision.py /opt/dspark-patches/vision_exp/vision.py
             cp /vision-exp/hotfix-dsv4-vision-exp.py /opt/dspark-patches/
             python3 /opt/dspark-patches/hotfix-dsv4-vision-exp.py
             python3 /opt/dspark-patches/hotfix-dsv4-vision-exp.py --status
