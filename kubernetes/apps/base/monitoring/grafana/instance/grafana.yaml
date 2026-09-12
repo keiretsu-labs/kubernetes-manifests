@@ -24,7 +24,6 @@ spec:
       callback_url: http://grafana-service.monitoring.svc:3000/
     security:
       admin_user: admin
-      admin_password: "${DEFAULT_PASSWORD}"
       cookie_secure: "true"
     auth:
       disable_login_form: "true"
