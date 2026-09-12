@@ -6,3 +6,4 @@ resources:
   - helmrelease.yaml
   - httproute.yaml
   - ../../gatus/app/referencegrant.yaml
+  - secret.yaml

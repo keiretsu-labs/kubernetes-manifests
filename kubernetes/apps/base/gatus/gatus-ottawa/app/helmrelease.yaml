@@ -24,10 +24,13 @@ spec:
     image:
       tag: v5.35.0
     priorityClassName: "infra-critical"
+    envFrom:
+      - secretRef:
+          name: gatus
     config:
       alerting:
         discord:
-          webhook-url: "${DISCORD_WEBHOOK_URL}"
+          webhook-url: "$${DISCORD_WEBHOOK_URL}"
           failure-threshold: 3
           success-threshold: 2
       ui:
