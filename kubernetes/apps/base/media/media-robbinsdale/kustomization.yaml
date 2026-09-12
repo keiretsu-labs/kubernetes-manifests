@@ -27,7 +27,6 @@ resources:
   - ./kometa
   - ./qb
   - ./qb-pvt
-  - ./feedcord
   - ./flaresolverr
   - ./maintainerr
   - ./tracearr
