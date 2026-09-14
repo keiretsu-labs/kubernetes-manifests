@@ -56,6 +56,19 @@ spec:
   dependsOn:
     - name: envoy-gateway-system-install
   path: ./kubernetes/apps/base/home/home/local-gateway
+  # Keep externalTrafficPolicy=Local for client-IP preservation, but place a
+  # private Envoy endpoint on each St. Petersburg node so Cilium can advertise
+  # the VIP from orin-0 as well as the two Spark nodes.
+  patches:
+    - target:
+        group: gateway.envoyproxy.io
+        version: v1alpha1
+        kind: EnvoyProxy
+        name: private
+      patch: |-
+        - op: replace
+          path: /spec/provider/kubernetes/envoyDeployment/replicas
+          value: 3
   prune: true
   sourceRef:
     kind: GitRepository
