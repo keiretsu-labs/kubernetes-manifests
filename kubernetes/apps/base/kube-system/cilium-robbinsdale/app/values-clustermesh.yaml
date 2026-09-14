@@ -16,7 +16,7 @@ clustermesh:
   apiserver:
     replicas: 2
     podAnnotations:
-      checksum/mesh-certificate: direct-clusterip-v1
+      checksum/mesh-certificate: direct-loadbalancer-v1
     service:
       annotations:
         tailscale.com/hostname: cilium-mesh-api-${LOCATION}
