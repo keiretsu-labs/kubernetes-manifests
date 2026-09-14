@@ -35,6 +35,7 @@ clustermesh:
         - cilium-mesh-api-${LOCATION}.kube-system
         extraIpAddresses:
         - "10.2.34.24"
+        - "10.169.10.20"
       auto:
         method: certmanager
         certManagerIssuerRef:
@@ -46,10 +47,10 @@ clustermesh:
     domain: kube-system
     clusters:
     - name: robbinsdale
-      address: "10.0.103.21"
+      address: "10.50.10.20"
       port: 2379
     - name: stpetersburg
-      address: "10.4.93.144"
+      address: "10.73.10.20"
       port: 2379
 hubble:
   tls:
