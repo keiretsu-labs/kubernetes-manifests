@@ -67,9 +67,6 @@
 		"services": {
 			"tag:k8s": ["tag:k8s"],
 			"tag:k8s-operator": ["tag:k8s-operator"],
-			"svc:cilium-mesh-api-ottawa": ["tag:k8s"],
-			"svc:cilium-mesh-api-robbinsdale": ["tag:k8s"],
-			"svc:cilium-mesh-api-stpetersburg": ["tag:k8s"],
 			"svc:test": ["tag:k8s"],
 			"svc:tsdnsproxy": ["tag:k8s"],
 			"svc:tempvm": ["tag:k8s"],
@@ -134,15 +131,6 @@
 			"src": ["group:ottawa"],
 			"dst": ["svc:cliproxy"],
 			"ip":  ["80"],
-		},
-		{
-			"src": ["tag:k8s"],
-			"dst": [
-				"svc:cilium-mesh-api-ottawa",
-				"svc:cilium-mesh-api-robbinsdale",
-				"svc:cilium-mesh-api-stpetersburg",
-			],
-			"ip":  ["2379"],
 		},
 		{
 			"src": ["autogroup:member"],

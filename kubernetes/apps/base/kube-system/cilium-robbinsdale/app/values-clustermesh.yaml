@@ -18,23 +18,11 @@ clustermesh:
     podAnnotations:
       checksum/mesh-certificate: direct-loadbalancer-v1
     service:
-      annotations:
-        tailscale.com/hostname: cilium-mesh-api-${LOCATION}
-        tailscale.com/proxy-group: cilium-mesh-ingress
-        tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
-      type: LoadBalancer
-      loadBalancerClass: tailscale
-      externallyCreated: false
+      externallyCreated: true
     tls:
       authMode: cluster
       server:
-        extraDnsNames:
-        - ${LOCATION}.keiretsu.ts.net
-        - ${LOCATION}.kube-system
-        - cilium-mesh-api-${LOCATION}.keiretsu.ts.net
-        - cilium-mesh-api-${LOCATION}.kube-system
         extraIpAddresses:
-        - "10.0.103.21"
         - "10.50.10.20"
       auto:
         method: certmanager

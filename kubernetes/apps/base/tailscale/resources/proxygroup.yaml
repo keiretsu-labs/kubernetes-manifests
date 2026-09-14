@@ -28,19 +28,6 @@ spec:
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyGroup
 metadata:
-  name: cilium-mesh-ingress
-spec:
-  hostnamePrefix: ${LOCATION}-cilium-mesh
-  tags:
-    - tag:k8s
-    - tag:${LOCATION}
-  proxyClass: ${TAILSCALE_INGRESS_PROXY_CLASS}
-  type: ingress
-  replicas: 2
----
-apiVersion: tailscale.com/v1alpha1
-kind: ProxyGroup
-metadata:
   name: ${LOCATION}-k8s
 spec:
   type: kube-apiserver

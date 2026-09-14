@@ -784,10 +784,9 @@ Also living in that tree, and easy to miss:
   `clustermesh-apiserver-direct`, at `10.50.10.20` (Robbinsdale),
   `10.169.10.20` (Ottawa) or `10.73.10.20` (St. Petersburg). The peer config
   uses those VIPs directly over the UniFi-routed network, with the shared
-  internal CA and IP SANs on the server certificates. The older Tailscale
-  LoadBalancer on `clustermesh-apiserver` remains only as a fallback during the
-  migration; ClusterMesh peer traffic does not use it, and the mesh-specific
-  Tailscale egress Services have been removed.
+  internal CA and IP SANs on the server certificates. The former Tailscale
+  LoadBalancer, dedicated mesh ProxyGroup, and mesh-specific Tailscale egress
+  Services have been removed; ClusterMesh peer traffic has no Tailscale hop.
 
 ### LoadBalancer addresses come from one flat pool
 
