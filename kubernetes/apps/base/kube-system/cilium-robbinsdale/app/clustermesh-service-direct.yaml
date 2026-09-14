@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clustermesh-apiserver-direct
+  labels:
+    app.kubernetes.io/name: clustermesh-apiserver-direct
+    app.kubernetes.io/part-of: cilium
+    cilium.io/cluster-mesh: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 10.50.10.20
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  sessionAffinity: ClientIP
+  selector:
+    k8s-app: clustermesh-apiserver
+  ports:
+    - name: etcd-client
+      port: 2379
+      targetPort: 2379
+      protocol: TCP
