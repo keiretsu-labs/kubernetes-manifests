@@ -70,6 +70,8 @@ operator:
         - targetLabel: cluster
           replacement: ${CLUSTER_NAME}
 rollOutCiliumPods: true
+podAnnotations:
+  checksum/service-map-refresh: canonical-clustermesh-v2
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:
