@@ -48,9 +48,6 @@ operator:
         - targetLabel: cluster
           replacement: ${CLUSTER_NAME}
 rollOutCiliumPods: true
-cleanBpfState: true
-podAnnotations:
-  checksum/service-map-refresh: canonical-clustermesh-v2
 localRedirectPolicy: true
 bgpControlPlane:
   enabled: true
