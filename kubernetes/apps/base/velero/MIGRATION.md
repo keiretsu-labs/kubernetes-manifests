@@ -4,7 +4,7 @@
 
 ### Scale
 - **54 StorageStacks** across 3 clusters (Ottawa: 30, Robbinsdale: 22, StPete: 2)
-- All managed via KRO `StorageStack` RGD + Flux GitOps
+- All managed via the `StorageStack` operator + Flux GitOps
 - Total PVCs under backup: ~54 (mostly small config PVCs)
 
 ### PVC Size Profile
@@ -52,7 +52,7 @@
 
 **Phase 3: Cutover**
 - Once proven, disable VolSync per-namespace:
-  - Set `backupPaused: true` on StorageStacks (KRO will pause ReplicationSources)
+  - Set `backupPaused: true` on StorageStacks (the operator will pause ReplicationSources)
   - OR delete StorageStack instances (which tears down ReplicationSources + VolSync restic repos)
 - VolSync namespace stays up (don't uninstall it — preserves ReplicationDestination CRDs for restores)
 - Velero schedules are already running

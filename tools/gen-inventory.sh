@@ -179,7 +179,7 @@ def commented_out(text):
 # failure than silently omitting it.
 ROLES = [
     ("Delivery and platform control", {
-        "flux-system", "kro-system", "tuppr"}),
+        "flux-system", "tuppr"}),
     ("Node runtime, scheduling and sandboxing", {
         "kube-system", "spegel", "node-feature-discovery", "vpa-system",
         "gvisor", "kata-containers", "agent-sandbox-system", "arc-systems",

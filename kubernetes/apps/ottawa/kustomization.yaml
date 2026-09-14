@@ -23,7 +23,6 @@ resources:
   - ./immich
   - ./k8gb
   - ./kata-containers
-  - ./kro-system
   - ./kube-system
   - ./lan
   - ./teslamate

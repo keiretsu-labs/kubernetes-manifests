@@ -21,7 +21,7 @@
 //  diagram-apps: bhaiya, hermes, forgejo, woodpecker, immich, teslamate,
 //  diagram-apps: searxng, firecrawl, cliproxy, zot, opencost, tempvm,
 //  diagram-apps: headlamp-install, velero, mimir, mimir-egress, victoria-logs,
-//  diagram-apps: fluent-bit, gatus, kromgo, garage, spegel, tuppr, vpa, kro,
+//  diagram-apps: fluent-bit, gatus, kromgo, garage, spegel, tuppr, vpa,
 //  diagram-apps: external-secrets-install, gvisor, kata-containers,
 //  diagram-apps: agent-sandbox, ocm, ocm-agent, media-apps, home-assistant,
 //  diagram-apps: ai-inference, cnpg-system, dragonfly-operator-system,
@@ -168,7 +168,7 @@ digraph fabric {
 
     k_ott [label=<<b>Ottawa-only services</b><br align="left"/>bhaiya · hermes · forgejo · woodpecker<br align="left"/>immich · teslamate · searxng · firecrawl · cliproxy<br align="left"/>zot registry · headlamp · opencost · tempvm<br align="left"/>>];
 
-    k_plat [label=<<b>Platform primitives</b><br align="left"/>priority classes · kro · spegel · tuppr · VPA<br align="left"/>external-secrets · Open Cluster Management<br align="left"/>the gVisor, Kata and agent-sandbox runtimes<br align="left"/>>];
+    k_plat [label=<<b>Platform primitives</b><br align="left"/>priority classes · spegel · tuppr · VPA<br align="left"/>external-secrets · Open Cluster Management<br align="left"/>the gVisor, Kata and agent-sandbox runtimes<br align="left"/>>];
   }
 
   k_media -> s_bulk   [label="libraries", style=dotted, constraint=false];
@@ -176,7 +176,6 @@ digraph fabric {
   k_ai    -> s_bulk   [label="model weights", style=dotted, constraint=false];
   k_ai    -> t_egress [label="consumed across\lthe tailnet", style=dashed, constraint=false];
   k_ott   -> s_gw     [label="S3 via ${COMMON_S3_ENDPOINT}", style=dotted, constraint=false];
-  k_plat  -> t_egress [label="kro generates the\legress pattern", style=dotted, constraint=false];
 
   // ---------------------------------------------------------------- layout
   // Band the panels vertically. Without these, storage, observability and

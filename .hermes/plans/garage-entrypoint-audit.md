@@ -73,7 +73,7 @@ COMMON_S3_ENDPOINT: "garage-gateway.garage.svc.cluster.local:3900"
 
 **Apps using COMMON_S3_ENDPOINT** (all correct):
 - velero, hermes, assistant-raj (reader), abtar, kartik
-- mimir, loki, kro, forgejo, zot
+- mimir, loki, forgejo, zot
 - tsflow (tailscale flow logs)
 - immich and tracearr (CNPG postgres backups via barman)
 

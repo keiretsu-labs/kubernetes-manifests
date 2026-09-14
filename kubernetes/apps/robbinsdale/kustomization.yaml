@@ -15,7 +15,6 @@ resources:
   - ./home
   - ./homer-operator
   - ./immich
-  - ./kro-system
   - ./kube-system
   - ./mimir
   - ./spegel

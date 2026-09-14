@@ -1,5 +1,5 @@
 # cdn-site: expose a Garage S3 static bucket as a GSLB-fronted, health-checked
-# public site — the no-kro replacement for the per-site HTTPRoute + Gslb pairs.
+# public site — the replacement for the per-site HTTPRoute + Gslb pairs.
 #
 # Opt in from an app dir:
 #   components:

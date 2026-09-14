@@ -318,7 +318,7 @@ the app-to-base-to-cluster mapping.
 - Cilium CNI, Hubble, CoreDNS customization, Envoy Gateway, and Gateway API
   routes.
 - Flux Operator/Instance, cert-manager, External Secrets, Node Feature
-  Discovery, KRO, VPA, snapshot-controller, and local-path storage.
+  Discovery, VPA, snapshot-controller, and local-path storage.
 - Tailscale operator/resources/system, Cloudflare ExternalDNS, K8GB, and
   Open Cluster Management agents.
 - Agent Sandbox, gVisor, Spegel, GitHub Actions Runner Controller, and

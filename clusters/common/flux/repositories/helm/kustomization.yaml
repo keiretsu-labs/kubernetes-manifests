@@ -39,7 +39,6 @@ resources:
   - ./woodpecker.yaml
   - ./forgejo.yaml
   - ./k8gb.yaml
-  - ./kro.yaml
   - ./ocm.yaml
   - ./vmware-tanzu.yaml
   - ./otwld.yaml

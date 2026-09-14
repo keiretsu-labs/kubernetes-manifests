@@ -390,8 +390,8 @@ is why this one line carries an explicit allow marker.
 Identity-authenticated protocols (Garage RPC) need one ingress identity and one
 egress Service **per remote node**; a shared L4 VIP cannot route a node ID.
 
-A kro `ResourceGraphDefinition serviceegress` generates this whole pattern as a
-custom `ServiceEgress` resource (group `network.keiretsu.ts.net`).
+These ExternalName Services are declared directly by the consuming apps; no
+generated resource abstraction is involved.
 
 ---
 
@@ -678,9 +678,6 @@ tools/kc.sh ot -n home get gateway ts -o jsonpath='{.spec.listeners[*].hostname}
   base directory differs, `home/grafana-redirect/app` versus
   `monitoring/grafana-redirect-stpetersburg`. Both attach to all three tiers
   and 301 `grafana.<cluster domain>` to the canonical `grafana.keiretsu.top`.
-- **kro `approute`** — a `ResourceGraphDefinition` that generates
-  Homer-annotated HTTPRoutes from a short schema, for self-service exposure.
-
 Per-cluster divergences: Frigate is WAN-reachable only from Ottawa (it owns the
 WebRTC routes); the Rook dashboard is ts-only on Ottawa but private+ts on
 Robbinsdale; Plex adds the `ts` tier only on Robbinsdale; Home Assistant's
@@ -1230,10 +1227,8 @@ The Flux Kustomization is named **`gatus`** in all three clusters — only the
 base directory varies (`gatus-ottawa`, `gatus-robbinsdale`, and plain `gatus`
 for St. Petersburg), so `flux reconcile kustomization gatus` is the command
 everywhere. Published at `status.<cluster domain>` and `status.keiretsu.top`
-via GSLB. It probes both
-in-cluster endpoints and their tailnet equivalents — for example Ottawa checks
-`mimir-gateway.mimir:80/ready` *and* `mimir.keiretsu.ts.net:8080/ready`, so a
-mesh break is distinguishable from a service failure.
+via GSLB. It probes local endpoints and direct MCS endpoints; independent
+tailnet checks remain only for paths that intentionally use the tailnet.
 
 ### Kromgo — the README badges
 
@@ -1400,8 +1395,7 @@ Companions:
   `cloudflare-cluster-app`, `flux-system-stpetersburg`, `tinyauth-egress`.
 - **All three** — `actions-runner-controller` plus runner scale sets that dial
   out to GitHub, `spegel` peer-to-peer image mirroring, `default-debug` and
-  `default-kubernetes` helpers, `kro` and its
-  ResourceGraphDefinitions, `vpa`, `memory-request-floor`, `priority-classes`,
+  `default-kubernetes` helpers, `vpa`, `memory-request-floor`, `priority-classes`,
   `irqbalance` (Ottawa + St. Petersburg), `node-feature-discovery`, `tuppr`,
   `external-secrets`, `csi-secrets-store`.
 
@@ -1423,9 +1417,6 @@ mesh health from it; use Hubble and the Gatus tailnet checks instead.
 
 - **`memory-request-floor`** — raises implausibly small memory requests.
 - **`vpa`** — right-sizes requests over time.
-- **`kro`** — ResourceGraphDefinitions turn repeated shapes into one custom
-  resource, including `ServiceEgress`, which generates the tailnet egress
-  pattern.
 - **`spegel`** — nodes serve image layers to each other; this is why containerd
   keeps `discard_unpacked_layers=false`.
 - **`tuppr`** — drives Talos and Kubernetes upgrades, gated on Node Ready plus

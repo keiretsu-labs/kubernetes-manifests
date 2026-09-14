@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 62 | 127 |
-| `robbinsdale` | 3 | 43 | 88 |
-| `stpetersburg` | 3 | 42 | 86 |
-| **total** | **10** | **147** | **301** |
+| `ottawa` | 4 | 61 | 124 |
+| `robbinsdale` | 3 | 42 | 85 |
+| `stpetersburg` | 3 | 41 | 83 |
+| **total** | **10** | **144** | **292** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -67,7 +67,6 @@ diagram in the [README](../../README.md#architecture).
 | Role | Pointer directory | Flux Kustomizations |
 |---|---|---|
 | Delivery and platform control | `flux-system` | `flux-instance`, `flux-monitoring`, `flux-notifications`, `flux-operator` |
-| Delivery and platform control | `kro-system` | `kro`, `kro-platform-config`, `kro-rgds` |
 | Delivery and platform control | `tuppr` | `tuppr` → ns `system-upgrade`, `tuppr-config` → ns `system-upgrade` |
 | Node runtime, scheduling and sandboxing | `agent-sandbox-system` | `agent-sandbox` |
 | Node runtime, scheduling and sandboxing | `arc-systems` | `actions-runner-controller`, `actions-runner-controller-runners` → ns `arc-runners` |
@@ -185,7 +184,6 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Role | Pointer directory | Flux Kustomizations |
 |---|---|---|
 | Delivery and platform control | `flux-system` | `flux-instance`, `flux-monitoring`, `flux-notifications`, `flux-operator` |
-| Delivery and platform control | `kro-system` | `kro`, `kro-platform-config`, `kro-rgds` |
 | Delivery and platform control | `tuppr` | `tuppr` → ns `system-upgrade`, `tuppr-config` → ns `system-upgrade` |
 | Node runtime, scheduling and sandboxing | `agent-sandbox-system` | `agent-sandbox` |
 | Node runtime, scheduling and sandboxing | `arc-systems` | `actions-runner-controller`, `actions-runner-controller-runners` → ns `arc-runners` |
@@ -273,7 +271,6 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Role | Pointer directory | Flux Kustomizations |
 |---|---|---|
 | Delivery and platform control | `flux-system` | `flux-instance`, `flux-monitoring`, `flux-notifications`, `flux-operator`, `flux-system-stpetersburg` |
-| Delivery and platform control | `kro-system` | `kro`, `kro-platform-config`, `kro-rgds` |
 | Delivery and platform control | `tuppr` | `tuppr` → ns `system-upgrade`, `tuppr-config` → ns `system-upgrade` |
 | Node runtime, scheduling and sandboxing | `agent-sandbox-system` | `agent-sandbox` |
 | Node runtime, scheduling and sandboxing | `arc-systems` | `actions-runner-controller`, `actions-runner-controller-runners` → ns `arc-runners` |

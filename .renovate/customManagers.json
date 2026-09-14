@@ -14,17 +14,6 @@
     },
     {
       "customType": "regex",
-      "description": "Process Kro CR image tag fields (ArrApp tag:, QbApp qbTag:/gluetunTag:/portSyncTag:)",
-      "managerFilePatterns": [
-        "/\\.ya?ml$/"
-      ],
-      "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\n\\s*\\w*[Tt]ag:\\s*\\\"?(?<currentValue>[^\"\\s]+)\\\"?"
-      ],
-      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}docker{{/if}}"
-    },
-    {
-      "customType": "regex",
       "description": "Process known CloudNativePG imageName fields as Docker dependencies",
       "managerFilePatterns": [
         "/^kubernetes/apps/base/(?:immich/.+/app|teslamate/teslamate/app|media/media-ottawa/bookorbit)/(?:pg|postgres)\\.yaml$/"
