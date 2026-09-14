@@ -12,6 +12,9 @@
       "svc:robbinsdale-k8gb-coredns",
       "svc:stpetersburg-k8gb-coredns"
     ],
+    "tsflow.rajsingh.info": [
+      "1.1.1.1"
+    ],
     "cdn.rajsingh.info": [
       "1.1.1.1"
     ],
