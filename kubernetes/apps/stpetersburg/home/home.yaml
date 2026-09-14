@@ -56,9 +56,9 @@ spec:
   dependsOn:
     - name: envoy-gateway-system-install
   path: ./kubernetes/apps/base/home/home/local-gateway
-  # Keep externalTrafficPolicy=Local for client-IP preservation, but place a
-  # private Envoy endpoint on each St. Petersburg node so Cilium can advertise
-  # the VIP from orin-0 as well as the two Spark nodes.
+  # Advertise the private VIP from every node while Envoy remains on the two
+  # Spark nodes. Cluster forwarding avoids placing ingress on memory-pressured
+  # orin-0; the trade-off is that Envoy backends see the forwarding node IP.
   patches:
     - target:
         group: gateway.envoyproxy.io
@@ -67,8 +67,8 @@ spec:
         name: private
       patch: |-
         - op: replace
-          path: /spec/provider/kubernetes/envoyDeployment/replicas
-          value: 3
+          path: /spec/provider/kubernetes/envoyService/externalTrafficPolicy
+          value: Cluster
   prune: true
   sourceRef:
     kind: GitRepository
