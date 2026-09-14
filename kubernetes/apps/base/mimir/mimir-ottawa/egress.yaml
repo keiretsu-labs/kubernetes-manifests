@@ -11,4 +11,8 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: Override
 spec:
-  externalName: null
+  # An explicit empty value is required here: the old Tailscale operator was
+  # the field owner, and an omitted/null field cannot take ownership of it
+  # during Flux server-side apply. The Service remains the Helm-owned
+  # ClusterIP/selector Service; externalName is unused for type ClusterIP.
+  externalName: ""
