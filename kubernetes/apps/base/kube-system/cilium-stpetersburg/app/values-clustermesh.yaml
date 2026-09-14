@@ -29,6 +29,8 @@ clustermesh:
         extraDnsNames:
           - ${LOCATION}.keiretsu.ts.net
           - ${LOCATION}.kube-system
+          - cilium-mesh-api-${LOCATION}.keiretsu.ts.net
+          - cilium-mesh-api-${LOCATION}.kube-system
       auto:
         method: certmanager
         certManagerIssuerRef:
