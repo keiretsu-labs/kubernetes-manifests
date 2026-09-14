@@ -6,4 +6,5 @@ resources:
   - localredirects.yaml
   - nodelocaldns.yaml
   - coredns.yaml
+  - mcsapi-rbac.yaml
   - bgp.yaml

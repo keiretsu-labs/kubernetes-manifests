@@ -4,6 +4,7 @@ resources:
   - ../../base/victoria-logs/victoria-logs/app
   - ingress-ts.yaml
   - egress-svc.yaml
+  - service-mesh.yaml
 patches:
   - patch: |-
       - op: add

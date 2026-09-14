@@ -48,6 +48,20 @@ data:
         prometheus :9253
         health
         }
+    clusterset.local:53 {
+        errors
+        cache {
+                success 9984 30
+                denial 9984 5
+        }
+        reload
+        loop
+        bind 0.0.0.0
+        forward . __PILLAR__CLUSTER__DNS__ {
+                force_tcp
+        }
+        prometheus :9253
+        }
     in-addr.arpa:53 {
         errors
         cache 30

@@ -16,7 +16,8 @@ data:
             class error
         }
         prometheus :9153
-        kubernetes cluster.local in-addr.arpa ip6.arpa {
+        kubernetes cluster.local clusterset.local in-addr.arpa ip6.arpa {
+            multicluster clusterset.local
             pods insecure
             fallthrough in-addr.arpa ip6.arpa
             ttl 30
@@ -27,6 +28,8 @@ data:
         cache 30 {
            disable success cluster.local
            disable denial cluster.local
+           disable success clusterset.local
+           disable denial clusterset.local
         }
         loop
         reload

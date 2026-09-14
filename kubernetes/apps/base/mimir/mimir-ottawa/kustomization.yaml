@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: mimir
 resources:
   - helmrelease.yaml
+  - service-mesh.yaml
   - ingester-pvc.yaml
   - ingress-ts.yaml
   - ingress-qf-ts.yaml
