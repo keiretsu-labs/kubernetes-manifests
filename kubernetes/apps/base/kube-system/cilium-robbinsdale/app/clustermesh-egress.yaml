@@ -6,7 +6,7 @@ metadata:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: cilium-mesh-api-ottawa.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
-  name: ottawa
+  name: cilium-mesh-api-ottawa
 spec:
   externalName: placeholder   # any value - will be overwritten by operator
   type: ExternalName 
@@ -22,7 +22,7 @@ metadata:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
     tailscale.com/tailnet-fqdn: cilium-mesh-api-stpetersburg.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
-  name: stpetersburg
+  name: cilium-mesh-api-stpetersburg
 spec:
   externalName: placeholder
   type: ExternalName

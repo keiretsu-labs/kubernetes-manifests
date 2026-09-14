@@ -40,10 +40,10 @@ clustermesh:
     domain: kube-system
     clusters:
     - name: robbinsdale
-      address: robbinsdale.kube-system
+      address: cilium-mesh-api-robbinsdale.kube-system
       port: 2379
     - name: stpetersburg
-      address: stpetersburg.kube-system
+      address: cilium-mesh-api-stpetersburg.kube-system
       port: 2379
 hubble:
   tls:
