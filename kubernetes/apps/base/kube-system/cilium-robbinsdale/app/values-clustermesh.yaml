@@ -15,6 +15,8 @@ clustermesh:
   useAPIServer: true
   apiserver:
     replicas: 2
+    podAnnotations:
+      checksum/mesh-certificate: san-v2
     service:
       annotations:
         tailscale.com/hostname: cilium-mesh-api-${LOCATION}
