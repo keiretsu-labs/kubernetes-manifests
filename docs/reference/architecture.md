@@ -773,10 +773,21 @@ Also living in that tree, and easy to miss:
   before assuming a crash loop.
 - a **Multus** patch, so pods can have a second interface (see the Home
   Assistant note under [Workloads](#workloads)).
-- a **generic device plugin**, and a parked ClusterMesh configuration —
-  `clustermesh-egress.yaml` and its values exist but are commented out of the
-  kustomization, so ClusterMesh is *not* live. Tailscale is still the only path
-  between sites.
+- a **generic device plugin**, and a live Cilium ClusterMesh configuration.
+  Robbinsdale, Ottawa and St. Petersburg use Cilium cluster IDs 1, 2 and 3.
+  The `cilium-mesh-secrets` Kustomization uses External Secrets to copy only
+  the public certificate from each cluster's local cert-manager
+  `kubernetes-internal-ca-key-pair`; the private key never leaves the local
+  cert-manager installation.
+
+  Each ClusterMesh API server has a dedicated Cilium/BGP LoadBalancer Service,
+  `clustermesh-apiserver-direct`, at `10.50.10.20` (Robbinsdale),
+  `10.169.10.20` (Ottawa) or `10.73.10.20` (St. Petersburg). The peer config
+  uses those VIPs directly over the UniFi-routed network, with the shared
+  internal CA and IP SANs on the server certificates. The older Tailscale
+  LoadBalancer on `clustermesh-apiserver` remains only as a fallback during the
+  migration; ClusterMesh peer traffic does not use it, and the mesh-specific
+  Tailscale egress Services have been removed.
 
 ### LoadBalancer addresses come from one flat pool
 
@@ -788,7 +799,8 @@ undivided range.
 The consequence: **the pinned addresses documented elsewhere in this file are
 hand-allocations inside that one pool, and nothing prevents a collision.** There
 is no sub-pool per tier and no allocation map beyond the manifests themselves.
-Before pinning a new address, grep for it.
+The `.10.20` address in each cluster's pool is reserved for the direct
+ClusterMesh LoadBalancer Service. Before pinning any other address, grep for it.
 
 ### Those addresses reach the LAN over BGP
 
