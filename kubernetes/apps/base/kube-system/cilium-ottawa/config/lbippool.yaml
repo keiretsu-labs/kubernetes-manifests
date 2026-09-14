@@ -5,7 +5,12 @@ metadata:
   name: "k8s-pool"
 spec:
   blocks:
-    - cidr: "${CLUSTER_LOAD_BALANCER_CIDR}"
+    # The UniFi gateway is 10.169.0.254. Keep it out of LB-IPAM while
+    # retaining the existing pool addresses, including 10.169.0.0 if used.
+    - start: "10.169.0.0"
+      stop: "10.169.0.253"
+    - start: "10.169.0.255"
+      stop: "10.169.255.254"
   serviceSelector:
     matchExpressions:
       - { key: somekey, operator: NotIn, values: ["never-used-value"] }
