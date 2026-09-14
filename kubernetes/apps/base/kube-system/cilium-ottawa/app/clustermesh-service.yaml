@@ -4,8 +4,8 @@ kind: Service
 metadata:
   name: clustermesh-apiserver
   annotations:
-    tailscale.com/hostname: cilium-mesh-ottawa
-    tailscale.com/proxy-group: common-ingress
+    tailscale.com/hostname: cilium-mesh-api-ottawa
+    tailscale.com/proxy-group: cilium-mesh-ingress
     tailscale.com/tags: "tag:k8s,tag:ottawa"
 spec:
   type: LoadBalancer

@@ -4,8 +4,8 @@ kind: Service
 metadata:
   name: clustermesh-apiserver
   annotations:
-    tailscale.com/hostname: cilium-mesh-stpetersburg
-    tailscale.com/proxy-group: common-ingress
+    tailscale.com/hostname: cilium-mesh-api-stpetersburg
+    tailscale.com/proxy-group: cilium-mesh-ingress
     tailscale.com/tags: "tag:k8s,tag:stpetersburg"
 spec:
   type: LoadBalancer

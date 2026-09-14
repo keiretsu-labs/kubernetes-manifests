@@ -4,7 +4,7 @@ kind: Service
 metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
-    tailscale.com/tailnet-fqdn: cilium-mesh-robbinsdale.keiretsu.ts.net
+    tailscale.com/tailnet-fqdn: cilium-mesh-api-robbinsdale.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: robbinsdale
 spec:
@@ -20,7 +20,7 @@ kind: Service
 metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
-    tailscale.com/tailnet-fqdn: cilium-mesh-stpetersburg.keiretsu.ts.net
+    tailscale.com/tailnet-fqdn: cilium-mesh-api-stpetersburg.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
   name: stpetersburg
 spec:
