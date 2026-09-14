@@ -133,19 +133,19 @@ body {
 
 <!-- Topology Diagram -->
 <section class="card topology fade-in">
-  <h2>🌐 Multi-Region Topology with Tailscale Proxy Groups</h2>
+  <h2>🌐 Multi-Region Topology with Direct ClusterMesh</h2>
   <div class="legend">
     <span class="legend-item"><span class="swatch" style="background:#34d399;" aria-hidden="true"></span> Storage Node</span>
     <span class="legend-item"><span class="swatch" style="background:#22d3ee;" aria-hidden="true"></span> Gateway Node</span>
     <span class="legend-item"><span class="swatch" style="background:#fb7185;" aria-hidden="true"></span> common-ingress (inbound)</span>
-    <span class="legend-item"><span class="swatch" style="background:#c084fc;" aria-hidden="true"></span> common-egress (outbound)</span>
+    <span class="legend-item"><span class="swatch" style="background:#c084fc;" aria-hidden="true"></span> Cilium MCS (direct RPC)</span>
     <span class="legend-item"><span class="swatch" style="background:#fbbf24;" aria-hidden="true"></span> Cross-Region RPC</span>
-    <span class="legend-item"><span class="swatch" style="background:#fb923c;" aria-hidden="true"></span> Tailscale VPN</span>
+    <span class="legend-item"><span class="swatch" style="background:#fb923c;" aria-hidden="true"></span> Tailscale ingress/fallback</span>
   </div>
 
-  <svg viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Multi-region Garage topology diagram showing Ottawa, Robbinsdale, and St. Petersburg with Tailscale VPN backbone, common-ingress and common-egress proxy groups, storage and gateway tiers, and cross-region RPC flows" style="margin-top:0.5rem;">
-    <title>Garage Multi-Region Topology — 3 datacenters with Tailscale VPN and GSLB round-robin</title>
-    <desc>Diagram showing three datacenter regions (Ottawa with 4 Talos nodes, Robbinsdale with 3 Talos nodes, St. Petersburg with 3 arm64+GPU nodes) connected via a Tailscale VPN backbone and common-ingress/common-egress Tailscale proxy groups. Each region contains storage pods and gateway pods. Cross-region RPC flows are shown as animated amber lines between regions. A GSLB round-robin DNS (s3.cdn.keiretsu.top) routes public S3 traffic via an Envoy Gateway. Traffic weights: Ottawa 33%, Robbinsdale 33%, St. Petersburg 34%. Replication factor is 2 with consistent mode.</desc>
+  <svg viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Multi-region Garage topology diagram showing Ottawa, Robbinsdale, and St. Petersburg with a direct UniFi-routed Cilium ClusterMesh, Tailscale ingress fallback, storage and gateway tiers, and cross-region RPC flows" style="margin-top:0.5rem;">
+    <title>Garage Multi-Region Topology — direct Cilium ClusterMesh with Tailscale ingress fallback</title>
+    <desc>Diagram showing three datacenter regions (Ottawa with 4 Talos nodes, Robbinsdale with 3 Talos nodes, St. Petersburg with 3 arm64+GPU nodes) connected through the UniFi-routed Pod and Service CIDRs with Cilium ClusterMesh MCS endpoints. Tailscale common-ingress remains available for tailnet clients. Each region contains storage pods and gateway pods. Cross-region RPC flows are shown as animated amber lines between regions. A GSLB round-robin DNS (s3.cdn.keiretsu.top) routes public S3 traffic via an Envoy Gateway.</desc>
     <defs>
       <marker id="arrow-amber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#fbbf24"/></marker>
       <marker id="arrow-rose"  markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#fb7185"/></marker>
@@ -162,10 +162,10 @@ body {
     <text x="500" y="15" text-anchor="middle" fill="#22d3ee" font-size="9" font-weight="600">🌐 Envoy Gateway public — s3.cdn.keiretsu.top (GSLB → garage-gateway:3900)</text>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- LAYER 1: Tailscale VPN Backbone                             -->
+    <!-- LAYER 1: Direct UniFi-routed Cilium ClusterMesh             -->
     <!-- ══════════════════════════════════════════════════════════════ -->
     <rect x="40" y="26" width="920" height="30" rx="5" fill="rgba(251,146,60,0.12)" stroke="#fb923c" stroke-width="1" stroke-dasharray="6,3"/>
-    <text x="500" y="46" text-anchor="middle" fill="#fb923c" font-size="10" font-weight="600">🌐 Tailscale VPN Backbone — keiretsu.ts.net</text>
+    <text x="500" y="46" text-anchor="middle" fill="#fb923c" font-size="10" font-weight="600">🌐 UniFi-routed Pod/Service CIDRs — Cilium ClusterMesh · clusterset.local</text>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
     <!-- LAYER 2: common-ingress Proxy Group (Tailscale inbound)     -->
@@ -191,43 +191,43 @@ body {
     <rect x="897" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="0.5" opacity="0.6"/><text x="934" y="131" text-anchor="middle" fill="#fb7185" font-size="7">ingress-2</text>
     <text x="852" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">8 TS services</text>
 
-    <!-- VPN → ingress arrows -->
+    <!-- Tailscale remains an external/client ingress path -->
     <path d="M97,56 L97,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
     <path d="M499,56 L499,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
     <path d="M852,56 L852,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- LAYER 3: common-egress Proxy Group (outbound)               -->
+    <!-- LAYER 3: Cilium MCS direct RPC endpoints                    -->
     <!-- ══════════════════════════════════════════════════════════════ -->
     <rect x="40" y="155" width="920" height="90" rx="6" fill="rgba(107,33,168,0.08)" stroke="#c084fc" stroke-width="1" stroke-dasharray="4,3"/>
-    <text x="500" y="173" text-anchor="middle" fill="#c084fc" font-size="9" font-weight="600">common-egress ProxyGroup — 3 replicas · Service → Tailscale (outbound RPC)</text>
+    <text x="500" y="173" text-anchor="middle" fill="#c084fc" font-size="9" font-weight="600">Cilium MCS — direct ServiceExport/ServiceImport RPC · no Tailscale hop</text>
 
     <!-- Egress proxies per region -->
     <rect x="60" y="185" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="97" y="200" text-anchor="middle" fill="#c084fc" font-size="8">egress-0</text>
     <rect x="60" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="97" y="228" text-anchor="middle" fill="#c084fc" font-size="8">egress-1</text>
     <rect x="142" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="0.5" opacity="0.6"/><text x="179" y="228" text-anchor="middle" fill="#c084fc" font-size="7">egress-2</text>
-    <text x="97" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.9">13 egress TS services</text>
+    <text x="97" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.9">direct per-node MCS Services</text>
 
     <rect x="462" y="185" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="499" y="200" text-anchor="middle" fill="#c084fc" font-size="8">egress-0</text>
     <rect x="462" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="499" y="228" text-anchor="middle" fill="#c084fc" font-size="8">egress-1</text>
     <rect x="544" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="0.5" opacity="0.6"/><text x="581" y="228" text-anchor="middle" fill="#c084fc" font-size="7">egress-2</text>
-    <text x="499" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.9">13 egress TS services</text>
+    <text x="499" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.9">direct per-node MCS Services</text>
 
     <rect x="815" y="185" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="852" y="200" text-anchor="middle" fill="#c084fc" font-size="8">egress-0</text>
     <rect x="815" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="1"/><text x="852" y="228" text-anchor="middle" fill="#c084fc" font-size="8">egress-1</text>
     <rect x="897" y="213" width="75" height="22" rx="4" fill="rgba(107,33,168,0.3)" stroke="#c084fc" stroke-width="0.5" opacity="0.6"/><text x="934" y="228" text-anchor="middle" fill="#c084fc" font-size="7">egress-2</text>
-    <text x="852" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.9">13 egress TS services</text>
+    <text x="852" y="240" text-anchor="middle" fill="#c084fc" font-size="7" opacity="0.9">direct per-node MCS Services</text>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- CROSS-REGION RPC FLOW via BOTH proxy groups                  -->
+    <!-- CROSS-REGION RPC FLOW via direct MCS Services                -->
     <!-- ══════════════════════════════════════════════════════════════ -->
 
-    <!-- Ottawa → Robbinsdale (egress → VPN → ingress) -->
+    <!-- Ottawa → Robbinsdale (direct MCS per-node Service) -->
     <path d="M140,175 C250,130 350,130 462,175" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.7"/>
     <text x="300" y="138" text-anchor="middle" fill="#fbbf24" font-size="7" opacity="0.7">Ottawa → Robbinsdale RPC</text>
     <circle r="4" fill="#fbbf24" opacity="0.9" aria-hidden="true"><animateMotion dur="3s" repeatCount="indefinite" path="M140,175 C250,130 350,130 462,175"/></circle>
 
-    <!-- Robbinsdale → Ottawa (egress → VPN → ingress) -->
+    <!-- Robbinsdale → Ottawa (direct MCS per-node Service) -->
     <path d="M462,185 C350,230 250,230 140,185" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)" stroke-dasharray="4,3" opacity="0.7"/>
     <circle r="4" fill="#fbbf24" opacity="0.9" aria-hidden="true"><animateMotion dur="3s" repeatCount="indefinite" path="M462,185 C350,230 250,230 140,185"/></circle>
 
@@ -248,7 +248,7 @@ body {
     <text x="180" y="293" text-anchor="middle" fill="#fb923c" font-size="12" font-weight="600">🇨🇦 Ottawa</text>
     <text x="180" y="308" text-anchor="middle" fill="#a09080" font-size="9">4 Nodes (Talos) · Services & Media</text>
 
-    <!-- Arrow from egress down into region -->
+    <!-- Arrow from direct MCS endpoints down into region -->
     <path d="M97,240 L97,265" stroke="#c084fc" stroke-width="1" marker-end="url(#arrow-purple)" opacity="0.4"/>
     <!-- Arrow from ingress down into region -->
     <path d="M97,148 L97,265" stroke="#fb7185" stroke-width="1" marker-end="url(#arrow-rose)" opacity="0.4"/>
@@ -265,7 +265,7 @@ body {
     <rect x="180" y="375" width="90" height="22" rx="5" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.2"/><text x="225" y="392" text-anchor="middle" fill="#22d3ee" font-size="8">gateway-1</text>
 
     <!-- Egress services (cross-region RPC targets) -->
-    <text x="225" y="430" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (common-egress)</text>
+    <text x="225" y="430" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (direct MCS)</text>
     <rect x="180" y="440" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="225" y="454" text-anchor="middle" fill="#c084fc" font-size="7">ottawa-gw-{ordinal}</text>
     <rect x="180" y="464" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="225" y="478" text-anchor="middle" fill="#c084fc" font-size="7">robbinsdale-gw-{ordinal}</text>
     <rect x="180" y="488" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="225" y="502" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
@@ -297,7 +297,7 @@ body {
     <rect x="500" y="375" width="90" height="22" rx="5" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.2"/><text x="545" y="392" text-anchor="middle" fill="#22d3ee" font-size="8">gateway-1</text>
 
     <!-- Egress templates -->
-    <text x="545" y="430" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (common-egress)</text>
+    <text x="545" y="430" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (direct MCS)</text>
     <rect x="500" y="440" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="545" y="454" text-anchor="middle" fill="#c084fc" font-size="7">ottawa-gw-{ordinal}</text>
     <rect x="500" y="464" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="545" y="478" text-anchor="middle" fill="#c084fc" font-size="7">robbinsdale-gw-{ordinal}</text>
     <rect x="500" y="488" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="545" y="502" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
@@ -322,7 +322,7 @@ body {
     <rect x="830" y="345" width="80" height="22" rx="5" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.2"/><text x="870" y="362" text-anchor="middle" fill="#22d3ee" font-size="8">gateway-0</text>
     <rect x="830" y="375" width="80" height="22" rx="5" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.2"/><text x="870" y="392" text-anchor="middle" fill="#22d3ee" font-size="8">gateway-1</text>
 
-    <text x="870" y="465" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (common-egress)</text>
+    <text x="870" y="465" text-anchor="middle" fill="#c084fc" font-size="9">RPC Templates (direct MCS)</text>
     <rect x="830" y="475" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="489" text-anchor="middle" fill="#c084fc" font-size="7">ottawa-gw-{ordinal}</text>
     <rect x="830" y="499" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="513" text-anchor="middle" fill="#c084fc" font-size="7">robbinsdale-gw-{ordinal}</text>
     <rect x="830" y="523" width="90" height="18" rx="4" fill="rgba(107,33,168,0.25)" stroke="#c084fc" stroke-width="0.8"/><text x="875" y="537" text-anchor="middle" fill="#c084fc" font-size="7">stpetersburg-gw-{ordinal}</text>
@@ -347,10 +347,10 @@ body {
       🡺 Public S3: Client → s3.cdn.keiretsu.top (GSLB) → Envoy Gateway public → Gateway pod
     </text>
     <text x="500" y="704" text-anchor="middle" fill="#c084fc" font-size="7.5" opacity="0.8">
-      🡺 Replication: Gateway → common-egress → Tailscale VPN → other region's common-ingress → Storage pod
+      🡺 Replication: Gateway → direct Cilium MCS per-node Service → remote Storage pod
     </text>
     <text x="500" y="718" text-anchor="middle" fill="#a09080" font-size="7">
-      Each cluster runs all 3 regions' gateway RPC endpoints as local egress services (13 via common-egress) · Tailscale VPN inbound via common-ingress
+      Each cluster publishes identity-specific RPC Services under clusterset.local · Tailscale common-ingress remains for tailnet clients
     </text>
   </svg>
 </section>
@@ -364,7 +364,7 @@ body {
     <div class="stat"><span class="stat-label">Storage Pods</span><span class="stat-value">5 (4 NVMe localpath + 1 SMB)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-ottawa">...</span> replicas · 9 TS svcs</span></div>
-    <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value"><span id="egress-ottawa">...</span> replicas · 13 TS svcs (all regions)</span></div>
+    <div class="stat"><span class="stat-label">ClusterMesh RPC</span><span class="stat-value">direct MCS Services · no Tailscale hop</span></div>
     <div class="storage-bar" id="disk-ottawa">
       <div class="bar-track"><div class="bar-fill green" id="disk-fill-ottawa" style="width:0%"></div></div>
       <div class="bar-labels"><span><span class="value-used" id="disk-used-ottawa">...</span> used</span><span id="disk-total-ottawa">...</span></div>
@@ -373,7 +373,7 @@ body {
       <span class="node-tag storage">asuka</span><span class="node-tag storage">kaji</span><span class="node-tag storage">rei</span>
       <span class="node-tag storage">shiro</span><span class="node-tag storage">smb</span>
       <span class="node-tag gateway">gw-0</span><span class="node-tag gateway">gw-1</span>
-      <span class="node-tag ingress">ingress×3</span><span class="node-tag egress">egress×3</span>
+      <span class="node-tag ingress">ingress×3</span><span class="node-tag egress">MCS RPC</span>
     </div>
   </div>
   <div class="cluster-card">
@@ -382,7 +382,7 @@ body {
     <div class="stat"><span class="stat-label">Storage Pods</span><span class="stat-value">4 (3 localpath + 1 SMB)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-robbinsdale">...</span> replicas · 8 TS svcs</span></div>
-    <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value"><span id="egress-robbinsdale">...</span> replicas · 13 TS svcs (all regions)</span></div>
+    <div class="stat"><span class="stat-label">ClusterMesh RPC</span><span class="stat-value">direct MCS Services · no Tailscale hop</span></div>
     <div class="storage-bar" id="disk-robbinsdale">
       <div class="bar-track"><div class="bar-fill green" id="disk-fill-robbinsdale" style="width:0%"></div></div>
       <div class="bar-labels"><span><span class="value-used" id="disk-used-robbinsdale">...</span> used</span><span id="disk-total-robbinsdale">...</span></div>
@@ -391,7 +391,7 @@ body {
       <span class="node-tag storage">stone</span><span class="node-tag storage">tank</span><span class="node-tag storage">titan</span>
       <span class="node-tag storage">smb</span>
       <span class="node-tag gateway">gw-0</span><span class="node-tag gateway">gw-1</span>
-      <span class="node-tag ingress">ingress×3</span><span class="node-tag egress">egress×3</span>
+      <span class="node-tag ingress">ingress×3</span><span class="node-tag egress">MCS RPC</span>
     </div>
   </div>
   <div class="cluster-card">
@@ -400,7 +400,7 @@ body {
     <div class="stat"><span class="stat-label">Storage</span><span class="stat-value">3 localpath (spark-0, spark-1, orin-0)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
     <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-stpetersburg">...</span> replicas · 8 TS svcs</span></div>
-    <div class="stat"><span class="stat-label">common-egress</span><span class="stat-value"><span id="egress-stpetersburg">...</span> replicas · 13 TS svcs (all regions)</span></div>
+    <div class="stat"><span class="stat-label">ClusterMesh RPC</span><span class="stat-value">direct MCS Services · no Tailscale hop</span></div>
     <div class="stat"><span class="stat-label">Federation</span><span class="stat-value">Rejoined 2026-06-04</span></div>
     <div class="storage-bar" id="disk-stpetersburg">
       <div class="bar-track"><div class="bar-fill green" id="disk-fill-stpetersburg" style="width:0%"></div></div>
@@ -410,7 +410,7 @@ body {
     <div class="nodes">
       <span class="node-tag storage">spark-0</span><span class="node-tag storage">spark-1</span><span class="node-tag" style="border-left:2px solid #fb923c;">orin-0</span>
       <span class="node-tag gateway">gw-0</span><span class="node-tag gateway">gw-1</span>
-      <span class="node-tag ingress">ingress×3</span><span class="node-tag egress">egress×3</span>
+      <span class="node-tag ingress">ingress×3</span><span class="node-tag egress">MCS RPC</span>
     </div>
   </div>
 </div>
@@ -438,12 +438,12 @@ body {
       </ul>
     </div>
     <div>
-      <h3 style="color:#c084fc; font-size:0.9rem; margin-bottom:0.5rem;">📤 common-egress (Outbound RPC)</h3>
+      <h3 style="color:#c084fc; font-size:0.9rem; margin-bottom:0.5rem;">📤 Direct ClusterMesh RPC</h3>
       <ul style="font-size:0.85rem; color:#d2b48c; line-height:1.6; list-style:none;">
-        <li>• 3 replicas per cluster — outbound Tailscale connections</li>
-        <li>• Each cluster runs <strong>all 3 regions'</strong> gateway RPC services (13 total)</li>
-        <li>• Template: <code style="font-size:0.75rem; background:#2e2621; padding:0.1rem 0.3rem; border-radius:3px;">{zone}-gw-{ordinal}.keiretsu.ts.net:3901</code></li>
-        <li>• Cross-region RPC flow: Garage → common-egress → VPN → common-ingress → peer</li>
+        <li>• Cilium MCS ServiceExports/Imports carry internal Garage RPC</li>
+        <li>• Each Garage node has its own identity-specific Service and endpoint</li>
+        <li>• Template: <code style="font-size:0.75rem; background:#2e2621; padding:0.1rem 0.3rem; border-radius:3px;">{zone}-gw-{ordinal}-mesh.garage.svc.clusterset.local:3901</code></li>
+        <li>• Cross-region RPC flow: Garage → direct MCS ServiceImport → peer</li>
       </ul>
     </div>
     <div>
@@ -562,7 +562,8 @@ setHealth('health-ottawa', m.nodes_ottawa, m.healthy_ottawa);
 setHealth('health-robbinsdale', m.nodes_robbinsdale, m.healthy_robbinsdale);
 setHealth('health-stpetersburg', m.nodes_stpetersburg, m.healthy_stpetersburg);
 
-// Proxy group replica counts from Mimir
+// Remaining tailnet ingress/fallback proxy counts from Mimir. Garage RPC uses
+// direct ClusterMesh Services and is not counted here.
 function setProxyCount(id, count) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -634,7 +635,7 @@ const ZONES = ['ottawa', 'robbinsdale', 'stpetersburg'];
   const k = ZONES.map(z=>Math.round(m['nodes_'+z]||0)).reduce((a,b)=>a+b,0);
   const ig = ZONES.map(z=>Math.round(m['ingress_'+z]||0)).reduce((a,b)=>a+b,0);
   const eg = ZONES.map(z=>Math.round(m['egress_'+z]||0)).reduce((a,b)=>a+b,0);
-  new Chart(document.getElementById('chartNodes'), { type: 'doughnut', data: { labels: ['Storage','Gateway/Other','Ingress','Egress'], datasets: [{ data: [s, Math.max(0,k-s), ig, eg], backgroundColor: ['#34d399','#22d3ee','#fb7185','#c084fc'], borderWidth: 0 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#a09080', boxWidth: 10 } } } } });
+  new Chart(document.getElementById('chartNodes'), { type: 'doughnut', data: { labels: ['Storage','Gateway/Other','Tailnet ingress','Tailnet fallback'], datasets: [{ data: [s, Math.max(0,k-s), ig, eg], backgroundColor: ['#34d399','#22d3ee','#fb7185','#c084fc'], borderWidth: 0 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#a09080', boxWidth: 10 } } } } });
 }
 
 // 3. Capacity Distribution (horizontal bar)

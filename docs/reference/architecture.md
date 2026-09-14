@@ -237,10 +237,20 @@ tools/kc.sh ot -n border0 get all
 tools/kc.sh ot delete namespace border0
 ~~~
 
+## Inter-cluster networking
+
+The primary path between clusters is the UniFi-routed Pod/Service CIDR fabric,
+with Cilium BGP advertising the routes and Cilium ClusterMesh providing direct
+service and endpoint discovery. MCS exports are published under
+`*.svc.clusterset.local`, so internal federation does not traverse Tailscale.
+Tailscale remains a separate access and fallback overlay for cluster APIs,
+tailnet ingress, and dependencies that intentionally require tailnet identity.
+
 ## Tailnet overlay
 
-The tailnet `keiretsu.ts.net` is the only path between clusters. Every
-cross-cluster dependency rides it.
+The tailnet `keiretsu.ts.net` is an access and fallback overlay, not the primary
+path between clusters. Only dependencies that intentionally require tailnet
+identity or external tailnet access ride it.
 
 ### `tailscale/policy.hujson` — central zero-trust policy
 
@@ -279,8 +289,9 @@ commented out.
 the 4via6 range; its domain sets are declared in the policy's `nodeAttrs`.
 
 **`ProxyGroup common-egress`** (egress, 3 replicas, proxyClass
-`common-accept-routes`) backs *every* `tailscale.com/tailnet-fqdn`
-ExternalName Service.
+`common-accept-routes`) backs the remaining
+`tailscale.com/tailnet-fqdn` ExternalName Services that intentionally use
+tailnet egress.
 
 **`ProxyGroup common-ingress`** (ingress, 3 replicas, proxyClass
 `${TAILSCALE_INGRESS_PROXY_CLASS}` = `common-dev`).
@@ -856,12 +867,12 @@ One per site; together, one logical S3 estate.
 - image `dxflrs/garage` v2.3.0, zone `${LOCATION}`
 - replication factor 3, `consistencyMode: degraded`
 - `s3Api` rootDomain `.s3.keiretsu.top`; `webApi` rootDomain `.keiretsu.top`
-- `rpcPublicAddr ${LOCATION}-garage.keiretsu.ts.net:3901`
-- `remoteClusters` lists **all three** zones, each reached over the tailnet:
-  admin API `http://<location>-garage.keiretsu.ts.net:3903`, gateway RPC
-  `<location>-gw-{ordinal}.keiretsu.ts.net:3901`. St. Petersburg additionally
-  sets `storageRpcEndpointTemplate`
-  `stpetersburg-garage-spark-{ordinal}.keiretsu.ts.net:3901`.
+- `rpcPublicAddr ${LOCATION}-garage-mesh.garage.svc.clusterset.local:3901`
+- `remoteClusters` lists **all three** zones through direct MCS Services:
+  admin API `http://<location>-garage-mesh.garage.svc.clusterset.local:3903`,
+  gateway RPC `<location>-gw-{ordinal}-mesh.garage.svc.clusterset.local:3901`.
+  St. Petersburg additionally sets `storageRpcEndpointTemplate`
+  `stpetersburg-garage-pool-spark-{ordinal}-mesh.garage.svc.clusterset.local:3901`.
 - `rpc-secret` and `admin-token` are SOPS-encrypted
 
 `GARAGE_STORAGE_LAYOUT_POLICY=Manual` on all three: the storage tier is
@@ -874,6 +885,11 @@ the gateway carries the full `FullReplication` `key_table` (so S3 signature auth
 resolves locally) and survives local storage loss by proxying reads to a
 surviving zone at `read_quorum=1`.
 
+The per-service Tailscale LoadBalancer Services remain for external/tailnet
+clients and emergency access. Garage federation and the internal health checks
+use the direct MCS Services, so they no longer depend on `common-egress` or
+`common-ingress`.
+
 ### Garage local pools
 
 Declared through `GARAGE_NODE_LOCAL_POOLS`, hostPath-backed — but these are not
@@ -884,13 +900,14 @@ through `existingClaim` so the Garage `nodeId` and layout tags survive
 untouched, and both keep metadata on Ceph RBD — which is the point: with no
 local-path data volume the pod is free to reschedule to any node, so a single
 machine going away is not a storage outage. Each has its own
-identity-specific `rpcPublicAddr` (`<location>-garage-smb.keiretsu.ts.net:3901`)
+identity-specific `rpcPublicAddr`
+(`<location>-garage-smb-mesh.garage.svc.clusterset.local:3901`)
 because Garage node IDs cannot share an L4 VIP.
 
 | Site | Pools | Notes |
 |---|---|---|
-| Ottawa | `local-700` 700Gi on `asuka`, `kaji`, `rei`; `local-200` 200Gi on `shiro` | RPC advertised as `ottawa-garage-pool-<node>.keiretsu.ts.net:3901`; gateway affinity excludes `asuka` (SIGILL on that node) |
-| Robbinsdale | `local-700` 700Gi on `stone`, `tank`, `titan` | RPC advertised via `robbinsdale-garage-pool-<node>-v4` cluster DNS |
+| Ottawa | `local-700` 700Gi on `asuka`, `kaji`, `rei`; `local-200` 200Gi on `shiro` | RPC advertised as `ottawa-garage-pool-<node>-mesh.garage.svc.clusterset.local:3901`; gateway affinity excludes `asuka` (SIGILL on that node) |
+| Robbinsdale | `local-700` 700Gi on `stone`, `tank`, `titan` | RPC advertised as `robbinsdale-garage-pool-<node>-mesh.garage.svc.clusterset.local:3901` |
 | St. Petersburg | `local-2ti` 2Ti on `spark-0`, `spark-1`; `local-200` 200Gi on `orin-0` (tolerates the control-plane taint) | `GARAGE_REPLICAS` 2, pods pinned to instance-type `dgx-spark` with a hostname topology spread |
 
 All *pools* live under `/var/local-path-provisioner/garage-node-local/…` with
@@ -1142,8 +1159,11 @@ remote-write survives a rollout. Reachable on the tailnet as
 `mimir.keiretsu.ts.net:8080`, and `mimir-qf.keiretsu.ts.net:9095` for
 query-frontend gRPC.
 
-Robbinsdale and St. Petersburg deploy only `mimir-egress` — the ExternalName
-Services that make the local `mimir-gateway` name resolve to Ottawa.
+Internal clients use the exported `mimir-gateway-mesh` and `mimir-qf-mesh`
+Services under `mimir.svc.clusterset.local`. Robbinsdale and St. Petersburg
+keep direct ExternalName compatibility aliases named `mimir-gateway` and
+`mimir-qf`; these point at MCS, not at Tailscale. The tailnet names remain only
+for external/tailnet ingress.
 
 ### VictoriaLogs — log store, Ottawa only
 
@@ -1153,9 +1173,10 @@ Chart `victoria-logs-single` 0.13.9, 50Gi, retention 7d. Published as
 **The trick worth copying:** `VICTORIA_LOGS_HOST` is the *same string* in all
 three clusters
 (`victoria-logs-victoria-logs-single-server.monitoring`). In Ottawa that name
-is the real Service. In the other two clusters the location tree ships only an
-ExternalName Service of exactly that name pointing at the tailnet FQDN, so
-Fluent Bit needs no per-cluster configuration at all.
+is the real Service. In Robbinsdale and St. Petersburg the location tree keeps
+the same ExternalName compatibility alias, but it points to the exported
+`victoria-logs-mesh.monitoring.svc.clusterset.local` Service rather than a
+Tailscale egress proxy, so Fluent Bit needs no per-cluster configuration.
 
 ### Fluent Bit
 

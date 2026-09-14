@@ -64,10 +64,10 @@ gateways in unified Auto mode).
 
 These were ephemeral runtime fixes; they need no revert and Flux will not fight them:
 
-- **StorageStack s3Endpoint** was cleared live on ~48 instances so kro re-defaulted
-  them to the storage Service (the old `garage-global`/`garage-gw` value had been
-  frozen into each instance spec at creation). Git intentionally omits `s3Endpoint`,
-  so kro keeps defaulting correctly — no drift.
+- **StorageStack s3Endpoint** was cleared live on ~48 instances so the operator re-defaulted
+  them to the storage Service (old frozen Garage endpoint values had been
+  retained in each instance spec at creation). Git intentionally omits `s3Endpoint`,
+  so the operator keeps defaulting correctly — no drift.
 - **restic stale locks** cleared via `spec.restic.unlock` on plex (both clusters) and
   homeassistant (robbinsdale) — leftover locks from restore ops during the outage that
   blocked the `forget` step. Backups themselves were already succeeding.

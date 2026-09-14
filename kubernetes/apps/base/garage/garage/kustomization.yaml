@@ -4,8 +4,6 @@ kind: Kustomization
 namespace: garage
 resources:
   - admin-token.yaml
-  - egress.yaml
-  - egress-storage-rpc.yaml
   - reference-grants.yaml
   - service-ts.yaml
   - service-ts-gateway.yaml
