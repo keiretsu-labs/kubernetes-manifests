@@ -11,6 +11,9 @@
     "rajsingh.info": [
       "svc:stpetersburg-home-envoy-gateway"
     ],
+    "tsflow.rajsingh.info": [
+      "1.1.1.1"
+    ],
     "cdn.rajsingh.info": [
       "1.1.1.1"
     ],
