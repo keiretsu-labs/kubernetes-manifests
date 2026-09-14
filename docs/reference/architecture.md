@@ -780,10 +780,10 @@ Also living in that tree, and easy to miss:
   `kubernetes-internal-ca-key-pair`; the private key never leaves the local
   cert-manager installation.
 
-  Each ClusterMesh API server has a dedicated Cilium/BGP LoadBalancer Service,
-  `clustermesh-apiserver-direct`, at `10.50.10.20` (Robbinsdale),
-  `10.169.10.20` (Ottawa) or `10.73.10.20` (St. Petersburg). The peer config
-  uses those VIPs directly over the UniFi-routed network, with the shared
+  Each ClusterMesh API server has a Cilium/BGP LoadBalancer Service,
+  `clustermesh-apiserver`, at `10.50.10.20` (Robbinsdale), `10.169.10.20`
+  (Ottawa) or `10.73.10.20` (St. Petersburg). The peer config uses those VIPs
+  directly over the UniFi-routed network, with the shared
   internal CA and IP SANs on the server certificates. The former Tailscale
   LoadBalancer, dedicated mesh ProxyGroup, and mesh-specific Tailscale egress
   Services have been removed; ClusterMesh peer traffic has no Tailscale hop.
