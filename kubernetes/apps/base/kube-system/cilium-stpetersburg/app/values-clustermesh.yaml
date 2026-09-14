@@ -17,7 +17,7 @@ clustermesh:
     replicas: 2
     service:
       annotations:
-        tailscale.com/hostname: ${LOCATION}
+        tailscale.com/hostname: cilium-mesh-${LOCATION}
         tailscale.com/proxy-group: common-ingress
         tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
       type: LoadBalancer
