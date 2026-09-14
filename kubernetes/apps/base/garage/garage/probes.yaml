@@ -32,12 +32,12 @@ spec:
   targets:
     staticConfig:
       static:
-        - ottawa-garage.garage:3900
-        - ottawa-garage.garage:3903
-        - robbinsdale-garage.garage:3900
-        - robbinsdale-garage.garage:3903
-        - stpetersburg-garage.garage:3900
-        - stpetersburg-garage.garage:3903
+        - ottawa-garage-mesh.garage.svc.clusterset.local:3900
+        - ottawa-garage-mesh.garage.svc.clusterset.local:3903
+        - robbinsdale-garage-mesh.garage.svc.clusterset.local:3900
+        - robbinsdale-garage-mesh.garage.svc.clusterset.local:3903
+        - stpetersburg-garage-mesh.garage.svc.clusterset.local:3900
+        - stpetersburg-garage-mesh.garage.svc.clusterset.local:3903
       labels:
         service: garage
         target: cross-cluster
@@ -80,9 +80,9 @@ spec:
   targets:
     staticConfig:
       static:
-        - http://ottawa-garage.garage:3903/health
-        - http://robbinsdale-garage.garage:3903/health
-        - http://stpetersburg-garage.garage:3903/health
+        - http://ottawa-garage-mesh.garage.svc.clusterset.local:3903/health
+        - http://robbinsdale-garage-mesh.garage.svc.clusterset.local:3903/health
+        - http://stpetersburg-garage-mesh.garage.svc.clusterset.local:3903/health
       labels:
         service: garage
         target: cross-cluster

@@ -205,7 +205,7 @@ spec:
               send-on-resolved: true
         - name: Garage Ottawa
           group: storage
-          url: tcp://ottawa-garage.garage:3900
+          url: tcp://ottawa-garage-mesh.garage.svc.clusterset.local:3900
           interval: 60s
           conditions:
             - "[CONNECTED] == true"
@@ -215,7 +215,7 @@ spec:
               send-on-resolved: true
         - name: Garage StPetersburg
           group: storage
-          url: tcp://stpetersburg-garage.garage:3900
+          url: tcp://stpetersburg-garage-mesh.garage.svc.clusterset.local:3900
           interval: 60s
           conditions:
             - "[CONNECTED] == true"

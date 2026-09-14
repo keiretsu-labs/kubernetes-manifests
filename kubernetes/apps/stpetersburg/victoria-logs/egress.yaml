@@ -4,14 +4,10 @@ metadata:
   name: victoria-logs-victoria-logs-single-server
   namespace: monitoring
   annotations:
-    tailscale.com/proxy-group: common-egress
-    tailscale.com/tailnet-fqdn: victoria-logs.keiretsu.ts.net
+    kustomize.toolkit.fluxcd.io/ssa: Override
 spec:
   type: ExternalName
-  # The Tailscale operator owns the generated `ts-*` service name. A checked-in
-  # generated suffix becomes stale after proxy-group reconciliation and leaves
-  # Fluent Bit Running but not Ready with CoreDNS NOERROR/NODATA errors.
-  externalName: placeholder
+  externalName: victoria-logs-mesh.monitoring.svc.clusterset.local
   ports:
     - name: http
       port: 9428

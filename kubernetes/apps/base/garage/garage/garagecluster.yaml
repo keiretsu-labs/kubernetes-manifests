@@ -53,7 +53,7 @@ spec:
     rootDomain: ".${COMMON_DOMAIN}"
 
   network:
-    rpcPublicAddr: "${LOCATION}-garage.keiretsu.ts.net:3901"
+    rpcPublicAddr: "${LOCATION}-garage-mesh.garage.svc.clusterset.local:3901"
     rpcSecretRef:
       name: garage-rpc-secret
       key: rpc-secret
@@ -62,25 +62,25 @@ spec:
     - name: ottawa
       zone: ottawa
       connection:
-        adminApiEndpoint: "http://ottawa-garage.keiretsu.ts.net:3903"
-        gatewayRpcEndpointTemplate: "ottawa-gw-{ordinal}.keiretsu.ts.net:3901"
+        adminApiEndpoint: "http://ottawa-garage-mesh.garage.svc.clusterset.local:3903"
+        gatewayRpcEndpointTemplate: "ottawa-gw-{ordinal}-mesh.garage.svc.clusterset.local:3901"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
     - name: robbinsdale
       zone: robbinsdale
       connection:
-        adminApiEndpoint: "http://robbinsdale-garage.keiretsu.ts.net:3903"
-        gatewayRpcEndpointTemplate: "robbinsdale-gw-{ordinal}.keiretsu.ts.net:3901"
+        adminApiEndpoint: "http://robbinsdale-garage-mesh.garage.svc.clusterset.local:3903"
+        gatewayRpcEndpointTemplate: "robbinsdale-gw-{ordinal}-mesh.garage.svc.clusterset.local:3901"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
     - name: stpetersburg
       zone: stpetersburg
       connection:
-        adminApiEndpoint: "http://stpetersburg-garage.keiretsu.ts.net:3903"
-        gatewayRpcEndpointTemplate: "stpetersburg-gw-{ordinal}.keiretsu.ts.net:3901"
-        storageRpcEndpointTemplate: "stpetersburg-garage-spark-{ordinal}.keiretsu.ts.net:3901"
+        adminApiEndpoint: "http://stpetersburg-garage-mesh.garage.svc.clusterset.local:3903"
+        gatewayRpcEndpointTemplate: "stpetersburg-gw-{ordinal}-mesh.garage.svc.clusterset.local:3901"
+        storageRpcEndpointTemplate: "stpetersburg-garage-pool-spark-{ordinal}-mesh.garage.svc.clusterset.local:3901"
         adminTokenSecretRef:
           name: garage-admin-token
           key: admin-token
@@ -165,13 +165,13 @@ spec:
   # cluster-wide table sync (key/bucket FullReplication).
   # PER-ORDINAL address (operator v0.6.9+, garage-operator#226): the operator
   # substitutes {ordinal} with each gateway pod's index, so pod N advertises
-  # ${LOCATION}-gw-N.keiretsu.ts.net — which the per-pod LB in service-ts-gateway.yaml
-  # routes to that exact pod. This matches remoteClusters[].gatewayRpcEndpointTemplate
+  # ${LOCATION}-gw-N-mesh.garage.svc.clusterset.local. The exported per-pod
+  # Service selects that exact pod and matches remoteClusters[].gatewayRpcEndpointTemplate
   # so all gateway pods (not just one) are reachable cross-region and join
   # FullReplication quorum. (A single shared addr could only ever route to one pod.)
   gateway:
     replicas: ${GARAGE_GATEWAY_REPLICAS:=2}
-    rpcPublicAddr: "${LOCATION}-gw-{ordinal}.keiretsu.ts.net:3901"
+    rpcPublicAddr: "${LOCATION}-gw-{ordinal}-mesh.garage.svc.clusterset.local:3901"
     priorityClassName: "infra-high"
     resources:
       requests:

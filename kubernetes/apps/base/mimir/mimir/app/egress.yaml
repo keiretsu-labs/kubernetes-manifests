@@ -4,12 +4,10 @@ kind: Service
 metadata:
   name: mimir-gateway
   annotations:
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
-    tailscale.com/tailnet-fqdn: mimir.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
+    kustomize.toolkit.fluxcd.io/ssa: Override
 spec:
   type: ExternalName
-  externalName: placeholder
+  externalName: mimir-gateway-mesh.mimir.svc.clusterset.local
   ports:
     - name: http
       port: 8080
@@ -21,12 +19,10 @@ kind: Service
 metadata:
   name: mimir-qf
   annotations:
-    tailscale.com/tailnet-fqdn: mimir-qf.keiretsu.ts.net
-    tailscale.com/proxy-group: common-egress
-    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    kustomize.toolkit.fluxcd.io/ssa: Override
 spec:
   type: ExternalName
-  externalName: placeholder
+  externalName: mimir-qf-mesh.mimir.svc.clusterset.local
   ports:
     - name: grpc
       port: 9095

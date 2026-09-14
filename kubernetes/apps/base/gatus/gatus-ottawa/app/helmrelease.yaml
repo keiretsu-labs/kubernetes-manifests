@@ -515,7 +515,7 @@ spec:
               send-on-resolved: true
         - name: Garage Robbinsdale (Cross-Cluster)
           group: Storage
-          url: tcp://robbinsdale-garage.garage:3900
+          url: tcp://robbinsdale-garage-mesh.garage.svc.clusterset.local:3900
           interval: 60s
           client:
             timeout: 30s
@@ -526,7 +526,7 @@ spec:
               send-on-resolved: true
         - name: Garage StPetersburg (Cross-Cluster)
           group: Storage
-          url: tcp://stpetersburg-garage.garage:3900
+          url: tcp://stpetersburg-garage-mesh.garage.svc.clusterset.local:3900
           interval: 60s
           client:
             timeout: 30s
@@ -576,9 +576,9 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-        - name: Mimir (Tailscale)
+        - name: Mimir (ClusterMesh)
           group: Monitoring
-          url: http://mimir.keiretsu.ts.net:8080/ready
+          url: http://mimir-gateway-mesh.mimir.svc.clusterset.local:8080/ready
           interval: 60s
           conditions:
             - "[STATUS] == 200"

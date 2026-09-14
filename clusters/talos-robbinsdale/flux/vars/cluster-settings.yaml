@@ -48,7 +48,7 @@ data:
 
   # Operator-managed replacements for the three LocalPath GarageNodes. Each
   # selected Node already has marker-backed metadata/data directories, and the
-  # identity-specific Tailscale Services use the same pool/node labels.
+  # identity-specific direct MCS Services use the same pool/node labels.
   GARAGE_NODE_LOCAL_POOLS: >-
     [
       {
@@ -72,7 +72,7 @@ data:
           "hostPathType": "Directory"
         },
         "network": {
-          "rpcPublicAddrTemplate": "robbinsdale-garage-pool-{nodeName}-v4.garage.svc.cluster.local:3901"
+          "rpcPublicAddrTemplate": "robbinsdale-garage-pool-{nodeName}-mesh.garage.svc.clusterset.local:3901"
         },
         "podTemplate": {
           "priorityClassName": "infra-critical",

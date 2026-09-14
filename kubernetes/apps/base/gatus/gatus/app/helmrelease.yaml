@@ -91,7 +91,7 @@ spec:
               send-on-resolved: true
         - name: Garage Ottawa
           group: storage
-          url: tcp://ottawa-garage.garage:3900
+          url: tcp://ottawa-garage-mesh.garage.svc.clusterset.local:3900
           interval: 60s
           client:
             timeout: 30s
@@ -102,7 +102,7 @@ spec:
               send-on-resolved: true
         - name: Garage Robbinsdale
           group: storage
-          url: tcp://robbinsdale-garage.garage:3900
+          url: tcp://robbinsdale-garage-mesh.garage.svc.clusterset.local:3900
           interval: 60s
           client:
             timeout: 30s
