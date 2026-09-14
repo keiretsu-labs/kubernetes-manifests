@@ -4,25 +4,25 @@ kind: Service
 metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
-    tailscale.com/tailnet-fqdn: robbinsdale.keiretsu.ts.net
+    tailscale.com/tailnet-fqdn: ottawa.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
-  name: robbinsdale
+  name: ottawa
 spec:
-  externalName: placeholder   # any value - will be overwritten by operator
-  type: ExternalName 
+  externalName: placeholder
+  type: ExternalName
   ports:
-  - name: https # any value
-    port: 2379
-    protocol: TCP
+    - name: https
+      port: 2379
+      protocol: TCP
 ---
 apiVersion: v1
 kind: Service
 metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
-    tailscale.com/tailnet-fqdn: stpetersburg.keiretsu.ts.net
+    tailscale.com/tailnet-fqdn: robbinsdale.keiretsu.ts.net
     tailscale.com/proxy-group: common-egress
-  name: stpetersburg
+  name: robbinsdale
 spec:
   externalName: placeholder
   type: ExternalName

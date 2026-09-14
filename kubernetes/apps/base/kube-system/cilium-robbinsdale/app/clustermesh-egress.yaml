@@ -14,3 +14,19 @@ spec:
   - name: https # any value
     port: 2379
     protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+    tailscale.com/tailnet-fqdn: stpetersburg.keiretsu.ts.net
+    tailscale.com/proxy-group: common-egress
+  name: stpetersburg
+spec:
+  externalName: placeholder
+  type: ExternalName
+  ports:
+    - name: https
+      port: 2379
+      protocol: TCP

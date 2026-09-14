@@ -26,8 +26,8 @@ clustermesh:
       authMode: cluster
       server:
         extraDnsNames:
-        - ${LOCATION}.keiretsu.ts.net
-        - ${LOCATION}.kube-system
+          - ${LOCATION}.keiretsu.ts.net
+          - ${LOCATION}.kube-system
       auto:
         method: certmanager
         certManagerIssuerRef:
@@ -38,17 +38,9 @@ clustermesh:
     enabled: true
     domain: kube-system
     clusters:
-    - name: robbinsdale
-      address: robbinsdale.kube-system
-      port: 2379
-    - name: stpetersburg
-      address: stpetersburg.kube-system
-      port: 2379
-hubble:
-  tls:
-    auto:
-      method: certmanager
-      certManagerIssuerRef:
-        group: cert-manager.io
-        kind: ClusterIssuer
-        name: internal
+      - name: ottawa
+        address: ottawa.kube-system
+        port: 2379
+      - name: robbinsdale
+        address: robbinsdale.kube-system
+        port: 2379
