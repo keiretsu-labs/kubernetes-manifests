@@ -104,6 +104,10 @@ original `remote-node.keiretsu.ts.net` name as that proxy's cluster IP. This
 allows applications to keep stable tailnet names while all traffic traverses
 the local `common-egress` ProxyGroup.
 
+Use this contract only for dependencies that require tailnet identity or
+tailnet reachability. Routable inter-cluster services should use Cilium
+ClusterMesh/MCS names under `*.svc.clusterset.local` instead.
+
 Operational rules:
 
 1. Put a shared egress set in a base deployed to **every consuming cluster**.
@@ -114,12 +118,14 @@ Operational rules:
    - `Service.status.conditions[type=TailscaleEgressSvcReady].status == True`
    - a temporary pod resolves the original `.keiretsu.ts.net` name to the
      generated egress proxy ClusterIP.
-5. For identity-authenticated protocols such as Garage RPC, create one ingress
-   identity and one egress Service per remote node. A shared L4 VIP cannot route
-   an expected cryptographic node ID to the correct backend.
+5. For identity-authenticated protocols that still require the tailnet, create
+   one ingress identity and one egress Service per remote node. A shared L4 VIP
+   cannot route an expected cryptographic node ID to the correct backend. Garage
+   federation now uses direct per-node MCS Services instead.
 
-Garage's complete storage/gateway example is under
-`kubernetes/apps/base/garage/garage/{egress.yaml,egress-storage-rpc.yaml}`.
+Garage's direct storage/gateway ServiceExports are under
+`kubernetes/apps/base/garage/garage-nodes-*/service-mesh.yaml`; its endpoint
+templates are in `kubernetes/apps/base/garage/garage/garagecluster.yaml`.
 
 ## CI workflows touching Tailscale
 
