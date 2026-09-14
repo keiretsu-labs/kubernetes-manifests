@@ -8,6 +8,7 @@ metadata:
     tailscale.com/proxy-group: cilium-mesh-ingress
     tailscale.com/tags: "tag:k8s,tag:ottawa"
 spec:
+  clusterIP: 10.2.34.24
   type: LoadBalancer
   loadBalancerClass: tailscale
   externalTrafficPolicy: Cluster

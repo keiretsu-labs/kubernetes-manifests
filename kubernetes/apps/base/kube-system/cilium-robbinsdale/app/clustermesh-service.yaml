@@ -8,6 +8,7 @@ metadata:
     tailscale.com/proxy-group: cilium-mesh-ingress
     tailscale.com/tags: "tag:k8s,tag:robbinsdale"
 spec:
+  clusterIP: 10.0.103.21
   type: LoadBalancer
   loadBalancerClass: tailscale
   externalTrafficPolicy: Cluster

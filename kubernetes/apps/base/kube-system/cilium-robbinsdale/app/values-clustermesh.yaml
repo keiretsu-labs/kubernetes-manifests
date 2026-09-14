@@ -16,7 +16,7 @@ clustermesh:
   apiserver:
     replicas: 2
     podAnnotations:
-      checksum/mesh-certificate: san-v2
+      checksum/mesh-certificate: direct-clusterip-v1
     service:
       annotations:
         tailscale.com/hostname: cilium-mesh-api-${LOCATION}
@@ -33,6 +33,8 @@ clustermesh:
         - ${LOCATION}.kube-system
         - cilium-mesh-api-${LOCATION}.keiretsu.ts.net
         - cilium-mesh-api-${LOCATION}.kube-system
+        extraIpAddresses:
+        - "10.0.103.21"
       auto:
         method: certmanager
         certManagerIssuerRef:
@@ -44,10 +46,10 @@ clustermesh:
     domain: kube-system
     clusters:
     - name: ottawa
-      address: cilium-mesh-api-ottawa.kube-system
+      address: "10.2.34.24"
       port: 2379
     - name: stpetersburg
-      address: cilium-mesh-api-stpetersburg.kube-system
+      address: "10.4.93.144"
       port: 2379
 hubble:
   tls:
