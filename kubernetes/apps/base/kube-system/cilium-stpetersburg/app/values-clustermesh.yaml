@@ -22,7 +22,7 @@ clustermesh:
         tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
       type: LoadBalancer
       loadBalancerClass: tailscale
-      externallyCreated: true
+      externallyCreated: false
     tls:
       authMode: cluster
       server:
