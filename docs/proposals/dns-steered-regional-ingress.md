@@ -1,6 +1,6 @@
 # Proposal: DNS-steered regional ingress
 
-Status: draft for architecture review. This PR includes the low-risk YAML normalization and TSFlow route convergence described below. It does not alter live DNS records or reconcile clusters.
+Status: draft for architecture review. This PR includes the route-wide YAML normalization and TSFlow MCS convergence described below. It does not alter live DNS records or reconcile clusters.
 
 ## Decision
 
@@ -57,7 +57,7 @@ Every application exposed in more than one region should have the same route con
 
 1. Use the same user-facing hostname and path in every region. The application hostname identifies the app; `/` is the canonical entry path unless the app explicitly owns a different prefix.
 2. Do not encode a region in the public, private, or Tailscale path. Region selection belongs to DNS and MCS.
-3. Use explicit `parentRefs` with `sectionName` for the intended `public`, `private`, or `ts` listener. Do not rely on an implicit listener match.
+3. Use explicit `parentRefs` with `sectionName` for the intended `public`, `private`, or `ts` listener when every hostname in the route belongs to one listener family. Cluster-domain routes use the per-cluster `${CLUSTER_DOMAIN_LISTENER}` setting. A route spanning multiple listener families (for example a CDN alias plus its canonical name) must either be split or explicitly documented as a multi-host exception.
 4. Use a normal `Service` for a regional-only backend. Use a same-named `ServiceImport` for a backend deliberately served through MCS.
 5. Create the matching `ServiceExport` in every region that serves the application. Keep namespace, service name, port, and route path identical across regions.
 6. Keep Envoy Gateway on `routingType: Service` for these routes. Cilium provides the cross-cluster service path; Envoy should not be made responsible for discovering remote pod addresses.
@@ -65,13 +65,30 @@ Every application exposed in more than one region should have the same route con
 
 This makes `tsflow.rajsingh.info` and `mcsapi` examples of the same pattern rather than special cases: one canonical route shape, one MCS service identity, and three regional deployment decisions.
 
-This PR implements the TSFlow part of that contract in
-`kubernetes/apps/base/tailscale-examples/tsflow-mcs/httproute.yaml`. The
-route-only base is now deployed in all three location trees. The TSFlow
-workload remains deployed only where its producer and storage contract exists;
-the other regional edges route to its MCS `ServiceImport`. The route is
-attached to the public and Tailscale gateways with the same three hostnames and
-the `/` path in every region. It is not attached to the private gateway.
+The route-wide implementation in this PR covers the complete checked-in
+Gateway API surface, not only TSFlow:
+
+- all 118 `HTTPRoute` objects (124 rules) now declare an explicit `matches`
+  block; root routes use `PathPrefix` `/`;
+- 89 cluster-domain route objects use the per-cluster listener variable,
+  `CLUSTER_DOMAIN_LISTENER`, so Ottawa, Robbinsdale, and St. Petersburg bind
+  to their own HTTPS listener without repeating listener names in every app;
+- common-domain routes with one unambiguous listener family now set an explicit
+  listener section as well;
+- the remaining multi-host routes intentionally span listener families (for
+  example `foo.cdn.${COMMON_DOMAIN}` plus `foo.${COMMON_DOMAIN}`) and are
+  called out as exceptions rather than given a section that would drop one of
+  their hostnames;
+- all checked-in k8gb `Gslb` resources use the canonical `k8gb.io/v1beta1`
+  API group.
+
+TSFlow is one validation case in that broader pass. Its route lives in
+`kubernetes/apps/base/tailscale-examples/tsflow-mcs/httproute.yaml`, the
+route-only base is deployed in all three location trees, and the workload
+remains deployed only where its producer and storage contract exists. The
+other regional edges route to its MCS `ServiceImport` using the same three
+hostnames and `/` path. It is attached to the public and Tailscale gateways,
+not the private gateway.
 
 ## DNS planes and health behavior
 
@@ -112,14 +129,13 @@ The target consolidation is:
 
 The consolidation must not merge public, private, and tailnet trust boundaries. It removes duplicated policy and naming, not the security boundaries themselves.
 
-The executable portion of this PR is intentionally small:
-
-- all checked-in k8gb `Gslb` objects now use `k8gb.io/v1beta1`;
-- the TSFlow HTTPRoute lives in one route-only MCS base and is deployed in all
-  three regions;
-- the old per-workload route copy is removed from the TSFlow workload base;
-- the generated deployment inventory reflects the two new regional Flux
-  pointers.
+The executable portion of this PR is deliberately reviewable even though it
+touches the whole route surface: the listener binding is a single shared
+cluster setting, route rules use one explicit root-match convention, and
+multi-host listener exceptions remain visible in their original route objects.
+The TSFlow HTTPRoute lives in one route-only MCS base and is deployed in all
+three regions; the old per-workload route copy is removed; and the generated
+deployment inventory reflects the two new regional Flux pointers.
 
 ## Proposed rollout
 
@@ -147,8 +163,8 @@ The executable portion of this PR is intentionally small:
 - No live DNS changes or manual Flux reconciliation.
 - No changes to the tailnet CoreDNS answers; they remain owner-pinned until a
   tailnet-only health-aware mechanism is selected.
-- No changes to the public/private/Tailscale Gateway fleets beyond the
-  standardized TSFlow route deployment.
+- No changes to the public/private/Tailscale Gateway fleets; this PR only
+  normalizes their existing HTTPRoute attachments.
 - No Cloudflare Load Balancer.
 - No BGP anycast or shared cross-region LoadBalancer IP.
 - No replacement of the regional Tailscale endpoints with a single shared Tailscale Service.

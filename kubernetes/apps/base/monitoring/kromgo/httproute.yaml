@@ -9,6 +9,7 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "kromgo.${CLUSTER_DOMAIN}"
   rules:

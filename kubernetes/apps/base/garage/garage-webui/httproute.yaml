@@ -16,6 +16,7 @@ spec:
       kind: Gateway
       name: private
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "garage.${CLUSTER_DOMAIN}"
   rules:

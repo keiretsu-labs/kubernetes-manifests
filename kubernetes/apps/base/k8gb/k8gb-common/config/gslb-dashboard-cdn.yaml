@@ -12,6 +12,7 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: wildcard-cdn-keiretsu-top-https
   hostnames:
     - "home.cdn.${COMMON_DOMAIN}"
   rules:
