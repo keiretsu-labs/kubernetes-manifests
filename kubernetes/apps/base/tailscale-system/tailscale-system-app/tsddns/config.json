@@ -3,30 +3,40 @@
       "svc:tsdnsproxy"
     ],
     "keiretsu.top": [
-      "1.1.1.1"
+      "svc:ottawa-k8gb-coredns",
+      "svc:robbinsdale-k8gb-coredns",
+      "svc:stpetersburg-k8gb-coredns"
     ],
     "rajsingh.info": [
+      "svc:ottawa-k8gb-coredns",
+      "svc:robbinsdale-k8gb-coredns",
       "svc:stpetersburg-k8gb-coredns"
     ],
     "cdn.rajsingh.info": [
       "1.1.1.1"
     ],
     "cdn.keiretsu.top": [
-      "1.1.1.1"
+      "svc:ottawa-k8gb-coredns",
+      "svc:robbinsdale-k8gb-coredns",
+      "svc:stpetersburg-k8gb-coredns"
     ],
     "stpetersburg.internal": [
         "192.168.73.1"
     ],
 
     "killinit.cc": [
-        "svc:ottawa-k8gb-coredns"
+        "svc:ottawa-k8gb-coredns",
+        "svc:robbinsdale-k8gb-coredns",
+        "svc:stpetersburg-k8gb-coredns"
       ],
     "killinit.internal": [
         "192.168.169.1"
     ],
 
     "lukehouge.com": [
-        "svc:robbinsdale-k8gb-coredns"
+        "svc:ottawa-k8gb-coredns",
+        "svc:robbinsdale-k8gb-coredns",
+        "svc:stpetersburg-k8gb-coredns"
     ],
     "robbinsdale.lan": [
         "192.168.50.1"

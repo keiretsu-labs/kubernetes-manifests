@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 123 |
-| `robbinsdale` | 3 | 42 | 85 |
-| `stpetersburg` | 3 | 41 | 83 |
-| **total** | **10** | **144** | **291** |
+| `ottawa` | 4 | 61 | 124 |
+| `robbinsdale` | 3 | 42 | 86 |
+| `stpetersburg` | 3 | 41 | 84 |
+| **total** | **10** | **144** | **294** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -99,7 +99,7 @@ diagram in the [README](../../README.md#architecture).
 | Storage and data services | `velero` | `velero` → ns `velero-system`, `velero-ui` → ns `velero-system` |
 | Storage and data services | `zot` | `zot`, `zot-cache` |
 | Observability | `fluent-bit` | `fluent-bit` |
-| Observability | `gatus` | `gatus` |
+| Observability | `gatus` | `gatus`, `gatus-mcs` |
 | Observability | `mimir` | `mimir` |
 | Observability | `monitoring` | `blackbox-exporter`, `blackbox-exporter-config`, `blackbox-exporter-ottawa`, `config`, `grafana`, `grafana-dashboards`, `grafana-datasources`, `grafana-instance`, `grafana-mcp`, `kromgo`, `mimir-rule-completeness`, `monitoring`, `monitoring-nagato`, `smartctl-exporter`, `smartctl-exporter-config`, `unpoller` |
 | Observability | `opencost` | `opencost` |
@@ -213,7 +213,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Storage and data services | `strimzi` | `strimzi` (pointer commented out — renders to nothing) |
 | Storage and data services | `velero` | `velero` → ns `velero-system` |
 | Observability | `fluent-bit` | `fluent-bit` |
-| Observability | `gatus` | `gatus` |
+| Observability | `gatus` | `gatus`, `gatus-mcs` |
 | Observability | `mimir` | `mimir-egress` |
 | Observability | `monitoring` | `blackbox-exporter`, `blackbox-exporter-config`, `blackbox-exporter-robbinsdale`, `config`, `kromgo`, `monitoring`, `smartctl-exporter`, `smartctl-exporter-config`, `unpoller` |
 | Observability | `victoria-logs` | `victoria-logs` → ns `monitoring` |
@@ -294,7 +294,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Storage and data services | `snapshot-controller` | `snapshot-controller` |
 | Storage and data services | `velero` | `velero` → ns `velero-system` |
 | Observability | `fluent-bit` | `fluent-bit` |
-| Observability | `gatus` | `gatus` |
+| Observability | `gatus` | `gatus`, `gatus-mcs` |
 | Observability | `mimir` | `mimir-egress` |
 | Observability | `monitoring` | `blackbox-exporter`, `blackbox-exporter-config`, `blackbox-exporter-stpetersburg`, `config`, `grafana-redirect`, `kromgo`, `monitoring`, `unpoller` |
 | Observability | `victoria-logs` | `victoria-logs` → ns `monitoring` |

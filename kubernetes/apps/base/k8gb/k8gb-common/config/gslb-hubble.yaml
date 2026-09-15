@@ -15,8 +15,8 @@ spec:
     - "hubble.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
-        - group: ""
-          kind: Service
+        - group: multicluster.x-k8s.io
+          kind: ServiceImport
           name: hubble-ui
           namespace: hubble-ui
           port: 80

@@ -18,7 +18,9 @@ spec:
           urlRewrite:
             hostname: "keiretsu.${COMMON_DOMAIN}"
       backendRefs:
-        - name: garage-gateway
+        - group: multicluster.x-k8s.io
+          kind: ServiceImport
+          name: garage-gateway
           port: 3902
       matches:
         - path:

@@ -23,8 +23,8 @@ spec:
     - "*.s3.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
-        - group: ""
-          kind: Service
+        - group: multicluster.x-k8s.io
+          kind: ServiceImport
           name: garage-gateway
           port: 3900
           weight: 1

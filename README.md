@@ -128,11 +128,13 @@ so a route joins a tier by attaching to its Gateway. The trap the diagram calls 
   </picture>
 </a>
 
-Tailscale is the only path between sites, and the three clusters are not peers:
-Ottawa runs the singletons — Mimir, VictoriaLogs, Grafana, Tinyauth, the Zot
-registry — that the other two borrow across the tailnet. Storage is one
-federated Garage S3 estate spanning all three zones, with Ceph and SMB per
-site. The amber boxes are constraints that have already caused an outage.
+The UniFi-routed Cilium ClusterMesh is the primary path between sites, with
+Cilium MCS providing shared `clusterset.local` services. Tailscale remains the
+access and fallback overlay: Ottawa runs the singletons — Mimir, VictoriaLogs,
+Grafana, Tinyauth, the Zot registry — that the other two borrow through the
+mesh or an explicitly tailnet-bound dependency. Storage is one federated
+Garage S3 estate spanning all three zones, with Ceph and SMB per site. The
+amber boxes are constraints that have already caused an outage.
 
 ### Where the detail lives
 
@@ -676,17 +678,20 @@ shared zone and in what else they carry:
   TCP/UDP :8555.
 - <code>private</code> has 6: HTTP :80, the four wildcards, and Forgejo SSH.
 - <code>ts</code> has 5 listeners for the three cluster-domain wildcards, HTTP
-  :80, and Forgejo SSH. Tailnet DNS is handled by Tailscale split DNS pointing
-  at the three regional k8gb CoreDNS services, not by a Gateway listener or a
-  separate shared tailnet zone.
+  :80, and Forgejo SSH. Tailnet DNS is handled by Tailscale split DNS using
+  all three regional k8gb CoreDNS services for every regional suffix, not by a
+  Gateway listener or a separate shared tailnet zone.
 
 Each tier also has its own DNS plane: routes on <code>public</code> are
 published to Cloudflare, routes on <code>private</code> to the UniFi
 controller, and routes on <code>ts</code> use Tailscale split DNS plus k8gb,
 selected by the <code>gateway=public</code>, <code>gateway=private</code> and
 <code>gateway=tailscale</code> labels where discovery is needed. Existing
-cluster-domain tailnet names remain supported through the k8gb compatibility
-view. Check the actual listener list before adding a route.
+cluster-domain tailnet names remain supported through the same k8gb
+compatibility view in every region. The resolver keeps each suffix pointed at
+its owning regional Envoy Gateway; use <code>cdn.keiretsu.top</code> for
+multi-cluster service failover. Check the actual listener list before adding a
+route.
 
 ## Links
 

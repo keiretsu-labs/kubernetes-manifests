@@ -1,0 +1,11 @@
+---
+# Gatus is deployed in every region. Export the same logical Service with
+# local affinity so a regional Envoy edge prefers its local status instance
+# and falls back to a healthy remote instance when necessary.
+apiVersion: multicluster.x-k8s.io/v1alpha1
+kind: ServiceExport
+metadata:
+  name: gatus
+spec:
+  exportedAnnotations:
+    service.cilium.io/affinity: local

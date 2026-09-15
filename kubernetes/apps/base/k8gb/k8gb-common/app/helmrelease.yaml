@@ -73,15 +73,39 @@ spec:
                           answer "_acme-challenge.cdn.keiretsu.top. 30 IN CNAME _acme-challenge-cdn.keiretsu.top."
                       }
                   }
-                  # Keep the cluster-domain route names resolvable for tailnet
-                  # clients after removing the legacy Pi-hole DNS path. The
-                  # CNAME preserves the original Host/SNI, so the existing
-                  # HTTPRoute still selects correctly.
-                  ${CLUSTER_DOMAIN}:5353 {
+                  # Every regional resolver answers every regional suffix.
+                  # Keep each suffix pinned to its owning Envoy Gateway so a
+                  # resolver failover cannot send a region-local route to a
+                  # cluster that does not run its backend. The CNAME preserves
+                  # the original Host/SNI for the HTTPRoute.
+                  (tailnet-regional) {
                       template IN ANY {
-                          match ^.+\.${CLUSTER_DOMAIN}\.$
-                          answer "{{ .Name }} 30 IN CNAME ${LOCATION}-home-envoy-gateway.keiretsu.ts.net."
+                          match ^.+\.killinit\.cc\.$
+                          answer "{{ .Name }} 30 IN CNAME ottawa-home-envoy-gateway.keiretsu.ts.net."
                       }
+                      template IN ANY {
+                          match ^.+\.lukehouge\.com\.$
+                          answer "{{ .Name }} 30 IN CNAME robbinsdale-home-envoy-gateway.keiretsu.ts.net."
+                      }
+                      template IN ANY {
+                          match ^.+\.rajsingh\.info\.$
+                          answer "{{ .Name }} 30 IN CNAME stpetersburg-home-envoy-gateway.keiretsu.ts.net."
+                      }
+                  }
+                  killinit.cc:5353 {
+                      import tailnet-regional
+                  }
+                  lukehouge.com:5353 {
+                      import tailnet-regional
+                  }
+                  rajsingh.info:5353 {
+                      import tailnet-regional
+                  }
+                  # The parent zone remains Cloudflare-owned. Forward it
+                  # through the same regional resolver pool so split DNS has
+                  # one HA path while preserving the public/private records.
+                  keiretsu.top:5353 {
+                      forward . 1.1.1.1
                   }
           - target:
               kind: Deployment

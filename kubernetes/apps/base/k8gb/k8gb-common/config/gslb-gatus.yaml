@@ -14,7 +14,9 @@ spec:
     - "status.cdn.${COMMON_DOMAIN}"
   rules:
     - backendRefs:
-        - name: gatus
+        - group: multicluster.x-k8s.io
+          kind: ServiceImport
+          name: gatus
           namespace: gatus
           port: 80
       matches:

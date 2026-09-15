@@ -246,6 +246,16 @@ service and endpoint discovery. MCS exports are published under
 Tailscale remains a separate access and fallback overlay for cluster APIs,
 tailnet ingress, and dependencies that intentionally require tailnet identity.
 
+For a service that is intentionally active in more than one region, export the
+same Service name and namespace in each cluster and reference the resulting
+MCS `ServiceImport` from the shared `HTTPRoute`. Cilium merges the exported
+endpoints and the `service.cilium.io/affinity: local` export annotation keeps a
+regional Envoy edge local-first while retaining remote failover. A normal
+`Service` backend is still cluster-local. This is the ingress contract: k8gb
+selects healthy regional edges, Envoy Gateway routes the request, and MCS
+supplies the shared backend set; DNS alone never makes a single-region
+workload highly available.
+
 ## Tailnet overlay
 
 The tailnet `keiretsu.ts.net` is an access and fallback overlay, not the primary
@@ -406,11 +416,11 @@ Three gateway tiers, three DNS planes, certificates, authorization.
 
 | Zone | Role | Answered by |
 |---|---|---|
-| `killinit.cc` | Ottawa's `${CLUSTER_DOMAIN}` | Cloudflare; tailnet split DNS → Ottawa k8gb CoreDNS |
-| `lukehouge.com` | Robbinsdale's `${CLUSTER_DOMAIN}` | Cloudflare; tailnet split DNS → Robbinsdale k8gb CoreDNS |
-| `rajsingh.info` | St. Petersburg's `${CLUSTER_DOMAIN}` | Cloudflare; tailnet split DNS → St. Petersburg k8gb CoreDNS |
-| `keiretsu.top` | `${COMMON_DOMAIN}`, shared | Cloudflare; LAN view in UniFi |
-| `cdn.keiretsu.top` | public GSLB | delegated to k8gb |
+| `killinit.cc` | Ottawa-owned regional suffix | Cloudflare; tailnet split DNS → all three regional k8gb CoreDNS Services, each returning the Ottawa Envoy CNAME |
+| `lukehouge.com` | Robbinsdale-owned regional suffix | Cloudflare; tailnet split DNS → all three regional k8gb CoreDNS Services, each returning the Robbinsdale Envoy CNAME |
+| `rajsingh.info` | St. Petersburg-owned regional suffix | Cloudflare; tailnet split DNS → all three regional k8gb CoreDNS Services, each returning the St. Petersburg Envoy CNAME |
+| `keiretsu.top` | `${COMMON_DOMAIN}`, shared | Cloudflare; LAN view in UniFi; tailnet split DNS → all three regional k8gb forwarders |
+| `cdn.keiretsu.top` | public multi-region GSLB | Cloudflare NS delegation to k8gb; tailnet split DNS → all three regional k8gb Services |
 
 Cloudflare remains the public authority. LAN clients receive the private view
 from UniFi, while tailnet clients receive split-DNS overrides from `tsddns`.
@@ -452,12 +462,15 @@ rejects wildcard hostnames with `400 Invalid Hostname`, so the wildcard
 
 ### DNS plane 3 — Tailscale split DNS and k8gb CoreDNS, for the tailnet tier
 
-`tsddns` is the only tailnet DNS control plane. It publishes each cluster
-domain to its local k8gb CoreDNS Tailscale Service. CoreDNS returns a
-short-lived CNAME to that region's
+`tsddns` is the only tailnet DNS control plane. It publishes the shared parent,
+the delegated CDN zone, and all three cluster-domain suffixes to all three
+regional k8gb CoreDNS Tailscale Services. Each resolver returns a short-lived
+CNAME for a regional suffix to that suffix's owning
 `${LOCATION}-home-envoy-gateway.keiretsu.ts.net` name. The original hostname
 is preserved in the client request, so existing HTTPRoutes continue to match
-without a second tailnet DNS namespace.
+without a second tailnet DNS namespace. The three-resolver pool makes the DNS
+path highly available; `cdn.keiretsu.top` plus MCS is the application failover
+path for services that are actually replicated.
 
 k8gb CoreDNS runs three replicas per cluster and serves both UDP and TCP DNS
 through its dedicated Tailscale LoadBalancer Service. The `ts` Gateway carries
@@ -518,7 +531,11 @@ replicas with priorityClass `infra-high`, hostname spreading,
 and a LoadBalancer at `<LB>.10.53`. Gateway API integration is on; the
 `extdns` sidecar is **off**, because Cloudflare and UniFi are managed by their
 respective ExternalDNS instances. CoreDNS templates answer the delegated CDN
-ACME challenge and provide the tailnet-only cluster-domain compatibility view.
+ACME challenge, forward the shared parent zone for tailnet clients, and provide
+the tailnet-only compatibility view for every cluster-domain suffix. Shared
+Garage web/S3 and Hubble CDN routes use MCS `ServiceImport` backends with local
+affinity; region-pinned services keep ordinary local `Service` backends and
+explicit GSLB weights.
 
 The `Gslb` count is **per cluster, not global**. Nine come from the shared
 `k8gb-common/config` Kustomization that every cluster deploys: `keiretsu-web`,
@@ -664,7 +681,14 @@ tools/kc.sh ot -n home get gateway ts -o jsonpath='{.spec.listeners[*].hostname}
 HTTPRoutes follow one contract: use `gateway.networking.k8s.io/v1`, make every
 `parentRef` explicit (`group`, `kind`, `name`, `namespace`), and attach only to
 the trust-zone Gateway that should serve the request. Use a cluster domain for
-a per-region tailnet URL; the legacy shared tailnet namespace is retired.
+a per-region URL; the legacy shared tailnet namespace is retired. Use an
+ordinary `Service` backend for cluster-local traffic. For a route whose
+backend is exported and active in all regions, use
+`group: multicluster.x-k8s.io`, `kind: ServiceImport`, and the same Service
+name/namespace in every cluster. The public multi-region name should be under
+`cdn.${COMMON_DOMAIN}`; a regional suffix remains an ownership alias unless
+the same route and MCS backend are deliberately deployed in all three
+clusters.
 Use a `${COMMON_DOMAIN}` name outside those GSLB objects only with an explicit
 DNSEndpoint in `k8gb-common/config/cnames.yaml`. The three trust zones remain
 independent: `public`, `private`, and `ts` are separate parentRefs even when a
@@ -897,9 +921,10 @@ resolves locally) and survives local storage loss by proxying reads to a
 surviving zone at `read_quorum=1`.
 
 The former per-node and gateway Tailscale LoadBalancer Services are retired.
-Garage federation and the internal health checks use the direct MCS Services,
-while S3/admin/web traffic uses the public/private Gateway routes. Garage no
-longer depends on `common-egress` or `common-ingress`.
+Garage federation and the internal health checks use the direct MCS Services;
+the public CDN HTTPRoutes use the shared `garage-gateway` MCS ServiceImport
+with local affinity, while the private S3/admin/web routes use the local
+Service. Garage no longer depends on `common-egress` or `common-ingress`.
 
 ### Garage local pools
 

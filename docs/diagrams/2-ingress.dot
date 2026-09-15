@@ -97,7 +97,7 @@ digraph ingress {
     s_gw [label=<<b>Gateway ts</b> — tailnet overlay only<br align="left"/>5 listeners: three HTTPS cluster-domain<br align="left"/>wildcards, HTTP on :80 and Forgejo SSH<br align="left"/>on :22. The legacy shared tailnet<br align="left"/>listener is removed; DNS is a separate<br align="left"/>k8gb CoreDNS service.<br align="left"/>>,
            fillcolor="#ece9fd"];
 
-    s_dns [label=<<b>Tailscale split DNS · k8gb</b><br align="left"/>tsddns points each cluster-domain<br align="left"/>suffix at its local k8gb CoreDNS<br align="left"/>Tailscale Service. CoreDNS returns<br align="left"/>a local Envoy compatibility CNAME;<br align="left"/>there is no shared tailnet zone.<br align="left"/>>];
+    s_dns [label=<<b>Tailscale split DNS · k8gb</b><br align="left"/>tsddns points the shared parent, CDN zone<br align="left"/>and all three cluster-domain suffixes at<br align="left"/>all three regional k8gb Tailscale Services.<br align="left"/>Each resolver returns the owning-Envoy<br align="left"/>compatibility CNAME; there is no shared<br align="left"/>tailnet zone.<br align="left"/>>];
   }
 
   g_envoy -> p_gw [style=bold];
@@ -142,7 +142,7 @@ digraph ingress {
     h_ddns [label=<<b>cloudflare-ddns</b><br align="left"/>keeps &lt;location&gt;.&lt;domain&gt; pointed at the site's<br align="left"/>current WAN address. Every ExternalDNS CNAME and<br align="left"/>every GSLB pool member resolves to that record in<br align="left"/>the end.<br align="left"/>>,
             fillcolor="#ddf4ff"];
 
-    h_k8gb [label=<<b>k8gb</b> — GSLB and tailnet DNS<br align="left"/>cdn.keiretsu.top is delegated to it. One controller<br align="left"/>runs in each cluster (three regional controllers;<br align="left"/>v1.0.0 intentionally has no leader election).<br align="left"/>CoreDNS is three replicas per cluster and is also<br align="left"/>exposed through a Tailscale LoadBalancer. A Corefile<br align="left"/>template keeps cluster-domain tailnet routes<br align="left"/>resolvable by CNAMEing to the local Envoy tailnet<br align="left"/>Service. An ABSENT HTTPRoute reads as healthy, so<br align="left"/>an inert route is deployed to every cluster to make<br align="left"/>health drive pools.<br align="left"/>>,
+    h_k8gb [label=<<b>k8gb</b> — GSLB and tailnet DNS<br align="left"/>cdn.keiretsu.top is delegated to it. One controller<br align="left"/>runs in each cluster (three regional controllers;<br align="left"/>v1.0.0 intentionally has no leader election).<br align="left"/>CoreDNS is three replicas per cluster and is also<br align="left"/>exposed through a Tailscale LoadBalancer. Every<br align="left"/>regional Corefile answers every cluster-domain suffix<br align="left"/>but CNAMEs it to the suffix's owning Envoy Service.<br align="left"/>Shared public routes use MCS ServiceImport backends;<br align="left"/>the route object still must exist in every intended<br align="left"/>cluster because absent routes read as healthy.<br align="left"/>>,
             fillcolor="#ddf4ff"];
   }
 

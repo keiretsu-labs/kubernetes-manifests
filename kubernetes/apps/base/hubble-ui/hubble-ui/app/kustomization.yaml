@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: hubble-ui
 resources:
   - helmrelease.yaml
+  - service-mesh.yaml
   - dns-visibility.yaml
   - httproute.yaml
   - referencegrant.yaml

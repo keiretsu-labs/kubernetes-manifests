@@ -6,6 +6,7 @@ resources:
   - admin-token.yaml
   - reference-grants.yaml
   - garagecluster.yaml
+  - service-mesh.yaml
   - rpc-secret.yaml
   - httproute-s3.yaml
   - httproute-web.yaml

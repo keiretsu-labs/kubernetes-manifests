@@ -36,8 +36,8 @@ spec:
               - name: Cache-Control
                 value: "public, max-age=3600"
       backendRefs:
-        - group: ""
-          kind: Service
+        - group: multicluster.x-k8s.io
+          kind: ServiceImport
           name: garage-gateway
           port: 3902
           weight: 1

@@ -64,10 +64,12 @@ Operator resources:
 - **Recorder** — SSH session recording, S3 backend (DigitalOcean Spaces nyc3,
   bucket tailscale-ssh-recorder-keiretsu)
 - **DNSConfig** — nameserver LoadBalancer at site `.69.50`
-- **Tailnet ingress DNS** — `tsddns` points each cluster-domain suffix at its
-  local k8gb CoreDNS Tailscale Service. CoreDNS returns a compatibility CNAME
-to the local Envoy tailnet Service. The legacy shared tailnet namespace and
-Pi-hole are not part of the tailnet DNS path.
+- **Tailnet ingress DNS** — `tsddns` points the shared parent, CDN zone and all
+  three cluster-domain suffixes at all three regional k8gb CoreDNS Tailscale
+  Services. Each resolver answers the regional suffixes with a compatibility
+  CNAME to the owning Envoy tailnet Service, preserving the original Host/SNI;
+  the CDN zone remains k8gb GSLB. The legacy shared tailnet namespace and
+  Pi-hole are not part of the tailnet DNS path.
 - `tailnet-readers-view` ClusterRoleBinding for read-only tailnet users
 - Custom CSI provider DaemonSet
   (`ghcr.io/rajsinghtech/tailscale/tailscale-csi-provider:dev`) — Secrets Store
@@ -110,7 +112,11 @@ the local `common-egress` ProxyGroup.
 
 Use this contract only for dependencies that require tailnet identity or
 tailnet reachability. Routable inter-cluster services should use Cilium
-ClusterMesh/MCS names under `*.svc.clusterset.local` instead.
+ClusterMesh/MCS names under `*.svc.clusterset.local` instead. For Gateway API
+ingress, Envoy Gateway 1.9+ can reference the corresponding
+`multicluster.x-k8s.io/ServiceImport` directly; use that only when the Service
+is exported from every intended region. A normal `Service` backend remains
+local to the Gateway's cluster.
 
 Operational rules:
 

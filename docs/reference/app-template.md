@@ -15,10 +15,10 @@ Reading this once replaces grepping the tree for the pointer shape, the
 
 `${COMMON_DOMAIN}` = `keiretsu.top` (all clusters). The `ts` gateway (ns
 `home`) listens on `*.killinit.cc *.lukehouge.com *.rajsingh.info`, so
-`myapp.${CLUSTER_DOMAIN}` always matches — no CNAME needed; tailnet split
-DNS resolves it through that cluster's k8gb CoreDNS compatibility view. The
-legacy shared tailnet namespace is retired. A `${COMMON_DOMAIN}` hostname
-does NOT auto-resolve: add a CNAME in
+`myapp.${CLUSTER_DOMAIN}` always matches — no CNAME needed; tailnet split DNS
+resolves it through any of the three regional k8gb CoreDNS Services, which
+returns the owning regional Envoy CNAME. The legacy shared tailnet namespace is
+retired. A `${COMMON_DOMAIN}` hostname does NOT auto-resolve: add a CNAME in
 `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml` (see AGENTS.md).
 
 ## base — `kubernetes/apps/base/<ns>/myapp/`
@@ -100,6 +100,25 @@ spec:
         - name: myapp
           port: 80
 ```
+
+For a genuinely multi-region app, deploy the same Service in all three
+clusters, add the same-name `ServiceExport` in each, and change the backend to
+the MCS ServiceImport form below. Keep the normal `Service` form for
+single-region apps; changing DNS or a route hostname does not replicate an
+application.
+
+```yaml
+backendRefs:
+  - group: multicluster.x-k8s.io
+    kind: ServiceImport
+    name: myapp
+    port: 80
+```
+
+The public multi-region hostname should be `myapp.cdn.${COMMON_DOMAIN}` and
+its k8gb `Gslb` should point to the same HTTPRoute. A regional hostname remains
+an ownership alias unless the same route is intentionally deployed in all
+three clusters.
 
 ## pointer — `kubernetes/apps/<location>/<ns>/myapp.yaml`
 
