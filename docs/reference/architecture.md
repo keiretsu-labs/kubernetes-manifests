@@ -1413,11 +1413,10 @@ Companions:
   `irqbalance` (Ottawa + St. Petersburg), `node-feature-discovery`, `tuppr`,
   `external-secrets`, `csi-secrets-store`.
 
-**`goldpinger` is not deployed anywhere.** Manifests for it sit in
-`kubernetes/apps/base/default/default-common/goldpinger/`, but that directory
-has no `kustomization.yaml` and nothing lists it, so it renders to nothing —
-there is no pod-to-pod mesh probe in any cluster today. Do not reason about
-mesh health from it; use Hubble and the Gatus tailnet checks instead.
+**`goldpinger` is retired and not deployed anywhere.** Its unused manifests
+were removed; there is no pod-to-pod mesh probe in any cluster today. Do not
+reason about mesh health from it; use Hubble and the direct Gatus checks
+instead.
 
 ### Platform primitives worth naming
 
