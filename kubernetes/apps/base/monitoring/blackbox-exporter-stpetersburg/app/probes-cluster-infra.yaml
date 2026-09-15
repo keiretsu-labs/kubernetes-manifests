@@ -48,4 +48,4 @@ spec:
         - http://mimir-gateway.mimir:8080/ready
       labels:
         service: mimir-gateway
-        target: external-tailscale
+        target: cluster-local
