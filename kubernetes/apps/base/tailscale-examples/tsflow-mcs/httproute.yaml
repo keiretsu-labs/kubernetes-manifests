@@ -11,6 +11,8 @@ spec:
       name: ts
       namespace: home
   hostnames:
+    - tsflow.killinit.cc
+    - tsflow.lukehouge.com
     - tsflow.rajsingh.info
   rules:
     - backendRefs:
