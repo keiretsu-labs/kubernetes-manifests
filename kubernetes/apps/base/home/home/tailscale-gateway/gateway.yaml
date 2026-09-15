@@ -4,7 +4,7 @@ kind: Gateway
 metadata:
   name: ts
   labels:
-    external-dns: ts
+    gateway: tailscale
 spec:
   gatewayClassName: home-ts
   listeners:
@@ -47,34 +47,9 @@ spec:
         - group: ''
           kind: Secret
           name: wildcard-rajsingh-info
-    - name: wildcard-ts-keiretsu-top-https
-      protocol: HTTPS
-      port: 443
-      hostname: "*.ts.keiretsu.top"
-      allowedRoutes:
-        namespaces:
-          from: All
-      tls:
-        mode: Terminate
-        certificateRefs:
-        - group: ''
-          kind: Secret
-          name: wildcard-ts-keiretsu-top
     - name: http
       port: 80
       protocol: HTTP
-    - name: pihole-udp
-      protocol: UDP
-      port: 53
-      allowedRoutes:
-        kinds:
-        - kind: UDPRoute
-    - name: pihole-tcp
-      protocol: TCP
-      port: 53
-      allowedRoutes:
-        kinds:
-        - kind: TCPRoute
     - name: forgejo-ssh
       protocol: TCP
       port: 22

@@ -16,7 +16,8 @@ spec:
   hostnames:
     # CLUSTER_DOMAIN = killinit.cc (Ottawa). This host's cookie domain is
     # killinit.cc, so extAuth for *.killinit.cc apps works without a loop.
-    # ${CLUSTER_DOMAIN} hosts get DNS automatically via external-dns.
+    # Public DNS publishes ${CLUSTER_DOMAIN}; tailnet split DNS preserves the
+    # same names through the local k8gb CoreDNS compatibility view.
     - "auth.${CLUSTER_DOMAIN}"
   rules:
     # Forward everything to tinyauth-killinit, force no-store (an auth server

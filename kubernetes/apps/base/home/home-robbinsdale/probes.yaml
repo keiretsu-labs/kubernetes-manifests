@@ -19,7 +19,7 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-home-pihole-dns
+  name: app-home-k8gb-dns
 spec:
   jobName: blackbox
   module: dns_a
@@ -28,7 +28,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - ts-pihole-dns.home:53
+        - k8gb-coredns.k8gb.svc.cluster.local:53
       labels:
-        service: pihole
+        service: k8gb
         target: dns

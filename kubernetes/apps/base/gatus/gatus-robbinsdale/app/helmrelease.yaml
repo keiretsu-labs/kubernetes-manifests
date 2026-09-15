@@ -148,11 +148,11 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-        - name: PiHole Home DNS
+        - name: k8gb Tailscale DNS
           group: network
-          url: "ts-pihole-dns.home"
+          url: "k8gb-coredns.k8gb.svc.cluster.local"
           dns:
-            query-name: "google.com"
+            query-name: "status.${CLUSTER_DOMAIN}"
             query-type: "A"
           conditions:
             - "[DNS_RCODE] == NOERROR"

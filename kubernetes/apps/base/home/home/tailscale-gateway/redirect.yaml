@@ -6,7 +6,10 @@ metadata:
   namespace: home
 spec:
   parentRefs:
-    - name: ts
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
       sectionName: http
   rules:
     - filters:

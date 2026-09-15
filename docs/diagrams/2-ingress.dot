@@ -5,10 +5,10 @@
 //  where certificates come from, and who is allowed through.
 //
 //  The organising idea, and the reason the tiers are boxed the way they are:
-//  a tier is a Gateway PLUS the ExternalDNS instance that publishes it. The
-//  pairing is by label — gateway=public, external-dns=private, external-dns=ts
-//  — so a route lands in a tier by which Gateway it attaches to, and gets DNS
-//  because that tier's writer is watching for exactly that label.
+//  a tier is a Gateway PLUS its DNS path. Public and private use ExternalDNS;
+//  the tailnet tier uses Tailscale split DNS backed by k8gb CoreDNS. Gateway
+//  labels are standardized as gateway=public, gateway=private and
+//  gateway=tailscale for discovery.
 //
 //  Companions: 1-delivery.dot (how a commit becomes running infrastructure)
 //              3-fabric.dot   (tailnet, storage, observability)
@@ -30,7 +30,7 @@ digraph ingress {
     rankdir=TB, compound=true, newrank=true, splines=spline,
     nodesep=0.34, ranksep=0.58, fontname="Helvetica", fontsize=11,
     labelloc="t", bgcolor="transparent",
-    label=<<b>2 · North-south — how a request reaches a service</b><br/><font point-size="10">three tiers, each a Gateway paired with its own DNS writer; instantiated identically in every cluster</font>>
+    label=<<b>2 · North-south — how a request reaches a service</b><br/><font point-size="10">three trust-zone Gateways with independent public, private and tailnet DNS paths; instantiated identically in every cluster</font>>
   ];
   node [fontname="Helvetica", fontsize=9, shape=box, style="filled,rounded",
         fillcolor="#ffffff", color="#8c959f", margin="0.22,0.10"];
@@ -52,14 +52,14 @@ digraph ingress {
 
     c_cf [label=<<b>Cloudflare</b><br align="left"/>authoritative for every zone<br align="left"/>proxied for public names,<br align="left"/>DNS-only for tailnet and GSLB<br align="left"/>>];
 
-    c_zones [label=<<b>The zones</b><br align="left"/>killinit.cc — Ottawa<br align="left"/>lukehouge.com — Robbinsdale<br align="left"/>rajsingh.info — St. Petersburg<br align="left"/>keiretsu.top — shared<br align="left"/>cdn. and ts.keiretsu.top —<br align="left"/>delegated away to k8gb<br align="left"/>>];
+    c_zones [label=<<b>The zones</b><br align="left"/>killinit.cc — Ottawa<br align="left"/>lukehouge.com — Robbinsdale<br align="left"/>rajsingh.info — St. Petersburg<br align="left"/>keiretsu.top — shared<br align="left"/>cdn.keiretsu.top — delegated<br align="left"/>away to k8gb; no shared tailnet<br align="left"/>DNS namespace remains<br align="left"/>>];
   }
 
   c_people -> c_cf   [label="resolve"];
   c_cf -> c_zones    [style=dotted];
 
   // ---------------------------------------------------------------- envoy
-  g_envoy [label=<<b>Envoy Gateway</b><br align="left"/>Three GatewayClasses per cluster, each with its own<br align="left"/>EnvoyProxy — but the one for home-ts is named ts.<br align="left"/>Only TWO ClientTrafficPolicies, and neither is<br align="left"/>named after a class: wildcard-lan covers Gateways<br align="left"/>public and private whole, while wildcard-ts covers<br align="left"/>ONE listener section of ts — so the other ts<br align="left"/>listeners get no client-IP detection or timeouts.<br align="left"/>The Gateways themselves are defined ONCE, in<br align="left"/>apps/base/home, and reused unmodified through<br align="left"/>${CLUSTER_DOMAIN} substitution — no per-cluster<br align="left"/>overlay.<br align="left"/>>,
+  g_envoy [label=<<b>Envoy Gateway</b><br align="left"/>Three GatewayClasses per cluster, each with its own<br align="left"/>EnvoyProxy — but the one for home-ts is named ts.<br align="left"/>Only TWO ClientTrafficPolicies: wildcard-lan covers<br align="left"/>Gateways public and private whole, and wildcard-ts<br align="left"/>covers Gateway ts whole. The Gateways themselves<br align="left"/>are defined ONCE, in apps/base/home, and reused<br align="left"/>unmodified through ${CLUSTER_DOMAIN} substitution —<br align="left"/>no per-cluster overlay.<br align="left"/>>,
            fillcolor="#ddf4ff", color="#0969da", penwidth=1.8];
 
   // Anchor from the LAST node of the clients box, not the first. Graphviz
@@ -87,17 +87,17 @@ digraph ingress {
     v_gw [label=<<b>Gateway private</b> — LAN only<br align="left"/>6 listeners. Narrower than public<br align="left"/>on purpose: no hermes, bhaiya, cdn<br align="left"/>or s3 sub-tiers and no WebRTC,<br align="left"/>because LAN traffic never needs them.<br align="left"/>Not published to Cloudflare.<br align="left"/>>,
            fillcolor="#dbeafe"];
 
-    v_dns [label=<<b>DNS writer · UniFi</b><br align="left"/>external-dns-unifi through a webhook<br align="left"/>sidecar, writing the LAN view<br align="left"/>filter: external-dns=private, plus<br align="left"/>dns-scope!=public-only, because the<br align="left"/>UniFi API rejects wildcard hostnames<br align="left"/>>];
+    v_dns [label=<<b>DNS writer · UniFi</b><br align="left"/>external-dns-unifi through a webhook<br align="left"/>sidecar, writing the LAN view<br align="left"/>filter: gateway=private, plus<br align="left"/>dns-scope!=public-only, because the<br align="left"/>UniFi API rejects wildcard hostnames<br align="left"/>>];
   }
 
   subgraph cluster_tier_ts {
     label=<<b>Tailnet tier</b>>;
     style="rounded,filled"; fillcolor="#f5f0ff"; color="#8250df"; fontsize=11;
 
-    s_gw [label=<<b>Gateway ts</b> — tailnet overlay only<br align="left"/>8 listeners, including Pi-hole DNS<br align="left"/>on :53 over both TCP and UDP.<br align="left"/>It serves *.ts.keiretsu.top and<br align="left"/>NOT *.keiretsu.top.<br align="left"/>>,
+    s_gw [label=<<b>Gateway ts</b> — tailnet overlay only<br align="left"/>5 listeners: three HTTPS cluster-domain<br align="left"/>wildcards, HTTP on :80 and Forgejo SSH<br align="left"/>on :22. The legacy shared tailnet<br align="left"/>listener is removed; DNS is a separate<br align="left"/>k8gb CoreDNS service.<br align="left"/>>,
            fillcolor="#ece9fd"];
 
-    s_dns [label=<<b>DNS writer · Pi-hole</b><br align="left"/>ts-external-dns, writing the<br align="left"/>tailnet view<br align="left"/>filter: external-dns=ts<br align="left"/>>];
+    s_dns [label=<<b>Tailscale split DNS · k8gb</b><br align="left"/>tsddns points each cluster-domain<br align="left"/>suffix at its local k8gb CoreDNS<br align="left"/>Tailscale Service. CoreDNS returns<br align="left"/>a local Envoy compatibility CNAME;<br align="left"/>there is no shared tailnet zone.<br align="left"/>>];
   }
 
   g_envoy -> p_gw [style=bold];
@@ -105,8 +105,8 @@ digraph ingress {
   g_envoy -> s_gw [style=bold];
 
   p_gw -> p_dns [label="gateway=public", style=dashed];
-  v_gw -> v_dns [label="external-dns=private", style=dashed];
-  s_gw -> s_dns [label="external-dns=ts", style=dashed];
+  v_gw -> v_dns [label="gateway=private", style=dashed];
+  s_gw -> s_dns [label="gateway=tailscale", style=dashed];
 
   c_people -> p_gw [label="internet", style=bold, constraint=false];
   c_people -> v_gw [label="LAN", style=bold, constraint=false];
@@ -142,12 +142,12 @@ digraph ingress {
     h_ddns [label=<<b>cloudflare-ddns</b><br align="left"/>keeps &lt;location&gt;.&lt;domain&gt; pointed at the site's<br align="left"/>current WAN address. Every ExternalDNS CNAME and<br align="left"/>every GSLB pool member resolves to that record in<br align="left"/>the end.<br align="left"/>>,
             fillcolor="#ddf4ff"];
 
-    h_k8gb [label=<<b>k8gb</b> — GSLB for the shared zone<br align="left"/>cdn. and ts.keiretsu.top are delegated to it. It runs<br align="left"/>13 named Gslb objects, plus one per CDN site generated<br align="left"/>from the components/cdn-site template, with the<br align="left"/>failover pairs taken from cluster-settings.<br align="left"/>An ABSENT HTTPRoute reads as healthy, so an inert<br align="left"/>route is deployed to every cluster to make per-cluster<br align="left"/>health actually drive pool membership.<br align="left"/>>,
+    h_k8gb [label=<<b>k8gb</b> — GSLB and tailnet DNS<br align="left"/>cdn.keiretsu.top is delegated to it. One controller<br align="left"/>runs in each cluster (three regional controllers;<br align="left"/>v1.0.0 intentionally has no leader election).<br align="left"/>CoreDNS is three replicas per cluster and is also<br align="left"/>exposed through a Tailscale LoadBalancer. A Corefile<br align="left"/>template keeps cluster-domain tailnet routes<br align="left"/>resolvable by CNAMEing to the local Envoy tailnet<br align="left"/>Service. An ABSENT HTTPRoute reads as healthy, so<br align="left"/>an inert route is deployed to every cluster to make<br align="left"/>health drive pools.<br align="left"/>>,
             fillcolor="#ddf4ff"];
   }
 
   h_ddns -> c_cf [label="the site's WAN address", style=dashed, constraint=false];
-  h_k8gb -> c_cf [label="answers the delegated\lcdn. and ts. subzones", style=dashed, constraint=false];
+  h_k8gb -> c_cf [label="answers the delegated\lcdn. subzone", style=dashed, constraint=false];
   h_k8gb -> p_gw [label="pool members are\lthe site edges", style=dotted, constraint=false];
   r_trap -> h_k8gb [style=dotted, constraint=false];
 

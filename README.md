@@ -114,9 +114,9 @@ into every pointer.
 </a>
 
 Three tiers — public, private and tailnet — where a tier is a Gateway *plus*
-the ExternalDNS instance that publishes it. The pairing is by label, so a route
-joins a tier by attaching to its Gateway and gets DNS because that tier's
-writer is watching for exactly that label. The trap the diagram calls out:
+its DNS path. Public and private use ExternalDNS; tailnet uses Tailscale split
+DNS backed by k8gb CoreDNS. The pairing is by label where discovery is needed,
+so a route joins a tier by attaching to its Gateway. The trap the diagram calls out:
 `${CLUSTER_DOMAIN}` names get DNS for free, `${COMMON_DOMAIN}` names do not.
 
 ### 3 · Runtime fabric — tailnet, storage and observability
@@ -675,16 +675,18 @@ shared zone and in what else they carry:
   sub-wildcards, plus HTTP :80, Forgejo SSH on TCP :22, and Frigate WebRTC on
   TCP/UDP :8555.
 - <code>private</code> has 6: HTTP :80, the four wildcards, and Forgejo SSH.
-- <code>ts</code> has 8 and serves <code>*.ts.keiretsu.top</code> —
-  <strong>not</strong> <code>*.keiretsu.top</code> — plus HTTP :80, Pi-hole DNS
-  on TCP/UDP :53, and Forgejo SSH.
+- <code>ts</code> has 5 listeners for the three cluster-domain wildcards, HTTP
+  :80, and Forgejo SSH. Tailnet DNS is handled by Tailscale split DNS pointing
+  at the three regional k8gb CoreDNS services, not by a Gateway listener or a
+  separate shared tailnet zone.
 
 Each tier also has its own DNS plane: routes on <code>public</code> are
 published to Cloudflare, routes on <code>private</code> to the UniFi
-controller, and routes on <code>ts</code> to Pi-hole, selected by the
-<code>gateway=public</code>, <code>external-dns=private</code> and
-<code>external-dns=ts</code> labels respectively. Check the actual listener
-list before adding a route.
+controller, and routes on <code>ts</code> use Tailscale split DNS plus k8gb,
+selected by the <code>gateway=public</code>, <code>gateway=private</code> and
+<code>gateway=tailscale</code> labels where discovery is needed. Existing
+cluster-domain tailnet names remain supported through the k8gb compatibility
+view. Check the actual listener list before adding a route.
 
 ## Links
 

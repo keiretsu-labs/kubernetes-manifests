@@ -2,14 +2,11 @@
     "k8s": [
       "svc:tsdnsproxy"
     ],
-    "ts.keiretsu.top": [
-      "svc:ottawa-k8gb-coredns"
-    ],
     "keiretsu.top": [
       "1.1.1.1"
     ],
     "rajsingh.info": [
-      "svc:stpetersburg-home-envoy-gateway"
+      "svc:stpetersburg-k8gb-coredns"
     ],
     "cdn.rajsingh.info": [
       "1.1.1.1"
@@ -22,14 +19,14 @@
     ],
 
     "killinit.cc": [
-        "svc:ottawa-home-envoy-gateway"
+        "svc:ottawa-k8gb-coredns"
       ],
     "killinit.internal": [
         "192.168.169.1"
     ],
 
     "lukehouge.com": [
-        "svc:robbinsdale-home-envoy-gateway"
+        "svc:robbinsdale-k8gb-coredns"
     ],
     "robbinsdale.lan": [
         "192.168.50.1"

@@ -71,7 +71,7 @@ spec:
       timeoutSeconds: 5
     extraArgs:
       - --ignore-ingress-tls-spec
-      - --gateway-label-filter=external-dns==private
+      - --gateway-label-filter=gateway==private
       - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
       - --crd-source-kind=DNSEndpoint
       # UniFi's static-DNS API rejects wildcard hostnames (400 Invalid Hostname),

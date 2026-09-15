@@ -14,9 +14,11 @@ Reading this once replaces grepping the tree for the pointer shape, the
 | talos-stpetersburg | `rajsingh.info`     |
 
 `${COMMON_DOMAIN}` = `keiretsu.top` (all clusters). The `ts` gateway (ns
-`home`) listens on `*.killinit.cc *.lukehouge.com *.rajsingh.info
-*.ts.keiretsu.top`, so `myapp.${CLUSTER_DOMAIN}` always matches — no CNAME
-needed. A `${COMMON_DOMAIN}` hostname does NOT auto-resolve: add a CNAME in
+`home`) listens on `*.killinit.cc *.lukehouge.com *.rajsingh.info`, so
+`myapp.${CLUSTER_DOMAIN}` always matches — no CNAME needed; tailnet split
+DNS resolves it through that cluster's k8gb CoreDNS compatibility view. The
+legacy shared tailnet namespace is retired. A `${COMMON_DOMAIN}` hostname
+does NOT auto-resolve: add a CNAME in
 `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml` (see AGENTS.md).
 
 ## base — `kubernetes/apps/base/<ns>/myapp/`

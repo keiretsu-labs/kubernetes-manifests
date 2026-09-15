@@ -106,7 +106,7 @@ spec:
         noexist: "true"
   gatewaySelector:
     matchLabels:
-      external-dns: keiretsu
+      gateway: public
   ingressSelector:
     matchLabels:
       disable-local-cluster: "true"

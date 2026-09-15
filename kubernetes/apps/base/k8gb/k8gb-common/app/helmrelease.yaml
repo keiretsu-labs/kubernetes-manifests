@@ -73,6 +73,35 @@ spec:
                           answer "_acme-challenge.cdn.keiretsu.top. 30 IN CNAME _acme-challenge-cdn.keiretsu.top."
                       }
                   }
+                  # Keep the cluster-domain route names resolvable for tailnet
+                  # clients after removing the legacy Pi-hole DNS path. The
+                  # CNAME preserves the original Host/SNI, so the existing
+                  # HTTPRoute still selects correctly.
+                  ${CLUSTER_DOMAIN}:5353 {
+                      template IN ANY {
+                          match ^.+\.${CLUSTER_DOMAIN}\.$
+                          answer "{{ .Name }} 30 IN CNAME ${LOCATION}-home-envoy-gateway.keiretsu.ts.net."
+                      }
+                  }
+          - target:
+              kind: Deployment
+              name: k8gb-coredns
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: k8gb-coredns
+              spec:
+                template:
+                  spec:
+                    topologySpreadConstraints:
+                      - maxSkew: 1
+                        topologyKey: kubernetes.io/hostname
+                        whenUnsatisfiable: ScheduleAnyway
+                        labelSelector:
+                          matchLabels:
+                            app.kubernetes.io/instance: k8gb
+                            app.kubernetes.io/name: coredns
   values:
     k8gb:
       clusterGeoTag: "${LOCATION}"
@@ -90,9 +119,6 @@ spec:
               template IN ANY _acme-challenge.cdn.keiretsu.top {
                 answer "_acme-challenge.cdn.keiretsu.top. 30 IN CNAME _acme-challenge-cdn.keiretsu.top."
               }
-        - parentZone: "keiretsu.top"
-          loadBalancedZone: "ts.keiretsu.top"
-          dnsZoneNegTTL: 30
       edgeDNSServers:
         - "1.1.1.1"
       nsRecordTTL: 30

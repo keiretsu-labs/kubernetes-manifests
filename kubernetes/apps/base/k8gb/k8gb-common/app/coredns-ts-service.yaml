@@ -1,7 +1,7 @@
 ---
 # Tailscale-facing Service for k8gb CoreDNS.
 # Exposes the same CoreDNS pods via Tailscale LB so that Tailscale
-# clients can query ts.keiretsu.top records via split DNS.
+# clients can query the cluster-domain records via split DNS.
 apiVersion: v1
 kind: Service
 metadata:

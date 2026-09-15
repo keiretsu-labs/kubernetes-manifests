@@ -406,14 +406,15 @@ Three gateway tiers, three DNS planes, certificates, authorization.
 
 | Zone | Role | Answered by |
 |---|---|---|
-| `killinit.cc` | Ottawa's `${CLUSTER_DOMAIN}` | Cloudflare |
-| `lukehouge.com` | Robbinsdale's `${CLUSTER_DOMAIN}` | Cloudflare |
-| `rajsingh.info` | St. Petersburg's `${CLUSTER_DOMAIN}` | Cloudflare |
-| `keiretsu.top` | `${COMMON_DOMAIN}`, shared | Cloudflare |
+| `killinit.cc` | Ottawa's `${CLUSTER_DOMAIN}` | Cloudflare; tailnet split DNS → Ottawa k8gb CoreDNS |
+| `lukehouge.com` | Robbinsdale's `${CLUSTER_DOMAIN}` | Cloudflare; tailnet split DNS → Robbinsdale k8gb CoreDNS |
+| `rajsingh.info` | St. Petersburg's `${CLUSTER_DOMAIN}` | Cloudflare; tailnet split DNS → St. Petersburg k8gb CoreDNS |
+| `keiretsu.top` | `${COMMON_DOMAIN}`, shared | Cloudflare; LAN view in UniFi |
 | `cdn.keiretsu.top` | public GSLB | delegated to k8gb |
-| `ts.keiretsu.top` | tailnet GSLB | delegated to k8gb |
 
-LAN views of the above are written into UniFi; tailnet views into Pi-hole.
+Cloudflare remains the public authority. LAN clients receive the private view
+from UniFi, while tailnet clients receive split-DNS overrides from `tsddns`.
+There is no separate tailnet DNS appliance.
 
 ### DNS plane 1 — Cloudflare, for the public tier
 
@@ -441,7 +442,7 @@ entry, or it will report `Accepted=True` forever and never resolve.
 
 `external-dns-unifi`, provider `webhook`, with a sidecar image
 `external-dns-unifi-webhook` and a SOPS-encrypted UniFi API key. Filters:
-`--gateway-label-filter external-dns==private` and
+`--gateway-label-filter gateway==private` and
 `--label-filter dns-scope!=public-only`. Sources: `crd` plus all four gateway
 route kinds plus `service`. Policy `sync`.
 
@@ -449,17 +450,20 @@ The `dns-scope!=public-only` filter exists because the UniFi static-DNS API
 rejects wildcard hostnames with `400 Invalid Hostname`, so the wildcard
 `DNSEndpoint` is deliberately tagged out of this instance's view.
 
-### DNS plane 3 — Pi-hole, for the tailnet tier
+### DNS plane 3 — Tailscale split DNS and k8gb CoreDNS, for the tailnet tier
 
-`ts-external-dns`, provider `pihole`, with
-`--gateway-label-filter external-dns==ts`, sourcing the four gateway route
-kinds **plus `service`** — so a LoadBalancer or ExternalName Service with the
-right annotations also gets a Pi-hole record here, without any HTTPRoute —
-`txtOwnerId ${LOCATION}-${CLUSTER_DOMAIN//./-}`,
-`txtPrefix k8s.${LOCATION}.`, policy `sync`.
+`tsddns` is the only tailnet DNS control plane. It publishes each cluster
+domain to its local k8gb CoreDNS Tailscale Service. CoreDNS returns a
+short-lived CNAME to that region's
+`${LOCATION}-home-envoy-gateway.keiretsu.ts.net` name. The original hostname
+is preserved in the client request, so existing HTTPRoutes continue to match
+without a second tailnet DNS namespace.
 
-Pi-hole itself is reachable through the `ts` Gateway's `:53` TCP and UDP
-listeners (`TCPRoute ts-pihole-tcp` / `UDPRoute ts-pihole-udp`).
+k8gb CoreDNS runs three replicas per cluster and serves both UDP and TCP DNS
+through its dedicated Tailscale LoadBalancer Service. The `ts` Gateway carries
+HTTP(S) and Forgejo SSH only; it is not a DNS transport. Pi-hole,
+`ts-external-dns`, the shared tailnet namespace, and the Pi-hole TCP/UDP routes
+are retired.
 
 ### cloudflare-ddns
 
@@ -499,39 +503,38 @@ Both live in `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml`.
 
 Everything is `cloudflare-proxied=false` except the apex/`www` pair.
 
-### k8gb — GSLB for the shared zone
+### k8gb — public GSLB and tailnet DNS compatibility
 
 `clusterGeoTag ${LOCATION}`; `extGslbClustersGeoTags` =
 `ottawa,robbinsdale,stpetersburg`. Load-balanced zones under parent
 `keiretsu.top`:
 
 - `cdn.keiretsu.top` — public multi-cluster names
-- `ts.keiretsu.top` — tailnet-facing names
 
 Negative TTL 30s, NS TTL 30s, requeue 60s; the edge resolver is a public
-resolver. The bundled CoreDNS runs 3 replicas with priorityClass `infra-high`
+resolver. There is one k8gb controller per cluster (three regional controllers;
+the v1.0.0 manager disables leader election), while bundled CoreDNS runs 3
+replicas with priorityClass `infra-high`, hostname spreading,
 and a LoadBalancer at `<LB>.10.53`. Gateway API integration is on; the
-`extdns` sidecar is **off**, because the ExternalDNS instances above own
-Cloudflare. An extra CoreDNS template answers
-`_acme-challenge.cdn.keiretsu.top` so DNS-01 can still issue certificates for
-GSLB names.
+`extdns` sidecar is **off**, because Cloudflare and UniFi are managed by their
+respective ExternalDNS instances. CoreDNS templates answer the delegated CDN
+ACME challenge and provide the tailnet-only cluster-domain compatibility view.
 
-The `Gslb` count is **per cluster, not global**. Eleven come from the shared
+The `Gslb` count is **per cluster, not global**. Nine come from the shared
 `k8gb-common/config` Kustomization that every cluster deploys: `keiretsu-web`,
-`dashboard-cdn`, `dashboard-ts-cdn`, `ts-gateway`, `garage-s3-cdn`,
-`zot-public`, `forgejo`, `velero`, `hubble`, `opencost`, `gatus-status`. Ottawa
-adds two more from Ottawa-only Kustomizations — `prometheus`
-(`k8gb-prometheus-ottawa`) and `victoria-logs` (`k8gb-monitoring-ottawa`) —
-for **thirteen in Ottawa and eleven** in Robbinsdale and St. Petersburg. That
-asymmetry is deliberate: only Ottawa runs the stores those two names front.
+`dashboard-cdn`, `garage-s3-cdn`, `zot-public`, `forgejo`, `velero`, `hubble`,
+`opencost`, and `gatus-status`. Ottawa adds two more from Ottawa-only
+Kustomizations — `prometheus` (`k8gb-prometheus-ottawa`) and `victoria-logs`
+(`k8gb-monitoring-ottawa`) — for **eleven in Ottawa and nine** in Robbinsdale
+and St. Petersburg. That asymmetry is deliberate: only Ottawa runs the stores
+those two names front.
 
 **No `Gslb` uses a failover strategy.** Every one of them sets
 `strategy.type: roundRobin` with an explicit per-cluster `weight` map, which is
 how a name is steered — `forgejo` is `ottawa: 100, robbinsdale: 0,
-stpetersburg: 0` (Ottawa-only in practice), while `ts-gateway` is a genuine
-33/33/34 split. `cluster-settings` does define a `FAILOVER` variable, but k8gb
-does not consume it; changing a name's cluster preference means editing that
-name's `weight` map, not the variable.
+stpetersburg: 0` (Ottawa-only in practice). `cluster-settings` does define a
+`FAILOVER` variable, but k8gb does not consume it; changing a name's cluster
+preference means editing that name's `weight` map, not the variable.
 
 **Two constraints learned the hard way:**
 
@@ -563,16 +566,14 @@ a GatewayClass — they are named for the certificate family they front:
 
 - `wildcard-lan` targets Gateways `public` **and** `private` (whole-Gateway,
   so every listener is covered)
-- `wildcard-ts` targets Gateway `ts` **and one listener section**,
-  `sectionName: wildcard-${CLUSTER_DOMAIN//./-}-https`
+- `wildcard-ts` targets Gateway `ts` as a whole, so every tailnet listener
+  receives the same client-IP and timeout policy
 
 Both set the same body: `xForwardedFor.numTrustedHops: 1`, a 1h idle / 15m
 stream-idle timeout, `requestID: PreserveOrGenerate` and HTTP/2 window tuning.
-The consequence of that `sectionName` is easy to miss: the `ts` Gateway's other
-listeners — `*.ts.keiretsu.top`, the `:80` HTTP listener, Pi-hole's `:53`
-TCP/UDP pair and Forgejo's `:22` — get **no** client-IP detection and none of
-those timeouts. If a tailnet route logs the Envoy pod's address instead of the
-client's, or dies at the default idle timeout, that is why.
+The `ts` policy deliberately covers the whole Gateway. If a tailnet route logs
+the Envoy pod's address instead of the client's, or dies at the default idle
+timeout, inspect this policy and the Gateway status before changing the route.
 
 The Gateways are defined **once** in `kubernetes/apps/base/home/home/` and
 reused unmodified by all three clusters through `${CLUSTER_DOMAIN}` /
@@ -614,7 +615,7 @@ listener alone would aim it at a Secret that nothing writes.
 
 ### Gateway `private` — site-private, 6 listeners
 
-Labels `external-dns=private`, `gateway=private`.
+Label `gateway=private`.
 
 | Listener / hostname | Proto | Port |
 |---|---|---|
@@ -637,30 +638,37 @@ Narrower than `public` on purpose: no hermes / bhaiya / cdn / s3 / location
 sub-tiers and no WebRTC, because LAN traffic never needs them. Not published to
 Cloudflare — it lacks the `gateway=public` label.
 
-### Gateway `ts` — tailnet only, 8 listeners
+### Gateway `ts` — tailnet only, 5 listeners
 
-Label `external-dns=ts`.
+Label `gateway=tailscale`.
 
 | Listener / hostname | Proto | Port | Notes |
 |---|---|---|---|
 | `*.killinit.cc` | HTTPS | 443 | |
 | `*.lukehouge.com` | HTTPS | 443 | |
 | `*.rajsingh.info` | HTTPS | 443 | |
-| `*.ts.keiretsu.top` | HTTPS | 443 | `wildcard-ts-keiretsu-top` |
 | `http` | HTTP | 80 | |
-| `pihole-udp` | UDP | 53 | `UDPRoute ts-pihole-udp` |
-| `pihole-tcp` | TCP | 53 | `TCPRoute ts-pihole-tcp` |
 | `forgejo-ssh` | TCP | 22 | TCPRoute |
 
-It does **not** serve `*.keiretsu.top` — only `*.ts.keiretsu.top`. A route
-whose hostname matches no listener reports `NoMatchingListenerHostname`, so
-check first:
+It does **not** serve `*.keiretsu.top` — only the three cluster-domain
+wildcards. Tailnet split DNS sends those suffixes to the local k8gb CoreDNS
+compatibility view. A route whose hostname matches no listener reports
+`NoMatchingListenerHostname`, so check first:
 
 ```bash
 tools/kc.sh ot -n home get gateway ts -o jsonpath='{.spec.listeners[*].hostname}'
 ```
 
 ### How routes are actually distributed
+
+HTTPRoutes follow one contract: use `gateway.networking.k8s.io/v1`, make every
+`parentRef` explicit (`group`, `kind`, `name`, `namespace`), and attach only to
+the trust-zone Gateway that should serve the request. Use a cluster domain for
+a per-region tailnet URL; the legacy shared tailnet namespace is retired.
+Use a `${COMMON_DOMAIN}` name outside those GSLB objects only with an explicit
+DNSEndpoint in `k8gb-common/config/cnames.yaml`. The three trust zones remain
+independent: `public`, `private`, and `ts` are separate parentRefs even when a
+service intentionally exposes more than one view.
 
 - **private + ts** — the default for admin consoles: every `*arr`, `sabnzbd`,
   the two qBittorrents, `plex`, `prowlarr`,
@@ -1174,7 +1182,7 @@ keep direct ExternalName compatibility aliases named `mimir-gateway` and
 ### VictoriaLogs — log store, Ottawa only
 
 Chart `victoria-logs-single` 0.13.9, 50Gi, retention 7d. The dedicated
-tailnet LoadBalancer and ts-gateway redirect are retired. The service remains
+tailnet LoadBalancer and dedicated tailnet redirect are retired. The service remains
 available through the public/private Gateway and GSLB routes, while internal
 cross-cluster writers use the exported MCS Service.
 

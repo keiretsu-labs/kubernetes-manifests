@@ -142,7 +142,7 @@ spec:
           url: "https://logs.${COMMON_DOMAIN}/select/vmui/#/?query=talos-service%3Acri&g0.range_input=5m&g0.relative_time=last_5_minutes"
   gatewaySelector:
     matchLabels:
-      external-dns: ts
+      gateway: tailscale
   ingressSelector:
     matchLabels:
       noexist: "true"

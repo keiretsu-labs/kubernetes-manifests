@@ -64,6 +64,10 @@ Operator resources:
 - **Recorder** — SSH session recording, S3 backend (DigitalOcean Spaces nyc3,
   bucket tailscale-ssh-recorder-keiretsu)
 - **DNSConfig** — nameserver LoadBalancer at site `.69.50`
+- **Tailnet ingress DNS** — `tsddns` points each cluster-domain suffix at its
+  local k8gb CoreDNS Tailscale Service. CoreDNS returns a compatibility CNAME
+to the local Envoy tailnet Service. The legacy shared tailnet namespace and
+Pi-hole are not part of the tailnet DNS path.
 - `tailnet-readers-view` ClusterRoleBinding for read-only tailnet users
 - Custom CSI provider DaemonSet
   (`ghcr.io/rajsinghtech/tailscale/tailscale-csi-provider:dev`) — Secrets Store

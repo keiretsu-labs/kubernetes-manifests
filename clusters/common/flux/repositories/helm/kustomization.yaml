@@ -23,7 +23,6 @@ resources:
   - ./open-webui.yaml
   - ./opencost.yaml
   - ./openspeedtest.yaml
-  - ./pihole.yaml
   - ./piraeus-charts.yaml
   - ./rook-ceph-charts.yaml
   - ./strimzi.yaml
