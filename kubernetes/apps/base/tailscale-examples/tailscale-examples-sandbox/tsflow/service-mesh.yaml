@@ -6,3 +6,4 @@ metadata:
 spec:
   exportedAnnotations:
     service.cilium.io/affinity: local
+    service.cilium.io/global-sync-endpoint-slices: "true"
