@@ -23,6 +23,19 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  # The chart mounts the bootstrap Secret without hashing it into the agent
+  # pod template. Bump this explicit marker when the direct OCM endpoint
+  # changes so every agent reloads the generated gRPC/API configuration.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: klusterlet-agent
+            patch: |
+              - op: add
+                path: /spec/template/metadata/annotations/keiretsu.top~1ocm-grpc-endpoint
+                value: ocm-grpc-mesh.open-cluster-management-hub.svc.clusterset.local
   valuesFrom:
     - kind: Secret
       name: ocm-bootstrap-kubeconfig
