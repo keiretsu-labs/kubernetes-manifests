@@ -347,7 +347,8 @@ instead of Kubernetes Secrets.
 
 - `tailscale-examples-sandbox` — the Kustomization runs in **Ottawa and
   Robbinsdale**, not Ottawa alone. What it actually renders is `tsflow`,
-  `tsk9s` and a secret: `tsidp` (OIDC identity provider, hostname
+  `tsk9s` and a secret. Both web apps use the shared Gateway routes rather than
+  their own Tailscale Service/Ingress. `tsidp` (OIDC identity provider, hostname
   `${LOCATION}-idp`), `golink`, `derper`, `proxyt`, `tsddns`, `egress` and
   `vector` are all **commented out** of its `kustomization.yaml`, so their
   manifests are on disk and in neither cluster.

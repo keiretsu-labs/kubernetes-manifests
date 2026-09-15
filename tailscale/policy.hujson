@@ -382,7 +382,6 @@
 				"tag:ottawa:443",
 				"tag:robbinsdale:443",
 				"tag:stpetersburg:443",
-				"svc:k9s:443",
 				"svc:tempvm:5432",
 				"svc:tsdnsproxy:53",
 				"192.168.50.1:443",
