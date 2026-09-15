@@ -79,15 +79,15 @@ spec:
                   # cluster that does not run its backend. The CNAME preserves
                   # the original Host/SNI for the HTTPRoute.
                   (tailnet-regional) {
-                      template IN ANY {
+                      template IN ANY killinit.cc {
                           match ^.+\.killinit\.cc\.$
                           answer "{{ .Name }} 30 IN CNAME ottawa-home-envoy-gateway.keiretsu.ts.net."
                       }
-                      template IN ANY {
+                      template IN ANY lukehouge.com {
                           match ^.+\.lukehouge\.com\.$
                           answer "{{ .Name }} 30 IN CNAME robbinsdale-home-envoy-gateway.keiretsu.ts.net."
                       }
-                      template IN ANY {
+                      template IN ANY rajsingh.info {
                           match ^.+\.rajsingh\.info\.$
                           answer "{{ .Name }} 30 IN CNAME stpetersburg-home-envoy-gateway.keiretsu.ts.net."
                       }
