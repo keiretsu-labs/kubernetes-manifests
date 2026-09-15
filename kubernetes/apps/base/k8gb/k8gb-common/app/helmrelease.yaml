@@ -110,6 +110,9 @@ spec:
                 name: k8gb-coredns
               spec:
                 template:
+                  metadata:
+                    annotations:
+                      dns-config-revision: "2026-09-15-regional-zones-v2"
                   spec:
                     topologySpreadConstraints:
                       - maxSkew: 1
