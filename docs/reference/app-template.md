@@ -15,7 +15,9 @@ Reading this once replaces grepping the tree for the pointer shape, the
 
 `${COMMON_DOMAIN}` = `keiretsu.top` (all clusters). The `ts` gateway (ns
 `home`) listens on `*.killinit.cc *.lukehouge.com *.rajsingh.info`, so
-`myapp.${CLUSTER_DOMAIN}` always matches — no CNAME needed; tailnet split DNS
+`myapp.${CLUSTER_DOMAIN}` always matches — no CNAME needed. Set
+`sectionName: ${CLUSTER_DOMAIN_LISTENER}` on each cluster-domain parentRef so
+the route binds to the region's intended HTTPS listener. Tailnet split DNS
 resolves it through any of the three regional k8gb CoreDNS Services, which
 returns the owning regional Envoy CNAME. The legacy shared tailnet namespace is
 retired. A `${COMMON_DOMAIN}` hostname does NOT auto-resolve: add a CNAME in
@@ -89,6 +91,7 @@ spec:
       kind: Gateway
       name: ts            # 'ts' tailnet-only | 'private' | 'public' — all in ns home
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "myapp.${CLUSTER_DOMAIN}"
   rules:

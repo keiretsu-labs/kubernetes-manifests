@@ -17,6 +17,7 @@ spec:
       kind: Gateway
       name: ts
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "headlamp.${CLUSTER_DOMAIN}"
   rules:
@@ -29,4 +30,4 @@ spec:
       matches:
         - path:
             type: PathPrefix
-            value: / 
+            value: /

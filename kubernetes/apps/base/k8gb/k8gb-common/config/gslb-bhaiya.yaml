@@ -23,6 +23,7 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: wildcard-keiretsu-top-https
   hostnames:
     - "bhaiya.${COMMON_DOMAIN}"
   rules:

@@ -24,6 +24,7 @@ data:
 
   # Domain
   CLUSTER_DOMAIN: rajsingh.info
+  CLUSTER_DOMAIN_LISTENER: wildcard-rajsingh-info-https
 
 
   # Storage

@@ -18,10 +18,12 @@ spec:
       kind: Gateway
       name: private
       namespace: home
+      sectionName: wildcard-keiretsu-top-https
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: public
       namespace: home
+      sectionName: wildcard-keiretsu-top-https
   rules:
     - backendRefs:
         - name: woodpecker-server

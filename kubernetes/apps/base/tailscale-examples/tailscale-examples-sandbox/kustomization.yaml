@@ -6,6 +6,8 @@ resources:
   # - ./proxyt
   # - ./tsidp
   # - ./tsddns
+  # TSFlow's route is deployed by the shared route-only MCS overlay so that
+  # every regional edge has the same public/Tailscale host and path contract.
   - ./tsflow
   # - ./sidecar
   - ./secret.yaml

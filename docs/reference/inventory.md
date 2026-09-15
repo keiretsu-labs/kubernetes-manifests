@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 124 |
-| `robbinsdale` | 3 | 42 | 86 |
+| `ottawa` | 4 | 61 | 125 |
+| `robbinsdale` | 3 | 42 | 87 |
 | `stpetersburg` | 3 | 42 | 85 |
-| **total** | **10** | **145** | **295** |
+| **total** | **10** | **145** | **297** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -85,7 +85,7 @@ diagram in the [README](../../README.md#architecture).
 | Networking, ingress and identity | `k8gb` | `k8gb-app`, `k8gb-config`, `k8gb-dashboard`, `k8gb-monitoring` → ns `keiretsu-top`, `k8gb-prometheus` → ns `keiretsu-top` |
 | Networking, ingress and identity | `lan` | `lan` |
 | Networking, ingress and identity | `tailscale` | `tailscale-csi-provider`, `tailscale-operator`, `tailscale-operator-resources` |
-| Networking, ingress and identity | `tailscale-examples` | `tailscale-examples-sandbox`, `tailscale-service-repro` |
+| Networking, ingress and identity | `tailscale-examples` | `tailscale-examples-sandbox`, `tailscale-service-repro`, `tsflow-mcs` |
 | Networking, ingress and identity | `tailscale-system` | `tailscale-system-app` |
 | Storage and data services | `cnpg-system` | `cnpg-system` |
 | Storage and data services | `csi-addons` | `csi-addons`, `csi-addons-config` |
@@ -198,7 +198,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Networking, ingress and identity | `hubble-ui` | `hubble-ui` |
 | Networking, ingress and identity | `k8gb` | `k8gb-app`, `k8gb-config` |
 | Networking, ingress and identity | `tailscale` | `tailscale-csi-provider`, `tailscale-operator`, `tailscale-operator-resources` |
-| Networking, ingress and identity | `tailscale-examples` | `tailscale-examples-sandbox` |
+| Networking, ingress and identity | `tailscale-examples` | `tailscale-examples-sandbox`, `tsflow-mcs` |
 | Networking, ingress and identity | `tailscale-system` | `tailscale-system-app` |
 | Networking, ingress and identity | `tinyauth-egress` | `tinyauth-egress` → ns `tinyauth` |
 | Storage and data services | `cnpg-system` | `cnpg-system` |

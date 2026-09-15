@@ -17,10 +17,12 @@ spec:
       kind: Gateway
       name: private
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: ts
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     # Public: BookOrbit runs its own OIDC login (provider `tinyauth`, auto-provision
     # on), so users self-serve in the browser/PWA. No SecurityPolicy — see the
     # device route below, which shares this hostname and must stay ungated.
@@ -28,6 +30,7 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - bookorbit.${CLUSTER_DOMAIN}
   rules:
@@ -50,10 +53,12 @@ spec:
       kind: Gateway
       name: private
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: ts
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     # Public: a Kobo/KOReader is off-tailnet and cannot hold a cookie. These
     # endpoints authenticate themselves — Kobo via a device token in the path,
     # OPDS via per-user credentials the user creates for themselves.
@@ -61,6 +66,7 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - bookorbit.${CLUSTER_DOMAIN}
   rules:

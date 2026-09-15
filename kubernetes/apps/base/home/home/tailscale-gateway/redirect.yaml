@@ -12,7 +12,11 @@ spec:
       namespace: home
       sectionName: http
   rules:
-    - filters:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
