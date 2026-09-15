@@ -32,6 +32,7 @@ resources:
   - ./flux-system
   - ./k8gb
   - ./node-feature-discovery
+  - ./tailscale-examples
   - ./tailscale-system
 
   - ./tailscale
