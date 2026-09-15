@@ -1470,7 +1470,9 @@ instead.
 - **`external-secrets`** — ClusterSecretStore-backed secret projection.
 - **`open-cluster-management`** — Ottawa is the hub (`ocm` + `ocm-grpc-lb`);
   every cluster runs `ocm-agent` and registers through
-  `ocm-grpc-hub.keiretsu.ts.net:443`.
+  `ocm-grpc-mesh.open-cluster-management-hub.svc.clusterset.local:443` over
+  the direct Cilium/UniFi mesh. OCM work-agent API traffic uses Ottawa’s
+  `192.168.169.25:6443` VIP.
 
 ---
 
