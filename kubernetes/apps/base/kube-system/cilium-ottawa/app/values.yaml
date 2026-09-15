@@ -22,6 +22,10 @@ bandwidthManager:
   bbr: true
 envoy:
   enabled: true
+  # Without this the envoy DaemonSet gets no config checksum annotation, so a
+  # cilium ConfigMap change rolls the agent but never envoy, and envoy is left
+  # on the xDS subscription it negotiated against the previous agent.
+  rollOutPods: true
 ipam:
   mode: "cluster-pool"
   operator:
