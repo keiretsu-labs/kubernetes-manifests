@@ -2,8 +2,8 @@
 apiVersion: dragonflydb.io/v1alpha1
 kind: Dragonfly
 metadata:
-  # Operator creates a Service of the same name. Keep distinct from the
-  # 'zot-cache' ExternalName in common/apps/zot to avoid a name collision.
+  # Operator creates a Service of the same name; zot uses the separate
+  # cluster-local 'zot-cache' alias below.
   name: dragonfly-zot
 spec:
   replicas: 2

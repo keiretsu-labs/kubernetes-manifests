@@ -47,19 +47,6 @@ gateways in unified Auto mode).
   `prometheusrule.yaml` has `GarageGatewayUnreachable` (client-path down) +
   `GarageServingUnavailable` (write-quorum lost). Correct permanently.
 
-## REVERT when stpetersburg is back online + healthy
-
-1. **zot cluster membership** (commit 4d54ed810):
-   re-add `"stpetersburg-zot:5000"` to the `cluster.members` list in
-   `clusters/common/apps/zot/app/helmrelease.yaml` to restore the full 3-way
-   consistent-hash ring. zot cluster mode SHARDS repos across members (no failover),
-   so while stp is removed its share of repos is served by the 2 live members from the
-   shared garage S3 backend. After re-adding: `flux reconcile helmrelease zot -n zot`
-   on each cluster; verify `cat /etc/zot/config.json` shows 3 members and that image
-   pulls still return 200.
-   - This is a `clusters/common/` change → redeploys zot on ALL clusters. Safe: zot
-     data lives in garage S3, the restart is stateless.
-
 ## Live-only remediation applied during the incident (NOT in git — informational)
 
 These were ephemeral runtime fixes; they need no revert and Flux will not fight them:
@@ -80,7 +67,5 @@ for c in ottawa robbinsdale stpetersburg; do
   kubectl --context $c get garagecluster garage -n garage \
     -o jsonpath="$c health={.status.health.healthy} parts={.status.health.partitionsAllOk}\n"
 done
-# zot 3-member ring + image pulls
-flux --context ottawa reconcile helmrelease zot -n zot
 # volsync all green (no mover pods in Error, all RS synced <26h)
 ```

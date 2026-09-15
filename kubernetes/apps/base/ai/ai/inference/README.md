@@ -191,8 +191,12 @@ For Bhaiya-managed workspaces, the generated config lives at
 }
 ```
 
-Tailscale MagicDNS hostnames:
-- `stpetersburg-vllm` → active vLLM Qwen3.8 head via Service `vllm-ts` (port 80 → 8000)
+Service endpoints:
+- `qwen38.ai:8000` → local Qwen3.8 Service in St. Petersburg
+- `qwen38-mesh.ai.svc.clusterset.local:80` → the exported direct ClusterMesh
+  Service used by Ottawa's CLIProxy and Hermes
+- There is no dedicated Tailscale vLLM ingress; external clients use the
+  CLIProxy API front door instead
 - There is no current `stpetersburg-llama-cpp` Service; the llama.cpp route
   described above is historical reference material only.
 

@@ -18,7 +18,7 @@ from the tree by `tools/gen-inventory.sh` and so cannot drift.
 |---|---|
 | [Outside world](#outside-world) | who we depend on that we do not run |
 | [Delivery pipeline](#delivery-pipeline) | why my change has not taken effect |
-| [Tailnet overlay](#tailnet-overlay) | why one cluster cannot reach another — start with [the egress contract](#the-pod-side-tailnet-egress-contract) |
+| [Tailnet overlay](#tailnet-overlay) | which access and external-dependency paths still use Tailscale — start with [the egress contract](#the-pod-side-tailnet-egress-contract) |
 | [North-south ingress](#north-south-ingress) | why a hostname does not resolve, or serves the wrong thing |
 | [Storage and data](#storage-and-data) | where the bytes are, and which failure loses them |
 | [Observability](#observability) | where the metrics and logs went |
@@ -387,8 +387,10 @@ Never publish tailnet CGNAT addresses in public DNS. The range is
 The secret scanner in `tools/check-diagram.sh` rejects addresses from it, which
 is why this one line carries an explicit allow marker.
 
-Identity-authenticated protocols (Garage RPC) need one ingress identity and one
-egress Service **per remote node**; a shared L4 VIP cannot route a node ID.
+Any identity-authenticated protocol that still rides the tailnet needs one
+ingress identity and one egress Service **per remote endpoint**; a shared L4 VIP
+cannot route a node ID. Garage RPC is no longer in this contract: it uses one
+direct MCS Service per remote Garage node.
 
 These ExternalName Services are declared directly by the consuming apps; no
 generated resource abstraction is involved.
@@ -660,15 +662,19 @@ tools/kc.sh ot -n home get gateway ts -o jsonpath='{.spec.listeners[*].hostname}
 ### How routes are actually distributed
 
 - **private + ts** — the default for admin consoles: every `*arr`, `sabnzbd`,
-  the two qBittorrents, `plex`, `prowlarr`, `garage-webui`, `headlamp`,
-  `hubble`, per-cluster `grafana`/`prometheus`/`alertmanager`,
-  `victoria-logs`, the Rook dashboard, `k9s`.
+  the two qBittorrents, `plex`, `prowlarr`,
+  and the routes that intentionally offer both LAN and tailnet access.
+- **private only** — `garage-webui`; its former shared tailnet Gateway
+  attachment was removed because the private route is sufficient.
+- **tailnet only** — `headlamp`, `hubble`, per-cluster
+  `grafana`/`prometheus`/`alertmanager`, the Ottawa Rook dashboard, and `k9s`.
 - **public as well** — `overseerr`, `tautulli`, `wizarr`, `plex`, and the
   Ottawa-only reading apps (`audiobookshelf`, `bookorbit`, `komga`,
   `suwayomi`).
 - **public only** — the CDN tier: every route in namespace `keiretsu-top`,
   generated from the `components/cdn-site` template, which rewrites the Host
-  header and sends traffic to `garage-gateway`.
+  header and sends traffic to `garage-gateway`; VictoriaLogs, Zot, and the
+  Mimir-compatible Prometheus endpoint use this Gateway/GSLB tier as well.
 - **Three Homers** — `dashboard-private`, `dashboard-public` and
   `dashboard-ts` are three separate deployments sharing the hostname
   `home.${CLUSTER_DOMAIN}`, one per tier. The `homepage` app additionally
@@ -713,8 +719,7 @@ SOPS-encrypted.
 |---|---|
 | `tinyauth` | serves `auth.keiretsu.top` (Ottawa) |
 | `tinyauth-killinit` | serves `auth.killinit.cc` — suwayomi needs a cookie scoped to `killinit.cc`, not the shared `keiretsu.top` one |
-| `tinyauth-ts` | a Tailscale Service in front of the same pods |
-| `tinyauth-egress` | Robbinsdale and St. Petersburg run no local Tinyauth; a headless Service plus pinned Endpoints reaches the Ottawa instance across the tailnet |
+| `tinyauth-egress` | Robbinsdale and St. Petersburg run no local Tinyauth; a compatibility ExternalName resolves to Ottawa's exported `tinyauth.tinyauth.svc.clusterset.local` Service over Cilium ClusterMesh |
 
 Tinyauth only **authenticates** (Google) and injects `Remote-User`,
 `Remote-Email`, `Remote-Name` and `Remote-Groups`. Every protected route then
@@ -882,10 +887,10 @@ the gateway carries the full `FullReplication` `key_table` (so S3 signature auth
 resolves locally) and survives local storage loss by proxying reads to a
 surviving zone at `read_quorum=1`.
 
-The per-service Tailscale LoadBalancer Services remain for external/tailnet
-clients and emergency access. Garage federation and the internal health checks
-use the direct MCS Services, so they no longer depend on `common-egress` or
-`common-ingress`.
+The former per-node and gateway Tailscale LoadBalancer Services are retired.
+Garage federation and the internal health checks use the direct MCS Services,
+while S3/admin/web traffic uses the public/private Gateway routes. Garage no
+longer depends on `common-egress` or `common-ingress`.
 
 ### Garage local pools
 
@@ -1078,8 +1083,9 @@ the repo.
 
 Valkey has one genuine instance: searxng's local chart, storage disabled.
 
-`zot-cache-ottawa` exposes `dragonfly-zot` to the other clusters, and zot's
-`remoteCache` points at `zot-cache:6379`.
+`zot-cache-ottawa` is an Ottawa-local Dragonfly cache, and the local Zot
+registry reaches it through the `zot-cache:6379` ClusterIP alias. No remote Zot
+instances or cross-cluster cache path are deployed.
 
 ### Zot OCI registry
 
@@ -1094,7 +1100,9 @@ Chart 0.1.122, zot v2.1.20, Ottawa.
 - htpasswd auth from a SOPS-encrypted secret; anonymous read/create/update
 - sync extension mirrors `ghcr.io` on demand, 6h poll
 - search, UI and metrics extensions enabled
-- reachable cross-cluster as `<location>-zot.keiretsu.ts.net:5000`
+- reachable through the public `oci.${COMMON_DOMAIN}` /
+  `oci.cdn.${COMMON_DOMAIN}` Gateway and GSLB routes; no dedicated tailnet
+  Service or cross-cluster Zot peer ring is deployed
 
 ### Strimzi / Kafka — parked
 
@@ -1152,20 +1160,22 @@ Flux Kustomization is named **`monitoring`** (with a sibling named `config`);
 Chart `mimir-distributed` 6.1.0, `mimir-ottawa` overlay. Blocks and ruler live
 on Garage S3, bucket `mimir` (ruler under prefix `ruler/`).
 `compactor_blocks_retention_period` 7d. The nginx gateway runs 2 replicas so
-remote-write survives a rollout. Reachable on the tailnet as
-`mimir.keiretsu.ts.net:8080`, and `mimir-qf.keiretsu.ts.net:9095` for
-query-frontend gRPC.
+remote-write survives a rollout. The former dedicated tailnet gateway and
+query-frontend LoadBalancers are retired; Mimir is reached from the other
+clusters through the exported MCS Services and from Grafana through the local
+ClusterIP.
 
 Internal clients use the exported `mimir-gateway-mesh` and `mimir-qf-mesh`
 Services under `mimir.svc.clusterset.local`. Robbinsdale and St. Petersburg
 keep direct ExternalName compatibility aliases named `mimir-gateway` and
-`mimir-qf`; these point at MCS, not at Tailscale. The tailnet names remain only
-for external/tailnet ingress.
+`mimir-qf`; these point at MCS, not at Tailscale.
 
 ### VictoriaLogs — log store, Ottawa only
 
-Chart `victoria-logs-single` 0.13.9, 50Gi, retention 7d. Published as
-`victoria-logs.keiretsu.ts.net` plus a ts-gateway route.
+Chart `victoria-logs-single` 0.13.9, 50Gi, retention 7d. The dedicated
+tailnet LoadBalancer and ts-gateway redirect are retired. The service remains
+available through the public/private Gateway and GSLB routes, while internal
+cross-cluster writers use the exported MCS Service.
 
 **The trick worth copying:** `VICTORIA_LOGS_HOST` is the *same string* in all
 three clusters
@@ -1330,8 +1340,11 @@ app-vllm` hits `/health` **and** `/v1/models`, because a served-model list prove
 the weights actually loaded, which `/health` alone does not.
 `HUGGING_FACE_HUB_TOKEN` comes from a SOPS-encrypted secret.
 
-Consumers reach it as `stpetersburg-vllm.keiretsu.ts.net`; `hermes` and
-`cliproxy` both declare that egress Service.
+Ottawa consumers reach the exported `qwen38-mesh.ai.svc.clusterset.local` Service
+through their local compatibility aliases `stpetersburg-vllm` and
+`stpetersburg-vllm-upstream`. The former `vllm-ts` Tailscale LoadBalancer is
+retired; the model is private to the routable ClusterMesh and CLIProxy front
+door.
 
 ### GPU / sandbox runtime stack
 
@@ -1371,9 +1384,9 @@ Companions:
 | App | Notes |
 |---|---|
 | `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo), not from this repo. This repo keeps the GitRepository, Forgejo credentials, and the Flux pointer (`dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, cert-manager). The Receiver, Firefly MCP secret, and home Gateway editor Role live in `corp/bhaiya`. Platform TLS (`*.bhaiya`), k8gb apex route, GarageKey, Velero schedule, and Mimir rules stay here. |
-| `hermes` | agent runtime (`hermes-agent`); egresses to `stpetersburg-vllm` and `aperture` on the tailnet |
+| `hermes` | agent runtime (`hermes-agent`); reaches St. Petersburg's vLLM through the direct MCS alias and still egresses to external `aperture` on the tailnet |
 | `firecrawl` | web-scraping stack, reconciled straight from the upstream GitHub repo's `examples/kubernetes/cluster-install` path |
-| `cliproxy` | LLM API proxy (`cli-proxy-api`); egress to `stpetersburg-vllm` |
+| `cliproxy` | LLM API proxy (`cli-proxy-api`); reaches St. Petersburg's vLLM through the direct MCS alias |
 | `forgejo` | self-hosted Git — and the source of truth for bhaiya. SSH on `:22` through the `private` and `ts` Gateways. |
 | `woodpecker` | CI paired with Forgejo, with a persistent Nix cache workspace |
 | `searxng` | metasearch, backed by the one real Valkey in the repo |
@@ -1509,19 +1522,21 @@ Two things this table does **not** say, and both matter:
 - **Workloads at the other two sites keep running.** They lose telemetry,
   authentication on protected routes, and their view of themselves — not their
   pods.
-- **Ottawa is not a pure hub.** It has live egress dependencies *on* the other
-  two: `stpetersburg-vllm` (consumed by `hermes` and `cliproxy`),
-  Robbinsdale's identity provider and SMB share, and full-mesh Garage RPC to
-  every remote storage node. The relationship is asymmetric, not one-directional,
+- **Ottawa is not a pure hub.** It has live dependencies *on* the other two:
+  `stpetersburg-vllm` (consumed by `hermes` and `cliproxy`) over direct MCS,
+  direct LAN access to the site SMB shares, and full-mesh Garage RPC over direct
+  MCS to every remote storage node. The remaining tailnet egress here is for
+  external identity-bound services, not cluster-internal traffic. The
+  relationship is asymmetric, not one-directional,
   so "Ottawa is the hub" is a statement about singletons, not about traffic.
 
 ### If Robbinsdale or St. Petersburg is down
 
 Ottawa keeps its own telemetry, auth and registry. What it loses is whatever it
-consumes from that site — inference from St. Petersburg, the identity provider
-and SMB share from Robbinsdale — plus one Garage zone (see below). Ottawa is
-also each of their k8gb failover targets, so GSLB names should converge on
-Ottawa's edge on their own.
+consumes from that site — inference from St. Petersburg and one Garage zone
+(see below). The site SMB shares remain reachable over the direct routed LAN.
+Ottawa is also each of their k8gb failover targets, so GSLB names should
+converge on Ottawa's edge on their own.
 
 ### Garage: one zone is survivable, two are not
 

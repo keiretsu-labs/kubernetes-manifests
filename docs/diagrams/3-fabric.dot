@@ -32,7 +32,7 @@ digraph fabric {
     rankdir=TB, compound=true, newrank=true, splines=spline,
     nodesep=0.38, ranksep=0.62, fontname="Helvetica", fontsize=11,
     labelloc="t", bgcolor="transparent",
-    label=<<b>3 · Runtime fabric — tailnet, storage, observability</b><br/><font point-size="10">Tailscale is the only path between sites, and Ottawa holds the singletons the other two borrow</font>>
+    label=<<b>3 · Runtime fabric — UniFi mesh, tailnet, storage, observability</b><br/><font point-size="10">UniFi-routed Cilium ClusterMesh is the internal path; Tailscale remains only for selected access and external dependencies</font>>
   ];
   node [fontname="Helvetica", fontsize=9, shape=box, style="filled,rounded",
         fillcolor="#ffffff", color="#8c959f", margin="0.22,0.10"];
@@ -62,7 +62,7 @@ digraph fabric {
 
   // ---------------------------------------------------------------- tailnet
   subgraph cluster_tailnet {
-    label=<<b>Tailnet keiretsu.ts.net — the only path between sites</b>>;
+    label=<<b>Tailnet keiretsu.ts.net — access and external-dependency overlay</b>>;
     style="rounded,filled"; fillcolor="#f5f0ff"; color="#8250df"; fontsize=11;
 
     t_policy [label=<<b>tailscale/policy.hujson</b><br align="left"/>One central zero-trust policy: groups, tags,<br align="left"/>per-location ipsets, autoApprovers, recorded SSH,<br align="left"/>and grants that permit location-to-location<br align="left"/>traffic only through that location's own subnet<br align="left"/>router. Its tests run in CI beside it.<br align="left"/>>];
@@ -74,12 +74,12 @@ digraph fabric {
 
     t_api [label=<<b>kube-apiserver ProxyGroup</b><br align="left"/>serves &lt;location&gt;-k8s-operator.keiretsu.ts.net<br align="left"/>TAILNET IDENTITY IS THE CREDENTIAL, which is why<br align="left"/>the committed kubeconfig carries no client cert,<br align="left"/>no key and only a placeholder token.<br align="left"/>>];
 
-    t_egress [label=<<b>Egress ProxyGroup common-egress</b><br align="left"/>Backs every tailnet-fqdn Service, and therefore<br align="left"/>every cross-cluster dependency on this page.<br align="left"/>>,
+    t_egress [label=<<b>Egress ProxyGroup common-egress</b><br align="left"/>Backs the remaining identity-bound and external<br align="left"/>tailnet dependencies. Internal cross-cluster<br align="left"/>workloads use Cilium MCS instead.<br align="left"/>>,
               penwidth=1.4];
 
     t_dns [label=<<b>DNSConfig ts-dns</b><br align="left"/>A LoadBalancer nameserver that CoreDNS forwards<br align="left"/>ts.net to, so that pods — not just laptops — can<br align="left"/>resolve tailnet names.<br align="left"/>>];
 
-    t_contract [label=<<b>The pod-side egress contract</b><br align="left"/>THE RULE THAT KEEPS BREAKING PEOPLE.<br align="left"/>For every tailnet name a pod consumes, declare in<br align="left"/>that namespace an ExternalName Service annotated<br align="left"/>with the tailnet FQDN and proxy-group:<br align="left"/>common-egress. The operator rewrites it to a proxy<br align="left"/>address and ts-dns republishes the original name.<br align="left"/>ts-dns PUBLISHES ONLY NAMES AN EGRESS SERVICE<br align="left"/>DECLARES — not every MagicDNS device.<br align="left"/>Verify TailscaleEgressSvcReady=True AND resolve<br align="left"/>the name from a throwaway pod. A laptop dig proves<br align="left"/>nothing: laptops use MagicDNS, pods do not.<br align="left"/>Never publish tailnet CGNAT addresses in public DNS.<br align="left"/>>,
+    t_contract [label=<<b>The pod-side egress contract</b><br align="left"/>THE RULE THAT KEEPS BREAKING PEOPLE.<br align="left"/>For every remaining tailnet name a pod consumes,<br align="left"/>declare in that namespace an ExternalName Service<br align="left"/>annotated with the tailnet FQDN and proxy-group:<br align="left"/>common-egress. The operator rewrites it to a proxy<br align="left"/>address and ts-dns republishes the original name.<br align="left"/>ts-dns PUBLISHES ONLY NAMES AN EGRESS SERVICE<br align="left"/>DECLARES — not every MagicDNS device.<br align="left"/>Verify TailscaleEgressSvcReady=True AND resolve<br align="left"/>the name from a throwaway pod. A laptop dig proves<br align="left"/>nothing: laptops use MagicDNS, pods do not.<br align="left"/>Never publish tailnet CGNAT addresses in public DNS.<br align="left"/>>,
                  fillcolor="#fff8c5", color="#9a6700", penwidth=1.4];
   }
 
@@ -101,7 +101,7 @@ digraph fabric {
     label=<<b>Storage — one federated S3 estate, plus per-site block and file</b>>;
     style="rounded,filled"; fillcolor="#fffbe6"; color="#9a6700"; fontsize=11;
 
-    s_garage [label=<<b>Garage — one logical S3 estate, three zones</b><br align="left"/>Every cluster runs a GarageCluster, and each one<br align="left"/>lists all three zones and reaches the others over<br align="left"/>the tailnet. Replication factor 3, consistency<br align="left"/>mode degraded.<br align="left"/>>,
+    s_garage [label=<<b>Garage — one logical S3 estate, three zones</b><br align="left"/>Every cluster runs a GarageCluster, and each one<br align="left"/>lists all three zones through direct UniFi-routed<br align="left"/>Cilium MCS Services. Replication factor 3,<br align="left"/>consistency mode degraded.<br align="left"/>>,
               fillcolor="#fff8c5", penwidth=1.6];
 
     s_gw [label=<<b>Apps never address the storage tier</b><br align="left"/>They use ${COMMON_S3_ENDPOINT}, the cluster-local<br align="left"/>gateway, for two reasons: the gateway carries the<br align="left"/>full key table so an S3 signature resolves<br align="left"/>locally, and it survives local storage loss by<br align="left"/>proxying reads to a surviving zone.<br align="left"/>>,
@@ -111,7 +111,7 @@ digraph fabric {
 
     s_buckets [label=<<b>Buckets</b><br align="left"/>velero · mimir · zot · tailscale-logs, plus one<br align="left"/>&lt;db&gt;-postgres bucket per database so that<br align="left"/>federated sites never share a Barman catalog.<br align="left"/>Per-app credentials are minted by GarageKey CRs.<br align="left"/>>];
 
-    s_rpc [label=<<b>Why Garage needs so many egress Services</b><br align="left"/>Its RPC is identity-authenticated per node, so it<br align="left"/>needs one ingress identity and one egress Service<br align="left"/>PER REMOTE NODE. A single shared L4 VIP cannot<br align="left"/>route a node identifier, so the usual one-Service<br align="left"/>shortcut does not work here.<br align="left"/>>,
+    s_rpc [label=<<b>Why Garage still needs many mesh Services</b><br align="left"/>Its RPC is identity-authenticated per node, so it<br align="left"/>needs one direct MCS Service PER REMOTE NODE.<br align="left"/>A single shared L4 VIP cannot route a node<br align="left"/>identifier, so the usual one-Service shortcut<br align="left"/>does not work here. There is no Tailscale hop.<br align="left"/>>,
            fillcolor="#fff8c5", color="#9a6700"];
 
     s_ceph [label=<<b>Rook-Ceph</b> — Ottawa and Robbinsdale only<br align="left"/>Block and filesystem, one CephCluster each, both<br align="left"/>on v20 — which IS Tentacle. Nothing is held back a<br align="left"/>major version; what is bounded is an mgr logging<br align="left"/>bug that floods the recent-log ring, capped by<br align="left"/>log_max_recent 100 until the fix lands (rook#17786).<br align="left"/>There is no CephObjectStore anywhere: all object<br align="left"/>storage is Garage.<br align="left"/>>];
@@ -131,7 +131,6 @@ digraph fabric {
   s_garage -> s_pools   [label="Manual storage tier", constraint=false];
   s_garage -> s_buckets [constraint=false];
   s_garage -> s_rpc     [style=dashed, constraint=false];
-  s_rpc    -> t_egress  [label="one egress Service\lper remote node", style=dashed, color="#9a6700", constraint=false];
   s_db     -> s_garage  [label="WAL, base backups\land Velero archives", style=bold, constraint=false];
 
   // ---------------------------------------------------------------- obs
@@ -141,18 +140,17 @@ digraph fabric {
 
     o_local [label=<<b>In every cluster</b><br align="left"/>kube-prometheus-stack · Fluent Bit · Gatus<br align="left"/>Kromgo · blackbox and host exporters.<br align="left"/>Prometheus stamps externalLabels cluster=&lt;name&gt;,<br align="left"/>which is what keeps the three sites' series apart<br align="left"/>once they all land in one Mimir.<br align="left"/>Fluent Bit also receives Talos KERNEL logs over<br align="left"/>TCP, because every machine ships them there.<br align="left"/>>];
 
-    o_store [label=<<b>Ottawa only</b><br align="left"/>Mimir — long-term metrics, blocks on Garage S3<br align="left"/>VictoriaLogs — logs, 7 day retention<br align="left"/>Grafana — the single pane of glass<br align="left"/>The other two clusters deploy only egress Services<br align="left"/>where these would be.<br align="left"/>>,
+    o_store [label=<<b>Ottawa only</b><br align="left"/>Mimir — long-term metrics, blocks on Garage S3<br align="left"/>VictoriaLogs — logs, 7 day retention<br align="left"/>Grafana — the single pane of glass<br align="left"/>The other two clusters deploy only MCS<br align="left"/>compatibility Services where these would be.<br align="left"/>>,
              fillcolor="#dafbe1", penwidth=1.4];
 
-    o_trick [label=<<b>Why the other two need no extra configuration</b><br align="left"/>The remote-write and log-sink hostnames are the<br align="left"/>SAME STRING in all three clusters. In Ottawa that<br align="left"/>name is the real Service. Elsewhere the location<br align="left"/>tree ships only an ExternalName Service of exactly<br align="left"/>that name pointing at the tailnet FQDN.<br align="left"/>So Fluent Bit and Prometheus are configured<br align="left"/>identically everywhere. Worth copying.<br align="left"/>>,
+    o_trick [label=<<b>Why the other two need no extra configuration</b><br align="left"/>The remote-write and log-sink hostnames are the<br align="left"/>SAME STRING in all three clusters. In Ottawa that<br align="left"/>name is the real Service. Elsewhere the location<br align="left"/>tree ships only an ExternalName Service of exactly<br align="left"/>that name pointing at an exported MCS Service.<br align="left"/>So Fluent Bit and Prometheus are configured<br align="left"/>identically everywhere. Worth copying.<br align="left"/>>,
              fillcolor="#fff8c5", color="#9a6700"];
 
-    o_probe [label=<<b>Probes check both paths on purpose</b><br align="left"/>Gatus checks the in-cluster endpoint AND its<br align="left"/>tailnet equivalent, so a broken overlay is<br align="left"/>distinguishable from a broken service.<br align="left"/>>];
+    o_probe [label=<<b>Probes check the direct path</b><br align="left"/>Gatus checks the in-cluster endpoint and the<br align="left"/>exported MCS compatibility path. Dedicated<br align="left"/>tailnet app ingress has been retired where a<br align="left"/>Gateway or GSLB path already exists.<br align="left"/>>];
   }
 
   o_local -> o_store  [label="remote-write and logs", style=bold];
   o_local -> o_trick  [style=dashed, constraint=false];
-  o_trick -> t_egress [label="resolved by the\legress ProxyGroup", style=dashed, constraint=false];
   o_store -> s_garage [label="metric blocks", style=bold, constraint=false];
   o_local -> o_probe  [style=dashed, constraint=false];
 
@@ -163,7 +161,7 @@ digraph fabric {
 
     k_media [label=<<b>Media</b> — Ottawa and Robbinsdale<br align="left"/>Plex, the full *arr stack, usenet and two torrent<br align="left"/>clients. Libraries on SMB, databases on Ceph.<br align="left"/>Ottawa adds the book, manga and audiobook titles.<br align="left"/>>];
 
-    k_ai [label=<<b>Inference</b> — St. Petersburg<br align="left"/>ONE vLLM model spans BOTH DGX Sparks through a<br align="left"/>LeaderWorkerSet, and the two halves talk over a<br align="left"/>private RDMA rail rather than the LAN.<br align="left"/>hermes and cliproxy in Ottawa consume it over the<br align="left"/>tailnet, like any other cross-site dependency.<br align="left"/>>,
+    k_ai [label=<<b>Inference</b> — St. Petersburg<br align="left"/>ONE vLLM model spans BOTH DGX Sparks through a<br align="left"/>LeaderWorkerSet, and the two halves talk over a<br align="left"/>private RDMA rail rather than the LAN.<br align="left"/>hermes and cliproxy in Ottawa consume it through<br align="left"/>the exported qwen38-mesh MCS Service.<br align="left"/>>,
            fillcolor="#ffe3ea"];
 
     k_ott [label=<<b>Ottawa-only services</b><br align="left"/>bhaiya · hermes · forgejo · woodpecker<br align="left"/>immich · teslamate · searxng · firecrawl · cliproxy<br align="left"/>zot registry · headlamp · opencost · tempvm<br align="left"/>>];
@@ -174,7 +172,6 @@ digraph fabric {
   k_media -> s_bulk   [label="libraries", style=dotted, constraint=false];
   k_media -> s_db     [style=dotted, constraint=false];
   k_ai    -> s_bulk   [label="model weights", style=dotted, constraint=false];
-  k_ai    -> t_egress [label="consumed across\lthe tailnet", style=dashed, constraint=false];
   k_ott   -> s_gw     [label="S3 via ${COMMON_S3_ENDPOINT}", style=dotted, constraint=false];
 
   // ---------------------------------------------------------------- layout

@@ -3,5 +3,4 @@ kind: Kustomization
 namespace: tinyauth
 resources:
   - ./egress.yaml
-  - ./endpoints.yaml
   - ./referencegrant.yaml

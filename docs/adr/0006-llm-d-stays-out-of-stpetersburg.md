@@ -18,7 +18,11 @@ The one llm-d idea that would pay off at a single replica is tiered prefix cachi
 
 ## Consequences
 
-- Keep serving through the existing chain: the `glm53` Service and the `vllm-ts` LoadBalancer, exposed on the tailnet as `stpetersburg-vllm`, with CLIProxy in front as the stable client-facing ID. Do not introduce an EPP hop between CLIProxy and vLLM while there is one endpoint behind it.
+- Keep serving through the direct `qwen38`/`qwen38-mesh` Service chain, with
+  CLIProxy in front as the stable client-facing ID. The former `vllm-ts`
+  Tailscale LoadBalancer was retired once the UniFi-routed ClusterMesh path was
+  validated. Do not introduce an EPP hop between CLIProxy and vLLM while there
+  is one endpoint behind it.
 - The next inference change on this cluster should be serving-native prefix/KV-cache tuning, not llm-d. Qualify it against the existing guardrails in `kubernetes/apps/base/ai/ai/inference/README.md` — `--gpu-memory-utilization 0.76` on the leader and `0.75` on the worker, with eager execution and CUDA-graph capture disabled, the 2048-token context, four sequences, 512 batched tokens, and DFlash2's seven speculative tokens. Treat it as a new load qualification, not a flag flip.
 - `hostNetwork: true` on the LWS leader and worker is load-bearing for the RDMA rail and it constrains any future router. InferencePool selects Pods and reads their endpoints; with host networking those are node IPs, and two model-server replicas on one node would collide on `:8000`. Two TP=1 replicas would land one per Spark and so happen to avoid it; any denser packing, or a third replica, would not. A second replica is a networking change as well as a serving one.
 - If Gateway API Inference Extension CRDs are ever installed for an unrelated reason, remember that installing them does **not** make Envoy Gateway serve an InferencePool. The v1.9.1 chart has no RBAC for the API group; an InferencePool would be Accepted by nothing and route nowhere. That failure looks like `NoMatchingParent`-class silence rather than a loud error.

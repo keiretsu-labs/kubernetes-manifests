@@ -31,7 +31,9 @@ Anthropic-compatible APIs.
   upstream gateways reject that agent while accepting the Bhaiya-specific
   identifier.
 - OpenAI-compatible provider `vllm` points at the St. Petersburg Qwen3.8
-  inference service through `Service/stpetersburg-vllm-upstream`. Startup discovery
+  inference service through the direct Cilium ClusterMesh alias
+  `Service/stpetersburg-vllm-upstream`, which resolves to St. Petersburg's
+  exported `qwen38-mesh.ai.svc.clusterset.local` Service. Startup discovery
   exposes its live catalog under the `vllm/` prefix. The stable
   `vllm/Qwen3.8-Flash-Next` client alias maps to the upstream
   `Qwen3.8-Flash-Next-NVFP4` model. If the upstream catalog is unavailable,
@@ -64,7 +66,6 @@ Anthropic-compatible APIs.
 | Purpose | URL | Exposure | Authentication |
 |---|---|---|---|
 | Browser UI / management | `https://cliproxy.keiretsu.top/management.html` | public and private gateways | tinyauth (Raj or Kartik), then the CLIProxy management key |
-| Browser UI / management (tailnet) | `http://cliproxy/management.html` (FQDN: `http://cliproxy.keiretsu.ts.net/management.html`) | direct Tailscale LoadBalancer on port 80 | tailnet ACL, then the CLIProxy management key |
 | Model API | `https://cliproxy-api.killinit.cc` | **private and ts gateways only** | CLIProxy API key |
 
 The split is enforced by path as well as hostname. Public/private UI routes only
@@ -80,11 +81,10 @@ converts only that response into a `302` to the Tinyauth login URL. After the
 Tinyauth browser session is established, CPAMC still asks for the independent
 CLIProxy management key.
 
-The short `http://cliproxy` tailnet URL is provided by `Service/cliproxy-ts`, a
-Tailscale `LoadBalancer` using the shared `common-ingress` ProxyGroup. It goes
-directly to application port 8317 and therefore does not traverse Envoy or
-tinyauth. Tailnet ACLs control network reachability, while CLIProxy's separate
-management key still protects management operations.
+There is no dedicated Tailscale LoadBalancer bypass for the UI. Use the
+public/private Gateway route, which applies Tinyauth before the separate
+CLIProxy management key. The API remains available through the private and
+shared `ts` Gateway route.
 
 `remote-management.allow-remote` is enabled because Envoy is remote from the
 pod, but the management API still requires its separate management key. WebSocket

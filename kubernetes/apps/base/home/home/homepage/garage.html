@@ -137,15 +137,15 @@ body {
   <div class="legend">
     <span class="legend-item"><span class="swatch" style="background:#34d399;" aria-hidden="true"></span> Storage Node</span>
     <span class="legend-item"><span class="swatch" style="background:#22d3ee;" aria-hidden="true"></span> Gateway Node</span>
-    <span class="legend-item"><span class="swatch" style="background:#fb7185;" aria-hidden="true"></span> common-ingress (inbound)</span>
+    <span class="legend-item"><span class="swatch" style="background:#fb7185;" aria-hidden="true"></span> Shared tailnet overlay</span>
     <span class="legend-item"><span class="swatch" style="background:#c084fc;" aria-hidden="true"></span> Cilium MCS (direct RPC)</span>
     <span class="legend-item"><span class="swatch" style="background:#fbbf24;" aria-hidden="true"></span> Cross-Region RPC</span>
-    <span class="legend-item"><span class="swatch" style="background:#fb923c;" aria-hidden="true"></span> Tailscale ingress/fallback</span>
+    <span class="legend-item"><span class="swatch" style="background:#fb923c;" aria-hidden="true"></span> Public/Gateway access</span>
   </div>
 
-  <svg viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Multi-region Garage topology diagram showing Ottawa, Robbinsdale, and St. Petersburg with a direct UniFi-routed Cilium ClusterMesh, Tailscale ingress fallback, storage and gateway tiers, and cross-region RPC flows" style="margin-top:0.5rem;">
-    <title>Garage Multi-Region Topology — direct Cilium ClusterMesh with Tailscale ingress fallback</title>
-    <desc>Diagram showing three datacenter regions (Ottawa with 4 Talos nodes, Robbinsdale with 3 Talos nodes, St. Petersburg with 3 arm64+GPU nodes) connected through the UniFi-routed Pod and Service CIDRs with Cilium ClusterMesh MCS endpoints. Tailscale common-ingress remains available for tailnet clients. Each region contains storage pods and gateway pods. Cross-region RPC flows are shown as animated amber lines between regions. A GSLB round-robin DNS (s3.cdn.keiretsu.top) routes public S3 traffic via an Envoy Gateway.</desc>
+  <svg viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Multi-region Garage topology diagram showing Ottawa, Robbinsdale, and St. Petersburg with a direct UniFi-routed Cilium ClusterMesh, shared tailnet services for unrelated workloads, storage and gateway tiers, and cross-region RPC flows" style="margin-top:0.5rem;">
+    <title>Garage Multi-Region Topology — direct Cilium ClusterMesh</title>
+    <desc>Diagram showing three datacenter regions (Ottawa with 4 Talos nodes, Robbinsdale with 3 Talos nodes, St. Petersburg with 3 arm64+GPU nodes) connected through the UniFi-routed Pod and Service CIDRs with Cilium ClusterMesh MCS endpoints. Garage federation, health checks, and client access use direct MCS or Gateway routes; the shared tailnet overlay shown above serves unrelated tailnet workloads. Cross-region RPC flows are shown as animated amber lines between regions. A GSLB round-robin DNS (s3.cdn.keiretsu.top) routes public S3 traffic via an Envoy Gateway.</desc>
     <defs>
       <marker id="arrow-amber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#fbbf24"/></marker>
       <marker id="arrow-rose"  markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#fb7185"/></marker>
@@ -168,30 +168,30 @@ body {
     <text x="500" y="46" text-anchor="middle" fill="#fb923c" font-size="10" font-weight="600">🌐 UniFi-routed Pod/Service CIDRs — Cilium ClusterMesh · clusterset.local</text>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- LAYER 2: common-ingress Proxy Group (Tailscale inbound)     -->
+    <!-- LAYER 2: shared tailnet overlay for unrelated workloads          -->
     <!-- ══════════════════════════════════════════════════════════════ -->
     <rect x="40" y="60" width="920" height="90" rx="6" fill="rgba(136,19,55,0.08)" stroke="#fb7185" stroke-width="1" stroke-dasharray="4,3"/>
-    <text x="500" y="77" text-anchor="middle" fill="#fb7185" font-size="9" font-weight="600">common-ingress ProxyGroup — 3 replicas · Tailscale VPN Inbound → Service</text>
+    <text x="500" y="77" text-anchor="middle" fill="#fb7185" font-size="9" font-weight="600">Shared tailnet overlay — 3 replicas · unrelated workload access</text>
 
     <!-- Ottawa ingress -->
     <rect x="60" y="88" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="97" y="103" text-anchor="middle" fill="#fb7185" font-size="8">ingress-0</text>
     <rect x="60" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="97" y="131" text-anchor="middle" fill="#fb7185" font-size="8">ingress-1</text>
     <rect x="142" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="0.5" opacity="0.6"/><text x="179" y="131" text-anchor="middle" fill="#fb7185" font-size="7">ingress-2</text>
-    <text x="97" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">9 TS services</text>
+    <text x="97" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">shared overlay</text>
 
     <!-- Robbinsdale ingress -->
     <rect x="462" y="88" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="499" y="103" text-anchor="middle" fill="#fb7185" font-size="8">ingress-0</text>
     <rect x="462" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="499" y="131" text-anchor="middle" fill="#fb7185" font-size="8">ingress-1</text>
     <rect x="544" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="0.5" opacity="0.6"/><text x="581" y="131" text-anchor="middle" fill="#fb7185" font-size="7">ingress-2</text>
-    <text x="499" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">8 TS services</text>
+    <text x="499" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">shared overlay</text>
 
     <!-- StPete ingress -->
     <rect x="815" y="88" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="852" y="103" text-anchor="middle" fill="#fb7185" font-size="8">ingress-0</text>
     <rect x="815" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/><text x="852" y="131" text-anchor="middle" fill="#fb7185" font-size="8">ingress-1</text>
     <rect x="897" y="116" width="75" height="22" rx="4" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="0.5" opacity="0.6"/><text x="934" y="131" text-anchor="middle" fill="#fb7185" font-size="7">ingress-2</text>
-    <text x="852" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">8 TS services</text>
+    <text x="852" y="148" text-anchor="middle" fill="#fb7185" font-size="7" opacity="0.8">shared overlay</text>
 
-    <!-- Tailscale remains an external/client ingress path -->
+    <!-- Shared tailnet overlay remains for unrelated workloads -->
     <path d="M97,56 L97,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
     <path d="M499,56 L499,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
     <path d="M852,56 L852,88" stroke="#fb923c" stroke-width="1" marker-end="url(#arrow-amber)" opacity="0.4"/>
@@ -253,7 +253,7 @@ body {
     <!-- Arrow from ingress down into region -->
     <path d="M97,148 L97,265" stroke="#fb7185" stroke-width="1" marker-end="url(#arrow-rose)" opacity="0.4"/>
 
-    <text x="90" y="335" text-anchor="middle" fill="#34d399" font-size="9">Storage Tier (common-ingress)</text>
+    <text x="90" y="335" text-anchor="middle" fill="#34d399" font-size="9">Storage Tier</text>
     <rect x="55" y="345" width="70" height="22" rx="5" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1.2"/><text x="90" y="362" text-anchor="middle" fill="#34d399" font-size="8">asuka</text>
     <rect x="55" y="375" width="70" height="22" rx="5" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1.2"/><text x="90" y="392" text-anchor="middle" fill="#34d399" font-size="8">kaji</text>
     <rect x="55" y="405" width="70" height="22" rx="5" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1.2"/><text x="90" y="422" text-anchor="middle" fill="#34d399" font-size="8">rei</text>
@@ -286,7 +286,7 @@ body {
     <path d="M499,235 L499,265" stroke="#c084fc" stroke-width="1" marker-end="url(#arrow-purple)" opacity="0.4"/>
     <path d="M499,148 L499,265" stroke="#fb7185" stroke-width="1" marker-end="url(#arrow-rose)" opacity="0.4"/>
 
-    <text x="410" y="335" text-anchor="middle" fill="#34d399" font-size="9">Storage Tier (common-ingress)</text>
+    <text x="410" y="335" text-anchor="middle" fill="#34d399" font-size="9">Storage Tier</text>
     <rect x="375" y="345" width="70" height="22" rx="5" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1.2"/><text x="410" y="362" text-anchor="middle" fill="#34d399" font-size="8">stone</text>
     <rect x="375" y="375" width="70" height="22" rx="5" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1.2"/><text x="410" y="392" text-anchor="middle" fill="#34d399" font-size="8">tank</text>
     <rect x="375" y="405" width="70" height="22" rx="5" fill="rgba(6,78,59,0.5)" stroke="#34d399" stroke-width="1.2"/><text x="410" y="422" text-anchor="middle" fill="#34d399" font-size="8">titan</text>
@@ -350,7 +350,7 @@ body {
       🡺 Replication: Gateway → direct Cilium MCS per-node Service → remote Storage pod
     </text>
     <text x="500" y="718" text-anchor="middle" fill="#a09080" font-size="7">
-      Each cluster publishes identity-specific RPC Services under clusterset.local · Tailscale common-ingress remains for tailnet clients
+      Each cluster publishes identity-specific RPC Services under clusterset.local · Garage has no dedicated Tailscale path
     </text>
   </svg>
 </section>
@@ -363,7 +363,7 @@ body {
     <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">4 <span style="color:#34d399" id="health-ottawa">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage Pods</span><span class="stat-value">5 (4 NVMe localpath + 1 SMB)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
-    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-ottawa">...</span> replicas · 9 TS svcs</span></div>
+    <div class="stat"><span class="stat-label">Shared tailnet overlay</span><span class="stat-value"><span id="ingress-ottawa">...</span> replicas · unrelated services</span></div>
     <div class="stat"><span class="stat-label">ClusterMesh RPC</span><span class="stat-value">direct MCS Services · no Tailscale hop</span></div>
     <div class="storage-bar" id="disk-ottawa">
       <div class="bar-track"><div class="bar-fill green" id="disk-fill-ottawa" style="width:0%"></div></div>
@@ -381,7 +381,7 @@ body {
     <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">3 <span style="color:#34d399" id="health-robbinsdale">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage Pods</span><span class="stat-value">4 (3 localpath + 1 SMB)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
-    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-robbinsdale">...</span> replicas · 8 TS svcs</span></div>
+    <div class="stat"><span class="stat-label">Shared tailnet overlay</span><span class="stat-value"><span id="ingress-robbinsdale">...</span> replicas · unrelated services</span></div>
     <div class="stat"><span class="stat-label">ClusterMesh RPC</span><span class="stat-value">direct MCS Services · no Tailscale hop</span></div>
     <div class="storage-bar" id="disk-robbinsdale">
       <div class="bar-track"><div class="bar-fill green" id="disk-fill-robbinsdale" style="width:0%"></div></div>
@@ -399,7 +399,7 @@ body {
     <div class="stat"><span class="stat-label">K8s Nodes</span><span class="stat-value">3 <span style="color:#34d399" id="health-stpetersburg">...</span></span></div>
     <div class="stat"><span class="stat-label">Storage</span><span class="stat-value">3 localpath (spark-0, spark-1, orin-0)</span></div>
     <div class="stat"><span class="stat-label">Gateway Pods</span><span class="stat-value">2</span></div>
-    <div class="stat"><span class="stat-label">common-ingress</span><span class="stat-value"><span id="ingress-stpetersburg">...</span> replicas · 8 TS svcs</span></div>
+    <div class="stat"><span class="stat-label">Shared tailnet overlay</span><span class="stat-value"><span id="ingress-stpetersburg">...</span> replicas · unrelated services</span></div>
     <div class="stat"><span class="stat-label">ClusterMesh RPC</span><span class="stat-value">direct MCS Services · no Tailscale hop</span></div>
     <div class="stat"><span class="stat-label">Federation</span><span class="stat-value">Rejoined 2026-06-04</span></div>
     <div class="storage-bar" id="disk-stpetersburg">
@@ -427,14 +427,12 @@ body {
       </ul>
     </div>
     <div>
-      <h3 style="color:#fb7185; font-size:0.9rem; margin-bottom:0.5rem;">📥 common-ingress (Tailscale VPN Inbound)</h3>
+      <h3 style="color:#fb7185; font-size:0.9rem; margin-bottom:0.5rem;">📥 Shared tailnet ingress (other workloads)</h3>
       <ul style="font-size:0.85rem; color:#d2b48c; line-height:1.6; list-style:none;">
-        <li>• 3 replicas per cluster — Tailscale VPN traffic → service</li>
-        <li>• For Tailscale VPN clients accessing Garage S3/admin/web</li>
-        <li>• Garage storage + gateway pods accept VPN inbound via this group</li>
-        <li>• <strong>Not</strong> used for public S3 CDN traffic (that goes through Envoy Gateway)</li>
-        <li>• 8–9 TS services per cluster with annotation: <code style="font-size:0.75rem; background:#2e2621; padding:0.1rem 0.3rem; border-radius:3px;">proxy-group: common-ingress</code></li>
-        <li>• Migrated from standalone TS pods to proxy group (Jun 9)</li>
+        <li>• 3 replicas per cluster for the remaining tailnet-only workloads</li>
+        <li>• Garage no longer uses this proxy group for S3, admin, web, or RPC</li>
+        <li>• Public S3 traffic goes through the Envoy Gateway and GSLB</li>
+        <li>• The live replica count is shown here as shared infrastructure, not Garage ingress</li>
       </ul>
     </div>
     <div>
@@ -452,7 +450,7 @@ body {
         <li>• K8GB round-robin DNS: <strong>s3.cdn.keiretsu.top</strong> → 3 A records</li>
         <li>• Weights: ottawa <strong>33%</strong>, robbinsdale <strong>33%</strong>, stpetersburg <strong>34%</strong></li>
         <li>• GSLB → Envoy Gateway <code style="font-size:0.75rem; background:#2e2621; padding:0.1rem 0.3rem; border-radius:3px;">public</code> → garage-gateway:3900</li>
-        <li>• Tailscale VPN clients hit common-ingress proxy for S3 access</li>
+        <li>• Tailnet clients use the same public/private Gateway routes for S3 access</li>
         <li>• All 3 clusters healthy — GSLB CRs: <code style="font-size:0.75rem; background:#2e2621; padding:0.1rem 0.3rem; border-radius:3px;">garage-s3-cdn</code></li>
       </ul>
     </div>
@@ -635,7 +633,7 @@ const ZONES = ['ottawa', 'robbinsdale', 'stpetersburg'];
   const k = ZONES.map(z=>Math.round(m['nodes_'+z]||0)).reduce((a,b)=>a+b,0);
   const ig = ZONES.map(z=>Math.round(m['ingress_'+z]||0)).reduce((a,b)=>a+b,0);
   const eg = ZONES.map(z=>Math.round(m['egress_'+z]||0)).reduce((a,b)=>a+b,0);
-  new Chart(document.getElementById('chartNodes'), { type: 'doughnut', data: { labels: ['Storage','Gateway/Other','Tailnet ingress','Tailnet fallback'], datasets: [{ data: [s, Math.max(0,k-s), ig, eg], backgroundColor: ['#34d399','#22d3ee','#fb7185','#c084fc'], borderWidth: 0 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#a09080', boxWidth: 10 } } } } });
+  new Chart(document.getElementById('chartNodes'), { type: 'doughnut', data: { labels: ['Storage','Gateway/Other','Shared tailnet ingress','Shared tailnet egress'], datasets: [{ data: [s, Math.max(0,k-s), ig, eg], backgroundColor: ['#34d399','#22d3ee','#fb7185','#c084fc'], borderWidth: 0 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#a09080', boxWidth: 10 } } } } });
 }
 
 // 3. Capacity Distribution (horizontal bar)

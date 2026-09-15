@@ -3,5 +3,4 @@ kind: Kustomization
 namespace: garage
 resources:
   - robbinsdale-garage-smb.yaml
-  - service-ts-storage.yaml
   - service-mesh.yaml

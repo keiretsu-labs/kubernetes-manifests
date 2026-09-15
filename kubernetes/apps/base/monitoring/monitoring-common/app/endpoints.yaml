@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: nagato
+subsets:
+  - addresses:
+      - ip: 192.168.169.111
+    ports:
+      - name: port-0
+        port: 9100
+        protocol: TCP

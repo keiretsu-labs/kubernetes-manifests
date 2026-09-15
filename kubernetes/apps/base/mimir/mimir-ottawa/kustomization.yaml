@@ -6,8 +6,6 @@ resources:
   - helmrelease.yaml
   - service-mesh.yaml
   - ingester-pvc.yaml
-  - ingress-ts.yaml
-  - ingress-qf-ts.yaml
   # Keep the Helm-owned Service in Flux's inventory while removing the legacy
   # Tailscale egress annotations; remote clusters use the ExternalName base.
   - egress.yaml

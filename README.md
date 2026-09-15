@@ -565,8 +565,8 @@ tools/ktriage.sh ot media <pod-name>
 
 The tracked root <code>.kube/config</code> contains operator URLs and a
 placeholder token, not credentials. Never add certificates, keys, or real
-tokens. Services are reachable over the Tailscale network; port-forwarding is
-normally unnecessary.
+tokens. Services are reachable over the UniFi-routed cluster fabric and the
+remaining Tailscale access overlay; port-forwarding is normally unnecessary.
 
 ### Talos commands
 

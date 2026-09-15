@@ -6,5 +6,4 @@ resources:
   - helmrelease.yaml
   - dashboard.yaml
   - dashboard-vector.yaml
-  - httproute.yaml
   - referencegrant.yaml

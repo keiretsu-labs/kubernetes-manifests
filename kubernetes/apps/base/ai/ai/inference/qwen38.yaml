@@ -465,29 +465,6 @@ spec:
   ports:
   - { name: http, port: 8000, protocol: TCP, targetPort: http }
 ---
-# Tailscale ingress for CLIProxy's stpetersburg-vllm-upstream ExternalName.
-# This used to live in vllm.yaml; keep it with the active head so prune cannot
-# leave the Tailscale hostname pointing at a deleting Service.
-apiVersion: v1
-kind: Service
-metadata:
-  name: vllm-ts
-  namespace: ai
-  labels:
-    app: qwen38
-  annotations:
-    tailscale.com/hostname: "${LOCATION}-vllm"
-    tailscale.com/proxy-group: common-ingress
-    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
-spec:
-  type: LoadBalancer
-  loadBalancerClass: tailscale
-  ports:
-  - { name: http, port: 80, protocol: TCP, targetPort: 8000 }
-  selector:
-    app: qwen38
-    role: head
----
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:

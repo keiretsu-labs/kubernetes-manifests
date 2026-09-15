@@ -1,8 +1,5 @@
 ---
-# Local in-cluster alias so Ottawa zot reaches Dragonfly directly without
-# hairpin-routing through Tailscale. Other clusters use a per-cluster
-# ExternalName (see talos-robbinsdale/apps/zot-cache-egress and
-# talos-stpetersburg/apps/zot-cache-egress).
+# Local in-cluster alias so the Ottawa Zot registry reaches Dragonfly directly.
 apiVersion: v1
 kind: Service
 metadata:

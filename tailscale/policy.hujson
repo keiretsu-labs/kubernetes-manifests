@@ -128,11 +128,6 @@
 			"ip":  ["*"],
 		},
 		{
-			"src": ["group:ottawa"],
-			"dst": ["svc:cliproxy"],
-			"ip":  ["80"],
-		},
-		{
 			"src": ["autogroup:member"],
 			"dst": [
 				"svc:ottawa-home-envoy-gateway",
@@ -387,8 +382,6 @@
 				"tag:ottawa:443",
 				"tag:robbinsdale:443",
 				"tag:stpetersburg:443",
-				"svc:cliproxy:80",
-				"svc:ottawa-zot:443",
 				"svc:k9s:443",
 				"svc:tempvm:5432",
 				"svc:tsdnsproxy:53",
@@ -404,7 +397,7 @@
 		{
 			"src":    "tag:k8s",
 			"accept": ["tag:k8s:443", "tag:k8s-operator:443", "[fd7a:115c:a1e0:b1a:0:2:a02:1]:443"],
-			"deny":   ["svc:cliproxy:80", "192.168.50.1:443"],
+			"deny":   ["192.168.50.1:443"],
 		},
 		{
 			"src":    "tag:robbinsdale",
@@ -424,7 +417,7 @@
 		{
 			"src":    "tag:ci",
 			"accept": ["[fd7a:115c:a1e0:b1a:0:3:a04:1]:443"],
-			"deny":   ["svc:cliproxy:80", "svc:tempvm:5432"],
+			"deny":   ["svc:tempvm:5432"],
 		},
 	]
 }

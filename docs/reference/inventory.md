@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 124 |
+| `ottawa` | 4 | 61 | 123 |
 | `robbinsdale` | 3 | 42 | 85 |
 | `stpetersburg` | 3 | 41 | 83 |
-| **total** | **10** | **144** | **292** |
+| **total** | **10** | **144** | **291** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -77,7 +77,7 @@ diagram in the [README](../../README.md#architecture).
 | Node runtime, scheduling and sandboxing | `node-feature-discovery` | `nfd-install`, `nfd-rules` |
 | Node runtime, scheduling and sandboxing | `spegel` | `spegel` |
 | Node runtime, scheduling and sandboxing | `vpa-system` | `vpa` |
-| Networking, ingress and identity | `auth` | `tinyauth` → ns `tinyauth`, `tinyauth-killinit` → ns `tinyauth`, `tinyauth-ts` → ns `tinyauth` |
+| Networking, ingress and identity | `auth` | `tinyauth` → ns `tinyauth`, `tinyauth-killinit` → ns `tinyauth` |
 | Networking, ingress and identity | `cloudflare` | `cloudflare-app` |
 | Networking, ingress and identity | `envoy-gateway-system` | `envoy-gateway-system-install` |
 | Networking, ingress and identity | `home` | `home-apps-ottawa`, `home-dnsrecords`, `home-homepage`, `home-homer`, `home-local-gateway`, `home-tailscale-gateway` |
@@ -144,7 +144,6 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | `teslamate-secret-sync` | `teslamate` | `monitoring` |
 | `tinyauth` | `auth` | `tinyauth` |
 | `tinyauth-killinit` | `auth` | `tinyauth` |
-| `tinyauth-ts` | `auth` | `tinyauth` |
 | `tuppr` | `tuppr` | `system-upgrade` |
 | `tuppr-config` | `tuppr` | `system-upgrade` |
 | `velero` | `velero` | `velero-system` |

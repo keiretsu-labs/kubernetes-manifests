@@ -269,24 +269,3 @@ data:
             print(f'Done: {repo}', flush=True)
         else:
             print(f'Already cached: {repo}', flush=True)
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: vllm-ts
-  namespace: ai
-  annotations:
-    tailscale.com/hostname: "${LOCATION}-vllm"
-    tailscale.com/proxy-group: common-ingress
-    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
-spec:
-  type: LoadBalancer
-  loadBalancerClass: tailscale
-  ports:
-  - name: http
-    port: 80
-    protocol: TCP
-    targetPort: 8000
-  selector:
-    app: qwen38
-    role: head

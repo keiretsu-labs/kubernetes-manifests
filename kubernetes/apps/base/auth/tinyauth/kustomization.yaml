@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - service-mesh.yaml
   - httproute.yaml
   - secret.yaml
   - referencegrant.yaml

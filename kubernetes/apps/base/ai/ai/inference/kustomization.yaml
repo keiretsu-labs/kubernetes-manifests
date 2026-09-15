@@ -5,6 +5,7 @@ namespace: ai
 resources:
   - namespace.yaml
   - qwen38.yaml
+  - service-mesh.yaml
   - secret.yaml
   - probes.yaml
   - prometheusrule.yaml

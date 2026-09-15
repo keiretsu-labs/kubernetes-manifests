@@ -5,8 +5,6 @@ namespace: garage
 resources:
   - admin-token.yaml
   - reference-grants.yaml
-  - service-ts.yaml
-  - service-ts-gateway.yaml
   - garagecluster.yaml
   - rpc-secret.yaml
   - httproute-s3.yaml

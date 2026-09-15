@@ -6,5 +6,4 @@ kind: Kustomization
 # namespace and fails ("namespace not specified").
 namespace: garage
 resources:
-  - service-ts-storage.yaml
   - service-mesh.yaml
