@@ -30,8 +30,8 @@ diagram in the [README](../../README.md#architecture).
 |---|---:|---:|---:|
 | `ottawa` | 4 | 61 | 124 |
 | `robbinsdale` | 3 | 42 | 86 |
-| `stpetersburg` | 3 | 41 | 84 |
-| **total** | **10** | **144** | **294** |
+| `stpetersburg` | 3 | 42 | 85 |
+| **total** | **10** | **145** | **295** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -285,6 +285,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Networking, ingress and identity | `hubble-ui` | `hubble-ui` |
 | Networking, ingress and identity | `k8gb` | `k8gb-app`, `k8gb-config` |
 | Networking, ingress and identity | `tailscale` | `tailscale-csi-provider`, `tailscale-operator`, `tailscale-operator-resources` |
+| Networking, ingress and identity | `tailscale-examples` | `tsflow-mcs` |
 | Networking, ingress and identity | `tailscale-system` | `tailscale-system-app` |
 | Networking, ingress and identity | `tinyauth-egress` | `tinyauth-egress` → ns `tinyauth` |
 | Storage and data services | `cnpg-system` | `cnpg-system` |
