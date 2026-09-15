@@ -1,5 +1,6 @@
 cluster:
   name: ${LOCATION}
+upgradeCompatibility: "1.19"
 cni:
   exclusive: false
 kubeProxyReplacement: true

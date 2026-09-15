@@ -11,7 +11,6 @@ clustermesh:
   enabled: true
   maxConnectedClusters: 255
   enableEndpointSliceSynchronization: true
-  enableMCSAPISupport: true
   mcsapi:
     enabled: true
   useAPIServer: true
