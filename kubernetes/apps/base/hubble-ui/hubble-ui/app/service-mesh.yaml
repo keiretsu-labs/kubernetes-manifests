@@ -2,7 +2,7 @@
 # Hubble UI is deployed in every region. Export the same logical Service with
 # local affinity so a regional Gateway prefers its local UI and falls back to
 # a healthy remote UI only when the local cluster has no usable endpoint.
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: hubble-ui

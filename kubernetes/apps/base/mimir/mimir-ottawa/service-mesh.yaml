@@ -30,12 +30,12 @@ spec:
     app.kubernetes.io/instance: mimir
     app.kubernetes.io/name: mimir
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: mimir-gateway-mesh
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: mimir-qf-mesh
