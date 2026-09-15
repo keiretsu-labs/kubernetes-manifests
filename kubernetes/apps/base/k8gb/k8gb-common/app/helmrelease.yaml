@@ -92,19 +92,12 @@ spec:
                           answer "{{ .Name }} 30 IN CNAME stpetersburg-home-envoy-gateway.keiretsu.ts.net."
                       }
                   }
-                  killinit.cc:5353 {
+                  # Use one catch-all resolver block so every regional suffix
+                  # is handled consistently. More-specific imported k8gb
+                  # zones (notably cdn.keiretsu.top) still win by CoreDNS
+                  # longest-zone matching.
+                  .:5353 {
                       import tailnet-regional
-                  }
-                  lukehouge.com:5353 {
-                      import tailnet-regional
-                  }
-                  rajsingh.info:5353 {
-                      import tailnet-regional
-                  }
-                  # The parent zone remains Cloudflare-owned. Forward it
-                  # through the same regional resolver pool so split DNS has
-                  # one HA path while preserving the public/private records.
-                  keiretsu.top:5353 {
                       forward . 1.1.1.1
                   }
           - target:
