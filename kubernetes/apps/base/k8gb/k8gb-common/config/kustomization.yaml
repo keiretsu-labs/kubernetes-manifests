@@ -4,10 +4,6 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./external-clusters-kubeconfig.yaml
-  # Temporary GitOps ownership of the legacy static ZoneDelegation. The next
-  # cleanup revision removes this object so k8gb can clear its dynamic zone
-  # configuration and run the controller finalizer.
-  - ./zonedelegation-legacy-tailnet.yaml
   - ./gslb.yaml
   - ./gslb-gatus.yaml
 
