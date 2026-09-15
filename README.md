@@ -293,8 +293,7 @@ The official Tailscale Kubernetes operator is deployed through
 and workloads are split between <code>tailscale/resources</code> and
 <code>tailscale-system/tailscale-system-app</code>. The deployment includes:
 
-- subnet-router Connectors for LAN and 4via6/app-connector traffic (cluster
-  Pod/Service/LoadBalancer CIDRs are routed by UniFi/Cilium BGP);
+- subnet-router Connectors for LAN, service, pod, and load-balancer CIDRs;
 - per-location PeerRelay and ProxyGroups for common ingress/egress;
 - ProxyClasses such as <code>common</code>,
   <code>common-accept-routes</code>, and <code>common-userspace</code>;

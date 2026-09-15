@@ -5,14 +5,10 @@
 Central zero-trust ACL policy, deployed via GitOps
 (`.github/workflows/tailscale.yml` — tests on PR, applies on merge).
 
-**IP sets per location** (LAN / 4via6):
-- Robbinsdale: 192.168.50.0/24, fd7a:115c:a1e0:b1a:0:1::/96
-- Ottawa: 192.168.169.0/24, fd7a:115c:a1e0:b1a:0:2::/96
-- St. Petersburg: 192.168.73.0/24, fd7a:115c:a1e0:b1a:0:3::/96
-
-The Kubernetes Pod, Service, and LoadBalancer CIDRs are intentionally absent
-from the Tailscale route sets. Cilium BGP advertises them to UniFi, and
-ClusterMesh/MCS handles cross-cluster service traffic directly.
+**IP sets per location** (LAN / services / pods / LB / 4via6):
+- Robbinsdale: 192.168.50.0/24, 10.0/10.1/10.50 /16s, fd7a:115c:a1e0:b1a:0:1::/96
+- Ottawa: 192.168.169.0/24, 10.2/10.3/10.169 /16s, fd7a:115c:a1e0:b1a:0:2::/96
+- St. Petersburg: 192.168.73.0/24, 10.4/10.5/10.73 /16s, fd7a:115c:a1e0:b1a:0:3::/96
 
 **Groups:** `superuser` (kbpersonal, LukeHouge, rajsinghtech), per-location
 groups, `kind` (testing). **Tags:** `infra`, `k8s-operator` (owns `k8s`),
@@ -51,8 +47,7 @@ Split across two bases:
 Operator resources:
 
 - **Connector** — subnet router + app connector (2 replicas each), advertises
-  LAN and 4via6 only; UniFi/Cilium BGP owns the Kubernetes Pod/Service/
-  LoadBalancer CIDRs
+  LAN/service/pod/LB CIDRs + 4via6
 - **PeerRelay** `${LOCATION}` — operator-managed peer relay (StatefulSet
   `peerrelay-${LOCATION}` in `tailscale`). Hostname prefix
   `${LOCATION}-peer-relay` keeps `…-peer-relay-0` on the tailnet. UDP **41641**

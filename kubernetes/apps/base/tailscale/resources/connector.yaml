@@ -12,11 +12,11 @@ spec:
   hostnamePrefix: *name
   # exitNode: true
   subnetRouter:
-    # UniFi/Cilium BGP is now the route for every cluster Pod, Service, and
-    # LoadBalancer CIDR. Keep Tailscale subnet routing for LAN appliances and
-    # the existing 4via6/app-connector traffic only.
     advertiseRoutes:
-      - "${LAN_CIDR}" # LAN appliances
+      - "${LAN_CIDR}" # LAN
+      - "${CLUSTER_SERVICE_CIDR}" # K8s Services
+      - "${CLUSTER_POD_CIDR}" # K8s Pods
+      - "${CLUSTER_LOAD_BALANCER_CIDR}" # Tailscale
       - fd7a:115c:a1e0:b1a:0:${SITE_ID}::/96 # 4via6
 ---
 apiVersion: tailscale.com/v1alpha1

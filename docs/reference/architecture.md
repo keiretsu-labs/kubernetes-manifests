@@ -261,9 +261,8 @@ identity or external tailnet access ride it.
   `tag:kartik`) tags. There is **no `tag:lobby`** in `tagOwners` — the word
   does not appear in `policy.hujson` at all, because lobby lives on a separate
   personal tailnet that this policy does not govern.
-- **ipsets** — one per location (LAN /24 only), plus
-  `ipset:infrastructure` = the three 4via6 /96 ranges. Kubernetes
-  Pod/Service/LoadBalancer CIDRs are routed by UniFi/Cilium instead.
+- **ipsets** — one per location (LAN /24 plus the service/pod/LB /16s), plus
+  `ipset:infrastructure` = the three 4via6 /96 ranges.
 - **autoApprovers** — routes, exit nodes and Tailscale Services for `tag:k8s`.
 - **ssh** — recorded sessions enforced through `tag:k8s-recorder`.
 - **grants** — location-to-location access only via that location's own subnet
@@ -282,9 +281,8 @@ identity or external tailnet access ride it.
 `operator-oauth` Secret is SOPS-encrypted.
 
 **`Connector ${LOCATION}-subnetrouter`** (2 replicas) advertises `LAN_CIDR`
-and 4via6 `fd7a:115c:a1e0:b1a:0:${SITE_ID}::/96` only. UniFi/Cilium BGP
-advertises the cluster Pod/Service/LoadBalancer CIDRs, so those ranges are no
-longer carried through Tailscale. An `exitNode` stanza is present but
+plus the service, pod and LoadBalancer CIDRs, plus 4via6
+`fd7a:115c:a1e0:b1a:0:${SITE_ID}::/96`. An `exitNode` stanza is present but
 commented out.
 
 **`Connector ${LOCATION}-appconnector`** (2 replicas) is the app connector for
@@ -832,12 +830,11 @@ selector, so *all* Services, not an opt-in subset — **and the node `PodCIDR`**
 Two things follow:
 
 - **Every ClusterIP and every pod address in every cluster is routable from that
-  site's LAN.** ClusterIPs are not a security boundary here. The cluster CIDRs
-  are deliberately not advertised through the Tailscale subnet routers;
-  tailnet clients should use the shared Tailscale Gateway/API/DNS services or
-  the UniFi private path. Anything that relies on "it's only a ClusterIP" for
+  site's LAN.** ClusterIPs are not a security boundary here. Since the tailnet
+  subnet router also advertises the pod and service CIDRs, they are reachable
+  from the tailnet too. Anything that relies on "it's only a ClusterIP" for
   protection is not protected; use a `SecurityPolicy`, a NetworkPolicy, or
-  Gateway/tailnet policy.
+  tailnet policy.
 - If BGP to the UDM is down, LoadBalancer Services still get addresses and still
   look healthy from inside the cluster, while being unreachable from the LAN.
   That failure presents as "DNS resolves but nothing connects", which is easy to
