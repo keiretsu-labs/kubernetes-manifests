@@ -11,7 +11,7 @@ tests:
     input_series:
       - series: 'probe_success{cluster="talos-ottawa",instance="nagato.killinit.internal:445",job="blackbox",namespace="monitoring",service="nodes",target="nas"}'
         values: "0+0x10"
-      - series: 'probe_success{cluster="talos-ottawa",instance="jetkvm.killinit.internal:80",job="blackbox",namespace="monitoring",service="nodes",target="jetkvm"}'
+      - series: 'probe_success{cluster="talos-ottawa",instance="ottawa-jetkvm.killinit.internal:80",job="blackbox",namespace="monitoring",service="nodes",target="jetkvm"}'
         values: "0+0x10"
     alert_rule_test:
       - eval_time: 4m
@@ -35,14 +35,14 @@ tests:
                 been failing for 5 minutes.
           - exp_labels:
               cluster: talos-ottawa
-              instance: jetkvm.killinit.internal:80
+              instance: ottawa-jetkvm.killinit.internal:80
               job: blackbox
               namespace: monitoring
               service: nodes
               target: jetkvm
               severity: critical
             exp_annotations:
-              summary: Probe failed for jetkvm.killinit.internal:80
+              summary: Probe failed for ottawa-jetkvm.killinit.internal:80
               description: >-
-                The blackbox probe targeting jetkvm.killinit.internal:80 has
+                The blackbox probe targeting ottawa-jetkvm.killinit.internal:80 has
                 been failing for 5 minutes.

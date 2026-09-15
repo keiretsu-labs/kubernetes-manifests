@@ -50,7 +50,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - jetkvm.killinit.internal:80
+        - ottawa-jetkvm.killinit.internal:80
       labels:
         service: nodes
         target: jetkvm

@@ -136,7 +136,7 @@ spec:
               send-on-resolved: true
         - name: Jetkvm
           group: Servers
-          url: tcp://jetkvm.killinit.internal:80
+          url: tcp://ottawa-jetkvm.killinit.internal:80
           interval: 60s
           client:
             insecure: true
