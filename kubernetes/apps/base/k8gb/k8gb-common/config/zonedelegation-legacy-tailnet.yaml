@@ -1,0 +1,12 @@
+---
+apiVersion: k8gb.io/v1beta1
+kind: ZoneDelegation
+metadata:
+  name: ts-keiretsu-top
+spec:
+  loadBalancedZone: ts.${COMMON_DOMAIN}
+  parentZone: ${COMMON_DOMAIN}
+  dnsZoneNegTTL: 30
+  # Local CoreDNS cleanup is required; the public parent is already
+  # undelegated, so do not ask the provider to change it.
+  doFinalize: false
