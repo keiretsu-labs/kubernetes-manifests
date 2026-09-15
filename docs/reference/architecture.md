@@ -246,6 +246,13 @@ service and endpoint discovery. MCS exports are published under
 Tailscale remains a separate access and fallback overlay for cluster APIs,
 tailnet ingress, and dependencies that intentionally require tailnet identity.
 
+The three home EnvoyProxy profiles use `routingType: Service`. This makes an
+Envoy Gateway `ServiceImport` backend use its local ClusterSetIP while Cilium
+owns endpoint selection, local affinity, and cross-cluster failover. It also
+avoids making every Gateway controller consume synthesized remote
+EndpointSlices; enable endpoint-slice synchronization only for a controller
+that explicitly needs endpoint-level routing.
+
 For a service that is intentionally active in more than one region, export the
 same Service name and namespace in each cluster and reference the resulting
 MCS `ServiceImport` from the shared `HTTPRoute`. Cilium merges the exported

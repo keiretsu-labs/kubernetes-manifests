@@ -115,6 +115,11 @@ backendRefs:
     port: 80
 ```
 
+The home EnvoyProxy profiles use `routingType: Service`, so Envoy sends the
+request to the local ClusterSetIP and Cilium performs local-first selection
+with cross-cluster failover. Do not add synthesized EndpointSlice plumbing
+unless another Gateway implementation needs endpoint-level routing.
+
 The public multi-region hostname should be `myapp.cdn.${COMMON_DOMAIN}` and
 its k8gb `Gslb` should point to the same HTTPRoute. A regional hostname remains
 an ownership alias unless the same route is intentionally deployed in all

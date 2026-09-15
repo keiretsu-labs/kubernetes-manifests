@@ -115,7 +115,9 @@ tailnet reachability. Routable inter-cluster services should use Cilium
 ClusterMesh/MCS names under `*.svc.clusterset.local` instead. For Gateway API
 ingress, Envoy Gateway 1.9+ can reference the corresponding
 `multicluster.x-k8s.io/ServiceImport` directly; use that only when the Service
-is exported from every intended region. A normal `Service` backend remains
+is exported from every intended region. The home EnvoyProxy profiles route
+these ServiceImports through their ClusterSetIP, leaving Cilium to perform
+local-first selection and remote failover. A normal `Service` backend remains
 local to the Gateway's cluster.
 
 Operational rules:

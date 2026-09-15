@@ -4,6 +4,10 @@ kind: EnvoyProxy
 metadata:
   name: private
 spec:
+  # Route ServiceImports through their ClusterSetIP so Cilium owns
+  # cross-cluster endpoint selection and Envoy does not need to consume
+  # synthesized EndpointSlices from every member cluster.
+  routingType: Service
   telemetry:
     accessLog:
       settings:
