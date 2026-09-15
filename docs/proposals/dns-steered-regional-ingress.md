@@ -1,6 +1,6 @@
 # Proposal: DNS-steered regional ingress
 
-Status: draft for architecture review. This change describes the target shape; it does not alter live routing or DNS records.
+Status: draft for architecture review. This PR includes the low-risk YAML normalization and TSFlow route convergence described below. It does not alter live DNS records or reconcile clusters.
 
 ## Decision
 
@@ -11,8 +11,9 @@ Keep one Envoy Gateway fleet and one local LoadBalancer Service per ingress zone
 - Private names remain on the private/internal DNS plane. They must not depend on public DNS or Tailscale CGNAT addresses.
 - Tailscale clients continue to resolve through split DNS and retain the three regional Tailscale Envoy endpoint names as the implementation targets. This is option 1: a shared application name with regional Tailscale edges, not one new shared Tailscale Service.
 - Cilium ClusterMesh and the Multi-Cluster Services API remain the east-west data plane. DNS chooses an edge; Envoy and `ServiceImport` choose the backend.
+- k8gb resources use the current canonical `k8gb.io/v1beta1` API group. The running k8gb release still serves the legacy group for migration, but new GitOps objects should use the canonical group.
 - There is no Cloudflare Load Balancer, BGP anycast, or cross-region L2 LoadBalancer in this design.
-- `ts.keiretsu.top` remains retired. The regional `*.keiretsu.ts.net` names are endpoint implementation details, not user-facing application URLs.
+- The legacy shared tailnet hostname remains retired. The regional `*.keiretsu.ts.net` names are endpoint implementation details, not user-facing application URLs.
 
 The important distinction is that “shared LoadBalancer” means a shared DNS name and policy, not one IP stretched across three regions. Each region still owns a local VIP and can fail independently.
 
@@ -64,6 +65,14 @@ Every application exposed in more than one region should have the same route con
 
 This makes `tsflow.rajsingh.info` and `mcsapi` examples of the same pattern rather than special cases: one canonical route shape, one MCS service identity, and three regional deployment decisions.
 
+This PR implements the TSFlow part of that contract in
+`kubernetes/apps/base/tailscale-examples/tsflow-mcs/httproute.yaml`. The
+route-only base is now deployed in all three location trees. The TSFlow
+workload remains deployed only where its producer and storage contract exists;
+the other regional edges route to its MCS `ServiceImport`. The route is
+attached to the public and Tailscale gateways with the same three hostnames and
+the `/` path in every region. It is not attached to the private gateway.
+
 ## DNS planes and health behavior
 
 ### Public
@@ -97,21 +106,30 @@ The target consolidation is:
 - one tailnet split-DNS policy that delegates to the approved tailnet-only health mechanism;
 - regional Envoy deployments retained as interchangeable edges;
 - Cilium ClusterMesh/MCS retained as the shared east-west service fabric;
-- Pi-hole removed from the authoritative request path and any remaining references inventoried before deletion;
-- `ts.keiretsu.top` references removed from routes, DNS records, documentation, tests, and Tailscale policy;
+- the legacy DNS forwarder removed from the authoritative request path and any remaining references inventoried before deletion;
+- legacy shared tailnet hostname references removed from routes, DNS records, documentation, tests, and Tailscale policy;
 - duplicate or owner-specific HTTPRoute definitions collapsed where the application is truly replicated in all three regions.
 
 The consolidation must not merge public, private, and tailnet trust boundaries. It removes duplicated policy and naming, not the security boundaries themselves.
 
+The executable portion of this PR is intentionally small:
+
+- all checked-in k8gb `Gslb` objects now use `k8gb.io/v1beta1`;
+- the TSFlow HTTPRoute lives in one route-only MCS base and is deployed in all
+  three regions;
+- the old per-workload route copy is removed from the TSFlow workload base;
+- the generated deployment inventory reflects the two new regional Flux
+  pointers.
+
 ## Proposed rollout
 
-1. Inventory every `Gateway`, `HTTPRoute`, `ServiceExport`, `ServiceImport`, k8gb `Gslb`, CNAME, Pi-hole reference, and `ts.keiretsu.top` reference.
+1. Inventory every `Gateway`, `HTTPRoute`, `ServiceExport`, `ServiceImport`, k8gb `Gslb`, CNAME, legacy DNS forwarder reference, and legacy shared tailnet hostname reference.
 2. Classify each application as regional-only, multi-region public, multi-region private, or tailnet-only.
 3. Normalize routes and MCS identities for applications classified as multi-region. Validate the complete hostname/path matrix from each regional edge.
 4. Choose and implement the tailnet-only health-aware DNS mechanism. Test resolver caching, TTL expiry, regional outage, recovery, and split-DNS behavior before changing owner-pinned answers.
 5. Move only replicated public names into the k8gb multi-region pool. Leave regional-only names owner-pinned until replication is real.
-6. Remove Pi-hole from remaining clients and authorities, then remove its manifests and documentation references in a separate reviewable cleanup commit.
-7. Remove the legacy `ts.keiretsu.top` surface only after reference and live DNS sweeps are empty. Keep the regional `.keiretsu.ts.net` endpoint names where option 1 requires them.
+6. Remove the legacy DNS forwarder from remaining clients and authorities, then remove its manifests and documentation references in a separate reviewable cleanup commit.
+7. Remove the legacy shared tailnet hostname surface only after reference and live DNS sweeps are empty. Keep the regional `.keiretsu.ts.net` endpoint names where option 1 requires them.
 
 ## Acceptance criteria
 
@@ -122,16 +140,20 @@ The consolidation must not merge public, private, and tailnet trust boundaries. 
 - Private and tailnet DNS remain inaccessible from the wrong client population.
 - A regional public edge outage causes new DNS answers to exclude that region after the documented TTL window; recovery restores it without manual route edits.
 - Tailnet failover is tested independently from public failover and does not require exposing the Tailscale endpoints publicly.
-- `ts.keiretsu.top`, Pi-hole, and obsolete route aliases have no remaining tracked references when their cleanup phases are complete.
+- The legacy shared tailnet hostname, legacy DNS forwarder, and obsolete route aliases have no remaining tracked references when their cleanup phases are complete.
 
 ## Not included in this draft PR
 
-- No live DNS changes.
-- No Flux-delivered Gateway, HTTPRoute, k8gb, Tailscale, or Cilium changes.
+- No live DNS changes or manual Flux reconciliation.
+- No changes to the tailnet CoreDNS answers; they remain owner-pinned until a
+  tailnet-only health-aware mechanism is selected.
+- No changes to the public/private/Tailscale Gateway fleets beyond the
+  standardized TSFlow route deployment.
 - No Cloudflare Load Balancer.
 - No BGP anycast or shared cross-region LoadBalancer IP.
 - No replacement of the regional Tailscale endpoints with a single shared Tailscale Service.
-- No assumption that the existing static k8gb Corefile already provides tailnet health failover.
+- No assumption that the existing static k8gb Corefile already provides
+  tailnet health failover.
 
 ## References
 

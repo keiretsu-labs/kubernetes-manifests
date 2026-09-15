@@ -6,4 +6,3 @@ resources:
   - deployment.yaml
   - service.yaml
   - service-mesh.yaml
-  - httproute.yaml
