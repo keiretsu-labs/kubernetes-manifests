@@ -112,7 +112,7 @@ spec:
                 template:
                   metadata:
                     annotations:
-                      dns-config-revision: "2026-09-15-regional-zones-v2"
+                      dns-config-revision: "2026-09-15-regional-zones-v3"
                   spec:
                     topologySpreadConstraints:
                       - maxSkew: 1
