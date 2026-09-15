@@ -40,7 +40,8 @@ spec:
       serverConfiguration:
         endpointsExposure:
           - protocol: grpc
+            usage: agentToHub
             grpc:
               type: hostname
               hostname:
-                host: ocm-grpc-hub.keiretsu.ts.net
+                host: ocm-grpc-mesh.open-cluster-management-hub.svc.clusterset.local
