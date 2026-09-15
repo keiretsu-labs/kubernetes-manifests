@@ -75,10 +75,11 @@ Gateway API surface, not only TSFlow:
   to their own HTTPS listener without repeating listener names in every app;
 - common-domain routes with one unambiguous listener family now set an explicit
   listener section as well;
-- the remaining multi-host routes intentionally span listener families (for
-  example `foo.cdn.${COMMON_DOMAIN}` plus `foo.${COMMON_DOMAIN}`) and are
-  called out as exceptions rather than given a section that would drop one of
-  their hostnames;
+- 15 route objects remain section-less because they either intentionally span
+  listener families (for example `foo.cdn.${COMMON_DOMAIN}` plus
+  `foo.${COMMON_DOMAIN}`) or are parameterized/future components that need a
+  separate listener decision; no section was guessed that could drop a
+  hostname;
 - all checked-in k8gb `Gslb` resources use the canonical `k8gb.io/v1beta1`
   API group.
 
