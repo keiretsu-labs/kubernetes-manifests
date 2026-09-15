@@ -3,7 +3,7 @@
 # logical name lets Gateway API routes use the MCS ServiceImport for the
 # multi-region CDN path while local/private routes continue to use the local
 # Service.
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: garage-gateway

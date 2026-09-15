@@ -116,42 +116,42 @@ spec:
     garage.rajsingh.info/node-local-pool: local-700
     garage.rajsingh.info/kubernetes-node: titan
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: robbinsdale-garage-mesh
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: robbinsdale-garage-gw-mesh
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: robbinsdale-gw-0-mesh
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: robbinsdale-gw-1-mesh
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: robbinsdale-garage-smb-mesh
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: robbinsdale-garage-pool-stone-mesh
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: robbinsdale-garage-pool-tank-mesh
 ---
-apiVersion: multicluster.x-k8s.io/v1alpha1
+apiVersion: multicluster.x-k8s.io/v1beta1
 kind: ServiceExport
 metadata:
   name: robbinsdale-garage-pool-titan-mesh
