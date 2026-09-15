@@ -144,23 +144,3 @@ spec:
     name: http
   selector:
     app: searxng
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: searxng-ts
-  namespace: searxng
-  annotations:
-    tailscale.com/hostname: "${LOCATION}-searxng"
-    tailscale.com/proxy-group: common-ingress
-    tailscale.com/tags: "tag:k8s,tag:${LOCATION}"
-spec:
-  type: LoadBalancer
-  loadBalancerClass: tailscale
-  ports:
-  - name: http
-    port: 80
-    protocol: TCP
-    targetPort: 8080
-  selector:
-    app: searxng

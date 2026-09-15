@@ -667,7 +667,7 @@ tools/kc.sh ot -n home get gateway ts -o jsonpath='{.spec.listeners[*].hostname}
   and the routes that intentionally offer both LAN and tailnet access.
 - **private only** — `garage-webui`; its former shared tailnet Gateway
   attachment was removed because the private route is sufficient.
-- **tailnet only** — `headlamp`, `hubble`, per-cluster
+- **tailnet only** — `headlamp`, `searxng`, `hubble`, per-cluster
   `grafana`/`prometheus`/`alertmanager`, the Ottawa Rook dashboard, and `k9s`.
 - **public as well** — `overseerr`, `tautulli`, `wizarr`, `plex`, and the
   Ottawa-only reading apps (`audiobookshelf`, `bookorbit`, `komga`,
