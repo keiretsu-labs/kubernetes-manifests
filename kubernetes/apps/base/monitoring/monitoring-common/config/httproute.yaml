@@ -17,10 +17,15 @@ spec:
       kind: Gateway
       name: ts
       namespace: home 
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "prometheus.${CLUSTER_DOMAIN}"
   rules:
-    - filters:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
@@ -40,10 +45,15 @@ spec:
       kind: Gateway
       name: ts
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "alertmanager.${CLUSTER_DOMAIN}"
   rules:
-    - backendRefs:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
         - group: ""
           kind: Service
           name: kube-prometheus-stack-alertmanager

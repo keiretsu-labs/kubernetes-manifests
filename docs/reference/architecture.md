@@ -562,13 +562,13 @@ preference means editing that name's `weight` map, not the variable.
 
 **Two constraints learned the hard way:**
 
-1. A `Gslb`'s HTTPRoute must name **exactly one** parent Gateway. Most routes
-   satisfy that by naming one Gateway and letting hostname matching pick the
-   listener — `components/cdn-site/httproute.yaml`, which generates the whole
-   CDN tier, pins no `sectionName` at all. The single repo-wide use of
-   `sectionName: wildcard-keiretsu-top-https` is in
-   `k8gb-monitoring-ottawa/gslb-grafana.yaml`, a Grafana-specific workaround —
-   do not copy it as the general pattern.
+1. A `Gslb`'s HTTPRoute must name **exactly one** parent Gateway. Routes whose
+   hostnames fit one listener family now pin `sectionName` explicitly; the
+   per-cluster `${CLUSTER_DOMAIN_LISTENER}` setting supplies the listener name
+   for cluster-domain routes. Multi-host routes that intentionally combine
+   listener families (for example a CDN name and its canonical alias) leave
+   `sectionName` unset so both hostnames remain admitted. Do not add a single
+   section to those routes unless you split the route first.
 2. An **absent** HTTPRoute reads as healthy, so an inert route is deployed to
    every cluster to make per-cluster health actually drive pool membership.
 
@@ -687,8 +687,13 @@ tools/kc.sh ot -n home get gateway ts -o jsonpath='{.spec.listeners[*].hostname}
 
 HTTPRoutes follow one contract: use `gateway.networking.k8s.io/v1`, make every
 `parentRef` explicit (`group`, `kind`, `name`, `namespace`), and attach only to
-the trust-zone Gateway that should serve the request. Use a cluster domain for
-a per-region URL; the legacy shared tailnet namespace is retired. Use an
+the trust-zone Gateway that should serve the request. Every rule declares its
+match explicitly; root routes use `PathPrefix /`. When the route's hostnames
+fit one listener family, set `sectionName`; cluster-domain routes use
+`${CLUSTER_DOMAIN_LISTENER}` so the same base works in all three clusters. A
+multi-host route spanning listener families must either be split or retain an
+explicitly documented section-less exception. Use a cluster domain for a
+per-region URL; the legacy shared tailnet namespace is retired. Use an
 ordinary `Service` backend for cluster-local traffic. For a route whose
 backend is exported and active in all regions, use
 `group: multicluster.x-k8s.io`, `kind: ServiceImport`, and the same Service

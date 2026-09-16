@@ -24,6 +24,7 @@ data:
 
   # Domain
   CLUSTER_DOMAIN: killinit.cc
+  CLUSTER_DOMAIN_LISTENER: wildcard-killinit-cc-https
 
 
   # Storage

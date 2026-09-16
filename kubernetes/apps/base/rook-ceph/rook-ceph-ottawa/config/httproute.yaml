@@ -18,6 +18,7 @@ spec:
       kind: Gateway
       name: ts
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "rook.${CLUSTER_DOMAIN}"
   rules:

@@ -24,6 +24,7 @@ data:
 
   # Domain
   CLUSTER_DOMAIN: lukehouge.com
+  CLUSTER_DOMAIN_LISTENER: wildcard-lukehouge-com-https
 
 
   # Storage

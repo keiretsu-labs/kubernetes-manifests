@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app tsflow-mcs
+  namespace: flux-system
+spec:
+  targetNamespace: tailscale-examples
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: tailscale-examples-sandbox
+  path: ./kubernetes/apps/base/tailscale-examples/tsflow-mcs
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m

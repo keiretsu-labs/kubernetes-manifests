@@ -16,14 +16,17 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: private
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: ts
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "homeassistant.${CLUSTER_DOMAIN}"
   rules:

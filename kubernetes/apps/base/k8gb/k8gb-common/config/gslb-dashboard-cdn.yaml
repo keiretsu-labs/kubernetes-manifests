@@ -12,6 +12,7 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: wildcard-cdn-keiretsu-top-https
   hostnames:
     - "home.cdn.${COMMON_DOMAIN}"
   rules:
@@ -23,7 +24,7 @@ spec:
             type: PathPrefix
             value: /
 ---
-apiVersion: k8gb.absa.oss/v1beta1
+apiVersion: k8gb.io/v1beta1
 kind: Gslb
 metadata:
   name: dashboard-cdn

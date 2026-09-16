@@ -4,7 +4,7 @@ metadata:
   name: tinyauth
 spec:
   parentRefs:
-    - { group: gateway.networking.k8s.io, kind: Gateway, name: public, namespace: home }
+    - { group: gateway.networking.k8s.io, kind: Gateway, name: public, namespace: home, sectionName: wildcard-keiretsu-top-https }
   hostnames:
     - "auth.${COMMON_DOMAIN}"
   rules:
@@ -13,7 +13,11 @@ spec:
     # init endpoint, which also sets the per-attempt session cookie — browsers
     # cached it and replayed it without the cookie, breaking login. An auth
     # server should never be cached, so we strip caching globally.
-    - backendRefs:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
         - { group: "", kind: Service, name: tinyauth, port: 3000 }
       filters:
         - type: ResponseHeaderModifier

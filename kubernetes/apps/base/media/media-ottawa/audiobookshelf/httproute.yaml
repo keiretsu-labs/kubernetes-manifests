@@ -16,10 +16,12 @@ spec:
       kind: Gateway
       name: private
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: ts
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     # Public: users authenticate with OIDC in the Audiobookshelf app and web UI
     # (ABS runs its own login, so no SecurityPolicy/extAuth here — a native
     # client cannot present a tinyauth cookie). Who may log in is gated by
@@ -29,6 +31,7 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - audiobookshelf.${CLUSTER_DOMAIN}
   rules:

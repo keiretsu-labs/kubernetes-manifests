@@ -10,10 +10,12 @@ spec:
       kind: Gateway
       name: public
       namespace: home
+      sectionName: wildcard-keiretsu-top-https
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: private
       namespace: home
+      sectionName: wildcard-keiretsu-top-https
   hostnames:
     - teslamate.keiretsu.top
   rules:

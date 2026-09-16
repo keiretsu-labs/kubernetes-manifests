@@ -8,10 +8,15 @@ spec:
       kind: Gateway
       name: private
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "jetkvm.${CLUSTER_DOMAIN}"
   rules:
-    - backendRefs:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
         - group: ""
           kind: Service
           name: jetkvm

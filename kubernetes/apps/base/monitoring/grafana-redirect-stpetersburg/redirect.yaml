@@ -10,18 +10,25 @@ spec:
       kind: Gateway
       name: ts
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: public
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: private
       namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
     - "grafana.${CLUSTER_DOMAIN}"
   rules:
-    - filters:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
