@@ -21,7 +21,7 @@ spec:
       terminationGracePeriodSeconds: 35
       containers:
         - name: lobby
-          image: ghcr.io/kbpersonal/tailscale-up-lobby:latest
+          image: ghcr.io/kbpersonal/tailscale-up-lobby:sha-48baa61
           imagePullPolicy: IfNotPresent
           env:
             - name: LISTEN_ADDR
