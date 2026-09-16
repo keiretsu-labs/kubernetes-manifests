@@ -1,0 +1,63 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: woodpecker
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: woodpecker
+      version: 3.7.3
+      sourceRef:
+        kind: HelmRepository
+        name: woodpecker
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    force: true
+    remediation:
+      retries: 3
+  values:
+    # This release is intentionally agent-only. Ottawa remains the sole
+    # Woodpecker server, PostgreSQL owner, HTTPRoute owner, and Nix-cache host.
+    server:
+      enabled: false
+      createAgentSecret: false
+    agent:
+      enabled: true
+      replicaCount: 2
+      # Agent registration defaults to the pod hostname. Keep Robbinsdale
+      # registrations distinct from Ottawa's woodpecker-agent-0/1/2 names.
+      nameOverride: robbinsdale-agent
+      image:
+        registry: docker.io
+        repository: woodpeckerci/woodpecker-agent
+        tag: v3.18.0
+      env:
+        # Cilium Global Service DNS; this resolves to Ottawa's server through
+        # ClusterMesh while the local Robbinsdale Service has no server pods.
+        WOODPECKER_SERVER: woodpecker-server.woodpecker.svc.cluster.local:9000
+        WOODPECKER_BACKEND: kubernetes
+        WOODPECKER_MAX_WORKFLOWS: "4"
+        WOODPECKER_BACKEND_K8S_NAMESPACE: woodpecker
+        WOODPECKER_BACKEND_K8S_STORAGE_CLASS: ceph-block-replicated-nvme
+        WOODPECKER_BACKEND_K8S_VOLUME_SIZE: 20G
+        WOODPECKER_BACKEND_K8S_STORAGE_RWX: false
+        WOODPECKER_LOG_LEVEL: info
+      persistence:
+        enabled: false
+      serviceAccount:
+        create: true
+        rbac:
+          create: true
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+        limits:
+          cpu: 1
+          memory: 1Gi

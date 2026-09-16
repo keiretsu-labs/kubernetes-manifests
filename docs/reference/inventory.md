@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 125 |
-| `robbinsdale` | 3 | 42 | 87 |
+| `ottawa` | 4 | 62 | 126 |
+| `robbinsdale` | 3 | 43 | 89 |
 | `stpetersburg` | 3 | 42 | 85 |
-| **total** | **10** | **145** | **297** |
+| **total** | **10** | **147** | **300** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -124,6 +124,7 @@ diagram in the [README](../../README.md#architecture).
 | Application workloads | `kopiur-velero-home-restore-proof-target` | `kopiur-velero-home-restore-proof-target` → ns `kopiur-velero-home-restore-20260908` |
 | Application workloads | `media` | `media-apps` |
 | Application workloads | `searxng` | `searxng` |
+| Application workloads | `tailscale-pam` | `tailscale-pam-lobby` |
 | Application workloads | `tempvm` | `tempvm` |
 | Application workloads | `teslamate` | `teslamate`, `teslamate-secret-sync` → ns `monitoring` |
 | Application workloads | `woodpecker` | `woodpecker` |
@@ -224,6 +225,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Application workloads | `immich` | `immich` |
 | Application workloads | `media` | `media-apps` |
 | Application workloads | `speedtest` | `speedtest` |
+| Application workloads | `woodpecker` | `woodpecker`, `woodpecker-secret-sync` |
 
 Pointers whose objects land outside their directory's namespace — use the right-hand column with `kubectl -n`:
 

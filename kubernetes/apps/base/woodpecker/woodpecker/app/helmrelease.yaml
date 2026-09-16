@@ -61,6 +61,13 @@ spec:
       service:
         type: ClusterIP
         port: 80
+        # Publish the Ottawa server through Cilium ClusterMesh. The
+        # Robbinsdale agent-only release carries the matching client-side
+        # Service so this standard service DNS name resolves there too.
+        annotations:
+          service.cilium.io/global: "true"
+          service.cilium.io/shared: "true"
+          service.cilium.io/affinity: local
       resources:
         requests:
           cpu: 250m

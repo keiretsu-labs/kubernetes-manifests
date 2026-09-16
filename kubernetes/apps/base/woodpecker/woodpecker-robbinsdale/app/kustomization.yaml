@@ -3,8 +3,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: woodpecker
 resources:
-  - pg.yaml
-  - workspace-nix-cache-pvc.yaml
   - helmrelease.yaml
-  - httproute.yaml
-  - tailnet-secret-sync-rbac.yaml
+  - service.yaml
