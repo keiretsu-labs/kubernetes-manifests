@@ -45,6 +45,11 @@ spec:
                 secretKeyRef:
                   name: lobby-ts-oauth
                   key: TS_OAUTH_CLIENT_SECRET
+            - name: TS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lobby-ts-oauth
+                  key: TS_API_KEY
             - name: TS_AUTHKEY
               valueFrom:
                 secretKeyRef:
