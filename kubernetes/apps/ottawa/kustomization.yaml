@@ -35,6 +35,7 @@ resources:
   - ./snapshot-controller
   - ./spegel
   - ./tailscale-examples
+  - ./tailscale-pam
 
   - ./tempvm
   - ./zot
