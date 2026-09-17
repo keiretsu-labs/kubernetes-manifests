@@ -7,7 +7,7 @@ resources:
   # - https://raw.githubusercontent.com/k8snetworkplumbingwg/whereabouts/refs/heads/master/doc/crds/daemonset-install.yaml
   # - https://raw.githubusercontent.com/k8snetworkplumbingwg/whereabouts/refs/heads/master/doc/crds/whereabouts.cni.cncf.io_ippools.yaml
   # - https://raw.githubusercontent.com/k8snetworkplumbingwg/whereabouts/refs/heads/master/doc/crds/whereabouts.cni.cncf.io_overlappingrangeipreservations.yaml
-  - https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/gpu_plugin/overlays/nfd_labeled_nodes?ref=v0.36.0
+  - https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/gpu_plugin/overlays/nfd_labeled_nodes?ref=v0.37.0
   - descheduler-cronjob.yaml
   - https://raw.githubusercontent.com/cilium/cilium/1.20.1/vendor/sigs.k8s.io/mcs-api/config/crd/multicluster.x-k8s.io_serviceexports.yaml
   - https://raw.githubusercontent.com/cilium/cilium/1.20.1/vendor/sigs.k8s.io/mcs-api/config/crd/multicluster.x-k8s.io_serviceimports.yaml
