@@ -28,6 +28,7 @@ metadata:
 spec:
   dependsOn:
     - name: kopiur
+    - name: kopiur-ottawa-repo
     - name: garage-kopiur-ottawa-bucket
     - name: home-apps-ottawa
     - name: tinyauth
@@ -39,7 +40,7 @@ spec:
     labels:
       app.kubernetes.io/name: kopiur-production
       app.kubernetes.io/part-of: kopiur
-  path: ./kubernetes/apps/base/kopiur/kopiur-ottawa
+  path: ./kubernetes/apps/base/kopiur/kopiur-ottawa-policies
   prune: true
   sourceRef:
     kind: GitRepository

@@ -4,10 +4,3 @@ kind: Kustomization
 resources:
   - ./kopia-password.sops.yaml
   - ./clusterrepository.yaml
-  - ./home.yaml
-  - ./tinyauth.yaml
-  - ./cliproxy.yaml
-  - ./firefly.yaml
-  - ./keiretsu.yaml
-  - ./media.yaml
-  - ./snapshotschedules.yaml

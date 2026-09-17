@@ -1,0 +1,23 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kopiur-robbinsdale-repo
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: kopiur
+    - name: garage-kopiur-robbinsdale-bucket
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: kopiur-robbinsdale-repo
+      app.kubernetes.io/part-of: kopiur
+  path: ./kubernetes/apps/base/kopiur/kopiur-robbinsdale
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 10m

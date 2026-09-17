@@ -4,6 +4,3 @@ kind: Kustomization
 resources:
   - ./kopia-password.sops.yaml
   - ./clusterrepository.yaml
-  - ./home.yaml
-  - ./media.yaml
-  - ./snapshotschedules.yaml

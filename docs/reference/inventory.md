@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 126 |
-| `robbinsdale` | 3 | 44 | 92 |
+| `ottawa` | 4 | 61 | 127 |
+| `robbinsdale` | 3 | 44 | 93 |
 | `stpetersburg` | 3 | 42 | 85 |
-| **total** | **10** | **147** | **303** |
+| **total** | **10** | **147** | **305** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -117,7 +117,7 @@ diagram in the [README](../../README.md#architecture).
 | Application workloads | `hermes` | `hermes` |
 | Application workloads | `homer-operator` | `homer-operator-install` |
 | Application workloads | `immich` | `immich` |
-| Application workloads | `kopiur` | `kopiur` → ns `kopiur-system`, `kopiur-production` |
+| Application workloads | `kopiur` | `kopiur` → ns `kopiur-system`, `kopiur-ottawa-repo`, `kopiur-production` |
 | Application workloads | `kopiur-velero-home-restore-projection` | `kopiur-velero-home-restore-projection` → ns `velero-system` |
 | Application workloads | `kopiur-velero-home-restore-proof` | `kopiur-velero-home-restore-proof` → ns `velero-system` |
 | Application workloads | `kopiur-velero-home-restore-proof-target` | `kopiur-velero-home-restore-proof-target` → ns `kopiur-velero-home-restore-20260908` |
@@ -222,7 +222,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Fleet management | `open-cluster-management-agent` | `ocm-agent` |
 | Application workloads | `homer-operator` | `homer-operator-install` |
 | Application workloads | `immich` | `immich` |
-| Application workloads | `kopiur` | `kopiur` → ns `kopiur-system`, `kopiur-production` |
+| Application workloads | `kopiur` | `kopiur` → ns `kopiur-system`, `kopiur-production`, `kopiur-robbinsdale-repo` |
 | Application workloads | `media` | `media-apps` |
 | Application workloads | `speedtest` | `speedtest` |
 | Application workloads | `woodpecker` | `woodpecker`, `woodpecker-secret-sync` |

@@ -28,6 +28,7 @@ metadata:
 spec:
   dependsOn:
     - name: kopiur
+    - name: kopiur-robbinsdale-repo
     - name: garage-kopiur-robbinsdale-bucket
     - name: home-apps
     - name: media-apps
@@ -35,7 +36,7 @@ spec:
     labels:
       app.kubernetes.io/name: kopiur-production
       app.kubernetes.io/part-of: kopiur
-  path: ./kubernetes/apps/base/kopiur/kopiur-robbinsdale
+  path: ./kubernetes/apps/base/kopiur/kopiur-robbinsdale-policies
   prune: true
   # A policy status is not a safe Flux readiness gate before its first
   # scheduled snapshot and restore proof exist.
