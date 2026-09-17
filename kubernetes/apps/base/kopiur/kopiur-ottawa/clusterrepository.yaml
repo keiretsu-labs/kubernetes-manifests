@@ -1,0 +1,55 @@
+---
+# Production Ottawa Kopiur repository. This is a new writer-owned Kopia
+# repository in a dedicated bucket, not a view over Velero's `velero` bucket.
+# The endpoint is cluster-local Garage; ADR 0007 still requires a separate
+# failure-domain object store before this can be called disaster recovery.
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: ClusterRepository
+metadata:
+  name: kopiur-ottawa
+spec:
+  allowedNamespaces:
+    list:
+      - home
+      - tinyauth
+      - cliproxy
+      - firefly
+      - keiretsu
+      - media
+  credentialProjection:
+    allowed: true
+  backend:
+    s3:
+      bucket: kopiur-ottawa
+      prefix: ottawa/
+      endpoint: ${COMMON_S3_ENDPOINT}
+      region: garage
+      tls:
+        disableTls: true
+      auth:
+        secretRef:
+          name: kopiur-ottawa-s3
+          namespace: home
+  encryption:
+    passwordSecretRef:
+      name: kopiur-ottawa-kopia-password
+      namespace: kopiur-system
+      key: KOPIA_PASSWORD
+  mode: ReadWrite
+  create:
+    enabled: true
+  catalog:
+    adoption: Ignore
+    periodicRefresh: false
+    retain:
+      perIdentity: 100
+      maxAgeDays: 180
+  maintenance:
+    # Garage is running in degraded RAW mode; Kopiur maintenance can mistake
+    # a stale HEAD for clock skew. Keep the repository usable and schedule
+    # explicit maintenance only after the Garage consistency decision changes.
+    enabled: false
+  moverDefaults:
+    sourceColocation:
+      mode: Auto
+  onNamespaceDelete: Orphan

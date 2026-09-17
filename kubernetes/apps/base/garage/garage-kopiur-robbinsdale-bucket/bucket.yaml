@@ -1,0 +1,24 @@
+---
+# Dedicated Garage bucket for Robbinsdale Kopiur repositories. Never share the
+# Velero `velero` bucket: Velero's uploaderType=kopia and Kopiur would contend
+# for the Kopia maintenance lease in a shared repository.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: kopiur-robbinsdale
+  namespace: garage
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: kopiur-robbinsdale
+  quotas:
+    maxSize: 50Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef:
+        name: kopiur-robbinsdale-key
+        namespace: home
+      read: true
+      write: true
+      owner: true

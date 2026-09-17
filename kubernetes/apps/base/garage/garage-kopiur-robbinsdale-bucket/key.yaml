@@ -1,0 +1,27 @@
+---
+# Garage mints this Secret from the key; AWS credentials are never stored in
+# Git. Keep the key in `home`; the dedicated reference grant in this bundle
+# authorizes the bucket-to-key reference.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: kopiur-robbinsdale-key
+  namespace: home
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Kopiur Robbinsdale Repository Key"
+  secretTemplate:
+    name: kopiur-robbinsdale-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    includeEndpoint: false
+    includeRegion: false
+  bucketPermissions:
+    - bucketRef:
+        name: kopiur-robbinsdale
+        namespace: garage
+      read: true
+      write: true
+      owner: true

@@ -1,0 +1,24 @@
+---
+# Dedicated Kopiur bucket; it must remain separate from the Velero bucket.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: garage-kopiur-robbinsdale-bucket
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: garage-bucket
+    - name: garage-reference-grants
+    - name: home-apps
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: garage-kopiur-robbinsdale-bucket
+  path: ./kubernetes/apps/base/garage/garage-kopiur-robbinsdale-bucket
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m

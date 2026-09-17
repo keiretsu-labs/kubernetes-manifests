@@ -1,0 +1,14 @@
+---
+# Permit only this GarageBucket to reference this Kopiur GarageKey.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-bucket-to-kopiur-ottawa-key
+  namespace: home
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: kopiur-ottawa-key

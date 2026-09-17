@@ -1,0 +1,89 @@
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: media-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  # Use individual CSI snapshots rather than requiring VolumeGroupSnapshot
+  # support across every Ceph CSI path.
+  groupBy: None
+  sources:
+    # Active Ceph-backed application config PVCs. This list mirrors the
+    # current media Velero opt-in set and includes the known Kometa gap.
+    - pvc: {name: audiobookshelf-config}
+      readOnly: true
+    - pvc: {name: autobrr-config}
+      readOnly: true
+    - pvc: {name: bazarr-1080p-config}
+      readOnly: true
+    - pvc: {name: bazarr-4k-config}
+      readOnly: true
+    - pvc: {name: bazarr-4kremux-config}
+      readOnly: true
+    - pvc: {name: bazarr-anime-config}
+      readOnly: true
+    - pvc: {name: bookorbit-config}
+      readOnly: true
+    - pvc: {name: kometa}
+      readOnly: true
+    - pvc: {name: komga-config}
+      readOnly: true
+    - pvc: {name: lidarr-config}
+      readOnly: true
+    - pvc: {name: maintainerr-config}
+      readOnly: true
+    - pvc: {name: omnibus-config}
+      readOnly: true
+    - pvc: {name: overseerr-config}
+      readOnly: true
+    - pvc: {name: plex-config}
+      readOnly: true
+    - pvc: {name: prowlarr-config}
+      readOnly: true
+    - pvc: {name: qbittorrent-config}
+      readOnly: true
+    - pvc: {name: qbittorrent-pvt-config}
+      readOnly: true
+    - pvc: {name: radarr-1080p-config}
+      readOnly: true
+    - pvc: {name: radarr-4k-config}
+      readOnly: true
+    - pvc: {name: radarr-4kremux-config}
+      readOnly: true
+    - pvc: {name: radarr-anime-config}
+      readOnly: true
+    - pvc: {name: sabnzbd-config}
+      readOnly: true
+    - pvc: {name: shelfmark-config}
+      readOnly: true
+    - pvc: {name: sonarr-1080p-config}
+      readOnly: true
+    - pvc: {name: sonarr-4k-config}
+      readOnly: true
+    - pvc: {name: sonarr-anime-config}
+      readOnly: true
+    - pvc: {name: suwayomi-config}
+      readOnly: true
+    - pvc: {name: tautulli-config}
+      readOnly: true
+    - pvc: {name: tracearr-backup}
+      readOnly: true
+    - pvc: {name: wizarr-config}
+      readOnly: true
+  # Deliberately absent: 20Ti SMB media-share and qbittorrent-downloads (the
+  # storage layer owns this bulk data), CNPG pgdata claims (native Barman), and
+  # media telemetry. Immich libraries remain an explicit exclusion.
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore

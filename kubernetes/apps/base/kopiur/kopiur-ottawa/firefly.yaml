@@ -1,0 +1,27 @@
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: firefly-uploads
+  namespace: firefly
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    # CNPG/Barman protects the database; this separate Ceph PVC holds the
+    # user-uploaded files and therefore needs its own file-data snapshot.
+    - pvc:
+        name: firefly-upload
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore

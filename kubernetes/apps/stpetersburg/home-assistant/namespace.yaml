@@ -3,6 +3,10 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: home-assistant
+  annotations:
+    # Kopiur Direct movers need the privileged mover admission gate for the
+    # owner-only files in Home Assistant's .storage directory.
+    kopiur.home-operations.com/privileged-movers: "true"
   labels:
     kustomize.toolkit.fluxcd.io/prune: disabled
     pod-security.kubernetes.io/enforce: privileged

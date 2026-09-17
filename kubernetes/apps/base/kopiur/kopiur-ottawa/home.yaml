@@ -1,0 +1,30 @@
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: home-config
+  namespace: home
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    # Both are Ceph RBD PVCs and are the durable Home Assistant/Home config
+    # sources; the live Ottawa Velero PVBs cover these two claims.
+    - pvc:
+        name: homeassistant-config
+      readOnly: true
+    - pvc:
+        name: frigate-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore

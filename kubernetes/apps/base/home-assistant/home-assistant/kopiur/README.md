@@ -9,7 +9,9 @@ Constraints (also comments on the CRs):
 3. Dedicated Garage bucket `kopiur-stpetersburg` + own Kopia password (not Velero).
 4. `Repository.spec.maintenance.enabled: false` (Garage degraded `_maintenance` RAW / km#2767).
 5. Chart `0.10.7` + controller/webhook/mover digests pinned.
-6. StP only — OT/RB HA already have Velero PVBs.
+6. StP uses Direct because its source is local-path → hostPath. Ottawa and
+   Robbinsdale use separate Ceph SnapshotPolicies under `base/kopiur` for
+   their Home Assistant and other production PVCs.
 
 ## Password escrow
 

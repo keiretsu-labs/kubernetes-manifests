@@ -41,6 +41,7 @@ resources:
   - ./tuppr
   - ./tinyauth-egress
   - ./rook-ceph
+  - ./kopiur
   - ./velero
   - ./vpa-system
   - ./victoria-logs

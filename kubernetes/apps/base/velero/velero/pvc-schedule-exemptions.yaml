@@ -13,6 +13,10 @@
 #
 # Scope: Git-declared volumes only. Out-of-band PVCs (e.g. StP
 # homeassistant-config hostPath) need a different detector.
+# The 20Ti `media/media-share` and `media/qbittorrent-downloads` SMB bulk
+# shares are intentionally omitted from Kopiur policies because the storage
+# layer owns them. `media` is already in a Velero Schedule, so this
+# namespace-scoped checker must not receive a redundant exemption for them.
 apiVersion: keiretsu.top/v1alpha1
 kind: VeleroPVCScheduleExemptions
 metadata:
@@ -48,15 +52,15 @@ exemptions:
       compaction/retention; Velero FSB of ingester PVCs is not the restore path.
 
   - cluster: ottawa
-    namespace: cephfs-proof
-    reason: >-
-      Disposable CephFS RWX probe PVC for CSI validation; not production state.
-
-  - cluster: ottawa
     namespace: tailscale-examples
     reason: >-
       Demo/sandbox tsidp volumeClaimTemplate under tailscale-examples; not a
       production data plane.
+
+  - cluster: ottawa
+    namespace: tailscale-pam
+    reason: >-
+      Workshop lobby ts-state volumeClaimTemplate; not a production data plane.
 
   # --- Robbinsdale ---
   - cluster: robbinsdale

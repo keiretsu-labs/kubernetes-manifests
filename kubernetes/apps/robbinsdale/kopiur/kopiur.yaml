@@ -28,25 +28,21 @@ metadata:
 spec:
   dependsOn:
     - name: kopiur
-    - name: garage-kopiur-ottawa-bucket
-    - name: home-apps-ottawa
-    - name: tinyauth
-    - name: tinyauth-killinit
-    - name: cliproxy
-    - name: firefly
+    - name: garage-kopiur-robbinsdale-bucket
+    - name: home-apps
     - name: media-apps
   commonMetadata:
     labels:
       app.kubernetes.io/name: kopiur-production
       app.kubernetes.io/part-of: kopiur
-  path: ./kubernetes/apps/base/kopiur/kopiur-ottawa
+  path: ./kubernetes/apps/base/kopiur/kopiur-robbinsdale
   prune: true
+  # A policy status is not a safe Flux readiness gate before its first
+  # scheduled snapshot and restore proof exist.
+  wait: false
   sourceRef:
     kind: GitRepository
     name: kubernetes-manifests
-  # Policies are intentionally not a readiness gate: a scheduled policy is
-  # only proven after its first Succeeded Snapshot and restore drill.
-  wait: false
   interval: 30m
   retryInterval: 1m
   timeout: 10m

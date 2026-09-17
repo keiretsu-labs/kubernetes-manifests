@@ -1,0 +1,27 @@
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: cliproxy-data
+  namespace: cliproxy
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: cliproxy-data
+      readOnly: true
+  # CLIProxy's logs PVC is explicitly excluded by the existing Velero
+  # deployment annotation and is rebuildable telemetry, not config state.
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore

@@ -6,4 +6,5 @@ resources:
   - ./garage.yaml
   - ./garage-reference-grants.yaml
   - ./garage-ottawa-reference-grants.yaml
+  - ./garage-kopiur-ottawa-bucket.yaml
   - ./namespace.yaml

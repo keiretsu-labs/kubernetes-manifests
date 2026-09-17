@@ -1,0 +1,48 @@
+---
+# Production Robbinsdale Kopiur repository. This is a new writer-owned Kopia
+# repository in a dedicated bucket, not a view over Velero's `velero` bucket.
+# It still uses cluster-local Garage; ADR 0007 requires an external independent
+# object store before this is a disaster-recovery claim.
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: ClusterRepository
+metadata:
+  name: kopiur-robbinsdale
+spec:
+  allowedNamespaces:
+    list:
+      - home
+      - media
+  credentialProjection:
+    allowed: true
+  backend:
+    s3:
+      bucket: kopiur-robbinsdale
+      prefix: robbinsdale/
+      endpoint: ${COMMON_S3_ENDPOINT}
+      region: garage
+      tls:
+        disableTls: true
+      auth:
+        secretRef:
+          name: kopiur-robbinsdale-s3
+          namespace: home
+  encryption:
+    passwordSecretRef:
+      name: kopiur-robbinsdale-kopia-password
+      namespace: kopiur-system
+      key: KOPIA_PASSWORD
+  mode: ReadWrite
+  create:
+    enabled: true
+  catalog:
+    adoption: Ignore
+    periodicRefresh: false
+    retain:
+      perIdentity: 100
+      maxAgeDays: 180
+  maintenance:
+    enabled: false
+  moverDefaults:
+    sourceColocation:
+      mode: Auto
+  onNamespaceDelete: Orphan

@@ -1,0 +1,72 @@
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: home-config
+  namespace: home
+spec:
+  policyRef:
+    name: home-config
+  schedule:
+    cron: "0 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: tinyauth-data
+  namespace: tinyauth
+spec:
+  policyRef:
+    name: tinyauth-data
+  schedule:
+    cron: "15 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: cliproxy-data
+  namespace: cliproxy
+spec:
+  policyRef:
+    name: cliproxy-data
+  schedule:
+    cron: "30 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: firefly-uploads
+  namespace: firefly
+spec:
+  policyRef:
+    name: firefly-uploads
+  schedule:
+    cron: "45 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: vault-data
+  namespace: keiretsu
+spec:
+  policyRef:
+    name: vault-data
+  schedule:
+    cron: "0 2 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: media-config
+  namespace: media
+spec:
+  policyRef:
+    name: media-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m

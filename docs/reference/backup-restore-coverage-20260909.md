@@ -1,5 +1,13 @@
 # Backup and restore coverage reference — 2026-09-09
 
+> Current as of the Kopiur implementation on 2026-09-16: Git now declares
+> production Kopiur repositories, SnapshotPolicies, and schedules for Ottawa
+> and Robbinsdale, and St. Petersburg's Direct mover is explicitly root and
+> privileged-gated. Velero, its schedules, BSL, and restore-proof scaffolding
+> remain in place until each policy has a successful Snapshot and a fresh-PVC
+> restore proof. The new repositories still point at cluster-local Garage, so
+> ADR 0007's independent object-store DR requirement remains open.
+
 This is a point-in-time record of the backup evidence and decisions available
 on 2026-09-09 UTC. It is not a promise that the live fleet still has the same
 objects, schedules, images, or storage. Recheck the live objects before using

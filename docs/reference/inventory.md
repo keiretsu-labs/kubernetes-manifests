@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 62 | 126 |
-| `robbinsdale` | 3 | 43 | 89 |
+| `ottawa` | 4 | 61 | 126 |
+| `robbinsdale` | 3 | 44 | 91 |
 | `stpetersburg` | 3 | 42 | 85 |
-| **total** | **10** | **147** | **300** |
+| **total** | **10** | **147** | **302** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -85,13 +85,13 @@ diagram in the [README](../../README.md#architecture).
 | Networking, ingress and identity | `k8gb` | `k8gb-app`, `k8gb-config`, `k8gb-dashboard`, `k8gb-monitoring` → ns `keiretsu-top`, `k8gb-prometheus` → ns `keiretsu-top` |
 | Networking, ingress and identity | `lan` | `lan` |
 | Networking, ingress and identity | `tailscale` | `tailscale-csi-provider`, `tailscale-operator`, `tailscale-operator-resources` |
-| Networking, ingress and identity | `tailscale-examples` | `tailscale-examples-sandbox`, `tailscale-service-repro`, `tsflow-mcs` |
+| Networking, ingress and identity | `tailscale-examples` | `tailscale-examples-sandbox`, `tsflow-mcs` |
 | Networking, ingress and identity | `tailscale-system` | `tailscale-system-app` |
 | Storage and data services | `cnpg-system` | `cnpg-system` |
 | Storage and data services | `csi-addons` | `csi-addons`, `csi-addons-config` |
 | Storage and data services | `csi-driver-smb` | `csi-driver-smb` → ns `kube-system` |
 | Storage and data services | `dragonfly-operator-system` | `dragonfly-operator-system` |
-| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-exporter`, `garage-keys`, `garage-nodes`, `garage-ottawa-reference-grants`, `garage-reference-grants`, `garage-velero-bucket`, `garage-webui` |
+| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-exporter`, `garage-keys`, `garage-kopiur-ottawa-bucket`, `garage-nodes`, `garage-ottawa-reference-grants`, `garage-reference-grants`, `garage-velero-bucket`, `garage-webui` |
 | Storage and data services | `garage-operator-system` | `garage-operator-system-install` |
 | Storage and data services | `local-path-storage` | `local-path-storage` |
 | Storage and data services | `rook-ceph` | `rook-ceph-cluster-config`, `rook-ceph-operator` |
@@ -110,7 +110,6 @@ diagram in the [README](../../README.md#architecture).
 | Fleet management | `open-cluster-management-agent` | `ocm-agent` |
 | GPU, RDMA and inference | `k8s-gpu-dra-driver` | `k8s-gpu-dra-driver` → ns `kube-system` |
 | Application workloads | `bhaiya` | `bhaiya` |
-| Application workloads | `cephfs-proof` | `cephfs-rwx-disposable-probe` |
 | Application workloads | `cliproxy` | `cliproxy` |
 | Application workloads | `firecrawl` | `firecrawl` |
 | Application workloads | `firefly` | `firefly`, `firefly-mcp` |
@@ -118,7 +117,7 @@ diagram in the [README](../../README.md#architecture).
 | Application workloads | `hermes` | `hermes` |
 | Application workloads | `homer-operator` | `homer-operator-install` |
 | Application workloads | `immich` | `immich` |
-| Application workloads | `kopiur` | `kopiur` → ns `kopiur-system` |
+| Application workloads | `kopiur` | `kopiur` → ns `kopiur-system`, `kopiur-production` |
 | Application workloads | `kopiur-velero-home-restore-projection` | `kopiur-velero-home-restore-projection` → ns `velero-system` |
 | Application workloads | `kopiur-velero-home-restore-proof` | `kopiur-velero-home-restore-proof` → ns `velero-system` |
 | Application workloads | `kopiur-velero-home-restore-proof-target` | `kopiur-velero-home-restore-proof-target` → ns `kopiur-velero-home-restore-20260908` |
@@ -206,7 +205,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Storage and data services | `csi-addons` | `csi-addons`, `csi-addons-config` |
 | Storage and data services | `csi-driver-smb` | `csi-driver-smb` → ns `kube-system` |
 | Storage and data services | `dragonfly-operator-system` | `dragonfly-operator-system` |
-| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-keys`, `garage-nodes`, `garage-reference-grants`, `garage-velero-bucket`, `garage-webui` |
+| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-keys`, `garage-kopiur-robbinsdale-bucket`, `garage-nodes`, `garage-reference-grants`, `garage-velero-bucket`, `garage-webui` |
 | Storage and data services | `garage-operator-system` | `garage-operator-system-install` |
 | Storage and data services | `local-path-storage` | `local-path-storage` |
 | Storage and data services | `rook-ceph` | `rook-ceph-cluster-config`, `rook-ceph-operator` |
@@ -218,11 +217,12 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Observability | `mimir` | `mimir-egress` |
 | Observability | `monitoring` | `blackbox-exporter`, `blackbox-exporter-config`, `blackbox-exporter-robbinsdale`, `config`, `kromgo`, `monitoring`, `smartctl-exporter`, `smartctl-exporter-config`, `unpoller` |
 | Observability | `victoria-logs` | `victoria-logs` → ns `monitoring` |
-| Certificates and secrets | `cert-manager` | `cert-manager`, `cert-manager-common-issuers`, `cert-manager-issuers` |
+| Certificates and secrets | `cert-manager` | `cert-manager`, `cert-manager-common-issuers` |
 | Certificates and secrets | `external-secrets` | `external-secrets-config`, `external-secrets-install` |
 | Fleet management | `open-cluster-management-agent` | `ocm-agent` |
 | Application workloads | `homer-operator` | `homer-operator-install` |
 | Application workloads | `immich` | `immich` |
+| Application workloads | `kopiur` | `kopiur` → ns `kopiur-system`, `kopiur-production` |
 | Application workloads | `media` | `media-apps` |
 | Application workloads | `speedtest` | `speedtest` |
 | Application workloads | `woodpecker` | `woodpecker`, `woodpecker-secret-sync` |
@@ -233,6 +233,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 |---|---|---|
 | `actions-runner-controller-runners` | `arc-systems` | `arc-runners` |
 | `csi-driver-smb` | `csi-driver-smb` | `kube-system` |
+| `kopiur` | `kopiur` | `kopiur-system` |
 | `tinyauth-egress` | `tinyauth-egress` | `tinyauth` |
 | `tuppr` | `tuppr` | `system-upgrade` |
 | `tuppr-config` | `tuppr` | `system-upgrade` |

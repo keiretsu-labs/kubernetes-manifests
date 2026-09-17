@@ -1,0 +1,30 @@
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: tinyauth-data
+  namespace: tinyauth
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    # Home Velero currently selects both SQLite session stores; keep the
+    # Kopiur policy explicit rather than relying on a broad PVC selector.
+    - pvc:
+        name: tinyauth-data
+      readOnly: true
+    - pvc:
+        name: tinyauth-killinit-data
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore

@@ -1,0 +1,26 @@
+---
+# Dedicated Garage bucket for Ottawa Kopiur repositories. Never share the
+# Velero `velero` bucket: Velero's uploaderType=kopia and Kopiur would contend
+# for the Kopia maintenance lease in a shared repository.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: kopiur-ottawa
+  namespace: garage
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  globalAlias: kopiur-ottawa
+  quotas:
+    # Ottawa has the largest config set in the fleet; retain headroom for
+    # Kopia indexes and the policy retention window.
+    maxSize: 50Gi
+    maxObjects: 1000000
+  keyPermissions:
+    - keyRef:
+        name: kopiur-ottawa-key
+        namespace: home
+      read: true
+      write: true
+      owner: true
