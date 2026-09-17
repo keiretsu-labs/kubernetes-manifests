@@ -1,12 +1,12 @@
 ---
 # Garage mints this Secret from the key; AWS credentials are never stored in
-# Git. Keep the key in `home`; the dedicated reference grant in this bundle
-# authorizes the bucket-to-key reference.
+# Git. Keep the key in kopiur-system; the dedicated reference grant authorizes
+# the bucket-to-key reference.
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:
   name: kopiur-robbinsdale-key
-  namespace: home
+  namespace: kopiur-system
 spec:
   clusterRef:
     name: garage

@@ -20,7 +20,7 @@ spec:
   keyPermissions:
     - keyRef:
         name: kopiur-ottawa-key
-        namespace: home
+        namespace: kopiur-system
       read: true
       write: true
       owner: true

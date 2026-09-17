@@ -25,7 +25,7 @@ spec:
       auth:
         secretRef:
           name: kopiur-robbinsdale-s3
-          namespace: home
+          namespace: kopiur-system
   encryption:
     passwordSecretRef:
       name: kopiur-robbinsdale-kopia-password

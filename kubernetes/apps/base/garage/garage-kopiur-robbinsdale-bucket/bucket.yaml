@@ -18,7 +18,7 @@ spec:
   keyPermissions:
     - keyRef:
         name: kopiur-robbinsdale-key
-        namespace: home
+        namespace: kopiur-system
       read: true
       write: true
       owner: true

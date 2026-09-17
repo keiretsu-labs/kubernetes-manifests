@@ -29,7 +29,7 @@ spec:
       auth:
         secretRef:
           name: kopiur-ottawa-s3
-          namespace: home
+          namespace: kopiur-system
   encryption:
     passwordSecretRef:
       name: kopiur-ottawa-kopia-password

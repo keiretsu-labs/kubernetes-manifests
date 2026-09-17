@@ -10,7 +10,7 @@ spec:
     - name: garage-bucket
     - name: garage-reference-grants
     - name: garage-ottawa-reference-grants
-    - name: home-apps-ottawa
+    - name: kopiur
   commonMetadata:
     labels:
       app.kubernetes.io/name: garage-kopiur-ottawa-bucket
