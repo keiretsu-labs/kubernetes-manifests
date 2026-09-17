@@ -77,8 +77,9 @@ _Managed with Flux, Tailscale, and GitHub Actions_
 ---
 
 Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. The three
-Talos Linux clusters are connected by a Tailscale mesh and share the same
-repository, platform conventions, and observability stack.
+Talos Linux clusters are connected by a UniFi-routed Cilium ClusterMesh as the
+primary inter-cluster path, with Tailscale as the access and fallback overlay,
+and share the same repository, platform conventions, and observability stack.
 
 ## Architecture
 

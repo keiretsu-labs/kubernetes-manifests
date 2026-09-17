@@ -5,4 +5,3 @@ resources:
   - ./namespace.yaml
   - ./tailscale-examples-sandbox.yaml
   - ./tsflow-mcs.yaml
-  # - ./tailscale-service-repro.yaml # Enable only for controlled svc:test replacement tests.
