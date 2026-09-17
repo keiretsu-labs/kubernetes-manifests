@@ -11,6 +11,8 @@ metadata:
     service.homer.rajsingh.info/name: "Home"
     service.homer.rajsingh.info/icon: "fas fa-home"
 spec:
+  # Public is intentional for the St. Petersburg Home Assistant deployment;
+  # keep all three public, private, and tailnet views.
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway

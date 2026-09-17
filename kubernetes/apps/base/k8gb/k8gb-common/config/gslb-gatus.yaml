@@ -25,6 +25,35 @@ spec:
             type: PathPrefix
             value: /
 ---
+# Apex alias: CNAME status.${COMMON_DOMAIN} -> status.cdn keeps the original
+# Host header, so it cannot share the CDN listener with gatus-cdn. Keep this
+# route off the Gslb resourceRef (k8gb wants exactly one Gateway parent).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gatus-status
+  namespace: keiretsu-top
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+  hostnames:
+    - "status.${COMMON_DOMAIN}"
+  rules:
+    - backendRefs:
+        - group: multicluster.x-k8s.io
+          kind: ServiceImport
+          name: gatus
+          namespace: gatus
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
 apiVersion: k8gb.io/v1beta1
 kind: Gslb
 metadata:

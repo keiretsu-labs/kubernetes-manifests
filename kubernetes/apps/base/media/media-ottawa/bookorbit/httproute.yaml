@@ -1,5 +1,5 @@
 ---
-# Browser route — targeted by reading-stack-tinyauth SecurityPolicy
+# Browser route — native BookOrbit OIDC; no Gateway SecurityPolicy
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -23,9 +23,10 @@ spec:
       name: ts
       namespace: home
       sectionName: ${CLUSTER_DOMAIN_LISTENER}
-    # Public: BookOrbit runs its own OIDC login (provider `tinyauth`, auto-provision
-    # on), so users self-serve in the browser/PWA. No SecurityPolicy — see the
-    # device route below, which shares this hostname and must stay ungated.
+    # Public: BookOrbit runs its own native OIDC login (provider `tinyauth`,
+    # auto-provision on), so users self-serve in the browser/PWA. No Gateway
+    # SecurityPolicy; the device/OPDS route below shares this hostname and stays
+    # ungated for clients that authenticate in the application.
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: public
@@ -42,7 +43,8 @@ spec:
         - name: bookorbit
           port: 3000
 ---
-# Device route — NOT targeted by SecurityPolicy; Kobo/KOReader/OPDS carry their own auth
+# Device/API route — NOT targeted by SecurityPolicy; Kobo/KOReader/OPDS carry
+# their own application auth.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
