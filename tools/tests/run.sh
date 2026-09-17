@@ -1007,6 +1007,63 @@ assert "runner retains second promtool error" \
   grep -q 'FAILED: deliberate fixture B' <<<"$runner_output"
 rm -rf "$runner_fixture_root" "$runner_promtool_root"
 
+# ---------------------------------------------------------------- gitops invariants (shipped manifests)
+# These assert the ClusterMesh/route/bloat/Kopiur GitOps contracts against
+# the real tree, not fixtures. Keep them in lockstep with AGENTS.md gotchas.
+section "gitops invariants"
+mesh="$ROOT/kubernetes/apps/base/kube-system"
+refute "ottawa CoreDNS has no .k8s Fluent Bit forward" \
+  grep -q 'ottawa.k8s:53' "$mesh/cilium-ottawa/config/coredns.yaml"
+refute "robbinsdale CoreDNS has no .k8s Fluent Bit forward" \
+  grep -q 'robbinsdale.k8s:53' "$mesh/cilium-robbinsdale/config/coredns.yaml"
+assert "ottawa EndpointSlice sync off" \
+  grep -q 'enableEndpointSliceSynchronization: false' "$mesh/cilium-ottawa/app/values-clustermesh.yaml"
+assert "robbinsdale EndpointSlice sync off" \
+  grep -q 'enableEndpointSliceSynchronization: false' "$mesh/cilium-robbinsdale/app/values-clustermesh.yaml"
+assert "stpetersburg EndpointSlice sync off" \
+  grep -q 'enableEndpointSliceSynchronization: false' "$mesh/cilium-stpetersburg/app/values-clustermesh.yaml"
+refute "no kubernetes-ottawa Tailscale egress Service" \
+  grep -q 'name: kubernetes-ottawa' "$ROOT/kubernetes/apps/base/tailscale/resources/egress.yaml"
+
+s3="$ROOT/kubernetes/apps/base/garage/garage/httproute-s3.yaml"
+assert "public S3 claims s3 apex" \
+  grep -q '"s3.\${COMMON_DOMAIN}"' "$s3"
+assert "public S3 claims wildcard" \
+  grep -q '"\*.s3.\${COMMON_DOMAIN}"' "$s3"
+assert "public S3 uses MCS ServiceImport" \
+  grep -q 'kind: ServiceImport' "$s3"
+assert "s3 wildcard CNAME exists" \
+  grep -q 'dnsName: "\*.s3.\${COMMON_DOMAIN}"' "$ROOT/kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml"
+assert "status apex HTTPRoute exists" \
+  grep -q '"status.\${COMMON_DOMAIN}"' "$ROOT/kubernetes/apps/base/k8gb/k8gb-common/config/gslb-gatus.yaml"
+assert "status apex binds keiretsu.top listener" \
+  grep -q 'wildcard-keiretsu-top-https' "$ROOT/kubernetes/apps/base/k8gb/k8gb-common/config/gslb-gatus.yaml"
+refute "velero-ui does not claim velero apex" \
+  grep -q '"velero.\${COMMON_DOMAIN}"' "$ROOT/kubernetes/apps/base/velero/velero-ui/httproute.yaml"
+
+refute "cephfs-proof tree gone" test -e "$ROOT/kubernetes/apps/base/cephfs-proof"
+refute "tailscale-service-repro gone" test -e "$ROOT/kubernetes/apps/base/tailscale-examples/tailscale-service-repro"
+refute "dsv4.yaml gone" test -e "$ROOT/kubernetes/apps/base/ai/ai/inference/dsv4.yaml"
+refute "swarm-test workflow gone" test -e "$ROOT/.github/workflows/swarm-test.yaml"
+refute "clippy-all stub gone" test -e "$ROOT/tools/clippy-all.sh"
+assert "HA HTTPRoute keeps public parent" \
+  grep -q 'name: public' "$ROOT/kubernetes/apps/base/home-assistant/home-assistant/app/httproute.yaml"
+
+assert "Robbinsdale kopiur pointer listed" \
+  grep -q './kopiur' "$ROOT/kubernetes/apps/robbinsdale/kustomization.yaml"
+assert "SP HA SnapshotPolicy privilegedMode" \
+  grep -q 'privilegedMode: true' "$ROOT/kubernetes/apps/base/home-assistant/home-assistant/kopiur/snapshotpolicy.yaml"
+assert "SP HA SnapshotPolicy runAsUser 0" \
+  grep -q 'runAsUser: 0' "$ROOT/kubernetes/apps/base/home-assistant/home-assistant/kopiur/snapshotpolicy.yaml"
+assert "kopiur-ottawa GarageBucket exists" \
+  grep -q 'name: kopiur-ottawa' "$ROOT/kubernetes/apps/base/garage/garage-kopiur-ottawa-bucket/bucket.yaml"
+assert "kopiur-robbinsdale GarageBucket exists" \
+  grep -q 'name: kopiur-robbinsdale' "$ROOT/kubernetes/apps/base/garage/garage-kopiur-robbinsdale-bucket/bucket.yaml"
+refute "kopiur-ottawa bucket is not velero" \
+  grep -q 'globalAlias: velero' "$ROOT/kubernetes/apps/base/garage/garage-kopiur-ottawa-bucket/bucket.yaml"
+assert "Velero schedules remain" \
+  test -n "$(find "$ROOT/kubernetes/apps" -path '*/velero/schedules/*.yaml' | head -1)"
+
 # ---------------------------------------------------------------- summary
 printf '\n== %d passed, %d failed ==\n' "$pass" "$fail"
 [ "$fail" = 0 ]
