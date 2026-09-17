@@ -1,0 +1,28 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: nix-cache
+  namespace: garage
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: nix-cache
+  quotas:
+    maxSize: 500Gi
+    maxObjects: 5000000
+  lifecycle:
+    rules:
+      - id: abort-incomplete-multipart-7d
+        status: Enabled
+        abortIncompleteMultipartUploadDays: 7
+  keyPermissions:
+    - keyRef:
+        name: nix-cache-writer-key
+        namespace: woodpecker
+      read: true
+      write: true
+    - keyRef:
+        name: nix-cache-reader-key
+        namespace: woodpecker
+      read: true
