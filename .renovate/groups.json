@@ -331,8 +331,9 @@
         "kubernetes/apps/base/mimir/**",
         "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/**"
       ],
+      "versioning": "regex:^(?:mimir-)?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
       "groupName": "grafana-mimir",
-      "minimumGroupSize": 3,
+      "minimumGroupSize": 10,
       "automerge": false,
       "labels": ["Mimir"]
     },

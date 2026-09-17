@@ -112,6 +112,8 @@
         "kubernetes/apps/**/gpu-operator*/**",
         "kubernetes/apps/**/homer-operator*/**",
         "kubernetes/apps/**/k8s-gpu-dra-driver*/**",
+        "kubernetes/apps/base/mimir/**",
+        "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/**",
         "kubernetes/apps/**/tailscale-system*/**",
         "kubernetes/apps/**/tailscale/**",
         "kubernetes/apps/**/tuppr*/**",
