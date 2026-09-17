@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: komga
-          image: ghcr.io/gotson/komga:1.26.3
+          image: ghcr.io/gotson/komga:1.27.0
           ports:
             - name: http
               containerPort: 25600
@@ -67,7 +67,7 @@ spec:
         # Komga scan watcher for omnibus-comics — polls for new/changed CBZs,
         # debounces, fires POST scan. Sidecar because inotify does not cross SMB.
         - name: komga-watcher
-          image: ghcr.io/gotson/komga:1.26.3
+          image: ghcr.io/gotson/komga:1.27.0
           command:
             - /bin/sh
             - -c
