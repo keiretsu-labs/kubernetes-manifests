@@ -24,7 +24,9 @@ spec:
     server:
       persistentVolume:
         enabled: true
-        size: 100Gi
+        # Keep template at 50Gi — STS volumeClaimTemplates size is immutable.
+        # Expand the live PVC separately if needed (SC allowVolumeExpansion=true).
+        size: 50Gi
       retentionPeriod: 7d
       # Cap disk usage so VL drops oldest partitions before PVC fills (default unit GiB).
       # Chart maps this to -retention.maxDiskSpaceUsageBytes.
