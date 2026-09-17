@@ -36,7 +36,7 @@ spec:
       image:
         registry: docker.io
         repository: woodpeckerci/woodpecker-agent
-        tag: v3.18.0
+        tag: v3.18.1
       env:
         # Cilium Global Service DNS; this resolves to Ottawa's server through
         # ClusterMesh while the local Robbinsdale Service has no server pods.
