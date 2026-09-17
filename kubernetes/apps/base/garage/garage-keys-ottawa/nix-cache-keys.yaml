@@ -1,0 +1,41 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: nix-cache-writer-key
+  namespace: woodpecker
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Nix Cache Ottawa Writer"
+  secretTemplate:
+    name: nix-cache-writer-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: nix-cache
+        namespace: garage
+      read: true
+      write: true
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: nix-cache-reader-key
+  namespace: woodpecker
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Nix Cache Ottawa Reader"
+  secretTemplate:
+    name: nix-cache-reader-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: nix-cache
+        namespace: garage
+      read: true
