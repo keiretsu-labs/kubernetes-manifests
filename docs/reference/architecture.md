@@ -758,12 +758,10 @@ ACME DNS-01 through Cloudflare, exclusively. ClusterIssuers in the shared base:
   the repo does not create — so losing that Secret breaks every internal
   certificate, and there is no `SelfSigned` issuer anywhere to fall back on.
 
-Robbinsdale adds exactly **one** issuer of its own — `luke-issuer`, plus the
-`cloudflare-luke` token Secret it needs; everything shared (`keiretsu-top`,
-`killinit-cc`, `lukehouge-com`, `rajsingh-info`, `internal`) comes from
-`cert-manager-common/issuers`, which Robbinsdale also deploys. The naming drift
-is still worth knowing: `luke-issuer` and `cloudflare-luke` do the same job as
-the shared `lukehouge-com` issuer under different names.
+Robbinsdale uses the shared `lukehouge-com` issuer from
+`cert-manager-common/issuers` for `lukehouge.com` certificates. A duplicate
+local `luke-issuer` / `cloudflare-luke` pair was removed; it did the same job
+under different names and had no remaining Certificate `issuerRef`.
 
 Wildcard Certificates back every listener secret named above, plus the Kafka
 server certificate. All Cloudflare API tokens and ACME account keys are
@@ -775,7 +773,7 @@ SOPS-encrypted.
 |---|---|
 | `tinyauth` | serves `auth.keiretsu.top` (Ottawa) |
 | `tinyauth-killinit` | serves `auth.killinit.cc` — suwayomi needs a cookie scoped to `killinit.cc`, not the shared `keiretsu.top` one |
-| `tinyauth-egress` | Robbinsdale and St. Petersburg run no local Tinyauth; a compatibility ExternalName resolves to Ottawa's exported `tinyauth.tinyauth.svc.clusterset.local` Service over Cilium ClusterMesh |
+| `tinyauth-egress` | Robbinsdale and St. Petersburg run no local Tinyauth; a compatibility ExternalName resolves to Ottawa's exported `tinyauth.tinyauth.svc.clusterset.local` Service over Cilium ClusterMesh, not a Tailscale east-west path |
 
 Tinyauth only **authenticates** (Google) and injects `Remote-User`,
 `Remote-Email`, `Remote-Name` and `Remote-Groups`. Every protected route then
@@ -1232,7 +1230,8 @@ keep direct ExternalName compatibility aliases named `mimir-gateway` and
 Chart `victoria-logs-single` 0.13.9, 50Gi, retention 7d. The dedicated
 tailnet LoadBalancer and dedicated tailnet redirect are retired. The service remains
 available through the public/private Gateway and GSLB routes, while internal
-cross-cluster writers use the exported MCS Service.
+cross-cluster writers use the exported `victoria-logs-mesh.monitoring.svc.clusterset.local`
+MCS Service.
 
 **The trick worth copying:** `VICTORIA_LOGS_HOST` is the *same string* in all
 three clusters
@@ -1441,7 +1440,7 @@ Companions:
 | App | Notes |
 |---|---|
 | `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo), not from this repo. This repo keeps the GitRepository, Forgejo credentials, and the Flux pointer (`dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, cert-manager). The Receiver, Firefly MCP secret, and home Gateway editor Role live in `corp/bhaiya`. Platform TLS (`*.bhaiya`), k8gb apex route, GarageKey, Velero schedule, and Mimir rules stay here. |
-| `hermes` | agent runtime (`hermes-agent`); reaches St. Petersburg's vLLM through the direct MCS alias and still egresses to external `aperture` on the tailnet |
+| `hermes` | agent runtime (`hermes-agent`); reaches St. Petersburg's vLLM through the direct MCS alias. The old `aperture` tailnet dependency is retained only in the retired rollback material |
 | `firecrawl` | web-scraping stack, reconciled straight from the upstream GitHub repo's `examples/kubernetes/cluster-install` path |
 | `cliproxy` | LLM API proxy (`cli-proxy-api`); reaches St. Petersburg's vLLM through the direct MCS alias |
 | `forgejo` | self-hosted Git — and the source of truth for bhaiya. SSH on `:22` through the `private` and `ts` Gateways. |
@@ -1459,8 +1458,7 @@ Companions:
 ### Elsewhere
 
 - **Robbinsdale** — `speedtest` (openspeedtest), `cloudflared` tunnel,
-  `cert-manager-issuers` (`luke-issuer` only; the rest come from the shared
-  set), `grafana-redirect`, `tinyauth-egress`, `strimzi` (disabled).
+  `grafana-redirect`, `tinyauth-egress`, `strimzi` (disabled).
 - **St. Petersburg** — `home-assistant`, `grafana-redirect`,
   `cloudflare-cluster-app`, `flux-system-stpetersburg`, `tinyauth-egress`.
 - **All three** — `actions-runner-controller` plus runner scale sets that dial

@@ -38,11 +38,6 @@ data:
             response set ra
         }
     }
-    robbinsdale.k8s:53 {
-      errors
-      cache 30
-      forward . 10.50.69.51
-    }
     cdn.keiretsu.top:53 {
       errors
       cache 30

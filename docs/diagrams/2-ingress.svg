@@ -419,27 +419,28 @@
 <!-- x_auth&#45;&gt;r_dist -->
 <g id="edge30" class="edge">
 <title>x_auth&#45;&gt;r_dist</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M1059.7,-730.32C1113.04,-690.88 1179.97,-629.21 1205,-554.6 1226.82,-489.56 1173.76,-464.6 1115,-429.2 975.83,-345.35 890.56,-464.66 753,-378.2 714.36,-353.92 735.56,-315.54 696,-292.8 655.08,-269.28 528.38,-295.86 484,-279.8 453.32,-268.69 423.63,-247.84 400.49,-228.53"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M1058.75,-730.3C1111.77,-690.73 1178.73,-628.93 1205,-554.6 1227.86,-489.92 1173.76,-464.6 1115,-429.2 975.83,-345.35 890.56,-464.66 753,-378.2 714.36,-353.92 735.56,-315.54 696,-292.8 655.08,-269.28 528.38,-295.86 484,-279.8 453.32,-268.69 423.63,-247.84 400.49,-228.53"/>
 <polygon fill="#57606a" stroke="#57606a" points="402.21,-226.78 395.29,-224.11 399.04,-230.51 402.21,-226.78"/>
-<text xml:space="preserve" text-anchor="start" x="1210.01" y="-464.8" font-family="Helvetica,sans-Serif" font-size="8.00">ext&#45;auth on</text>
-<text xml:space="preserve" text-anchor="middle" x="1239.26" y="-455.8" font-family="Helvetica,sans-Serif" font-size="8.00">protected routes</text>
+<text xml:space="preserve" text-anchor="start" x="1210.36" y="-464.8" font-family="Helvetica,sans-Serif" font-size="8.00">ext&#45;auth on</text>
+<text xml:space="preserve" text-anchor="middle" x="1239.61" y="-455.8" font-family="Helvetica,sans-Serif" font-size="8.00">protected routes</text>
 </g>
 <!-- x_borrow -->
 <g id="node19" class="node">
 <title>x_borrow</title>
-<path fill="#ffffff" stroke="#8c959f" d="M1093.34,-657.5C1093.34,-657.5 878.66,-657.5 878.66,-657.5 872.66,-657.5 866.66,-651.5 866.66,-645.5 866.66,-645.5 866.66,-601.1 866.66,-601.1 866.66,-595.1 872.66,-589.1 878.66,-589.1 878.66,-589.1 1093.34,-589.1 1093.34,-589.1 1099.34,-589.1 1105.34,-595.1 1105.34,-601.1 1105.34,-601.1 1105.34,-645.5 1105.34,-645.5 1105.34,-651.5 1099.34,-657.5 1093.34,-657.5"/>
-<text xml:space="preserve" text-anchor="start" x="882.5" y="-642.75" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">Only Ottawa runs Tinyauth</text>
-<text xml:space="preserve" text-anchor="start" x="882.5" y="-633.75" font-family="Helvetica,sans-Serif" font-size="9.00">Robbinsdale and St. Petersburg reach it across the</text>
-<text xml:space="preserve" text-anchor="start" x="882.5" y="-624.75" font-family="Helvetica,sans-Serif" font-size="9.00">tailnet rather than running a second copy, so their</text>
-<text xml:space="preserve" text-anchor="start" x="882.5" y="-615.75" font-family="Helvetica,sans-Serif" font-size="9.00">protected routes depend on the overlay being up.</text>
-<text xml:space="preserve" text-anchor="start" x="882.5" y="-606.75" font-family="Helvetica,sans-Serif" font-size="9.00">Tailnet&#45;only routes lean on tailnet policy instead</text>
-<text xml:space="preserve" text-anchor="start" x="882.5" y="-597.75" font-family="Helvetica,sans-Serif" font-size="9.00">of Tinyauth altogether.</text>
+<path fill="#ffffff" stroke="#8c959f" d="M1086.59,-662C1086.59,-662 885.41,-662 885.41,-662 879.41,-662 873.41,-656 873.41,-650 873.41,-650 873.41,-596.6 873.41,-596.6 873.41,-590.6 879.41,-584.6 885.41,-584.6 885.41,-584.6 1086.59,-584.6 1086.59,-584.6 1092.59,-584.6 1098.59,-590.6 1098.59,-596.6 1098.59,-596.6 1098.59,-650 1098.59,-650 1098.59,-656 1092.59,-662 1086.59,-662"/>
+<text xml:space="preserve" text-anchor="start" x="889.25" y="-647.25" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">Only Ottawa runs Tinyauth</text>
+<text xml:space="preserve" text-anchor="start" x="889.25" y="-638.25" font-family="Helvetica,sans-Serif" font-size="9.00">Robbinsdale and St. Petersburg reach Ottawa&#39;s</text>
+<text xml:space="preserve" text-anchor="start" x="889.25" y="-629.25" font-family="Helvetica,sans-Serif" font-size="9.00">exported tinyauth.tinyauth.svc.clusterset.local</text>
+<text xml:space="preserve" text-anchor="start" x="889.25" y="-620.25" font-family="Helvetica,sans-Serif" font-size="9.00">through Cilium ClusterMesh; Tailscale remains</text>
+<text xml:space="preserve" text-anchor="start" x="889.25" y="-611.25" font-family="Helvetica,sans-Serif" font-size="9.00">an access and fallback overlay.</text>
+<text xml:space="preserve" text-anchor="start" x="889.25" y="-602.25" font-family="Helvetica,sans-Serif" font-size="9.00">Tailnet&#45;only routes lean on tailnet policy instead</text>
+<text xml:space="preserve" text-anchor="start" x="889.25" y="-593.25" font-family="Helvetica,sans-Serif" font-size="9.00">of Tinyauth altogether.</text>
 </g>
 <!-- x_auth&#45;&gt;x_borrow -->
 <g id="edge25" class="edge">
 <title>x_auth&#45;&gt;x_borrow</title>
-<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M986,-730.42C986,-709.78 986,-685.78 986,-665.84"/>
-<polygon fill="#57606a" stroke="#57606a" points="988.45,-666.07 986,-659.07 983.55,-666.07 988.45,-666.07"/>
+<path fill="none" stroke="#57606a" stroke-dasharray="5,2" d="M986,-730.42C986,-711.49 986,-689.74 986,-670.88"/>
+<polygon fill="#57606a" stroke="#57606a" points="988.45,-670.95 986,-663.95 983.55,-670.95 988.45,-670.95"/>
 </g>
 <!-- x_tunnel -->
 <g id="node20" class="node">
@@ -460,4 +461,4 @@
 </g>
 </g>
 </svg>
-<!-- diagram-source-sha256: 9d52cd18f945b48b28d6c4c5f8b1147d7111afe2bc58b286e7acdc4cb598d7bf -->
+<!-- diagram-source-sha256: 1a9b354e5b57baf3ee56a8100049a0c2ade43b0e18c3accc4a6542ecd55a3a4b -->

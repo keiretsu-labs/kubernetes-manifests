@@ -163,7 +163,7 @@ digraph ingress {
     x_auth [label=<<b>Tinyauth authenticates, SecurityPolicy authorises</b><br align="left"/>Tinyauth only proves WHO you are, then injects the<br align="left"/>Remote-User, Remote-Email, Remote-Name and<br align="left"/>Remote-Groups headers.<br align="left"/>Authorization is a separate thing: each protected<br align="left"/>route carries its own Envoy SecurityPolicy with<br align="left"/>extAuth, defaultAction Deny and an explicit allow-list.<br align="left"/>THERE IS NO CENTRAL ROLE MODEL. Access is per-route<br align="left"/>and per-person, and visible in the manifest.<br align="left"/>>,
              fillcolor="#fff8c5", penwidth=1.6];
 
-    x_borrow [label=<<b>Only Ottawa runs Tinyauth</b><br align="left"/>Robbinsdale and St. Petersburg reach it across the<br align="left"/>tailnet rather than running a second copy, so their<br align="left"/>protected routes depend on the overlay being up.<br align="left"/>Tailnet-only routes lean on tailnet policy instead<br align="left"/>of Tinyauth altogether.<br align="left"/>>];
+    x_borrow [label=<<b>Only Ottawa runs Tinyauth</b><br align="left"/>Robbinsdale and St. Petersburg reach Ottawa's<br align="left"/>exported tinyauth.tinyauth.svc.clusterset.local<br align="left"/>through Cilium ClusterMesh; Tailscale remains<br align="left"/>an access and fallback overlay.<br align="left"/>Tailnet-only routes lean on tailnet policy instead<br align="left"/>of Tinyauth altogether.<br align="left"/>>];
 
     x_tunnel [label=<<b>cloudflared</b> — Robbinsdale only<br align="left"/>an outbound-only tunnel, so that site can publish<br align="left"/>without an inbound port forward. A second ingress<br align="left"/>path that bypasses the Envoy public tier entirely.<br align="left"/>>];
   }

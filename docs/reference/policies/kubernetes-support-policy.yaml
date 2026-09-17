@@ -22,7 +22,7 @@ spec:
         storage: smartctl-exporter
     logging:
       required: [fluent-bit]
-      sink: VictoriaLogs over the Tailscale egress Service
+      sink: VictoriaLogs via the exported MCS Service
       nodePath: /var/log/containers/*.log
   admission:
     rejectUnsupportedMinor: true

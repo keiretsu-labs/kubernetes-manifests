@@ -10,7 +10,8 @@ tls:
 clustermesh:
   enabled: true
   maxConnectedClusters: 255
-  enableEndpointSliceSynchronization: true
+  # Envoy uses routingType: Service, so remote EndpointSlices are not required.
+  enableEndpointSliceSynchronization: false
   mcsapi:
     enabled: true
   useAPIServer: true

@@ -38,11 +38,6 @@ data:
             response set ra
         }
     }
-    ottawa.k8s:53 {
-      errors
-      cache 30
-      forward . 10.169.69.51
-    }
     # k8gb owns cdn.keiretsu.top (NS-delegated). Recursors cache NS
     # ns1.dns.cdn.keiretsu.top with no A glue, so following the public
     # CNAME forgejo → forgejo.cdn from 1.1.1.1 NXDOMAINs and breaks
