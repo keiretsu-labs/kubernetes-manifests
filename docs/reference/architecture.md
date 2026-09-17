@@ -263,6 +263,17 @@ selects healthy regional edges, Envoy Gateway routes the request, and MCS
 supplies the shared backend set; DNS alone never makes a single-region
 workload highly available.
 
+Woodpecker is the asymmetric Global Service exception. Ottawa remains the only
+server, PostgreSQL owner and RWO Nix-cache host; Robbinsdale runs only
+agent-only capacity. The Ottawa `woodpecker-server` Service is global and
+shared, while Robbinsdale carries the same-name endpointless Service with
+`service.cilium.io/shared: "false"`. Agents use
+`woodpecker-server.woodpecker.svc.cluster.local:9000`, so Cilium ClusterMesh
+delivers them to Ottawa without adding a second server or an HTTPRoute.
+`service.cilium.io/affinity: local` keeps any future local endpoint preferred,
+and the Robbinsdale `shared=false` direction prevents an accidental local
+endpoint from being published back to Ottawa.
+
 ## Tailnet overlay
 
 The tailnet `keiretsu.ts.net` is an access and fallback overlay, not the primary
@@ -1434,7 +1445,7 @@ Companions:
 | `firecrawl` | web-scraping stack, reconciled straight from the upstream GitHub repo's `examples/kubernetes/cluster-install` path |
 | `cliproxy` | LLM API proxy (`cli-proxy-api`); reaches St. Petersburg's vLLM through the direct MCS alias |
 | `forgejo` | self-hosted Git — and the source of truth for bhaiya. SSH on `:22` through the `private` and `ts` Gateways. |
-| `woodpecker` | CI paired with Forgejo, with a persistent Nix cache workspace |
+| `woodpecker` | CI paired with Forgejo; the server, database and persistent Nix-cache workspace stay in Ottawa, while Robbinsdale contributes agent-only capacity over ClusterMesh |
 | `searxng` | metasearch, backed by the one real Valkey in the repo |
 | `teslamate` | vehicle telemetry plus a secret-sync helper and a Grafana datasource |
 | `immich` | photos (also on Robbinsdale); vectorchord Postgres + Dragonfly |
@@ -1558,6 +1569,7 @@ than merely removing itself:
 | Also lost | Why | Visible as |
 |---|---|---|
 | Authentication on Robbinsdale and St. Petersburg | Neither runs a local Tinyauth; both reach Ottawa's through `tinyauth-egress` | protected routes stop authenticating everywhere |
+| Woodpecker CI control plane | Server, database and Nix cache remain in Ottawa; Robbinsdale agents cannot register or claim queued work | CI cannot schedule jobs even though agent pods remain present |
 | Long-term metrics | `mimir-egress` at the other two sites points at Ottawa's Mimir | remote-write fails; local Prometheus keeps only its own window |
 | Log ingest | the shared `VICTORIA_LOGS_HOST` resolves to Ottawa outside Ottawa | Fluent Bit backs up and drops |
 | Grafana | single deployment; the other sites only redirect to it | every dashboard, including the ones you would use to diagnose this |

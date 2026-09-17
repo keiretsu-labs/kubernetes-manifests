@@ -1,0 +1,29 @@
+---
+# Cilium Global Services require the same Service name and namespace in each
+# cluster. This endpointless local stub gives Robbinsdale DNS for the remote
+# Ottawa server without creating a second server or any local endpoints.
+apiVersion: v1
+kind: Service
+metadata:
+  name: woodpecker-server
+  annotations:
+    service.cilium.io/global: "true"
+    # Do not publish any future local endpoint from this client-only cluster
+    # back to Ottawa. Ottawa's shared=true service remains consumable here.
+    service.cilium.io/shared: "false"
+    service.cilium.io/affinity: local
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    - appProtocol: kubernetes.io/h2c
+      name: grpc
+      port: 9000
+      protocol: TCP
+      targetPort: grpc
+  selector:
+    app.kubernetes.io/instance: woodpecker
+    app.kubernetes.io/name: server
