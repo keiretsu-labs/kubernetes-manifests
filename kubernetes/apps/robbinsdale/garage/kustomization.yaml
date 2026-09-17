@@ -5,4 +5,5 @@ resources:
   - ./namespace.yaml
   - ./garage.yaml
   - ./garage-reference-grants.yaml
+  - ./garage-robbinsdale-reference-grants.yaml
   - ./garage-kopiur-robbinsdale-bucket.yaml

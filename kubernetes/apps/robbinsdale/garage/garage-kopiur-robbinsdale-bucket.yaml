@@ -9,6 +9,7 @@ spec:
   dependsOn:
     - name: garage-bucket
     - name: garage-reference-grants
+    - name: garage-robbinsdale-reference-grants
     - name: home-apps
   commonMetadata:
     labels:

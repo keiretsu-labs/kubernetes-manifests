@@ -1,9 +1,9 @@
 ---
-# Permit only this GarageBucket to reference this Kopiur GarageKey.
+# Site-scoped grant: persist it before the dependent GarageBucket dry-run.
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageReferenceGrant
 metadata:
-  name: garage-bucket-to-kopiur-robbinsdale-key
+  name: garage-bucket-to-kopiur-ottawa-key
   namespace: home
 spec:
   from:
@@ -11,4 +11,4 @@ spec:
       namespace: garage
   to:
     - kind: GarageKey
-      name: kopiur-robbinsdale-key
+      name: kopiur-ottawa-key

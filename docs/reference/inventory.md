@@ -29,9 +29,9 @@ diagram in the [README](../../README.md#architecture).
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
 | `ottawa` | 4 | 61 | 126 |
-| `robbinsdale` | 3 | 44 | 91 |
+| `robbinsdale` | 3 | 44 | 92 |
 | `stpetersburg` | 3 | 42 | 85 |
-| **total** | **10** | **147** | **302** |
+| **total** | **10** | **147** | **303** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -205,7 +205,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Storage and data services | `csi-addons` | `csi-addons`, `csi-addons-config` |
 | Storage and data services | `csi-driver-smb` | `csi-driver-smb` → ns `kube-system` |
 | Storage and data services | `dragonfly-operator-system` | `dragonfly-operator-system` |
-| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-keys`, `garage-kopiur-robbinsdale-bucket`, `garage-nodes`, `garage-reference-grants`, `garage-velero-bucket`, `garage-webui` |
+| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-keys`, `garage-kopiur-robbinsdale-bucket`, `garage-nodes`, `garage-reference-grants`, `garage-robbinsdale-reference-grants`, `garage-velero-bucket`, `garage-webui` |
 | Storage and data services | `garage-operator-system` | `garage-operator-system-install` |
 | Storage and data services | `local-path-storage` | `local-path-storage` |
 | Storage and data services | `rook-ceph` | `rook-ceph-cluster-config`, `rook-ceph-operator` |

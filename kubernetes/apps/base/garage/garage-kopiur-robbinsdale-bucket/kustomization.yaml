@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - ./bucket.yaml
   - ./key.yaml
-  - ./reference-grant.yaml
