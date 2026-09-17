@@ -80,6 +80,8 @@ spec:
       replicaCount: 3
       env:
         WOODPECKER_SERVER: woodpecker-server:9000
+        # Ottawa-only capability: workspace-image workflows mount the Ottawa-local RWO Nix cache.
+        WOODPECKER_AGENT_LABELS: "nix-cache=true"
         WOODPECKER_BACKEND: kubernetes
         WOODPECKER_MAX_WORKFLOWS: "4"
         WOODPECKER_BACKEND_K8S_NAMESPACE: woodpecker
