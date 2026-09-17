@@ -7,13 +7,18 @@ metadata:
 spec:
   template:
     spec:
+      # CNI must survive soft memory eviction. orin-0 evicted Multus
+      # (Burstable, no PriorityClass) ahead of Guaranteed HA — then
+      # CmdAdd timed out and HomeKit stayed offline until Multus
+      # recovered. Match cilium-agent: system-node-critical.
+      priorityClassName: system-node-critical
       volumes:
         - name: host-run-netns
           hostPath:
             path: /var/run/netns/
       initContainers:
         - name: install-multus-binary
-          image: ghcr.io/k8snetworkplumbingwg/multus-cni:v4.3.0-thick@sha256:2b9671447f3ea4e7e56730843dbf59445b9307246f393b61386b896d56ae51c9
+          image: ghcr.io/k8snetworkplumbingwg/multus-cni:v4.3.1-thick@sha256:a357a79359b80ddd5f4699117946cacf3b54f5baecf7944535594863e875fc25
           command:
             - "cp"
             - "-f"
