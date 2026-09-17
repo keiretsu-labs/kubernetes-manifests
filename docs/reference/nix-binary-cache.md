@@ -17,11 +17,14 @@ This rollout therefore uses a dedicated read-only key instead of inventing a
 public-read CR field. A future public HTTP substituter must preserve the
 read-only boundary and be reviewed separately.
 
-The signing key is `nix-cache-ottawa-1`. Add its public key to every consumer's
-`trusted-public-keys` before rotating the signer. During rotation, publish the
-new public key first, wait for consumers to converge, then change the
-Woodpecker signing secret; retain the old public key until old cache entries no
-longer need verification.
+The signing key is `nix-cache-ottawa-1` and its public key is:
+
+    nix-cache-ottawa-1:RrfEf9BBc/2OGwMTaUcSKx/sGa1xuZw/7CD4QOknQUI=
+
+Add that public key to every consumer's `trusted-public-keys` before rotating
+the signer. During rotation, publish the new public key first, wait for
+consumers to converge, then change the Woodpecker signing secret; retain the
+old public key until old cache entries no longer need verification.
 
 Retention/pruning is intentionally a placeholder. The multipart-abort rule is
 safe housekeeping; object expiry must be designed and reviewed against release
