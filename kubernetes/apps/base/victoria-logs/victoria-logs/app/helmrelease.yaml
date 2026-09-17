@@ -24,8 +24,11 @@ spec:
     server:
       persistentVolume:
         enabled: true
-        size: 50Gi
-      retentionPeriod: 30d
+        size: 100Gi
+      retentionPeriod: 7d
+      # Cap disk usage so VL drops oldest partitions before PVC fills (default unit GiB).
+      # Chart maps this to -retention.maxDiskSpaceUsageBytes.
+      retentionDiskSpaceUsage: 40
       resources:
         requests:
           cpu: 200m
