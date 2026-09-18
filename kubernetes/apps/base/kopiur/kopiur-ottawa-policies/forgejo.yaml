@@ -13,8 +13,13 @@ spec:
   copyMethod: Snapshot
   groupBy: None
   mover:
-    inheritSecurityContextFrom:
-      pvcConsumer: {}
+    # Forgejo's pod spec does not pin runAsUser (image USER 65532). Git
+    # object dirs are uid 1000 / fsGroup 1000, so inherit-from-workload
+    # would snapshot as 65532 and PermissionDenied. Pin the git uid.
+    securityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
     privilegedMode: true
   sources:
     # Git data volume. Postgres is CNPG/Barman on Garage. Runner caches are
