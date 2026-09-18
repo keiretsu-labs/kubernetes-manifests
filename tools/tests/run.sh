@@ -816,29 +816,30 @@ assert "success prints one ✓ line" \
 rm -rf "$dtmp"
 
 # ---------------------------------------------------------------- check-velero-pvc-coverage.sh
-# Offline: mutate a real Schedule fixture, prove the guard fires, restore it.
+# Offline: hide the Ottawa home SnapshotPolicy, prove the guard fires, restore.
 section "check-velero-pvc-coverage.sh"
 exits  "current tree passes coverage gate" 0 "$T/check-velero-pvc-coverage.sh"
 assert "success mentions exemptions" \
   grep -q 'documented exemptions' <<<"$("$T/check-velero-pvc-coverage.sh" 2>/dev/null)"
 
 hsbak="$(mktemp)"
-cp "$ROOT/kubernetes/apps/ottawa/velero/schedules/home-backup.yaml" "$hsbak"
-python3 - "$ROOT/kubernetes/apps/ottawa/velero/schedules/home-backup.yaml" <<'PY'
+hspol="$ROOT/kubernetes/apps/base/kopiur/kopiur-ottawa-policies/home.yaml"
+cp "$hspol" "$hsbak"
+python3 - "$hspol" <<'PY'
 import pathlib, sys, yaml
 p = pathlib.Path(sys.argv[1])
 docs = [d for d in yaml.safe_load_all(p.read_text()) if isinstance(d, dict)]
 for doc in docs:
-    if doc.get("kind") == "Schedule":
-        doc.setdefault("spec", {}).setdefault("template", {})["includedNamespaces"] = ["tinyauth"]
+    if doc.get("kind") == "SnapshotPolicy":
+        doc.setdefault("metadata", {})["namespace"] = "not-home"
 p.write_text("---\n" + "\n---\n".join(yaml.safe_dump(d, sort_keys=False) for d in docs))
 PY
-exits  "dropping home from schedule fails the gate" 1 "$T/check-velero-pvc-coverage.sh"
+exits  "dropping home SnapshotPolicy fails the gate" 1 "$T/check-velero-pvc-coverage.sh"
 assert "failure names ottawa/home" \
   grep -q 'ottawa/home' <<<"$("$T/check-velero-pvc-coverage.sh" 2>&1 || true)"
-cp "$hsbak" "$ROOT/kubernetes/apps/ottawa/velero/schedules/home-backup.yaml"
+cp "$hsbak" "$hspol"
 rm -f "$hsbak"
-exits  "restored schedule passes again" 0 "$T/check-velero-pvc-coverage.sh"
+exits  "restored SnapshotPolicy passes again" 0 "$T/check-velero-pvc-coverage.sh"
 
 # ---------------------------------------------------------------- Renovate exclusion ledger
 # Disabled rules are allowed only when their paths and a review-by date are

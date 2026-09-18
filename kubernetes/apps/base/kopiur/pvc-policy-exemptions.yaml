@@ -1,0 +1,67 @@
+# Kopiur PVC→SnapshotPolicy coverage exemptions.
+#
+# Consumed only by tools/check-velero-pvc-coverage.sh (now Kopiur-backed).
+# NOT a Flux resource — do not add this file to kustomization.yaml.
+#
+# The check fails when a namespace that declares a PersistentVolumeClaim,
+# volumeClaimTemplate, or CNPG Cluster storage in Git has no SnapshotPolicy
+# on that cluster — unless listed here with a non-empty reason.
+apiVersion: keiretsu.top/v1alpha1
+kind: KopiurPVCPolicyExemptions
+metadata:
+  name: pvc-policy-exemptions
+exemptions:
+  # --- Ottawa ---
+  - cluster: ottawa
+    namespace: immich
+    reason: >-
+      Photo libraries deliberately not backed up per Raj 2026-09-07; see
+      corp/bhaiya#718. immich-postgres remains protected via GarageBucket
+      CNPG/Barman dumps.
+
+  - cluster: ottawa
+    namespace: woodpecker
+    reason: >-
+      CI workspace/nix-cache PVCs are rebuildable; woodpecker-postgres is
+      CNPG/Barman on Garage. No Kopiur volume policy.
+
+  - cluster: ottawa
+    namespace: teslamate
+    reason: >-
+      Postgres-only namespace: CNPG ScheduledBackup to Garage. No app PVC
+      beyond the database cluster.
+
+  - cluster: ottawa
+    namespace: mimir
+    reason: >-
+      Metrics TSDB is product-native multi-replica storage; Kopiur FSB of
+      ingester PVCs is not the restore path.
+
+  - cluster: ottawa
+    namespace: tailscale-examples
+    reason: >-
+      Demo/sandbox tsidp volumeClaimTemplate; not a production data plane.
+
+  - cluster: ottawa
+    namespace: tailscale-pam
+    reason: >-
+      Workshop lobby ts-state volumeClaimTemplate; not a production data plane.
+
+  # --- Robbinsdale ---
+  - cluster: robbinsdale
+    namespace: immich
+    reason: >-
+      Photo libraries deliberately not backed up per Raj 2026-09-07; see
+      corp/bhaiya#718. immich-postgres remains CNPG/Barman on Garage.
+
+  - cluster: robbinsdale
+    namespace: tailscale-examples
+    reason: >-
+      Demo/sandbox tsidp volumeClaimTemplate; not a production data plane.
+
+  # --- St Petersburg ---
+  - cluster: stpetersburg
+    namespace: ai
+    reason: >-
+      Model-weight caches on local-path (vLLM); rebuildable from registry,
+      not application state.

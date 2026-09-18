@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 # tools/check-velero-pvc-coverage.sh — repo-side contract: every namespace that
-# declares durable volume intent in Git must appear in a Velero Schedule's
-# includedNamespaces for that cluster, or in the committed exemption list.
+# declares durable volume intent in Git must have a Kopiur SnapshotPolicy on
+# that cluster, or a committed exemption. Filename kept so CI/make still call
+# it; the oracle is SnapshotPolicy, not Velero Schedule.
 #
-# This is a CI check, not a Mimir alert: Schedule includedNamespaces are not
-# exported as metrics, and a PR-time failure prevents shipping a silent gap.
-#
-# See kubernetes/apps/base/velero/velero/pvc-schedule-exemptions.yaml.
+# See kubernetes/apps/base/kopiur/pvc-policy-exemptions.yaml.
 set -euo pipefail
 cd -- "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -27,7 +25,14 @@ import yaml
 
 ROOT = Path.cwd()
 CLUSTERS = ("ottawa", "robbinsdale", "stpetersburg")
-EXEMPTIONS_PATH = ROOT / "kubernetes/apps/base/velero/velero/pvc-schedule-exemptions.yaml"
+EXEMPTIONS_PATH = ROOT / "kubernetes/apps/base/kopiur/pvc-policy-exemptions.yaml"
+POLICY_PATHS = {
+    "ottawa": (ROOT / "kubernetes/apps/base/kopiur/kopiur-ottawa-policies",),
+    "robbinsdale": (ROOT / "kubernetes/apps/base/kopiur/kopiur-robbinsdale-policies",),
+    "stpetersburg": (
+        ROOT / "kubernetes/apps/base/home-assistant/home-assistant/kopiur",
+    ),
+}
 
 
 def load_docs(path: Path):
@@ -50,10 +55,10 @@ def is_flux_kustomization(doc: dict) -> bool:
     )
 
 
-def is_velero_schedule(doc: dict) -> bool:
+def is_snapshot_policy(doc: dict) -> bool:
     return (
-        doc.get("kind") == "Schedule"
-        and str(doc.get("apiVersion", "")).startswith("velero.io/")
+        doc.get("kind") == "SnapshotPolicy"
+        and "kopiur.home-operations.com" in str(doc.get("apiVersion", ""))
     )
 
 
@@ -89,22 +94,19 @@ def path_declares_durable_volume(path: Path) -> bool:
     return False
 
 
-def scheduled_namespaces(cluster: str) -> set[str]:
+def policy_namespaces(cluster: str) -> set[str]:
     covered: set[str] = set()
-    schedule_dir = ROOT / f"kubernetes/apps/{cluster}/velero/schedules"
-    if not schedule_dir.is_dir():
-        return covered
-    for path in sorted(schedule_dir.glob("*.yaml")) + sorted(schedule_dir.glob("*.yml")):
-        for doc in load_docs(path):
-            if not is_velero_schedule(doc):
-                continue
-            template = (doc.get("spec") or {}).get("template") or {}
-            included = template.get("includedNamespaces") or []
-            if not isinstance(included, list):
-                continue
-            for name in included:
-                if isinstance(name, str) and name:
-                    covered.add(name)
+    for policy_dir in POLICY_PATHS[cluster]:
+        if not policy_dir.is_dir():
+            continue
+        files = list(policy_dir.glob("*.yaml")) + list(policy_dir.glob("*.yml"))
+        for path in files:
+            for doc in load_docs(path):
+                if not is_snapshot_policy(doc):
+                    continue
+                ns = (doc.get("metadata") or {}).get("namespace")
+                if isinstance(ns, str) and ns:
+                    covered.add(ns)
     return covered
 
 
@@ -135,9 +137,9 @@ def load_exemptions() -> dict[str, dict[str, str]]:
     if not docs:
         raise SystemExit(f"empty exemption list: {EXEMPTIONS_PATH}")
     doc = docs[0]
-    if doc.get("kind") != "VeleroPVCScheduleExemptions":
+    if doc.get("kind") != "KopiurPVCPolicyExemptions":
         raise SystemExit(
-            f"{EXEMPTIONS_PATH}: expected kind VeleroPVCScheduleExemptions, "
+            f"{EXEMPTIONS_PATH}: expected kind KopiurPVCPolicyExemptions, "
             f"got {doc.get('kind')!r}"
         )
     raw = doc.get("exemptions")
@@ -177,45 +179,44 @@ def main() -> int:
 
     for cluster in CLUSTERS:
         pvc_ns = pvc_namespaces(cluster)
-        covered = scheduled_namespaces(cluster)
+        covered = policy_namespaces(cluster)
         exempt = exemptions[cluster]
 
         for namespace in sorted(pvc_ns - covered - set(exempt)):
             failures.append(
                 f"{cluster}/{namespace}: declares a PVC/VCT/CNPG volume in Git "
-                f"but is in no Velero Schedule and has no exemption"
+                f"but has no Kopiur SnapshotPolicy and no exemption"
             )
 
         for namespace in sorted(set(exempt) - pvc_ns):
-            # Covered-by-schedule + exempt is also stale: exemption no longer needed.
             stale.append(
                 f"{cluster}/{namespace}: exemption has no matching Git-declared "
                 f"PVC namespace on this cluster (remove or fix the entry)"
             )
         for namespace in sorted(set(exempt) & covered):
             stale.append(
-                f"{cluster}/{namespace}: exempted but also listed in a Schedule "
-                f"(drop the exemption or the schedule membership)"
+                f"{cluster}/{namespace}: exempted but also has a SnapshotPolicy "
+                f"(drop the exemption or the policy)"
             )
 
     if failures or stale:
-        print("velero PVC schedule coverage check failed:", file=sys.stderr)
+        print("kopiur PVC policy coverage check failed:", file=sys.stderr)
         for line in failures + stale:
             print(f"  {line}", file=sys.stderr)
         if failures:
             print(
-                "  add a Schedule includedNamespaces entry, or document the "
+                "  add a SnapshotPolicy for the namespace, or document the "
                 "decision in "
-                "kubernetes/apps/base/velero/velero/pvc-schedule-exemptions.yaml",
+                "kubernetes/apps/base/kopiur/pvc-policy-exemptions.yaml",
                 file=sys.stderr,
             )
         return 1
 
-    covered_total = sum(len(scheduled_namespaces(c)) for c in CLUSTERS)
+    covered_total = sum(len(policy_namespaces(c)) for c in CLUSTERS)
     exempt_total = sum(len(exemptions[c]) for c in CLUSTERS)
     print(
-        f"✓ velero PVC schedule coverage "
-        f"(schedules cover namespaces; {exempt_total} documented exemptions)"
+        f"✓ kopiur PVC policy coverage "
+        f"(policies cover {covered_total} namespaces; {exempt_total} documented exemptions)"
     )
     return 0
 
