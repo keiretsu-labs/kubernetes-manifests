@@ -12,15 +12,11 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
-  # TinyAuth stores its OIDC private key owner-only. Use an explicit root
-  # mover instead of ignoring the permission failure; the source PVCs remain
-  # read-only and permission errors remain fatal.
+  # TinyAuth's OIDC private key is 0600 uid 1000. A root mover without
+  # CAP_DAC_OVERRIDE still cannot read it; inherit the workload UID instead.
   mover:
-    securityContext:
-      runAsUser: 0
-      runAsGroup: 0
-      runAsNonRoot: false
-    privilegedMode: true
+    inheritSecurityContextFrom:
+      pvcConsumer: {}
   sources:
     # Home Velero currently selects both SQLite session stores; keep the
     # Kopiur policy explicit rather than relying on a broad PVC selector.
