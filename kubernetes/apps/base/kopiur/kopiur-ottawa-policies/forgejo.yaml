@@ -12,6 +12,10 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    inheritSecurityContextFrom:
+      pvcConsumer: {}
+    privilegedMode: true
   sources:
     # Git data volume. Postgres is CNPG/Barman on Garage. Runner caches are
     # rebuildable and are not included.
