@@ -63,10 +63,6 @@ there is no in-repo image build in this rollback.
   its source `262144` value to `1048576` on each start. This is metadata-only;
   it prevents long prompts from being rejected by the tokenizer before SGLang's
   configured extended context is used and does not increase the GPU allocation.
-- Velero's bounded repository-maintenance jobs are deliberately spread across
-  the two worker nodes; they have a `2Gi` memory ceiling and must not be
-  changed to unbounded batch workloads.
-
 ## Historical alternative: llama.cpp (not deployed)
 
 **Model**: `unsloth/Qwen3-Coder-Next-GGUF` (UD-Q4_K_XL, ~46GB)

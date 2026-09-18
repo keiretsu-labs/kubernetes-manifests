@@ -1,5 +1,10 @@
 # Proposal: export Velero's intended pod-volume coverage
 
+> **Superseded:** Velero was removed as the production volume-backup plane in
+> the 2026-09-16 Kopiur cutover. This proposal is retained as historical
+> design analysis; current volume protection is declared with Kopiur
+> `SnapshotPolicy` and `SnapshotSchedule` resources.
+
 ## Problem
 
 `VeleroScheduleVolumeCoverageRegressed` currently compares the newest

@@ -1,12 +1,14 @@
 # Backup and restore coverage reference — 2026-09-09
 
-> Current as of the Kopiur implementation on 2026-09-16: Git now declares
-> production Kopiur repositories, SnapshotPolicies, and schedules for Ottawa
-> and Robbinsdale, and St. Petersburg's Direct mover is explicitly root and
+> Amended after the Kopiur cutover on 2026-09-16: Git now declares production
+> Kopiur repositories, SnapshotPolicies, and schedules for Ottawa and
+> Robbinsdale, and St. Petersburg's Direct mover is explicitly root and
 > privileged-gated. Velero, its schedules, BSL, and restore-proof scaffolding
-> remain in place until each policy has a successful Snapshot and a fresh-PVC
-> restore proof. The new repositories still point at cluster-local Garage, so
-> ADR 0007's independent object-store DR requirement remains open.
+> were removed after the production policies passed snapshot/restore
+> validation. The detailed Velero observations below are retained as a
+> pre-cutover evidence record. The new repositories still point at
+> cluster-local Garage, so ADR 0007's independent object-store DR requirement
+> remains open.
 
 This is a point-in-time record of the backup evidence and decisions available
 on 2026-09-09 UTC. It is not a promise that the live fleet still has the same
@@ -21,8 +23,8 @@ this as an incident procedure. No credential values are recorded here.
   application recovery.
 * Kopiur’s mechanism is credible, but its fleet coverage is exactly one
   workload/volume: St. Petersburg `home-assistant/homeassistant-config`.
-* Velero backs up selected Kubernetes objects and supported pod volumes through
-  its node-agent/Kopia filesystem-backup path. It cannot filesystem-back up a
+* Before the cutover, Velero backed up selected Kubernetes objects and supported pod volumes through
+  its node-agent/Kopia filesystem-backup path. It could not filesystem-back up a
   `hostPath`, including a `local-path` volume whose PV resolves to `hostPath`.
 * The initial eight-PVC candidate list resolves to four genuine gaps, three
   deliberate Immich exclusions, and one candidate corrected to not-a-gap after
@@ -237,9 +239,10 @@ the fleet.
 
 ## Fleet coverage snapshot
 
-### Velero’s positive scope
+### Historical Velero scope before the Kopiur cutover
 
-Velero schedules select Kubernetes API objects in their included namespaces.
+Before the cutover, Velero schedules selected Kubernetes API objects in their
+included namespaces.
 For volumes that the node-agent filesystem-backup path supports, the data
 unit is a `PodVolumeBackup` tied to the source Pod and volume, not a bare PVC
 or a CSI `VolumeSnapshot`. For a data-coverage claim, inspect the parent

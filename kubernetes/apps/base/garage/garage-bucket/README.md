@@ -16,11 +16,11 @@ and deleting objects or prefixes. Removing write permission would leave those
 controls visible but non-functional, so the hardening boundary is the reviewed
 bucket allowlist rather than read-only access.
 
-`velero` is deliberately excluded while the policy decision in
-[kubernetes-manifests#2637](https://github.com/keiretsu-labs/kubernetes-manifests/issues/2637)
-is open. It is a disaster-recovery bucket and has its own dedicated Velero
-credential. `bhaiya-postgres` and `firefly-postgres` are also excluded because
-their database backup workloads have dedicated credentials. The live
+The dedicated Kopiur buckets (`kopiur-ottawa`, `kopiur-robbinsdale`, and
+`kopiur-stpetersburg`) are deliberately excluded. They are volume-backup
+repositories with dedicated Garage credentials, not general-purpose web UI
+data. `bhaiya-postgres` and `firefly-postgres` are also excluded because their
+database backup workloads have dedicated credentials. The live
 `git-s3-awslabs-1787539999` bucket has no current repository definition or
 consumer evidence, so it is excluded as legacy or generated data.
 

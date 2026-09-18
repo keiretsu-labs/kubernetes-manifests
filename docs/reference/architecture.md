@@ -511,8 +511,8 @@ Both live in `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml`.
 - Proxied through Cloudflare: the apex and `www` →
   `keiretsu.cdn.keiretsu.top`.
 - Pointed at `<name>.cdn.keiretsu.top`, i.e. answered by k8gb GSLB:
-  `velero`, `hubble`, `logs`, `prometheus`, `opencost`, `oci`,
-  `status`, `s3`, `tailscale-logs.s3`.
+  `hubble`, `logs`, `prometheus`, `opencost`, `oci`, `status`, `s3`,
+  `tailscale-logs.s3`.
 - Pointed at `ottawa.keiretsu.top`, i.e. straight to the Ottawa edge and
   bypassing GSLB: `auth`, `home`, `bhaiya`, `forgejo`, `grafana`, `teslamate`, `litellm`,
   `woodpecker`, `infisical`, `frigate`, `cliproxy`,
@@ -555,12 +555,12 @@ Garage web/S3 and Hubble CDN routes use MCS `ServiceImport` backends with local
 affinity; region-pinned services keep ordinary local `Service` backends and
 explicit GSLB weights.
 
-The `Gslb` count is **per cluster, not global**. Nine come from the shared
+The `Gslb` count is **per cluster, not global**. Eight come from the shared
 `k8gb-common/config` Kustomization that every cluster deploys: `keiretsu-web`,
-`dashboard-cdn`, `garage-s3-cdn`, `zot-public`, `forgejo`, `velero`, `hubble`,
-`opencost`, and `gatus-status`. Ottawa adds two more from Ottawa-only
+`dashboard-cdn`, `garage-s3-cdn`, `zot-public`, `forgejo`, `hubble`, `opencost`,
+and `gatus-status`. Ottawa adds two more from Ottawa-only
 Kustomizations — `prometheus` (`k8gb-prometheus-ottawa`) and `victoria-logs`
-(`k8gb-monitoring-ottawa`) — for **eleven in Ottawa and nine** in Robbinsdale
+(`k8gb-monitoring-ottawa`) — for **ten in Ottawa and eight** in Robbinsdale
 and St. Petersburg. That asymmetry is deliberate: only Ottawa runs the stores
 those two names front.
 
@@ -787,7 +787,7 @@ cluster**, and this is a real trap. The name is shared; the contents are not.
 
 | Where | Admits SecurityPolicies from |
 |---|---|
-| Ottawa (`auth/tinyauth`) | `home`, `bhaiya`, `keiretsu-top`, `velero-system`, `teslamate`, `cliproxy`, `media` |
+| Ottawa (`auth/tinyauth`) | `home`, `bhaiya`, `keiretsu-top`, `teslamate`, `cliproxy`, `media` |
 | Robbinsdale, St. Petersburg (`tinyauth-egress`) | `home` and `keiretsu-top` **only** |
 
 So a SecurityPolicy copied from Ottawa into `media` or `monitoring` on the other
@@ -976,7 +976,7 @@ All *pools* live under `/var/local-path-provisioner/garage-node-local/…` with
 
 | Bucket | Contents |
 |---|---|
-| `velero` | Velero backups, prefix `${LOCATION}` |
+| `kopiur-${LOCATION}` | Kopiur/Kopia volume repositories with site-specific prefixes |
 | `zot` | OCI registry blobs, rootdirectory `/zot` |
 | `mimir` | long-term metrics blocks |
 | `tailscale-logs` | tailnet audit log stream |
@@ -1072,38 +1072,30 @@ here — the classes are owned by Rook-Ceph. `csi-addons` adds RBD network
 fencing (Ottawa, Robbinsdale). `secrets-store-csi-driver` 1.5.4 backs the
 Tailscale CSI provider.
 
-### Velero
+### Kopiur
 
-Chart 12.1.0, velero v1.18.2, aws plugin v1.14.2.
+Chart 0.10.8, with the controller, webhook, and mover images pinned by digest.
 
-`BackupStorageLocation garage` — provider `aws`, bucket `velero`, prefix
-`${LOCATION}`, region `garage`, `s3Url http://${COMMON_S3_ENDPOINT}`,
-`s3ForcePathStyle`. **The prefix MUST be a sibling of `bucket`**; nested under
-`config` it is silently ignored and every cluster shares one kopia repo.
+Kopiur is the current volume-backup plane. Ottawa and Robbinsdale use
+per-PVC `SnapshotPolicy` objects against their Ceph-backed workloads, with
+writer-owned Kopia repositories in the dedicated `kopiur-${LOCATION}` Garage
+buckets. St. Petersburg uses a namespaced `Repository` and an explicit
+`copyMethod: Direct` policy for Home Assistant's local-path-to-hostPath PVC;
+the read-only source mount and privileged mover are intentional for that
+storage boundary.
 
-`volumeSnapshotLocation` is empty — PV data is captured by kopia fs-backup
-through the node agent, not by CSI snapshots.
+The production policies use 14 daily, 4 weekly, and 3 monthly retained
+snapshots. `SnapshotSchedule` objects are explicit and are not themselves
+acceptance: a policy is proven by a successful non-empty `Snapshot` and a
+restore into a new PVC. Repository maintenance remains disabled while Garage
+runs in degraded RAW mode because Kopia's `_maintenance` read-after-write
+check can produce false clock-skew failures.
 
-`node-agent-config` sets `loadConcurrency: 2` and `prepareQueueLength: 8`,
-because the default of 1 lets one wedged `PodVolumeBackup` fail the whole node.
-
-Credentials come from a `GarageKey`-populated Secret, not the chart's file.
-`velero-ui` (Ottawa) exposes it; a `bhaiya-velero` Role lets the bhaiya
-ServiceAccount manage its own backups.
-
-Schedules, all TTL 168h:
-
-| Cluster | Schedules |
-|---|---|
-| Ottawa | `bhaiya` 08:00 · `cliproxy` 09:00 · `hermes` 07:00 · `home`+`tinyauth` 09:00 · `media-config` 06:00 (config only) |
-| Robbinsdale | `home` 09:00 · `media-config` 06:00 (config only) |
-| St. Petersburg | `home-assistant` 09:00 |
-
-`media-config` deliberately sets `defaultVolumesToFsBackup: false` (opt-IN) so
-the bulk Ceph/SMB media shares are never selected. App pods must set
-`backup.velero.io/backup-volumes` to their config volume (`config` /
-`config-volume` / `backup`); `backup-volumes-excludes` alone does not opt
-anything in. Postgres in `media` is covered by CNPG/Barman, not this schedule.
+The Velero HelmRelease, BackupStorageLocations, schedules, UI, GSLB route,
+and restore-proof scaffolding were removed after Kopiur snapshot and restore
+validation. Kopiur still writes to the federated Garage estate; ADR 0007's
+independent object-store requirement therefore remains open and is historical
+context rather than a second active backup plane.
 
 ### CloudNativePG
 
@@ -1439,7 +1431,7 @@ Companions:
 
 | App | Notes |
 |---|---|
-| `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo), not from this repo. This repo keeps the GitRepository, Forgejo credentials, and the Flux pointer (`dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, cert-manager). The Receiver, Firefly MCP secret, and home Gateway editor Role live in `corp/bhaiya`. Platform TLS (`*.bhaiya`), k8gb apex route, GarageKey, Velero schedule, and Mimir rules stay here. |
+| `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo), not from this repo. This repo keeps the GitRepository, Forgejo credentials, and the Flux pointer (`dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, cert-manager). The Receiver, Firefly MCP secret, and home Gateway editor Role live in `corp/bhaiya`. Platform TLS (`*.bhaiya`), k8gb apex route, GarageKey, Kopiur repositories and policies, and Mimir rules stay here. |
 | `hermes` | agent runtime (`hermes-agent`); reaches St. Petersburg's vLLM through the direct MCS alias. The old `aperture` tailnet dependency is retained only in the retired rollback material |
 | `firecrawl` | web-scraping stack, reconciled straight from the upstream GitHub repo's `examples/kubernetes/cluster-install` path |
 | `cliproxy` | LLM API proxy (`cli-proxy-api`); reaches St. Petersburg's vLLM through the direct MCS alias |
@@ -1615,8 +1607,9 @@ the `_maintenance` schedule blob and can false-refuse prune as "clock skew"
 under degraded (corp/bhaiya#575). That is accepted intermittent pain, not a
 reason to raise fleet read quorum; Garage cannot scope consistency per bucket,
 and a maintenance-window flip still exposes Zot/CI to flap 503s. See the
-comment on `consistencyMode` in `garagecluster.yaml`. ADR 0007 (independent
-Velero object store) remains the durability/RAW endgame.
+comment on `consistencyMode` in `garagecluster.yaml`. ADR 0007's independent
+object-store requirement remains the durability/RAW endgame for the Kopiur
+repositories.
 
 Note also that the storage tier is `Manual` at all three sites while the gateway
 tier is operator-managed, and that retirement of a node with positive capacity

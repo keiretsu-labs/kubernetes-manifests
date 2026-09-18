@@ -265,24 +265,27 @@ during upgrades. A brief outage is expected.
 To roll back, revert the image change in Git (or revert the responsible commit),
 run the Ottawa check again, and let Flux reconcile. OAuth credentials remain on
 the PVC and are not tied to the container image. If a new version changes token
-formats, take or confirm a successful Velero backup before upgrade and consult
-upstream release notes before restoring older software.
+formats, take or confirm a successful Kopiur Snapshot before upgrade and
+consult upstream release notes before restoring older software.
 
-## PVC and Velero
+## PVC and Kopiur
 
-`Schedule/cliproxy-backup` runs daily at `09:00` UTC, retains backups for seven
-days (`168h`), includes the `cliproxy` namespace, and enables filesystem volume
-backup. It protects `/data/auth` and the management panel cache on the PVC.
+`SnapshotSchedule/cliproxy-data` runs daily at `01:30` UTC and retains 14 daily,
+4 weekly, and 3 monthly snapshots. Its `SnapshotPolicy` protects the
+`cliproxy-data` PVC containing `/data/auth` and the management panel state; the
+separate logs PVC is rebuildable telemetry and is not part of the policy.
 
-Check schedules and recent backups without mutating the cluster:
+Check the policy, schedule, and recent snapshots without mutating the cluster:
 
 ```bash
-tools/kc.sh ot -n velero-system get schedule cliproxy-backup
-tools/kc.sh ot -n velero-system get backup \
-  -l velero.io/schedule-name=cliproxy-backup
+tools/kc.sh ot -n cliproxy get snapshotpolicy.kopiur.home-operations.com cliproxy-data
+tools/kc.sh ot -n cliproxy get snapshotschedule.kopiur.home-operations.com cliproxy-data
+tools/kc.sh ot -n cliproxy get snapshot.kopiur.home-operations.com \
+  --sort-by=.metadata.creationTimestamp
 ```
 
-Before a risky upgrade, verify the latest backup is `Completed`. Restore work is
-an operator-controlled Velero procedure: avoid restoring into the live namespace
+Before a risky upgrade, verify the latest Snapshot is `Succeeded` with non-zero
+file statistics. Restore work is an operator-controlled Kopiur procedure:
+restore into an isolated namespace or new PVC rather than the live namespace
 while the Deployment is writing the PVC, and preserve the encrypted Git Secret
 separately because it is the source for API and management keys.

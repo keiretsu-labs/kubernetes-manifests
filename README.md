@@ -155,8 +155,8 @@ unreadable without making them any more accurate.
 
 One thing to read carefully there: a pointer's *directory* is usually also the
 namespace its objects land in, but a number of them set a different
-`targetNamespace` — `auth/tinyauth.yaml` deploys into `tinyauth`, `velero` into
-`velero-system`, `tuppr` into `system-upgrade`, `victoria-logs` into
+`targetNamespace` — `auth/tinyauth.yaml` deploys into `tinyauth`, `kopiur` into
+`kopiur-system`, `tuppr` into `system-upgrade`, and `victoria-logs` into
 `monitoring`. Each cluster's section ends with a table of its own exceptions, so
 check there before reaching for `kubectl -n`.
 
@@ -338,8 +338,8 @@ the app-to-base-to-cluster mapping.
 - Rook-Ceph is deployed in Ottawa and Robbinsdale.
 - Garage provides federated S3-compatible storage across all three clusters,
   with per-node local pools and gateway services.
-- CloudNativePG, Dragonfly, CSI SMB, Velero, and Zot provide database,
-  backup, file-storage, and registry capabilities.
+- CloudNativePG, Dragonfly, CSI SMB, Kopiur, and Zot provide database,
+  volume-backup, file-storage, and registry capabilities.
 
 ### Location workloads
 
