@@ -11,7 +11,7 @@ groups:
         expr: |
           max by (cluster, namespace, job_name) (
             kube_job_status_failed{
-              namespace=~"mimir|velero-system|rook-ceph|firefly|tailscale-system|kube-system|ai|speedtest|media",
+              namespace=~"mimir|rook-ceph|firefly|tailscale-system|kube-system|ai|speedtest|media",
               job_name!~"qbittorrent(-pvt)?-portforward-probe-.*",
               reason=~".+"
             } > 0
@@ -19,7 +19,7 @@ groups:
           and on (cluster, namespace, job_name)
           max by (cluster, namespace, job_name) (
             time() - kube_job_status_start_time{
-              namespace=~"mimir|velero-system|rook-ceph|firefly|tailscale-system|kube-system|ai|speedtest|media",
+              namespace=~"mimir|rook-ceph|firefly|tailscale-system|kube-system|ai|speedtest|media",
               job_name!~"qbittorrent(-pvt)?-portforward-probe-.*"
             } < 3600
           )

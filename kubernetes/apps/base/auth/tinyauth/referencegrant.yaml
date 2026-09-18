@@ -17,9 +17,6 @@ spec:
       namespace: keiretsu-top
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
-      namespace: velero-system
-    - group: gateway.envoyproxy.io
-      kind: SecurityPolicy
       namespace: teslamate
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
