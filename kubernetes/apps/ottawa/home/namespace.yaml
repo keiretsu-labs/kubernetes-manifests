@@ -7,3 +7,4 @@ metadata:
     pod-security.kubernetes.io/enforce: privileged
     kustomize.toolkit.fluxcd.io/prune: disabled
   annotations:
+    kopiur.home-operations.com/privileged-movers: "true"
