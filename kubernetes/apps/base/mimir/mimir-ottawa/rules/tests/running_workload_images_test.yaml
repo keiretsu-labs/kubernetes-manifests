@@ -90,7 +90,7 @@ tests:
               summary: Running workload image registry status is unknown
               description: >-
                 The registry probe cannot determine whether
-                ghcr.io/example/app:old is pullable for 1 running pod
+                oci.cdn.keiretsu.top/keiretsu/app:old is pullable for 1 running pod
                 container(s). This is a network, TLS, authentication,
                 rate-limit, or registry-server error, not evidence that the
                 image is missing. Restore probe reachability before treating
