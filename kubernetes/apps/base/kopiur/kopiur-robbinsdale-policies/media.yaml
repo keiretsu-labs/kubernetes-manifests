@@ -38,6 +38,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: bazarr-1080p-config
@@ -163,6 +174,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: lidarr-config
@@ -263,6 +285,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: prowlarr-config
@@ -288,6 +321,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: qbittorrent-config
@@ -313,6 +357,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: qbittorrent-pvt-config
@@ -338,6 +393,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: radarr-1080p-config
@@ -363,6 +429,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: radarr-4k-config
@@ -388,6 +465,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: radarr-4kremux-config
@@ -413,6 +501,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: radarr-anime-config
@@ -438,6 +537,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: sabnzbd-config
@@ -463,6 +573,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: sonarr-1080p-config
@@ -488,6 +609,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: sonarr-4k-config
@@ -513,6 +645,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: sonarr-anime-config
@@ -588,6 +731,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: wizarr-config
