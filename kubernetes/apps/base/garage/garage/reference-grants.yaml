@@ -25,6 +25,10 @@ spec:
       namespace: hermes
     - kind: GarageKey
       namespace: home
+    # Ottawa and Robbinsdale Kopiur repository keys live in the operator
+    # namespace and must reference the site GarageCluster.
+    - kind: GarageKey
+      namespace: kopiur-system
     # kopiur Repository for StP homeassistant-config (#695): the GarageKey in
     # home-assistant must reference GarageCluster garage/garage. Without this
     # the vgaragekey webhook denies it and the Kustomization never converges.
