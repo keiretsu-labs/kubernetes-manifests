@@ -38,6 +38,104 @@ groups:
 
   - name: kopiur-backups.rules
     rules:
+      # The generic guards below cover every protected namespace. The live
+      # scrape labels the controller namespace as namespace=kopiur-system and
+      # preserves the protected namespace as exported_namespace; normalize the
+      # latter back to namespace for alert consumers. resource_phase emits only
+      # the active phase, so Pending/Running is a current stalled-state signal,
+      # not an archaeological scan of old Snapshot objects.
+      - alert: KopiurSnapshotNotCompleting
+        expr: |
+          label_replace(
+            kopiur_resource_phase{
+              kind="Snapshot",
+              namespace="kopiur-system",
+              exported_namespace=~".+",
+              policy=~".+",
+              phase=~"Pending|Running"
+            },
+            "namespace", "$1", "exported_namespace", "(.+)"
+          ) == 1
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: Kopiur snapshot {{ $labels.namespace }}/{{ $labels.policy }} is not completing
+          description: >-
+            Kopiur snapshot {{ $labels.name }} for
+            {{ $labels.namespace }}/{{ $labels.policy }} has remained in
+            {{ $labels.phase }} for at least one hour. Inspect the Snapshot,
+            SnapshotPolicy, mover Job, and controller events. This catches a
+            stalled Pending or Running snapshot; a failure-state alert alone
+            would not catch this outage.
+
+      # Unlike an immutable Failed Snapshot object, this controller metric is
+      # re-derived per policy and counts failures since the latest success.
+      - alert: KopiurSnapshotFailureState
+        expr: |
+          label_replace(
+            label_replace(
+              kopiur_snapshot_consecutive_failures{
+                namespace="kopiur-system",
+                exported_namespace=~".+",
+                name=~".+"
+              },
+              "namespace", "$1", "exported_namespace", "(.+)"
+            ),
+            "policy", "$1", "name", "(.+)"
+          ) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kopiur policy {{ $labels.namespace }}/{{ $labels.policy }} has failed snapshots
+          description: >-
+            Kopiur reports {{ $value }} consecutive failed snapshots for
+            {{ $labels.namespace }}/{{ $labels.policy }} since its latest
+            success. Inspect the current Snapshot, mover Job, repository, and
+            controller events. This is separate from the stalled-state alert
+            because Pending is not Failed.
+
+      # The previous Velero coverage also had a freshness guard. Keep it
+      # separate from current phase/failure alerts: active policies with no
+      # success are covered by those state guards, while this timestamp check
+      # catches a policy whose prior success has gone stale.
+      - alert: KopiurSnapshotSuccessStale
+        expr: |
+          (
+            label_replace(
+              kopiur_policy_last_backup_success_timestamp_seconds{
+                namespace="kopiur-system",
+                exported_namespace=~".+",
+                policy=~".+"
+              },
+              "namespace", "$1", "exported_namespace", "(.+)"
+            ) > 0
+          )
+          and
+          (
+            time()
+            - label_replace(
+                kopiur_policy_last_backup_success_timestamp_seconds{
+                  namespace="kopiur-system",
+                  exported_namespace=~".+",
+                  policy=~".+"
+                },
+                "namespace", "$1", "exported_namespace", "(.+)"
+              ) > 86400
+          )
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Kopiur policy {{ $labels.namespace }}/{{ $labels.policy }} has no recent successful snapshot
+          description: >-
+            No successful Kopiur snapshot for {{ $labels.namespace }}/{{
+            $labels.policy }} has completed within 24 hours. This is a
+            freshness guard distinct from current Pending/Running and failure
+            state; inspect the SnapshotSchedule, current Snapshot, mover Job,
+            repository, and controller metrics.
+
       - alert: KopiurSnapshotFailed
         expr: |
           (
