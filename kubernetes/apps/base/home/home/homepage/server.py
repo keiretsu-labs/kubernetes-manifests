@@ -404,12 +404,6 @@ KNOWN_SERVICES = {
         "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/harbor.svg",
         "group": "Infrastructure",
     },
-    "velero": {
-        "name": "Velero",
-        "subtitle": "Backups & Recovery",
-        "logo": "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/velero.svg",
-        "group": "Infrastructure",
-    },
     "teslamate": {
         "name": "TeslaMate",
         "subtitle": "Tesla Data Logger",

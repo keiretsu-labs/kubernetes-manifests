@@ -37,10 +37,6 @@ spec:
     - kind: GarageKey
       namespace: tailscale-examples
     - kind: GarageKey
-      namespace: loki
-    - kind: GarageBucket
-      namespace: loki
-    - kind: GarageKey
       namespace: tailscale
     - kind: GarageKey
       namespace: flux-system
@@ -57,7 +53,5 @@ spec:
       namespace: woodpecker
     - kind: GarageKey
       namespace: teslamate
-    - kind: GarageKey
-      namespace: velero-system
     - kind: GarageKey
       namespace: firefly

@@ -56,11 +56,10 @@ GC skips the foreign-owned CR.
 keep the A→B window short (hours): during it both parents apply the same CR
 and the ownership label can flap. never batch A and B into one PR.
 
-Most of the migration completed June 2026. A few remnants remain
-(`clusters/common/apps/`, `clusters/talos-ottawa/apps/`,
-`clusters/talos-stpetersburg/apps/`) — these should be migrated to
-`kubernetes/apps/` using the same two-PR process above. New apps should be
-created directly in `kubernetes/apps/base/<ns>/<app>/` with pointer files in
+The migration from the old `clusters/*/apps/` tree to `kubernetes/apps/`
+completed in June 2026. The two-PR process above remains useful for future
+restructures. New apps should be created directly in
+`kubernetes/apps/base/<ns>/<app>/` with pointer files in
 `kubernetes/apps/<location>/<ns>/<app>.yaml` — no migration needed.
 
 ## namespaces
