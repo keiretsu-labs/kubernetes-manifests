@@ -29,7 +29,7 @@ spec:
       createAgentSecret: false
     agent:
       enabled: true
-      replicaCount: 2
+      replicaCount: 4
       # Agent registration defaults to the pod hostname. Keep Robbinsdale
       # registrations distinct from Ottawa's woodpecker-agent-0/1/2 names.
       nameOverride: robbinsdale-agent
