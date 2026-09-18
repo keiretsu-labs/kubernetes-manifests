@@ -40,3 +40,37 @@ subjects:
   - kind: ServiceAccount
     name: bhaiya
     namespace: bhaiya
+---
+# Bhaiya checks custom hostnames against the certificate on the selected
+# shared cluster-domain Gateway listener. Keep the credential-bearing Secret
+# access limited to home, these three foreign listener certificates, and get.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bhaiya-home-tls-reader
+  namespace: home
+rules:
+  - apiGroups:
+      - ""
+    resourceNames:
+      - wildcard-killinit-cc
+      - wildcard-lukehouge-com
+      - wildcard-rajsingh-info
+    resources:
+      - secrets
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bhaiya-home-tls-reader
+  namespace: home
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: bhaiya-home-tls-reader
+subjects:
+  - kind: ServiceAccount
+    name: bhaiya
+    namespace: bhaiya
