@@ -9,14 +9,10 @@ metadata:
   name: kopiur-ottawa
 spec:
   allowedNamespaces:
-    list:
-      - home
-      - tinyauth
-      - cliproxy
-      - firefly
-      - keiretsu
-      - media
-      - forgejo
+    # Workspace namespaces are created dynamically by Bhaiya (label
+    # bhaiya.corp/workspace). An explicit list cannot keep up; Kopiur
+    # still authorizes each SnapshotPolicy via credentialProjection.
+    all: true
   credentialProjection:
     allowed: true
   backend:
