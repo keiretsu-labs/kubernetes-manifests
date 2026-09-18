@@ -1,0 +1,107 @@
+rule_files:
+  - ../kopiur.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # This is the outage shape that the migration lost coverage for: a current
+  # Snapshot remains Pending. The fixture uses the live Mimir label contract
+  # (controller namespace plus exported protected namespace), not the raw
+  # controller endpoint's namespace label.
+  - interval: 1m
+    input_series:
+      - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-teaspoon-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon",phase="Pending"}'
+        values: "1+0x80"
+    alert_rule_test:
+      - eval_time: 59m
+        alertname: KopiurSnapshotNotCompleting
+        exp_alerts: []
+      - eval_time: 1h1m
+        alertname: KopiurSnapshotNotCompleting
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              exported_namespace: bhaiya
+              kind: Snapshot
+              namespace: bhaiya
+              policy: bhaiya-teaspoon
+              name: bhaiya-teaspoon-1789721339
+              phase: Pending
+              severity: critical
+            exp_annotations:
+              summary: Kopiur snapshot bhaiya/bhaiya-teaspoon is not completing
+              description: >-
+                Kopiur snapshot bhaiya-teaspoon-1789721339 for
+                bhaiya/bhaiya-teaspoon has remained in Pending for at least one
+                hour. Inspect the Snapshot, SnapshotPolicy, mover Job, and
+                controller events. This catches a stalled Pending or Running
+                snapshot; a failure-state alert alone would not catch this
+                outage.
+
+  # A current Succeeded Snapshot is healthy and must stay silent on the
+  # stalled-state alert, even after the one-hour hold.
+  - interval: 1m
+    input_series:
+      - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-teaspoon-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon",phase="Succeeded"}'
+        values: "1+0x80"
+    alert_rule_test:
+      - eval_time: 1h1m
+        alertname: KopiurSnapshotNotCompleting
+        exp_alerts: []
+
+  # Explicit failure remains covered independently of the Pending/Running
+  # guard, using the controller's current per-policy failure metric.
+  - interval: 1m
+    input_series:
+      - series: 'kopiur_snapshot_consecutive_failures{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",name="bhaiya-teaspoon"}'
+        values: "1+0x20"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: KopiurSnapshotFailureState
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: KopiurSnapshotFailureState
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              exported_namespace: bhaiya
+              namespace: bhaiya
+              policy: bhaiya-teaspoon
+              name: bhaiya-teaspoon
+              severity: critical
+            exp_annotations:
+              summary: Kopiur policy bhaiya/bhaiya-teaspoon has failed snapshots
+              description: >-
+                Kopiur reports 1 consecutive failed snapshots for
+                bhaiya/bhaiya-teaspoon since its latest success. Inspect the
+                current Snapshot, mover Job, repository, and controller events.
+                This is separate from the stalled-state alert because Pending
+                is not Failed.
+
+  # A previous success older than the 24-hour freshness window fires, while a
+  # recent success stays silent. The metric is a Unix timestamp, so the test
+  # pins both cases away from the exact boundary.
+  - interval: 1m
+    input_series:
+      - series: 'kopiur_policy_last_backup_success_timestamp_seconds{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-old"}'
+        values: "1+0x1600"
+      - series: 'kopiur_policy_last_backup_success_timestamp_seconds{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-fresh"}'
+        values: "89000+0x1600"
+    alert_rule_test:
+      - eval_time: 25h
+        alertname: KopiurSnapshotSuccessStale
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              exported_namespace: bhaiya
+              namespace: bhaiya
+              policy: bhaiya-old
+              severity: critical
+            exp_annotations:
+              summary: Kopiur policy bhaiya/bhaiya-old has no recent successful snapshot
+              description: >-
+                No successful Kopiur snapshot for bhaiya/bhaiya-old has
+                completed within 24 hours. This is a freshness guard distinct
+                from current Pending/Running and failure state; inspect the
+                SnapshotSchedule, current Snapshot, mover Job, repository, and
+                controller metrics.
