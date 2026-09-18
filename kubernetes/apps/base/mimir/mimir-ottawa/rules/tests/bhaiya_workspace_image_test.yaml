@@ -20,7 +20,7 @@ tests:
           - exp_labels:
               cluster: talos-ottawa
               image: oci.cdn.keiretsu.top/corp/workspace
-              version: 0.3.299
+              version: 0.3.411
               severity: critical
             exp_annotations:
               summary: Workspace image release pipeline 0.3.299 failed
@@ -40,7 +40,7 @@ tests:
           - exp_labels:
               cluster: talos-ottawa
               image: oci.cdn.keiretsu.top/corp/workspace
-              version: 0.3.300
+              version: 0.3.411
               severity: critical
             exp_annotations:
               summary: Workspace image release 0.3.300 was not queued
