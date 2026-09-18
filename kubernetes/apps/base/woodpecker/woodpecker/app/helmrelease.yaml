@@ -77,7 +77,7 @@ spec:
           memory: 1Gi
     agent:
       enabled: true
-      replicaCount: 3
+      replicaCount: 5
       env:
         WOODPECKER_SERVER: woodpecker-server:9000
         # Ottawa-only capability: workspace-image workflows mount the Ottawa-local RWO Nix cache.
