@@ -84,7 +84,7 @@ The local gate must pass before commit:
 | `tools/tests/run.sh` | offline self-tests for `tools/` |
 | `make diff` | rendered diff vs `origin/main` |
 
-GitHub Actions workflows — seventeen on disk:
+GitHub Actions workflows — sixteen on disk:
 
 - `flate.yaml` — render matrix plus a sticky rendered-diff comment per cluster
 - `validate.yaml` — YAML parse gate on Renovate PRs
@@ -96,7 +96,7 @@ GitHub Actions workflows — seventeen on disk:
 - `delete-inactive-tailnet-nodes.yml` — tag-filtered device reaping
 - `token.yml`, `release.yaml`, `label-sync.yaml`, `devcontainer.yaml`
 - `garage-webadmin-build.yaml`, `garage-webadmin-sidecar-build.yaml`
-- `aqua-checksums.yaml`, `swarm-test.yaml`, `test-arc-runner.yaml`
+- `aqua-checksums.yaml`, `test-arc-runner.yaml`
 
 The first three of those are worth a caveat: `flate.yaml`, `diagram.yaml` and
 `version-sync.yaml` are **path-filtered**, not unconditional. `flate` fires only
@@ -1092,7 +1092,7 @@ runs in degraded RAW mode because Kopia's `_maintenance` read-after-write
 check can produce false clock-skew failures.
 
 The Velero HelmRelease, BackupStorageLocations, schedules, UI, GSLB route,
-and restore-proof scaffolding were removed after Kopiur snapshot and restore
+and all restore-proof scaffolding were removed after Kopiur snapshot and restore
 validation. Kopiur still writes to the federated Garage estate; ADR 0007's
 independent object-store requirement therefore remains open and is historical
 context rather than a second active backup plane.
