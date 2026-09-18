@@ -13,7 +13,6 @@ spec:
   template:
     metadata:
       annotations:
-        backup.velero.io/backup-volumes-excludes: logs
         # Re-run the one-shot catalog discovery only after the Qwen LWS is
         # healthy; a pod started during GPU warm-up must retain the safe
         # subscription fallback rather than advertising an unavailable route.
