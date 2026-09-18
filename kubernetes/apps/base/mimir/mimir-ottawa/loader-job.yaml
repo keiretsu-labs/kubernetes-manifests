@@ -37,7 +37,6 @@ spec:
             - /rules/bhaiya-provider-provisioning.yaml
             - /rules/bhaiya-ssh.yaml
             - /rules/bhaiya-sandbox-telemetry.yaml
-            - /rules/bhaiya-velero-coverage.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/bhaiya-workspace-endpoints.yaml
             - /rules/blackbox.yaml
@@ -56,15 +55,9 @@ spec:
             - /rules/stpetersburg-memory.yaml
             - /rules/node-health.yaml
             - /rules/node-clock.yaml
-            - /rules/velero-node-saturation.yaml
-            - /rules/velero-restore-admission.yaml
-            - /rules/velero-pvc-selection.yaml
             - /rules/running-workload-images.yaml
             - /rules/payments.yaml
             - /rules/smartctl.yaml
-            - /rules/velero.yaml
-            - /rules/velero-integrity.yaml
-            - /rules/velero-volume-progress.yaml
             - /rules/zot.yaml
           volumeMounts: &rulesmount
             - { name: rules, mountPath: /rules }
@@ -85,7 +78,6 @@ spec:
             - /rules/bhaiya-provider-provisioning.yaml
             - /rules/bhaiya-ssh.yaml
             - /rules/bhaiya-sandbox-telemetry.yaml
-            - /rules/bhaiya-velero-coverage.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/bhaiya-workspace-endpoints.yaml
             - /rules/blackbox.yaml
@@ -104,15 +96,9 @@ spec:
             - /rules/stpetersburg-memory.yaml
             - /rules/node-health.yaml
             - /rules/node-clock.yaml
-            - /rules/velero-node-saturation.yaml
-            - /rules/velero-restore-admission.yaml
-            - /rules/velero-pvc-selection.yaml
             - /rules/running-workload-images.yaml
             - /rules/payments.yaml
             - /rules/smartctl.yaml
-            - /rules/velero.yaml
-            - /rules/velero-integrity.yaml
-            - /rules/velero-volume-progress.yaml
             - /rules/zot.yaml
           volumeMounts: *rulesmount
           securityContext: *sc
@@ -129,7 +115,6 @@ spec:
             - /rules/bhaiya-provider-provisioning.yaml
             - /rules/bhaiya-ssh.yaml
             - /rules/bhaiya-sandbox-telemetry.yaml
-            - /rules/bhaiya-velero-coverage.yaml
             - /rules/bhaiya-workspace-image.yaml
             - /rules/bhaiya-workspace-endpoints.yaml
             - /rules/blackbox.yaml
@@ -148,15 +133,9 @@ spec:
             - /rules/stpetersburg-memory.yaml
             - /rules/node-health.yaml
             - /rules/node-clock.yaml
-            - /rules/velero-node-saturation.yaml
-            - /rules/velero-restore-admission.yaml
-            - /rules/velero-pvc-selection.yaml
             - /rules/running-workload-images.yaml
             - /rules/payments.yaml
             - /rules/smartctl.yaml
-            - /rules/velero.yaml
-            - /rules/velero-integrity.yaml
-            - /rules/velero-volume-progress.yaml
             - /rules/zot.yaml
           volumeMounts: *rulesmount
           securityContext: *sc
