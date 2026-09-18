@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./kopia-password.sops.yaml
   - ./clusterrepository.yaml
+  - ./bhaiya-rbac.yaml

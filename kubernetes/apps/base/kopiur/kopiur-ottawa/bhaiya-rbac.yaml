@@ -1,0 +1,42 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: bhaiya-kopiur
+rules:
+  - apiGroups:
+      - kopiur.home-operations.com
+    resources:
+      - snapshots
+      - snapshotpolicies
+      - snapshotschedules
+      - restores
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - kopiur.home-operations.com
+    resources:
+      - clusterrepositories
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: bhaiya-kopiur
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: bhaiya-kopiur
+subjects:
+  - kind: ServiceAccount
+    name: bhaiya
+    namespace: bhaiya
