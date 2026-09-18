@@ -94,6 +94,34 @@ def path_declares_durable_volume(path: Path) -> bool:
     return False
 
 
+def multi_source_policies() -> list[str]:
+    """Kopiur groupBy:None still kopia-ids only the first PVC; ban multi-source."""
+    bad: list[str] = []
+    for cluster, paths in POLICY_PATHS.items():
+        for policy_dir in paths:
+            if not policy_dir.is_dir():
+                continue
+            for path in list(policy_dir.glob("*.yaml")) + list(policy_dir.glob("*.yml")):
+                for doc in load_docs(path):
+                    if not is_snapshot_policy(doc):
+                        continue
+                    sources = (doc.get("spec") or {}).get("sources") or []
+                    names = []
+                    for src in sources:
+                        if not isinstance(src, dict):
+                            continue
+                        pvc = src.get("pvc") or {}
+                        if isinstance(pvc, dict) and pvc.get("name"):
+                            names.append(pvc["name"])
+                    if len(names) > 1:
+                        meta = doc.get("metadata") or {}
+                        bad.append(
+                            f"{cluster}/{meta.get('namespace')}/{meta.get('name')} "
+                            f"lists {len(names)} PVCs {names}; split to one policy per PVC"
+                        )
+    return bad
+
+
 def policy_namespaces(cluster: str) -> set[str]:
     covered: set[str] = set()
     for policy_dir in POLICY_PATHS[cluster]:
@@ -147,6 +175,7 @@ def load_exemptions() -> dict[str, dict[str, str]]:
         raise SystemExit(f"{EXEMPTIONS_PATH}: exemptions must be a non-empty list")
 
     out: dict[str, dict[str, str]] = {c: {} for c in CLUSTERS}
+    out_of_band: dict[str, set[str]] = {c: set() for c in CLUSTERS}
     for idx, entry in enumerate(raw):
         if not isinstance(entry, dict):
             raise SystemExit(f"{EXEMPTIONS_PATH}: exemptions[{idx}] must be a mapping")
@@ -169,13 +198,16 @@ def load_exemptions() -> dict[str, dict[str, str]]:
                 f"{EXEMPTIONS_PATH}: duplicate exemption {cluster}/{namespace}"
             )
         out[cluster][namespace] = " ".join(reason.split())
-    return out
+        if entry.get("outOfBand") is True:
+            out_of_band[cluster].add(namespace)
+    return out, out_of_band
 
 
 def main() -> int:
-    exemptions = load_exemptions()
+    exemptions, out_of_band = load_exemptions()
     failures: list[str] = []
     stale: list[str] = []
+    failures.extend(multi_source_policies())
 
     for cluster in CLUSTERS:
         pvc_ns = pvc_namespaces(cluster)
@@ -188,7 +220,7 @@ def main() -> int:
                 f"but has no Kopiur SnapshotPolicy and no exemption"
             )
 
-        for namespace in sorted(set(exempt) - pvc_ns):
+        for namespace in sorted(set(exempt) - pvc_ns - out_of_band[cluster]):
             stale.append(
                 f"{cluster}/{namespace}: exemption has no matching Git-declared "
                 f"PVC namespace on this cluster (remove or fix the entry)"

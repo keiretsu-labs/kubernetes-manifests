@@ -2,7 +2,7 @@
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotPolicy
 metadata:
-  name: home-config
+  name: homeassistant-config-ceph
   namespace: home
 spec:
   repository:
@@ -12,24 +12,16 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
-  sources:
-    # These are the active Ceph RBD claims used by the live workloads. The
-    # older *-unas claims are SMB copies and are not the active mounts.
-    - pvc:
-        name: homeassistant-config-ceph
-      readOnly: true
-    - pvc:
-        name: frigate-config-ceph
-      readOnly: true
-    - pvc:
-        name: mqtt-data-ceph
-      readOnly: true
   mover:
     securityContext:
       runAsUser: 0
       runAsGroup: 0
       runAsNonRoot: false
     privilegedMode: true
+  sources:
+    - pvc:
+        name: homeassistant-config-ceph
+      readOnly: true
   retention:
     keepDaily: 14
     keepWeekly: 4
@@ -37,3 +29,101 @@ spec:
   deletion:
     onPolicyDelete: Retain
   adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: frigate-config-ceph
+  namespace: home
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+    privilegedMode: true
+  sources:
+    - pvc:
+        name: frigate-config-ceph
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: mqtt-data-ceph
+  namespace: home
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+    privilegedMode: true
+  sources:
+    - pvc:
+        name: mqtt-data-ceph
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: homeassistant-config-ceph
+  namespace: home
+spec:
+  policyRef:
+    name: homeassistant-config-ceph
+  schedule:
+    cron: "0 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: frigate-config-ceph
+  namespace: home
+spec:
+  policyRef:
+    name: frigate-config-ceph
+  schedule:
+    cron: "0 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: mqtt-data-ceph
+  namespace: home
+spec:
+  policyRef:
+    name: mqtt-data-ceph
+  schedule:
+    cron: "0 1 * * *"
+    jitter: 30m

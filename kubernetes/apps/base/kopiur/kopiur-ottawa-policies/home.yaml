@@ -1,8 +1,10 @@
+# One SnapshotPolicy per PVC: groupBy None still only
+# kopia-ids the first source on this Kopiur version.
 ---
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotPolicy
 metadata:
-  name: home-config
+  name: homeassistant-config
   namespace: home
 spec:
   repository:
@@ -12,9 +14,6 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
-  # HA keeps owner-only files under .storage/. Use the same explicit root
-  # mover contract as the isolated restore proof; the source PVCs remain
-  # read-only and permission errors remain fatal.
   mover:
     securityContext:
       runAsUser: 0
@@ -22,17 +21,99 @@ spec:
       runAsNonRoot: false
     privilegedMode: true
   sources:
-    # Both are Ceph RBD PVCs and are the durable Home Assistant/Home config
-    # sources; the live Ottawa Velero PVBs cover these two claims.
     - pvc:
         name: homeassistant-config
       readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: frigate-config
+  namespace: home
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+    privilegedMode: true
+  sources:
     - pvc:
         name: frigate-config
       readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: openclaw-example-data
+  namespace: home
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+    privilegedMode: true
+  sources:
     - pvc:
         name: openclaw-example-data
       readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: tailboy-data
+  namespace: home
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+    privilegedMode: true
+  sources:
     - pvc:
         name: tailboy-data
       readOnly: true
@@ -43,3 +124,51 @@ spec:
   deletion:
     onPolicyDelete: Retain
   adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: homeassistant-config
+  namespace: home
+spec:
+  policyRef:
+    name: homeassistant-config
+  schedule:
+    cron: "0 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: frigate-config
+  namespace: home
+spec:
+  policyRef:
+    name: frigate-config
+  schedule:
+    cron: "0 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: openclaw-example-data
+  namespace: home
+spec:
+  policyRef:
+    name: openclaw-example-data
+  schedule:
+    cron: "0 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: tailboy-data
+  namespace: home
+spec:
+  policyRef:
+    name: tailboy-data
+  schedule:
+    cron: "0 1 * * *"
+    jitter: 30m

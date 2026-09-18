@@ -47,6 +47,15 @@ exemptions:
     reason: >-
       Workshop lobby ts-state volumeClaimTemplate; not a production data plane.
 
+  - cluster: ottawa
+    namespace: bhaiya
+    outOfBand: true
+    reason: >-
+      Former Velero Schedule bhaiya-backup fs-backed live workspace PVCs
+      created by the foreign bhaiya GitRepository, not this repo. Those
+      volumes are ephemeral session disks. bhaiya-postgres is CNPG/Barman
+      on Garage. GitOps rebuilds the control plane.
+
   # --- Robbinsdale ---
   - cluster: robbinsdale
     namespace: immich

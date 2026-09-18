@@ -1,8 +1,9 @@
+# Deliberately absent: SMB bulk shares, *-unas, CNPG, Immich.
 ---
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotPolicy
 metadata:
-  name: media-config
+  name: autobrr-config
   namespace: media
 spec:
   repository:
@@ -13,61 +14,9 @@ spec:
   copyMethod: Snapshot
   groupBy: None
   sources:
-    # Active Ceph-backed application config PVCs. This includes the four
-    # Bazarr claims that had a successful Velero PVB in the last complete run,
-    # the current Velero opt-in set, and the known Kometa gap.
-    - pvc: {name: autobrr-config}
+    - pvc:
+        name: autobrr-config
       readOnly: true
-    - pvc: {name: bazarr-1080p-config}
-      readOnly: true
-    - pvc: {name: bazarr-4k-config}
-      readOnly: true
-    - pvc: {name: bazarr-4kremux-config}
-      readOnly: true
-    - pvc: {name: bazarr-anime-config}
-      readOnly: true
-    - pvc: {name: kometa}
-      readOnly: true
-    - pvc: {name: lidarr-config}
-      readOnly: true
-    - pvc: {name: maintainerr-config}
-      readOnly: true
-    - pvc: {name: overseerr-config}
-      readOnly: true
-    - pvc: {name: plex-config-ceph}
-      readOnly: true
-    - pvc: {name: prowlarr-config}
-      readOnly: true
-    - pvc: {name: qbittorrent-config}
-      readOnly: true
-    - pvc: {name: qbittorrent-pvt-config}
-      readOnly: true
-    - pvc: {name: radarr-1080p-config}
-      readOnly: true
-    - pvc: {name: radarr-4k-config}
-      readOnly: true
-    - pvc: {name: radarr-4kremux-config}
-      readOnly: true
-    - pvc: {name: radarr-anime-config}
-      readOnly: true
-    - pvc: {name: sabnzbd-config}
-      readOnly: true
-    - pvc: {name: sonarr-1080p-config}
-      readOnly: true
-    - pvc: {name: sonarr-4k-config}
-      readOnly: true
-    - pvc: {name: sonarr-anime-config}
-      readOnly: true
-    - pvc: {name: tautulli-config}
-      readOnly: true
-    - pvc: {name: tracearr-backup}
-      readOnly: true
-    - pvc: {name: wizarr-config}
-      readOnly: true
-  # Deliberately absent: 20Ti SMB media-share and qbittorrent-downloads (the
-  # storage layer owns bulk data), old prowlarr-config-unas, CNPG pgdata, and
-  # Immich photo stores. The Velero checker remains Velero-only and media is
-  # already in its Schedule, so no namespace exemption belongs in its ledger.
   retention:
     keepDaily: 14
     keepWeekly: 4
@@ -75,3 +24,866 @@ spec:
   deletion:
     onPolicyDelete: Retain
   adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: bazarr-1080p-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: bazarr-1080p-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: bazarr-4k-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: bazarr-4k-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: bazarr-4kremux-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: bazarr-4kremux-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: bazarr-anime-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: bazarr-anime-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: kometa
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: kometa
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: lidarr-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: lidarr-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: maintainerr-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: maintainerr-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: overseerr-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: overseerr-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: plex-config-ceph
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: plex-config-ceph
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: prowlarr-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: prowlarr-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: qbittorrent-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: qbittorrent-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: qbittorrent-pvt-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: qbittorrent-pvt-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: radarr-1080p-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: radarr-1080p-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: radarr-4k-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: radarr-4k-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: radarr-4kremux-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: radarr-4kremux-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: radarr-anime-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: radarr-anime-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: sabnzbd-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: sabnzbd-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: sonarr-1080p-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: sonarr-1080p-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: sonarr-4k-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: sonarr-4k-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: sonarr-anime-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: sonarr-anime-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: tautulli-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: tautulli-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: tracearr-backup
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: tracearr-backup
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: wizarr-config
+  namespace: media
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-robbinsdale
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    - pvc:
+        name: wizarr-config
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: autobrr-config
+  namespace: media
+spec:
+  policyRef:
+    name: autobrr-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: bazarr-1080p-config
+  namespace: media
+spec:
+  policyRef:
+    name: bazarr-1080p-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: bazarr-4k-config
+  namespace: media
+spec:
+  policyRef:
+    name: bazarr-4k-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: bazarr-4kremux-config
+  namespace: media
+spec:
+  policyRef:
+    name: bazarr-4kremux-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: bazarr-anime-config
+  namespace: media
+spec:
+  policyRef:
+    name: bazarr-anime-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: kometa
+  namespace: media
+spec:
+  policyRef:
+    name: kometa
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: lidarr-config
+  namespace: media
+spec:
+  policyRef:
+    name: lidarr-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: maintainerr-config
+  namespace: media
+spec:
+  policyRef:
+    name: maintainerr-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: overseerr-config
+  namespace: media
+spec:
+  policyRef:
+    name: overseerr-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: plex-config-ceph
+  namespace: media
+spec:
+  policyRef:
+    name: plex-config-ceph
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: prowlarr-config
+  namespace: media
+spec:
+  policyRef:
+    name: prowlarr-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: qbittorrent-config
+  namespace: media
+spec:
+  policyRef:
+    name: qbittorrent-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: qbittorrent-pvt-config
+  namespace: media
+spec:
+  policyRef:
+    name: qbittorrent-pvt-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: radarr-1080p-config
+  namespace: media
+spec:
+  policyRef:
+    name: radarr-1080p-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: radarr-4k-config
+  namespace: media
+spec:
+  policyRef:
+    name: radarr-4k-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: radarr-4kremux-config
+  namespace: media
+spec:
+  policyRef:
+    name: radarr-4kremux-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: radarr-anime-config
+  namespace: media
+spec:
+  policyRef:
+    name: radarr-anime-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: sabnzbd-config
+  namespace: media
+spec:
+  policyRef:
+    name: sabnzbd-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: sonarr-1080p-config
+  namespace: media
+spec:
+  policyRef:
+    name: sonarr-1080p-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: sonarr-4k-config
+  namespace: media
+spec:
+  policyRef:
+    name: sonarr-4k-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: sonarr-anime-config
+  namespace: media
+spec:
+  policyRef:
+    name: sonarr-anime-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: tautulli-config
+  namespace: media
+spec:
+  policyRef:
+    name: tautulli-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: tracearr-backup
+  namespace: media
+spec:
+  policyRef:
+    name: tracearr-backup
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: wizarr-config
+  namespace: media
+spec:
+  policyRef:
+    name: wizarr-config
+  schedule:
+    cron: "0 3 * * *"
+    jitter: 30m

@@ -12,17 +12,38 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
-  # TinyAuth's OIDC private key is 0600 uid 1000. A root mover without
-  # CAP_DAC_OVERRIDE still cannot read it; inherit the workload UID instead.
   mover:
     inheritSecurityContextFrom:
       pvcConsumer: {}
   sources:
-    # Home Velero currently selects both SQLite session stores; keep the
-    # Kopiur policy explicit rather than relying on a broad PVC selector.
     - pvc:
         name: tinyauth-data
       readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: tinyauth-killinit-data
+  namespace: tinyauth
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  mover:
+    inheritSecurityContextFrom:
+      pvcConsumer: {}
+  sources:
     - pvc:
         name: tinyauth-killinit-data
       readOnly: true
@@ -33,3 +54,27 @@ spec:
   deletion:
     onPolicyDelete: Retain
   adoption: Ignore
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: tinyauth-data
+  namespace: tinyauth
+spec:
+  policyRef:
+    name: tinyauth-data
+  schedule:
+    cron: "15 1 * * *"
+    jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: tinyauth-killinit-data
+  namespace: tinyauth
+spec:
+  policyRef:
+    name: tinyauth-killinit-data
+  schedule:
+    cron: "15 1 * * *"
+    jitter: 30m

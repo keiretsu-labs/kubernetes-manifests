@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - ./home.yaml
   - ./media.yaml
-  - ./snapshotschedules.yaml
