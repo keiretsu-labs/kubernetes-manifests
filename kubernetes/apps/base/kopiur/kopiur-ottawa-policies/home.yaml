@@ -12,6 +12,15 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  # HA keeps owner-only files under .storage/. Use the same explicit root
+  # mover contract as the isolated restore proof; the source PVCs remain
+  # read-only and permission errors remain fatal.
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+    privilegedMode: true
   sources:
     # Both are Ceph RBD PVCs and are the durable Home Assistant/Home config
     # sources; the live Ottawa Velero PVBs cover these two claims.
