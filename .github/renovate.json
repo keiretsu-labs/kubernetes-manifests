@@ -181,6 +181,18 @@
       "enabled": false
     },
     {
+      "description": "Do not update Docker-like image values in the Mimir running-workload alert-rule fixture; they are test data, not deployed images. Review-by: 2026-10-10.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "oci.cdn.keiretsu.top/keiretsu/vault",
+        "oci.cdn.keiretsu.top/keiretsu/app"
+      ],
+      "matchFileNames": [
+        "kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/running_workload_images_test.yaml"
+      ],
+      "enabled": false
+    },
+    {
       "description": "Exclude legacy tags with 4-digit build numbers in patch position",
       "matchPackageNames": ["lscr.io/linuxserver/lidarr"],
       "allowedVersions": "/^\\d+\\.\\d+\\.\\d{1,2}$/"
