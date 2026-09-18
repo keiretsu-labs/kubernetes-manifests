@@ -84,26 +84,6 @@ there is no in-repo image build in this rollback.
 ### Sampling (per Unsloth docs)
 - `--temp 1.0`, `--top-p 0.95`, `--top-k 40`, `--min-p 0.01`
 
-## Retained rollback: vLLM (DFlash) — currently disabled (replicas: 0)
-
-**Model**: `AEON-7/Qwen3.6-27B-AEON-Ultimate-Uncensored-Multimodal-NVFP4-MTP-XS` (~90GB)
-**Image**: `ghcr.io/aeon-7/vllm-aeon-ultimate-dflash:qwen36-v4`
-**Decode**: speculative decoding via DFlash (15 draft tokens)
-**Status**: `replicas: 0` — both DGX Spark GPUs are claimed by the Qwen3.8
-TP=2 instance (`qwen38.yaml`). Kept in-repo for rollback.
-
-Config lives in `vllm.yaml` but the StatefulSet is scaled to zero.
-
-### vLLM Tuning Notes (for future use)
-- `--gpu-memory-utilization 0.60` (conservative for unified memory buffer cache)
-- `--enable-prefix-caching` — free throughput for repeated system prompts
-- `--enable-chunked-prefill` — better TTFT
-- `--speculative-config '{"method":"dflash","model":"...","num_speculative_tokens":15}'`
-- `--block-size 32` — PagedAttention block size
-- `--attention-backend flash_attn`
-- `MMProcessor` cache on `/dev/shm` (`--mm-processor-cache-type shm`)
-- `VLLM_CPU_KV_TRANSFER_CHUNK_SIZE=16`, `VLLM_BLOCK_SIZE=32` — CPU/KV cache tuning
-
 ## Historical comparison: retired alternatives
 
 | | vLLM DFlash (disabled) | llama.cpp Q4 (not deployed) |

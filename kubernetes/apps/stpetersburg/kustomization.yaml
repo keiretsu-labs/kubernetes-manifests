@@ -15,8 +15,6 @@ resources:
   - ./home
   - ./home-assistant
   - ./kopiur
-  - ./kopiur-restore-proof
-  - ./kopiur-restore-projection
   - ./homer-operator
   - ./kube-system
   - ./lws-system
