@@ -10,7 +10,9 @@ spec:
     name: kopiur-ottawa
   credentialProjection:
     enabled: true
-  copyMethod: Snapshot
+  # Direct: CSI clone of gitea-shared-storage did not bind before the
+  # staging deadline. Read-only Direct mounts the live PVC like St. Pete HA.
+  copyMethod: Direct
   groupBy: None
   mover:
     # Git data has mixed 0700 dirs (git user, .ssh, bleve). Namespace is
@@ -27,6 +29,17 @@ spec:
     - pvc:
         name: gitea-shared-storage
       readOnly: true
+  files:
+    # Explicit list replaces Kopiur defaults wholesale. Keep OS junk rules
+    # and skip git's ephemeral incoming object dirs (mode 000 while receive
+    # is in flight).
+    ignoreRules:
+      - "/lost+found"
+      - "System Volume Information"
+      - "$RECYCLE.BIN"
+      - "@eaDir"
+      - ".snapshot"
+      - "**/tmp_objdir-incoming-*"
   retention:
     keepDaily: 14
     keepWeekly: 4
