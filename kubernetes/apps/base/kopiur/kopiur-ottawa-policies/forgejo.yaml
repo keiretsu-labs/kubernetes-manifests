@@ -22,6 +22,11 @@ spec:
       runAsUser: 0
       runAsGroup: 0
       runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
     privilegedMode: true
   sources:
     # Git data volume. Postgres is CNPG/Barman on Garage. Runner caches are
