@@ -26,6 +26,12 @@ spec:
       key: KOPIA_PASSWORD
   create:
     enabled: true
+  bootstrap:
+    failurePolicy:
+      # The St. Petersburg Garage-backed repository can need more than the
+      # default deadline to open a cold Kopia index. The Kopiur Repository
+      # CRD documents this field as the bootstrap Job wall-clock cap.
+      activeDeadlineSeconds: 1800
   # Maintenance DISABLED — kopiur Maintenance runs real `kopia maintenance`,
   # which PUTs `_maintenance` then immediately HEADs it. Under Garage
   # consistencyMode:degraded that HEAD can see a stale replica and refuse with
