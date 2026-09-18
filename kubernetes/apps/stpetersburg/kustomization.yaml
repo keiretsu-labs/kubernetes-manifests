@@ -41,7 +41,6 @@ resources:
   - ./tinyauth-egress
   - ./rdma-shared-dp
   - ./gpu-operator
-  - ./velero
   - ./vpa-system
   - ./victoria-logs
   - ./victoria-logs/victoria-logs.yaml

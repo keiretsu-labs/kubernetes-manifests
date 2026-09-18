@@ -1049,8 +1049,10 @@ assert "status apex HTTPRoute exists" \
   grep -q '"status.\${COMMON_DOMAIN}"' "$ROOT/kubernetes/apps/base/k8gb/k8gb-common/config/gslb-gatus.yaml"
 assert "status apex binds keiretsu.top listener" \
   grep -q 'wildcard-keiretsu-top-https' "$ROOT/kubernetes/apps/base/k8gb/k8gb-common/config/gslb-gatus.yaml"
-refute "velero-ui does not claim velero apex" \
-  grep -q '"velero.\${COMMON_DOMAIN}"' "$ROOT/kubernetes/apps/base/velero/velero-ui/httproute.yaml"
+refute "Velero base tree is gone" \
+  test -e "$ROOT/kubernetes/apps/base/velero"
+refute "garage-velero-bucket tree is gone" \
+  test -e "$ROOT/kubernetes/apps/base/garage/garage-velero-bucket"
 
 refute "cephfs-proof tree gone" test -e "$ROOT/kubernetes/apps/base/cephfs-proof"
 refute "tailscale-service-repro gone" test -e "$ROOT/kubernetes/apps/base/tailscale-examples/tailscale-service-repro"
@@ -1072,8 +1074,12 @@ assert "kopiur-robbinsdale GarageBucket exists" \
   grep -q 'name: kopiur-robbinsdale' "$ROOT/kubernetes/apps/base/garage/garage-kopiur-robbinsdale-bucket/bucket.yaml"
 refute "kopiur-ottawa bucket is not velero" \
   grep -q 'globalAlias: velero' "$ROOT/kubernetes/apps/base/garage/garage-kopiur-ottawa-bucket/bucket.yaml"
-assert "Velero schedules remain" \
-  test -n "$(find "$ROOT/kubernetes/apps" -path '*/velero/schedules/*.yaml' | head -1)"
+assert "Ottawa Kopiur SnapshotPolicy remains" \
+  test -f "$ROOT/kubernetes/apps/base/kopiur/kopiur-ottawa-policies/home.yaml"
+assert "Robbinsdale Kopiur SnapshotPolicy remains" \
+  test -f "$ROOT/kubernetes/apps/base/kopiur/kopiur-robbinsdale-policies/home.yaml"
+assert "St. Petersburg Kopiur SnapshotPolicy remains" \
+  test -f "$ROOT/kubernetes/apps/base/home-assistant/home-assistant/kopiur/snapshotpolicy.yaml"
 
 # ---------------------------------------------------------------- summary
 printf '\n== %d passed, %d failed ==\n' "$pass" "$fail"

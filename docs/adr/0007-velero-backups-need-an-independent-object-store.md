@@ -33,10 +33,10 @@ federation/control-plane failure, deletion, or corruption can remove both
 Velero's backup metadata and its Kopia data path. Another bucket, gateway pod,
 or namespace in this same estate would have the same common dependency.
 
-The repository configuration is visible in
-[`velero/helmrelease.yaml`](../../kubernetes/apps/base/velero/velero/helmrelease.yaml),
-[`garage-velero-bucket/bucket.yaml`](../../kubernetes/apps/base/garage/garage-velero-bucket/bucket.yaml),
-and [`garagecluster.yaml`](../../kubernetes/apps/base/garage/garage/garagecluster.yaml).
+The repository configuration that informed this decision was the Velero
+HelmRelease and GarageBucket configuration; those Velero manifests were
+removed during the Kopiur cutover. The still-current Garage cluster
+configuration is [`garagecluster.yaml`](../../kubernetes/apps/base/garage/garage/garagecluster.yaml).
 Velero has no `volumeSnapshotLocation`; node-agent Kopia filesystem backups
 write through the single Garage BSL.
 

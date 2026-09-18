@@ -357,4 +357,4 @@ count for the PVC ledger.
 * [r3 isolated namespace](../../kubernetes/apps/base/kopiur/kopiur-restore-proof/namespace.yaml)
 * [St. Petersburg read-only repository projection](../../kubernetes/apps/base/kopiur/kopiur-stpetersburg-restore-projection/clusterrepository.yaml)
 * [Home Assistant Kopiur notes](../../kubernetes/apps/base/home-assistant/home-assistant/kopiur/README.md)
-* [Velero PVC schedule exemptions](../../kubernetes/apps/base/velero/velero/pvc-schedule-exemptions.yaml)
+* [Kopiur PVC policy exemptions](../../kubernetes/apps/base/kopiur/pvc-policy-exemptions.yaml)

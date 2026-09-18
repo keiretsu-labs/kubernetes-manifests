@@ -20,7 +20,7 @@
 //  a lie in the picture:
 //  diagram-apps: bhaiya, hermes, forgejo, woodpecker, immich, teslamate,
 //  diagram-apps: searxng, firecrawl, cliproxy, zot, opencost, tempvm,
-//  diagram-apps: headlamp-install, velero, mimir, mimir-egress, victoria-logs,
+//  diagram-apps: headlamp-install, kopiur, mimir, mimir-egress, victoria-logs,
 //  diagram-apps: fluent-bit, gatus, kromgo, garage, spegel, tuppr, vpa,
 //  diagram-apps: external-secrets-install, gvisor, kata-containers,
 //  diagram-apps: agent-sandbox, ocm, ocm-agent, media-apps, home-assistant,
@@ -109,7 +109,7 @@ digraph fabric {
 
     s_pools [label=<<b>Garage local pools</b><br align="left"/>hostPath-backed and declared per node. The storage<br align="left"/>tier is Manual at all three sites, deliberately, so<br align="left"/>an array can be moved between backing stores; the<br align="left"/>gateway tier stays operator-managed.<br align="left"/>>];
 
-    s_buckets [label=<<b>Buckets</b><br align="left"/>velero · mimir · zot · tailscale-logs, plus one<br align="left"/>&lt;db&gt;-postgres bucket per database so that<br align="left"/>federated sites never share a Barman catalog.<br align="left"/>Per-app credentials are minted by GarageKey CRs.<br align="left"/>>];
+    s_buckets [label=<<b>Buckets</b><br align="left"/>Kopiur · mimir · zot · tailscale-logs, plus one<br align="left"/>&lt;db&gt;-postgres bucket per database so that<br align="left"/>federated sites never share a Barman catalog.<br align="left"/>Per-app credentials are minted by GarageKey CRs.<br align="left"/>>];
 
     s_rpc [label=<<b>Why Garage still needs many mesh Services</b><br align="left"/>Its RPC is identity-authenticated per node, so it<br align="left"/>needs one direct MCS Service PER REMOTE NODE.<br align="left"/>A single shared L4 VIP cannot route a node<br align="left"/>identifier, so the usual one-Service shortcut<br align="left"/>does not work here. There is no Tailscale hop.<br align="left"/>>,
            fillcolor="#fff8c5", color="#9a6700"];
@@ -118,7 +118,7 @@ digraph fabric {
 
     s_bulk [label=<<b>Bulk and node-local</b><br align="left"/>csi-driver-smb — media libraries, never databases<br align="left"/>local-path — every St. Petersburg tier, the model<br align="left"/>weights, and the backing store under the Garage<br align="left"/>hostPath pools<br align="left"/>>];
 
-    s_db [label=<<b>Databases, caches and backup</b><br align="left"/>CloudNativePG — 10 Postgres clusters, streaming<br align="left"/>WAL and base backups to Garage<br align="left"/>Dragonfly — every cache; there is no real Redis in<br align="left"/>this repository, whatever the filenames say<br align="left"/>Velero — kopia file backup, not CSI snapshots<br align="left"/>>];
+    s_db [label=<<b>Databases, caches and backup</b><br align="left"/>CloudNativePG — 10 Postgres clusters, streaming<br align="left"/>WAL and base backups to Garage<br align="left"/>Dragonfly — every cache; there is no real Redis in<br align="left"/>this repository, whatever the filenames say<br align="left"/>Kopiur — Kopia file backup, not CSI snapshots<br align="left"/>>];
   }
 
   p_ot -> s_ceph [style=dotted, color="#1a7f37", constraint=false];
@@ -131,7 +131,7 @@ digraph fabric {
   s_garage -> s_pools   [label="Manual storage tier", constraint=false];
   s_garage -> s_buckets [constraint=false];
   s_garage -> s_rpc     [style=dashed, constraint=false];
-  s_db     -> s_garage  [label="WAL, base backups\land Velero archives", style=bold, constraint=false];
+  s_db     -> s_garage  [label="WAL, base backups\land Kopiur archives", style=bold, constraint=false];
 
   // ---------------------------------------------------------------- obs
   subgraph cluster_obs {

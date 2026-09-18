@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 127 |
-| `robbinsdale` | 3 | 44 | 93 |
-| `stpetersburg` | 3 | 42 | 85 |
-| **total** | **10** | **147** | **305** |
+| `ottawa` | 4 | 57 | 121 |
+| `robbinsdale` | 3 | 43 | 91 |
+| `stpetersburg` | 3 | 41 | 83 |
+| **total** | **10** | **141** | **295** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -91,12 +91,11 @@ diagram in the [README](../../README.md#architecture).
 | Storage and data services | `csi-addons` | `csi-addons`, `csi-addons-config` |
 | Storage and data services | `csi-driver-smb` | `csi-driver-smb` → ns `kube-system` |
 | Storage and data services | `dragonfly-operator-system` | `dragonfly-operator-system` |
-| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-exporter`, `garage-keys`, `garage-kopiur-ottawa-bucket`, `garage-nodes`, `garage-ottawa-reference-grants`, `garage-reference-grants`, `garage-velero-bucket`, `garage-webui` |
+| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-exporter`, `garage-keys`, `garage-kopiur-ottawa-bucket`, `garage-nodes`, `garage-ottawa-reference-grants`, `garage-reference-grants`, `garage-webui` |
 | Storage and data services | `garage-operator-system` | `garage-operator-system-install` |
 | Storage and data services | `local-path-storage` | `local-path-storage` |
 | Storage and data services | `rook-ceph` | `rook-ceph-cluster-config`, `rook-ceph-operator` |
 | Storage and data services | `snapshot-controller` | `snapshot-controller` |
-| Storage and data services | `velero` | `velero` → ns `velero-system`, `velero-ui` → ns `velero-system` |
 | Storage and data services | `zot` | `zot`, `zot-cache` |
 | Observability | `fluent-bit` | `fluent-bit` |
 | Observability | `gatus` | `gatus`, `gatus-mcs` |
@@ -118,9 +117,6 @@ diagram in the [README](../../README.md#architecture).
 | Application workloads | `homer-operator` | `homer-operator-install` |
 | Application workloads | `immich` | `immich` |
 | Application workloads | `kopiur` | `kopiur` → ns `kopiur-system`, `kopiur-ottawa-repo`, `kopiur-production` |
-| Application workloads | `kopiur-velero-home-restore-projection` | `kopiur-velero-home-restore-projection` → ns `velero-system` |
-| Application workloads | `kopiur-velero-home-restore-proof` | `kopiur-velero-home-restore-proof` → ns `velero-system` |
-| Application workloads | `kopiur-velero-home-restore-proof-target` | `kopiur-velero-home-restore-proof-target` → ns `kopiur-velero-home-restore-20260908` |
 | Application workloads | `media` | `media-apps` |
 | Application workloads | `searxng` | `searxng` |
 | Application workloads | `tailscale-pam` | `tailscale-pam-lobby` |
@@ -138,16 +134,11 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | `k8gb-prometheus` | `k8gb` | `keiretsu-top` |
 | `k8s-gpu-dra-driver` | `k8s-gpu-dra-driver` | `kube-system` |
 | `kopiur` | `kopiur` | `kopiur-system` |
-| `kopiur-velero-home-restore-projection` | `kopiur-velero-home-restore-projection` | `velero-system` |
-| `kopiur-velero-home-restore-proof` | `kopiur-velero-home-restore-proof` | `velero-system` |
-| `kopiur-velero-home-restore-proof-target` | `kopiur-velero-home-restore-proof-target` | `kopiur-velero-home-restore-20260908` |
 | `teslamate-secret-sync` | `teslamate` | `monitoring` |
 | `tinyauth` | `auth` | `tinyauth` |
 | `tinyauth-killinit` | `auth` | `tinyauth` |
 | `tuppr` | `tuppr` | `system-upgrade` |
 | `tuppr-config` | `tuppr` | `system-upgrade` |
-| `velero` | `velero` | `velero-system` |
-| `velero-ui` | `velero` | `velero-system` |
 | `victoria-logs` | `victoria-logs` | `monitoring` |
 
 ## Robbinsdale — `talos-robbinsdale`
@@ -205,13 +196,12 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Storage and data services | `csi-addons` | `csi-addons`, `csi-addons-config` |
 | Storage and data services | `csi-driver-smb` | `csi-driver-smb` → ns `kube-system` |
 | Storage and data services | `dragonfly-operator-system` | `dragonfly-operator-system` |
-| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-keys`, `garage-kopiur-robbinsdale-bucket`, `garage-nodes`, `garage-reference-grants`, `garage-robbinsdale-reference-grants`, `garage-velero-bucket`, `garage-webui` |
+| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-keys`, `garage-kopiur-robbinsdale-bucket`, `garage-nodes`, `garage-reference-grants`, `garage-robbinsdale-reference-grants`, `garage-webui` |
 | Storage and data services | `garage-operator-system` | `garage-operator-system-install` |
 | Storage and data services | `local-path-storage` | `local-path-storage` |
 | Storage and data services | `rook-ceph` | `rook-ceph-cluster-config`, `rook-ceph-operator` |
 | Storage and data services | `snapshot-controller` | `snapshot-controller` |
 | Storage and data services | `strimzi` | `strimzi` (pointer commented out — renders to nothing) |
-| Storage and data services | `velero` | `velero` → ns `velero-system` |
 | Observability | `fluent-bit` | `fluent-bit` |
 | Observability | `gatus` | `gatus`, `gatus-mcs` |
 | Observability | `mimir` | `mimir-egress` |
@@ -237,7 +227,6 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | `tinyauth-egress` | `tinyauth-egress` | `tinyauth` |
 | `tuppr` | `tuppr` | `system-upgrade` |
 | `tuppr-config` | `tuppr` | `system-upgrade` |
-| `velero` | `velero` | `velero-system` |
 | `victoria-logs` | `victoria-logs` | `monitoring` |
 
 ## StPetersburg — `talos-stpetersburg`
@@ -292,11 +281,10 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Networking, ingress and identity | `tailscale-system` | `tailscale-system-app` |
 | Networking, ingress and identity | `tinyauth-egress` | `tinyauth-egress` → ns `tinyauth` |
 | Storage and data services | `cnpg-system` | `cnpg-system` |
-| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-keys`, `garage-kopiur-stpetersburg-bucket`, `garage-nodes-stpetersburg`, `garage-reference-grants`, `garage-stpetersburg-reference-grants`, `garage-velero-bucket`, `garage-webui` |
+| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-keys`, `garage-kopiur-stpetersburg-bucket`, `garage-nodes-stpetersburg`, `garage-reference-grants`, `garage-stpetersburg-reference-grants`, `garage-webui` |
 | Storage and data services | `garage-operator-system` | `garage-operator-system-install` |
 | Storage and data services | `local-path-storage` | `local-path-storage` |
 | Storage and data services | `snapshot-controller` | `snapshot-controller` |
-| Storage and data services | `velero` | `velero` → ns `velero-system` |
 | Observability | `fluent-bit` | `fluent-bit` |
 | Observability | `gatus` | `gatus`, `gatus-mcs` |
 | Observability | `mimir` | `mimir-egress` |
@@ -328,6 +316,5 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | `tinyauth-egress` | `tinyauth-egress` | `tinyauth` |
 | `tuppr` | `tuppr` | `system-upgrade` |
 | `tuppr-config` | `tuppr` | `system-upgrade` |
-| `velero` | `velero` | `velero-system` |
 | `victoria-logs` | `victoria-logs` | `monitoring` |
 
