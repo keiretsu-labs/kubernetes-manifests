@@ -260,6 +260,17 @@ spec:
     enabled: true
   copyMethod: Snapshot
   groupBy: None
+  mover:
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      runAsNonRoot: false
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+          - DAC_OVERRIDE
+          - DAC_READ_SEARCH
+    privilegedMode: true
   sources:
     - pvc:
         name: plex-config-ceph
