@@ -172,23 +172,10 @@
       "enabled": false
     },
     {
-      "description": "Do not update Docker-like versions in Mimir alert-rule fixtures; they are test data, not deployed images. Review-by: 2026-10-10.",
+      "description": "Do not update Docker-like image or version values in Mimir alert-rule test fixtures; rules/tests/ contains promtool data, not deployed images. Review-by: 2026-10-10.",
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["oci.cdn.keiretsu.top/corp/workspace"],
       "matchFileNames": [
-        "kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/bhaiya_workspace_image_test.yaml"
-      ],
-      "enabled": false
-    },
-    {
-      "description": "Do not update Docker-like image values in the Mimir running-workload alert-rule fixture; they are test data, not deployed images. Review-by: 2026-10-10.",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": [
-        "oci.cdn.keiretsu.top/keiretsu/vault",
-        "oci.cdn.keiretsu.top/keiretsu/app"
-      ],
-      "matchFileNames": [
-        "kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/running_workload_images_test.yaml"
+        "kubernetes/apps/base/mimir/*/rules/tests/**"
       ],
       "enabled": false
     },
