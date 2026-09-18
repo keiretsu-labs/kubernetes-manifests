@@ -172,6 +172,15 @@
       "enabled": false
     },
     {
+      "description": "Do not update Docker-like versions in Mimir alert-rule fixtures; they are test data, not deployed images. Review-by: 2026-10-10.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["oci.cdn.keiretsu.top/corp/workspace"],
+      "matchFileNames": [
+        "kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/bhaiya_workspace_image_test.yaml"
+      ],
+      "enabled": false
+    },
+    {
       "description": "Exclude legacy tags with 4-digit build numbers in patch position",
       "matchPackageNames": ["lscr.io/linuxserver/lidarr"],
       "allowedVersions": "/^\\d+\\.\\d+\\.\\d{1,2}$/"

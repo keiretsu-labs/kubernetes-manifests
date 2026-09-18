@@ -1,6 +1,14 @@
 name: flate
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "clusters/**"
+      - "kubernetes/**"
+      - "tools/**"
+      - "Makefile"
+      - ".github/workflows/flate.yaml"
   pull_request:
     branches: [main]
     paths:
@@ -16,6 +24,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  mimir-rule-tests:
+    name: Mimir rule fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install pinned promtool
+        env:
+          PROMETHEUS_VERSION: 3.14.0
+          PROMETHEUS_SHA256: f665c6da19eb7ba399c915d30c7d9793c9b417bf8a749b504bc470678631478d
+        run: |
+          set -euo pipefail
+          asset="prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz"
+          url="https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/${asset}"
+          curl --fail --silent --show-error --location --retry 3 "$url" -o "$RUNNER_TEMP/$asset"
+          printf '%s  %s\n' "$PROMETHEUS_SHA256" "$RUNNER_TEMP/$asset" | sha256sum --check --status
+          tar -xzf "$RUNNER_TEMP/$asset" -C "$RUNNER_TEMP"
+          install -m 0755 "$RUNNER_TEMP/prometheus-${PROMETHEUS_VERSION}.linux-amd64/promtool" "$RUNNER_TEMP/promtool"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Run all Mimir rule fixtures
+        run: kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/run.sh
+
   test:
     runs-on: ubuntu-latest
     permissions:
