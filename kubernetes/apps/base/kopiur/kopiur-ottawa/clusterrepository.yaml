@@ -16,6 +16,7 @@ spec:
       - firefly
       - keiretsu
       - media
+      - forgejo
   credentialProjection:
     allowed: true
   backend:

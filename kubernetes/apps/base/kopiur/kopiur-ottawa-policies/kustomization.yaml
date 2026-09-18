@@ -8,4 +8,5 @@ resources:
   - ./firefly.yaml
   - ./keiretsu.yaml
   - ./media.yaml
+  - ./forgejo.yaml
   - ./snapshotschedules.yaml

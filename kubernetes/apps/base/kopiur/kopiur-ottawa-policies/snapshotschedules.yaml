@@ -70,3 +70,15 @@ spec:
   schedule:
     cron: "0 3 * * *"
     jitter: 30m
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: forgejo-data
+  namespace: forgejo
+spec:
+  policyRef:
+    name: forgejo-data
+  schedule:
+    cron: "30 2 * * *"
+    jitter: 30m

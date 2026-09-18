@@ -30,12 +30,6 @@ spec:
     - pvc:
         name: tinyauth-killinit-data
       readOnly: true
-  mover:
-    securityContext:
-      runAsUser: 0
-      runAsGroup: 0
-      runAsNonRoot: false
-    privilegedMode: true
   retention:
     keepDaily: 14
     keepWeekly: 4
