@@ -74,3 +74,11 @@ spec:
         - kind: TCPRoute
         namespaces:
           from: All
+    - name: bhaiya-workspace-ssh
+      protocol: TCP
+      port: 6922
+      allowedRoutes:
+        kinds:
+        - kind: TCPRoute
+        namespaces:
+          from: All
