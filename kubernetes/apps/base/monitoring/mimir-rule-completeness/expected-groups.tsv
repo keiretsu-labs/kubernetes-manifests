@@ -10,6 +10,7 @@ bhaiya-sandbox-telemetry	bhaiya-sandbox-telemetry.rules
 bhaiya-ssh	bhaiya-ssh.rules
 bhaiya-workspace-endpoints	bhaiya-workspace-endpoints.rules
 bhaiya-workspace-image	bhaiya-workspace-image.rules
+bhaiya-workspace-backup	bhaiya-workspace-backup.rules
 bhaiya-fleet	bhaiya.fleet.availability
 bhaiya-fleet	bhaiya.fleet.ssh
 bhaiya-fleet	bhaiya.fleet.release
