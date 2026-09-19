@@ -870,11 +870,17 @@ ClusterMesh LoadBalancer Service. Before pinning any other address, grep for it.
 
 ### Those addresses reach the LAN over BGP
 
-Cilium peers with the UniFi gateway: `CiliumBGPClusterConfig` named `unifi`,
-local ASN 64514, peering `${LAN_GATEWAY_IP}` at ASN 64515, with a 9-second hold
-time and graceful restart. The peer config selects which advertisements to send
-by the label `advertise: bgp`, and the single shipped `CiliumBGPAdvertisement`
-carries that label.
+Cilium peers with the **local** UniFi gateway only. `CiliumBGPClusterConfig`
+named `unifi` uses `${CILIUM_ASN}` / `${UNIFI_ASN}` / `${LAN_GATEWAY_IP}`, a
+9-second hold time and graceful restart. The UniFi mesh already carries
+cross-site reachability; a second BGP session to the other UDMs does not add
+a path. The peer config selects which advertisements to send by the label
+`advertise: bgp`, and the single shipped `CiliumBGPAdvertisement` carries that
+label.
+
+Cilium ASNs are unique per cluster: Robbinsdale 64512, Ottawa 64514,
+St. Petersburg 64516. St. Petersburg used to share Ottawa's 64514. Its UDM
+stays ASN 64515; FRR `remote-as` on that UDM must move from 64514 to 64516.
 
 What that advertisement contains is the part worth reading twice. It advertises
 Service `ClusterIP`, `ExternalIP` and `LoadBalancerIP` — with a catch-all
@@ -892,6 +898,31 @@ Two things follow:
   look healthy from inside the cluster, while being unreachable from the LAN.
   That failure presents as "DNS resolves but nothing connects", which is easy to
   misdiagnose as an ingress or certificate problem.
+
+### Shared LoadBalancer CIDR
+
+Per-site `CLUSTER_LOAD_BALANCER_CIDR` stays the Tailscale and ClusterMesh
+pool (`10.169.0.0/16`, `10.50.0.0/16`, `10.73.0.0/16`) — `.69.x` nameserver
+and fluent-bit, `.100.x` PeerRelay, `.10.20` ClusterMesh.
+
+Public vs private is a Gateway listener, not an IP range. The per-site `/16`
+already hosts both Envoy VIPs (`*.10.15` public, `*.10.14` private). A second
+shared space is one UniFi network, same `.254` convention:
+
+| | |
+|---|---|
+| UniFi network | `k8s-shared` |
+| CIDR | `10.69.0.0/16` |
+| Gateway | `10.69.0.254` |
+| UniFi-only | `10.69.0.0/24` (DHCP off) |
+| Robbinsdale | `10.69.1.0/24` |
+| Ottawa | `10.69.2.0/24` |
+| St. Petersburg | `10.69.3.0/24` |
+
+Opt in with `lb.keiretsu.top/pool: shared`. `ipv4NativeRoutingCIDR` is already
+`10.0.0.0/8`. The mesh routes this because it is a UniFi network, not because
+Cilium BGP-peers with remote routers. `10.69.0.0/16` does not overlap
+`10.169.69.50` (that address lives in Ottawa's per-site pool).
 
 ## Storage and data
 
@@ -1726,7 +1757,7 @@ namespaces.
 - scheduling allowed on control planes
 - `LAN_CIDR 192.168.169.0/24` · `KUBERNETES_API_VIP 192.168.169.25`
 - `CLUSTER_POD_CIDR 10.3.0.0/16` · `CLUSTER_SERVICE_CIDR 10.2.0.0/16`
-- `CLUSTER_LOAD_BALANCER_CIDR 10.169.0.0/16`
+- `CLUSTER_LOAD_BALANCER_CIDR 10.169.0.0/16` · `CILIUM_ASN 64514` · shared `10.69.2.0/24`
 - 4via6 `fd7a:115c:a1e0:b1a:0:2::/96`
 - `STORAGECLASS_DEFAULT` and `_METADATA` = `ceph-block-replicated`;
   `_LONGTERM` = smb
@@ -1782,7 +1813,7 @@ namespaces.
 - three machines, **all control plane** — no dedicated workers
 - `LAN_CIDR 192.168.50.0/24` · `KUBERNETES_API_VIP 192.168.50.25`
 - `CLUSTER_POD_CIDR 10.1.0.0/16` · `CLUSTER_SERVICE_CIDR 10.0.0.0/16`
-- `CLUSTER_LOAD_BALANCER_CIDR 10.50.0.0/16`
+- `CLUSTER_LOAD_BALANCER_CIDR 10.50.0.0/16` · `CILIUM_ASN 64512` · shared `10.69.1.0/24`
 - 4via6 `fd7a:115c:a1e0:b1a:0:1::/96`
 - `STORAGECLASS_DEFAULT` and `_METADATA` = `ceph-block-replicated-nvme`;
   `_LONGTERM` = smb
@@ -1828,7 +1859,7 @@ namespaces.
   sparks
 - `LAN_CIDR 192.168.73.0/24` · `KUBERNETES_API_VIP 192.168.73.25`
 - `CLUSTER_POD_CIDR 10.5.0.0/16` · `CLUSTER_SERVICE_CIDR 10.4.0.0/16`
-- `CLUSTER_LOAD_BALANCER_CIDR 10.73.0.0/16`
+- `CLUSTER_LOAD_BALANCER_CIDR 10.73.0.0/16` · `CILIUM_ASN 64516` · `UNIFI_ASN 64515` · shared `10.69.3.0/24`
 - 4via6 `fd7a:115c:a1e0:b1a:0:3::/96`
 - no Rook-Ceph here — `STORAGECLASS_DEFAULT` / `_METADATA` / `_LONGTERM` are
   all `local-path`

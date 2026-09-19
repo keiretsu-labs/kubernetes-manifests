@@ -9,10 +9,10 @@ spec:
       kubernetes.io/os: linux
   bgpInstances:
     - name: unifi
-      localASN: 64514
+      localASN: ${CILIUM_ASN}
       peers:
-        - name: "udm-1"
-          peerASN: 64515
+        - name: udm-1
+          peerASN: ${UNIFI_ASN}
           peerAddress: ${LAN_GATEWAY_IP}
           peerConfigRef:
             name: cilium-peer

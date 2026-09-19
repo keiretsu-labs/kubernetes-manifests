@@ -5,8 +5,8 @@ metadata:
   name: "k8s-pool"
 spec:
   blocks:
-    # The UniFi gateway is 10.169.0.254. Keep it out of LB-IPAM while
-    # retaining the existing pool addresses, including 10.169.0.0 if used.
+    # Per-site pool: Tailscale (.69.x, .100.x), ClusterMesh, and existing
+    # pinned LBs. UniFi gateway is 10.169.0.254 — keep it out of IPAM.
     - start: "10.169.0.0"
       stop: "10.169.0.253"
     - start: "10.169.0.255"
@@ -14,3 +14,15 @@ spec:
   serviceSelector:
     matchExpressions:
       - { key: somekey, operator: NotIn, values: ["never-used-value"] }
+      - { key: lb.keiretsu.top/pool, operator: NotIn, values: ["shared"] }
+---
+apiVersion: cilium.io/v2
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: k8s-shared
+spec:
+  blocks:
+    - cidr: "${SHARED_LOAD_BALANCER_SITE_CIDR}"
+  serviceSelector:
+    matchLabels:
+      lb.keiretsu.top/pool: shared
