@@ -10,24 +10,43 @@ groups:
     rules:
       - alert: BhaiyaProviderFenceDirectDenial
         expr: |
-          sum by (cluster, reason) (
-            increase(
-              bhaiya_provider_fence_denials_total{
-                namespace="bhaiya"
-              }[15m]
-            )
-          ) > 0
+          # Alert on a rising per-reason denial rate, not merely on a counter
+          # that remains high. The current-denial guard keeps a falling burst
+          # from starting a new alert after its rate slope has turned over.
+          (
+            deriv(
+              (
+                sum by (cluster, reason) (
+                  rate(
+                    bhaiya_provider_fence_denials_total{
+                      namespace="bhaiya"
+                    }[5m]
+                  )
+                )
+              )[30m:]
+            ) > 0
+          )
+          and on (cluster, reason)
+          (
+            sum by (cluster, reason) (
+              increase(
+                bhaiya_provider_fence_denials_total{
+                  namespace="bhaiya"
+                }[5m]
+              )
+            ) > 0
+          )
         for: 1m
         labels:
           severity: critical
         annotations:
-          summary: Bhaiya provider fence is denying mutations ({{ $labels.reason }})
+          summary: Bhaiya provider fence denial rate is rising ({{ $labels.reason }})
           description: >-
-            The provider-fence admission sidecar has denied at least one Bhaiya
-            mutation in the last fifteen minutes. Reason {{ $labels.reason }}
-            is a direct fail-closed decision; inspect the activation barrier,
-            durable lease state, and affected reconciliation before accepting
-            stale provider objects.
+            The provider-fence admission sidecar's denial rate for reason
+            {{ $labels.reason }} is rising. This is a burst above its steady
+            state, not merely a continuously elevated counter; inspect the
+            activation barrier, durable lease state, and affected
+            reconciliation before accepting stale provider objects.
 
   - name: bhaiya.workspace-provisioning
     rules:
