@@ -8,14 +8,24 @@ spec:
     matchLabels:
       kubernetes.io/os: linux
   bgpInstances:
-    - name: "unifi"
-      localASN: 64512
+    - name: unifi
+      localASN: ${CILIUM_ASN}
       peers:
-        - name: "udm-1"
-          peerASN: 64513
-          peerAddress: ${LAN_GATEWAY_IP}
+        - name: udm-ottawa
+          peerASN: ${UNIFI_ASN_OTTAWA}
+          peerAddress: ${UNIFI_GATEWAY_OTTAWA}
           peerConfigRef:
-            name: "cilium-peer"
+            name: cilium-peer
+        - name: udm-robbinsdale
+          peerASN: ${UNIFI_ASN_ROBBINSDALE}
+          peerAddress: ${UNIFI_GATEWAY_ROBBINSDALE}
+          peerConfigRef:
+            name: cilium-peer
+        - name: udm-stpetersburg
+          peerASN: ${UNIFI_ASN_STPETERSBURG}
+          peerAddress: ${UNIFI_GATEWAY_STPETERSBURG}
+          peerConfigRef:
+            name: cilium-peer
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPPeerConfig

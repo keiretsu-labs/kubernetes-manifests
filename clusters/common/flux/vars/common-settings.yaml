@@ -8,6 +8,26 @@ data:
   COMMON_DOMAIN: keiretsu.top
   K8GB_EXT_GEO_TAGS: "ottawa,robbinsdale,stpetersburg"
 
+  # ASN pairs: even = Cilium, odd = UDM, +2 per SITE_ID.
+  #   Robbinsdale (1) 64512 / 64513
+  #   Ottawa      (2) 64514 / 64515
+  #   St. Pete    (3) 64516 / 64517
+  UNIFI_GATEWAY_OTTAWA: "192.168.169.1"
+  UNIFI_GATEWAY_ROBBINSDALE: "192.168.50.1"
+  UNIFI_GATEWAY_STPETERSBURG: "192.168.73.1"
+  UNIFI_ASN_OTTAWA: "64515"
+  UNIFI_ASN_ROBBINSDALE: "64513"
+  UNIFI_ASN_STPETERSBURG: "64517"
+
+  # Shared public/private LB space. Tailscale LBs stay on the per-site
+  # CLUSTER_LOAD_BALANCER_CIDR (.69.x nameserver, .100.x PeerRelay).
+  # UniFi: k8s-public 10.6.0.0/16 gw 10.6.0.254; k8s-private 10.7.0.0/16 gw 10.7.0.254.
+  # 10.6.0.0/24 and 10.7.0.0/24 are UniFi-only. Cilium carves 10.{6,7}.${SITE_ID}.0/24.
+  SHARED_PUBLIC_LB_CIDR: "10.6.0.0/16"
+  SHARED_PUBLIC_LB_GATEWAY: "10.6.0.254"
+  SHARED_PRIVATE_LB_CIDR: "10.7.0.0/16"
+  SHARED_PRIVATE_LB_GATEWAY: "10.7.0.254"
+
   # Garage scheduling defaults — CRD rejects YAML null on these fields, so we
   # supply empty JSON object/array. Clusters with specific placement needs
   # override in their flux/vars/cluster-settings.yaml.
