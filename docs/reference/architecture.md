@@ -899,27 +899,30 @@ Two things follow:
   That failure presents as "DNS resolves but nothing connects", which is easy to
   misdiagnose as an ingress or certificate problem.
 
-### Shared public and private LoadBalancer CIDRs
+### Shared LoadBalancer CIDR
 
 Per-site `CLUSTER_LOAD_BALANCER_CIDR` stays the Tailscale and ClusterMesh
 pool (`10.169.0.0/16`, `10.50.0.0/16`, `10.73.0.0/16`) — `.69.x` nameserver
-and fluent-bit, `.100.x` PeerRelay, `.10.20` ClusterMesh. Those VIPs are
-site-local on purpose.
+and fluent-bit, `.100.x` PeerRelay, `.10.20` ClusterMesh.
 
-Internet and LAN VIPs that should exist on every site live in two shared UniFi
-networks (same pattern as the per-site LB nets: gateway `.0.254`, DHCP off):
+Public vs private is a Gateway listener, not an IP range. The per-site `/16`
+already hosts both Envoy VIPs (`*.10.15` public, `*.10.14` private). A second
+shared space is one UniFi network, same `.254` convention:
 
-| UniFi network | CIDR | Gateway | UniFi-only | Robbinsdale | Ottawa | St. Petersburg | Cilium pool / label |
-|---|---|---|---|---|---|---|---|
-| `k8s-public` | `10.6.0.0/16` | `10.6.0.254` | `10.6.0.0/24` | `10.6.1.0/24` | `10.6.2.0/24` | `10.6.3.0/24` | `k8s-public` / `lb.keiretsu.top/pool=public` |
-| `k8s-private` | `10.7.0.0/16` | `10.7.0.254` | `10.7.0.0/24` | `10.7.1.0/24` | `10.7.2.0/24` | `10.7.3.0/24` | `k8s-private` / `lb.keiretsu.top/pool=private` |
+| | |
+|---|---|
+| UniFi network | `k8s-shared` |
+| CIDR | `10.69.0.0/16` |
+| Gateway | `10.69.0.254` |
+| UniFi-only | `10.69.0.0/24` (DHCP off) |
+| Robbinsdale | `10.69.1.0/24` |
+| Ottawa | `10.69.2.0/24` |
+| St. Petersburg | `10.69.3.0/24` |
 
-`ipv4NativeRoutingCIDR` is already `10.0.0.0/8`. Existing LoadBalancers without
-that label keep their per-site addresses. The mesh routes these CIDRs because
-they are UniFi networks, not because Cilium BGP-peers with remote routers.
-
-Do not put the same address in more than one cluster's carve. Anycast is a
-later `/32` advertised from multiple speakers, not a shared IPAM block.
+Opt in with `lb.keiretsu.top/pool: shared`. `ipv4NativeRoutingCIDR` is already
+`10.0.0.0/8`. The mesh routes this because it is a UniFi network, not because
+Cilium BGP-peers with remote routers. `10.69.0.0/16` does not overlap
+`10.169.69.50` (that address lives in Ottawa's per-site pool).
 
 ## Storage and data
 
@@ -1754,7 +1757,7 @@ namespaces.
 - scheduling allowed on control planes
 - `LAN_CIDR 192.168.169.0/24` · `KUBERNETES_API_VIP 192.168.169.25`
 - `CLUSTER_POD_CIDR 10.3.0.0/16` · `CLUSTER_SERVICE_CIDR 10.2.0.0/16`
-- `CLUSTER_LOAD_BALANCER_CIDR 10.169.0.0/16` · `CILIUM_ASN 64514` · public `10.6.2.0/24` · private `10.7.2.0/24`
+- `CLUSTER_LOAD_BALANCER_CIDR 10.169.0.0/16` · `CILIUM_ASN 64514` · shared `10.69.2.0/24`
 - 4via6 `fd7a:115c:a1e0:b1a:0:2::/96`
 - `STORAGECLASS_DEFAULT` and `_METADATA` = `ceph-block-replicated`;
   `_LONGTERM` = smb
@@ -1810,7 +1813,7 @@ namespaces.
 - three machines, **all control plane** — no dedicated workers
 - `LAN_CIDR 192.168.50.0/24` · `KUBERNETES_API_VIP 192.168.50.25`
 - `CLUSTER_POD_CIDR 10.1.0.0/16` · `CLUSTER_SERVICE_CIDR 10.0.0.0/16`
-- `CLUSTER_LOAD_BALANCER_CIDR 10.50.0.0/16` · `CILIUM_ASN 64512` · public `10.6.1.0/24` · private `10.7.1.0/24`
+- `CLUSTER_LOAD_BALANCER_CIDR 10.50.0.0/16` · `CILIUM_ASN 64512` · shared `10.69.1.0/24`
 - 4via6 `fd7a:115c:a1e0:b1a:0:1::/96`
 - `STORAGECLASS_DEFAULT` and `_METADATA` = `ceph-block-replicated-nvme`;
   `_LONGTERM` = smb
@@ -1856,7 +1859,7 @@ namespaces.
   sparks
 - `LAN_CIDR 192.168.73.0/24` · `KUBERNETES_API_VIP 192.168.73.25`
 - `CLUSTER_POD_CIDR 10.5.0.0/16` · `CLUSTER_SERVICE_CIDR 10.4.0.0/16`
-- `CLUSTER_LOAD_BALANCER_CIDR 10.73.0.0/16` · `CILIUM_ASN 64516` · `UNIFI_ASN 64515` · public `10.6.3.0/24` · private `10.7.3.0/24`
+- `CLUSTER_LOAD_BALANCER_CIDR 10.73.0.0/16` · `CILIUM_ASN 64516` · `UNIFI_ASN 64515` · shared `10.69.3.0/24`
 - 4via6 `fd7a:115c:a1e0:b1a:0:3::/96`
 - no Rook-Ceph here — `STORAGECLASS_DEFAULT` / `_METADATA` / `_LONGTERM` are
   all `local-path`

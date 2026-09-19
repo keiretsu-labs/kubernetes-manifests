@@ -646,18 +646,13 @@ reasoning behind the ingress and DNS design is in
 
 ### Cluster CIDRs
 
-| Cluster | LAN / API VIP | Pod CIDR | Service CIDR | Site LB (Tailscale / mesh) | Public carve | Private carve |
-|---------|---------------|----------|--------------|----------------------------|--------------|---------------|
-| <code>talos-ottawa</code> | <code>192.168.169.0/24</code> / <code>192.168.169.25</code> | <code>10.3.0.0/16</code> | <code>10.2.0.0/16</code> | <code>10.169.0.0/16</code> | <code>10.6.2.0/24</code> | <code>10.7.2.0/24</code> |
-| <code>talos-robbinsdale</code> | <code>192.168.50.0/24</code> / <code>192.168.50.25</code> | <code>10.1.0.0/16</code> | <code>10.0.0.0/16</code> | <code>10.50.0.0/16</code> | <code>10.6.1.0/24</code> | <code>10.7.1.0/24</code> |
-| <code>talos-stpetersburg</code> | <code>192.168.73.0/24</code> / <code>192.168.73.25</code> | <code>10.5.0.0/16</code> | <code>10.4.0.0/16</code> | <code>10.73.0.0/16</code> | <code>10.6.3.0/24</code> | <code>10.7.3.0/24</code> |
+| Cluster | LAN / API VIP | Pod CIDR | Service CIDR | Site LB (Tailscale / mesh) | Shared carve |
+|---------|---------------|----------|--------------|----------------------------|--------------|
+| <code>talos-ottawa</code> | <code>192.168.169.0/24</code> / <code>192.168.169.25</code> | <code>10.3.0.0/16</code> | <code>10.2.0.0/16</code> | <code>10.169.0.0/16</code> | <code>10.69.2.0/24</code> |
+| <code>talos-robbinsdale</code> | <code>192.168.50.0/24</code> / <code>192.168.50.25</code> | <code>10.1.0.0/16</code> | <code>10.0.0.0/16</code> | <code>10.50.0.0/16</code> | <code>10.69.1.0/24</code> |
+| <code>talos-stpetersburg</code> | <code>192.168.73.0/24</code> / <code>192.168.73.25</code> | <code>10.5.0.0/16</code> | <code>10.4.0.0/16</code> | <code>10.73.0.0/16</code> | <code>10.69.3.0/24</code> |
 
-Shared UniFi networks (DHCP off, gateway <code>.0.254</code>, <code>.0.0/24</code> stays on the router):
-
-- <code>k8s-public</code> <code>10.6.0.0/16</code> — opt in with <code>lb.keiretsu.top/pool: public</code>
-- <code>k8s-private</code> <code>10.7.0.0/16</code> — opt in with <code>lb.keiretsu.top/pool: private</code>
-
-Tailscale nameserver (<code>.69.50</code>), PeerRelay (<code>.100.100</code>) and ClusterMesh (<code>.10.20</code>) stay on the per-site LB CIDR.
+Shared UniFi network <code>k8s-shared</code>: <code>10.69.0.0/16</code>, gateway <code>10.69.0.254</code>, DHCP off, <code>10.69.0.0/24</code> stays on the router. Opt in with <code>lb.keiretsu.top/pool: shared</code>. Tailscale nameserver (<code>.69.50</code>), PeerRelay (<code>.100.100</code>) and ClusterMesh (<code>.10.20</code>) stay on the per-site LB CIDR.
 
 ### Tailscale DNS and Gateway API
 

@@ -14,26 +14,15 @@ spec:
   serviceSelector:
     matchExpressions:
       - { key: somekey, operator: NotIn, values: ["never-used-value"] }
-      - { key: lb.keiretsu.top/pool, operator: NotIn, values: ["public", "private"] }
+      - { key: lb.keiretsu.top/pool, operator: NotIn, values: ["shared"] }
 ---
 apiVersion: cilium.io/v2
 kind: CiliumLoadBalancerIPPool
 metadata:
-  name: k8s-public
+  name: k8s-shared
 spec:
   blocks:
-    - cidr: "${SHARED_PUBLIC_LB_SITE_CIDR}"
+    - cidr: "${SHARED_LOAD_BALANCER_SITE_CIDR}"
   serviceSelector:
     matchLabels:
-      lb.keiretsu.top/pool: public
----
-apiVersion: cilium.io/v2
-kind: CiliumLoadBalancerIPPool
-metadata:
-  name: k8s-private
-spec:
-  blocks:
-    - cidr: "${SHARED_PRIVATE_LB_SITE_CIDR}"
-  serviceSelector:
-    matchLabels:
-      lb.keiretsu.top/pool: private
+      lb.keiretsu.top/pool: shared
