@@ -180,6 +180,28 @@ groups:
             scrape/evaluation jitter. Inspect the main-push dispatcher before
             treating a healthy 28–29 minute tag pipeline as stalled.
 
+      # This is deliberately a separate alert from the release-state alerts:
+      # a missing Woodpecker token makes the observer report unknown forever,
+      # so neither a failed nor a not-queued release can be detected.
+      - alert: BhaiyaWorkspaceImageReleaseObserverUnconfigured
+        expr: |
+          max by (cluster) (
+            bhaiya_workspace_image_release_observer_configured == 0
+          )
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya workspace-image release observer is unconfigured
+          description: >-
+            Bhaiya's workspace-image release observer has reported that its
+            required Woodpecker API token is not configured for at least 15
+            minutes. While this gauge is zero, release status remains unknown
+            and BhaiyaWorkspaceImageReleasePipelineFailed and
+            BhaiyaWorkspaceImageReleaseNotQueued cannot fire. Restore the
+            observer credential in corp/bhaiya, then verify that release
+            status is reporting definitive states again.
+
       - alert: BhaiyaWorkspaceImageLatestRollback
         expr: |
           max by (cluster, image) (
