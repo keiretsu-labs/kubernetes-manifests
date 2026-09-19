@@ -13,7 +13,7 @@ spec:
     namespace: garage
   globalAlias: kopiur-robbinsdale
   quotas:
-    maxSize: 50Gi
+    maxSize: 500Gi
     maxObjects: 1000000
   keyPermissions:
     - keyRef:
