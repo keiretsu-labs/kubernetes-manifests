@@ -13,6 +13,74 @@ spec:
       dataChecksums: true
   monitoring:
     enablePodMonitor: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: lobby-postgres-s3-store
+        serverName: lobby-postgres
+  backup:
+    retentionPolicy: "30d"
+  externalClusters:
+    - name: lobby-postgres-backup
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: lobby-postgres-s3-store
+          serverName: lobby-postgres
   storage:
     size: 5Gi
     storageClass: ceph-block-replicated
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: lobby-postgres-s3-store
+spec:
+  configuration:
+    destinationPath: s3://lobby-postgres/${LOCATION}/
+    endpointURL: http://${COMMON_S3_ENDPOINT}
+    s3Credentials:
+      accessKeyId:
+        name: lobby-postgres-s3
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: lobby-postgres-s3
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      maxParallel: 8
+  instanceSidecarConfiguration:
+    env:
+      - name: AWS_DEFAULT_REGION
+        value: garage
+  retentionPolicy: "30d"
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: lobby-postgres-s3
+spec:
+  schedule: "0 30 2 * * *"
+  # The explicit Backup below establishes the first recoverable base backup
+  # after the plugin sidecar is registered. Keep immediate false so Flux
+  # reconciliation cannot repeatedly launch another initial backup.
+  immediate: false
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: lobby-postgres
+---
+# One-shot base backup after enabling the Barman Cloud plugin. The schedule
+# keeps the recovery window fresh after this first completed Backup.
+apiVersion: postgresql.cnpg.io/v1
+kind: Backup
+metadata:
+  name: lobby-postgres-verify-20260919
+spec:
+  cluster:
+    name: lobby-postgres
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

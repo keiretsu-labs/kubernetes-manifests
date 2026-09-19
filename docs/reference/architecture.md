@@ -981,7 +981,7 @@ All *pools* live under `/var/local-path-provisioner/garage-node-local/…` with
 | `mimir` | long-term metrics blocks |
 | `tailscale-logs` | tailnet audit log stream |
 | `forgejo` | Forgejo attachments and LFS objects |
-| `bhaiya-postgres`, `firefly-postgres`, `forgejo-postgres`, `woodpecker-postgres`, `suwayomi-postgres`, `teslamate-postgres`, `immich-postgres`, `tracearr-postgres`, `omnibus-postgres`, `bookorbit-postgres` | CNPG barman-cloud WAL and base backups — one bucket per database, prefix `${LOCATION}`, so federated sites never share a Barman catalog |
+| `bhaiya-postgres`, `firefly-postgres`, `forgejo-postgres`, `lobby-postgres`, `woodpecker-postgres`, `suwayomi-postgres`, `teslamate-postgres`, `immich-postgres`, `tracearr-postgres`, `omnibus-postgres`, `bookorbit-postgres` | CNPG barman-cloud WAL and base backups — one bucket per database, prefix `${LOCATION}`, so federated sites never share a Barman catalog |
 
 One footnote on that last row, because it breaks the pattern it states:
 
@@ -1106,7 +1106,7 @@ except `lobby-postgres` (1):
 |---|---|---|
 | `forgejo-postgres` | `ceph-block-replicated` 10Gi | |
 | `woodpecker-postgres` | `ceph-block-replicated` 10Gi | |
-| `lobby-postgres` | `ceph-block-replicated` 5Gi | database conference; 1 instance |
+| `lobby-postgres` | `ceph-block-replicated` 5Gi | database conference; 1 instance; CNPG/Barman backup to Garage |
 | `teslamate-postgres` | default class 8Gi | `postgresql:18` |
 | `suwayomi-postgres` | default class 10Gi | |
 | `immich-postgres` | 16Gi Ottawa / 40Gi Robbinsdale | vectorchord image; the larger volume is the Robbinsdale one |

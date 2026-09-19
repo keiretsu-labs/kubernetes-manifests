@@ -6,5 +6,6 @@ resources:
   - kopiur-reference-grant.yaml
   - firefly-reference-grant.yaml
   - forgejo-reference-grant.yaml
+  - lobby-postgres-reference-grant.yaml
   - woodpecker-reference-grant.yaml
   - teslamate-reference-grant.yaml
