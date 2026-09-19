@@ -37,3 +37,36 @@ tests:
       - eval_time: 15m
         alertname: BhaiyaWorkspaceImageReleaseObserverUnconfigured
         exp_alerts: []
+
+  # Replay the 14-hour delivery outage: the observer was unconfigured, so its
+  # release state stayed unknown and the terminal failure/not-queued alerts had
+  # no matching status series to evaluate.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_workspace_image_release_observer_configured{cluster="talos-ottawa"}'
+        values: "0+0x840"
+      - series: 'bhaiya_workspace_image_release_status{cluster="talos-ottawa",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.412",status="unknown"}'
+        values: "1+0x840"
+    alert_rule_test:
+      - eval_time: 840m
+        alertname: BhaiyaWorkspaceImageReleaseObserverUnconfigured
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              severity: critical
+            exp_annotations:
+              summary: Bhaiya workspace-image release observer is unconfigured
+              description: >-
+                Bhaiya's workspace-image release observer has reported that its
+                required Woodpecker API token is not configured for at least 15
+                minutes. While this gauge is zero, release status remains
+                unknown and BhaiyaWorkspaceImageReleasePipelineFailed and
+                BhaiyaWorkspaceImageReleaseNotQueued cannot fire. Restore the
+                observer credential in corp/bhaiya, then verify that release
+                status is reporting definitive states again.
+      - eval_time: 840m
+        alertname: BhaiyaWorkspaceImageReleasePipelineFailed
+        exp_alerts: []
+      - eval_time: 840m
+        alertname: BhaiyaWorkspaceImageReleaseNotQueued
+        exp_alerts: []

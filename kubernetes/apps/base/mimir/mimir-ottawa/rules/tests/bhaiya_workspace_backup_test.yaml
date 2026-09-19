@@ -1,0 +1,59 @@
+rule_files:
+  - ../bhaiya-workspace-backup.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # A high age is sufficient to fire regardless of which diagnostic condition
+  # caused coverage to disappear.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_workspace_backup_last_success_age_seconds{cluster="talos-ottawa",workspace="raj-trades"}'
+        values: "172800+0x20"
+      - series: 'bhaiya_workspace_backup_last_success_age_seconds{cluster="talos-ottawa",workspace="teaspoon"}'
+        values: "172800+0x20"
+      - series: 'bhaiya_workspace_backup_policy_missing{cluster="talos-ottawa",workspace="raj-trades"}'
+        values: "1+0x20"
+      - series: 'bhaiya_workspace_backup_schedule_suspended{cluster="talos-ottawa",workspace="teaspoon"}'
+        values: "1+0x20"
+    alert_rule_test:
+      - eval_time: 0m
+        alertname: BhaiyaWorkspaceBackupStale
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              workspace: raj-trades
+              severity: critical
+            exp_annotations:
+              summary: Bhaiya workspace raj-trades has no recent backup
+              description: >-
+                Bhaiya has observed no successful Kopiur backup for workspace
+                raj-trades within the last 24 hours. This is a backup coverage
+                failure whether the cause is a missing policy, a suspended
+                schedule, or a failing mover. Inspect
+                bhaiya_workspace_backup_policy_missing,
+                bhaiya_workspace_backup_schedule_suspended, and the current
+                Snapshot/SnapshotSchedule status to identify the cause.
+          - exp_labels:
+              cluster: talos-ottawa
+              workspace: teaspoon
+              severity: critical
+            exp_annotations:
+              summary: Bhaiya workspace teaspoon has no recent backup
+              description: >-
+                Bhaiya has observed no successful Kopiur backup for workspace
+                teaspoon within the last 24 hours. This is a backup coverage
+                failure whether the cause is a missing policy, a suspended
+                schedule, or a failing mover. Inspect
+                bhaiya_workspace_backup_policy_missing,
+                bhaiya_workspace_backup_schedule_suspended, and the current
+                Snapshot/SnapshotSchedule status to identify the cause.
+
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_workspace_backup_last_success_age_seconds{cluster="talos-ottawa",workspace="raj-trades"}'
+        values: "3600+0x20"
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: BhaiyaWorkspaceBackupStale
+        exp_alerts: []

@@ -1,0 +1,28 @@
+# Workspace backup freshness is emitted by Bhaiya and remote-written into the
+# per-cluster Mimir tenant. The age is the firing signal; companion policy and
+# schedule gauges explain why the age is high but must not decide coverage.
+#
+# Keep this namespace unique across every file passed to mimirtool. A repeated
+# namespace aborts the complete rule sync for every tenant.
+namespace: bhaiya-workspace-backup
+groups:
+  - name: bhaiya-workspace-backup.rules
+    rules:
+      - alert: BhaiyaWorkspaceBackupStale
+        expr: |
+          max by (cluster, workspace) (
+            bhaiya_workspace_backup_last_success_age_seconds > 86400
+          )
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya workspace {{ $labels.workspace }} has no recent backup
+          description: >-
+            Bhaiya has observed no successful Kopiur backup for workspace
+            {{ $labels.workspace }} within the last 24 hours. This is a backup
+            coverage failure whether the cause is a missing policy, a suspended
+            schedule, or a failing mover. Inspect
+            bhaiya_workspace_backup_policy_missing,
+            bhaiya_workspace_backup_schedule_suspended, and the current
+            Snapshot/SnapshotSchedule status to identify the cause.
