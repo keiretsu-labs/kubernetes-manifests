@@ -1,0 +1,49 @@
+rule_files:
+  - ../bhaiya-provider-provisioning.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # A chronic tombstone denial must not hide a new activation-barrier burst.
+  # The tombstone counter rises at a flat six denials per minute; the
+  # activation counter rises by fourteen per minute after an hour of silence.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_provider_fence_denials_total{cluster="talos-ottawa",namespace="bhaiya",reason="tombstone_update_invalid"}'
+        values: "0+6x90"
+      - series: 'bhaiya_provider_fence_denials_total{cluster="talos-ottawa",namespace="bhaiya",reason="activation_barrier_not_live"}'
+        values: "0+0x60 14 28 42 56 70 84 98 112 126 140 140+0x20"
+    alert_rule_test:
+      - eval_time: 55m
+        alertname: BhaiyaProviderFenceDirectDenial
+        exp_alerts: []
+      - eval_time: 65m
+        alertname: BhaiyaProviderFenceDirectDenial
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              reason: activation_barrier_not_live
+              severity: critical
+            exp_annotations:
+              summary: >-
+                Bhaiya provider fence denial rate is rising
+                (activation_barrier_not_live)
+              description: >-
+                The provider-fence admission sidecar's denial rate for reason
+                activation_barrier_not_live is rising. This is a burst above
+                its steady state, not merely a continuously elevated counter;
+                inspect the activation barrier, durable lease state, and
+                affected reconciliation before accepting stale provider
+                objects.
+
+  # A continuously elevated tombstone rate is steady state, not a critical
+  # denial burst. Keep this separate from the combined test so the no-alert
+  # result cannot be explained by the activation series being absent.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_provider_fence_denials_total{cluster="talos-ottawa",namespace="bhaiya",reason="tombstone_update_invalid"}'
+        values: "0+6x120"
+    alert_rule_test:
+      - eval_time: 90m
+        alertname: BhaiyaProviderFenceDirectDenial
+        exp_alerts: []
