@@ -870,17 +870,17 @@ ClusterMesh LoadBalancer Service. Before pinning any other address, grep for it.
 
 ### Those addresses reach the LAN over BGP
 
-Cilium eBGP-peers with **every** UniFi gateway, not only the local one.
-`CiliumBGPClusterConfig` named `unifi` lists three peers — Ottawa
-`192.168.169.1` ASN 64515, Robbinsdale `192.168.50.1` ASN 64513, St. Petersburg
-`192.168.73.1` ASN 64517 — with a 9-second hold time, graceful restart, and
-`ebgpMultihop: 4` so the session can cross the UniFi site-to-site mesh. The
-peer config selects which advertisements to send by the label `advertise: bgp`,
-and the single shipped `CiliumBGPAdvertisement` carries that label.
+Cilium peers with the **local** UniFi gateway only. `CiliumBGPClusterConfig`
+named `unifi` uses `${CILIUM_ASN}` / `${UNIFI_ASN}` / `${LAN_GATEWAY_IP}`, a
+9-second hold time and graceful restart. The UniFi mesh already carries
+cross-site reachability; a second BGP session to the other UDMs does not add
+a path. The peer config selects which advertisements to send by the label
+`advertise: bgp`, and the single shipped `CiliumBGPAdvertisement` carries that
+label.
 
 Cilium ASNs are unique per cluster: Robbinsdale 64512, Ottawa 64514,
-St. Petersburg 64516. St. Petersburg used to share Ottawa's 64514; that
-collides once both advertise to the same third router.
+St. Petersburg 64516. St. Petersburg used to share Ottawa's 64514. Its UDM
+stays ASN 64515; FRR `remote-as` on that UDM must move from 64514 to 64516.
 
 What that advertisement contains is the part worth reading twice. It advertises
 Service `ClusterIP`, `ExternalIP` and `LoadBalancerIP` — with a catch-all
@@ -888,32 +888,16 @@ selector, so *all* Services, not an opt-in subset — **and the node `PodCIDR`**
 
 Two things follow:
 
-- **Every ClusterIP and every pod address in every cluster is routable from
-  every site's LAN.** ClusterIPs are not a security boundary here. Since the
-  tailnet subnet router also advertises the pod and service CIDRs, they are
-  reachable from the tailnet too. Anything that relies on "it's only a
-  ClusterIP" for protection is not protected; use a `SecurityPolicy`, a
-  NetworkPolicy, or tailnet policy.
-- If BGP to a UDM is down, LoadBalancer Services still get addresses and still
-  look healthy from inside the cluster, while being unreachable from that
-  site's LAN. That failure presents as "DNS resolves but nothing connects",
-  which is easy to misdiagnose as an ingress or certificate problem.
-
-Each UDM's FRR has **one peer-group per Cilium ASN** (a peer-group has a
-single `remote-as`), listing every node IP from that cluster, and TCP 179 must
-be allowed across the UniFi mesh. Cilium does not configure UniFi. Copy-paste
-FRR is below.
-
-ASN scheme, even = Cilium, odd = UDM, +2 per `SITE_ID`:
-
-| Site | SITE_ID | Cilium ASN | UDM ASN | UDM |
-|---|---|---|---|---|
-| Robbinsdale | 1 | 64512 | 64513 | 192.168.50.1 |
-| Ottawa | 2 | 64514 | 64515 | 192.168.169.1 |
-| St. Petersburg | 3 | 64516 | 64517 | 192.168.73.1 |
-
-St. Petersburg's UDM must move from 64515 to 64517 so it no longer shares
-Ottawa's router ASN.
+- **Every ClusterIP and every pod address in every cluster is routable from that
+  site's LAN.** ClusterIPs are not a security boundary here. Since the tailnet
+  subnet router also advertises the pod and service CIDRs, they are reachable
+  from the tailnet too. Anything that relies on "it's only a ClusterIP" for
+  protection is not protected; use a `SecurityPolicy`, a NetworkPolicy, or
+  tailnet policy.
+- If BGP to the UDM is down, LoadBalancer Services still get addresses and still
+  look healthy from inside the cluster, while being unreachable from the LAN.
+  That failure presents as "DNS resolves but nothing connects", which is easy to
+  misdiagnose as an ingress or certificate problem.
 
 ### Shared public and private LoadBalancer CIDRs
 
@@ -922,88 +906,20 @@ pool (`10.169.0.0/16`, `10.50.0.0/16`, `10.73.0.0/16`) — `.69.x` nameserver
 and fluent-bit, `.100.x` PeerRelay, `.10.20` ClusterMesh. Those VIPs are
 site-local on purpose.
 
-Internet and LAN VIPs that should be origin-advertised to every UDM live in
-two shared UniFi networks:
+Internet and LAN VIPs that should exist on every site live in two shared UniFi
+networks (same pattern as the per-site LB nets: gateway `.0.254`, DHCP off):
 
 | UniFi network | CIDR | Gateway | UniFi-only | Robbinsdale | Ottawa | St. Petersburg | Cilium pool / label |
 |---|---|---|---|---|---|---|---|
 | `k8s-public` | `10.6.0.0/16` | `10.6.0.254` | `10.6.0.0/24` | `10.6.1.0/24` | `10.6.2.0/24` | `10.6.3.0/24` | `k8s-public` / `lb.keiretsu.top/pool=public` |
 | `k8s-private` | `10.7.0.0/16` | `10.7.0.254` | `10.7.0.0/24` | `10.7.1.0/24` | `10.7.2.0/24` | `10.7.3.0/24` | `k8s-private` / `lb.keiretsu.top/pool=private` |
 
-DHCP off on both. `ipv4NativeRoutingCIDR` is already `10.0.0.0/8`. Existing
-LoadBalancers without that label keep their per-site addresses.
+`ipv4NativeRoutingCIDR` is already `10.0.0.0/8`. Existing LoadBalancers without
+that label keep their per-site addresses. The mesh routes these CIDRs because
+they are UniFi networks, not because Cilium BGP-peers with remote routers.
 
 Do not put the same address in more than one cluster's carve. Anycast is a
 later `/32` advertised from multiple speakers, not a shared IPAM block.
-
-### UniFi FRR
-
-Three peer-groups on every UDM. Node IPs are the Talos InternalIPs (not the
-API VIP). Confirm St. Petersburg DHCP addresses with `kubectl get nodes -o
-wide` before pasting — sparks are `192.168.73.206` / `192.168.73.211` in the
-machine cert SANs; `orin-0` is DHCP plus VIP `192.168.73.25` (do not peer the
-VIP).
-
-**Ottawa UDM** (`router bgp 64515`, router-id `192.168.169.1`):
-
-```
-router bgp 64515
- bgp ebgp-requires-policy
- bgp router-id 192.168.169.1
- maximum-paths 4
- !
- neighbor cilium-ottawa peer-group
- neighbor cilium-ottawa remote-as 64514
- neighbor cilium-ottawa ebgp-multihop 4
- neighbor cilium-ottawa activate
- neighbor cilium-ottawa soft-reconfiguration inbound
- neighbor 192.168.169.116 peer-group cilium-ottawa
- neighbor 192.168.169.117 peer-group cilium-ottawa
- neighbor 192.168.169.118 peer-group cilium-ottawa
- neighbor 192.168.169.119 peer-group cilium-ottawa
- !
- neighbor cilium-robbinsdale peer-group
- neighbor cilium-robbinsdale remote-as 64512
- neighbor cilium-robbinsdale ebgp-multihop 4
- neighbor cilium-robbinsdale activate
- neighbor cilium-robbinsdale soft-reconfiguration inbound
- neighbor 192.168.50.51 peer-group cilium-robbinsdale
- neighbor 192.168.50.82 peer-group cilium-robbinsdale
- neighbor 192.168.50.112 peer-group cilium-robbinsdale
- !
- neighbor cilium-stpetersburg peer-group
- neighbor cilium-stpetersburg remote-as 64516
- neighbor cilium-stpetersburg ebgp-multihop 4
- neighbor cilium-stpetersburg activate
- neighbor cilium-stpetersburg soft-reconfiguration inbound
- neighbor 192.168.73.206 peer-group cilium-stpetersburg
- neighbor 192.168.73.211 peer-group cilium-stpetersburg
- !
- address-family ipv4 unicast
-  redistribute connected
-  neighbor cilium-ottawa activate
-  neighbor cilium-ottawa route-map ALLOW-ALL in
-  neighbor cilium-ottawa route-map ALLOW-ALL out
-  neighbor cilium-ottawa next-hop-self
-  neighbor cilium-robbinsdale activate
-  neighbor cilium-robbinsdale route-map ALLOW-ALL in
-  neighbor cilium-robbinsdale route-map ALLOW-ALL out
-  neighbor cilium-robbinsdale next-hop-self
-  neighbor cilium-stpetersburg activate
-  neighbor cilium-stpetersburg route-map ALLOW-ALL in
-  neighbor cilium-stpetersburg route-map ALLOW-ALL out
-  neighbor cilium-stpetersburg next-hop-self
- exit-address-family
-!
-route-map ALLOW-ALL permit 10
-```
-
-**Robbinsdale UDM** (`router bgp 64513`, router-id `192.168.50.1`): same
-neighbor blocks, swap the `router bgp` / `bgp router-id` lines.
-
-**St. Petersburg UDM** (`router bgp 64517`, router-id `192.168.73.1`): same
-neighbor blocks. Add `orin-0`'s DHCP address to `cilium-stpetersburg` once
-known. Allow TCP 179 from the three LAN CIDRs on the site-to-site mesh.
 
 ## Storage and data
 
@@ -1940,7 +1856,7 @@ namespaces.
   sparks
 - `LAN_CIDR 192.168.73.0/24` · `KUBERNETES_API_VIP 192.168.73.25`
 - `CLUSTER_POD_CIDR 10.5.0.0/16` · `CLUSTER_SERVICE_CIDR 10.4.0.0/16`
-- `CLUSTER_LOAD_BALANCER_CIDR 10.73.0.0/16` · `CILIUM_ASN 64516` · public `10.6.3.0/24` · private `10.7.3.0/24`
+- `CLUSTER_LOAD_BALANCER_CIDR 10.73.0.0/16` · `CILIUM_ASN 64516` · `UNIFI_ASN 64515` · public `10.6.3.0/24` · private `10.7.3.0/24`
 - 4via6 `fd7a:115c:a1e0:b1a:0:3::/96`
 - no Rook-Ceph here — `STORAGECLASS_DEFAULT` / `_METADATA` / `_LONGTERM` are
   all `local-path`
