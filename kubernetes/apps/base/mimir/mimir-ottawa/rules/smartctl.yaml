@@ -88,6 +88,20 @@ groups:
         labels:
           severity: critical
 
+      - alert: SmartDevicePercentageUsedHigh
+        expr: |-
+          smartctl_device_percentage_used >= 80
+        for: 5m
+        annotations:
+          summary: >-
+            Mounted drive {{ $labels.device }} on device {{ $labels.instance }} has used {{ printf "%.0f" $value }}% of its rated endurance
+          description: >-
+            NVMe Percentage Used is the device's estimate of consumed
+            endurance, not a temperature reading. Plan replacement before
+            this value reaches 100%.
+        labels:
+          severity: warning
+
       - alert: SmartDeviceCriticalWarning
         expr: |-
           smartctl_device_critical_warning != 0

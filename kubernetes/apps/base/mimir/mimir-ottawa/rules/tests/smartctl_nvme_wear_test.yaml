@@ -1,0 +1,32 @@
+rule_files:
+  - ../smartctl.yaml
+
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'smartctl_device_percentage_used{cluster="talos-ottawa",device="nvme0",instance="10.3.3.136:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-6tjmp",service="smartctl-exporter"}'
+        values: "79+0x5 80+0x10"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: SmartDevicePercentageUsedHigh
+        exp_alerts: []
+      - eval_time: 11m
+        alertname: SmartDevicePercentageUsedHigh
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              device: nvme0
+              instance: 10.3.3.136:9633
+              job: smartctl-exporter
+              namespace: monitoring
+              pod: smartctl-exporter-0-6tjmp
+              service: smartctl-exporter
+              severity: warning
+            exp_annotations:
+              summary: Mounted drive nvme0 on device 10.3.3.136:9633 has used 80% of its rated endurance
+              description: >-
+                NVMe Percentage Used is the device's estimate of consumed
+                endurance, not a temperature reading. Plan replacement before
+                this value reaches 100%.
