@@ -1,0 +1,22 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: lobby-postgres-key
+  namespace: tailscale-pam
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Tailscale PAM Lobby PostgreSQL Backup Key"
+  secretTemplate:
+    name: lobby-postgres-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: lobby-postgres
+        namespace: garage
+      read: true
+      write: true
+      owner: true

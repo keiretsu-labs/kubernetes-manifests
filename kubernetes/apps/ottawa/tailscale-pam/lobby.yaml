@@ -9,6 +9,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
+    - name: garage
+    - name: garage-keys
     - name: cnpg-system
   path: ./kubernetes/apps/base/tailscale-pam/lobby
   prune: true
@@ -18,6 +20,7 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
+  wait: true
   decryption:
     provider: sops
     secretRef:

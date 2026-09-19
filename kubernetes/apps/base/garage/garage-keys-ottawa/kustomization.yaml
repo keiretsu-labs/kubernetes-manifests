@@ -6,6 +6,7 @@ resources:
   - bhaiya-postgres-key.yaml
   - firefly-postgres-key.yaml
   - forgejo-postgres-key.yaml
+  - lobby-postgres-key.yaml
   - nix-cache-keys.yaml
   - woodpecker-postgres-key.yaml
   - suwayomi-postgres-key.yaml

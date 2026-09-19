@@ -46,6 +46,8 @@ exemptions:
     namespace: tailscale-pam
     reason: >-
       Workshop lobby ts-state volumeClaimTemplate; not a production data plane.
+      lobby-postgres holds registration and service-ownership state and is
+      protected separately through CNPG/Barman on Garage.
 
   - cluster: ottawa
     namespace: bhaiya
