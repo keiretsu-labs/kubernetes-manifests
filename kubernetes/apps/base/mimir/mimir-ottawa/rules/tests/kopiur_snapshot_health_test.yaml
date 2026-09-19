@@ -53,8 +53,12 @@ tests:
   # guard, using the controller's current per-policy failure metric.
   - interval: 1m
     input_series:
+      - series: 'kopiur_leader_is_leader{cluster="talos-ottawa"}'
+        values: "1+0x20"
       - series: 'kopiur_snapshot_consecutive_failures{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",name="bhaiya-teaspoon"}'
         values: "1+0x20"
+      - series: 'kopiur_snapshotpolicy_last_backup_success{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon"}'
+        values: "0+0x20"
     alert_rule_test:
       - eval_time: 4m
         alertname: KopiurSnapshotFailureState
@@ -77,16 +81,37 @@ tests:
                 current Snapshot, mover Job, repository, and controller events.
                 This is separate from the stalled-state alert because Pending
                 is not Failed.
+      - eval_time: 1m
+        alertname: KopiurSnapshotFailed
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              exported_namespace: bhaiya
+              namespace: bhaiya
+              policy: bhaiya-teaspoon
+              severity: critical
+            exp_annotations:
+              summary: Kopiur policy bhaiya-teaspoon reports a failed snapshot
+              description: >-
+                Kopiur's latest terminal snapshot for bhaiya/bhaiya-teaspoon is
+                failed. This is a per-policy current-result signal; an old Failed
+                Snapshot object alone does not keep the alert firing after a later
+                success. Inspect the current Snapshot, SnapshotPolicy, mover Job, and
+                repository logs.
 
   # A previous success older than the 24-hour freshness window fires, while a
   # recent success stays silent. The metric is a Unix timestamp, so the test
   # pins both cases away from the exact boundary.
   - interval: 1m
     input_series:
+      - series: 'kopiur_leader_is_leader{cluster="talos-ottawa"}'
+        values: "1+0x2250"
       - series: 'kopiur_policy_last_backup_success_timestamp_seconds{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-old"}'
-        values: "1+0x1600"
+        values: "1+0x2250"
       - series: 'kopiur_policy_last_backup_success_timestamp_seconds{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-fresh"}'
-        values: "89000+0x1600"
+        values: "89000+0x2250"
+      - series: 'kopiur_snapshotpolicy_last_backup_success{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-old"}'
+        values: "1+0x2250"
     alert_rule_test:
       - eval_time: 25h
         alertname: KopiurSnapshotSuccessStale
@@ -105,3 +130,21 @@ tests:
                 from current Pending/Running and failure state; inspect the
                 SnapshotSchedule, current Snapshot, mover Job, repository, and
                 controller metrics.
+      - eval_time: 37h
+        alertname: KopiurSnapshotStale
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              exported_namespace: bhaiya
+              namespace: bhaiya
+              policy: bhaiya-old
+              severity: critical
+            exp_annotations:
+              summary: Kopiur policy bhaiya-old has a stale snapshot
+              description: >-
+                No successful Kopiur snapshot for bhaiya/bhaiya-old has completed
+                within 36 hours (the daily schedule, jitter, and operational margin).
+                The timestamp must be positive, so a controller restart/reset cannot
+                turn a zero gauge into an immediate stale alert. Inspect the
+                SnapshotSchedule, current Snapshot, mover Job, and repository
+                reachability.

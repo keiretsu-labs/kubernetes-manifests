@@ -139,17 +139,14 @@ groups:
       - alert: KopiurSnapshotFailed
         expr: |
           (
-            kopiur_expected_source_info
-            and on (cluster, namespace, policy)
-            (
-              label_replace(
-                kopiur_snapshotpolicy_last_backup_success{
-                  exported_namespace="home-assistant",
-                  policy="homeassistant-config"
-                },
-                "namespace", "$1", "exported_namespace", "(.+)"
-              ) == 0
-            )
+            label_replace(
+              kopiur_snapshotpolicy_last_backup_success{
+                namespace="kopiur-system",
+                exported_namespace=~".+",
+                policy=~".+"
+              },
+              "namespace", "$1", "exported_namespace", "(.+)"
+            ) == 0
           )
           and on (cluster)
           (kopiur_leader_is_leader == 1)
@@ -168,23 +165,21 @@ groups:
       - alert: KopiurSnapshotStale
         expr: |
           (
-            kopiur_expected_source_info
-            and on (cluster, namespace, policy)
-            (
-              label_replace(
-                kopiur_snapshotpolicy_last_backup_success{
-                  exported_namespace="home-assistant",
-                  policy="homeassistant-config"
-                },
-                "namespace", "$1", "exported_namespace", "(.+)"
-              ) == 1
-            )
+            label_replace(
+              kopiur_snapshotpolicy_last_backup_success{
+                namespace="kopiur-system",
+                exported_namespace=~".+",
+                policy=~".+"
+              },
+              "namespace", "$1", "exported_namespace", "(.+)"
+            ) == 1
             and on (cluster, namespace, policy)
             (
               label_replace(
                 kopiur_policy_last_backup_success_timestamp_seconds{
-                  exported_namespace="home-assistant",
-                  policy="homeassistant-config"
+                  namespace="kopiur-system",
+                  exported_namespace=~".+",
+                  policy=~".+"
                 },
                 "namespace", "$1", "exported_namespace", "(.+)"
               ) > 0
@@ -192,8 +187,9 @@ groups:
               time()
                 - label_replace(
                     kopiur_policy_last_backup_success_timestamp_seconds{
-                      exported_namespace="home-assistant",
-                      policy="homeassistant-config"
+                      namespace="kopiur-system",
+                      exported_namespace=~".+",
+                      policy=~".+"
                     },
                     "namespace", "$1", "exported_namespace", "(.+)"
                   )

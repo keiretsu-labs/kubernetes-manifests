@@ -55,10 +55,9 @@ tests:
         exp_alerts:
           - exp_labels:
               cluster: talos-stpetersburg
+              exported_namespace: home-assistant
               namespace: home-assistant
               policy: homeassistant-config
-              pvc: homeassistant-config
-              repository: kopiur-stpetersburg
               severity: critical
             exp_annotations:
               summary: Kopiur policy homeassistant-config reports a failed snapshot
@@ -102,10 +101,9 @@ tests:
         exp_alerts:
           - exp_labels:
               cluster: talos-stpetersburg
+              exported_namespace: home-assistant
               namespace: home-assistant
               policy: homeassistant-config
-              pvc: homeassistant-config
-              repository: kopiur-stpetersburg
               severity: critical
             exp_annotations:
               summary: Kopiur policy homeassistant-config has a stale snapshot
@@ -135,9 +133,9 @@ tests:
         alertname: KopiurSnapshotFailed
         exp_alerts: []
 
-  # An excluded policy is not part of the Git-declared expected-source
-  # inventory. Its failed result must not create either a policy-failure or a
-  # coverage alert for the protected source.
+  # An untracked policy is not part of the Git-declared expected-source
+  # inventory, but the generic current-result alert still covers it. It must
+  # not create a coverage alert for the separately inventoried source.
   - interval: 1m
     input_series:
       - series: 'kopiur_leader_is_leader{cluster="talos-stpetersburg"}'
@@ -149,7 +147,21 @@ tests:
     alert_rule_test:
       - eval_time: 15m
         alertname: KopiurSnapshotFailed
-        exp_alerts: []
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-stpetersburg
+              exported_namespace: home-assistant
+              namespace: home-assistant
+              policy: excluded-policy
+              severity: critical
+            exp_annotations:
+              summary: Kopiur policy excluded-policy reports a failed snapshot
+              description: >-
+                Kopiur's latest terminal snapshot for home-assistant/excluded-policy
+                is failed. This is a per-policy current-result signal; an old Failed
+                Snapshot object alone does not keep the alert firing after a later
+                success. Inspect the current Snapshot, SnapshotPolicy, mover Job, and
+                repository logs.
       - eval_time: 15m
         alertname: KopiurCoverageMissing
         exp_alerts: []
@@ -168,10 +180,9 @@ tests:
         exp_alerts:
           - exp_labels:
               cluster: talos-stpetersburg
+              exported_namespace: home-assistant
               namespace: home-assistant
               policy: homeassistant-config
-              pvc: homeassistant-config
-              repository: kopiur-stpetersburg
               severity: critical
             exp_annotations:
               summary: Kopiur policy homeassistant-config reports a failed snapshot
@@ -199,10 +210,9 @@ tests:
         exp_alerts:
           - exp_labels:
               cluster: talos-stpetersburg
+              exported_namespace: home-assistant
               namespace: home-assistant
               policy: homeassistant-config
-              pvc: homeassistant-config
-              repository: kopiur-stpetersburg
               severity: critical
             exp_annotations:
               summary: Kopiur policy homeassistant-config has a stale snapshot
