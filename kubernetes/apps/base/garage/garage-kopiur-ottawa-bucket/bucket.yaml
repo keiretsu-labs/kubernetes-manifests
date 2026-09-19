@@ -15,7 +15,7 @@ spec:
   quotas:
     # Ottawa has the largest config set in the fleet; retain headroom for
     # Kopia indexes and the policy retention window.
-    maxSize: 50Gi
+    maxSize: 500Gi
     maxObjects: 1000000
   keyPermissions:
     - keyRef:
