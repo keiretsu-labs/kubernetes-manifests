@@ -27,7 +27,7 @@ spec:
             - name: LISTEN_ADDR
               value: "127.0.0.1:8080"
             - name: TAILNET_NAME
-              value: "Tailscale PAM workshop"
+              value: "tsupLDN-pam"
             - name: TS_TAILNET
               value: "-"
             - name: DATABASE_URL
@@ -35,16 +35,6 @@ spec:
                 secretKeyRef:
                   name: lobby-postgres-app
                   key: uri
-            - name: TS_OAUTH_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: lobby-ts-oauth
-                  key: TS_OAUTH_CLIENT_ID
-            - name: TS_OAUTH_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: lobby-ts-oauth
-                  key: TS_OAUTH_CLIENT_SECRET
             - name: TS_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -84,7 +74,7 @@ spec:
             - name: TS_SOCKS5_SERVER
               value: ":1055"
             - name: TS_STATE_DIR
-              value: /var/lib/tailscale
+              value: /var/lib/tailscale/tsupldn
             - name: TS_HOSTNAME
               value: lobby
             - name: TS_ACCEPT_DNS
