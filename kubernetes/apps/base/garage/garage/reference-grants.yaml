@@ -44,6 +44,10 @@ spec:
       namespace: mimir
     - kind: GarageKey
       namespace: tailscale-system
+    # The Ottawa PAM lobby's PostgreSQL backup key references GarageCluster
+    # garage from the tailscale-pam namespace.
+    - kind: GarageKey
+      namespace: tailscale-pam
 
     - kind: GarageKey
       namespace: bhaiya
