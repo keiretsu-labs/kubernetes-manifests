@@ -6,6 +6,14 @@
 # roles, managed via the bhaiya admin UI). The route lives in keiretsu-top
 # (where the apex hostnames and tinyauth ReferenceGrant already are);
 # per-workspace routes are created in the bhaiya namespace by ExposeRoute.
+#
+# The public hostname is deliberately split into two routes. The existing
+# bhaiya-cdn route is the upgrade lane: its header/method matches win Gateway
+# API precedence for WebSocket and CONNECT traffic. bhaiya-cdn-plain is the
+# catch-all for requests without an upgrade signal and is the only route that
+# receives the request buffer and local rate limit below. Keeping the buffer
+# off the broad upgrade route is required because Envoy request buffering can
+# hang streaming and upgrade traffic indefinitely.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -27,14 +35,62 @@ spec:
   hostnames:
     - "bhaiya.${COMMON_DOMAIN}"
   rules:
-    - backendRefs:
-        - name: bhaiya
-          namespace: bhaiya
-          port: 80
-      matches:
+    - matches:
+        # HTTP/1 WebSocket and other RFC 9110 upgrades carry Upgrade. Match
+        # every value conservatively so a new upgrade protocol is not buffered.
         - path:
             type: PathPrefix
             value: /
+          headers:
+            - name: Upgrade
+              type: RegularExpression
+              value: .+
+        # Preserve clients that signal an upgrade through Connection as well.
+        - path:
+            type: PathPrefix
+            value: /
+          headers:
+            - name: Connection
+              type: RegularExpression
+              value: (?i).*upgrade.*
+        # HTTP/2 and HTTP/3 extended CONNECT do not use HTTP/1 Upgrade.
+        - path:
+            type: PathPrefix
+            value: /
+          method: CONNECT
+      backendRefs:
+        - name: bhaiya
+          namespace: bhaiya
+          port: 80
+      timeouts:
+        request: 3600s
+---
+# The plain lane intentionally has the same host and backend as bhaiya-cdn.
+# Gateway API match precedence selects bhaiya-cdn for the upgrade matches above
+# and this route for all remaining requests.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bhaiya-cdn-plain
+  namespace: keiretsu-top
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+  hostnames:
+    - "bhaiya.${COMMON_DOMAIN}"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: bhaiya
+          namespace: bhaiya
+          port: 80
       timeouts:
         request: 3600s
 ---
@@ -54,6 +110,9 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: bhaiya-cdn
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: bhaiya-cdn-plain
   extAuth:
     headersToExtAuth:
       - cookie
@@ -86,6 +145,9 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: bhaiya-cdn
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: bhaiya-cdn-plain
   lua:
     - inline: |
         function envoy_on_response(response_handle)
@@ -99,3 +161,29 @@ spec:
             end
           end
         end
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: bhaiya-plain-http-limits
+  namespace: keiretsu-top
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: bhaiya-cdn-plain
+  # 8MiB is above Bhaiya's 4MiB upload chunk plus JSON/envelope overhead, while
+  # still bounding a single plain HTTP request before it reaches the slow
+  # control-plane or workspace proxy.
+  requestBuffer:
+    limit: 8Mi
+  # 600 requests/minute (10 requests/second) is a per-Envoy-instance admission
+  # budget, large enough for a browser's burst of UI assets and polling. The
+  # counter is charged on request admission only; it does not hold a token for
+  # the 3600s route timeout or for a slow upstream response.
+  rateLimit:
+    local:
+      rules:
+        - limit:
+            requests: 600
+            unit: Minute
