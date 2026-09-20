@@ -80,10 +80,8 @@ spec:
       replicaCount: 5
       env:
         WOODPECKER_SERVER: woodpecker-server:9000
-        # Keep the cache label for the pre-retirement workflow while adding a
-        # location-only label for the main release lane's cluster-local Flux
-        # receiver. The cleanup phase removes nix-cache after Bhaiya switches.
-        WOODPECKER_AGENT_LABELS: "nix-cache=true,cluster=ottawa"
+        # Keep the release lane on Ottawa for its cluster-local Flux receiver.
+        WOODPECKER_AGENT_LABELS: "cluster=ottawa"
         WOODPECKER_BACKEND: kubernetes
         WOODPECKER_MAX_WORKFLOWS: "4"
         WOODPECKER_BACKEND_K8S_NAMESPACE: woodpecker
