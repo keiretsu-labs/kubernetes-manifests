@@ -23,39 +23,41 @@ spec:
     remediation:
       retries: 3
     crds: CreateReplace
-  # Chart's ServiceMonitor selector matches both the metrics Service (port 8443)
-  # and the webhook Service (port 443) because they share identical labels and
-  # both name a port `https`. Prometheus ends up scraping the webhook on /metrics
-  # and getting 404s. Tag the metrics Service with a component label and pin the
-  # ServiceMonitor selector to it.
   postRenderers:
     - kustomize:
         patches:
+          # The chart now labels the metrics Service and selects that label in
+          # its ServiceMonitor. Keep only the independent aggregation fix for
+          # GarageNodeDisconnected: each node reports its own self-observation
+          # as 0, so the alert must aggregate by id and fire only when no peer
+          # sees that node.
+          #
+          # The current pin is 0.7.10, whose rules have no garage.quota group;
+          # keep its numeric path scoped to that chart label until the release
+          # containing quota rules is available.
           - target:
-              kind: Service
-              name: garage-operator-metrics
-            patch: |
-              - op: add
-                path: /metadata/labels/app.kubernetes.io~1component
-                value: metrics
-          - target:
-              kind: ServiceMonitor
-              name: garage-operator
-            patch: |
-              - op: add
-                path: /spec/selector/matchLabels/app.kubernetes.io~1component
-                value: metrics
-          # Chart's GarageNodeDisconnected rule fires on per-node
-          # self-observation series (each node reports 0 for its own id).
-          # Aggregate by id so the alert only triggers when no peer sees a
-          # given node. Path indexes the garage.cluster group (idx 2),
-          # GarageNodeDisconnected rule (idx 4).
-          - target:
+              group: monitoring.coreos.com
+              version: v1
               kind: PrometheusRule
               name: garage-operator-garage
+              labelSelector: helm.sh/chart=garage-operator-0.7.10
             patch: |
               - op: replace
                 path: /spec/groups/2/rules/4/expr
+                value: sum by (id) (cluster_layout_node_connected{job="garage"}) == 0
+          # The garage.quota group in v0.7.11 is inserted before garage.cluster,
+          # moving GarageNodeDisconnected to groups/3/rules/4. Keep this patch
+          # explicitly version-scoped so the valid JSON path cannot silently
+          # land on a different alert.
+          - target:
+              group: monitoring.coreos.com
+              version: v1
+              kind: PrometheusRule
+              name: garage-operator-garage
+              labelSelector: helm.sh/chart=garage-operator-0.7.11
+            patch: |
+              - op: replace
+                path: /spec/groups/3/rules/4/expr
                 value: sum by (id) (cluster_layout_node_connected{job="garage"}) == 0
   values:
     resources:
@@ -69,9 +71,18 @@ spec:
       enabled: true
       labels:
         release: monitoring
+    # The chart rejects enabling both monitors because that double-scrapes
+    # every operator replica. Keep the existing ServiceMonitor path.
+    podMonitor:
+      enabled: false
     prometheusRules:
       enabled: true
       labels:
         release: monitoring
+      # v0.7.11 adds garage.quota to this enabled rule set.
+    grafanaDashboard:
+      enabled: true
+      labels:
+        grafana_dashboard: "1"
     webhooks:
       enabled: true
