@@ -1,0 +1,25 @@
+---
+# Adopt the existing Ottawa public trades site bucket. The explicit bucketId
+# is required by garage-operator for safe adoption; alias-only declarations
+# are rejected when an untracked bucket already owns the alias.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: raj-assistant-web
+  annotations:
+    # This is a populated pre-existing bucket. Keep it protected from an
+    # accidental Flux prune; deliberate removal must retain the remote data.
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  clusterRef:
+    name: garage
+  bucketId: d5833343115e740ca0d669ee263cb3608745ffb925cec9099de1910214fe1f46
+  globalAlias: raj-assistant-web
+  deletionPolicy: Retain
+  quotas:
+    maxSize: 1Gi
+    maxObjects: 10000
+  website:
+    enabled: true
+    indexDocument: index.html
+    errorDocument: error.html
