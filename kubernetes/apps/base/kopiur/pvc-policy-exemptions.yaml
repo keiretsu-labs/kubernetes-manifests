@@ -38,11 +38,6 @@ exemptions:
       ingester PVCs is not the restore path.
 
   - cluster: ottawa
-    namespace: tailscale-examples
-    reason: >-
-      Demo/sandbox tsidp volumeClaimTemplate; not a production data plane.
-
-  - cluster: ottawa
     namespace: tailscale-pam
     reason: >-
       Workshop lobby ts-state volumeClaimTemplate; not a production data plane.
