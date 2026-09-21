@@ -245,6 +245,28 @@ groups:
             minutes. Inspect the main queue, dispatcher, tag pipeline, and
             registry before treating the semantic lag as a build failure.
 
+      - alert: BhaiyaWorkspaceImageReleasePublicationLagging
+        expr: |
+          max by (cluster, image) (
+            bhaiya_workspace_image_release_publication_lag_releases > 1
+          )
+          and on (cluster)
+          max by (cluster) (
+            bhaiya_workspace_image_release_observer_configured == 1
+          )
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: Workspace image releases are not reaching the registry
+          description: >-
+            The newest durable workspace-image tag is more than one semantic
+            release ahead of the highest registry tag with a readable
+            manifest for at least 15 minutes. Main and the dispatcher may be
+            green while consumer-visible publication is behind. Inspect the
+            tag pipeline's promote step, registry manifest, and publication
+            credentials; do not hand-push a tag or registry image.
+
       - alert: BhaiyaWorkspaceImageLatestRollback
         expr: |
           max by (cluster, image) (
