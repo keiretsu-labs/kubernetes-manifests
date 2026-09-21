@@ -109,11 +109,14 @@ The exporter cannot be retired until all of the following are true:
 2. `raj-assistant-web` is adopted into a CR with its website and key behavior
    verified.
 3. Each `ws-*` bucket is either adopted into a CR with an identified owner or
-   explicitly accepted as unmanaged and kept in a deliberately narrowed
-   exporter allowlist.
+   explicitly accepted as unmanaged. An accepted-unmanaged bucket remains in
+   a deliberately narrowed exporter allowlist and therefore continues to
+   block exporter retirement unless an alternate complete monitoring source
+   is delivered.
 4. The two sibling-cluster Kopiur buckets remain covered by their existing
    CRs and are not replaced by duplicate Ottawa declarations.
 
-Only after that gate is satisfied should a separate PR remove the Ottawa
-`garage-exporter` Flux Kustomization and its Deployment, Service, and
-ServiceMonitor. This PR makes no live or GitOps retirement change.
+Only after no retained bucket depends on the exporter should a separate PR
+remove the Ottawa `garage-exporter` Flux Kustomization and its
+Deployment, Service, and ServiceMonitor. This PR makes no live or GitOps
+retirement change.
