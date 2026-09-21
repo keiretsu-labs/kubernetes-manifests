@@ -189,6 +189,14 @@ spec:
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
+          - { name: GLM53_INDEXER_WORKSPACE, value: "rightsize" }
+          - { name: GLM53_MIXED_PREFILL_CHUNK, value: "fair" }
+          - { name: GLM53_FAIR_PREFILL_CHUNK, value: "256" }
+          - { name: GLM53_FAIR_PREFILL_SHARE, value: "0.30" }
+          - { name: GLM53_FAIR_PREFILL_MAX_INTERVAL_MS, value: "2000" }
+          - { name: GLM53_FAIR_PREFILL_MAX_STEP_MS, value: "2000" }
+          - { name: GLM53_FAIR_PREFILL_MAX_CHUNKS, value: "1" }
+          - { name: GLM53_KV_CAPACITY_LOG, value: "1" }
           securityContext:
             privileged: true
             capabilities:
@@ -328,6 +336,14 @@ spec:
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
+          - { name: GLM53_INDEXER_WORKSPACE, value: "rightsize" }
+          - { name: GLM53_MIXED_PREFILL_CHUNK, value: "fair" }
+          - { name: GLM53_FAIR_PREFILL_CHUNK, value: "256" }
+          - { name: GLM53_FAIR_PREFILL_SHARE, value: "0.30" }
+          - { name: GLM53_FAIR_PREFILL_MAX_INTERVAL_MS, value: "2000" }
+          - { name: GLM53_FAIR_PREFILL_MAX_STEP_MS, value: "2000" }
+          - { name: GLM53_FAIR_PREFILL_MAX_CHUNKS, value: "1" }
+          - { name: GLM53_KV_CAPACITY_LOG, value: "1" }
           securityContext:
             privileged: true
             capabilities:
