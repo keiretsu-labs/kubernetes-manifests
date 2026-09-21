@@ -1,22 +1,11 @@
-# SPDX-FileCopyrightText: © 2026 Raj Singh <raj@keiretsu.cloud>
-# SPDX-License-Identifier: MIT
+# GLM-5.3-Flash EXL3/TR3 on 2× DGX Spark — MiaAI-Lab TP=2 + DFlash2.
 #
-# Qwen3.8-Flash-Next-NVFP4 on 2× DGX Spark — vLLM TP=2+EP+MTP3.
-#
-# --served-model-name carries three IDs on purpose. CLIProxy's vllm provider is
-# configured as name: Qwen3.8-Flash-Next-NVFP4 / alias: Qwen3.8-Flash-Next, but
-# it sends the ALIAS upstream, so serving only the canonical name returns
-# `404: The model \'Qwen3.8-Flash-Next\' does not exist`. With
-# disable-cooling: false that 404 trips CLIProxy's breaker and every later
-# request fails `auth_unavailable`, which also drops vllm/* out of /v1/models
-# and reads as a retired route. Serving the alias too makes the ID Bhaiya pins
-# as BHAIYA_CLIPROXY_DEFAULT_MODEL valid whichever field CLIProxy sends.
-#
-# The model and serving recipe are from:
-# https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Dual-DGX-Sparks
-# Target checkpoint: nvidia/Qwen3.8-Flash-Next-NVFP4@fc694b54
-# Target recipe: MiaAI-Lab upstream c2325b2 (vLLM TP2+EP+MTP3, FP8 KV/QSA and MTP/PLE fixes).
-# Runtime image: the upstream-provided vLLM image, arm64 pinned.
+# The qwen38 resource/service identity is retained so the existing in-cluster
+# Service, mesh export, probes, and consumers cut over atomically.
+# Upstream recipe: https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks
+# Model: Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw@25a44fdbf16862a46b7cc9921142c6c81350af2f
+# Image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor
+# Image digest: sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -28,55 +17,48 @@ data:
     #!/bin/bash
     set -euo pipefail
     MODEL_DIR="$${MODEL_DIR:-/models/qwen38}"
-    HF_REPO="$${HF_REPO:-nvidia/Qwen3.8-Flash-Next-NVFP4}"
-    HF_REVISION="$${HF_REVISION:-fc694b54fb0174e0913e6adf86691ef85a4ead47}"
+    MODEL_REPO="$${MODEL_REPO:-Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw}"
+    MODEL_REVISION="$${MODEL_REVISION:-25a44fdbf16862a46b7cc9921142c6c81350af2f}"
+    DFLASH_REPO="$${DFLASH_REPO:-incoai/GLM-5.3-Flash-DFlash2}"
+    DFLASH_REVISION="$${DFLASH_REVISION:-dc77ff1c99eeb2df044ee3d4f0094eb033fee410}"
     MODEL_MARKER="$${MODEL_DIR}/.model-revision"
-    EXPECTED_MARKER="$${HF_REPO}@$${HF_REVISION}"
-    EXPECTED_SHARDS=11
-
+    EXPECTED_MARKER="$${MODEL_REPO}@$${MODEL_REVISION}"
+    DFLASH_MARKER="$${MODEL_DIR}/dflash2/.model-revision"
+    EXPECTED_DFLASH_MARKER="$${DFLASH_REPO}@$${DFLASH_REVISION}"
     mkdir -p "$${MODEL_DIR}"
-    COUNT="$$(find "$${MODEL_DIR}" -maxdepth 1 -name '*.safetensors' | wc -l)"
-    CURRENT_MARKER="$$(cat "$${MODEL_MARKER}" 2>/dev/null || true)"
-    if [ "$${COUNT}" -eq "$${EXPECTED_SHARDS}" ] && [ "$${CURRENT_MARKER}" = "$${EXPECTED_MARKER}" ] \
-      && [ -f "$${MODEL_DIR}/config.json" ] \
-      && [ -f "$${MODEL_DIR}/model.safetensors.index.json" ]; then
-      echo "[download] All $${EXPECTED_SHARDS} safetensor files already present — skipping download."
-      echo "[validate] Model validation OK ($${COUNT}/$${EXPECTED_SHARDS})"
-      exit 0
-    fi
-
-    if [ "$${CURRENT_MARKER}" != "$${EXPECTED_MARKER}" ]; then
-      echo "[download] Model revision changed ($${CURRENT_MARKER:-unmarked} -> $${EXPECTED_MARKER}); clearing old weights."
+    current="$$(cat "$${MODEL_MARKER}" 2>/dev/null || true)"
+    if [ "$${current}" != "$${EXPECTED_MARKER}" ]; then
+      echo "[download] replacing previous model $${current:-unmarked} with $${EXPECTED_MARKER}"
       find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
       mkdir -p "$${MODEL_DIR}"
     fi
-
-    echo "[download] Downloading $${HF_REPO}@$${HF_REVISION} (~135 GB)…"
-    python3 - "$${MODEL_DIR}" "$${HF_REPO}" "$${HF_REVISION}" <<'PY'
-    import os
-    import sys
-
+    count="$$(find "$${MODEL_DIR}" -maxdepth 1 -type f -name '*.safetensors' | wc -l)"
+    if [ "$${count}" -lt 100 ] || [ ! -f "$${MODEL_DIR}/config.json" ]; then
+      echo "[download] fetching $${MODEL_REPO}@$${MODEL_REVISION}"
+      python3 - "$${MODEL_DIR}" "$${MODEL_REPO}" "$${MODEL_REVISION}" <<'PY'
+    import os, sys
     from huggingface_hub import snapshot_download
-
-    path, repo, revision = sys.argv[1:]
-    snapshot_download(
-        repo_id=repo,
-        revision=revision,
-        local_dir=path,
-        token=os.environ.get("HUGGING_FACE_HUB_TOKEN") or None,
-        max_workers=8,
-    )
+    snapshot_download(repo_id=sys.argv[2], revision=sys.argv[3], local_dir=sys.argv[1], token=os.environ.get("HUGGING_FACE_HUB_TOKEN") or None, max_workers=8)
     PY
-
-    COUNT="$$(find "$${MODEL_DIR}" -maxdepth 1 -name '*.safetensors' | wc -l)"
-    if [ "$${COUNT}" -ne "$${EXPECTED_SHARDS}" ]; then
-      echo "[FATAL] Expected $${EXPECTED_SHARDS} safetensor files, got $${COUNT}."
-      exit 1
     fi
+    count="$$(find "$${MODEL_DIR}" -maxdepth 1 -type f -name '*.safetensors' | wc -l)"
+    [ "$${count}" -ge 100 ]
     test -f "$${MODEL_DIR}/config.json"
-    test -f "$${MODEL_DIR}/model.safetensors.index.json"
     printf '%s\n' "$${EXPECTED_MARKER}" > "$${MODEL_MARKER}"
-    echo "[validate] Model validation OK ($${COUNT}/$${EXPECTED_SHARDS})"
+    mkdir -p "$${MODEL_DIR}/dflash2"
+    dcurrent="$$(cat "$${DFLASH_MARKER}" 2>/dev/null || true)"
+    if [ "$${dcurrent}" != "$${EXPECTED_DFLASH_MARKER}" ]; then
+      echo "[download] fetching $${DFLASH_REPO}@$${DFLASH_REVISION}"
+      python3 - "$${MODEL_DIR}/dflash2" "$${DFLASH_REPO}" "$${DFLASH_REVISION}" <<'PY'
+    import os, sys
+    from huggingface_hub import snapshot_download
+    snapshot_download(repo_id=sys.argv[2], revision=sys.argv[3], local_dir=sys.argv[1], token=os.environ.get("HUGGING_FACE_HUB_TOKEN") or None, max_workers=8)
+    PY
+      printf '%s\n' "$${EXPECTED_DFLASH_MARKER}" > "$${DFLASH_MARKER}"
+    fi
+    test -f "$${MODEL_DIR}/dflash2/config.json"
+    echo "[validate] GLM model files=$${count} and DFlash2 present"
+
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -138,13 +120,15 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: vllm/vllm-openai@sha256:3b0e188ffceb3d07e09c3cb5215433a0020eacf02d7f882ed3a8bfd15454477e
+          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
           command: [/bin/bash]
           args: [/scripts/download-and-validate.sh]
           env:
           - { name: MODEL_DIR, value: "/models/qwen38" }
-          - { name: HF_REPO, value: "nvidia/Qwen3.8-Flash-Next-NVFP4" }
-          - { name: HF_REVISION, value: "fc694b54fb0174e0913e6adf86691ef85a4ead47" }
+          - { name: MODEL_REPO, value: "Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw" }
+          - { name: MODEL_REVISION, value: "25a44fdbf16862a46b7cc9921142c6c81350af2f" }
+          - { name: DFLASH_REPO, value: "incoai/GLM-5.3-Flash-DFlash2" }
+          - { name: DFLASH_REVISION, value: "dc77ff1c99eeb2df044ee3d4f0094eb033fee410" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "0" }
@@ -165,63 +149,26 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: vllm/vllm-openai@sha256:3b0e188ffceb3d07e09c3cb5215433a0020eacf02d7f882ed3a8bfd15454477e
-          # Upstream MiaAI-Lab arm64 image; patches below are applied at startup.
+          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
+          # Upstream MiaAI-Lab arm64 image with the recipe runtime baked in.
           command: [bash, -c]
           args:
           - |
             set -euo pipefail
-            echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
-            nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            mkdir -p /tmp/qwen-patches
-            cp /qwen-patches/patch_checkpoint_config.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_ple_layer.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_modelopt_mxfp8.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_modelopt_fp8_block_moe.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_qsa_fp8_kv.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_mtp_draft_vocab.py /tmp/qwen-patches/
-            VLLM_DIR=$(python3 -c 'import vllm; print(vllm.__path__[0])')
-            python3 - "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/ple_layer.py" <<'PY'
-            import sys
-            from pathlib import Path
-            p=Path(sys.argv[1]); Path('/tmp/qwen-patches/ple_layer_patched.py.orig').write_text(p.read_text())
-            PY
-            python3 - "$VLLM_DIR/model_executor/layers/quantization/modelopt.py" <<'PY'
-            import sys
-            from pathlib import Path
-            p=Path(sys.argv[1]); Path('/tmp/qwen-patches/modelopt_patched.py.orig').write_text(p.read_text())
-            PY
-            python3 - "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/ops/qsa.py" "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/qsa.py" <<'PY'
-            import sys
-            from pathlib import Path
-            Path('/tmp/qwen-patches/qsa_ops_patched.py.orig').write_text(Path(sys.argv[1]).read_text())
-            Path('/tmp/qwen-patches/qsa_nvidia_patched.py.orig').write_text(Path(sys.argv[2]).read_text())
-            PY
-            python3 /tmp/qwen-patches/patch_ple_layer.py
-            python3 /tmp/qwen-patches/patch_modelopt_mxfp8.py
-            python3 /tmp/qwen-patches/patch_modelopt_fp8_block_moe.py
-            python3 /tmp/qwen-patches/patch_qsa_fp8_kv.py
-            python3 /tmp/qwen-patches/patch_checkpoint_config.py /models/qwen38 /tmp/qwen-patches
-            cp /tmp/qwen-patches/ple_layer_patched.py "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/ple_layer.py"
-            cp /tmp/qwen-patches/modelopt_patched.py "$VLLM_DIR/model_executor/layers/quantization/modelopt.py"
-            cp /tmp/qwen-patches/qsa_ops_patched.py "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/ops/qsa.py"
-            cp /tmp/qwen-patches/qsa_nvidia_patched.py "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/qsa.py"
-            if [ -f /tmp/qwen-patches/config_patched.json ]; then cp /tmp/qwen-patches/config_patched.json /models/qwen38/config.json; fi
-            if [ -f /tmp/qwen-patches/hf_quant_config_patched.json ]; then cp /tmp/qwen-patches/hf_quant_config_patched.json /models/qwen38/hf_quant_config.json; fi
             exec vllm serve /models/qwen38 \
-              --served-model-name qwen3.8-flash-next Qwen3.8-Flash-Next Qwen3.8-Flash-Next-NVFP4 \
-              --tensor-parallel-size 2 --distributed-executor-backend mp \
-              --enable-expert-parallel --all2all-backend allgather_reducescatter \
-              --gpu-memory-utilization 0.70 --max-num-seqs 8 --max-num-batched-tokens 8192 \
-              --max-model-len 1000000 --kv-cache-dtype fp8 --load-format safetensors \
-              --safetensors-load-strategy lazy --enable-chunked-prefill --enable-prefix-caching \
-              --reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser qwen3_coder \
-              --mm-encoder-tp-mode data --limit-mm-per-prompt '{"image":1,"video":1}' \
-              --compilation-config '{"mode":0,"cudagraph_mode":"FULL_DECODE_ONLY"}' \
-              --hf-overrides '{"text_config":{"ple_embedding_dtype":"float8_e4m3fn","rope_parameters":{"rope_type":"yarn","factor":4.0,"original_max_position_embeddings":262144}}}' \
-              --nnodes 2 --node-rank 0 --master-addr 192.168.74.1 --master-port 26400
-          ports:
-          - { containerPort: 8000, name: http, protocol: TCP }
+              --served-model-name GLM-5.3-Flash-EXL3 \
+              --host 0.0.0.0 --port 8000 \
+              --tensor-parallel-size 2 --nnodes 2 --node-rank 0 \
+              --master-addr 192.168.74.1 --master-port 26400 \
+              --distributed-executor-backend mp --quantization exl3 \
+              --load-format instanttensor --gpu-memory-utilization 0.85 \
+              --max-model-len 850000 --max-num-seqs 4 --max-num-batched-tokens 7168 \
+              --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
+              --speculative-config '{"method":"dflash","model":"/models/qwen38/dflash2","num_speculative_tokens":7,"kv_cache_dtype":"auto","draft_tensor_parallel_size":2,"draft_sample_method":"probabilistic","rejection_sample_method":"standard"}' \
+              --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
+              --limit-mm-per-prompt '{"image":48,"video":1}' \
+              --mm-processor-kwargs '{"max_image_tokens":2048}' \
+              --mm-processor-cache-gb 1 --skip-mm-profiling
           env:
           - { name: VLLM_HOST_IP, value: "192.168.74.1" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
@@ -254,7 +201,6 @@ spec:
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
           - { name: sys-ib, mountPath: /sys/class/infiniband }
-          - { name: qwen-patches, mountPath: /qwen-patches }
           startupProbe:
             httpGet:
               path: /health
@@ -290,9 +236,6 @@ spec:
         - name: download-script
           configMap:
             name: qwen38-download-script
-        - name: qwen-patches
-          configMap:
-            name: qwen-patches
     workerTemplate:
       metadata:
         labels:
@@ -316,13 +259,15 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
-          image: vllm/vllm-openai@sha256:3b0e188ffceb3d07e09c3cb5215433a0020eacf02d7f882ed3a8bfd15454477e
+          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
           command: [/bin/bash]
           args: [/scripts/download-and-validate.sh]
           env:
           - { name: MODEL_DIR, value: "/models/qwen38" }
-          - { name: HF_REPO, value: "nvidia/Qwen3.8-Flash-Next-NVFP4" }
-          - { name: HF_REVISION, value: "fc694b54fb0174e0913e6adf86691ef85a4ead47" }
+          - { name: MODEL_REPO, value: "Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw" }
+          - { name: MODEL_REVISION, value: "25a44fdbf16862a46b7cc9921142c6c81350af2f" }
+          - { name: DFLASH_REPO, value: "incoai/GLM-5.3-Flash-DFlash2" }
+          - { name: DFLASH_REVISION, value: "dc77ff1c99eeb2df044ee3d4f0094eb033fee410" }
           - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: HF_HUB_OFFLINE, value: "0" }
@@ -343,62 +288,26 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         - name: vllm
-          image: vllm/vllm-openai@sha256:3b0e188ffceb3d07e09c3cb5215433a0020eacf02d7f882ed3a8bfd15454477e
-          # Upstream MiaAI-Lab arm64 image; patches below are applied at startup.
+          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
+          # Upstream MiaAI-Lab arm64 image with the recipe runtime baked in.
           command: [bash, -c]
           args:
           - |
             set -euo pipefail
-            echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
-            nvidia-smi --gpu-reset -i 0 >/dev/null 2>/dev/null || true
-            mkdir -p /tmp/qwen-patches
-            cp /qwen-patches/patch_checkpoint_config.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_ple_layer.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_modelopt_mxfp8.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_modelopt_fp8_block_moe.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_qsa_fp8_kv.py /tmp/qwen-patches/
-            cp /qwen-patches/patch_mtp_draft_vocab.py /tmp/qwen-patches/
-            VLLM_DIR=$(python3 -c 'import vllm; print(vllm.__path__[0])')
-            python3 - "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/ple_layer.py" <<'PY'
-            import sys
-            from pathlib import Path
-            p=Path(sys.argv[1]); Path('/tmp/qwen-patches/ple_layer_patched.py.orig').write_text(p.read_text())
-            PY
-            python3 - "$VLLM_DIR/model_executor/layers/quantization/modelopt.py" <<'PY'
-            import sys
-            from pathlib import Path
-            p=Path(sys.argv[1]); Path('/tmp/qwen-patches/modelopt_patched.py.orig').write_text(p.read_text())
-            PY
-            python3 - "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/ops/qsa.py" "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/qsa.py" <<'PY'
-            import sys
-            from pathlib import Path
-            Path('/tmp/qwen-patches/qsa_ops_patched.py.orig').write_text(Path(sys.argv[1]).read_text())
-            Path('/tmp/qwen-patches/qsa_nvidia_patched.py.orig').write_text(Path(sys.argv[2]).read_text())
-            PY
-            python3 /tmp/qwen-patches/patch_ple_layer.py
-            python3 /tmp/qwen-patches/patch_modelopt_mxfp8.py
-            python3 /tmp/qwen-patches/patch_modelopt_fp8_block_moe.py
-            python3 /tmp/qwen-patches/patch_qsa_fp8_kv.py
-            python3 /tmp/qwen-patches/patch_checkpoint_config.py /models/qwen38 /tmp/qwen-patches
-            cp /tmp/qwen-patches/ple_layer_patched.py "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/ple_layer.py"
-            cp /tmp/qwen-patches/modelopt_patched.py "$VLLM_DIR/model_executor/layers/quantization/modelopt.py"
-            cp /tmp/qwen-patches/qsa_ops_patched.py "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/ops/qsa.py"
-            cp /tmp/qwen-patches/qsa_nvidia_patched.py "$VLLM_DIR/models/qwen3_8_flash_next/nvidia/qsa.py"
-            if [ -f /tmp/qwen-patches/config_patched.json ]; then cp /tmp/qwen-patches/config_patched.json /models/qwen38/config.json; fi
-            if [ -f /tmp/qwen-patches/hf_quant_config_patched.json ]; then cp /tmp/qwen-patches/hf_quant_config_patched.json /models/qwen38/hf_quant_config.json; fi
             exec vllm serve /models/qwen38 \
-              --served-model-name qwen3.8-flash-next Qwen3.8-Flash-Next Qwen3.8-Flash-Next-NVFP4 \
-              --tensor-parallel-size 2 --distributed-executor-backend mp \
-              --enable-expert-parallel --all2all-backend allgather_reducescatter \
-              --gpu-memory-utilization 0.70 --max-num-seqs 8 --max-num-batched-tokens 8192 \
-              --max-model-len 1000000 --kv-cache-dtype fp8 --load-format safetensors \
-              --safetensors-load-strategy lazy --enable-chunked-prefill --enable-prefix-caching \
-              --reasoning-parser qwen3 --enable-auto-tool-choice --tool-call-parser qwen3_coder \
-              --mm-encoder-tp-mode data --limit-mm-per-prompt '{"image":1,"video":1}' \
-              --compilation-config '{"mode":0,"cudagraph_mode":"FULL_DECODE_ONLY"}' \
-              --hf-overrides '{"text_config":{"ple_embedding_dtype":"float8_e4m3fn","rope_parameters":{"rope_type":"yarn","factor":4.0,"original_max_position_embeddings":262144}}}' \
-              --nnodes 2 --node-rank 1 --master-addr 192.168.74.1 --master-port 26400 \
-              --headless
+              --served-model-name GLM-5.3-Flash-EXL3 \
+              --host 0.0.0.0 --port 8000 \
+              --tensor-parallel-size 2 --nnodes 2 --node-rank 1 \
+              --master-addr 192.168.74.1 --master-port 26400 \
+              --distributed-executor-backend mp --headless --quantization exl3 \
+              --load-format instanttensor --gpu-memory-utilization 0.85 \
+              --max-model-len 850000 --max-num-seqs 4 --max-num-batched-tokens 7168 \
+              --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
+              --speculative-config '{"method":"dflash","model":"/models/qwen38/dflash2","num_speculative_tokens":7,"kv_cache_dtype":"auto","draft_tensor_parallel_size":2,"draft_sample_method":"probabilistic","rejection_sample_method":"standard"}' \
+              --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
+              --limit-mm-per-prompt '{"image":48,"video":1}' \
+              --mm-processor-kwargs '{"max_image_tokens":2048}' \
+              --mm-processor-cache-gb 1 --skip-mm-profiling
           env:
           - { name: VLLM_HOST_IP, value: "192.168.74.2" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
@@ -431,7 +340,6 @@ spec:
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
           - { name: sys-ib, mountPath: /sys/class/infiniband }
-          - { name: qwen-patches, mountPath: /qwen-patches }
           # Worker rank is headless and has no HTTP probes.
         volumes:
         - name: shm
@@ -447,9 +355,6 @@ spec:
         - name: download-script
           configMap:
             name: qwen38-download-script
-        - name: qwen-patches
-          configMap:
-            name: qwen-patches
 ---
 apiVersion: v1
 kind: Service

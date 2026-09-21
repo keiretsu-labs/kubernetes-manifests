@@ -1,5 +1,5 @@
 ---
-# Qwen3.8-Flash-Next-NVFP4 OpenAI-compatible inference server.
+# GLM-5.3-Flash-EXL3 OpenAI-compatible inference server.
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:

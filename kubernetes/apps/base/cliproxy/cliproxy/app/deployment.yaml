@@ -16,7 +16,7 @@ spec:
         # Re-run the one-shot catalog discovery only after the Qwen LWS is
         # healthy; a pod started during GPU warm-up must retain the safe
         # subscription fallback rather than advertising an unavailable route.
-        keiretsu.top/restarted-for: qwen38-ready-v4
+        keiretsu.top/restarted-for: glm53-ready-v1
       labels:
         app.kubernetes.io/name: cliproxy
     spec:
@@ -183,7 +183,7 @@ spec:
               payload:
                 override:
                   - models:
-                      - name: "vllm/Qwen3.8-Flash-Next"
+                      - name: "vllm/GLM-5.3-Flash-EXL3"
                         protocol: "openai"
                     params:
                       'messages.#(role=="developer")#.role': system
@@ -321,7 +321,7 @@ spec:
               )
               metadata_alias_sources = {
                   "codex-subscription/vllm-fallback": "codex-subscription/gpt-5.6-luna",
-                  "vllm/Qwen3.8-Flash-Next": "vllm/Qwen3.8-Flash-Next-NVFP4",
+                  "vllm/GLM-5.3-Flash-EXL3": "vllm/GLM-5.3-Flash-EXL3",
               }
               # The St. Petersburg Vision-Exp catalog does not publish all
               # serving-profile facts in /v1/models. Keep those facts explicit
@@ -329,10 +329,10 @@ spec:
               # the active route accurately. Assert an 8k output cap so a stuck
               # stream cannot legally decode for the full 1,048,576 context.
               metadata_overrides = {
-                  "vllm/Qwen3.8-Flash-Next-NVFP4": {
+                  "vllm/GLM-5.3-Flash-EXL3": {
                       "context_window": 1048576,
                       "max_tokens": 8192,
-                      "name": "Qwen3.8 Flash Next",
+                      "name": "GLM-5.3 Flash EXL3",
                       "reasoning": True,
                   },
               }
