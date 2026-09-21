@@ -15,6 +15,30 @@ operator metrics. It deliberately left the exporter deployed.
 The post-merge live signal is present: Mimir-Ottawa reports 102
 `garage_operator_bucket_*` series for `job="garage-operator-metrics"`.
 
+## Operator coverage is a design boundary
+
+This gap is not a missing 0.7.11 Helm value or a failed scrape. The released
+operator's bucket metrics are updated by the `GarageBucket` reconciler from
+`GarageBucket.status.quotaUsage`, keyed by the CR namespace and name. The
+operator's `ListBuckets` Admin API client exists, but its only caller is the
+`GarageKey` reconciliation path guarded by `spec.allBuckets`; it is used to
+build all-bucket key permissions, not to populate the metrics registry.
+
+The 0.7.11 chart exposes no unmanaged-bucket discovery or Admin API collector
+mode. Consequently, an exporter-only bucket cannot appear in
+`garage_operator_bucket_*` under the current release. Every bucket in the
+coverage gap requires one of two deliberate changes: adopt it as a
+`GarageBucket` CR, or add a future operator-side Admin API collector upstream.
+There is no in-repository configuration switch that can make the existing
+operator metrics cover those buckets.
+
+The upstream source evidence is `internal/controller/garagebucket_metrics.go`,
+the call from `internal/controller/garagebucket_controller.go`, the
+`ListBuckets` implementation in `internal/garage/client.go`, its
+`internal/controller/garagekey_controller.go` caller, and the chart's
+`charts/garage-operator/values.yaml`. This makes the homepage migration gate
+and exporter-retirement gate explicit design constraints.
+
 ## Homepage decision
 
 The homepage is an additional exporter consumer, not just a Grafana consumer:
@@ -120,3 +144,20 @@ Only after no retained bucket depends on the exporter should a separate PR
 remove the Ottawa `garage-exporter` Flux Kustomization and its
 Deployment, Service, and ServiceMonitor. This PR makes no live or GitOps
 retirement change.
+
+## Deferred km cleanup after garage-operator 0.7.12
+
+The garage399 lane is moving the `GarageNodeDisconnected` aggregation into the
+chart itself and will release 0.7.12. Do not open or merge this cleanup against
+an unreleased version. Once 0.7.12 is published, the follow-up km PR should
+change only
+`kubernetes/apps/base/garage-operator-system/garage-operator-system-install/helmrelease.yaml`:
+
+1. bump the chart pin from 0.7.11 to the released 0.7.12; and
+2. delete the entire `spec.postRenderers` block, including both the legacy
+   0.7.10 and 0.7.11 version-scoped patches.
+
+It must not reindex or recreate the aggregation patch in km. The follow-up
+should be validated against the actual released chart render, then with the
+Ottawa render gate and server-side dry-run. It is intentionally not part of
+this exporter-retirement PR.
