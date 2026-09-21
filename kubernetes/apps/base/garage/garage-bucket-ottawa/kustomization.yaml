@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: garage
 resources:
   - ../garage-bucket
+  - raj-assistant-web.yaml
   - bucket.yaml
   - firefly-postgres.yaml
   - forgejo-postgres.yaml
