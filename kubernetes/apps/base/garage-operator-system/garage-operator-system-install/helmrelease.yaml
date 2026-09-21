@@ -26,16 +26,16 @@ spec:
   postRenderers:
     - kustomize:
         patches:
-          # Keep the aggregation fix while the existing 0.7.7 release is
-          # still live. Rendered 0.7.7, 0.7.8, 0.7.9, and 0.7.10 charts all
-          # keep GarageNodeDisconnected at groups/2/rules/4; the intervening
-          # releases do not add a PrometheusRule group.
+          # Keep the aggregation fix while the existing 0.7.10 release is
+          # still live. Rendered 0.7.8, 0.7.9, and 0.7.10 charts keep
+          # GarageNodeDisconnected at groups/2/rules/4; neither skipped
+          # release adds a PrometheusRule group.
           - target:
               group: monitoring.coreos.com
               version: v1
               kind: PrometheusRule
               name: garage-operator-garage
-              labelSelector: helm.sh/chart=garage-operator-0.7.7
+              labelSelector: helm.sh/chart=garage-operator-0.7.10
             patch: |
               - op: replace
                 path: /spec/groups/2/rules/4/expr
