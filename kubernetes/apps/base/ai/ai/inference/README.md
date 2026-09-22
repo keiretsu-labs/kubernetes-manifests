@@ -10,10 +10,14 @@
 - **Topology:** one LeaderWorkerSet spanning `spark-0` and `spark-1`, TP=2, MP executor
 - **Serving ID:** `GLM-5.3-Flash-EXL3`
 - **Service:** `qwen38.ai:8000` (identity retained so CLIProxy, mesh export, probes, and consumers cut over atomically)
-- **Context guardrail:** `850000` tokens, `max-num-seqs=4`
-- **KV:** FP8; `gpu-memory-utilization=0.85`; `max-num-batched-tokens=7168`
-- **Speculative decoding:** DFlash2, 7 draft tokens, draft TP=2
-- **Vision:** enabled; maximum 48 images / 1 video per prompt, 2048 tokens per image, 1 GiB media cache, max-size multimodal profiling disabled
+**Mia recipe contract ported:**
+- TP=2 / MP across spark-0 and spark-1, pinned Mia image and model revisions.
+- E2 direct fat-expert path (`EXL3_FAT_GROUPED=0`, fused temp rows 256), right-sized indexer.
+- FP8 packed MLA KV, explicit 15 GiB KV budget, 1M max length, one sequence, MNBT 2048.
+- FlashInfer autotune disabled, eager qualification, text-only/no DFlash for the memory gate.
+- Persistent Triton/TileLang cache paths, extended model-execution timeout, no boot shape warmup.
+- Downloader now requires the complete 120-shard checkpoint, index, and non-empty config.
+- Vision/DFlash remain pinned and downloadable for the later production profile; qualification intentionally omits them.
 
 The Mia recipe uses the published arm64 image directly; no image build or runtime patch ConfigMap is required. The model and DFlash2 weights are downloaded to the existing per-rank 200Gi PVCs and pinned by immutable Hugging Face revisions.
 

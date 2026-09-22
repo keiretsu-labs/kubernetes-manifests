@@ -42,8 +42,9 @@ data:
     PY
     fi
     count="$$(find "$${MODEL_DIR}" -maxdepth 1 -type f -name '*.safetensors' | wc -l)"
-    [ "$${count}" -ge 100 ]
-    test -f "$${MODEL_DIR}/config.json"
+    [ "$${count}" -ge 120 ]
+    test -s "$${MODEL_DIR}/config.json"
+    test -s "$${MODEL_DIR}/model.safetensors.index.json"
     printf '%s\n' "$${EXPECTED_MARKER}" > "$${MODEL_MARKER}"
     mkdir -p "$${MODEL_DIR}/dflash2"
     dcurrent="$$(cat "$${DFLASH_MARKER}" 2>/dev/null || true)"
@@ -56,7 +57,8 @@ data:
     PY
       printf '%s\n' "$${EXPECTED_DFLASH_MARKER}" > "$${DFLASH_MARKER}"
     fi
-    test -f "$${MODEL_DIR}/dflash2/config.json"
+    test -s "$${MODEL_DIR}/dflash2/config.json"
+    # DFlash2 uses safetensors or a single model file depending on revision; config is the required gate.
     echo "[validate] GLM model files=$${count} and DFlash2 present"
 
   patch_glm_video_placeholders.py: |
@@ -347,9 +349,10 @@ spec:
               --distributed-executor-backend mp --quantization exl3 \
               --load-format instanttensor --gpu-memory-utilization 0.68 \
               --kv-cache-memory-bytes 15032385536 \
+              --no-enable-flashinfer-autotune \
               --enforce-eager \
               --language-model-only \
-              --max-model-len 1000000 --max-num-seqs 1 --max-num-batched-tokens 256 \
+              --max-model-len 1000000 --max-num-seqs 1 --max-num-batched-tokens 2048 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
               --limit-mm-per-prompt '{"image":48,"video":1}' \
@@ -379,6 +382,12 @@ spec:
           - { name: EXL3_FAT_GROUPED, value: "0" }
           - { name: EXL3_TEMP_ROWS_FUSED, value: "256" }
           - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS, value: "1800" }
+          - { name: TRITON_CACHE_DIR, value: "/models/triton-cache" }
+          - { name: TILELANG_CACHE_DIR, value: "/models/tilelang-cache" }
+          - { name: GLM53_BOOT_SHAPE_WARMUP, value: "0" }
+          - { name: GLM53_ADAPTIVE_K, value: "off" }
+          - { name: GLM53_DENSE_FP8, value: "off" }
           - { name: GLM53_MIXED_PREFILL_CHUNK, value: "fair" }
           - { name: GLM53_FAIR_PREFILL_CHUNK, value: "256" }
           - { name: GLM53_FAIR_PREFILL_SHARE, value: "0.30" }
@@ -508,9 +517,10 @@ spec:
               --distributed-executor-backend mp --headless --quantization exl3 \
               --load-format instanttensor --gpu-memory-utilization 0.68 \
               --kv-cache-memory-bytes 15032385536 \
+              --no-enable-flashinfer-autotune \
               --enforce-eager \
               --language-model-only \
-              --max-model-len 1000000 --max-num-seqs 1 --max-num-batched-tokens 256 \
+              --max-model-len 1000000 --max-num-seqs 1 --max-num-batched-tokens 2048 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
               --limit-mm-per-prompt '{"image":48,"video":1}' \
@@ -540,6 +550,12 @@ spec:
           - { name: EXL3_FAT_GROUPED, value: "0" }
           - { name: EXL3_TEMP_ROWS_FUSED, value: "256" }
           - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_EXECUTE_MODEL_TIMEOUT_SECONDS, value: "1800" }
+          - { name: TRITON_CACHE_DIR, value: "/models/triton-cache" }
+          - { name: TILELANG_CACHE_DIR, value: "/models/tilelang-cache" }
+          - { name: GLM53_BOOT_SHAPE_WARMUP, value: "0" }
+          - { name: GLM53_ADAPTIVE_K, value: "off" }
+          - { name: GLM53_DENSE_FP8, value: "off" }
           - { name: GLM53_MIXED_PREFILL_CHUNK, value: "fair" }
           - { name: GLM53_FAIR_PREFILL_CHUNK, value: "256" }
           - { name: GLM53_FAIR_PREFILL_SHARE, value: "0.30" }
