@@ -373,7 +373,7 @@ gate_root="$(mktemp -d)"
 mkdir -p "$gate_root/tools"
 cp "$T/check.sh" "$gate_root/tools/check.sh"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
-  check-cliproxy-pi-bridge.sh check-zot-upload-affinity.sh \
+  check-cliproxy-pi-bridge.sh check-zot-upload-affinity.sh check-bhaiya-limits.sh \
   check-mimir-rules.sh check-velero-pvc-coverage.sh \
   check-helmrelease-schema.sh; do
   printf '#!/usr/bin/env bash\nexit 0\n' >"$gate_root/tools/$helper"
@@ -422,7 +422,7 @@ watchdog_tmp="$(mktemp -d)"
 mkdir -p "$watchdog_tmp/tools" "$watchdog_tmp/stub"
 cp "$T/check.sh" "$watchdog_tmp/tools/check.sh"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
-  check-cliproxy-pi-bridge.sh check-zot-upload-affinity.sh \
+  check-cliproxy-pi-bridge.sh check-zot-upload-affinity.sh check-bhaiya-limits.sh \
   check-mimir-rules.sh check-velero-pvc-coverage.sh \
   check-helmrelease-schema.sh; do
   cat >"$watchdog_tmp/tools/$helper" <<'EOF'
@@ -517,7 +517,7 @@ wedge_gate_root="$mstub/gate"
 mkdir -p "$wedge_gate_root/tools"
 cp "$T/check.sh" "$wedge_gate_root/tools/check.sh"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
-  check-cliproxy-pi-bridge.sh check-zot-upload-affinity.sh \
+  check-cliproxy-pi-bridge.sh check-zot-upload-affinity.sh check-bhaiya-limits.sh \
   check-mimir-rules.sh check-velero-pvc-coverage.sh \
   check-helmrelease-schema.sh; do
   printf '#!/usr/bin/env bash\nexit 0\n' >"$wedge_gate_root/tools/$helper"
