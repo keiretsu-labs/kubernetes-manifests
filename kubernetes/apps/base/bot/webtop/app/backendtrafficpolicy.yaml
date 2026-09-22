@@ -1,0 +1,22 @@
+---
+# Selkies drives input, audio and the video signalling channel over websockets
+# and holds them open for the life of the session, so the default Envoy idle
+# and request timeouts would tear the desktop down every minute.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: webtop-upgrade-policy
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: webtop
+  httpUpgrade:
+  - type: websocket
+  connection:
+    bufferLimit: 32768
+  timeout:
+    http:
+      connectionIdleTimeout: 900s
+      maxConnectionDuration: 0s  # unlimited
+      requestTimeout: 0s  # unlimited for the streaming websocket

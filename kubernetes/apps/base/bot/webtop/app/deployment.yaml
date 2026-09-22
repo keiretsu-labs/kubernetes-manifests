@@ -1,0 +1,76 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webtop
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: webtop
+  template:
+    metadata:
+      labels:
+        app: webtop
+    spec:
+      enableServiceLinks: false
+      containers:
+      - name: webtop
+        image: lscr.io/linuxserver/webtop:debian-xfce
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        env:
+        - name: PUID
+          value: '1000'
+        - name: PGID
+          value: '1000'
+        - name: TZ
+          value: ${TIMEZONE}
+        - name: TITLE
+          value: bot
+        # Selkies serves the desktop over plain HTTP on 3000 for reverse proxies;
+        # the ts gateway terminates TLS, so the browser still gets a secure context.
+        - name: DISABLE_IPV6
+          value: 'true'
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        # Selkies' encoder needs real shared memory; the container default 64Mi
+        # is not enough and the desktop dies mid-session without this.
+        - name: dshm
+          mountPath: /dev/shm
+        resources:
+          requests:
+            cpu: 250m
+            memory: 1Gi
+          limits:
+            cpu: '4'
+            memory: 6Gi
+        startupProbe:
+          httpGet:
+            path: /
+            port: http
+          periodSeconds: 5
+          failureThreshold: 60
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          periodSeconds: 30
+          failureThreshold: 5
+      volumes:
+      - name: config
+        emptyDir: {}
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 1Gi
