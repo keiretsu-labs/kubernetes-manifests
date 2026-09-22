@@ -385,7 +385,6 @@ spec:
           - { name: GLM53_FAIR_PREFILL_MAX_STEP_MS, value: "2000" }
           - { name: GLM53_FAIR_PREFILL_MAX_CHUNKS, value: "1" }
           - { name: GLM53_KV_CAPACITY_LOG, value: "1" }
-          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
           securityContext:
             privileged: true
             capabilities:
@@ -546,7 +545,6 @@ spec:
           - { name: GLM53_FAIR_PREFILL_MAX_STEP_MS, value: "2000" }
           - { name: GLM53_FAIR_PREFILL_MAX_CHUNKS, value: "1" }
           - { name: GLM53_KV_CAPACITY_LOG, value: "1" }
-          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
           securityContext:
             privileged: true
             capabilities:
