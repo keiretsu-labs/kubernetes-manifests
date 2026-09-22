@@ -7,8 +7,8 @@ kind: BackendTrafficPolicy
 metadata:
   name: webtop-upgrade-policy
 spec:
-  targetRef:
-    group: gateway.networking.k8s.io
+  targetRefs:
+  - group: gateway.networking.k8s.io
     kind: HTTPRoute
     name: webtop
   httpUpgrade:
