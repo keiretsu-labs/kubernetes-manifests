@@ -176,7 +176,7 @@ make_gate_root() {
   mkdir -p "$root/tools" "$root/bin"
   cp "$T/check.sh" "$root/tools/check.sh"
   for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
-    check-cliproxy-pi-bridge.sh check-zot-upload-affinity.sh \
+    check-cliproxy-pi-bridge.sh check-zot-upload-affinity.sh check-bhaiya-limits.sh \
     check-mimir-rules.sh check-velero-pvc-coverage.sh; do
     printf '#!/usr/bin/env bash\nexit 0\n' >"$root/tools/$helper"
     chmod +x "$root/tools/$helper"
