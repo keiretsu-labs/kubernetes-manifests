@@ -9,7 +9,10 @@ spec:
     name: garage
   globalAlias: woodpecker-postgres
   quotas:
-    maxSize: 100Gi
+    # The previous 100Gi ceiling was reached with the archive bucket nearly
+    # full. Raise the hard write cap for immediate recovery; this does not
+    # reserve Garage disk space.
+    maxSize: 200Gi
     maxObjects: 1000000
   keyPermissions:
     - keyRef:

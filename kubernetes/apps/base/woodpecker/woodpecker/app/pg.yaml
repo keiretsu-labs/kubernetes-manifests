@@ -24,8 +24,6 @@ spec:
       parameters:
         barmanObjectName: woodpecker-postgres-s3-store
         serverName: woodpecker-postgres
-  backup:
-    retentionPolicy: "30d"
   externalClusters:
     - name: woodpecker-postgres-backup
       plugin:
@@ -56,7 +54,10 @@ spec:
     env:
       - name: AWS_DEFAULT_REGION
         value: garage
-  retentionPolicy: "30d"
+  # Keep two weeks of point-in-time recovery instead of 30 days. This gives up
+  # 16 days of the previous policy. Barman removes obsolete objects after a
+  # later successful backup; the Garage quota remains a hard size cap.
+  retentionPolicy: "14d"
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup

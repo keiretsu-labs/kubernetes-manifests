@@ -123,3 +123,53 @@ groups:
             destination does not clear this. Inspect ScheduledBackup, the verify
             Backup path, and ObjectStore status.serverRecoveryWindow before
             treating the database as restorable.
+
+      - alert: CNPGWALArchiveBacklog
+        expr: |
+          max by (cluster, namespace, pod) (
+            cnpg_collector_pg_wal_archive_status{value="ready"} > 0
+          )
+          and on (cluster, namespace, pod)
+          max by (cluster, namespace, pod) (
+            cnpg_pg_replication_in_recovery == 0
+          )
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: CNPG primary {{ $labels.namespace }}/{{ $labels.pod }} has WAL waiting for archive
+          description: >-
+            PostgreSQL has WAL segments marked ready for archival on its primary
+            for at least 15 minutes. Check the barman-cloud sidecar logs and the
+            destination bucket quota or write errors; a stalled archive retains
+            WAL on the database volume and can stop PostgreSQL. Restore the
+            archive destination before considering failover or deleting data.
+
+      - alert: WoodpeckerPostgresPVCNearFull
+        expr: |
+          1 - (
+            max by (namespace, persistentvolumeclaim) (
+              kubelet_volume_stats_available_bytes{
+                namespace="woodpecker",
+                persistentvolumeclaim=~"woodpecker-postgres-[0-9]+"
+              }
+            )
+            /
+            max by (namespace, persistentvolumeclaim) (
+              kubelet_volume_stats_capacity_bytes{
+                namespace="woodpecker",
+                persistentvolumeclaim=~"woodpecker-postgres-[0-9]+"
+              }
+            )
+          ) > 0.85
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Woodpecker PostgreSQL volume {{ $labels.persistentvolumeclaim }} is nearly full
+          description: >-
+            A Woodpecker CNPG instance volume is more than 85 percent full for
+            15 minutes. Check the Cluster and PVC capacity, then inspect WAL
+            archive health and the dedicated Garage bucket quota. Expand via
+            the CNPG Cluster GitOps storage size; do not remove WAL files or
+            force a promotion.

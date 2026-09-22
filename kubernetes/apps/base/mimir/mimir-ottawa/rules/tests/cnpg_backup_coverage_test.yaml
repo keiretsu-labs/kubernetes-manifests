@@ -1,0 +1,90 @@
+rule_files:
+  - ../cnpg-backup-coverage.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # A persistent ready-WAL queue on the primary points to an archive stall.
+  # A replica's archive-status series must not page as a primary failure.
+  - interval: 1m
+    input_series:
+      - series: 'cnpg_collector_pg_wal_archive_status{cluster="talos-ottawa",namespace="woodpecker",pod="woodpecker-postgres-1",value="ready"}'
+        values: "1+0x20"
+      - series: 'cnpg_pg_replication_in_recovery{cluster="talos-ottawa",namespace="woodpecker",pod="woodpecker-postgres-1"}'
+        values: "0+0x20"
+      - series: 'cnpg_collector_pg_wal_archive_status{cluster="talos-ottawa",namespace="woodpecker",pod="woodpecker-postgres-2",value="ready"}'
+        values: "1+0x20"
+      - series: 'cnpg_pg_replication_in_recovery{cluster="talos-ottawa",namespace="woodpecker",pod="woodpecker-postgres-2"}'
+        values: "1+0x20"
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: CNPGWALArchiveBacklog
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: CNPGWALArchiveBacklog
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: woodpecker
+              pod: woodpecker-postgres-1
+              severity: critical
+            exp_annotations:
+              summary: CNPG primary woodpecker/woodpecker-postgres-1 has WAL waiting for archive
+              description: >-
+                PostgreSQL has WAL segments marked ready for archival on its primary
+                for at least 15 minutes. Check the barman-cloud sidecar logs and the
+                destination bucket quota or write errors; a stalled archive retains
+                WAL on the database volume and can stop PostgreSQL. Restore the
+                archive destination before considering failover or deleting data.
+
+  # The archive backlog must clear when no primary WAL is waiting for upload.
+  - interval: 1m
+    input_series:
+      - series: 'cnpg_collector_pg_wal_archive_status{cluster="talos-ottawa",namespace="woodpecker",pod="woodpecker-postgres-1",value="ready"}'
+        values: "0+0x20"
+      - series: 'cnpg_pg_replication_in_recovery{cluster="talos-ottawa",namespace="woodpecker",pod="woodpecker-postgres-1"}'
+        values: "0+0x20"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: CNPGWALArchiveBacklog
+        exp_alerts: []
+
+  # Exercise the low-volume-space warning with the incident's primary PVC
+  # available-bytes value and verify the hold time.
+  - interval: 1m
+    input_series:
+      - series: 'kubelet_volume_stats_available_bytes{cluster="talos-ottawa",namespace="woodpecker",persistentvolumeclaim="woodpecker-postgres-1"}'
+        values: "1208320+0x20"
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-ottawa",namespace="woodpecker",persistentvolumeclaim="woodpecker-postgres-1"}'
+        values: "10737418240+0x20"
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: WoodpeckerPostgresPVCNearFull
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: WoodpeckerPostgresPVCNearFull
+        exp_alerts:
+          - exp_labels:
+              namespace: woodpecker
+              persistentvolumeclaim: woodpecker-postgres-1
+              severity: warning
+            exp_annotations:
+              summary: Woodpecker PostgreSQL volume woodpecker-postgres-1 is nearly full
+              description: >-
+                A Woodpecker CNPG instance volume is more than 85 percent full for
+                15 minutes. Check the Cluster and PVC capacity, then inspect WAL
+                archive health and the dedicated Garage bucket quota. Expand via
+                the CNPG Cluster GitOps storage size; do not remove WAL files or
+                force a promotion.
+
+  # Half-full storage must remain quiet.
+  - interval: 1m
+    input_series:
+      - series: 'kubelet_volume_stats_available_bytes{cluster="talos-ottawa",namespace="woodpecker",persistentvolumeclaim="woodpecker-postgres-2"}'
+        values: "5368709120+0x20"
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-ottawa",namespace="woodpecker",persistentvolumeclaim="woodpecker-postgres-2"}'
+        values: "10737418240+0x20"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: WoodpeckerPostgresPVCNearFull
+        exp_alerts: []
