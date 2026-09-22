@@ -347,7 +347,7 @@ spec:
               --distributed-executor-backend mp --quantization exl3 \
               --load-format instanttensor --gpu-memory-utilization 0.72 \
               --enforce-eager \
-              --max-model-len 256000 --max-num-seqs 1 --max-num-batched-tokens 2048 \
+              --max-model-len 32000 --max-num-seqs 1 --max-num-batched-tokens 2048 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
               --limit-mm-per-prompt '{"image":48,"video":1}' \
@@ -504,7 +504,7 @@ spec:
               --distributed-executor-backend mp --headless --quantization exl3 \
               --load-format instanttensor --gpu-memory-utilization 0.72 \
               --enforce-eager \
-              --max-model-len 256000 --max-num-seqs 1 --max-num-batched-tokens 2048 \
+              --max-model-len 32000 --max-num-seqs 1 --max-num-batched-tokens 2048 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
               --limit-mm-per-prompt '{"image":48,"video":1}' \
