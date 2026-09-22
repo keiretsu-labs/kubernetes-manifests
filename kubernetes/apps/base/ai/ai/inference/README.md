@@ -10,14 +10,15 @@
 - **Topology:** one LeaderWorkerSet spanning `spark-0` and `spark-1`, TP=2, MP executor
 - **Serving ID:** `GLM-5.3-Flash-EXL3`
 - **Service:** `qwen38.ai:8000` (identity retained so CLIProxy, mesh export, probes, and consumers cut over atomically)
-**Mia recipe contract ported:**
-- TP=2 / MP across spark-0 and spark-1, pinned Mia image and model revisions.
-- E2 direct fat-expert path (`EXL3_FAT_GROUPED=0`, fused temp rows 256), right-sized indexer.
-- FP8 packed MLA KV, explicit 15 GiB KV budget, 1M max length, one sequence, MNBT 2048.
-- FlashInfer autotune disabled, eager qualification, text-only/no DFlash for the memory gate.
-- Persistent Triton/TileLang cache paths, extended model-execution timeout, no boot shape warmup.
-- Downloader now requires the complete 120-shard checkpoint, index, and non-empty config.
-- Vision/DFlash remain pinned and downloadable for the later production profile; qualification intentionally omits them.
+**Mia practical coding profile ported:**
+- 262,144 tokens per request, two active sequences, 1,024 batched prefill tokens.
+- E3 grouped prefill (`EXL3_FAT_GROUPED=1`, temp rows 32) and fair scheduling.
+- Fast MoE decode, KDA BF16 large-M prefill, and dense/KDA FP8 opt-ins enabled.
+- DFlash2 fixed at k=7 with draft TP=2; adaptive-K remains off.
+- Vision remains enabled with 48-image/1-video ceiling, 2,048 image tokens, and 1 GiB media cache.
+- Explicit 15 GiB FP8 KV budget retained to preserve host headroom.
+
+This is the practical responsive long-session profile from Mia’s September 2026 report. The three opt-ins add roughly 3.3 GiB per GPU and dense/KDA FP8 changes numerics; they are deliberate performance/memory tradeoffs, not free capacity.
 
 The Mia recipe uses the published arm64 image directly; no image build or runtime patch ConfigMap is required. The model and DFlash2 weights are downloaded to the existing per-rank 200Gi PVCs and pinned by immutable Hugging Face revisions.
 
