@@ -1076,6 +1076,8 @@ woodpecker_bucket="$ROOT/kubernetes/apps/base/garage/garage-bucket-ottawa/woodpe
 woodpecker_pg="$ROOT/kubernetes/apps/base/woodpecker/woodpecker/app/pg.yaml"
 assert "Woodpecker backup GarageBucket quota is 200Gi" \
   grep -q '^    maxSize: 200Gi$' "$woodpecker_bucket"
+assert "Woodpecker CNPG storage headroom is 20Gi" \
+  grep -q '^    size: 20Gi$' "$woodpecker_pg"
 assert "Woodpecker Barman ObjectStore retention is 14d" \
   grep -q '^  retentionPolicy: "14d"$' "$woodpecker_pg"
 refute "Woodpecker plugin Cluster has no unused in-tree retention policy" \

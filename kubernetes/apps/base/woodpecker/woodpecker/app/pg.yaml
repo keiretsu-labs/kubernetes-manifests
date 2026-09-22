@@ -14,7 +14,9 @@ spec:
       owner: woodpecker
       dataChecksums: true
   storage:
-    size: 10Gi
+    # Add WAL headroom on both instance PVCs after the archive write path is
+    # restored. CNPG expands each instance claim from this Cluster setting.
+    size: 20Gi
     storageClass: ceph-block-replicated
   monitoring:
     enablePodMonitor: true
