@@ -177,9 +177,9 @@ spec:
               # Allow a bounded wait for a cooling credential before starting
               # another round; 0 forbade every positive cooldown wait.
               max-retry-interval: 30
-              # St. Petersburg's Qwen SGLang endpoint accepts system messages
-              # but rejects OpenAI's developer role, which Pi sends by default.
-              # Keep this compatibility translation scoped to the Qwen alias.
+              # St. Petersburg's GLM vLLM endpoint accepts system messages but
+              # rejects OpenAI's developer role, which Pi sends by default.
+              # Keep this compatibility translation scoped to the GLM alias.
               payload:
                 override:
                   - models:

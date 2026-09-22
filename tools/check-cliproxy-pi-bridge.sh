@@ -37,12 +37,12 @@ rendered_config_match = re.search(
 if rendered_config_match is None:
     raise SystemExit("render-config must write the CLIProxy configuration heredoc")
 rendered_config = yaml.safe_load(rendered_config_match.group(1))
-qwen_payload_override = {
-    "models": [{"name": "vllm/Qwen3.8-Flash-Next", "protocol": "openai"}],
+glm_payload_override = {
+    "models": [{"name": "vllm/GLM-5.3-Flash-EXL3", "protocol": "openai"}],
     "params": {"messages.#(role==\"developer\")#.role": "system"},
 }
-if qwen_payload_override not in (rendered_config.get("payload") or {}).get("override", []):
-    raise SystemExit("Qwen must rewrite every developer message to system before its OpenAI route")
+if glm_payload_override not in (rendered_config.get("payload") or {}).get("override", []):
+    raise SystemExit("GLM must rewrite every developer message to system before its OpenAI route")
 
 providers_path = pathlib.Path("kubernetes/apps/base/cliproxy/cliproxy/app/providers/providers.yaml")
 providers = yaml.safe_load(providers_path.read_text())
@@ -51,14 +51,14 @@ vllm_provider = next(
     for provider in providers["openai-compatibility"]
     if provider.get("name") == "vllm"
 )
-qwen_provider_model = next(
+glm_provider_model = next(
     model
     for model in vllm_provider["models"]
-    if model.get("alias") == "Qwen3.8-Flash-Next"
+    if model.get("alias") == "GLM-5.3-Flash-EXL3"
 )
-if qwen_provider_model.get("thinking") != {"levels": ["low", "medium", "xhigh"]}:
+if glm_provider_model.get("thinking") != {"levels": ["low", "medium", "high"]}:
     raise SystemExit(
-        "Qwen must declare its live low/medium/xhigh thinking levels"
+        "GLM must declare its live low/medium/high thinking levels"
     )
 
 sync = next(container for container in containers if container["name"] == "pi-bridge-sync")
@@ -77,24 +77,24 @@ source = "codex-subscription/gpt-5.6-luna"
 if namespace["metadata_alias_sources"].get(fallback) != source:
     raise SystemExit(f"{fallback} must resolve metadata from {source}")
 
-qwen_alias = "vllm/Qwen3.8-Flash-Next"
-qwen_source = "vllm/Qwen3.8-Flash-Next-NVFP4"
-if namespace["metadata_alias_sources"].get(qwen_alias) != qwen_source:
-    raise SystemExit(f"{qwen_alias} must resolve metadata from {qwen_source}")
-if namespace["metadata_override"](qwen_alias) != {
+glm_alias = "vllm/GLM-5.3-Flash-EXL3"
+glm_source = "vllm/GLM-5.3-Flash-EXL3"
+if namespace["metadata_alias_sources"].get(glm_alias) != glm_source:
+    raise SystemExit(f"{glm_alias} must resolve metadata from {glm_source}")
+if namespace["metadata_override"](glm_alias) != {
     "context_window": 1048576,
     "max_tokens": 8192,
-    "name": "Qwen3.8 Flash Next",
+    "name": "GLM-5.3 Flash EXL3",
     "reasoning": True,
 }:
-    raise SystemExit("Qwen alias metadata must describe the active serving profile")
+    raise SystemExit("GLM alias metadata must describe the active serving profile")
 
 namespace["fetch_json"] = lambda url: {
-    "data": [{"id": "Qwen3.8-Flash-Next-NVFP4"}]
+    "data": [{"id": "GLM-5.3-Flash-EXL3"}]
 }
-qwen_sources = namespace["route_sources"]({qwen_alias})
-if qwen_sources.get(qwen_alias, {}).get("id") != "Qwen3.8-Flash-Next-NVFP4":
-    raise SystemExit("alias-only Qwen catalog did not resolve its canonical upstream source")
+glm_sources = namespace["route_sources"]({glm_alias})
+if glm_sources.get(glm_alias, {}).get("id") != "GLM-5.3-Flash-EXL3":
+    raise SystemExit("GLM catalog did not resolve its canonical upstream source")
 
 if not re.search(
     r'(?ms)oauth-model-alias:\s*\n\s*codex:\s*\n\s*- name: "gpt-5\.6-luna"\s*\n\s*alias: "vllm-fallback"',
@@ -117,8 +117,8 @@ if seen != [{"id": "gpt-5.6-luna", "provider": {"id": "codex"}, "direct": {}}]:
 # A configured compatible-provider route must not inherit an old alias
 # override when its live upstream source is unavailable. Otherwise a stale
 # vLLM route remains selectable even after the serving workload disappears.
-if namespace["resolved_metadata"](qwen_alias, "vllm", None, [], {}) is not None:
+if namespace["resolved_metadata"](glm_alias, "vllm", None, [], {}) is not None:
     raise SystemExit("unavailable vLLM route inherited stale metadata")
 
-print("✓ cliproxy Pi bridge metadata and Qwen payload contract")
+print("✓ cliproxy Pi bridge metadata and GLM payload contract")
 PY
