@@ -1072,6 +1072,14 @@ assert "kopiur-ottawa GarageBucket exists" \
   grep -q 'name: kopiur-ottawa' "$ROOT/kubernetes/apps/base/garage/garage-kopiur-ottawa-bucket/bucket.yaml"
 assert "kopiur-robbinsdale GarageBucket exists" \
   grep -q 'name: kopiur-robbinsdale' "$ROOT/kubernetes/apps/base/garage/garage-kopiur-robbinsdale-bucket/bucket.yaml"
+woodpecker_bucket="$ROOT/kubernetes/apps/base/garage/garage-bucket-ottawa/woodpecker-postgres.yaml"
+woodpecker_pg="$ROOT/kubernetes/apps/base/woodpecker/woodpecker/app/pg.yaml"
+assert "Woodpecker backup GarageBucket quota is 200Gi" \
+  grep -q '^    maxSize: 200Gi$' "$woodpecker_bucket"
+assert "Woodpecker Barman ObjectStore retention is 14d" \
+  grep -q '^  retentionPolicy: "14d"$' "$woodpecker_pg"
+refute "Woodpecker plugin Cluster has no unused in-tree retention policy" \
+  grep -q '^    retentionPolicy:' "$woodpecker_pg"
 refute "kopiur-ottawa bucket is not velero" \
   grep -q 'globalAlias: velero' "$ROOT/kubernetes/apps/base/garage/garage-kopiur-ottawa-bucket/bucket.yaml"
 assert "Ottawa Kopiur SnapshotPolicy remains" \
