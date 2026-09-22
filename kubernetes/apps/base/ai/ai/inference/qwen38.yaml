@@ -374,6 +374,8 @@ spec:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: GLM53_INDEXER_WORKSPACE, value: "rightsize" }
+          - { name: EXL3_FAT_GROUPED, value: "0" }
+          - { name: EXL3_TEMP_ROWS_FUSED, value: "256" }
           - { name: GLM53_MIXED_PREFILL_CHUNK, value: "fair" }
           - { name: GLM53_FAIR_PREFILL_CHUNK, value: "256" }
           - { name: GLM53_FAIR_PREFILL_SHARE, value: "0.30" }
@@ -531,6 +533,8 @@ spec:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: GLM53_INDEXER_WORKSPACE, value: "rightsize" }
+          - { name: EXL3_FAT_GROUPED, value: "0" }
+          - { name: EXL3_TEMP_ROWS_FUSED, value: "256" }
           - { name: GLM53_MIXED_PREFILL_CHUNK, value: "fair" }
           - { name: GLM53_FAIR_PREFILL_CHUNK, value: "256" }
           - { name: GLM53_FAIR_PREFILL_SHARE, value: "0.30" }
