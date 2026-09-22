@@ -345,7 +345,7 @@ spec:
               --tensor-parallel-size 2 --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 26400 \
               --distributed-executor-backend mp --quantization exl3 \
-              --load-format instanttensor --gpu-memory-utilization 0.75 \
+              --load-format instanttensor --gpu-memory-utilization 0.70 \
               --kv-cache-memory-bytes 15032385536 \
               --enforce-eager \
               --language-model-only \
@@ -506,7 +506,7 @@ spec:
               --tensor-parallel-size 2 --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 26400 \
               --distributed-executor-backend mp --headless --quantization exl3 \
-              --load-format instanttensor --gpu-memory-utilization 0.75 \
+              --load-format instanttensor --gpu-memory-utilization 0.70 \
               --kv-cache-memory-bytes 15032385536 \
               --enforce-eager \
               --language-model-only \
