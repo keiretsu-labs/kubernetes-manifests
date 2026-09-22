@@ -345,7 +345,7 @@ spec:
               --tensor-parallel-size 2 --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 26400 \
               --distributed-executor-backend mp --quantization exl3 \
-              --load-format instanttensor --gpu-memory-utilization 0.72 \
+              --load-format instanttensor --gpu-memory-utilization 0.735 \
               --max-model-len 850000 --max-num-seqs 4 --max-num-batched-tokens 7168 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --speculative-config '{"method":"dflash","model":"/models/qwen38/dflash2","num_speculative_tokens":7,"kv_cache_dtype":"auto","draft_tensor_parallel_size":2,"draft_sample_method":"probabilistic","rejection_sample_method":"standard"}' \
@@ -381,7 +381,7 @@ spec:
           - { name: GLM53_FAIR_PREFILL_MAX_STEP_MS, value: "2000" }
           - { name: GLM53_FAIR_PREFILL_MAX_CHUNKS, value: "1" }
           - { name: GLM53_KV_CAPACITY_LOG, value: "1" }
-          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "1" }
           securityContext:
             privileged: true
             capabilities:
@@ -502,7 +502,7 @@ spec:
               --tensor-parallel-size 2 --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 26400 \
               --distributed-executor-backend mp --headless --quantization exl3 \
-              --load-format instanttensor --gpu-memory-utilization 0.72 \
+              --load-format instanttensor --gpu-memory-utilization 0.735 \
               --max-model-len 850000 --max-num-seqs 4 --max-num-batched-tokens 7168 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --speculative-config '{"method":"dflash","model":"/models/qwen38/dflash2","num_speculative_tokens":7,"kv_cache_dtype":"auto","draft_tensor_parallel_size":2,"draft_sample_method":"probabilistic","rejection_sample_method":"standard"}' \
@@ -538,7 +538,7 @@ spec:
           - { name: GLM53_FAIR_PREFILL_MAX_STEP_MS, value: "2000" }
           - { name: GLM53_FAIR_PREFILL_MAX_CHUNKS, value: "1" }
           - { name: GLM53_KV_CAPACITY_LOG, value: "1" }
-          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "0" }
+          - { name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS, value: "1" }
           securityContext:
             privileged: true
             capabilities:
