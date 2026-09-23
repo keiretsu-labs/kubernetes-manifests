@@ -32,7 +32,7 @@ if [[ ! -e "${home}/.codex/config.toml" && -n "${CLIPROXY_BASE_URL:-}" ]]; then
 # Seeded by the bot/webtop image. Delete this file to get the stock defaults
 # back on the next container start.
 model_provider = "cliproxy"
-model = "${CLIPROXY_CODEX_MODEL:-ai/gpt-5.3-codex}"
+model = "${CLIPROXY_CODEX_MODEL:-codex-subscription/gpt-5.6-luna}"
 
 # The desktop container is itself the sandbox and the session runs as root, so
 # codex's own landlock/seccomp layer has nothing left to protect and fails to

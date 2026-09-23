@@ -54,8 +54,14 @@ spec:
             secretKeyRef:
               name: webtop-cliproxy
               key: api-key
+        # The codex-subscription route is Codex's own backend, so cliproxy
+        # passes /v1/responses straight through. The `ai` route is an
+        # openai-compatible provider that cliproxy reaches over chat/completions,
+        # and the gpt-*-codex models there reject that endpoint -- `ai/gpt-5.3-codex`
+        # is in the catalog but 400s for this CLI. Matches the model cliproxy's
+        # own oauth-model-alias names for the codex pool.
         - name: CLIPROXY_CODEX_MODEL
-          value: ai/gpt-5.3-codex
+          value: codex-subscription/gpt-5.6-luna
         volumeMounts:
         # /config is the single user's ~. See the image's 20-bot-home init.
         - name: config

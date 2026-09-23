@@ -112,6 +112,16 @@ a pod annotation to force a roll (as `gatus` does), would expose it in
 `kubectl get pod -o yaml`, which is not worth it for a one-line restart.
 
 cliproxy runs with `force-model-prefix: true`, so model names carry their
-route prefix — `ai/gpt-5.3-codex`, `vllm/GLM-5.3-Flash-EXL3`. The codex
-default is `CLIPROXY_CODEX_MODEL` in the Deployment. The catalog lives in
+route prefix. The codex default is `CLIPROXY_CODEX_MODEL` in the Deployment,
+and the prefix matters more than it looks:
+
+- `codex-subscription/*` is Codex's own backend, so cliproxy passes
+  `/v1/responses` straight through. This is what `codex` wants.
+- `ai/*` and `ai-kartik/*` are openai-compatible providers that cliproxy
+  reaches over `chat/completions`. Fine for most models, but the `gpt-*-codex`
+  ones there reject that endpoint — `ai/gpt-5.3-codex` appears in
+  `GET /v1/models` and still 400s for this CLI.
+
+So presence in the catalog is not proof a model works for a given client;
+check the route too. The catalog lives in
 [`providers.yaml`](../../../cliproxy/cliproxy/app/providers/providers.yaml).
