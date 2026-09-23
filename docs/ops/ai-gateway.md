@@ -44,7 +44,7 @@ fixed pair:
 
 | Setting | Value |
 |---|---|
-| `OPENAI_BASE_URL` | `http://ai-gateway.cliproxy.svc/v1` (canary) or CLIProxy until cutover |
+| `OPENAI_BASE_URL` | `http://ai-gateway.cliproxy.svc.cluster.local/v1` (canary; Gateway in `cliproxy`) or CLIProxy until cutover |
 | `model` | **`vllm/default`** (preferred) or `vllm/auto` (alias) |
 
 Agent Router matches `x-ai-eg-model` and applies `modelNameOverride` on the
@@ -62,15 +62,17 @@ names) still match during migration and are rewritten to the same override.
 | `kubernetes/apps/base/envoy-ai-gateway-system/` | Namespace + HelmReleases (`ai-gateway-crds-helm` + `ai-gateway-helm` **v1.1.0**) |
 | `kubernetes/apps/ottawa/envoy-ai-gateway-system/` | Flux Kustomization (depends on `envoy-gateway-system-install`) |
 | `.../envoy-gw-common/ai-gateway-extension/values-patch.yaml` | EG `extensionManager` snippet (merged into EG HelmRelease via #3179) |
-| `.../envoy-ai-gateway-system/routes/` | `Gateway` + `AIGatewayRoute` for SP vLLM (included in default kustomization) |
+| `.../envoy-ai-gateway-system/routes/` | `Gateway` + `AIGatewayRoute` for SP vLLM (Flux KS `envoy-ai-gateway-system-routes` → `cliproxy`) |
 
 ### Enablement checklist
 
 1. Merge this PR → Flux installs `envoy-ai-gateway-system` controller on Ottawa.
 2. ~~Merge `ai-gateway-extension/values-patch.yaml` into the EG HelmRelease~~
    — landed via the `feat/eg-ai-gateway-extension-manager` follow-up (shared CP).
-3. ~~Add `./routes` to the base kustomization~~ — landed; smoke:
-   `curl http://ai-gateway.cliproxy.svc/v1/models` (and a completion with `vllm/default`)
+3. Routes via Flux KS `envoy-ai-gateway-system-routes` (`targetNamespace: cliproxy`).
+   Smoke: `curl http://ai-gateway.cliproxy.svc.cluster.local/v1/models` + completion `vllm/default`.
+   Note: EG data-plane Service lives in `envoy-gateway-system`; until a stable
+   alias Service exists, use that LB Service DNS or the Gateway address.
 4. Point a canary worker: `OPENAI_BASE_URL=http://ai-gateway.cliproxy.svc/v1`
    with model **`vllm/default`** (or alias `vllm/auto`). Do not put GLM/Qwen served names in worker config.
 5. Leave CLIProxy as default until OAuth/Pi parity is decided.
