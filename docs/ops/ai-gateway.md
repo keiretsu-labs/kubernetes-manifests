@@ -61,14 +61,14 @@ names) still match during migration and are rewritten to the same override.
 |---|---|
 | `kubernetes/apps/base/envoy-ai-gateway-system/` | Namespace + HelmReleases (`ai-gateway-crds-helm` + `ai-gateway-helm` **v1.1.0**) |
 | `kubernetes/apps/ottawa/envoy-ai-gateway-system/` | Flux Kustomization (depends on `envoy-gateway-system-install`) |
-| `.../envoy-gw-common/ai-gateway-extension/values-patch.yaml` | **Required** EG `extensionManager` merge (not auto-applied) |
+| `.../envoy-gw-common/ai-gateway-extension/values-patch.yaml` | EG `extensionManager` snippet (merged into EG HelmRelease via #3179) |
 | `.../envoy-ai-gateway-system/routes/` | Example `Gateway` + `AIGatewayRoute` for SP vLLM (**not** in default kustomization) |
 
 ### Enablement checklist
 
 1. Merge this PR → Flux installs `envoy-ai-gateway-system` controller on Ottawa.
-2. Manually merge `ai-gateway-extension/values-patch.yaml` into the EG
-   HelmRelease values (shared control plane — explicit approve).
+2. ~~Merge `ai-gateway-extension/values-patch.yaml` into the EG HelmRelease~~
+   — landed via the `feat/eg-ai-gateway-extension-manager` follow-up (shared CP).
 3. When ready for traffic: add `./routes` to the base kustomization (or a new
    Flux Kustomization) and smoke:
    `curl -H 'Authorization: …' http://<ai-gateway>/v1/models`

@@ -31,7 +31,7 @@ spec:
       # change so the process rereads the mounted configuration.
       pod:
         annotations:
-          config.keiretsu.top/extension-apis: enable-lua-v1
+          config.keiretsu.top/extension-apis: enable-lua-ai-gateway-ext-v1
     config:
       envoyGateway:
         extensionApis:
@@ -42,3 +42,26 @@ spec:
           # disables Lua by default; leaving it off makes those routes render
           # as an Envoy-generated direct 500 instead of reaching their backend.
           enableLua: true
+        # Agent Router (envoy-ai-gateway-system) xDS translation hooks.
+        # Controller must be Ready before AIGatewayRoute programs Envoy.
+        # See docs/ops/ai-gateway.md and ai-gateway-extension/values-patch.yaml.
+        extensionManager:
+          hooks:
+            xdsTranslator:
+              translation:
+                listener:
+                  includeAll: true
+                route:
+                  includeAll: true
+                cluster:
+                  includeAll: true
+                secret:
+                  includeAll: true
+              post:
+                - Translation
+                - Cluster
+                - Route
+          service:
+            fqdn:
+              hostname: ai-gateway-controller.envoy-ai-gateway-system.svc.cluster.local
+              port: 1063
