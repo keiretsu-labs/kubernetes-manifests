@@ -1,0 +1,77 @@
+---
+# Shared Garage gateway ingress policy.
+#
+# Selecting the gateway pods enables Cilium ingress default-deny for anything
+# not listed below. `fromEntities: cluster` is local-cluster only; ClusterMesh
+# remote Garage identities must be allowed explicitly via fromEndpoints so
+# federation RPC (3901) and admin (3903) peer traffic keeps working.
+#
+# S3 (3900) / web (3902) stay local-cluster (+ host/remote-node probes and
+# Envoy Gateway backends). Do not open those client ports to every mesh peer.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: garage-gateway-ingress
+spec:
+  description: >
+    Preserve local S3/web/admin access to Garage gateway pods while allowing
+    narrowly scoped cross-cluster Garage peer RPC/admin ingress.
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/instance: garage
+      garage.rajsingh.info/tier: gateway
+  ingress:
+    # Local-cluster clients, probes, and same-cluster peers.
+    - fromEntities:
+        - cluster
+      toPorts:
+        - ports:
+            - port: "3900"
+              protocol: TCP
+            - port: "3901"
+              protocol: TCP
+            - port: "3902"
+              protocol: TCP
+            - port: "3903"
+              protocol: TCP
+    # Node / remote-node health checks (kubelet, Cilium host probes).
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "3900"
+              protocol: TCP
+            - port: "3903"
+              protocol: TCP
+    # Cross-cluster Garage peers (ClusterMesh). Match gateway + storage tiers
+    # only — not every remote identity — on RPC and admin ports required by
+    # GarageCluster.remoteClusters (3901 RPC, 3903 admin API).
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/instance: garage
+            garage.rajsingh.info/tier: gateway
+        - matchLabels:
+            app.kubernetes.io/instance: garage
+            garage.rajsingh.info/tier: storage
+        - matchLabels:
+            garage.rajsingh.info/cluster: garage
+            garage.rajsingh.info/tier: storage
+      toPorts:
+        - ports:
+            - port: "3901"
+              protocol: TCP
+            - port: "3903"
+              protocol: TCP
+    # Cross-cluster Envoy Gateway backends for S3/web (CDN / MCS failover).
+    # Affinity is usually local; this covers remote gateway backends only on
+    # client ports, not peer RPC.
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway-system
+      toPorts:
+        - ports:
+            - port: "3900"
+              protocol: TCP
+            - port: "3902"
+              protocol: TCP
