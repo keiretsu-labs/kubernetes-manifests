@@ -4,4 +4,6 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./install
-  - ./routes
+  # routes/ applied by Flux Kustomization envoy-ai-gateway-system-routes
+  # (targetNamespace: cliproxy). Do not include here — the install KS uses
+  # targetNamespace: envoy-ai-gateway-system and would override cliproxy.
