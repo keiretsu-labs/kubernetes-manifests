@@ -3,13 +3,13 @@
 # Keep every sibling *.yaml listed here. Runtime/model swaps must NOT remove
 # dashboards — tools/orphans.sh flags UNLISTED files (#2573).
 # Primary for current Mia GLM / vLLM runtime: vllm-inference.yaml
-# SGLang-era panels: sglang.yaml (empty under vLLM metrics)
 # Upstream vLLM JSON imports: dashboards.yaml
 # GPU: gpu-dcgm.yaml
+# SGLang dashboard removed — SP runtime is vLLM (job=qwen38, container=vllm);
+# no live SGLang HelmRelease/LWS remains in-tree.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - dashboards.yaml
   - gpu-dcgm.yaml
-  - sglang.yaml
   - vllm-inference.yaml
