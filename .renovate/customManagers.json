@@ -144,12 +144,12 @@
     },
     {
       "customType": "regex",
-      "description": "Track bot/webtop maintainer image tool versions",
+      "description": "Track bot/webtop maintainer image tool versions (KUSTOMIZE_VERSION is handled by a dedicated manager and must not carry a # renovate: comment)",
       "managerFilePatterns": [
         "/^kubernetes/apps/base/bot/webtop/image/versions\\.env$/"
       ],
       "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s*\\n(?!KUSTOMIZE_VERSION)[A-Z0-9_]+=\"(?<currentValue>[^\"]+)\""
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s*\\n[A-Z0-9_]+=\"(?<currentValue>[^\"]+)\""
       ],
       "datasourceTemplate": "{{{datasource}}}"
     },
