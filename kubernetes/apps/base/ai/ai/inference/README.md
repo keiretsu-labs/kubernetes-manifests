@@ -12,11 +12,13 @@
 - **Service:** `qwen38.ai:8000` (identity retained so CLIProxy, mesh export, probes, and consumers cut over atomically)
 **Mia practical coding profile ported:**
 - 262,144 tokens per request, two active sequences, 1,024 batched prefill tokens.
+- `GPU_MEM_UTIL=0.865` with automatic KV sizing at this context; the fixed 15GiB reservation is removed.
+- Prompt-token details, compact DFlash2 KV pages, SpinCondition wait tuning, and sparse APC retention are enabled exactly as the upstream profile.
 - E3 grouped prefill (`EXL3_FAT_GROUPED=1`, temp rows 32) and fair scheduling.
 - Fast MoE decode, KDA BF16 large-M prefill, and dense/KDA FP8 opt-ins enabled.
 - DFlash2 fixed at k=7 with draft TP=2; adaptive-K remains off.
 - Vision remains enabled with 48-image/1-video ceiling, 2,048 image tokens, and 1 GiB media cache.
-- Explicit 15 GiB FP8 KV budget retained to preserve host headroom.
+- Adaptive-K remains off; sparse APC retention is enabled as an explicit workload tradeoff and is not yet qualified for edit/branch reuse.
 
 This is the practical responsive long-session profile from Mia’s September 2026 report. The three opt-ins add roughly 3.3 GiB per GPU and dense/KDA FP8 changes numerics; they are deliberate performance/memory tradeoffs, not free capacity.
 
