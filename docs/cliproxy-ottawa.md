@@ -292,4 +292,4 @@ separately because it is the source for API and management keys.
 
 ## AI gateway (Agent Router)
 
-Endpoint manageability / `vllm/*` front door: see [docs/ops/ai-gateway.md](ops/ai-gateway.md). CLIProxy remains the OAuth + Pi-bridge path.
+Endpoint manageability / `vllm/*` front door: see [docs/ops/ai-gateway.md](ops/ai-gateway.md). Canary workers on Agent Router should use model **`vllm/default`** (or `vllm/auto`); gateway `modelNameOverride` carries the active SP served name. CLIProxy remains the OAuth + Pi-bridge path and default `OPENAI_BASE_URL` until cutover.

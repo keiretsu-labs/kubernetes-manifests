@@ -36,6 +36,25 @@ Grafana stack we just fixed for vLLM.
 | `vllm/*` via CLIProxy | Ottawa → ClusterMesh | `stpetersburg-vllm-upstream` → `qwen38-mesh.ai.svc.clusterset.local` |
 | Direct SP `qwen38` ServiceMonitor `/metrics` | SP | Grafana AI dashboards (see `docs/ops/grafana-ai-inference.md`) |
 
+
+## Client-stable model id (hot-swap)
+
+Workers should **not** embed the served model name (GLM / Qwen / …). Use a
+fixed pair:
+
+| Setting | Value |
+|---|---|
+| `OPENAI_BASE_URL` | `http://ai-gateway.cliproxy.svc/v1` (canary) or CLIProxy until cutover |
+| `model` | **`vllm/default`** (preferred) or `vllm/auto` (alias) |
+
+Agent Router matches `x-ai-eg-model` and applies `modelNameOverride` on the
+`AIGatewayRoute` backendRef to whatever SP currently serves (today
+`GLM-5.3-Flash-EXL3`). **Model swaps are a one-line GitOps change** to
+`modelNameOverride` in `routes/sp-vllm.yaml` — no worker config churn.
+
+Legacy ids (`vllm/Qwen3.8-Flash-Next`, `vllm/GLM-5.3-Flash-EXL3`, bare served
+names) still match during migration and are rewritten to the same override.
+
 ## This spike (GitOps)
 
 | Path | Purpose |
@@ -54,7 +73,7 @@ Grafana stack we just fixed for vLLM.
    Flux Kustomization) and smoke:
    `curl -H 'Authorization: …' http://<ai-gateway>/v1/models`
 4. Point a canary worker: `OPENAI_BASE_URL=http://ai-gateway.cliproxy.svc/v1`
-   with model `vllm/Qwen3.8-Flash-Next` (or the GLM alias).
+   with model **`vllm/default`** (or alias `vllm/auto`). Do not put GLM/Qwen served names in worker config.
 5. Leave CLIProxy as default until OAuth/Pi parity is decided.
 
 ### Registering a new AI endpoint
@@ -62,8 +81,9 @@ Grafana stack we just fixed for vLLM.
 1. Add a `Backend` (or Service) for the upstream.
 2. Add `AIServiceBackend` with `schema.name: OpenAI` (or Anthropic/etc.).
 3. Add an `AIGatewayRoute` rule matching `x-ai-eg-model: <client-model-id>`.
-4. Optional: `modelNameOverride` on the backendRef when the served id differs
-   from the client id (the clean replacement for CLIProxy dual-alias hacks).
+4. Set `modelNameOverride` on the backendRef to the **active served name**.
+   Prefer exposing a stable client id (`vllm/default` / `vllm/auto`) and remapping
+   here — the clean replacement for CLIProxy dual-alias / per-worker churn.
 5. Commit → Flux; no worker rename.
 
 ### Observability

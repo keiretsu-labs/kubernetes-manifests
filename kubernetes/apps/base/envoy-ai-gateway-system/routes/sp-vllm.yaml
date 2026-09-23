@@ -1,7 +1,13 @@
 ---
-# Front door for in-region SP inference. Workers can keep a stable client model
-# id; Agent Router rewrites to the active served name via modelNameOverride
-# when we add it on the backendRef (see docs/ops/ai-gateway.md).
+# Front door for in-region SP inference.
+#
+# Client-stable model ids (hot-swap with minimal config):
+#   - vllm/default  (preferred)
+#   - vllm/auto     (accepted alias)
+# Both map to the same AIServiceBackend; modelNameOverride rewrites the
+# OpenAI request body to whatever SP currently serves. Workers keep a fixed
+# OPENAI_BASE_URL + one of those ids — they never need the GLM/Qwen served name.
+# When SP swaps models, change modelNameOverride here only (GitOps).
 #
 # Phase-1 backend = existing cliproxy ExternalName to ClusterMesh:
 #   stpetersburg-vllm-upstream → qwen38-mesh.ai.svc.clusterset.local
@@ -40,11 +46,26 @@ spec:
       kind: Gateway
       group: gateway.networking.k8s.io
   rules:
-    # Match any model under the vllm/ prefix that workers already use via
-    # CLIProxy (vllm/Qwen3.8-Flash-Next, vllm/GLM-5.3-Flash-EXL3, …).
-    # Agent Router extracts the model from the OpenAI request body into
-    # x-ai-eg-model; Exact match on one logical name keeps the first slice
-    # small — expand matches as we register more backends.
+    # Stable client ids — preferred path for canary workers.
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: vllm/default
+      backendRefs:
+        - name: sp-vllm
+          # Active served name on SP (Mia GLM EXL3 / vllm). Update on model swap.
+          modelNameOverride: GLM-5.3-Flash-EXL3
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: vllm/auto
+      backendRefs:
+        - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3
+    # Transitional: historic CLIProxy-era client ids still land on SP, rewritten
+    # to the active served name so old configs keep working during migration.
     - matches:
         - headers:
             - type: Exact
@@ -52,6 +73,7 @@ spec:
               value: vllm/Qwen3.8-Flash-Next
       backendRefs:
         - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3
     - matches:
         - headers:
             - type: Exact
@@ -59,6 +81,7 @@ spec:
               value: vllm/GLM-5.3-Flash-EXL3
       backendRefs:
         - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3
     - matches:
         - headers:
             - type: Exact
@@ -66,6 +89,7 @@ spec:
               value: GLM-5.3-Flash-EXL3
       backendRefs:
         - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3
     - matches:
         - headers:
             - type: Exact
@@ -73,3 +97,4 @@ spec:
               value: Qwen3.8-Flash-Next
       backendRefs:
         - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3
