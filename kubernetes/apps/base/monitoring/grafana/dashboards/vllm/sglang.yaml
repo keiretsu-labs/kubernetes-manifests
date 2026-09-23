@@ -13,9 +13,10 @@ spec:
       grafana.internal/instance: grafana
   folder: AI
   resyncPeriod: 30m
-  # This dashboard uses SGLang's native metrics rather than the vLLM
-  # dashboard imports above. Keep the model selector label-based so changing
-  # the default model does not require changing dashboard expressions.
+  # SGLang-NATIVE metrics only (sglang:*). Under the current Mia GLM / vLLM
+  # runtime these panels stay empty — use Grafana folder AI → "vLLM Inference".
+  # Keep this file listed in kustomization.yaml across runtime swaps (#2573).
+  # OOM/restart panels use $workload / $container so they still work on vLLM.
   json: |
     {
       "annotations": {
@@ -726,13 +727,13 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "sum by (pod) (rate(container_oom_events_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"qwen38-.*\",container=\"sglang\"}[$${__rate_interval}]))",
+              "expr": "sum by (pod) (rate(container_oom_events_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"$${workload}-.*\",container=~\"$${container}\"}[$${__rate_interval}]))",
               "legendFormat": "OOM events {{pod}}",
               "range": true
             },
             {
               "refId": "B",
-              "expr": "sum by (pod) (rate(kube_pod_container_status_restarts_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"qwen38-.*\",container=\"sglang\"}[$${__rate_interval}]))",
+              "expr": "sum by (pod) (rate(kube_pod_container_status_restarts_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"$${workload}-.*\",container=~\"$${container}\"}[$${__rate_interval}]))",
               "legendFormat": "Restarts {{pod}}",
               "range": true
             }
@@ -781,7 +782,31 @@ spec:
             "multi": true,
             "refresh": 1,
             "sort": 1,
-            "options": []
+          },
+          {
+            "name": "workload",
+            "label": "Workload",
+            "type": "custom",
+            "query": "qwen38",
+            "current": {"selected": true, "text": "qwen38", "value": "qwen38"},
+            "options": [{"selected": true, "text": "qwen38", "value": "qwen38"}],
+            "includeAll": false,
+            "multi": false
+          },
+          {
+            "name": "container",
+            "label": "Container",
+            "type": "custom",
+            "query": "vllm,sglang",
+            "current": {"selected": true, "text": "vllm", "value": "vllm"},
+            "options": [
+              {"selected": true, "text": "vllm", "value": "vllm"},
+              {"selected": false, "text": "sglang", "value": "sglang"}
+            ],
+            "includeAll": true,
+            "allValue": "vllm|sglang",
+            "multi": true
+
           }
         ]
       },
@@ -790,7 +815,7 @@ spec:
         "refresh_intervals": ["15s", "30s", "1m", "5m", "15m", "30m", "1h"]
       },
       "timezone": "",
-      "title": "SGLang Inference",
+      "title": "SGLang Inference (SGLang runtime only)",
       "uid": "sglang-inference",
       "version": 1
     }

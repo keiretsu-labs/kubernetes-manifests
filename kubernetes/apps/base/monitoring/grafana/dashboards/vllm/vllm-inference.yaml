@@ -1,0 +1,767 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: vllm-inference
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: AI
+  resyncPeriod: 30m
+  # Primary AI inference dashboard for the CURRENT St. Petersburg runtime (vLLM
+  # container on sticky qwen38 LWS). The SGLang dashboard beside this file is
+  # kept for SGLang-metric eras only — it will look empty under vLLM.
+  # Datasource uid mimir-stpetersburg is hard-pinned (tenant talos-stpetersburg).
+  json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Scrape up",
+          "description": "ServiceMonitor scrape for sticky ai/qwen38 identity. 1 = /metrics reachable.",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 0,
+            "y": 0
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "area",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max(up{namespace=\"ai\",job=~\"$${job}\"})",
+              "legendFormat": "Scrape up"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Running reqs",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 4,
+            "y": 0
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "area",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max(vllm:num_requests_running{job=~\"$${job}\",model_name=~\"$${model}\"})",
+              "legendFormat": "Running reqs"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Waiting reqs",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 8,
+            "y": 0
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "area",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max(vllm:num_requests_waiting{job=~\"$${job}\",model_name=~\"$${model}\"})",
+              "legendFormat": "Waiting reqs"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "KV cache %",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 12,
+            "y": 0
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "area",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max(vllm:kv_cache_usage_perc{job=~\"$${job}\",model_name=~\"$${model}\"}) * 100",
+              "legendFormat": "KV cache %"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 5,
+          "type": "stat",
+          "title": "Prompt tok/s",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 16,
+            "y": 0
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "area",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(vllm:prompt_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "legendFormat": "Prompt tok/s"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 6,
+          "type": "stat",
+          "title": "Gen tok/s",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 20,
+            "y": 0
+          },
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "area",
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(vllm:generation_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "legendFormat": "Gen tok/s"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops"
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 7,
+          "type": "timeseries",
+          "title": "Requests running / waiting",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max by (model_name) (vllm:num_requests_running{job=~\"$${job}\",model_name=~\"$${model}\"})",
+              "legendFormat": "running {{model_name}}",
+              "range": true
+            },
+            {
+              "refId": "B",
+              "expr": "max by (model_name) (vllm:num_requests_waiting{job=~\"$${job}\",model_name=~\"$${model}\"})",
+              "legendFormat": "waiting {{model_name}}",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        },
+        {
+          "id": 8,
+          "type": "timeseries",
+          "title": "Token throughput",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 8
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (model_name) (rate(vllm:prompt_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "legendFormat": "prompt {{model_name}}",
+              "range": true
+            },
+            {
+              "refId": "B",
+              "expr": "sum by (model_name) (rate(vllm:generation_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "legendFormat": "generation {{model_name}}",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        },
+        {
+          "id": 9,
+          "type": "timeseries",
+          "title": "Latency p95 (TTFT / E2E / queue)",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 16
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "histogram_quantile(0.95, sum by (le, model_name) (rate(vllm:time_to_first_token_seconds_bucket{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval])))",
+              "legendFormat": "TTFT {{model_name}}",
+              "range": true
+            },
+            {
+              "refId": "B",
+              "expr": "histogram_quantile(0.95, sum by (le, model_name) (rate(vllm:e2e_request_latency_seconds_bucket{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval])))",
+              "legendFormat": "E2E {{model_name}}",
+              "range": true
+            },
+            {
+              "refId": "C",
+              "expr": "histogram_quantile(0.95, sum by (le, model_name) (rate(vllm:request_queue_time_seconds_bucket{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval])))",
+              "legendFormat": "Queue {{model_name}}",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        },
+        {
+          "id": 10,
+          "type": "timeseries",
+          "title": "KV cache usage",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 16
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max by (model_name) (vllm:kv_cache_usage_perc{job=~\"$${job}\",model_name=~\"$${model}\"}) * 100",
+              "legendFormat": "KV% {{model_name}}",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        },
+        {
+          "id": 11,
+          "type": "timeseries",
+          "title": "Success rate",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 24
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (model_name) (rate(vllm:request_success_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "legendFormat": "success {{model_name}}",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        },
+        {
+          "id": 12,
+          "type": "timeseries",
+          "title": "OOM / restarts (workload container)",
+          "description": "Uses sticky K8s identity ($workload=qwen38) and runtime container ($container=vllm|sglang).",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 24
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (pod) (rate(container_oom_events_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"$${workload}-.*\",container=~\"$${container}\"}[$__rate_interval]))",
+              "legendFormat": "OOM {{pod}}",
+              "range": true
+            },
+            {
+              "refId": "B",
+              "expr": "sum by (pod) (rate(kube_pod_container_status_restarts_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"$${workload}-.*\",container=~\"$${container}\"}[$__rate_interval]))",
+              "legendFormat": "restarts {{pod}}",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        },
+        {
+          "id": 13,
+          "type": "timeseries",
+          "title": "GPU util (DCGM)",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 32
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "DCGM_FI_DEV_GPU_UTIL{cluster=\"talos-stpetersburg\"}",
+              "legendFormat": "gpu {{gpu}} {{Hostname}}",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        },
+        {
+          "id": 14,
+          "type": "timeseries",
+          "title": "GPU power (DCGM)",
+          "description": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir-stpetersburg"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 32
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "DCGM_FI_DEV_POWER_USAGE{cluster=\"talos-stpetersburg\"}",
+              "legendFormat": "W {{gpu}} {{Hostname}}",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "watt",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            }
+          }
+        }
+      ],
+      "refresh": "15s",
+      "schemaVersion": 39,
+      "tags": [
+        "AI",
+        "vLLM",
+        "DGX Spark",
+        "inference"
+      ],
+      "templating": {
+        "list": [
+          {
+            "name": "job",
+            "label": "Job",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "mimir-stpetersburg"
+            },
+            "definition": "label_values(vllm:num_requests_running{namespace=\"ai\"}, job)",
+            "query": {
+              "query": "label_values(vllm:num_requests_running{namespace=\"ai\"}, job)",
+              "refId": "job"
+            },
+            "current": {
+              "selected": true,
+              "text": "qwen38",
+              "value": "qwen38"
+            },
+            "includeAll": false,
+            "multi": false,
+            "refresh": 1,
+            "sort": 1,
+            "options": []
+          },
+          {
+            "name": "model",
+            "label": "Model",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "mimir-stpetersburg"
+            },
+            "definition": "label_values(vllm:num_requests_running{job=~\"$job\"}, model_name)",
+            "query": {
+              "query": "label_values(vllm:num_requests_running{job=~\"$job\"}, model_name)",
+              "refId": "model"
+            },
+            "includeAll": true,
+            "allValue": ".*",
+            "multi": true,
+            "refresh": 1,
+            "sort": 1,
+            "options": []
+          },
+          {
+            "name": "workload",
+            "label": "Workload",
+            "type": "custom",
+            "query": "qwen38",
+            "current": {
+              "selected": true,
+              "text": "qwen38",
+              "value": "qwen38"
+            },
+            "options": [
+              {
+                "selected": true,
+                "text": "qwen38",
+                "value": "qwen38"
+              }
+            ],
+            "includeAll": false,
+            "multi": false
+          },
+          {
+            "name": "container",
+            "label": "Container",
+            "type": "custom",
+            "query": "vllm,sglang",
+            "current": {
+              "selected": true,
+              "text": "vllm",
+              "value": "vllm"
+            },
+            "options": [
+              {
+                "selected": true,
+                "text": "vllm",
+                "value": "vllm"
+              },
+              {
+                "selected": false,
+                "text": "sglang",
+                "value": "sglang"
+              }
+            ],
+            "includeAll": true,
+            "allValue": "vllm|sglang",
+            "multi": true
+          }
+        ]
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": [
+          "15s",
+          "30s",
+          "1m",
+          "5m",
+          "15m"
+        ]
+      },
+      "timezone": "",
+      "title": "vLLM Inference",
+      "uid": "vllm-inference",
+      "version": 1
+    }
