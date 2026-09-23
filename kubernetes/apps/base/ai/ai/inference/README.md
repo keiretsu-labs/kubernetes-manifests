@@ -1,3 +1,5 @@
+> **Model swap procedure:** see [docs/ops/in-region-model-swap.md](../../../../../../docs/ops/in-region-model-swap.md). Keep the `qwen38` K8s identity and the `vllm/Qwen3.8-Flash-Next` worker alias; retarget CLIProxy + `--served-model-name`, do not rename workers.
+
 # AI inference on 2× NVIDIA DGX Spark
 
 ## Active deployment: GLM-5.3-Flash EXL3/TR3

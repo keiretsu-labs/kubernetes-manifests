@@ -342,7 +342,7 @@ spec:
             cp /glm-patches/patch_glm_video_placeholders.py /tmp/patch_glm_video_placeholders.py
             python3 /tmp/patch_glm_video_placeholders.py
             exec vllm serve /models/qwen38 \
-              --served-model-name GLM-5.3-Flash-EXL3 \
+              --served-model-name GLM-5.3-Flash-EXL3 Qwen3.8-Flash-Next \
               --host 0.0.0.0 --port 8000 \
               --tensor-parallel-size 2 --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 26400 \
@@ -509,7 +509,7 @@ spec:
             cp /glm-patches/patch_glm_video_placeholders.py /tmp/patch_glm_video_placeholders.py
             python3 /tmp/patch_glm_video_placeholders.py
             exec vllm serve /models/qwen38 \
-              --served-model-name GLM-5.3-Flash-EXL3 \
+              --served-model-name GLM-5.3-Flash-EXL3 Qwen3.8-Flash-Next \
               --host 0.0.0.0 --port 8000 \
               --tensor-parallel-size 2 --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 26400 \

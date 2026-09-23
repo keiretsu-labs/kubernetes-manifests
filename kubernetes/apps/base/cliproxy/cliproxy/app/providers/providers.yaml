@@ -130,12 +130,26 @@ openai-compatibility:
     headers:
       User-Agent: "Bhaiya-CLIProxy/1.0"
     models: *keiretsu_catalog
-  # St. Petersburg GPU route. Existing vllm/GLM-5.3-Flash-EXL3 clients stay on the managed gateway.
+  # St. Petersburg GPU route.
+  # Contract: CLIProxy sends the *alias* upstream (see #2783), so every alias
+  # MUST also appear in the LeaderWorkerSet --served-model-name list.
+  # Stable worker-facing alias (do not rename workers on model swap):
+  #   vllm/Qwen3.8-Flash-Next  -> served Qwen3.8-Flash-Next
+  # Ephemeral served identity (may change per swap):
+  #   vllm/GLM-5.3-Flash-EXL3  -> served GLM-5.3-Flash-EXL3
+  # Swap = retarget served names + keep the Qwen3.8-Flash-Next alias entry.
   - name: "vllm"
     prefix: "vllm"
     base-url: "http://stpetersburg-vllm-upstream/v1"
     disable-cooling: false
     models:
+      - name: "Qwen3.8-Flash-Next"
+        alias: "Qwen3.8-Flash-Next"
+        thinking:
+          levels:
+            - "low"
+            - "medium"
+            - "high"
       - name: "GLM-5.3-Flash-EXL3"
         alias: "GLM-5.3-Flash-EXL3"
         thinking:

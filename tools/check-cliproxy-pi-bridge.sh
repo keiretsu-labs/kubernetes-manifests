@@ -38,11 +38,16 @@ if rendered_config_match is None:
     raise SystemExit("render-config must write the CLIProxy configuration heredoc")
 rendered_config = yaml.safe_load(rendered_config_match.group(1))
 glm_payload_override = {
-    "models": [{"name": "vllm/GLM-5.3-Flash-EXL3", "protocol": "openai"}],
+    "models": [
+        {"name": "vllm/Qwen3.8-Flash-Next", "protocol": "openai"},
+        {"name": "vllm/GLM-5.3-Flash-EXL3", "protocol": "openai"},
+    ],
     "params": {"messages.#(role==\"developer\")#.role": "system"},
 }
 if glm_payload_override not in (rendered_config.get("payload") or {}).get("override", []):
-    raise SystemExit("GLM must rewrite every developer message to system before its OpenAI route")
+    raise SystemExit(
+        "in-region vllm aliases must rewrite developer->system before the OpenAI route"
+    )
 
 providers_path = pathlib.Path("kubernetes/apps/base/cliproxy/cliproxy/app/providers/providers.yaml")
 providers = yaml.safe_load(providers_path.read_text())
@@ -51,6 +56,12 @@ vllm_provider = next(
     for provider in providers["openai-compatibility"]
     if provider.get("name") == "vllm"
 )
+aliases = {model.get("alias") for model in vllm_provider["models"]}
+required_aliases = {"Qwen3.8-Flash-Next", "GLM-5.3-Flash-EXL3"}
+if not required_aliases.issubset(aliases):
+    raise SystemExit(
+        f"vllm provider must expose stable+ephemeral aliases {sorted(required_aliases)}; got {sorted(aliases)}"
+    )
 glm_provider_model = next(
     model
     for model in vllm_provider["models"]
@@ -59,6 +70,15 @@ glm_provider_model = next(
 if glm_provider_model.get("thinking") != {"levels": ["low", "medium", "high"]}:
     raise SystemExit(
         "GLM must declare its live low/medium/high thinking levels"
+    )
+stable_provider_model = next(
+    model
+    for model in vllm_provider["models"]
+    if model.get("alias") == "Qwen3.8-Flash-Next"
+)
+if stable_provider_model.get("thinking") != {"levels": ["low", "medium", "high"]}:
+    raise SystemExit(
+        "stable Qwen3.8-Flash-Next alias must declare thinking levels"
     )
 
 sync = next(container for container in containers if container["name"] == "pi-bridge-sync")
@@ -79,15 +99,21 @@ if namespace["metadata_alias_sources"].get(fallback) != source:
 
 glm_alias = "vllm/GLM-5.3-Flash-EXL3"
 glm_source = "vllm/GLM-5.3-Flash-EXL3"
+stable_alias = "vllm/Qwen3.8-Flash-Next"
 if namespace["metadata_alias_sources"].get(glm_alias) != glm_source:
     raise SystemExit(f"{glm_alias} must resolve metadata from {glm_source}")
-if namespace["metadata_override"](glm_alias) != {
+if namespace["metadata_alias_sources"].get(stable_alias) != glm_source:
+    raise SystemExit(f"{stable_alias} must resolve metadata from active served route {glm_source}")
+expected_meta = {
     "context_window": 1048576,
     "max_tokens": 8192,
     "name": "GLM-5.3 Flash EXL3",
     "reasoning": True,
-}:
+}
+if namespace["metadata_override"](glm_alias) != expected_meta:
     raise SystemExit("GLM alias metadata must describe the active serving profile")
+if namespace["metadata_override"](stable_alias) != expected_meta:
+    raise SystemExit("stable worker alias must inherit active serving-profile metadata")
 
 namespace["fetch_json"] = lambda url: {
     "data": [{"id": "GLM-5.3-Flash-EXL3"}]
@@ -120,5 +146,14 @@ if seen != [{"id": "gpt-5.6-luna", "provider": {"id": "codex"}, "direct": {}}]:
 if namespace["resolved_metadata"](glm_alias, "vllm", None, [], {}) is not None:
     raise SystemExit("unavailable vLLM route inherited stale metadata")
 
-print("✓ cliproxy Pi bridge metadata and GLM payload contract")
+
+# Stable alias must remain a served-model-name on the SP LeaderWorkerSet so
+# CLIProxy's alias-upstream behavior (#2783) does not 404 on swap.
+qwen = pathlib.Path("kubernetes/apps/base/ai/ai/inference/qwen38.yaml").read_text()
+if qwen.count("--served-model-name GLM-5.3-Flash-EXL3 Qwen3.8-Flash-Next") != 2:
+    raise SystemExit(
+        "LeaderWorkerSet must serve both ephemeral and stable model names (leader+worker)"
+    )
+
+print("✓ cliproxy Pi bridge metadata, dual-alias payload, and served-name contract")
 PY

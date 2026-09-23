@@ -13,9 +13,14 @@ spec:
       grafana.internal/instance: grafana
   folder: AI
   resyncPeriod: 30m
-  # This dashboard uses SGLang's native metrics rather than the vLLM
-  # dashboard imports above. Keep the model selector label-based so changing
-  # the default model does not require changing dashboard expressions.
+  # SGLang-native metrics dashboard (vLLM upstream JSON imports live beside
+  # this file). Keep selectors label/variable based:
+  #   $target  = scrape job
+  #   $model   = model_name label from the active runtime
+  #   $workload = sticky K8s identity (qwen38) — do NOT rename on model swap
+  #   $container = vllm|sglang — pick the runtime container for OOM/restart panels
+  # Never drop this file from kustomization.yaml during a runtime/model swap
+  # (that orphaned the dashboard after the Aug 2026 GLM cutover; fixed in #2573).
   json: |
     {
       "annotations": {
@@ -41,7 +46,7 @@ spec:
           "id": 1,
           "type": "stat",
           "title": "Scrape target",
-          "description": "The qwen38 ServiceMonitor target. A value of 1 means the SGLang endpoint is currently reachable by the Prometheus agent.",
+          "description": "ServiceMonitor scrape for the stable ai/qwen38 identity (workload name is intentionally sticky across model swaps). 1 = endpoint reachable.",
           "datasource": {
             "type": "prometheus",
             "uid": "mimir-stpetersburg"
@@ -726,13 +731,13 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "sum by (pod) (rate(container_oom_events_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"qwen38-.*\",container=\"sglang\"}[$${__rate_interval}]))",
+              "expr": "sum by (pod) (rate(container_oom_events_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"$${workload}-.*\",container=~\"$${container}\"}[$${__rate_interval}]))",
               "legendFormat": "OOM events {{pod}}",
               "range": true
             },
             {
               "refId": "B",
-              "expr": "sum by (pod) (rate(kube_pod_container_status_restarts_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"qwen38-.*\",container=\"sglang\"}[$${__rate_interval}]))",
+              "expr": "sum by (pod) (rate(kube_pod_container_status_restarts_total{cluster=\"talos-stpetersburg\",namespace=\"ai\",pod=~\"$${workload}-.*\",container=~\"$${container}\"}[$${__rate_interval}]))",
               "legendFormat": "Restarts {{pod}}",
               "range": true
             }
@@ -782,6 +787,30 @@ spec:
             "refresh": 1,
             "sort": 1,
             "options": []
+          },
+          {
+            "name": "workload",
+            "label": "Workload",
+            "type": "custom",
+            "query": "qwen38",
+            "current": {"selected": true, "text": "qwen38", "value": "qwen38"},
+            "options": [{"selected": true, "text": "qwen38", "value": "qwen38"}],
+            "includeAll": false,
+            "multi": false
+          },
+          {
+            "name": "container",
+            "label": "Container",
+            "type": "custom",
+            "query": "vllm,sglang",
+            "current": {"selected": true, "text": "vllm", "value": "vllm"},
+            "options": [
+              {"selected": true, "text": "vllm", "value": "vllm"},
+              {"selected": false, "text": "sglang", "value": "sglang"}
+            ],
+            "includeAll": true,
+            "allValue": "vllm|sglang",
+            "multi": true
           }
         ]
       },

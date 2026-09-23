@@ -30,19 +30,18 @@ Anthropic-compatible APIs.
   configs override CLIProxy's generic compatibility user agent because the
   upstream gateways reject that agent while accepting the Bhaiya-specific
   identifier.
-- OpenAI-compatible provider `vllm` points at the St. Petersburg Qwen3.8
-  inference service through the direct Cilium ClusterMesh alias
-  `Service/stpetersburg-vllm-upstream`, which resolves to St. Petersburg's
-  exported `qwen38-mesh.ai.svc.clusterset.local` Service. Startup discovery
-  exposes its live catalog under the `vllm/` prefix. The stable
-  `vllm/Qwen3.8-Flash-Next` client alias maps to the upstream
-  `Qwen3.8-Flash-Next-NVFP4` model. If the upstream catalog is unavailable,
-  CLIProxy omits that dead route rather than blocking startup; clients use the
-  available Codex subscription model instead.
-- The Pi metadata synchronizer resolves the Qwen client alias to the canonical
-  upstream entry, records the effective `1048576`-token context and reasoning
-  support, and leaves the output limit unknown because vLLM does not publish
-  one in its model catalog.
+- OpenAI-compatible provider `vllm` points at the St. Petersburg inference
+  Service through `Service/stpetersburg-vllm-upstream` → exported
+  `qwen38-mesh.ai.svc.clusterset.local`. The catalog is **static**
+  (`providers/providers.yaml`); CLIProxy boots even when SP is cold.
+- **Stable worker alias:** `vllm/Qwen3.8-Flash-Next` (do not rename workers on
+  model swap). **Ephemeral served id** (currently `GLM-5.3-Flash-EXL3`) is
+  also advertised. Both names must appear in the LWS `--served-model-name`
+  list because CLIProxy sends the alias upstream (#2783). Swap procedure:
+  [docs/ops/in-region-model-swap.md](ops/in-region-model-swap.md).
+- The Pi metadata synchronizer maps the stable alias to the active served
+  route's explicit context / max_tokens / reasoning facts in
+  `deployment.yaml` (`metadata_alias_sources` + `metadata_overrides`).
 - Bhaiya serializes that unknown output as `0` in the OpenCode limit object
   because OpenCode requires both `context` and `output`.
 - `codex-subscription/vllm-fallback` is the GitOps-owned fallback model. It

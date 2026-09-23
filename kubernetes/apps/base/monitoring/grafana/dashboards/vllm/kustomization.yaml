@@ -1,4 +1,8 @@
 ---
+# AI inference GrafanaDashboard bundle (Ottawa Grafana, SP metrics via Mimir).
+# Keep every sibling *.yaml listed here. Model/runtime swaps must NOT remove
+# sglang.yaml or dashboards.yaml — tools/orphans.sh will flag an UNLISTED file,
+# and #2573 documented the last time a swap silently dropped the dashboard.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
