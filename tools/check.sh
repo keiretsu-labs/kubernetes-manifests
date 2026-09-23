@@ -178,6 +178,8 @@ run_capped "mimir-promql" tools/check-mimir-promql.sh
 run_capped "version-sync" tools/check-versions.sh
 run_capped "notification-scope" tools/check-notification-scope.sh
 run_capped "cliproxy-pi-bridge" tools/check-cliproxy-pi-bridge.sh
+run_capped "inference-dashboard-wiring" tools/check-inference-dashboard-wiring.sh
+run_capped "orphans" tools/orphans.sh
 run_capped "zot-upload-affinity" tools/check-zot-upload-affinity.sh
 run_capped "bhaiya-limits" bash tools/check-bhaiya-limits.sh
 run_capped "mimir-rule-load-path" tools/check-mimir-rules.sh
