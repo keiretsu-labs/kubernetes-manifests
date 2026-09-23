@@ -1,0 +1,100 @@
+---
+# Front door for in-region SP inference.
+#
+# Client-stable model ids (hot-swap with minimal config):
+#   - vllm/default  (preferred)
+#   - vllm/auto     (accepted alias)
+# Both map to the same AIServiceBackend; modelNameOverride rewrites the
+# OpenAI request body to whatever SP currently serves. Workers keep a fixed
+# OPENAI_BASE_URL + one of those ids — they never need the GLM/Qwen served name.
+# When SP swaps models, change modelNameOverride here only (GitOps).
+#
+# Phase-1 backend = existing cliproxy ExternalName to ClusterMesh:
+#   stpetersburg-vllm-upstream → qwen38-mesh.ai.svc.clusterset.local
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: sp-vllm
+  namespace: cliproxy
+spec:
+  endpoints:
+    - fqdn:
+        hostname: stpetersburg-vllm-upstream.cliproxy.svc.cluster.local
+        port: 80
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIServiceBackend
+metadata:
+  name: sp-vllm
+  namespace: cliproxy
+spec:
+  schema:
+    name: OpenAI
+  backendRef:
+    name: sp-vllm
+    kind: Backend
+    group: gateway.envoyproxy.io
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIGatewayRoute
+metadata:
+  name: sp-vllm
+  namespace: cliproxy
+spec:
+  parentRefs:
+    - name: ai-gateway
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    # Stable client ids — preferred path for canary workers.
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: vllm/default
+      backendRefs:
+        - name: sp-vllm
+          # Active served name on SP (Mia GLM EXL3 / vllm). Update on model swap.
+          modelNameOverride: GLM-5.3-Flash-EXL3
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: vllm/auto
+      backendRefs:
+        - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3
+    # Transitional: historic CLIProxy-era client ids still land on SP, rewritten
+    # to the active served name so old configs keep working during migration.
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: vllm/Qwen3.8-Flash-Next
+      backendRefs:
+        - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: vllm/GLM-5.3-Flash-EXL3
+      backendRefs:
+        - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: GLM-5.3-Flash-EXL3
+      backendRefs:
+        - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: Qwen3.8-Flash-Next
+      backendRefs:
+        - name: sp-vllm
+          modelNameOverride: GLM-5.3-Flash-EXL3

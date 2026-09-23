@@ -46,6 +46,7 @@ resources:
   - ./cliproxy
   - ./default
   - ./envoy-gateway-system
+  - ./envoy-ai-gateway-system
   - ./flux-system
   - ./node-feature-discovery
   - ./tailscale
