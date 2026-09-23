@@ -67,8 +67,8 @@ names) still match during migration and are rewritten to the same override.
 ### Enablement checklist
 
 1. Merge this PR → Flux installs `envoy-ai-gateway-system` controller on Ottawa.
-2. Manually merge `ai-gateway-extension/values-patch.yaml` into the EG
-   HelmRelease values (shared control plane — explicit approve).
+2. ~~Merge `ai-gateway-extension/values-patch.yaml` into the EG HelmRelease~~
+   — landed via the `feat/eg-ai-gateway-extension-manager` follow-up (shared CP).
 3. When ready for traffic: add `./routes` to the base kustomization (or a new
    Flux Kustomization) and smoke:
    `curl -H 'Authorization: …' http://<ai-gateway>/v1/models`
