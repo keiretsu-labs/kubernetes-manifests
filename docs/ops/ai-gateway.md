@@ -61,7 +61,7 @@ names) still match during migration and are rewritten to the same override.
 |---|---|
 | `kubernetes/apps/base/envoy-ai-gateway-system/` | Namespace + HelmReleases (`ai-gateway-crds-helm` + `ai-gateway-helm` **v1.1.0**) |
 | `kubernetes/apps/ottawa/envoy-ai-gateway-system/` | Flux Kustomization (depends on `envoy-gateway-system-install`) |
-| `.../envoy-gw-common/ai-gateway-extension/values-patch.yaml` | **Required** EG `extensionManager` merge (not auto-applied) |
+| `.../envoy-gw-common/ai-gateway-extension/values-patch.yaml` | EG `extensionManager` snippet (merged into EG HelmRelease via #3179) |
 | `.../envoy-ai-gateway-system/routes/` | Example `Gateway` + `AIGatewayRoute` for SP vLLM (**not** in default kustomization) |
 
 ### Enablement checklist
