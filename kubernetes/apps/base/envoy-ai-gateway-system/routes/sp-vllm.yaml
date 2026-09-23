@@ -1,0 +1,75 @@
+---
+# Front door for in-region SP inference. Workers can keep a stable client model
+# id; Agent Router rewrites to the active served name via modelNameOverride
+# when we add it on the backendRef (see docs/ops/ai-gateway.md).
+#
+# Phase-1 backend = existing cliproxy ExternalName to ClusterMesh:
+#   stpetersburg-vllm-upstream → qwen38-mesh.ai.svc.clusterset.local
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: sp-vllm
+  namespace: cliproxy
+spec:
+  endpoints:
+    - fqdn:
+        hostname: stpetersburg-vllm-upstream.cliproxy.svc.cluster.local
+        port: 80
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIServiceBackend
+metadata:
+  name: sp-vllm
+  namespace: cliproxy
+spec:
+  schema:
+    name: OpenAI
+  backendRef:
+    name: sp-vllm
+    kind: Backend
+    group: gateway.envoyproxy.io
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIGatewayRoute
+metadata:
+  name: sp-vllm
+  namespace: cliproxy
+spec:
+  parentRefs:
+    - name: ai-gateway
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    # Match any model under the vllm/ prefix that workers already use via
+    # CLIProxy (vllm/Qwen3.8-Flash-Next, vllm/GLM-5.3-Flash-EXL3, …).
+    # Agent Router extracts the model from the OpenAI request body into
+    # x-ai-eg-model; Exact match on one logical name keeps the first slice
+    # small — expand matches as we register more backends.
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: vllm/Qwen3.8-Flash-Next
+      backendRefs:
+        - name: sp-vllm
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: vllm/GLM-5.3-Flash-EXL3
+      backendRefs:
+        - name: sp-vllm
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: GLM-5.3-Flash-EXL3
+      backendRefs:
+        - name: sp-vllm
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: Qwen3.8-Flash-Next
+      backendRefs:
+        - name: sp-vllm
