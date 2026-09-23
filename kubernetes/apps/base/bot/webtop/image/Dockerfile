@@ -68,10 +68,14 @@ RUN HERDR_VERSION="${HERDR_VERSION}" \
 # corepack resolves pnpm/yarn from each project's packageManager field on first
 # use, which is what it is for -- but it prompts before downloading, and an
 # interactive prompt in a desktop terminal just looks like a hang.
+#
+# PATH *prepends* rather than replaces: the base image puts LinuxServer's
+# python venv on /lsiopy/bin, which Selkies runs out of. Spelling out a full
+# PATH here would drop it and break the desktop.
 ENV GOROOT=/opt/go \
     GOTOOLCHAIN=local \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
-    PATH=/opt/go/bin:/opt/node/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin
+    PATH=/opt/go/bin:/opt/node/bin:${PATH}
 
 # LinuxServer overlay: /custom-cont-init.d scripts run after the built-in init
 # and before any service starts. COPY preserves the 0755 bits from git.
