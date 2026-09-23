@@ -1,0 +1,72 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+# Seed the single desktop user's home directory.
+#
+# LinuxServer's contract is that /config *is* that user's ~, and it is a volume:
+# anything written there during the build is masked by the mount. So the home
+# layout is created here, on every boot, and is idempotent.
+#
+# lsiown is LinuxServer's own chown wrapper -- it resolves whatever PUID/PGID
+# the container was given instead of hardcoding a uid, which is what keeps this
+# correct when the deployment runs as root (PUID=0).
+set -euo pipefail
+
+home=${HOME:-/config}
+
+mkdir -p \
+  "${home}/.cache" \
+  "${home}/.claude" \
+  "${home}/.codex" \
+  "${home}/.config/herdr" \
+  "${home}/.local/bin" \
+  "${home}/.ssh" \
+  "${home}/go/bin" \
+  "${home}/workspace"
+chmod 0700 "${home}/.ssh"
+
+# --- codex -------------------------------------------------------------------
+# env_key means the key itself never lands in a config file on disk; codex
+# reads CLIPROXY_API_KEY out of the environment at call time.
+if [[ ! -e "${home}/.codex/config.toml" && -n "${CLIPROXY_BASE_URL:-}" ]]; then
+  cat > "${home}/.codex/config.toml" <<TOML
+# Seeded by the bot/webtop image. Delete this file to get the stock defaults
+# back on the next container start.
+model_provider = "cliproxy"
+model = "${CLIPROXY_CODEX_MODEL:-ai/gpt-5.3-codex}"
+
+# The desktop container is itself the sandbox and the session runs as root, so
+# codex's own landlock/seccomp layer has nothing left to protect and fails to
+# initialise when nested. Approvals stay on so a human still sees each command.
+sandbox_mode = "danger-full-access"
+approval_policy = "on-request"
+
+[model_providers.cliproxy]
+name = "cliproxy (keiretsu)"
+base_url = "${CLIPROXY_BASE_URL%/}/v1"
+env_key = "CLIPROXY_API_KEY"
+wire_api = "responses"
+request_max_retries = 4
+stream_max_retries = 5
+TOML
+fi
+
+# --- herdr -------------------------------------------------------------------
+# herdr multiplexes the agents rather than talking to a model itself, so the
+# only thing worth seeding is skipping first-run onboarding on a throwaway home.
+if [[ ! -e "${home}/.config/herdr/config.toml" ]]; then
+  printf 'onboarding = false\n' > "${home}/.config/herdr/config.toml"
+fi
+
+# --- shell -------------------------------------------------------------------
+# Interactive terminals inside XFCE are non-login shells, so they read .bashrc
+# and never source /etc/profile.d. Hook it in once.
+if ! grep -qs 'bot-tooling.sh' "${home}/.bashrc" 2>/dev/null; then
+  cat >> "${home}/.bashrc" <<'BASHRC'
+
+# added by the bot/webtop image
+[ -r /etc/profile.d/90-bot-tooling.sh ] && . /etc/profile.d/90-bot-tooling.sh
+BASHRC
+fi
+
+lsiown -R abc:abc "${home}"
+echo "[bot-home] home ready at ${home}"

@@ -18,25 +18,46 @@ spec:
       enableServiceLinks: false
       containers:
       - name: webtop
-        image: lscr.io/linuxserver/webtop:debian-xfce
+        # Built from ./kubernetes/apps/base/bot/webtop/image by
+        # .github/workflows/webtop-bot-build.yaml. The tag is the LinuxServer
+        # desktop flavour: swapping to debian-kde or ubuntu-mate is a tag
+        # change here plus a workflow_dispatch to publish that flavour.
+        image: ghcr.io/keiretsu-labs/kubernetes-manifests/webtop-bot:debian-xfce
+        # The flavour tag is rolling (weekly base rebuilds), so a restart has
+        # to re-resolve it rather than trust the node's cached layer.
+        imagePullPolicy: Always
         ports:
         - name: http
           containerPort: 3000
           protocol: TCP
         env:
+        # One desktop, one user, and that user is root: PUID/PGID 0 makes
+        # LinuxServer's `abc` account uid 0, so sudo, apt and the toolchains
+        # all work in-session without a second identity to reason about.
         - name: PUID
-          value: '1000'
+          value: '0'
         - name: PGID
-          value: '1000'
+          value: '0'
         - name: TZ
           value: ${TIMEZONE}
         - name: TITLE
           value: bot
-        # Selkies serves the desktop over plain HTTP on 3000 for reverse proxies;
-        # the ts gateway terminates TLS, so the browser still gets a secure context.
         - name: DISABLE_IPV6
           value: 'true'
+        # cliproxy wiring: the image's custom-cont-init.d/10-bot-environment
+        # fans these two values out into OPENAI_*, ANTHROPIC_* and GEMINI_*,
+        # and seeds ~/.codex/config.toml to read the key from the environment.
+        - name: CLIPROXY_BASE_URL
+          value: http://cliproxy.cliproxy.svc.cluster.local:8317
+        - name: CLIPROXY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: webtop-cliproxy
+              key: api-key
+        - name: CLIPROXY_CODEX_MODEL
+          value: ai/gpt-5.3-codex
         volumeMounts:
+        # /config is the single user's ~. See the image's 20-bot-home init.
         - name: config
           mountPath: /config
         # Selkies' encoder needs real shared memory; the container default 64Mi
@@ -45,11 +66,11 @@ spec:
           mountPath: /dev/shm
         resources:
           requests:
-            cpu: 250m
-            memory: 1Gi
+            cpu: 500m
+            memory: 2Gi
           limits:
-            cpu: '4'
-            memory: 6Gi
+            cpu: '8'
+            memory: 16Gi
         startupProbe:
           httpGet:
             path: /
@@ -68,8 +89,11 @@ spec:
           periodSeconds: 30
           failureThreshold: 5
       volumes:
+      # Disposable home by design. Bounded so a runaway module cache cannot
+      # eat the node's ephemeral storage.
       - name: config
-        emptyDir: {}
+        emptyDir:
+          sizeLimit: 50Gi
       - name: dshm
         emptyDir:
           medium: Memory

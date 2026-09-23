@@ -1,0 +1,105 @@
+name: Build & Push Webtop Bot Image
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "kubernetes/apps/base/bot/webtop/image/**"
+      - ".github/workflows/webtop-bot-build.yaml"
+  # LinuxServer rebuilds the webtop bases regularly; a weekly run picks up
+  # their security updates without a commit here.
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: >-
+          LinuxServer webtop tag to build on (debian-xfce, debian-kde,
+          ubuntu-mate, alpine-xfce, ...). Defaults to WEBTOP_BASE_TAG in
+          versions.env.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.flavor || 'default' }}
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}/webtop-bot
+  CONTEXT: kubernetes/apps/base/bot/webtop/image
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # versions.env is the single source of truth for every pinned tool, so
+      # the workflow reads it rather than duplicating versions here. Each
+      # KEY="value" line becomes a build arg.
+      - name: Load pinned versions
+        id: versions
+        run: |
+          set -euo pipefail
+          set -a
+          # shellcheck disable=SC1091
+          source "${CONTEXT}/versions.env"
+          set +a
+
+          flavor="${{ inputs.flavor }}"
+          flavor="${flavor:-$WEBTOP_BASE_TAG}"
+          echo "flavor=${flavor}" >> "$GITHUB_OUTPUT"
+          echo "base=${WEBTOP_BASE_IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "sha=$(echo "$GITHUB_SHA" | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+          {
+            echo 'args<<ARGS_EOF'
+            grep -E '^[A-Z0-9_]+=' "${CONTEXT}/versions.env" \
+              | grep -v '^WEBTOP_BASE' \
+              | sed 's/"//g'
+            echo 'ARGS_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # amd64 only: every Ottawa node is amd64. install.sh is arch-aware, so
+      # adding linux/arm64 here is the only change a future arm build needs.
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ env.CONTEXT }}
+          platforms: linux/amd64
+          push: true
+          provenance: false
+          build-args: |
+            WEBTOP_BASE_IMAGE=${{ steps.versions.outputs.base }}
+            WEBTOP_BASE_TAG=${{ steps.versions.outputs.flavor }}
+            ${{ steps.versions.outputs.args }}
+          # The flavor tag is what the Deployment references, so swapping the
+          # desktop is a tag change. The sha tag exists to roll back to.
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.versions.outputs.flavor }}
+            ${{ env.IMAGE }}:${{ steps.versions.outputs.flavor }}-${{ steps.versions.outputs.sha }}
+          cache-from: type=gha,scope=webtop-bot-${{ steps.versions.outputs.flavor }}
+          cache-to: type=gha,scope=webtop-bot-${{ steps.versions.outputs.flavor }},mode=max
+
+      - name: Summary
+        run: |
+          {
+            echo "### webtop-bot"
+            echo
+            echo "- flavor: \`${{ steps.versions.outputs.flavor }}\`"
+            echo "- \`${{ env.IMAGE }}:${{ steps.versions.outputs.flavor }}\`"
+            echo "- \`${{ env.IMAGE }}:${{ steps.versions.outputs.flavor }}-${{ steps.versions.outputs.sha }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

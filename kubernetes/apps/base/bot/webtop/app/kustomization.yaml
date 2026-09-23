@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: bot
 
 resources:
+  - secret.yaml
   - deployment.yaml
   - service.yaml
   - httproute.yaml

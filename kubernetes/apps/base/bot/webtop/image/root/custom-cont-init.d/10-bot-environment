@@ -1,0 +1,44 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+# Fan the two cliproxy inputs out into the per-agent variables each CLI expects.
+#
+# The manifest supplies exactly CLIPROXY_BASE_URL and CLIPROXY_API_KEY. Knowing
+# that Codex wants an env_key, Claude Code wants ANTHROPIC_*, and the OpenAI and
+# Gemini SDKs want their own pair is the image's job, not the Deployment's.
+#
+# Writing into /run/s6/container_environment is the s6-overlay way to export a
+# variable to every later service, so the desktop session and anything launched
+# from a GUI menu sees these too -- not just login shells.
+set -euo pipefail
+
+if [[ -z "${CLIPROXY_BASE_URL:-}" ]]; then
+  echo "[bot-environment] CLIPROXY_BASE_URL unset; leaving agent env alone"
+  exit 0
+fi
+
+base="${CLIPROXY_BASE_URL%/}"
+
+# An empty key is the one failure that looks like a working desktop until the
+# first agent call returns 401, so say so loudly at boot instead.
+if [[ -z "${CLIPROXY_API_KEY:-}" ]]; then
+  echo "[bot-environment] WARNING: CLIPROXY_API_KEY is empty -- agents will get 401."
+  echo "[bot-environment]          add CLIPROXY_API_KEY to ottawa cluster-secrets."
+fi
+
+put() {
+  printf '%s' "$2" > "/run/s6/container_environment/$1"
+}
+
+# OpenAI-compatible: /v1/chat/completions and /v1/responses.
+put OPENAI_BASE_URL "${base}/v1"
+put OPENAI_API_KEY "${CLIPROXY_API_KEY:-}"
+
+# Anthropic-compatible: Claude Code appends /v1/messages itself.
+put ANTHROPIC_BASE_URL "${base}"
+put ANTHROPIC_AUTH_TOKEN "${CLIPROXY_API_KEY:-}"
+
+# Gemini-compatible.
+put GOOGLE_GEMINI_BASE_URL "${base}/v1beta"
+put GEMINI_API_KEY "${CLIPROXY_API_KEY:-}"
+
+echo "[bot-environment] agent endpoints pointed at ${base}"

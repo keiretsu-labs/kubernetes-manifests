@@ -141,6 +141,30 @@
         "#\\s*renovate:\\s*datasource=docker\\s+depName=(?<depName>\\S+)\\n\\s*[A-Z][A-Z0-9_]*:\\s*(?:[a-z0-9.-]+(?::[0-9]+)?/)?[a-z0-9._/-]+:(?<currentValue>[^@\\s]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"
       ],
       "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Track bot/webtop maintainer image tool versions",
+      "managerFilePatterns": [
+        "/^kubernetes/apps/base/bot/webtop/image/versions\\.env$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s*\\n(?!KUSTOMIZE_VERSION)[A-Z0-9_]+=\"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "{{{datasource}}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the bot/webtop kustomize pin, whose upstream tags carry a kustomize/ path prefix the plain version manager cannot strip",
+      "managerFilePatterns": [
+        "/^kubernetes/apps/base/bot/webtop/image/versions\\.env$/"
+      ],
+      "matchStrings": [
+        "KUSTOMIZE_VERSION=\"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "kubernetes-sigs/kustomize",
+      "extractVersionTemplate": "^kustomize/v(?<version>.+)$"
     }
   ]
 }
