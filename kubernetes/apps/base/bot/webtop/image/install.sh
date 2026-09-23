@@ -99,7 +99,7 @@ stage_system() {
         bind9-dnsutils iputils-ping netcat-openbsd \
         fd-find ripgrep fzf htop shellcheck
       # Debian ships fd as fdfind to avoid a name clash with an unrelated package.
-      ln -sf "$(command -v fdfind)" "$PREFIX/bin/fd"
+      if fdfind=$(command -v fdfind); then ln -sf "$fdfind" "$PREFIX/bin/fd"; fi
       rm -rf /var/lib/apt/lists/*
       ;;
     apk)
@@ -143,7 +143,7 @@ stage_langs() {
   tar -C "$OPT/node" --strip-components=1 -xJf /tmp/node.txz
   rm -f /tmp/node.txz
   # corepack gives pnpm and yarn without pinning either one here.
-  "$OPT/node/bin/corepack" enable --install-directory "$OPT/node/bin"
+  corepack enable --install-directory "$OPT/node/bin"
 
   install_tgz \
     "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-${ARCH_RUST}-unknown-linux-gnu.tar.gz" \
@@ -203,7 +203,11 @@ stage_agents() {
     codex "codex-${ARCH_RUST}-unknown-linux-musl"
 
   log "claude code ${CLAUDE_CODE_VERSION}"
-  "$OPT/node/bin/npm" install -g --no-fund --no-audit \
+  # npm 11 blocks install scripts by default, and claude-code's postinstall is
+  # what puts its native binary in place. Allowing it here keeps that work at
+  # build time instead of deferring it to the first run inside the desktop.
+  npm install -g --no-fund --no-audit \
+    --allow-scripts=@anthropic-ai/claude-code \
     "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
   ln -sf "$OPT/node/bin/claude" "$PREFIX/bin/claude"
 }
@@ -211,6 +215,11 @@ stage_agents() {
 main() {
   local stage=${1:?usage: install.sh <system|langs|tools|agents>}
   arch_init
+
+  # corepack and npm are `#!/usr/bin/env node` scripts, so node has to be on
+  # PATH while they run. The Dockerfile's ENV PATH applies to the final image,
+  # not to the RUN layers that install these, so set it here too.
+  export PATH="$OPT/node/bin:$OPT/go/bin:$PREFIX/bin:$PATH"
   case "$stage" in
     system) stage_system ;;
     langs)  stage_langs ;;

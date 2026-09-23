@@ -65,8 +65,12 @@ RUN HERDR_VERSION="${HERDR_VERSION}" \
 
 # ENV rather than profile.d: the XFCE session and everything launched from a
 # desktop menu are not login shells, so a profile script would miss them.
+# corepack resolves pnpm/yarn from each project's packageManager field on first
+# use, which is what it is for -- but it prompts before downloading, and an
+# interactive prompt in a desktop terminal just looks like a hang.
 ENV GOROOT=/opt/go \
     GOTOOLCHAIN=local \
+    COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
     PATH=/opt/go/bin:/opt/node/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin
 
 # LinuxServer overlay: /custom-cont-init.d scripts run after the built-in init
