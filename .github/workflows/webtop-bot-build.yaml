@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "kubernetes/apps/base/bot/webtop/image/**"
+      - "!kubernetes/apps/base/bot/webtop/image/README.md"
       - ".github/workflows/webtop-bot-build.yaml"
   # LinuxServer rebuilds the webtop bases regularly; a weekly run picks up
   # their security updates without a commit here.

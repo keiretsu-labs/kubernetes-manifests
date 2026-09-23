@@ -104,6 +104,13 @@ image's job:
 The key is never written to a file: `codex` reads it from the environment at
 call time, and the others take it as an env var.
 
+Because it arrives as a `secretKeyRef` env var, rotating `CLIPROXY_API_KEY` in
+ottawa cluster-secrets needs a `kubectl rollout restart deploy/webtop -n bot`
+to take effect — Flux updates the Secret but the Deployment spec is unchanged,
+so nothing rolls on its own. The alternative, putting the substituted value in
+a pod annotation to force a roll (as `gatus` does), would expose it in
+`kubectl get pod -o yaml`, which is not worth it for a one-line restart.
+
 cliproxy runs with `force-model-prefix: true`, so model names carry their
 route prefix — `ai/gpt-5.3-codex`, `vllm/GLM-5.3-Flash-EXL3`. The codex
 default is `CLIPROXY_CODEX_MODEL` in the Deployment. The catalog lives in
