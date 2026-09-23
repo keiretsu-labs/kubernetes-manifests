@@ -62,16 +62,15 @@ names) still match during migration and are rewritten to the same override.
 | `kubernetes/apps/base/envoy-ai-gateway-system/` | Namespace + HelmReleases (`ai-gateway-crds-helm` + `ai-gateway-helm` **v1.1.0**) |
 | `kubernetes/apps/ottawa/envoy-ai-gateway-system/` | Flux Kustomization (depends on `envoy-gateway-system-install`) |
 | `.../envoy-gw-common/ai-gateway-extension/values-patch.yaml` | EG `extensionManager` snippet (merged into EG HelmRelease via #3179) |
-| `.../envoy-ai-gateway-system/routes/` | Example `Gateway` + `AIGatewayRoute` for SP vLLM (**not** in default kustomization) |
+| `.../envoy-ai-gateway-system/routes/` | `Gateway` + `AIGatewayRoute` for SP vLLM (included in default kustomization) |
 
 ### Enablement checklist
 
 1. Merge this PR → Flux installs `envoy-ai-gateway-system` controller on Ottawa.
 2. ~~Merge `ai-gateway-extension/values-patch.yaml` into the EG HelmRelease~~
    — landed via the `feat/eg-ai-gateway-extension-manager` follow-up (shared CP).
-3. When ready for traffic: add `./routes` to the base kustomization (or a new
-   Flux Kustomization) and smoke:
-   `curl -H 'Authorization: …' http://<ai-gateway>/v1/models`
+3. ~~Add `./routes` to the base kustomization~~ — landed; smoke:
+   `curl http://ai-gateway.cliproxy.svc/v1/models` (and a completion with `vllm/default`)
 4. Point a canary worker: `OPENAI_BASE_URL=http://ai-gateway.cliproxy.svc/v1`
    with model **`vllm/default`** (or alias `vllm/auto`). Do not put GLM/Qwen served names in worker config.
 5. Leave CLIProxy as default until OAuth/Pi parity is decided.
@@ -96,5 +95,5 @@ scraping SP `vllm:*` directly (already working after the Grafana fix PR).
 
 - EG `extensionManager` is a shared-control-plane change — test on Ottawa first.
 - Not a drop-in for CLIProxy OAuth pooling / Pi-bridge.
-- `routes/` must not be enabled until the extension hook is live or Envoy will
-  ignore `AIGatewayRoute`.
+- `routes/` requires the EG `extensionManager` hook; without it Envoy ignores
+  `AIGatewayRoute` (hook enabled via #3179).

@@ -4,6 +4,4 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./install
-  # routes/ is intentionally NOT included. Apply via the routes kustomization
-  # (or by adding it here) after the EG extensionManager patch is live and
-  # Raj approves cutover of vllm/* clients.
+  - ./routes
