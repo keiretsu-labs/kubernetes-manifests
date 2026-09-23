@@ -1091,6 +1091,12 @@ assert "Robbinsdale Kopiur SnapshotPolicy remains" \
 assert "St. Petersburg Kopiur SnapshotPolicy remains" \
   test -f "$ROOT/kubernetes/apps/base/home-assistant/home-assistant/kopiur/snapshotpolicy.yaml"
 
+# ---------------------------------------------------------------- garage gateway ingress peer scope
+section "garage-gateway-ingress peer scope"
+exits "garage gateway CNP keeps peer RPC/admin scoped" 0 \
+  bash "$T/check-garage-gateway-ingress.sh"
+
+
 # ---------------------------------------------------------------- summary
 printf '\n== %d passed, %d failed ==\n' "$pass" "$fail"
 [ "$fail" = 0 ]
