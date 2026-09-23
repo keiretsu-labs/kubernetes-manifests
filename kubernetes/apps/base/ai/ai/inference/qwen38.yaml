@@ -410,7 +410,7 @@ spec:
           startupProbe:
             httpGet:
               path: /health
-              port: http
+              port: 8000
             initialDelaySeconds: 30
             periodSeconds: 30
             timeoutSeconds: 10
@@ -418,14 +418,14 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: http
+              port: 8000
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /health
-              port: http
+              port: 8000
             periodSeconds: 15
             timeoutSeconds: 10
         volumes:
