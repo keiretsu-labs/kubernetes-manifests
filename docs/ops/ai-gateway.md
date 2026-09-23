@@ -71,8 +71,7 @@ names) still match during migration and are rewritten to the same override.
    — landed via the `feat/eg-ai-gateway-extension-manager` follow-up (shared CP).
 3. Routes via Flux KS `envoy-ai-gateway-system-routes` (`targetNamespace: cliproxy`).
    Smoke: `curl http://ai-gateway.cliproxy.svc.cluster.local/v1/models` + completion `vllm/default`.
-   Note: EG data-plane Service lives in `envoy-gateway-system`; until a stable
-   alias Service exists, use that LB Service DNS or the Gateway address.
+   Stable alias: Service `ai-gateway` (ExternalName) in `cliproxy` → EG data-plane Service.
 4. Point a canary worker: `OPENAI_BASE_URL=http://ai-gateway.cliproxy.svc/v1`
    with model **`vllm/default`** (or alias `vllm/auto`). Do not put GLM/Qwen served names in worker config.
 5. Leave CLIProxy as default until OAuth/Pi parity is decided.

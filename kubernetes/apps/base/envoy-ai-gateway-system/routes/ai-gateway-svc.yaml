@@ -1,0 +1,15 @@
+---
+# Stable in-cluster DNS for canary workers.
+# EG places the data-plane LoadBalancer in envoy-gateway-system as
+# envoy-<gateway-ns>-<gateway-name>-<hash>. Alias it into cliproxy so
+# OPENAI_BASE_URL=http://ai-gateway.cliproxy.svc.cluster.local/v1 works.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-gateway
+  namespace: cliproxy
+  labels:
+    app.kubernetes.io/name: ai-gateway
+spec:
+  type: ExternalName
+  externalName: envoy-cliproxy-ai-gateway-14de1007.envoy-gateway-system.svc.cluster.local
