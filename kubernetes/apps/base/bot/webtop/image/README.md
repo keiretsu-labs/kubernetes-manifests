@@ -16,7 +16,9 @@ deployed by [`../app`](../app).
 | `Dockerfile` | thin wrapper over the LinuxServer base; no `ENTRYPOINT`/`CMD` |
 | `versions.env` | every pinned version, Renovate-managed |
 | `install.sh` | build-time provisioner, one stage per Docker layer |
-| `root/` | image overlay copied to `/`, LinuxServer extension points |
+| `root/custom-cont-init.d/` | LinuxServer's boot hook: agent env, home seeding |
+| `root/etc/bot/agent-env.sh` | the cliproxy→agent variable mapping, sourced by both consumers |
+| `root/etc/profile.d/` | shell setup (login-shell `PATH` repair, agent env) |
 
 ## Following the LinuxServer contract
 
@@ -36,11 +38,23 @@ derived LinuxServer image goes wrong:
    and the toolchains all work without a second identity. A second user means
    a second webtop, not a second account.
 
-Environment that the desktop session needs — not just login shells — is
-exported the s6 way, by writing files into `/run/s6/container_environment`
-from `root/custom-cont-init.d/10-bot-environment`. `PATH` and `GOROOT` are
-Dockerfile `ENV` for the same reason: a GUI menu entry is not a login shell
-and would never read `/etc/profile.d`.
+No single mechanism reaches every caller, so the agent environment is applied
+twice from one mapping in `root/etc/bot/agent-env.sh`:
+
+- `custom-cont-init.d/10-bot-environment` writes it into
+  `/run/s6/container_environment`, which is the s6 way to reach every service
+  started afterwards — the desktop session and anything launched from a GUI
+  menu. A `/etc/profile.d` script alone would miss those, since a menu entry
+  is not a login shell.
+- `/etc/profile.d/90-bot-tooling.sh` exports it for shells, because
+  `kubectl exec` starts from the container's original environment and never
+  sees `/run/s6/container_environment`.
+
+`PATH` is likewise set in two places. The Dockerfile `ENV` *prepends* to the
+base's `PATH` (which carries `/lsiopy/bin`, the LinuxServer venv Selkies runs
+from — replacing it wholesale breaks the desktop), and `profile.d` re-adds the
+toolchain dirs because Debian's `/etc/profile` rewrites `PATH` from scratch for
+login shells.
 
 ## Swapping the desktop flavour
 
