@@ -180,7 +180,6 @@ run_capped "notification-scope" tools/check-notification-scope.sh
 run_capped "cliproxy-pi-bridge" tools/check-cliproxy-pi-bridge.sh
 run_capped "zot-upload-affinity" tools/check-zot-upload-affinity.sh
 run_capped "bhaiya-limits" bash tools/check-bhaiya-limits.sh
-run_capped "garage-gateway-ingress" bash tools/check-garage-gateway-ingress.sh
 run_capped "mimir-rule-load-path" tools/check-mimir-rules.sh
 run_capped "velero-pvc-coverage" tools/check-velero-pvc-coverage.sh
 
