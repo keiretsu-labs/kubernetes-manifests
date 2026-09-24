@@ -323,14 +323,17 @@ spec:
                   "codex-subscription/vllm-fallback": "codex-subscription/gpt-5.6-luna",
                   "vllm/GLM-5.3-Flash-EXL3": "vllm/GLM-5.3-Flash-EXL3",
               }
-              # The St. Petersburg Vision-Exp catalog does not publish all
-              # serving-profile facts in /v1/models. Keep those facts explicit
-              # so the Pi catalog and Bhaiya's generated OpenCode config describe
-              # the active route accurately. Assert an 8k output cap so a stuck
-              # stream cannot legally decode for the full 1,048,576 context.
+              # Facts the upstream /v1/models does not publish. Limits do NOT
+              # belong here: vLLM reports max_model_len and is the only thing
+              # that knows what it is actually serving, so context_window is
+              # always derived. A declared window outlives the flag it was
+              # copied from -- this table said 1048576 while the LWS ran
+              # --max-model-len 16384, and every harness budgeted a 1M context
+              # against a 16k server. max_tokens stays because vLLM publishes
+              # no output cap; it asserts that a stuck stream cannot legally
+              # decode the whole window.
               metadata_overrides = {
                   "vllm/GLM-5.3-Flash-EXL3": {
-                      "context_window": 1048576,
                       "max_tokens": 8192,
                       "name": "GLM-5.3 Flash EXL3",
                       "reasoning": True,
@@ -344,6 +347,21 @@ spec:
                   source_id = metadata_alias_sources.get(model_id, model_id)
                   override = metadata_overrides.get(source_id)
                   return dict(override) if override else {}
+
+              def apply_override(metadata, override):
+                  # Limits clamp down, never up. Overstating a limit breaks a
+                  # session deep in a run; understating one only wastes
+                  # capacity, so a declared limit may lower what the upstream
+                  # reports but never raise it. Non-limit facts are curated
+                  # here and win outright.
+                  for key, value in override.items():
+                      if key in ("context_window", "max_tokens"):
+                          if not positive(value):
+                              continue
+                          live = metadata.get(key)
+                          metadata[key] = min(live, value) if positive(live) else value
+                      else:
+                          metadata[key] = value
 
               def request(method, path, token, payload=None, extra_headers=None):
                   body = None if payload is None else json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
@@ -648,7 +666,7 @@ spec:
                       route_source = {"id": raw_id, "provider": {"id": owner}, "direct": {}}
                   metadata = resolve_models_dev(entries, index, route_source)
                   metadata.update(route_source.get("direct", {}))
-                  metadata.update(metadata_override(model_id))
+                  apply_override(metadata, metadata_override(model_id))
                   if not positive(metadata.get("context_window")):
                       return None
                   return metadata
