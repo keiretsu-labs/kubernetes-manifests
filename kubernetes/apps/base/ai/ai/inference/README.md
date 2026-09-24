@@ -32,6 +32,9 @@
   and compile headroom. A safe boot reported 506,414 logical KV tokens
   (1.93 concurrent 262,144-token requests); the exact total is runtime-dependent
   and must be confirmed from the vLLM capacity log after each rollout.
+- The TP ranks use a one-hour NCCL/Gloo distributed timeout and engine-ready
+  timeout so rank 1 is not evicted by the default 30-minute wait while rank 0
+  loads the 164 GiB InstantTensor checkpoint.
 
 This follows MiaAI-Lab's runtime/image recipe, with a lower memory profile
 qualified for this shared cluster. Do not raise context length, concurrency,

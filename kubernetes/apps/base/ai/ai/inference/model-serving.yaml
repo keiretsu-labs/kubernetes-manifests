@@ -362,6 +362,7 @@ spec:
               --host 0.0.0.0 --port 8000 \
               --tensor-parallel-size 2 --nnodes 2 --node-rank 0 \
               --master-addr 192.168.74.1 --master-port 26400 \
+              --distributed-timeout-seconds 3600 --cpu-distributed-timeout-seconds 3600 \
               --distributed-executor-backend mp --quantization exl3 \
               --enforce-eager \
               --load-format instanttensor --gpu-memory-utilization 0.70 \
@@ -375,6 +376,7 @@ spec:
               --enable-prompt-tokens-details
           env:
           - { name: VLLM_HOST_IP, value: "192.168.74.1" }
+          - { name: VLLM_ENGINE_READY_TIMEOUT_S, value: "3600" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
@@ -526,6 +528,7 @@ spec:
               --host 0.0.0.0 --port 8000 \
               --tensor-parallel-size 2 --nnodes 2 --node-rank 1 \
               --master-addr 192.168.74.1 --master-port 26400 \
+              --distributed-timeout-seconds 3600 --cpu-distributed-timeout-seconds 3600 \
               --distributed-executor-backend mp --headless --quantization exl3 \
               --enforce-eager \
               --load-format instanttensor --gpu-memory-utilization 0.70 \
@@ -539,6 +542,7 @@ spec:
               --enable-prompt-tokens-details
           env:
           - { name: VLLM_HOST_IP, value: "192.168.74.2" }
+          - { name: VLLM_ENGINE_READY_TIMEOUT_S, value: "3600" }
           - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
