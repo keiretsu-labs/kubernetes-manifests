@@ -52,27 +52,25 @@ spec:
   #                         record for ai.keiretsu.top -> the private LB.
   #                         Deliberately no cnames.yaml entry: a CNAME to
   #                         ottawa.keiretsu.top would resolve and then 404.
+  # No sectionName. The hostnames below span two zones, so no single listener
+  # covers both, and pinning one sectionName per (gateway, listener) pair is
+  # what kept this route out of every data plane: Envoy Gateway counted it in
+  # attachedRoutes and reported Accepted=True on all four parentRefs while
+  # emitting no virtual host on either private or ts.
+  #
+  # The two other multi-zone routes in the fleet -- tailscale-examples/tsflow
+  # and the bhaiya trades route -- both omit sectionName and both resolve.
+  # Without it the gateway attaches the route to every compatible listener and
+  # intersects the hostnames itself, which is the behaviour we want here.
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: private
       namespace: home
-      sectionName: ${CLUSTER_DOMAIN_LISTENER}
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: ts
       namespace: home
-      sectionName: ${CLUSTER_DOMAIN_LISTENER}
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: private
-      namespace: home
-      sectionName: wildcard-keiretsu-top-https
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: ts
-      namespace: home
-      sectionName: wildcard-keiretsu-top-https
   hostnames:
     - "ai.${CLUSTER_DOMAIN}"
     - "ai.${COMMON_DOMAIN}"
