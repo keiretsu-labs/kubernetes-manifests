@@ -20,6 +20,7 @@ spec:
     sectionName: ${CLUSTER_DOMAIN_LISTENER}
   hostnames:
   - "webtop.${CLUSTER_DOMAIN}"
+  - "webtop.${COMMON_DOMAIN}"
   rules:
   - matches:
     - path:
