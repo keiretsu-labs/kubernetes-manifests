@@ -8,3 +8,4 @@ resources:
   - ./gateway.yaml
   - ./sp-vllm.yaml
   - ./ai-gateway-svc.yaml
+  - ./httproute-external.yaml

@@ -66,6 +66,22 @@ spec:
         - group: ''
           kind: Secret
           name: wildcard-keiretsu-top
+    # Apex, not covered by the *.keiretsu.top wildcard. The same Certificate
+    # carries both SANs, so this costs nothing but lets keiretsu.top itself
+    # attach here instead of only on public.
+    - name: keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-keiretsu-top
     - name: forgejo-ssh
       protocol: TCP
       port: 22

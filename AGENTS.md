@@ -175,16 +175,32 @@ the label `substitution.flux.home.arpa/disabled=true`.
   Flux renders, write `$${...}` to emit a literal `${...}`.
 - **Gateway hostnames:** check listener hostnames before adding an HTTPRoute:
   `kubectl get gateway <name> -n home -o jsonpath='{.spec.listeners[*].hostname}'`.
-  Common gateways (`ts`, `private`, `public`) live in namespace `home` and
-  accept `*.${CLUSTER_DOMAIN}` (e.g. `*.killinit.cc` for Ottawa); `public`
-  (and now `private`) also accept `*.${COMMON_DOMAIN}` (`*.keiretsu.top`).
+  Common gateways (`ts`, `private`, `public`) live in namespace `home` and all
+  three accept `*.${CLUSTER_DOMAIN}` (e.g. `*.killinit.cc` for Ottawa) and
+  `*.${COMMON_DOMAIN}` / `${COMMON_DOMAIN}` (`*.keiretsu.top`, `keiretsu.top`).
+  `private` and `ts` serve an identical hostname set on purpose — they are the
+  LAN and tailnet halves of the same internal edge, and
+  `tools/check-domain-dns.sh` fails if they drift. `public` carries extra
+  delegated subzones (`*.cdn`, `*.s3`, `*.bhaiya`, `*.hermes`, `*.${LOCATION}`).
   `NoMatchingListenerHostname` in HTTPRoute status = no listener matches.
-- **DNS:** `${CLUSTER_DOMAIN}` hostnames get DNS automatically (external-dns
-  watches HTTPRoutes). `${COMMON_DOMAIN}` hostnames do NOT — you MUST add a
-  CNAME entry in `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml`
+- **DNS:** each gateway feeds a different resolver, so *where you attach the
+  route decides who can resolve it*. `private` → external-dns-unifi → LAN DNS
+  (A record to the private LB); `ts` → the k8gb CoreDNS split-DNS zones the
+  tailnet points at; `public` → external-dns-cloudflare → the WAN edge. Both
+  `${CLUSTER_DOMAIN}` and `${COMMON_DOMAIN}` are automatic on `private`/`ts` —
+  attach the route and the record appears.
+  The one manual surface left is **public** `${COMMON_DOMAIN}`: the Cloudflare
+  keiretsu.top instance is CRD-only (three clusters share that zone, so a
+  gateway source would make them race for ownership), so a route on `public`
+  still needs a CNAME in
+  `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml`
   (Ottawa-only: target `"ottawa.${COMMON_DOMAIN}"`; multi-cluster/k8gb:
   `"<name>.cdn.${COMMON_DOMAIN}"`; both `cloudflare-proxied: "false"`).
   Without it the route shows Accepted=True but never resolves.
+  Those CNAMEs all point at the WAN edge, so any DNSEndpoint holding them must
+  keep the `dns-scope: public-only` label or UniFi copies them into LAN DNS and
+  shadows the private-LB records. Internal names reach the private LB over the
+  tailnet via the site subnet routes, not via the `ts` gateway's own IP.
 - **Tailnet DNS from pods:** do not publish Tailscale CGNAT (`100.64.0.0/10`)
   in public DNS and do not assume a new `*.keiretsu.ts.net` device name is
   automatically present in pod DNS. For every tailnet target, define an
@@ -275,6 +291,10 @@ tools/check.sh [cluster]   # CI render gate — the sole verify command
                            # (one ✓ line on success; accepts ot/rb/sp aliases;
                            #  scope by cluster if only one changed)
 tools/check-versions.sh    # talconfig↔tuppr and CephCluster↔toolbox version sync
+tools/check-domain-dns.sh  # gateway listeners ↔ the three DNS planes: private/ts
+                           # hostname parity, per-plane domainFilter coverage, a
+                           # tailnet answer for every internal zone, and
+                           # public-edge CNAMEs staying out of LAN DNS
 tools/check-diagram.sh     # architecture docs gate: Graphviz syntax + secret scan
                            # over docs/diagrams/*.dot, SVG-matches-source stamps,
                            # inventory freshness, coverage of every cluster / node /

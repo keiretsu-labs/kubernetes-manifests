@@ -1,0 +1,43 @@
+name: domain dns coverage
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "clusters/common/flux/vars/common-settings.yaml"
+      - "clusters/talos-*/flux/vars/cluster-settings.yaml"
+      - "kubernetes/apps/base/home/home/local-gateway/**"
+      - "kubernetes/apps/base/home/home/tailscale-gateway/**"
+      - "kubernetes/apps/base/cloudflare/cloudflare/**"
+      - "kubernetes/apps/base/k8gb/k8gb-common/**"
+      - "tools/check-domain-dns.sh"
+  push:
+    branches: [main]
+    paths:
+      - "clusters/common/flux/vars/common-settings.yaml"
+      - "clusters/talos-*/flux/vars/cluster-settings.yaml"
+      - "kubernetes/apps/base/home/home/local-gateway/**"
+      - "kubernetes/apps/base/home/home/tailscale-gateway/**"
+      - "kubernetes/apps/base/cloudflare/cloudflare/**"
+      - "kubernetes/apps/base/k8gb/k8gb-common/**"
+      - "tools/check-domain-dns.sh"
+  workflow_dispatch:
+
+concurrency:
+  group: domain-dns-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  domain-dns:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      # Gateway listeners vs the three DNS planes that have to publish them:
+      # private/ts listener parity, per-plane domainFilter coverage, a tailnet
+      # answer for every internal zone, and public-edge CNAME tables staying
+      # out of LAN DNS.
+      - name: Check domain DNS coverage
+        run: tools/check-domain-dns.sh
