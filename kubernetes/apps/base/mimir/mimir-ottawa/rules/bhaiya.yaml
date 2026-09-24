@@ -317,25 +317,13 @@ groups:
         not treated as deployment lag.
 - name: bhaiya.fleet.resources
   rules:
-  - alert: BhaiyaContainerOOMKilled
-    expr: |
-      sum by (namespace, pod, container) (
-        increase(
-          container_oom_events_total{
-            namespace="bhaiya",
-            container!="",
-            container!="POD"
-          }[10m]
-        )
-      ) > 0
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      summary: Bhaiya container {{ $labels.container }} was OOM-killed
-      description: '{{ $labels.container }} in {{ $labels.pod }} has recorded an OOM kill
-        in the last ten minutes. Check memory working set versus its limit, inspect the workload
-        logs, and raise the limit or fix the leak before restarting it.'
+  # NOTE: no cAdvisor-based OOM rule here. Bhaiya workloads run under Kata, and
+  # guest-kernel OOM kills are invisible to host cAdvisor:
+  # container_oom_events_total{namespace="bhaiya"} stayed flat at 0 for 7 days
+  # while forgejo-mcp recorded four OOMKilled terminations (corp/bhaiya#1162).
+  # OOM coverage for bhaiya pods comes from the kube-state-metrics-based
+  # OomKilled rule in rules/monitoring.yaml, which is namespace-agnostic and
+  # verified firing for forgejo-mcp.
   - alert: BhaiyaPVCNearFull
     expr: |
       (
