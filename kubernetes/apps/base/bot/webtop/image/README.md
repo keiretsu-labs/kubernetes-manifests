@@ -77,7 +77,7 @@ Every build also publishes an immutable `<flavor>-<sha>` tag to roll back to.
 - **Node** LTS with `corepack` (pnpm, yarn)
 - **Python** via `uv`/`uvx` — `uv` also manages the interpreters, so there is
   no separate Python pin
-- **Agents** — `herdr`, `codex`, `claude`
+- **Agents** — Hermes Agent, `herdr`, `codex`, `claude`
 - **GitOps** — `kubectl`, `helm`, `flux`, `kustomize`, `talosctl`, `sops`,
   `age`, `gh`, `yq`
 - **Shell** — `git`, `jq`, `ripgrep`, `fd`, `fzf`, `tmux`, `shellcheck`,
@@ -96,10 +96,16 @@ image's job:
 | CLI / SDK | how it is pointed at cliproxy |
 |---|---|
 | `codex` | `~/.codex/config.toml` provider `cliproxy`, `wire_api = "responses"` against `/v1`, key read from the env via `env_key` |
+| `hermes` | `~/.hermes/config.yaml` seeds the OpenAI provider and `CLIPROXY_HERMES_MODEL`; endpoint and key come from `OPENAI_BASE_URL` + `OPENAI_API_KEY` |
 | `claude` | `ANTHROPIC_BASE_URL` + `ANTHROPIC_AUTH_TOKEN` (`/v1/messages`) |
 | OpenAI SDKs | `OPENAI_BASE_URL` + `OPENAI_API_KEY` (`/v1`) |
 | Gemini SDKs | `GOOGLE_GEMINI_BASE_URL` + `GEMINI_API_KEY` (`/v1beta`) |
 | `herdr` | nothing — it multiplexes the agents above rather than calling a model itself |
+
+Hermes code and its virtual environment are baked into the image at the pinned
+`HERMES_VERSION`. Its mutable state and lazy-installed optional packages use
+`/config/.hermes`; this deployment's `/config` is an `emptyDir`, so Hermes
+state lasts for the pod lifetime and resets when the pod is replaced.
 
 The key is never written to a file: `codex` reads it from the environment at
 call time, and the others take it as an env var.

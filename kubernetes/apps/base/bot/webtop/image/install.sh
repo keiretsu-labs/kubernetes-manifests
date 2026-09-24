@@ -8,6 +8,7 @@
 #   install.sh langs    Go, Node, uv (Python)
 #   install.sh tools    kubernetes/gitops CLIs
 #   install.sh agents   herdr, codex, claude code
+#   install.sh hermes   Hermes Agent (pinned source + isolated uv environment)
 #
 # Nothing here writes to /config. /config is the LinuxServer volume and is
 # masked at runtime by the mount, so anything seeded at build time would
@@ -191,6 +192,43 @@ stage_tools() {
     gh "gh_${GH_VERSION}_linux_${ARCH_GO}/bin/gh"
 }
 
+stage_hermes() {
+  local src="${OPT}/hermes-agent" revision
+  log "hermes ${HERMES_VERSION}"
+
+  git clone --quiet --depth 1 --branch "${HERMES_VERSION}" \
+    https://github.com/NousResearch/hermes-agent.git "$src"
+
+  # Keep Hermes' managed Python and project environment in the immutable image
+  # tree. Its runtime state and any lazy-installed optional packages live under
+  # HERMES_HOME instead (the LinuxServer /config volume).
+  export UV_PYTHON_INSTALL_DIR="${OPT}/uv/python"
+  export UV_PROJECT_ENVIRONMENT="${src}/.venv"
+  export UV_CACHE_DIR=/tmp/uv-hermes-cache
+  (
+    # LinuxServer exports its own /lsiopy environment for the desktop. Keep
+    # Hermes isolated so its dependency pins cannot change Selkies' Python.
+    unset VIRTUAL_ENV CONDA_PREFIX
+    cd "$src"
+    uv sync --frozen --no-install-project --extra all
+    uv pip install --python "${src}/.venv/bin/python" --no-cache-dir --no-deps -e .
+  )
+
+  ln -sf "${src}/.venv/bin/hermes" "$PREFIX/bin/hermes"
+  revision=$(git -C "$src" rev-parse HEAD)
+  printf '%s\n' "$revision" > "${src}/.hermes_build_sha"
+  printf 'docker\n' > "${src}/.install_method"
+
+  # Hermes uses this marker to report that its code is managed by an immutable
+  # image. It keeps `hermes update` from modifying the sealed image filesystem.
+  mkdir -p /etc/hermes
+  HERMES_REVISION="$revision" \
+    "${src}/.venv/bin/python" -c 'import json, os, pathlib, tomllib; project = tomllib.loads(pathlib.Path("/opt/hermes-agent/pyproject.toml").read_text(encoding="utf-8"))["project"]; p = pathlib.Path("/etc/hermes/image-provenance.json"); p.write_text(json.dumps({"schema": 1, "deployment_kind": "image", "manager": "docker", "image": "ghcr.io/keiretsu-labs/kubernetes-manifests/webtop-bot", "version": project["version"], "revision": os.environ["HERMES_REVISION"]}, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8"); p.chmod(0o444)'
+
+  rm -rf "${src}/.git" "$UV_CACHE_DIR"
+  chmod -R a-w "$src"
+}
+
 stage_agents() {
   install_bin \
     "https://github.com/herdrdev/herdr/releases/download/v${HERDR_VERSION}/herdr-linux-${ARCH_RUST}" \
@@ -213,7 +251,7 @@ stage_agents() {
 }
 
 main() {
-  local stage=${1:?usage: install.sh <system|langs|tools|agents>}
+  local stage=${1:?usage: install.sh <system|langs|tools|hermes|agents>}
   arch_init
 
   # corepack and npm are `#!/usr/bin/env node` scripts, so node has to be on
@@ -224,6 +262,7 @@ main() {
     system) stage_system ;;
     langs)  stage_langs ;;
     tools)  stage_tools ;;
+    hermes) stage_hermes ;;
     agents) stage_agents ;;
     *) echo "install.sh: unknown stage '$stage'" >&2; return 2 ;;
   esac
