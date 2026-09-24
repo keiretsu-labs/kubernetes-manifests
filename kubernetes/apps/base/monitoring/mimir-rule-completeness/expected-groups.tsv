@@ -48,3 +48,5 @@ smartctl	smartctl-exporter.rules
 stpetersburg-memory	stpetersburg-memory.rules
 running-workload-images	running-workload-images.rules
 zot	zot.rules
+envoy-gateway	envoy-gateway-xds.rules
+envoy-gateway	envoy-gateway-reconcile.rules

@@ -43,6 +43,7 @@ spec:
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
             - /rules/cnpg-backup-coverage.yaml
+            - /rules/envoy-gateway.yaml
             - /rules/kopiur.yaml
             - /rules/flux.yaml
             - /rules/garage.yaml
@@ -85,6 +86,7 @@ spec:
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
             - /rules/cnpg-backup-coverage.yaml
+            - /rules/envoy-gateway.yaml
             - /rules/kopiur.yaml
             - /rules/flux.yaml
             - /rules/garage.yaml
@@ -123,6 +125,7 @@ spec:
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
             - /rules/cnpg-backup-coverage.yaml
+            - /rules/envoy-gateway.yaml
             - /rules/kopiur.yaml
             - /rules/flux.yaml
             - /rules/garage.yaml

@@ -1,0 +1,98 @@
+# Envoy Gateway control-plane health. These exist because a 21-hour outage of
+# every gateway's config delivery produced no alert at all: Envoy Gateway keeps
+# publishing Gateway API status from one runner while a different runner fails
+# to translate xDS, so every HTTPRoute read Accepted=True while the data planes
+# served config that was up to six days old. Route status is therefore not a
+# health signal for config delivery; the translator's own counters are.
+namespace: envoy-gateway
+groups:
+  - name: envoy-gateway-xds.rules
+    rules:
+      # The xds runner only writes its snapshot cache when translation returns
+      # no error ("Only update the snapshot cache when there are no
+      # system-level errors, to avoid publishing partial resources"), so one
+      # failure means that proxy keeps its previous snapshot and silently stops
+      # tracking Git. Any sustained increase is an outage of config delivery
+      # even though every route still reports Accepted=True.
+      - alert: EnvoyGatewayXdsSnapshotNotPublishing
+        expr: |
+          max by (cluster) (
+            increase(
+              watchable_subscribe_total{
+                job="envoy-gateway",
+                message="xds-ir",
+                status="failure"
+              }[15m]
+            )
+          ) > 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: Envoy Gateway is not publishing xDS snapshots
+          description: >-
+            The Envoy Gateway xds runner has failed to translate the xDS IR
+            repeatedly over the last 15 minutes, so it is not updating its
+            snapshot cache and every data plane is serving its last good
+            config. Gateway and HTTPRoute status will still report
+            Accepted=True because status is published by a separate runner,
+            so confirm against a proxy's config_dump rather than status.
+            Check the control plane logs for "skipped publishing xds
+            resources"; note that a reconcile storm can rotate that log in
+            under a minute.
+
+      # The same cache gate applies to every other runner, so alert on the
+      # class rather than on the one message that caused the first incident.
+      - alert: EnvoyGatewayRunnerErrors
+        expr: |
+          max by (cluster, runner, message) (
+            increase(
+              watchable_subscribe_total{
+                job="envoy-gateway",
+                status="failure",
+                message!="xds-ir"
+              }[15m]
+            )
+          ) > 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Envoy Gateway runner {{ $labels.runner }} is reporting errors
+          description: >-
+            The Envoy Gateway {{ $labels.runner }} runner has reported errors
+            handling {{ $labels.message }} over the last 15 minutes. Depending
+            on the runner this can stop infrastructure reconciliation or status
+            publication without any Gateway API object reporting a problem.
+
+  - name: envoy-gateway-reconcile.rules
+    rules:
+      # Every watched-object event makes the provider re-walk the whole cluster
+      # resource tree, so a namespace that churns Services or routes turns into
+      # sustained control-plane load. The harm is not the CPU: at roughly 700
+      # log lines per second the container log rotates in under a minute, which
+      # is what made the xDS failure above undiagnosable after the fact.
+      # Healthy clusters here sit near zero - Robbinsdale recorded 4 provider
+      # events in 21 hours and St. Petersburg 18 - while the incident ran at
+      # 1.7/s, so anything sustained above 0.5/s is churn, not baseline.
+      # Summed per pod first so an HA metrics agent cannot double count.
+      - alert: EnvoyGatewayReconcileStorm
+        expr: |
+          max by (cluster) (
+            sum by (cluster, pod) (
+              rate(controller_runtime_reconcile_total{job="envoy-gateway"}[10m])
+            )
+          ) > 0.5
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: Envoy Gateway is reconciling continuously
+          description: >-
+            The Envoy Gateway provider has sustained more than 0.5 full
+            reconciles per second for 30 minutes. Each one re-lists every
+            HTTPRoute, Service and EndpointSlice the control plane watches, so
+            this burns API and control-plane capacity and rotates the control
+            plane log fast enough to destroy diagnostic history. Find the
+            churning objects by sampling resourceVersion across the watched
+            kinds rather than by reading the log.
