@@ -55,8 +55,11 @@ fi
 # --- hermes ------------------------------------------------------------------
 # Hermes reads model and provider settings from config.yaml. Credentials stay
 # in OPENAI_API_KEY from the existing cliproxy secret mapping and are never
-# copied into this home-volume config. Preserve any config a user already has.
-if [[ ! -e "${hermes_home}/config.yaml" && -n "${OPENAI_BASE_URL:-}" ]]; then
+# copied into this home-volume config. The earlier 10-bot-environment hook
+# adds OPENAI_* to s6's service environment, not this init process, so use the
+# container-provided CLIPROXY_BASE_URL to decide whether to seed. Preserve any
+# config a user already has.
+if [[ ! -e "${hermes_home}/config.yaml" && -n "${CLIPROXY_BASE_URL:-}" ]]; then
   cat > "${hermes_home}/config.yaml" <<YAML
 model:
   default: "${CLIPROXY_HERMES_MODEL:-ai/deepseek/deepseek-v4-flash}"
