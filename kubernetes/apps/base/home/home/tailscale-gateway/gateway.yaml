@@ -47,6 +47,23 @@ spec:
         - group: ''
           kind: Secret
           name: wildcard-rajsingh-info
+    # The wildcard-keiretsu-top cert is already issued by this app's
+    # certificate-wildcard.yaml and exists in all three clusters; ts simply
+    # never declared a listener for it, so a *.keiretsu.top route attached
+    # here would fail with NoMatchingListenerHostname.
+    - name: wildcard-keiretsu-top-https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.keiretsu.top"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - group: ''
+          kind: Secret
+          name: wildcard-keiretsu-top
     - name: http
       port: 80
       protocol: HTTP

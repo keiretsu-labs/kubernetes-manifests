@@ -1,0 +1,116 @@
+---
+# External front door for the AI gateway: ai.${COMMON_DOMAIN} on the private
+# and tailnet gateways.
+#
+# The AI gateway runs its own Envoy data plane (the `ai-gateway` Gateway in
+# this namespace) because AIGatewayRoute needs the extensionManager-enabled
+# control plane and a listener we can roll independently. Rather than attach
+# AIGatewayRoutes to the shared `private`/`ts` gateways and change their filter
+# chains, this chains into it: the shared gateway terminates TLS for
+# *.${COMMON_DOMAIN} and forwards to the AI data plane, which does model
+# routing.
+#
+# A Backend (not a cross-namespace Service backendRef) keeps this in one
+# namespace: the data-plane Service lives in envoy-gateway-system, and the
+# routes Flux KS sets targetNamespace: cliproxy, so a ReferenceGrant could not
+# be placed in the namespace that needs it.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: ai-gateway-dataplane
+  namespace: cliproxy
+spec:
+  endpoints:
+    # Envoy Gateway names a data-plane Service
+    # envoy-<gateway-ns>-<gateway-name>-<hash>. The hash is derived from the
+    # Gateway's namespace and name, so it is stable until the Gateway is
+    # renamed. ai-gateway-svc.yaml already depends on this same name.
+    - fqdn:
+        hostname: envoy-cliproxy-ai-gateway-14de1007.envoy-gateway-system.svc.cluster.local
+        port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ai-gateway-external
+  namespace: cliproxy
+spec:
+  # Two hostnames, because only one of them resolves today.
+  #
+  #   ai.${CLUSTER_DOMAIN}  works now. external-dns watches HTTPRoutes and
+  #                         publishes cluster-domain names automatically, and
+  #                         tailnet split DNS resolves them. This is exactly
+  #                         what cliproxy-api.${CLUSTER_DOMAIN} already does
+  #                         on the same two gateways.
+  #
+  #   ai.${COMMON_DOMAIN}   needs a DNS decision first. Every other
+  #                         *.keiretsu.top name in the fleet is served by the
+  #                         `public` gateway, because keiretsu.top resolves to
+  #                         ottawa.keiretsu.top -> the WAN address, and the
+  #                         edge forwards :443 to the public data plane.
+  #                         Attaching it here makes the listener serve it; it
+  #                         does not make public DNS point at private. Either
+  #                         add `public` to the parentRefs below (and a
+  #                         SecurityPolicy -- unlike CLIProxy this gateway has
+  #                         no api-keys of its own), or publish an internal
+  #                         record for ai.keiretsu.top -> the private LB.
+  #                         Deliberately no cnames.yaml entry: a CNAME to
+  #                         ottawa.keiretsu.top would resolve and then 404.
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+      sectionName: ${CLUSTER_DOMAIN_LISTENER}
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+  hostnames:
+    - "ai.${CLUSTER_DOMAIN}"
+    - "ai.${COMMON_DOMAIN}"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: ai-gateway-dataplane
+          weight: 1
+      timeouts:
+        # A completion can think for minutes before the first token, and the
+        # default 15s request timeout would cut it off. This is the outer hop
+        # of two Envoys, so it has to be at least as patient as the inner one.
+        request: "0s"
+        backendRequest: "0s"
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: ai-gateway-external
+  namespace: cliproxy
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: ai-gateway-external
+  timeout:
+    http:
+      # Streaming responses idle between tokens; the default would drop a slow
+      # generation mid-stream.
+      requestTimeout: 0s
+      connectionIdleTimeout: 900s
+      maxConnectionDuration: 0s
