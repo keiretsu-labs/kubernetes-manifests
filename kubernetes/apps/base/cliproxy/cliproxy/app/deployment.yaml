@@ -104,7 +104,7 @@ spec:
               drop:
                 - ALL
         - name: render-config
-          image: eceasy/cli-proxy-api:v7.3.16@sha256:ca6af8b19642b3176eaa6b6ed197cf870a9f8026d1b58693d3ff2a4d7faaedf3
+          image: eceasy/cli-proxy-api:v7.3.17@sha256:a1dffb9c2300099039d9e2dd3dbf6396a72b798c891fe170940d2d8106222a8c
           command:
             - /bin/sh
             - -ec
@@ -144,7 +144,7 @@ spec:
                 - ALL
       containers:
         - name: cliproxy
-          image: eceasy/cli-proxy-api:v7.3.16@sha256:ca6af8b19642b3176eaa6b6ed197cf870a9f8026d1b58693d3ff2a4d7faaedf3
+          image: eceasy/cli-proxy-api:v7.3.17@sha256:a1dffb9c2300099039d9e2dd3dbf6396a72b798c891fe170940d2d8106222a8c
           command:
             - /CLIProxyAPI/CLIProxyAPI
           args:
@@ -219,7 +219,7 @@ spec:
           # model edit no longer has to roll the pod. The generator used to be
           # hash-suffixed purely because render-config only ran at start, which
           # meant editing one vLLM model restarted the OAuth pool with it.
-          image: eceasy/cli-proxy-api:v7.3.16@sha256:ca6af8b19642b3176eaa6b6ed197cf870a9f8026d1b58693d3ff2a4d7faaedf3
+          image: eceasy/cli-proxy-api:v7.3.17@sha256:a1dffb9c2300099039d9e2dd3dbf6396a72b798c891fe170940d2d8106222a8c
           command:
             - /bin/sh
             - -ec
