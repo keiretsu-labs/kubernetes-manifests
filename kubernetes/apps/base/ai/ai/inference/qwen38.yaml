@@ -348,7 +348,7 @@ spec:
               --master-addr 192.168.74.1 --master-port 26400 \
               --distributed-executor-backend mp --quantization exl3 \
               --enforce-eager \
-              --load-format instanttensor --gpu-memory-utilization 0.74 \
+              --load-format instanttensor --gpu-memory-utilization 0.80 \
               --max-model-len 262144 --max-num-seqs 2 --max-num-batched-tokens 1024 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --speculative-config '{"method":"dflash","model":"/models/qwen38/dflash2","num_speculative_tokens":7,"kv_cache_dtype":"auto","draft_sample_method":"probabilistic","rejection_sample_method":"standard","draft_tensor_parallel_size":2}' \
@@ -517,7 +517,7 @@ spec:
               --master-addr 192.168.74.1 --master-port 26400 \
               --distributed-executor-backend mp --headless --quantization exl3 \
               --enforce-eager \
-              --load-format instanttensor --gpu-memory-utilization 0.74 \
+              --load-format instanttensor --gpu-memory-utilization 0.80 \
               --max-model-len 262144 --max-num-seqs 2 --max-num-batched-tokens 1024 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --speculative-config '{"method":"dflash","model":"/models/qwen38/dflash2","num_speculative_tokens":7,"kv_cache_dtype":"auto","draft_sample_method":"probabilistic","rejection_sample_method":"standard","draft_tensor_parallel_size":2}' \
