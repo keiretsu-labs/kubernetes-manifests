@@ -92,8 +92,15 @@ spec:
         # A completion can think for minutes before the first token, and the
         # default 15s request timeout would cut it off. This is the outer hop
         # of two Envoys, so it has to be at least as patient as the inner one.
+        #
+        # request only. backendRequest: "0s" makes Envoy Gateway drop the whole
+        # route during translation -- silently: the HTTPRoute still reports
+        # Accepted=True and ResolvedRefs=True, the listener's attachedRoutes
+        # still counts it, the AI extension server still sees it, and Envoy
+        # reports update_rejected=0, but the virtual host never appears in the
+        # data plane and every request 404s. request: "0s" alone is fine and is
+        # already what the bhaiya workspace routes use.
         request: "0s"
-        backendRequest: "0s"
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: BackendTrafficPolicy
