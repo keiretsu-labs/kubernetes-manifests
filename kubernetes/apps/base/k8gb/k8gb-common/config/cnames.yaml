@@ -14,8 +14,9 @@ metadata:
     # sitting one hop away. Cloudflare still picks the object up via
     # dns-target==cloudflare.
     dns-scope: public-only
-# Proxied records carry "true"; named aliases that must remain unproxied carry
-# an explicit "false". Other records inherit external-dns's unproxied default.
+# Only records that must be proxied carry a cloudflare-proxied property.
+# external-dns defaults to unproxied, so an explicit "false" is redundant and
+# makes CRD-sourced records update on every reconcile.
 spec:
   endpoints:
     - dnsName: "${COMMON_DOMAIN}"
@@ -43,14 +44,11 @@ spec:
       targets:
         - "ottawa.${COMMON_DOMAIN}"
     # Webtop is deployed only in Ottawa; publish its common-domain alias at
-    # the Ottawa edge and keep Cloudflare proxying disabled.
+    # the Ottawa edge. The external-dns default keeps it unproxied.
     - dnsName: "webtop.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     # Pin to the Ottawa edge, not forgejo.cdn (k8gb). Recursors cache
     # NS ns1.dns.cdn.keiretsu.top with no A glue, so the CNAME hop
     # NXDOMAINs in-cluster and breaks Woodpecker's Forgejo OAuth token
