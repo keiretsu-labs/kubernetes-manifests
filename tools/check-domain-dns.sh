@@ -36,6 +36,15 @@
 #    CNAMEs land in LAN DNS and shadow the private-LB records derived from the
 #    gateway's own routes.
 #
+# 5. Nobody addresses an Envoy Gateway data plane by its generated name.
+#
+# 6. No HTTPRoute sets timeouts.backendRequest: 0s.
+#
+# 7. Where an internal zone's tailnet answer forwards to the site resolver with
+#    a public resolver behind it, the public one stays strictly last. forward
+#    defaults to policy random, which would race them and answer a share of
+#    every internal lookup from public DNS.
+#
 # Offline: reads tracked YAML only, no cluster calls. Exit 1 on any violation.
 set -uo pipefail
 
@@ -257,6 +266,68 @@ for path in sorted((root / "kubernetes").rglob("*.yaml")):
                     f"drops the route while still reporting it Accepted; use "
                     f"timeouts.request alone"
                 )
+
+# 7. An internal zone's tailnet forward is ordered, not raced.
+#    #3189 answers keiretsu.top on the tailnet by forwarding to the site's own
+#    resolver with a public resolver behind it as the unreachable-UniFi
+#    fallback. forward's default policy is random, so without an explicit
+#    sequential policy CoreDNS would spread internal lookups across both and
+#    answer a share of them with the WAN edge -- a 404 for every route
+#    attached only to private, intermittently. Asserted as the ordering rule,
+#    not as the current pair of addresses.
+PUBLIC_RESOLVERS = {
+    "1.1.1.1",
+    "1.0.0.1",
+    "8.8.8.8",
+    "8.8.4.4",
+    "9.9.9.9",
+    "149.112.112.112",
+}
+
+
+def corefile_block(text, header):
+    """The body of a `header { ... }` stanza, or None. Brace-counted so a
+    nested forward/template block does not truncate it."""
+    m = re.search(rf"^\s*{re.escape(header)}\s*\{{", text, re.M)
+    if not m:
+        return None
+    depth = 0
+    for i in range(m.end() - 1, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[m.end() : i]
+    return None
+
+
+for z in internal_zones:
+    block = corefile_block(corefile, f"{z}:5353")
+    if block is None:
+        continue  # check 3 owns a missing block
+    fwd = re.search(r"^\s*forward\s+\.\s+(.+)$", block, re.M)
+    if not fwd:
+        continue
+    # Strip the optional trailing `{` that opens the forward body. Cannot
+    # simply stop the capture at `{` — ${LAN_GATEWAY_IP} contains one.
+    upstreams = re.sub(r"\{\s*$", "", fwd.group(1)).split()
+    public = [u for u in upstreams if u in PUBLIC_RESOLVERS]
+    if len(upstreams) < 2 or not public:
+        continue
+    if upstreams[0] in PUBLIC_RESOLVERS:
+        problems.append(
+            f"k8gb Corefile {z}:5353 forwards to {upstreams[0]} before "
+            f"{upstreams[1]} — the public resolver has to be the fallback, "
+            f"not the primary, or internal names resolve to the WAN edge"
+        )
+    elif not re.search(r"policy\s+sequential", block):
+        problems.append(
+            f"k8gb Corefile {z}:5353 forwards to {' '.join(upstreams)} "
+            f"without policy sequential — forward defaults to random, so "
+            f"{public[0]} would answer a share of every internal lookup with "
+            f"the public record and 404 any route attached only to private"
+        )
 
 # ---------------------------------------------------------------- report
 if problems:

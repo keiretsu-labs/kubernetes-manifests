@@ -201,6 +201,14 @@ the label `substitution.flux.home.arpa/disabled=true`.
   keep the `dns-scope: public-only` label or UniFi copies them into LAN DNS and
   shadows the private-LB records. Internal names reach the private LB over the
   tailnet via the site subnet routes, not via the `ts` gateway's own IP.
+- **Do not replace external-dns-unifi with an in-cluster resolver** without
+  reading `docs/adr/0008-internal-dns-overlay-needs-negative-passthrough.md`.
+  The internal planes serve a subset of zones whose apexes are not ours —
+  three of the four carry live `MX` and SPF — so the overlay has to forward on
+  NODATA as well as NXDOMAIN. Stock CoreDNS cannot: the `etcd` plugin falls
+  through only on a missing key, answers any name that has descendants with
+  its descendants' records, and matches wildcards only in the question. The
+  ADR records the three paths that would work.
 - **Tailnet DNS from pods:** do not publish Tailscale CGNAT (`100.64.0.0/10`)
   in public DNS and do not assume a new `*.keiretsu.ts.net` device name is
   automatically present in pod DNS. For every tailnet target, define an
