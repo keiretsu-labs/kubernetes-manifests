@@ -10,6 +10,30 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   path: ./kubernetes/apps/base/cloudflare/cloudflare
+  # TEMPORARY -- remove once adoption is verified (see the PR that added it).
+  #
+  # txtOwnerId for the keiretsu.top instance was changed from `keiretsu-top`
+  # to `keiretsu-top-${LOCATION}` and the records created under the old id
+  # were never migrated. 21 of them are still labelled `keiretsu-top`, which
+  # no instance now recognises as its own: they resolve, but external-dns
+  # will not touch them, so editing one in cnames.yaml is a silent no-op.
+  #
+  # --migrate-from-txt-owner relabels them to this instance's id on the next
+  # reconcile. Ottawa only: the registry adopts *every* record carrying the
+  # old id, so running it on two clusters at once would have each adopting
+  # the other's records and then deleting them under policy: sync.
+  #
+  # Leaving this on permanently would force an update on every record every
+  # cycle -- plan.go treats any owner that is not the old id as changed --
+  # which is the churn #3197 just removed. One reconcile, then it goes.
+  patches:
+    - target:
+        kind: HelmRelease
+        name: external-dns-cloudflare-keiretsu-top
+      patch: |
+        - op: add
+          path: /spec/values/extraArgs/-
+          value: --migrate-from-txt-owner=keiretsu-top
   prune: true
   sourceRef:
     kind: GitRepository
