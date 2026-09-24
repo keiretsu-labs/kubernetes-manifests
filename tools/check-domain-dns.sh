@@ -215,6 +215,25 @@ for doc in load_all(CNAMES):
         )
         break
 
+# 5. Nobody addresses an Envoy Gateway data plane by its generated name.
+#    EG derives envoy-<gateway-ns>-<gateway-name>-<hash> for the data-plane
+#    Service. It is stable, but it is the controller's internal naming, not an
+#    API, and a hash nobody can derive by reading the manifests. EnvoyProxy's
+#    provider.kubernetes.envoyService.name pins a name we own instead.
+generated = re.compile(r"\benvoy(?:-[a-z0-9]+)+-[0-9a-f]{8}\b")
+for path in sorted((root / "kubernetes").rglob("*.yaml")):
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        if line.lstrip().startswith("#"):
+            continue
+        m = generated.search(line)
+        if m:
+            problems.append(
+                f"{path.relative_to(root)}:{n} hardcodes {m.group(0)!r}, an "
+                f"Envoy Gateway generated data-plane Service name — pin one "
+                f"with EnvoyProxy provider.kubernetes.envoyService.name and "
+                f"reference that instead"
+            )
+
 # ---------------------------------------------------------------- report
 if problems:
     print("domain/DNS coverage check FAILED:\n", file=sys.stderr)

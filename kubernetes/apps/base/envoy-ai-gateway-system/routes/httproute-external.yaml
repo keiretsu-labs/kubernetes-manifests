@@ -21,12 +21,10 @@ metadata:
   namespace: cliproxy
 spec:
   endpoints:
-    # Envoy Gateway names a data-plane Service
-    # envoy-<gateway-ns>-<gateway-name>-<hash>. The hash is derived from the
-    # Gateway's namespace and name, so it is stable until the Gateway is
-    # renamed. ai-gateway-svc.yaml already depends on this same name.
+    # Name pinned by the EnvoyProxy in gateway.yaml, so this is a name we own
+    # rather than Envoy Gateway's generated envoy-<ns>-<name>-<hash>.
     - fqdn:
-        hostname: envoy-cliproxy-ai-gateway-14de1007.envoy-gateway-system.svc.cluster.local
+        hostname: ai-gateway-dataplane.envoy-gateway-system.svc.cluster.local
         port: 80
 ---
 apiVersion: gateway.networking.k8s.io/v1
