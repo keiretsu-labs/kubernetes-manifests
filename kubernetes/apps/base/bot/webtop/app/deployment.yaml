@@ -22,7 +22,7 @@ spec:
         # .github/workflows/webtop-bot-build.yaml. This pins the immutable
         # flavor-SHA tag; change WEBTOP_BASE_TAG in versions.env to switch
         # the LinuxServer desktop flavor.
-        image: ghcr.io/keiretsu-labs/kubernetes-manifests/webtop-bot:debian-xfce-323cfa9
+        image: ghcr.io/keiretsu-labs/kubernetes-manifests/webtop-bot:debian-xfce-baf73ff
         # Resolve the registry tag when the pod starts.
         imagePullPolicy: Always
         ports:
