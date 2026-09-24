@@ -5,6 +5,7 @@ metadata:
   name: cilium
 spec:
   interval: 30m
+  targetNamespace: kube-system
   chart:
     spec:
       chart: cilium
@@ -20,6 +21,37 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  postRenderers:
+    - kustomize:
+        patches:
+          # The chart's preferred anti-affinity co-located both replicas on
+          # spark-0. Require one per Spark worker. maxUnavailable=1 is needed
+          # because a two-worker Deployment otherwise deadlocks during a
+          # rollout: maxSurge creates the new spark-1 pod, then the second new
+          # pod cannot fit until the old spark-0 pod is allowed to terminate.
+          - target:
+              kind: Deployment
+              name: clustermesh-apiserver
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: clustermesh-apiserver
+              spec:
+                strategy:
+                  type: RollingUpdate
+                  rollingUpdate:
+                    maxSurge: 0
+                    maxUnavailable: 1
+                template:
+                  spec:
+                    affinity:
+                      podAntiAffinity:
+                        requiredDuringSchedulingIgnoredDuringExecution:
+                          - labelSelector:
+                              matchLabels:
+                                k8s-app: clustermesh-apiserver
+                            topologyKey: kubernetes.io/hostname
   valuesFrom:
     - kind: ConfigMap
       name: cilium-values
