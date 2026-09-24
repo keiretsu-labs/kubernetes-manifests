@@ -37,23 +37,30 @@ Grafana stack we just fixed for vLLM.
 | Direct SP `model-serving` ServiceMonitor `/metrics` | SP | Grafana AI dashboards (see `docs/ops/grafana-ai-inference.md`) |
 
 
-## Client-stable model id (hot-swap)
-
-Workers should **not** embed the served model name (GLM / Qwen / …). Use a
-fixed pair:
+## Model ids name the model that answers
 
 | Setting | Value |
 |---|---|
-| `OPENAI_BASE_URL` | `http://ai-gateway.cliproxy.svc.cluster.local/v1` (canary; Gateway in `cliproxy`) or CLIProxy until cutover |
-| `model` | **`vllm/default`** (preferred) or `vllm/auto` (alias) |
+| `OPENAI_BASE_URL` | `http://ai-gateway.cliproxy.svc.cluster.local/v1` (Gateway in `cliproxy`) or CLIProxy until cutover |
+| `model` | the served name, namespaced: **`vllm/GLM-5.3-Flash-EXL3`** |
 
-Agent Router matches `x-ai-eg-model` and applies `modelNameOverride` on the
-`AIGatewayRoute` backendRef to whatever SP currently serves (today
-`GLM-5.3-Flash-EXL3`). **Model swaps are a one-line GitOps change** to
-`modelNameOverride` in `routes/sp-vllm.yaml` — no worker config churn.
+**Reversal (2026-09-23): the `vllm/default` / `vllm/auto` aliases are gone.**
+They bought a one-line model swap and charged the metadata tier for it.
+models.dev, LiteLLM's registry and every harness's built-in table are keyed by
+model id, so `vllm/default` resolves to nothing and the client silently falls
+back to a generic context window. That is the same failure this stack already
+hit from the other direction, when the Pi bridge published a 1M window against
+a server running `--max-model-len 16384`.
 
-Legacy ids (`vllm/Qwen3.8-Flash-Next`, `vllm/GLM-5.3-Flash-EXL3`, bare served
-names) still match during migration and are rewritten to the same override.
+`vllm/` remains a route namespace, not an alias: it selects the backend and
+`modelNameOverride` strips it back to the served name. A swap now edits the
+route and regenerates worker config from the serving profile, which is the
+point — the profile is the only thing that knows the real limits, so it should
+be the thing that propagates.
+
+Retired ids are not kept as compatibility shims. `vllm/Qwen3.8-Flash-Next`
+used to rewrite onto GLM, which is the routing-layer version of lying about a
+model: the client believes it reached Qwen and keeps Qwen's assumptions.
 
 ## This spike (GitOps)
 
@@ -82,8 +89,8 @@ names) still match during migration and are rewritten to the same override.
 2. Add `AIServiceBackend` with `schema.name: OpenAI` (or Anthropic/etc.).
 3. Add an `AIGatewayRoute` rule matching `x-ai-eg-model: <client-model-id>`.
 4. Set `modelNameOverride` on the backendRef to the **active served name**.
-   Prefer exposing a stable client id (`vllm/default` / `vllm/auto`) and remapping
-   here — the clean replacement for CLIProxy dual-alias / per-worker churn.
+   Expose the served name to clients too — do not invent a stable alias for it.
+   An id no catalog can resolve costs you the model's limits.
 5. Commit → Flux; no worker rename.
 
 ### Observability
@@ -98,3 +105,11 @@ scraping SP `vllm:*` directly (already working after the Grafana fix PR).
 - Not a drop-in for CLIProxy OAuth pooling / Pi-bridge.
 - `routes/` requires the EG `extensionManager` hook; without it Envoy ignores
   `AIGatewayRoute` (hook enabled via #3179).
+- **The client-facing wire format is fixed to OpenAI.** `AIServiceBackend`
+  accepts `Anthropic` / `AWSAnthropic` / `GCPAnthropic` as *backend* schemas,
+  but `AIGatewayRoute` (v1beta1) has no input-schema field, so the gateway only
+  parses OpenAI-shaped requests. Claude Code talks the Anthropic Messages API
+  and therefore cannot be model-virtualized here — if CLIProxy moves behind
+  this Gateway, its Anthropic, Gemini (`/v1beta`) and Codex
+  (`/backend-api/codex`) paths must be carried by a plain `HTTPRoute` on the
+  same Gateway as passthrough, not by an `AIGatewayRoute`.

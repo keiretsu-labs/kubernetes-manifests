@@ -1,16 +1,18 @@
 ---
 # Front door for in-region SP inference.
 #
-# Client-stable model ids (hot-swap with minimal config):
-#   - vllm/default  (preferred)
-#   - vllm/auto     (accepted alias)
-# Both map to the same AIServiceBackend; modelNameOverride rewrites the
-# OpenAI request body to whatever SP currently serves. Workers keep a fixed
-# OPENAI_BASE_URL + one of those ids — they never need the GLM/Qwen served name.
-# When SP swaps models, change modelNameOverride here only (GitOps).
+# Clients address the model by the name SP actually serves, namespaced by the
+# route prefix: `vllm/GLM-5.3-Flash-EXL3`. There is deliberately no
+# `vllm/default` / `vllm/auto` alias. An alias makes a model swap a one-line
+# GitOps change, but it costs the only key a metadata catalog can match on:
+# models.dev, LiteLLM's registry and every harness's built-in table are keyed
+# by model id, so a request for `vllm/default` resolves to nothing and the
+# client falls back to a generic default context window. Worker configs are
+# generated from the serving profile instead, so a swap regenerates them
+# rather than being absorbed by an alias that hides which model answered.
 #
 # Phase-1 backend = existing cliproxy ExternalName to ClusterMesh:
-#   stpetersburg-vllm-upstream → model-serving-mesh.ai.svc.clusterset.local
+#   stpetersburg-vllm-upstream → qwen38-mesh.ai.svc.clusterset.local
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: Backend
 metadata:
@@ -46,34 +48,9 @@ spec:
       kind: Gateway
       group: gateway.networking.k8s.io
   rules:
-    # Stable client ids — preferred path for canary workers.
-    - matches:
-        - headers:
-            - type: Exact
-              name: x-ai-eg-model
-              value: vllm/default
-      backendRefs:
-        - name: sp-vllm
-          # Active served name on SP (Mia GLM EXL3 / vllm). Update on model swap.
-          modelNameOverride: GLM-5.3-Flash-EXL3
-    - matches:
-        - headers:
-            - type: Exact
-              name: x-ai-eg-model
-              value: vllm/auto
-      backendRefs:
-        - name: sp-vllm
-          modelNameOverride: GLM-5.3-Flash-EXL3
-    # Transitional: historic CLIProxy-era client ids still land on SP, rewritten
-    # to the active served name so old configs keep working during migration.
-    - matches:
-        - headers:
-            - type: Exact
-              name: x-ai-eg-model
-              value: vllm/Qwen3.8-Flash-Next
-      backendRefs:
-        - name: sp-vllm
-          modelNameOverride: GLM-5.3-Flash-EXL3
+    # `vllm/` is a route namespace, not an alias: the prefix selects this
+    # backend and modelNameOverride strips it back to the served name. The id
+    # a client sends still names the model that answers.
     - matches:
         - headers:
             - type: Exact
@@ -82,19 +59,12 @@ spec:
       backendRefs:
         - name: sp-vllm
           modelNameOverride: GLM-5.3-Flash-EXL3
+    # Unprefixed served name, for clients that send it verbatim.
     - matches:
         - headers:
             - type: Exact
               name: x-ai-eg-model
               value: GLM-5.3-Flash-EXL3
-      backendRefs:
-        - name: sp-vllm
-          modelNameOverride: GLM-5.3-Flash-EXL3
-    - matches:
-        - headers:
-            - type: Exact
-              name: x-ai-eg-model
-              value: Qwen3.8-Flash-Next
       backendRefs:
         - name: sp-vllm
           modelNameOverride: GLM-5.3-Flash-EXL3
