@@ -209,6 +209,22 @@ the label `substitution.flux.home.arpa/disabled=true`.
   through only on a missing key, answers any name that has descendants with
   its descendants' records, and matches wildcards only in the question. The
   ADR records the three paths that would work.
+- **Never register an `extensionManager` hook on the shared Envoy Gateway
+  control plane.** `ExtensionManager` is a field on the singleton
+  `EnvoyGateway` config with no GatewayClass scoping, so a hook added for one
+  class participates in translating `private`, `public` and `ts` too. #3179 did
+  this for Agent Router and froze all four gateways for 21 hours: with
+  `listener.includeAll: true` the AI controller received every filter chain and
+  tried to insert an HTTP header filter into the `bhaiya-ssh-mux` **TCPRoute**
+  chain — `unable to find HTTPConnectionManager in FilterChain`. `Translate()`
+  failed every pass, and the xds runner only writes the snapshot cache when
+  `err == nil`, so nothing was published while each proxy kept serving its last
+  good config. Route status read `Accepted=True` the whole time, because status
+  comes from a different runner — so **`Accepted=True` does not mean the route
+  is programmed.** Confirm against the data plane
+  (`config_dump?resource=dynamic_route_configs`), not status, whenever a route
+  change appears to do nothing. See
+  `docs/adr/0009-agent-router-needs-its-own-control-plane.md`.
 - **Tailnet DNS from pods:** do not publish Tailscale CGNAT (`100.64.0.0/10`)
   in public DNS and do not assume a new `*.keiretsu.ts.net` device name is
   automatically present in pod DNS. For every tailnet target, define an
