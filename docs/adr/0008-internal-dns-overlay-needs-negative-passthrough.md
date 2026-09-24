@@ -81,6 +81,36 @@ first, because none of them is reachable without a supported per-site change.
    `--gateway-label-filter=gateway==private` is the thing that makes the
    internal answer correct, and `k8s_gateway` has no equivalent.
 
-A `Gslb` per app was the original suggestion and is not on this list: k8gb
-resolves a GSLB name to the participating clusters' external addresses, which
-is the public path, and it would need one CR per exposed route.
+## A `Gslb` per app, the original suggestion
+
+Not on that list, and not for the reason first given: k8gb can produce a
+private answer. `GetGslbExposedIPs` reads `gateway.Status.Addresses` from the
+route's parent Gateway, so a route on `private` yields the private LB, and
+`k8gb.io/exposed-ip-addresses` pins it outright. The private path was never
+the problem. Three other things are.
+
+**`k8s_crd` is terminal for whatever zone you give it.** Its Corefile options
+are `filter`, `annotation`, `ttl`, `negttl`, `apex`, `kubecontroller`,
+`loadbalance` and the geodata trio — there is no `fallthrough`, `ServeDNS`
+returns `RcodeSuccess` without ever calling `plugin.NextOrFailure`, and the
+plugin README states that only A queries are answered and "all other queries
+result in NODATA responses". Point it at `keiretsu.top` or `killinit.cc` and
+every public-only name in the zone stops resolving, along with the apex `MX`
+and SPF — the same wall this ADR describes, reached through a different
+plugin.
+
+**The Gateway API resolver takes exactly one parent.** `GetGateway` collects
+the route's `parentRefs` and fails with `expected exactly 1 Gateway to be
+referenced by the route but %d were found`. In this repo 83 of the routes
+touching `private` or `ts` carry two to four parentRefs, which is the shape
+#3189 deliberately converged on. Adopting k8gb here would mean splitting them
+back apart.
+
+**It is one CR per exposed name**, against a gateway source that needs none.
+
+The shape that does work is the one already in service: a sub-zone k8gb owns
+completely. `cdn.keiretsu.top` is NS-delegated, so every name under it is
+ours and there is nothing to fall through to — which is why `k8s_crd` being
+terminal is correct there and fatal on the parent zone. Moving a name onto
+the private path through k8gb therefore means moving it into that sub-zone,
+as `oci.cdn.keiretsu.top` already did.
