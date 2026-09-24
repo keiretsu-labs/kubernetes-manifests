@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 59 | 124 |
+| `ottawa` | 4 | 59 | 125 |
 | `robbinsdale` | 3 | 43 | 91 |
 | `stpetersburg` | 3 | 39 | 81 |
-| **total** | **10** | **141** | **296** |
+| **total** | **10** | **141** | **297** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -111,7 +111,7 @@ diagram in the [README](../../README.md#architecture).
 | Application workloads | `bhaiya` | `bhaiya` |
 | Application workloads | `bot` | `webtop` |
 | Application workloads | `cliproxy` | `cliproxy` |
-| Application workloads | `envoy-ai-gateway-system` | `envoy-ai-gateway-system-install`, `envoy-ai-gateway-system-routes` → ns `cliproxy` |
+| Application workloads | `envoy-ai-gateway-system` | `envoy-ai-gateway-system-grants` → ns `envoy-gateway-system`, `envoy-ai-gateway-system-install`, `envoy-ai-gateway-system-routes` → ns `cliproxy` |
 | Application workloads | `firecrawl` | `firecrawl` |
 | Application workloads | `firefly` | `firefly`, `firefly-mcp` |
 | Application workloads | `forgejo` | `forgejo` |
@@ -132,6 +132,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 |---|---|---|
 | `actions-runner-controller-runners` | `arc-systems` | `arc-runners` |
 | `csi-driver-smb` | `csi-driver-smb` | `kube-system` |
+| `envoy-ai-gateway-system-grants` | `envoy-ai-gateway-system` | `envoy-gateway-system` |
 | `envoy-ai-gateway-system-routes` | `envoy-ai-gateway-system` | `cliproxy` |
 | `k8gb-monitoring` | `k8gb` | `keiretsu-top` |
 | `k8gb-prometheus` | `k8gb` | `keiretsu-top` |

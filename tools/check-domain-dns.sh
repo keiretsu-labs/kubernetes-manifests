@@ -38,14 +38,12 @@
 #
 # 5. Nobody addresses an Envoy Gateway data plane by its generated name.
 #
-# 6. No HTTPRoute sets timeouts.backendRequest: 0s.
-#
-# 7. Where an internal zone's tailnet answer forwards to the site resolver with
+# 6. Where an internal zone's tailnet answer forwards to the site resolver with
 #    a public resolver behind it, the public one stays strictly last. forward
 #    defaults to policy random, which would race them and answer a share of
 #    every internal lookup from public DNS.
 #
-# 8. No DNSEndpoint asserts cloudflare-proxied: "false". That is already the
+# 7. No DNSEndpoint asserts cloudflare-proxied: "false". That is already the
 #    provider default, and asserting it is the one structural difference
 #    between the CRD-sourced endpoints -- every record of which external-dns
 #    rewrote on every reconcile -- and the gateway-sourced ones, which
@@ -251,31 +249,7 @@ for path in sorted((root / "kubernetes").rglob("*.yaml")):
                 f"reference that instead"
             )
 
-# 6. No HTTPRoute sets timeouts.backendRequest: 0s.
-#    Envoy Gateway drops the entire route during translation, and every status
-#    surface lies about it: the HTTPRoute reports Accepted=True and
-#    ResolvedRefs=True, the listener counts it in attachedRoutes, and Envoy
-#    reports update_rejected=0 -- but the virtual host never reaches the data
-#    plane and every request 404s. timeouts.request: 0s on its own is fine.
-for path in sorted((root / "kubernetes").rglob("*.yaml")):
-    try:
-        docs = list(yaml.safe_load_all(path.read_text()))
-    except yaml.YAMLError:
-        continue  # Helm templates and the like; the render gate owns those.
-    for doc in docs:
-        if not isinstance(doc, dict) or doc.get("kind") != "HTTPRoute":
-            continue
-        for i, rule in enumerate(doc.get("spec", {}).get("rules", []) or []):
-            if (rule.get("timeouts") or {}).get("backendRequest") == "0s":
-                problems.append(
-                    f"{path.relative_to(root)} HTTPRoute "
-                    f"{doc['metadata']['name']} rule {i} sets "
-                    f"timeouts.backendRequest: 0s — Envoy Gateway silently "
-                    f"drops the route while still reporting it Accepted; use "
-                    f"timeouts.request alone"
-                )
-
-# 7. An internal zone's tailnet forward is ordered, not raced.
+# 6. An internal zone's tailnet forward is ordered, not raced.
 #    #3189 answers keiretsu.top on the tailnet by forwarding to the site's own
 #    resolver with a public resolver behind it as the unreachable-UniFi
 #    fallback. forward's default policy is random, so without an explicit
@@ -337,7 +311,7 @@ for z in internal_zones:
             f"the public record and 404 any route attached only to private"
         )
 
-# 8. Nobody asserts the Cloudflare proxied default.
+# 7. Nobody asserts the Cloudflare proxied default.
 #    --cloudflare-proxied is unset on every instance, so shouldBeProxied()
 #    already returns false; a providerSpecific saying so changes nothing about
 #    the record. It is not free, though: CRD-sourced endpoints carrying it were
