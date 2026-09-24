@@ -81,13 +81,18 @@ glm_alias = "vllm/GLM-5.3-Flash-EXL3"
 glm_source = "vllm/GLM-5.3-Flash-EXL3"
 if namespace["metadata_alias_sources"].get(glm_alias) != glm_source:
     raise SystemExit(f"{glm_alias} must resolve metadata from {glm_source}")
-if namespace["metadata_override"](glm_alias) != {
-    "context_window": 1048576,
+glm_override = namespace["metadata_override"](glm_alias)
+if "context_window" in glm_override:
+    raise SystemExit(
+        "GLM must not declare a context_window: vLLM reports max_model_len and a "
+        "declared window outlives the flag it was copied from"
+    )
+if glm_override != {
     "max_tokens": 8192,
     "name": "GLM-5.3 Flash EXL3",
     "reasoning": True,
 }:
-    raise SystemExit("GLM alias metadata must describe the active serving profile")
+    raise SystemExit("GLM alias metadata lost its curated serving facts")
 
 namespace["fetch_json"] = lambda url: {
     "data": [{"id": "GLM-5.3-Flash-EXL3"}]
@@ -119,6 +124,45 @@ if seen != [{"id": "gpt-5.6-luna", "provider": {"id": "codex"}, "direct": {}}]:
 # vLLM route remains selectable even after the serving workload disappears.
 if namespace["resolved_metadata"](glm_alias, "vllm", None, [], {}) is not None:
     raise SystemExit("unavailable vLLM route inherited stale metadata")
+
+# The live upstream is authoritative for limits. A catalog guess or a curated
+# override may lower the published window but must never raise it: this bridge
+# once advertised a 1M context while the LWS served --max-model-len 16384, and
+# every harness budgeted against a window 64x larger than the one it had.
+served = namespace["resolved_metadata"](
+    glm_alias,
+    "vllm",
+    {"id": "GLM-5.3-Flash-EXL3", "provider": {"id": "vllm"}, "direct": {"context_window": 16384}},
+    [],
+    {},
+)
+if served.get("context_window") != 16384:
+    raise SystemExit(f"published window must track the live upstream: {served!r}")
+if served.get("max_tokens") != 8192:
+    raise SystemExit(f"curated output cap must clamp the catalog value: {served!r}")
+
+# An upstream that reports a *smaller* output cap than the curated one wins.
+# This is what separates clamping from a plain dict update, so it is the case
+# that fails if the override is ever allowed to overwrite a live limit again.
+narrow = namespace["resolved_metadata"](
+    glm_alias,
+    "vllm",
+    {
+        "id": "GLM-5.3-Flash-EXL3",
+        "provider": {"id": "vllm"},
+        "direct": {"context_window": 16384, "max_tokens": 4096},
+    },
+    [],
+    {},
+)
+if narrow.get("max_tokens") != 4096:
+    raise SystemExit(f"a lower upstream output cap must win: {narrow!r}")
+
+# Pin the clamp itself, independent of whatever the override table holds today.
+probe = {"context_window": 16384, "max_tokens": 4096}
+namespace["apply_override"](probe, {"context_window": 1048576, "max_tokens": 8192, "name": "x"})
+if probe != {"context_window": 16384, "max_tokens": 4096, "name": "x"}:
+    raise SystemExit(f"apply_override must clamp limits down, never up: {probe!r}")
 
 print("✓ cliproxy Pi bridge metadata and GLM payload contract")
 PY
