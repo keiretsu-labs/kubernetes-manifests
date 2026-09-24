@@ -50,6 +50,23 @@ The cache gate is the mechanism, quoting
 `internal/xds/runner/runner.go`: "Only update the snapshot cache when there are
 no system-level errors, to avoid publishing partial resources."
 
+The error itself, captured at `2026-09-24T20:51:57Z`:
+
+```
+error  xds  runner/runner.go:345  skipped publishing xds resources: failed to
+translate xds ir  {"runner": "xds", "error": "rpc error: code = Unknown desc =
+failed to insert request header metadata filter: unable to find
+HTTPConnectionManager in FilterChain: tcproute/bhaiya/bhaiya-ssh-mux"}
+```
+
+`listener.includeAll: true` hands the AI controller every filter chain on the
+proxy, and it tries to insert an HTTP request-header filter into each one. It
+has no guard for non-HTTP chains, so it fails on the first TCP one it sees.
+`private`, `public` and `ts` all carry TCP listeners (`forgejo-ssh`,
+`bhaiya-workspace-ssh`); the `ai-gateway` proxy carries only HTTP. That is
+exactly why the AI gateway's own proxy was the single one that kept
+translating, and why the three shared gateways never did.
+
 ## What this hid
 
 Every gateway change merged during the freeze silently did nothing:
@@ -64,16 +81,20 @@ Every gateway change merged during the freeze silently did nothing:
 
 ## Why not keep it at safe defaults
 
-Returning `listener.includeAll` and `route.includeAll` to `false` would very
-likely have been enough — those were the two fields #3179 moved off their
-defaults. It was rejected anyway. `cluster.includeAll` and `secret.includeAll`
-default to `true` for backward compatibility, so every gateway's clusters and
+Returning `listener.includeAll` to `false` would have fixed this instance —
+the controller would only ever see the AI gateway's own HTTP listeners, and
+never a TCP chain. It was rejected anyway. `cluster.includeAll` and
+`secret.includeAll` default to `true` for backward compatibility, so every
+gateway's clusters and
 secrets keep flowing through the AI controller on every translation no matter
 how the hook is tuned. The coupling can be reduced but not removed, the
 failure it produces is silent, and any future chart bump can re-arm it.
 
 Agent Router was not misconfigured — its `AIGatewayRoute` matched the live
-model exactly (`GLM-5.3-Flash-EXL3`, `max_model_len` 262144). It was two lines
-from working. It is removed because a component that can silently freeze
+model exactly (`GLM-5.3-Flash-EXL3`, `max_model_len` 262144). One field —
+`listener.includeAll: false` — would have kept it working. It is removed because a component that can silently freeze
 unrelated production ingress, with no scoping available, is not worth carrying
-for a cutover that has not happened.
+for a cutover that has not happened. An extension that assumes every filter
+chain is HTTP, and whose failure mode is to silently stop publishing all xDS
+for unrelated gateways, is the wrong thing to wire into a shared control
+plane at any `includeAll` setting.

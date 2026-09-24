@@ -213,7 +213,10 @@ the label `substitution.flux.home.arpa/disabled=true`.
   control plane.** `ExtensionManager` is a field on the singleton
   `EnvoyGateway` config with no GatewayClass scoping, so a hook added for one
   class participates in translating `private`, `public` and `ts` too. #3179 did
-  this for Agent Router and froze all four gateways for 21 hours: `Translate()`
+  this for Agent Router and froze all four gateways for 21 hours: with
+  `listener.includeAll: true` the AI controller received every filter chain and
+  tried to insert an HTTP header filter into the `bhaiya-ssh-mux` **TCPRoute**
+  chain — `unable to find HTTPConnectionManager in FilterChain`. `Translate()`
   failed every pass, and the xds runner only writes the snapshot cache when
   `err == nil`, so nothing was published while each proxy kept serving its last
   good config. Route status read `Accepted=True` the whole time, because status
