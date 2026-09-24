@@ -29,13 +29,43 @@ deployment = next(
 containers = deployment["spec"]["template"]["spec"]["containers"]
 init_containers = deployment["spec"]["template"]["spec"].get("initContainers", [])
 render_config = next(container for container in init_containers if container["name"] == "render-config")
-render_script = render_config["args"][0]
+# The render moved out of the Deployment so the init container and the
+# catalog-watch sidecar can share one copy. Both must invoke that file rather
+# than carry their own heredoc.
+render_path = pathlib.Path("kubernetes/apps/base/cliproxy/cliproxy/app/render/render-config.sh")
+if render_config["args"] != ["/render/render-config.sh"]:
+    raise SystemExit("render-config must run the shared /render/render-config.sh")
+watcher = next((c for c in containers if c["name"] == "catalog-watch"), None)
+if watcher is None:
+    raise SystemExit("catalog-watch sidecar must re-render the config on catalog changes")
+if "render-config.sh" not in watcher["args"][0]:
+    raise SystemExit("catalog-watch must reuse the shared render script, not inline its own")
+render_script = render_path.read_text()
 rendered_config_match = re.search(
-    r"(?ms)^[ \t]*cat > /config/config\.yaml <<EOF\n(.*?)^[ \t]*EOF[ \t]*$",
+    r"(?ms)^[ \t]*cat > /config/\.config\.yaml\.tmp <<EOF\n(.*?)^[ \t]*EOF[ \t]*$",
     render_script,
 )
 if rendered_config_match is None:
-    raise SystemExit("render-config must write the CLIProxy configuration heredoc")
+    raise SystemExit("render-config.sh must write the CLIProxy configuration heredoc")
+if "mv /config/.config.yaml.tmp /config/config.yaml" not in render_script:
+    raise SystemExit(
+        "render-config.sh must swap the config atomically: CLIProxyAPI watches "
+        "the path with fsnotify and would otherwise read a half-written file"
+    )
+
+# The catalog ConfigMap must stay unhashed. A hash suffix puts the catalog in
+# the pod template, so editing one model restarts the OAuth pool with it.
+kustomization = yaml.safe_load(
+    pathlib.Path("kubernetes/apps/base/cliproxy/cliproxy/app/kustomization.yaml").read_text()
+)
+catalog_gen = next(
+    g for g in kustomization["configMapGenerator"] if g["name"] == "cliproxy-providers"
+)
+if not catalog_gen.get("options", {}).get("disableNameSuffixHash"):
+    raise SystemExit(
+        "cliproxy-providers must set disableNameSuffixHash: a hashed catalog "
+        "rolls the Deployment on every model edit"
+    )
 rendered_config = yaml.safe_load(rendered_config_match.group(1))
 glm_payload_override = {
     "models": [{"name": "vllm/GLM-5.3-Flash-EXL3", "protocol": "openai"}],
@@ -103,7 +133,7 @@ if glm_sources.get(glm_alias, {}).get("id") != "GLM-5.3-Flash-EXL3":
 
 if not re.search(
     r'(?ms)oauth-model-alias:\s*\n\s*codex:\s*\n\s*- name: "gpt-5\.6-luna"\s*\n\s*alias: "vllm-fallback"',
-    path.read_text(),
+    render_script,
 ):
     raise SystemExit("CLIProxy fallback alias and metadata source are no longer aligned")
 

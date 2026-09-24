@@ -17,8 +17,19 @@ resources:
   - tinyauth-redirect-lua.yaml
 
 configMapGenerator:
-  # Hash-suffixed on purpose: editing the catalog must roll the Deployment,
-  # because render-config only reads it at pod start.
+  # Deliberately NOT hash-suffixed. The catalog-watch sidecar re-renders
+  # /config/config.yaml when this ConfigMap changes and CLIProxyAPI reloads it
+  # through fsnotify, so a model edit must NOT change the pod template. The
+  # hash used to be load-bearing because render-config only ran at pod start,
+  # which made editing one vLLM model restart the Codex/Claude OAuth pool --
+  # a single-replica Recreate Deployment with a slow multi-init boot.
   - name: cliproxy-providers
+    options:
+      disableNameSuffixHash: true
     files:
       - providers.yaml=providers/providers.yaml
+  # This one stays hashed: changing how the config is rendered is a genuine
+  # pod-template change, and it is rare.
+  - name: cliproxy-render
+    files:
+      - render-config.sh=render/render-config.sh
