@@ -234,6 +234,30 @@ for path in sorted((root / "kubernetes").rglob("*.yaml")):
                 f"reference that instead"
             )
 
+# 6. No HTTPRoute sets timeouts.backendRequest: 0s.
+#    Envoy Gateway drops the entire route during translation, and every status
+#    surface lies about it: the HTTPRoute reports Accepted=True and
+#    ResolvedRefs=True, the listener counts it in attachedRoutes, and Envoy
+#    reports update_rejected=0 -- but the virtual host never reaches the data
+#    plane and every request 404s. timeouts.request: 0s on its own is fine.
+for path in sorted((root / "kubernetes").rglob("*.yaml")):
+    try:
+        docs = list(yaml.safe_load_all(path.read_text()))
+    except yaml.YAMLError:
+        continue  # Helm templates and the like; the render gate owns those.
+    for doc in docs:
+        if not isinstance(doc, dict) or doc.get("kind") != "HTTPRoute":
+            continue
+        for i, rule in enumerate(doc.get("spec", {}).get("rules", []) or []):
+            if (rule.get("timeouts") or {}).get("backendRequest") == "0s":
+                problems.append(
+                    f"{path.relative_to(root)} HTTPRoute "
+                    f"{doc['metadata']['name']} rule {i} sets "
+                    f"timeouts.backendRequest: 0s — Envoy Gateway silently "
+                    f"drops the route while still reporting it Accepted; use "
+                    f"timeouts.request alone"
+                )
+
 # ---------------------------------------------------------------- report
 if problems:
     print("domain/DNS coverage check FAILED:\n", file=sys.stderr)
