@@ -31,7 +31,7 @@ spec:
       # change so the process rereads the mounted configuration.
       pod:
         annotations:
-          config.keiretsu.top/extension-apis: enable-lua-ai-gateway-ext-v1
+          config.keiretsu.top/extension-apis: enable-lua-no-ai-gateway-ext-v2
     config:
       envoyGateway:
         extensionApis:
@@ -42,26 +42,12 @@ spec:
           # disables Lua by default; leaving it off makes those routes render
           # as an Envoy-generated direct 500 instead of reaching their backend.
           enableLua: true
-        # Agent Router (envoy-ai-gateway-system) xDS translation hooks.
-        # Controller must be Ready before AIGatewayRoute programs Envoy.
-        # See docs/ops/ai-gateway.md and ai-gateway-extension/values-patch.yaml.
-        extensionManager:
-          hooks:
-            xdsTranslator:
-              translation:
-                listener:
-                  includeAll: true
-                route:
-                  includeAll: true
-                cluster:
-                  includeAll: true
-                secret:
-                  includeAll: true
-              post:
-                - Translation
-                - Cluster
-                - Route
-          service:
-            fqdn:
-              hostname: ai-gateway-controller.envoy-ai-gateway-system.svc.cluster.local
-              port: 1063
+        # No extensionManager here on purpose. #3179 wired the Agent Router
+        # xDS hook in with translation.*.includeAll, which routes every
+        # gateway's listeners/routes/clusters through the AI controller, not
+        # just the keiretsu-ai-gateway class. From the moment it rolled
+        # (2026-09-23T23:26Z) Translate() returned an error on every pass, and
+        # the xds runner only updates the snapshot cache when err == nil - so
+        # all four gateways froze on their last good config and silently
+        # stopped picking up route changes while still reporting
+        # Accepted=True. Re-add only if scoped to the AI gateway class.
