@@ -26,6 +26,15 @@ preemptionPolicy: PreemptLowerPriority
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
+  name: ai-inference
+value: 900000000
+globalDefault: false
+description: "Production model serving — protects the TP ranks from ordinary workload contention without preempting infra-critical services."
+preemptionPolicy: PreemptLowerPriority
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
   name: infra-default
 value: 500000000
 globalDefault: false

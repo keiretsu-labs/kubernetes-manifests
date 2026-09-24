@@ -16,6 +16,7 @@ spec:
     name: kubernetes-manifests
   dependsOn:
     - name: lws-system-install
+    - name: priority-classes
   wait: false
   interval: 1m
   retryInterval: 1m

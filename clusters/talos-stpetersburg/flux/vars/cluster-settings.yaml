@@ -11,6 +11,10 @@ data:
   TIMEZONE: America/New_York
   CLUSTER_NAME: talos-stpetersburg
   CLUSTER_DISPLAY_NAME: StPetersburg
+  # Shared-cluster model profile. Both TP ranks consume the same explicit KV
+  # budget; keep this in cluster settings so a qualification cannot drift one
+  # rank away from the other in the generic serving manifest.
+  MODEL_SERVING_KV_CACHE_BYTES: "4831838208"
 
   # K8s
   CLUSTER_POD_CIDR: 10.5.0.0/16

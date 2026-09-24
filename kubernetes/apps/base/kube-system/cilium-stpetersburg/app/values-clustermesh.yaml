@@ -17,6 +17,15 @@ clustermesh:
   useAPIServer: true
   apiserver:
     replicas: 2
+    # The chart's default is only preferred anti-affinity, which co-located
+    # both replicas on spark-0. Require one replica per Spark worker.
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                k8s-app: clustermesh-apiserver
+            topologyKey: kubernetes.io/hostname
     podAnnotations:
       checksum/mesh-certificate: direct-loadbalancer-v1
     service:
