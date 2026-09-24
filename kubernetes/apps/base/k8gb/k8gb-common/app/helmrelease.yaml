@@ -73,6 +73,25 @@ spec:
                           answer "_acme-challenge.cdn.keiretsu.top. 30 IN CNAME _acme-challenge-cdn.keiretsu.top."
                       }
                   }
+                  # keiretsu.top is the shared zone, so it cannot be pinned to
+                  # one cluster's Envoy Gateway the way the regional suffixes
+                  # below are: most of it is served only by public. Hand it to
+                  # this site's UniFi resolver, which already holds a
+                  # private-LB record for every keiretsu.top route attached to
+                  # the private gateway (external-dns-unifi derives them) and
+                  # forwards everything it does not own upstream. Internal
+                  # names stop hairpinning out to the WAN edge and back, while
+                  # public-only names resolve exactly as they did before.
+                  # 1.1.1.1 is the fallback for an unreachable UniFi; the
+                  # sequential policy keeps it strictly second.
+                  # cdn.keiretsu.top is a longer zone and still wins the match.
+                  keiretsu.top:5353 {
+                      errors
+                      cache 30
+                      forward . ${LAN_GATEWAY_IP} 1.1.1.1 {
+                          policy sequential
+                      }
+                  }
                   # Every regional resolver answers every regional suffix.
                   # Keep each suffix pinned to its owning Envoy Gateway so a
                   # resolver failover cannot send a region-local route to a
@@ -112,7 +131,7 @@ spec:
                 template:
                   metadata:
                     annotations:
-                      dns-config-revision: "2026-09-15-regional-zones-v3"
+                      dns-config-revision: "2026-09-23-keiretsu-top-internal-v1"
                   spec:
                     topologySpreadConstraints:
                       - maxSkew: 1

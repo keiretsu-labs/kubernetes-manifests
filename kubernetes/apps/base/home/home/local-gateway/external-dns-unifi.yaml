@@ -90,6 +90,13 @@ spec:
       - gateway-udproute
       - service
     domainFilters:
+      # ${CLUSTER_DOMAIN} for all three sites plus the shared ${COMMON_DOMAIN}.
+      # keiretsu.top is here so a *.keiretsu.top route attached to the private
+      # gateway resolves to the private LB from the LAN instead of leaving the
+      # building and hairpinning back through the WAN edge. Names with no
+      # private route are untouched: UniFi forwards them upstream and they
+      # still land on the public edge.
+      - keiretsu.top
       - killinit.cc
       - lukehouge.com
       - rajsingh.info

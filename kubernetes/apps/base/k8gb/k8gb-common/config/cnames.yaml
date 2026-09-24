@@ -6,6 +6,14 @@ metadata:
   namespace: cloudflare
   labels:
     dns-target: cloudflare
+    # Every target here is the public WAN edge, which is the right answer only
+    # from the internet. external-dns-unifi now watches keiretsu.top, so
+    # without this label it would copy these CNAMEs into LAN DNS and shadow the
+    # private-LB records it derives from the private gateway's own routes --
+    # sending LAN and tailnet clients out to the WAN and back for services
+    # sitting one hop away. Cloudflare still picks the object up via
+    # dns-target==cloudflare.
+    dns-scope: public-only
 spec:
   endpoints:
     - dnsName: "${COMMON_DOMAIN}"
