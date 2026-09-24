@@ -12,7 +12,7 @@ Why the AI folder looked broken after the Mia GLM / vLLM cutover:
 
 Live facts (Mimir tenant `talos-stpetersburg`):
 
-- ServiceMonitor `ai/qwen38` scrapes job `qwen38`, container `vllm`
+- ServiceMonitor `ai/model-serving` scrapes job `model-serving`, container `vllm`
 - Series labels include `model_name=GLM-5.3-Flash-EXL3` (and dual served name when enabled)
 - Instant gaps during LWS restarts are expected; range queries still show history
 - Workload is Mia GLM EXL3 via `vllm serve` (not SGLang / `lmsysorg/sglang`)

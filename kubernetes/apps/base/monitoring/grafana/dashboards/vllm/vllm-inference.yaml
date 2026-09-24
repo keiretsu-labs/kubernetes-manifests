@@ -11,7 +11,7 @@ spec:
   folder: AI
   resyncPeriod: 30m
   # Primary AI inference dashboard for the CURRENT St. Petersburg runtime (vLLM
-  # container on sticky qwen38 LWS). The SGLang dashboard beside this file is
+  # container on the generic vllm LWS. The SGLang dashboard beside this file is
   # kept for SGLang-metric eras only — it will look empty under vLLM.
   # Datasource uid mimir-stpetersburg is hard-pinned (tenant talos-stpetersburg).
   json: |
@@ -28,7 +28,7 @@ spec:
           "id": 1,
           "type": "stat",
           "title": "Scrape up",
-          "description": "ServiceMonitor scrape for sticky ai/qwen38 identity. 1 = /metrics reachable.",
+          "description": "ServiceMonitor scrape for generic ai/model-serving identity. 1 = /metrics reachable.",
           "datasource": {
             "type": "prometheus",
             "uid": "mimir-stpetersburg"
@@ -513,7 +513,7 @@ spec:
           "id": 12,
           "type": "timeseries",
           "title": "OOM / restarts (workload container)",
-          "description": "Uses sticky K8s identity ($workload=qwen38) and runtime container ($container=vllm|sglang).",
+          "description": "Uses generic K8s identity ($workload=model-serving) and runtime container ($container=vllm|sglang).",
           "datasource": {
             "type": "prometheus",
             "uid": "mimir-stpetersburg"
@@ -670,8 +670,8 @@ spec:
             },
             "current": {
               "selected": true,
-              "text": "qwen38",
-              "value": "qwen38"
+              "text": "model-serving",
+              "value": "model-serving"
             },
             "includeAll": false,
             "multi": false,
@@ -703,17 +703,17 @@ spec:
             "name": "workload",
             "label": "Workload",
             "type": "custom",
-            "query": "qwen38",
+            "query": "model-serving",
             "current": {
               "selected": true,
-              "text": "qwen38",
-              "value": "qwen38"
+              "text": "model-serving",
+              "value": "model-serving"
             },
             "options": [
               {
                 "selected": true,
-                "text": "qwen38",
-                "value": "qwen38"
+                "text": "model-serving",
+                "value": "model-serving"
               }
             ],
             "includeAll": false,

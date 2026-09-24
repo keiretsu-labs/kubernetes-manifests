@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: ai
 resources:
   - namespace.yaml
-  - qwen38.yaml
+  - model-serving.yaml
   - service-mesh.yaml
   - secret.yaml
   - probes.yaml

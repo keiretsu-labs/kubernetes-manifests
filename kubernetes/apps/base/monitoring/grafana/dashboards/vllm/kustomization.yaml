@@ -5,7 +5,7 @@
 # Primary for current Mia GLM / vLLM runtime: vllm-inference.yaml
 # Upstream vLLM JSON imports: dashboards.yaml
 # GPU: gpu-dcgm.yaml
-# SGLang dashboard removed — SP runtime is vLLM (job=qwen38, container=vllm);
+# SGLang dashboard removed — SP runtime is vLLM (job=model-serving, container=vllm);
 # no live SGLang HelmRelease/LWS remains in-tree.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization

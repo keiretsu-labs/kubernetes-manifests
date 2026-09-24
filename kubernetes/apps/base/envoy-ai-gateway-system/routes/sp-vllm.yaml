@@ -10,7 +10,7 @@
 # When SP swaps models, change modelNameOverride here only (GitOps).
 #
 # Phase-1 backend = existing cliproxy ExternalName to ClusterMesh:
-#   stpetersburg-vllm-upstream → qwen38-mesh.ai.svc.clusterset.local
+#   stpetersburg-vllm-upstream → model-serving-mesh.ai.svc.clusterset.local
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: Backend
 metadata:

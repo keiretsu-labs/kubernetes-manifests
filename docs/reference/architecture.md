@@ -1398,28 +1398,29 @@ St. Petersburg runs `home-assistant` as its own namespace instead.
 
 ### `ai` namespace — inference on the DGX Sparks (St. Petersburg)
 
-**`LeaderWorkerSet glm53`** — replicas 1, size 2. The leader is pinned to
+**`LeaderWorkerSet vllm`** — replicas 1, size 2. The leader is pinned to
 `spark-0` and the worker to `spark-1`. It serves the
 `Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw` checkpoint under vLLM with TP=2,
-DFlash2 k=7 speculative decoding, packed FP8 MLA KV, and a 1M-token context,
+eager execution, a 262K-token per-request limit, and a fixed 4GiB FP8 KV
+budget; DFlash2 is retained on disk but disabled in the shared-cluster profile,
 so **one model spans both machines**. The ranks talk over the
 `192.168.74.0/30` RDMA rail (`VLLM_HOST_IP` and `--master-addr` are the RDMA
 addresses, not the LAN ones). The served model is
-`GLM-5.3-Flash-EXL3`; the `vllm` provider also offers the
-`GLM-5.3-Flash` alias. Head and worker have separate 200Gi model PVCs, and a
-drop-caches loop keeps unified memory available. Each vLLM rank requests
-`94Gi` and is limited to `96Gi`; the target image supplies the SM121 sparse-MLA
+`GLM-5.3-Flash-EXL3`; the `vllm` provider exposes that same stable ID. Head and
+worker have separate 200Gi model PVCs, and a preflight memory gate checks the
+unified-memory floor before vLLM starts. Each vLLM rank requests
+`90Gi` and is limited to `96Gi`; the target image supplies the SM121 sparse-MLA
 and EXL3 runtime. The image is consumed at its pinned MiaAI-Lab arm64 digest;
 there is no in-repo serving-image build. No unrelated GPU workload should be
 scheduled on either Spark without a fresh load qualification.
 
-The `glm53` ServiceMonitor scrapes the vLLM endpoint at
-`glm53.ai.svc.cluster.local:8000/metrics` every 15s. The blackbox `Probe
+The `model-serving` ServiceMonitor scrapes the vLLM endpoint at
+`model-serving.ai.svc.cluster.local:8000/metrics` every 15s. The blackbox `Probe
 app-vllm` hits `/health` **and** `/v1/models`, because a served-model list proves
 the weights actually loaded, which `/health` alone does not.
 `HUGGING_FACE_HUB_TOKEN` comes from a SOPS-encrypted secret.
 
-Ottawa consumers reach the exported `qwen38-mesh.ai.svc.clusterset.local` Service
+Ottawa consumers reach the exported `model-serving-mesh.ai.svc.clusterset.local` Service
 through their local compatibility aliases `stpetersburg-vllm` and
 `stpetersburg-vllm-upstream`. The former `vllm-ts` Tailscale LoadBalancer is
 retired; the model is private to the routable ClusterMesh and CLIProxy front
@@ -1449,7 +1450,7 @@ door.
 Companions:
 
 - `rdma-shared-dp` — exposes the spark-to-spark RDMA devices to pods
-- `lws-system` — the LeaderWorkerSet controller that `glm53` depends on
+- `lws-system` — the LeaderWorkerSet controller that the `vllm` inference workload depends on
 - `k8s-gpu-dra-driver` — DRA-based GPU allocation, Ottawa
 - `kata-containers` — RuntimeClasses `kata-clh`, `kata-workspace`,
   `kata-tailscale` (Ottawa). `kata-tailscale` is the only one with the Talos

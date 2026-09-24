@@ -13,10 +13,10 @@ spec:
   template:
     metadata:
       annotations:
-        # Re-run the one-shot catalog discovery only after the Qwen LWS is
+        # Re-run the one-shot catalog discovery only after the model-serving LWS is
         # healthy; a pod started during GPU warm-up must retain the safe
         # subscription fallback rather than advertising an unavailable route.
-        keiretsu.top/restarted-for: glm53-ready-v1
+        keiretsu.top/restarted-for: model-serving-ready-v1
       labels:
         app.kubernetes.io/name: cliproxy
     spec:

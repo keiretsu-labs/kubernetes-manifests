@@ -1,7 +1,7 @@
-# GLM-5.3-Flash EXL3/TR3 on 2× DGX Spark — MiaAI-Lab TP=2 + DFlash2.
+# GLM-5.3-Flash EXL3/TR3 on 2× DGX Spark — shared-cluster vLLM profile.
 #
-# The qwen38 resource/service identity is retained so the existing in-cluster
-# Service, mesh export, probes, and consumers cut over atomically.
+# The workload and service identity is generic so future model swaps do not
+# bake a retired model name into the in-cluster Service, mesh export, or probes.
 # Upstream recipe: https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks
 # Model: Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw@25a44fdbf16862a46b7cc9921142c6c81350af2f
 # Image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor
@@ -10,7 +10,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: qwen38-download-script
+  name: model-serving-download-script
   namespace: ai
 data:
   download-and-validate.sh: |
@@ -243,6 +243,24 @@ data:
         _disable_gb10_persistent_topk()
         print("glm53: overlay install ok aligned=True", file=sys.stderr)
 
+  preflight-memory.sh: |
+    #!/bin/bash
+    # Refuse to start when unified host/GPU memory cannot satisfy the conservative
+    # serving profile plus safety headroom. Other workloads share both Sparks.
+    set -euo pipefail
+    total_kib="$$(awk '$$1 == "MemTotal:" { print $$2; exit }' /proc/meminfo)"
+    available_kib="$$(awk '$$1 == "MemAvailable:" { print $$2; exit }' /proc/meminfo)"
+    : "$${total_kib:?missing MemTotal}"
+    : "$${available_kib:?missing MemAvailable}"
+    util="$${GPU_MEM_UTIL:-0.74}"
+    headroom_kib="$${GLM53_PREFLIGHT_MEMORY_HEADROOM_KIB:-8388608}"
+    required_kib="$$(awk -v total="$${total_kib}" -v util="$${util}" -v headroom="$${headroom_kib}" 'BEGIN { printf "%.0f", total * util + headroom }')"
+    if [ "$${available_kib}" -lt "$${required_kib}" ]; then
+      echo "PREFLIGHT FAIL: MemAvailable=$${available_kib} KiB; required=$${required_kib} KiB (GPU_MEM_UTIL=$${util}, headroom=$${headroom_kib} KiB)" >&2
+      exit 78
+    fi
+    echo "PREFLIGHT OK: MemAvailable=$${available_kib} KiB; required=$${required_kib} KiB (GPU_MEM_UTIL=$${util}, headroom=$${headroom_kib} KiB)"
+
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -269,10 +287,10 @@ spec:
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
 metadata:
-  name: qwen38
+  name: vllm
   namespace: ai
   labels:
-    app: qwen38
+    app: model-serving
 spec:
   replicas: 1
   startupPolicy: LeaderCreated
@@ -284,7 +302,7 @@ spec:
     leaderTemplate:
       metadata:
         labels:
-          app: qwen38
+          app: model-serving
           role: head
       spec:
         terminationGracePeriodSeconds: 120
@@ -295,14 +313,6 @@ spec:
         nodeSelector:
           kubernetes.io/hostname: spark-0
         initContainers:
-        - name: drop-caches
-          image: busybox:1.38
-          command: [sh, -c, "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"]
-          securityContext:
-            privileged: true
-          resources:
-            requests: { memory: "64Mi", cpu: "100m" }
-            limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
           image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
           command: [/bin/bash]
@@ -323,19 +333,25 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
-        containers:
-        - name: drop-caches-loop
-          image: busybox:1.38
-          command: [sh, -c, "while true; do sleep 15; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true; done"]
-          securityContext:
-            privileged: true
+        - name: preflight-memory
+          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
+          command: [/bin/bash]
+          args: [/scripts/preflight-memory.sh]
+          env:
+          - { name: GPU_MEM_UTIL, value: "0.74" }
+          - { name: GLM53_PREFLIGHT_MEMORY_HEADROOM_KIB, value: "8388608" }
+          volumeMounts:
+          - { name: download-script, mountPath: /scripts }
           resources:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
+        containers:
         - name: vllm
           image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
           # Upstream MiaAI-Lab arm64 image with the recipe runtime baked in.
           command: [bash, -c]
+          ports:
+          - { name: http, containerPort: 8000, protocol: TCP }
           args:
           - |
             set -euo pipefail
@@ -349,7 +365,8 @@ spec:
               --distributed-executor-backend mp --quantization exl3 \
               --enforce-eager \
               --load-format instanttensor --gpu-memory-utilization 0.74 \
-              --max-model-len 16384 --max-num-seqs 2 --max-num-batched-tokens 1024 \
+              --kv-cache-memory-bytes 4294967296 \
+              --max-model-len 262144 --max-num-seqs 2 --max-num-batched-tokens 1024 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
               --limit-mm-per-prompt '{"image":48,"video":1}' \
@@ -383,10 +400,7 @@ spec:
           - { name: GLM53_EXL3_MOE_FAST, value: "1" }
           - { name: GLM53_KDA_BF16_LARGE_M, value: "0" }
           - { name: GLM53_DENSE_FP8, value: "dense,kda" }
-          - { name: GLM53_DRAFT_KV_COMPACT, value: "1" }
           - { name: GLM53_SPINWAIT_MS, value: "16" }
-          - { name: GLM53_APC_RETENTION_INTERVAL, value: "14336" }
-          - { name: GLM53_APC_RETENTION_INTERVAL_SWA, value: "0" }
           - { name: GLM53_ADAPTIVE_K, value: "off" }
           - { name: GLM53_MIXED_PREFILL_CHUNK, value: "fair" }
           - { name: GLM53_FAIR_PREFILL_CHUNK, value: "256" }
@@ -440,7 +454,7 @@ spec:
           hostPath: { path: /sys/class/infiniband, type: Directory }
         - name: glm-patches
           configMap:
-            name: qwen38-download-script
+            name: model-serving-download-script
             items:
             - key: patch_glm_video_placeholders.py
               path: patch_glm_video_placeholders.py
@@ -448,11 +462,11 @@ spec:
           persistentVolumeClaim: { claimName: qwen38-head-models }
         - name: download-script
           configMap:
-            name: qwen38-download-script
+            name: model-serving-download-script
     workerTemplate:
       metadata:
         labels:
-          app: qwen38
+          app: model-serving
           role: worker
       spec:
         terminationGracePeriodSeconds: 120
@@ -463,14 +477,6 @@ spec:
         nodeSelector:
           kubernetes.io/hostname: spark-1
         initContainers:
-        - name: drop-caches
-          image: busybox:1.38
-          command: [sh, -c, "echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true"]
-          securityContext:
-            privileged: true
-          resources:
-            requests: { memory: "64Mi", cpu: "100m" }
-            limits: { memory: "256Mi", cpu: "500m" }
         - name: download-models
           image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
           command: [/bin/bash]
@@ -491,19 +497,25 @@ spec:
           resources:
             requests: { memory: "4Gi", cpu: "2000m" }
             limits: { memory: "8Gi", cpu: "4000m" }
-        containers:
-        - name: drop-caches-loop
-          image: busybox:1.38
-          command: [sh, -c, "while true; do sleep 15; echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true; done"]
-          securityContext:
-            privileged: true
+        - name: preflight-memory
+          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
+          command: [/bin/bash]
+          args: [/scripts/preflight-memory.sh]
+          env:
+          - { name: GPU_MEM_UTIL, value: "0.74" }
+          - { name: GLM53_PREFLIGHT_MEMORY_HEADROOM_KIB, value: "8388608" }
+          volumeMounts:
+          - { name: download-script, mountPath: /scripts }
           resources:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
+        containers:
         - name: vllm
           image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
           # Upstream MiaAI-Lab arm64 image with the recipe runtime baked in.
           command: [bash, -c]
+          ports:
+          - { name: http, containerPort: 8000, protocol: TCP }
           args:
           - |
             set -euo pipefail
@@ -517,7 +529,8 @@ spec:
               --distributed-executor-backend mp --headless --quantization exl3 \
               --enforce-eager \
               --load-format instanttensor --gpu-memory-utilization 0.74 \
-              --max-model-len 16384 --max-num-seqs 2 --max-num-batched-tokens 1024 \
+              --kv-cache-memory-bytes 4294967296 \
+              --max-model-len 262144 --max-num-seqs 2 --max-num-batched-tokens 1024 \
               --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
               --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
               --limit-mm-per-prompt '{"image":48,"video":1}' \
@@ -551,10 +564,7 @@ spec:
           - { name: GLM53_EXL3_MOE_FAST, value: "1" }
           - { name: GLM53_KDA_BF16_LARGE_M, value: "0" }
           - { name: GLM53_DENSE_FP8, value: "dense,kda" }
-          - { name: GLM53_DRAFT_KV_COMPACT, value: "1" }
           - { name: GLM53_SPINWAIT_MS, value: "16" }
-          - { name: GLM53_APC_RETENTION_INTERVAL, value: "14336" }
-          - { name: GLM53_APC_RETENTION_INTERVAL_SWA, value: "0" }
           - { name: GLM53_ADAPTIVE_K, value: "off" }
           - { name: GLM53_MIXED_PREFILL_CHUNK, value: "fair" }
           - { name: GLM53_FAIR_PREFILL_CHUNK, value: "256" }
@@ -588,7 +598,7 @@ spec:
           hostPath: { path: /sys/class/infiniband, type: Directory }
         - name: glm-patches
           configMap:
-            name: qwen38-download-script
+            name: model-serving-download-script
             items:
             - key: patch_glm_video_placeholders.py
               path: patch_glm_video_placeholders.py
@@ -596,18 +606,18 @@ spec:
           persistentVolumeClaim: { claimName: qwen38-worker-models }
         - name: download-script
           configMap:
-            name: qwen38-download-script
+            name: model-serving-download-script
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: qwen38
+  name: model-serving
   namespace: ai
   labels:
-    app: qwen38
+    app: model-serving
 spec:
   selector:
-    app: qwen38
+    app: model-serving
     role: head
   ports:
   - { name: http, port: 8000, protocol: TCP, targetPort: http }
@@ -615,10 +625,10 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: qwen38
+  name: model-serving
   namespace: ai
   labels:
-    app: qwen38
+    app: model-serving
     release: kube-prometheus-stack
 spec:
   endpoints:
@@ -632,7 +642,7 @@ spec:
       targetLabel: cluster
   selector:
     matchLabels:
-      app: qwen38
+      app: model-serving
   namespaceSelector:
     matchNames:
     - ai

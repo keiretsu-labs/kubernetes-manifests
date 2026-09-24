@@ -33,8 +33,8 @@ Grafana stack we just fixed for vLLM.
 | Client-facing | Where | Backend |
 |---|---|---|
 | `OPENAI_BASE_URL` → CLIProxy (`cliproxy-api.${CLUSTER_DOMAIN}`) | Ottawa | providers: `ai`, `ai-kartik`, `vllm` |
-| `vllm/*` via CLIProxy | Ottawa → ClusterMesh | `stpetersburg-vllm-upstream` → `qwen38-mesh.ai.svc.clusterset.local` |
-| Direct SP `qwen38` ServiceMonitor `/metrics` | SP | Grafana AI dashboards (see `docs/ops/grafana-ai-inference.md`) |
+| `vllm/*` via CLIProxy | Ottawa → ClusterMesh | `stpetersburg-vllm-upstream` → `model-serving-mesh.ai.svc.clusterset.local` |
+| Direct SP `model-serving` ServiceMonitor `/metrics` | SP | Grafana AI dashboards (see `docs/ops/grafana-ai-inference.md`) |
 
 
 ## Client-stable model id (hot-swap)
