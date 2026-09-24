@@ -15,5 +15,9 @@ spec:
         name: secrets-store-csi-driver
         namespace: kube-system
       interval: 1m
-  # releaseName: csi-secrets-store
+  # The CSI node agent is required on every Linux node, including the
+  # control-plane. Protect it from ordinary workloads when the small Orin
+  # control-plane node is request-saturated.
   values:
+    linux:
+      priorityClassName: system-node-critical
