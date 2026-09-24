@@ -1874,8 +1874,8 @@ Talos machines (arm64):
 | Node | Role | Hardware |
 |---|---|---|
 | `orin-0` | sole control plane, holds VIP 192.168.73.25 | NVIDIA Jetson Orin Nano Super dev kit; instance-type `jetson-orin-nano-super`; onboard M.2 NVMe for the OS (the SD card is unused); Tegra iGPU present but deliberately unused — no NVIDIA kernel modules loaded, minimal Talos schematic; 8 GiB RAM, so no hugepage reservation |
-| `spark-0` | GPU worker | NVIDIA DGX Spark, GB10 Grace Blackwell superchip; instance-type `dgx-spark`; 1 GPU; ~4 TB NVMe; `vm.nr_hugepages` 2048 (4 GiB); RDMA rail 192.168.74.1/30, MTU 9000 |
-| `spark-1` | GPU worker | NVIDIA DGX Spark, GB10 Grace Blackwell superchip; instance-type `dgx-spark`; 1 GPU; ~4 TB NVMe; `vm.nr_hugepages` 2048 (4 GiB); RDMA rail 192.168.74.2/30, MTU 9000 |
+| `spark-0` | GPU worker | NVIDIA DGX Spark, GB10 Grace Blackwell superchip; instance-type `dgx-spark`; 1 GPU; ~4 TB NVMe; explicit HugeTLB pages disabled (`vm.nr_hugepages=0`) so the 4 GiB reservation remains available to unified memory; RDMA rail 192.168.74.1/30, MTU 9000 |
+| `spark-1` | GPU worker | NVIDIA DGX Spark, GB10 Grace Blackwell superchip; instance-type `dgx-spark`; 1 GPU; ~4 TB NVMe; explicit HugeTLB pages disabled (`vm.nr_hugepages=0`) so the 4 GiB reservation remains available to unified memory; RDMA rail 192.168.74.2/30, MTU 9000 |
 
 The `spark-0` ↔ `spark-1` RDMA / RoCE link is a direct point-to-point /30 with
 MTU 9000, modules `ib_core`, `rdma_cm`, `rdma_ucm`, exposed to pods by

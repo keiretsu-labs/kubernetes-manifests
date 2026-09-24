@@ -13,8 +13,10 @@ machine:
     feature.node.kubernetes.io/system-os_release.VERSION_ID: "24.04"
     feature.node.kubernetes.io/system-os_release.VERSION_ID.major: "24"
     feature.node.kubernetes.io/cpu-model.vendor_id: NVIDIA
+  # Keep explicit HugeTLB pages disabled. No St. Petersburg workload requests
+  # hugepages, and the former 4Gi reservation reduced the unified-memory pool.
   sysctls:
-    vm.nr_hugepages: "2048"
+    vm.nr_hugepages: "0"
   network:
     interfaces:
       # ConnectX-7 RDMA rail to spark-0 (single 200G DAC link, /30 subnet)
