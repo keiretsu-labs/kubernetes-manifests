@@ -12,12 +12,14 @@
 set -euo pipefail
 
 home=${HOME:-/config}
+hermes_home=${HERMES_HOME:-${home}/.hermes}
 
 mkdir -p \
   "${home}/.cache" \
   "${home}/.claude" \
   "${home}/.codex" \
   "${home}/.config/herdr" \
+  "${hermes_home}/lazy-packages" \
   "${home}/.local/bin" \
   "${home}/.ssh" \
   "${home}/go/bin" \
@@ -48,6 +50,18 @@ wire_api = "responses"
 request_max_retries = 4
 stream_max_retries = 5
 TOML
+fi
+
+# --- hermes ------------------------------------------------------------------
+# Hermes reads model and provider settings from config.yaml. Credentials stay
+# in OPENAI_API_KEY from the existing cliproxy secret mapping and are never
+# copied into this home-volume config. Preserve any config a user already has.
+if [[ ! -e "${hermes_home}/config.yaml" && -n "${OPENAI_BASE_URL:-}" ]]; then
+  cat > "${hermes_home}/config.yaml" <<YAML
+model:
+  default: "${CLIPROXY_HERMES_MODEL:-ai/deepseek/deepseek-v4-flash}"
+  provider: openai
+YAML
 fi
 
 # --- herdr -------------------------------------------------------------------

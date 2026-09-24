@@ -27,6 +27,7 @@ ARG GOLANGCI_LINT_VERSION
 ARG HERDR_VERSION
 ARG CODEX_VERSION
 ARG CLAUDE_CODE_VERSION
+ARG HERMES_VERSION
 ARG KUBECTL_VERSION
 ARG HELM_VERSION
 ARG FLUX_VERSION
@@ -57,6 +58,8 @@ RUN KUBECTL_VERSION="${KUBECTL_VERSION}" \
     GH_VERSION="${GH_VERSION}" \
     YQ_VERSION="${YQ_VERSION}" \
     /tmp/install.sh tools
+RUN HERMES_VERSION="${HERMES_VERSION}" \
+    /tmp/install.sh hermes
 RUN HERDR_VERSION="${HERDR_VERSION}" \
     CODEX_VERSION="${CODEX_VERSION}" \
     CLAUDE_CODE_VERSION="${CLAUDE_CODE_VERSION}" \
@@ -74,10 +77,12 @@ RUN HERDR_VERSION="${HERDR_VERSION}" \
 # PATH here would drop it and break the desktop.
 ENV GOROOT=/opt/go \
     GOTOOLCHAIN=local \
+    HERMES_HOME=/config/.hermes \
+    HERMES_LAZY_INSTALL_TARGET=/config/.hermes/lazy-packages \
+    PYTHONDONTWRITEBYTECODE=1 \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
     PATH=/opt/go/bin:/opt/node/bin:${PATH}
 
 # LinuxServer overlay: /custom-cont-init.d scripts run after the built-in init
 # and before any service starts. COPY preserves the 0755 bits from git.
 COPY root/ /
-
