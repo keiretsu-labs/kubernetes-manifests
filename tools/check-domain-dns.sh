@@ -45,6 +45,12 @@
 #    defaults to policy random, which would race them and answer a share of
 #    every internal lookup from public DNS.
 #
+# 8. No DNSEndpoint asserts cloudflare-proxied: "false". That is already the
+#    provider default, and asserting it is the one structural difference
+#    between the CRD-sourced endpoints -- every record of which external-dns
+#    rewrote on every reconcile -- and the gateway-sourced ones, which
+#    converge.
+#
 # Offline: reads tracked YAML only, no cluster calls. Exit 1 on any violation.
 set -uo pipefail
 
@@ -173,9 +179,11 @@ for doc in load_all(UNIFI):
         (doc.get("spec", {}).get("values", {}) or {}).get("domainFilters", [])
     )
 cloudflare_zones = set()
+cloudflare_values = []
 for path in sorted((root / CLOUDFLARE_DIR).glob("externaldns-*.yaml")):
     for doc in load_all(path.relative_to(root)):
         vals = doc.get("spec", {}).get("values", {}) or {}
+        cloudflare_values.append(vals)
         cloudflare_zones.update(vals.get("domainFilters", []))
 
 for gw, feeder, have in (
@@ -328,6 +336,42 @@ for z in internal_zones:
             f"{public[0]} would answer a share of every internal lookup with "
             f"the public record and 404 any route attached only to private"
         )
+
+# 8. Nobody asserts the Cloudflare proxied default.
+#    --cloudflare-proxied is unset on every instance, so shouldBeProxied()
+#    already returns false; a providerSpecific saying so changes nothing about
+#    the record. It is not free, though: CRD-sourced endpoints carrying it were
+#    rewritten on every reconcile -- roughly 2,280 Cloudflare writes an hour
+#    across the fleet -- while the gateway-sourced instances, which set no
+#    provider-specific properties, reported "All records are already up to
+#    date" every cycle. Keep the property for records that must be proxied.
+proxied_default_on = any(
+    "--cloudflare-proxied" in str(vals.get("extraArgs", []))
+    for vals in cloudflare_values
+)
+if not proxied_default_on:
+    for path in sorted((root / "kubernetes").rglob("*.yaml")):
+        try:
+            docs = list(yaml.safe_load_all(path.read_text()))
+        except yaml.YAMLError:
+            continue
+        for doc in docs:
+            if not isinstance(doc, dict) or doc.get("kind") != "DNSEndpoint":
+                continue
+            for ep in doc.get("spec", {}).get("endpoints", []) or []:
+                for prop in ep.get("providerSpecific", []) or []:
+                    if prop.get("name", "").endswith("cloudflare-proxied") and str(
+                        prop.get("value")
+                    ).lower() == "false":
+                        problems.append(
+                            f"{path.relative_to(root)} DNSEndpoint "
+                            f"{doc['metadata']['name']} declares "
+                            f"cloudflare-proxied: \"false\" on "
+                            f"{ep.get('dnsName')} — that is the provider "
+                            f"default, so it asserts nothing, and CRD "
+                            f"endpoints carrying it were rewritten on every "
+                            f"reconcile; drop the property"
+                        )
 
 # ---------------------------------------------------------------- report
 if problems:

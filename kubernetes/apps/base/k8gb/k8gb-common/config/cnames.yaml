@@ -14,6 +14,13 @@ metadata:
     # sitting one hop away. Cloudflare still picks the object up via
     # dns-target==cloudflare.
     dns-scope: public-only
+# Only the records that must be proxied carry a cloudflare-proxied property.
+# external-dns defaults to unproxied (--cloudflare-proxied is not set on any
+# instance), so an explicit "false" asserted nothing and was removed -- it is
+# also the only structural difference between these CRD-sourced endpoints and
+# the gateway-sourced ones, which converge while every record owned here is
+# rewritten on every reconcile. If --cloudflare-proxied is ever turned on,
+# these records need explicit "false" back.
 spec:
   endpoints:
     - dnsName: "${COMMON_DOMAIN}"
@@ -34,18 +41,12 @@ spec:
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     # home.keiretsu.top is a Python server behind the Envoy Gateway,
     # NOT a Garage/CDN site — point at the ottawa edge (envoy gateway IP).
     - dnsName: "home.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     # Pin to the Ottawa edge, not forgejo.cdn (k8gb). Recursors cache
     # NS ns1.dns.cdn.keiretsu.top with no A glue, so the CNAME hop
     # NXDOMAINs in-cluster and breaks Woodpecker's Forgejo OAuth token
@@ -54,9 +55,6 @@ spec:
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     # bhaiya admin console + per-workspace opencode instances live ONLY in
     # ottawa, so point straight at the ottawa edge (one healthy WAN IP) instead
     # of the k8gb cdn GSLB — the GSLB hands back a second, broken WAN edge that
@@ -66,132 +64,78 @@ spec:
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "grafana.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "firefly.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "hubble.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "hubble.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "logs.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "logs.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "prometheus.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "prometheus.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "opencost.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "opencost.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "oci.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "oci.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "status.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "status.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "s3.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "s3.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "tailscale-logs.s3.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "s3.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     # teslamate behind tinyauth on the public envoy gateway — same domain family
     - dnsName: "teslamate.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "litellm.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "woodpecker.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "infisical.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     # frigate NVR behind tinyauth on the public envoy gateway
     - dnsName: "frigate.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     # CLIProxyAPI browser UI; the API hostname uses ${CLUSTER_DOMAIN} and is
     # discovered from its private/ts HTTPRoute instead of public DNS.
     - dnsName: "cliproxy.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "frigate.${LOCATION}.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
 ---
 # Wildcard CNAMEs that only Cloudflare can serve. UniFi's static-DNS API rejects
 # wildcard hostnames (400 Invalid Hostname), so these are isolated under a
@@ -213,29 +157,17 @@ spec:
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "*.hermes.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "ottawa.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     - dnsName: "*.s3.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "s3.cdn.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
     # per-location wildcard: *.ottawa.keiretsu.top → ottawa.keiretsu.top, etc.
     # each cluster manages its own entry via ${LOCATION} substitution
     - dnsName: "*.${LOCATION}.${COMMON_DOMAIN}"
       recordType: CNAME
       targets:
         - "${LOCATION}.${COMMON_DOMAIN}"
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
