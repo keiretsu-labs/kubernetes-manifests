@@ -10,22 +10,20 @@
 # *.${COMMON_DOMAIN} and forwards to the AI data plane, which does model
 # routing.
 #
-# A Backend (not a cross-namespace Service backendRef) keeps this in one
-# namespace: the data-plane Service lives in envoy-gateway-system, and the
-# routes Flux KS sets targetNamespace: cliproxy, so a ReferenceGrant could not
-# be placed in the namespace that needs it.
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: Backend
-metadata:
-  name: ai-gateway-dataplane
-  namespace: cliproxy
-spec:
-  endpoints:
-    # Name pinned by the EnvoyProxy in gateway.yaml, so this is a name we own
-    # rather than Envoy Gateway's generated envoy-<ns>-<name>-<hash>.
-    - fqdn:
-        hostname: ai-gateway-dataplane.envoy-gateway-system.svc.cluster.local
-        port: 80
+# The backendRef is the data-plane Service in envoy-gateway-system, named by
+# the EnvoyProxy in gateway.yaml rather than Envoy Gateway's generated
+# envoy-<ns>-<name>-<hash>. A ReferenceGrant authorizes the cross-namespace
+# reference; it ships in ../grants because this KS sets
+# targetNamespace: cliproxy and a grant only counts in the target namespace.
+#
+# This was an Envoy Gateway `Backend` until it turned out to be the only
+# Backend-backed route in the fleet attached to private/ts, and the only one
+# that never reached a data plane. Backend works on public (prometheus-cdn)
+# and on the ai-gateway class (sp-vllm); on private/ts the route reported
+# Accepted=True and ResolvedRefs=True on all four parentRefs, the Backend
+# reported Accepted=True, the controller logged it into the resource tree
+# with no error or warning, and the virtual host still never appeared.
+# Services are what the other 43 routes on those two gateways use.
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -84,22 +82,21 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - group: gateway.envoyproxy.io
-          kind: Backend
+        - group: ""
+          kind: Service
           name: ai-gateway-dataplane
+          namespace: envoy-gateway-system
+          port: 80
           weight: 1
       timeouts:
         # A completion can think for minutes before the first token, and the
         # default 15s request timeout would cut it off. This is the outer hop
         # of two Envoys, so it has to be at least as patient as the inner one.
         #
-        # request only. backendRequest: "0s" makes Envoy Gateway drop the whole
-        # route during translation -- silently: the HTTPRoute still reports
-        # Accepted=True and ResolvedRefs=True, the listener's attachedRoutes
-        # still counts it, the AI extension server still sees it, and Envoy
-        # reports update_rejected=0, but the virtual host never appears in the
-        # data plane and every request 404s. request: "0s" alone is fine and is
-        # already what the bhaiya workspace routes use.
+        # request only, matching the bhaiya workspace routes. An earlier
+        # revision claimed backendRequest: "0s" was what kept this route out
+        # of the data plane; that was wrong -- removing it changed nothing and
+        # the route still 404'd.
         request: "0s"
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
