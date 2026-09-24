@@ -1,0 +1,119 @@
+rule_files:
+  - ../envoy-gateway.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # The incident shape: the failure counter climbs on every IR event while the
+  # success counter also climbs, because Envoy Gateway keeps handling events
+  # and keeps failing to publish. A rule that only watched for the absence of
+  # successes would have stayed silent through the whole outage.
+  - interval: 1m
+    input_series:
+      - series: 'watchable_subscribe_total{cluster="talos-ottawa",job="envoy-gateway",message="xds-ir",runner="xds",status="failure"}'
+        values: "0+1x40"
+      - series: 'watchable_subscribe_total{cluster="talos-ottawa",job="envoy-gateway",message="xds-ir",runner="xds",status="success"}'
+        values: "0+1x40"
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: EnvoyGatewayXdsSnapshotNotPublishing
+        exp_alerts: []
+      - eval_time: 26m
+        alertname: EnvoyGatewayXdsSnapshotNotPublishing
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              severity: critical
+            exp_annotations:
+              summary: Envoy Gateway is not publishing xDS snapshots
+              description: >-
+                The Envoy Gateway xds runner has failed to translate the xDS IR
+                repeatedly over the last 15 minutes, so it is not updating its
+                snapshot cache and every data plane is serving its last good
+                config. Gateway and HTTPRoute status will still report
+                Accepted=True because status is published by a separate runner,
+                so confirm against a proxy's config_dump rather than status.
+                Check the control plane logs for "skipped publishing xds
+                resources"; note that a reconcile storm can rotate that log in
+                under a minute.
+
+  # A healthy control plane only ever increments the success counter. The
+  # failure series is absent entirely, which must not fire anything.
+  - interval: 1m
+    input_series:
+      - series: 'watchable_subscribe_total{cluster="talos-robbinsdale",job="envoy-gateway",message="xds-ir",runner="xds",status="success"}'
+        values: "0+1x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: EnvoyGatewayXdsSnapshotNotPublishing
+        exp_alerts: []
+      - eval_time: 30m
+        alertname: EnvoyGatewayRunnerErrors
+        exp_alerts: []
+
+  # Non-xds-ir runner failures are a warning, and must not be swallowed by the
+  # xds-ir alert's own matcher.
+  - interval: 1m
+    input_series:
+      - series: 'watchable_subscribe_total{cluster="talos-ottawa",job="envoy-gateway",message="infra-ir",runner="infrastructure",status="failure"}'
+        values: "0+1x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: EnvoyGatewayXdsSnapshotNotPublishing
+        exp_alerts: []
+      - eval_time: 31m
+        alertname: EnvoyGatewayRunnerErrors
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              runner: infrastructure
+              message: infra-ir
+              severity: warning
+            exp_annotations:
+              summary: Envoy Gateway runner infrastructure is reporting errors
+              description: >-
+                The Envoy Gateway infrastructure runner has reported errors
+                handling infra-ir over the last 15 minutes. Depending on the
+                runner this can stop infrastructure reconciliation or status
+                publication without any Gateway API object reporting a problem.
+
+  # Reconcile storm: two result labels on one pod must be summed, not taken
+  # separately, or a storm split across success and requeue stays under the
+  # threshold. 0.6/s total here, made of two 0.3/s halves.
+  - interval: 1m
+    input_series:
+      - series: 'controller_runtime_reconcile_total{cluster="talos-ottawa",job="envoy-gateway",pod="envoy-gateway-a",controller="gatewayapi-1",result="success"}'
+        values: "0+18x80"
+      - series: 'controller_runtime_reconcile_total{cluster="talos-ottawa",job="envoy-gateway",pod="envoy-gateway-a",controller="gatewayapi-1",result="requeue"}'
+        values: "0+18x80"
+    alert_rule_test:
+      - eval_time: 29m
+        alertname: EnvoyGatewayReconcileStorm
+        exp_alerts: []
+      - eval_time: 55m
+        alertname: EnvoyGatewayReconcileStorm
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              severity: warning
+            exp_annotations:
+              summary: Envoy Gateway is reconciling continuously
+              description: >-
+                The Envoy Gateway provider has sustained more than 0.5 full
+                reconciles per second for 30 minutes. Each one re-lists every
+                HTTPRoute, Service and EndpointSlice the control plane watches,
+                so this burns API and control-plane capacity and rotates the
+                control plane log fast enough to destroy diagnostic history.
+                Find the churning objects by sampling resourceVersion across
+                the watched kinds rather than by reading the log.
+
+  # An idle control plane must not trip the storm alert. Robbinsdale recorded
+  # 4 provider events in 21 hours.
+  - interval: 1m
+    input_series:
+      - series: 'controller_runtime_reconcile_total{cluster="talos-robbinsdale",job="envoy-gateway",pod="envoy-gateway-b",controller="gatewayapi-2",result="success"}'
+        values: "0+0x80"
+    alert_rule_test:
+      - eval_time: 55m
+        alertname: EnvoyGatewayReconcileStorm
+        exp_alerts: []
