@@ -338,7 +338,7 @@ spec:
           command: [/bin/bash]
           args: [/scripts/preflight-memory.sh]
           env:
-          - { name: GPU_MEM_UTIL, value: "0.70" }
+          - { name: GPU_MEM_UTIL, value: "0.80" }
           - { name: GLM53_PREFLIGHT_MEMORY_HEADROOM_KIB, value: "8388608" }
           volumeMounts:
           - { name: download-script, mountPath: /scripts }
@@ -365,7 +365,7 @@ spec:
               --distributed-timeout-seconds 3600 --cpu-distributed-timeout-seconds 3600 \
               --distributed-executor-backend mp --quantization exl3 \
               --enforce-eager \
-              --load-format instanttensor --gpu-memory-utilization 0.70 \
+              --load-format instanttensor --gpu-memory-utilization 0.80 \
               # 5 GiB manual KV pool: the HugeTLB reclaim gives the shared
               # Sparks one measured step beyond the former ~506K-token pool.
               --kv-cache-memory-bytes 5368709120 \
@@ -506,7 +506,7 @@ spec:
           command: [/bin/bash]
           args: [/scripts/preflight-memory.sh]
           env:
-          - { name: GPU_MEM_UTIL, value: "0.70" }
+          - { name: GPU_MEM_UTIL, value: "0.80" }
           - { name: GLM53_PREFLIGHT_MEMORY_HEADROOM_KIB, value: "8388608" }
           volumeMounts:
           - { name: download-script, mountPath: /scripts }
@@ -533,7 +533,7 @@ spec:
               --distributed-timeout-seconds 3600 --cpu-distributed-timeout-seconds 3600 \
               --distributed-executor-backend mp --headless --quantization exl3 \
               --enforce-eager \
-              --load-format instanttensor --gpu-memory-utilization 0.70 \
+              --load-format instanttensor --gpu-memory-utilization 0.80 \
               # Keep the TP2 ranks on the same measured 5 GiB KV pool.
               --kv-cache-memory-bytes 5368709120 \
               --max-model-len 262144 --max-num-seqs 2 --max-num-batched-tokens 1024 \
