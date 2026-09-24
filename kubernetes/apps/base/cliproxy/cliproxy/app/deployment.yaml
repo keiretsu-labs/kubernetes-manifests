@@ -109,86 +109,7 @@ spec:
             - /bin/sh
             - -ec
           args:
-            - |
-              umask 077
-              cat > /config/config.yaml <<EOF
-              host: ""
-              port: 8317
-              auth-dir: /data/auth
-              tls:
-                enable: false
-                cert: ""
-                key: ""
-              remote-management:
-                allow-remote: true
-                secret-key: "$${MANAGEMENT_KEY}"
-                disable-control-panel: false
-                disable-auto-update-panel: true
-              api-keys:
-                - "$${API_KEY}"
-              # Every credential owns its native route prefix. OAuth prefixes
-              # live in auth metadata; the generated compatible providers
-              # declare the Tailscale-backed routes below.
-              force-model-prefix: true
-              # Keep a stable, GitOps-owned fallback in the Codex subscription
-              # pool while the Vision-Exp route is unavailable.
-              oauth-model-alias:
-                codex:
-                  - name: "gpt-5.6-luna"
-                    alias: "vllm-fallback"
-                    display-name: "Codex subscription fallback"
-                    fork: true
-              plugins:
-                enabled: true
-                dir: "/CLIProxyAPI/plugins"
-                configs:
-                  pi-bridge:
-                    enabled: true
-                    priority: 3
-                    store:
-                      version: "0.9.1"
-                    allow_all_api_keys: true
-              debug: false
-              pprof:
-                enable: false
-                addr: "127.0.0.1:8316"
-              logging-to-file: true
-              # Keep operational logs bounded on the dedicated PVC. Full
-              # request-body logging produced one multi-megabyte artifact per
-              # request and exhausted the 20Gi claim before the old age-based
-              # cleanup could catch up.
-              logs-max-total-size-mb: 256
-              request-log: false
-              usage-statistics-enabled: false
-              ws-auth: true
-              routing:
-                strategy: round-robin
-                # Affinity is deliberate: it keeps one conversation on one
-                # subscription so the account's prompt cache keeps hitting.
-                # It is not what blocked failover -- request-retry was.
-                session-affinity: true
-              # Additional credential retry rounds. These rounds are what
-              # handle 403/408/429/500/502/503/504, so leaving this at 0
-              # meant a rate-limited subscription returned the 429 straight
-              # to the client instead of moving to the next credential. A
-              # disabled or throttled account now falls through to a healthy
-              # one. Upstream's own default is 3.
-              request-retry: 3
-              # Allow a bounded wait for a cooling credential before starting
-              # another round; 0 forbade every positive cooldown wait.
-              max-retry-interval: 30
-              # St. Petersburg's GLM vLLM endpoint accepts system messages but
-              # rejects OpenAI's developer role, which Pi sends by default.
-              # Keep this compatibility translation scoped to the GLM alias.
-              payload:
-                override:
-                  - models:
-                      - name: "vllm/GLM-5.3-Flash-EXL3"
-                        protocol: "openai"
-                    params:
-                      'messages.#(role=="developer")#.role': system
-              EOF
-              cat /provider/providers.yaml >> /config/config.yaml
+            - /render/render-config.sh
           env:
             - name: API_KEY
               valueFrom:
@@ -205,6 +126,9 @@ spec:
               mountPath: /config
             - name: provider-config
               mountPath: /provider
+              readOnly: true
+            - name: render-script
+              mountPath: /render
               readOnly: true
           resources:
             requests:
@@ -290,6 +214,68 @@ spec:
             - name: pi-bridge-state
               mountPath: /var/run/pi-bridge
               readOnly: true
+        - name: catalog-watch
+          # Re-render the config when Flux updates the catalog ConfigMap, so a
+          # model edit no longer has to roll the pod. The generator used to be
+          # hash-suffixed purely because render-config only ran at start, which
+          # meant editing one vLLM model restarted the OAuth pool with it.
+          image: eceasy/cli-proxy-api:v7.3.15@sha256:86032129fa65496428752ec6e5c7480f07fde137160b728cd850cc65e9eaa391
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              # The catalog mount is not subPath, so kubelet swaps it
+              # atomically in place; CLIProxyAPI then picks the rendered file
+              # up through its own fsnotify watcher.
+              #
+              # State is a marker file compared with cmp rather than a shell
+              # variable: Flux envsubst eats bare $ in this manifest, so the
+              # loop avoids expansions entirely.
+              while :; do
+                sha256sum /provider/providers.yaml > /config/.catalog.sha.new
+                if cmp -s /config/.catalog.sha.new /config/.catalog.sha; then
+                  rm -f /config/.catalog.sha.new
+                else
+                  sh /render/render-config.sh
+                  mv /config/.catalog.sha.new /config/.catalog.sha
+                  echo "catalog re-rendered from ConfigMap update"
+                fi
+                sleep 10
+              done
+          env:
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cliproxy-credentials
+                  key: api-key
+            - name: MANAGEMENT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cliproxy-credentials
+                  key: management-key
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: provider-config
+              mountPath: /provider
+              readOnly: true
+            - name: render-script
+              mountPath: /render
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
         - name: pi-bridge-sync
           image: python:3.14-alpine@sha256:9e9fde4d32eedce0b661d9ab91e826b62dddf28e928c230ec55f1866cac66b01
           command:
@@ -970,6 +956,10 @@ spec:
         - name: provider-config
           configMap:
             name: cliproxy-providers
+        - name: render-script
+          configMap:
+            name: cliproxy-render
+            defaultMode: 0555
         - name: data
           persistentVolumeClaim:
             claimName: cliproxy-data
