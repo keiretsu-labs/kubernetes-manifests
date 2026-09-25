@@ -56,7 +56,14 @@ spec:
         WOODPECKER_BACKEND_K8S_STORAGE_RWX: false
         WOODPECKER_LOG_LEVEL: info
       persistence:
-        enabled: false
+        # Keep each agent's registration identity across StatefulSet pod
+        # recreation. Without this mount, an agent restart loses
+        # /etc/woodpecker/agent.conf and registers as a new agent, orphaning
+        # any workflow that was assigned to the old identity.
+        enabled: true
+        size: 1Gi
+        storageClass: ceph-block-replicated-nvme
+        mountPath: /etc/woodpecker
       serviceAccount:
         create: true
         rbac:
