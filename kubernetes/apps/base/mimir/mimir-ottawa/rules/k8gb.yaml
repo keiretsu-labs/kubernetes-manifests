@@ -38,12 +38,20 @@ groups:
 
       - alert: K8gbNoHealthyRecords
         expr: |
-          k8gb_gslb_healthy_records{name!="init"} == 0
+          (
+            k8gb_gslb_healthy_records{name!="init"} == 0
+          )
+          and on (namespace, name)
+          (
+            max by (namespace, name) (
+              k8gb_gslb_service_status_num{status=~"Healthy|Unhealthy"} > 0
+            ) > 0
+          )
         for: 5m
         annotations:
           summary: >-
             GSLB {{ $labels.name }} in {{ $labels.namespace }} has zero healthy
-            DNS records.
+            DNS records while k8gb still reports a serving or unhealthy backend.
         labels:
           severity: critical
 
