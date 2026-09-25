@@ -15,6 +15,9 @@
 #
 # Keep this namespace unique across every file passed to mimirtool. A repeated
 # namespace aborts the complete rule sync for every tenant.
+# Teaspoon's two policies are intentionally suspended and owned by that lane.
+# Keep this exclusion explicit and narrow: other suspended policies remain
+# visible so an ownership/lifecycle decision cannot hide a real gap.
 namespace: kopiur-backups
 groups:
   - name: kopiur-backups.inventory
@@ -52,6 +55,7 @@ groups:
               namespace="kopiur-system",
               exported_namespace=~".+",
               policy=~".+",
+              policy!~"^bhaiya-teaspoon(-tailscale-state)?$",
               phase=~"Pending|Running"
             },
             "namespace", "$1", "exported_namespace", "(.+)"
@@ -78,7 +82,8 @@ groups:
               kopiur_snapshot_consecutive_failures{
                 namespace="kopiur-system",
                 exported_namespace=~".+",
-                name=~".+"
+                name=~".+",
+                name!~"^bhaiya-teaspoon(-tailscale-state)?$"
               },
               "namespace", "$1", "exported_namespace", "(.+)"
             ),
@@ -107,7 +112,8 @@ groups:
               kopiur_policy_last_backup_success_timestamp_seconds{
                 namespace="kopiur-system",
                 exported_namespace=~".+",
-                policy=~".+"
+                policy=~".+",
+                policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
               },
               "namespace", "$1", "exported_namespace", "(.+)"
             ) > 0
@@ -119,7 +125,8 @@ groups:
                 kopiur_policy_last_backup_success_timestamp_seconds{
                   namespace="kopiur-system",
                   exported_namespace=~".+",
-                  policy=~".+"
+                  policy=~".+",
+                  policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
                 },
                 "namespace", "$1", "exported_namespace", "(.+)"
               ) > 86400
@@ -143,7 +150,8 @@ groups:
               kopiur_snapshotpolicy_last_backup_success{
                 namespace="kopiur-system",
                 exported_namespace=~".+",
-                policy=~".+"
+                policy=~".+",
+                policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
               },
               "namespace", "$1", "exported_namespace", "(.+)"
             ) == 0
@@ -169,7 +177,8 @@ groups:
               kopiur_snapshotpolicy_last_backup_success{
                 namespace="kopiur-system",
                 exported_namespace=~".+",
-                policy=~".+"
+                policy=~".+",
+                policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
               },
               "namespace", "$1", "exported_namespace", "(.+)"
             ) == 1
@@ -179,7 +188,8 @@ groups:
                 kopiur_policy_last_backup_success_timestamp_seconds{
                   namespace="kopiur-system",
                   exported_namespace=~".+",
-                  policy=~".+"
+                  policy=~".+",
+                  policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
                 },
                 "namespace", "$1", "exported_namespace", "(.+)"
               ) > 0
@@ -189,7 +199,8 @@ groups:
                     kopiur_policy_last_backup_success_timestamp_seconds{
                       namespace="kopiur-system",
                       exported_namespace=~".+",
-                      policy=~".+"
+                      policy=~".+",
+                      policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
                     },
                     "namespace", "$1", "exported_namespace", "(.+)"
                   )
