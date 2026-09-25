@@ -1,24 +1,5 @@
 model_list:
-  # The served SP model is intentionally one line away from a model swap:
-  # keep the public LiteLLM names stable while changing only this upstream ID.
-  - model_name: vllm/default
-    litellm_params:
-      model: openai/GLM-5.3-Flash-EXL3
-      api_base: http://stpetersburg-vllm-upstream/v1
-      api_key: none
-      timeout: 600
-      stream_timeout: 3600
-      max_retries: 2
-  - model_name: vllm/auto
-    litellm_params:
-      model: openai/GLM-5.3-Flash-EXL3
-      api_base: http://stpetersburg-vllm-upstream/v1
-      api_key: none
-      timeout: 600
-      stream_timeout: 3600
-      max_retries: 2
-
-  # Explicitly named for the fallback chain below. CLIProxy includes the
+  # Explicitly named for Bhaiya's configured fallback. CLIProxy includes the
   # OAuth-pool prefix in the upstream model ID, so preserve it in both the
   # public alias and the OpenAI-compatible passthrough model. A bare
   # cli/* -> openai/* route would drop that prefix and advertise models
@@ -119,9 +100,6 @@ router_settings:
   retry_after: 5
   allowed_fails: 3
   cooldown_time: 30
-  fallbacks:
-    - vllm/default: [cli/codex-subscription/vllm-fallback]
-    - vllm/auto: [cli/codex-subscription/vllm-fallback]
 
 litellm_settings:
   request_timeout: 600
