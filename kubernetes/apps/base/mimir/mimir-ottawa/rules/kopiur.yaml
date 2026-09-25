@@ -18,8 +18,11 @@
 # Bhaiya exports one lifecycle gauge per workspace. An idle workspace is the
 # controller's durable representation of an intentionally Suspended Sandbox;
 # project both durable-volume policy names onto that workspace before the
-# alert expressions below. This keeps every intentionally suspended Sandbox
-# (including Teaspoon) out of Kopiur pages without naming a workspace here.
+# alert expressions below. Teaspoon is the documented exception: its Sandbox
+# intentionally remains Running while both of its SnapshotPolicies are
+# suspended, and no Kopiur metric exports SnapshotPolicy.spec.suspend. Keep
+# that explicit intent in this single recording rule rather than mutating the
+# policies or repeating a selector in every alert.
 namespace: kopiur-backups
 groups:
   - name: kopiur-backups.inventory
@@ -53,6 +56,16 @@ groups:
           or
           label_replace(
             bhaiya_workspace_state{state="idle"},
+            "policy", "bhaiya-$1-tailscale-state", "workspace", "(.+)"
+          )
+          or
+          label_replace(
+            bhaiya_workspace_state{workspace="teaspoon"},
+            "policy", "bhaiya-$1", "workspace", "(.+)"
+          )
+          or
+          label_replace(
+            bhaiya_workspace_state{workspace="teaspoon"},
             "policy", "bhaiya-$1-tailscale-state", "workspace", "(.+)"
           )
 

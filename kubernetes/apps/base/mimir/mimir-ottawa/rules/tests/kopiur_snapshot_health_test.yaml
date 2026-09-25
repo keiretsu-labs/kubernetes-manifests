@@ -149,16 +149,16 @@ tests:
                 SnapshotSchedule, current Snapshot, mover Job, and repository
                 reachability.
 
-  # Teaspoon remains suspended by policy. Even pathological failure, stale,
-  # or Pending metrics must not page for either intentionally suspended policy.
+  # Teaspoon remains suspended by policy even while its Sandbox is Running.
+  # Even pathological failure, stale, or Pending metrics must not page for
+  # either intentionally suspended policy.
   - interval: 1m
     input_series:
       - series: 'kopiur_leader_is_leader{cluster="talos-ottawa"}'
         values: "1+0x2250"
-      # Bhaiya's lifecycle gauge is the generic intent signal used by the
-      # production rule; this fixture deliberately does not name Teaspoon in
-      # the alert expression.
-      - series: 'bhaiya_workspace_state{cluster="talos-ottawa",workspace="teaspoon",state="idle"}'
+      # The production rule has a documented Teaspoon intent exception because
+      # its Sandbox remains ready while its two policies are suspended.
+      - series: 'bhaiya_workspace_state{cluster="talos-ottawa",workspace="teaspoon",state="ready"}'
         values: "1+0x2250"
       - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-teaspoon-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon",phase="Pending"}'
         values: "1+0x2250"
