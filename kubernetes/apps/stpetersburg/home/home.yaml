@@ -69,6 +69,23 @@ spec:
         - op: replace
           path: /spec/provider/kubernetes/envoyService/externalTrafficPolicy
           value: Cluster
+    # St. Pete's orin-0 is request-exhausted. Keep the public Envoy's existing
+    # CPU request and sidecar request, but lower only the data-plane memory
+    # request; the generated deployment has no memory limit today, so none is
+    # changed here. The 2-replica 25% surge rollout can use Spark-1 headroom.
+    - target:
+        group: gateway.envoyproxy.io
+        version: v1alpha1
+        kind: EnvoyProxy
+        name: public
+      patch: |-
+        - op: add
+          path: /spec/provider/kubernetes/envoyDeployment/container
+          value:
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
   prune: true
   sourceRef:
     kind: GitRepository
