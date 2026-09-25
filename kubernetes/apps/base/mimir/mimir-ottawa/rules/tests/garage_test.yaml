@@ -96,68 +96,31 @@ tests:
         alertname: GarageFederationPeerConnectivityDegraded
         exp_alerts:
           - exp_labels:
-              cluster: talos-ottawa
-              container: garage
-              endpoint: admin
-              instance: 10.3.0.1:3903
-              job: garage
-              namespace: garage
-              pod: garage-storage-local-700-ottawa
-              service: garage
-              severity: warning
-            exp_annotations:
-              summary: >-
-                Garage federation connectivity degraded from
-                garage-storage-local-700-ottawa (talos-ottawa)
-              description: >-
-                This Garage admin vantage point sees 17 of the expected 18
-                federation peers. The count is per scrape target, not a fleet
-                aggregate; other sites may see a different subset. Check
-                inter-site RPC transport (DNS, TCP 3901, Tailscale, routing,
-                and policy) before treating partition quorum as proof of
-                federation health.
-          - exp_labels:
               cluster: talos-robbinsdale
-              container: garage
-              endpoint: admin
-              instance: 10.1.0.1:3903
-              job: garage
-              namespace: garage
-              pod: garage-storage-local-700-robbinsdale
-              service: garage
               severity: warning
             exp_annotations:
               summary: >-
-                Garage federation connectivity degraded from
-                garage-storage-local-700-robbinsdale (talos-robbinsdale)
+                Garage federation connectivity degraded in talos-robbinsdale
               description: >-
-                This Garage admin vantage point sees 16 of the expected 18
-                federation peers. The count is per scrape target, not a fleet
-                aggregate; other sites may see a different subset. Check
-                inter-site RPC transport (DNS, TCP 3901, Tailscale, routing,
-                and policy) before treating partition quorum as proof of
-                federation health.
+                The best observed Garage admin vantage point in
+                talos-robbinsdale has seen only 16 of the expected 18
+                federation peers for 15m. A lower count from one pod alone is
+                not sufficient because Garage reports this metric per scrape
+                target. Check inter-site RPC transport (DNS, TCP 3901,
+                Tailscale, routing, and policy).
           - exp_labels:
               cluster: talos-stpetersburg
-              container: garage
-              endpoint: admin
-              instance: 10.5.0.1:3903
-              job: garage
-              namespace: garage
-              pod: garage-storage-local-200-stpetersburg
-              service: garage
               severity: warning
             exp_annotations:
               summary: >-
-                Garage federation connectivity degraded from
-                garage-storage-local-200-stpetersburg (talos-stpetersburg)
+                Garage federation connectivity degraded in talos-stpetersburg
               description: >-
-                This Garage admin vantage point sees 17 of the expected 18
-                federation peers. The count is per scrape target, not a fleet
-                aggregate; other sites may see a different subset. Check
-                inter-site RPC transport (DNS, TCP 3901, Tailscale, routing,
-                and policy) before treating partition quorum as proof of
-                federation health.
+                The best observed Garage admin vantage point in
+                talos-stpetersburg has seen only 17 of the expected 18
+                federation peers for 15m. A lower count from one pod alone is
+                not sufficient because Garage reports this metric per scrape
+                target. Check inter-site RPC transport (DNS, TCP 3901,
+                Tailscale, routing, and policy).
 
   - interval: 1m
     input_series:
