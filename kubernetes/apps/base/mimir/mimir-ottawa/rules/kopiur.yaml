@@ -15,9 +15,11 @@
 #
 # Keep this namespace unique across every file passed to mimirtool. A repeated
 # namespace aborts the complete rule sync for every tenant.
-# Teaspoon's two policies are intentionally suspended and owned by that lane.
-# Keep this exclusion explicit and narrow: other suspended policies remain
-# visible so an ownership/lifecycle decision cannot hide a real gap.
+# Bhaiya exports one lifecycle gauge per workspace. An idle workspace is the
+# controller's durable representation of an intentionally Suspended Sandbox;
+# project both durable-volume policy names onto that workspace before the
+# alert expressions below. This keeps every intentionally suspended Sandbox
+# (including Teaspoon) out of Kopiur pages without naming a workspace here.
 namespace: kopiur-backups
 groups:
   - name: kopiur-backups.inventory
@@ -39,6 +41,21 @@ groups:
           namespace: home-assistant
           name: kopiur-stpetersburg
 
+      # Bhaiya's home policy is bhaiya-<workspace>; embedded Tailscale state
+      # uses the additional -tailscale-state suffix. Keep this as a recording
+      # rule so all Kopiur alert expressions share the same generic exclusion.
+      - record: kopiur_intentionally_suspended_policy
+        expr: |
+          label_replace(
+            bhaiya_workspace_state{state="idle"},
+            "policy", "bhaiya-$1", "workspace", "(.+)"
+          )
+          or
+          label_replace(
+            bhaiya_workspace_state{state="idle"},
+            "policy", "bhaiya-$1-tailscale-state", "workspace", "(.+)"
+          )
+
   - name: kopiur-backups.rules
     rules:
       # The generic guards below cover every protected namespace. The live
@@ -49,17 +66,20 @@ groups:
       # not an archaeological scan of old Snapshot objects.
       - alert: KopiurSnapshotNotCompleting
         expr: |
-          label_replace(
-            kopiur_resource_phase{
-              kind="Snapshot",
-              namespace="kopiur-system",
-              exported_namespace=~".+",
-              policy=~".+",
-              policy!~"^bhaiya-teaspoon(-tailscale-state)?$",
-              phase=~"Pending|Running"
-            },
-            "namespace", "$1", "exported_namespace", "(.+)"
-          ) == 1
+          (
+            label_replace(
+              kopiur_resource_phase{
+                kind="Snapshot",
+                namespace="kopiur-system",
+                exported_namespace=~".+",
+                policy=~".+",
+                phase=~"Pending|Running"
+              },
+              "namespace", "$1", "exported_namespace", "(.+)"
+            ) == 1
+          )
+          unless on (cluster, policy)
+          kopiur_intentionally_suspended_policy
         for: 1h
         labels:
           severity: critical
@@ -77,18 +97,21 @@ groups:
       # re-derived per policy and counts failures since the latest success.
       - alert: KopiurSnapshotFailureState
         expr: |
-          label_replace(
+          (
             label_replace(
-              kopiur_snapshot_consecutive_failures{
-                namespace="kopiur-system",
-                exported_namespace=~".+",
-                name=~".+",
-                name!~"^bhaiya-teaspoon(-tailscale-state)?$"
-              },
-              "namespace", "$1", "exported_namespace", "(.+)"
-            ),
-            "policy", "$1", "name", "(.+)"
-          ) > 0
+              label_replace(
+                kopiur_snapshot_consecutive_failures{
+                  namespace="kopiur-system",
+                  exported_namespace=~".+",
+                  name=~".+"
+                },
+                "namespace", "$1", "exported_namespace", "(.+)"
+              ),
+              "policy", "$1", "name", "(.+)"
+            ) > 0
+          )
+          unless on (cluster, policy)
+          kopiur_intentionally_suspended_policy
         for: 5m
         labels:
           severity: critical
@@ -108,29 +131,31 @@ groups:
       - alert: KopiurSnapshotSuccessStale
         expr: |
           (
-            label_replace(
-              kopiur_policy_last_backup_success_timestamp_seconds{
-                namespace="kopiur-system",
-                exported_namespace=~".+",
-                policy=~".+",
-                policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
-              },
-              "namespace", "$1", "exported_namespace", "(.+)"
-            ) > 0
-          )
-          and
-          (
-            time()
-            - label_replace(
+            (
+              label_replace(
                 kopiur_policy_last_backup_success_timestamp_seconds{
                   namespace="kopiur-system",
                   exported_namespace=~".+",
-                  policy=~".+",
-                  policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
+                  policy=~".+"
                 },
                 "namespace", "$1", "exported_namespace", "(.+)"
-              ) > 86400
+              ) > 0
+            )
+            and
+            (
+              time()
+              - label_replace(
+                  kopiur_policy_last_backup_success_timestamp_seconds{
+                    namespace="kopiur-system",
+                    exported_namespace=~".+",
+                    policy=~".+"
+                  },
+                  "namespace", "$1", "exported_namespace", "(.+)"
+                ) > 86400
+            )
           )
+          unless on (cluster, policy)
+          kopiur_intentionally_suspended_policy
         for: 15m
         labels:
           severity: critical
@@ -146,18 +171,21 @@ groups:
       - alert: KopiurSnapshotFailed
         expr: |
           (
-            label_replace(
-              kopiur_snapshotpolicy_last_backup_success{
-                namespace="kopiur-system",
-                exported_namespace=~".+",
-                policy=~".+",
-                policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
-              },
-              "namespace", "$1", "exported_namespace", "(.+)"
-            ) == 0
+            (
+              label_replace(
+                kopiur_snapshotpolicy_last_backup_success{
+                  namespace="kopiur-system",
+                  exported_namespace=~".+",
+                  policy=~".+"
+                },
+                "namespace", "$1", "exported_namespace", "(.+)"
+              ) == 0
+            )
+            and on (cluster)
+            (kopiur_leader_is_leader == 1)
           )
-          and on (cluster)
-          (kopiur_leader_is_leader == 1)
+          unless on (cluster, policy)
+          kopiur_intentionally_suspended_policy
         for: 0m
         labels:
           severity: critical
@@ -173,42 +201,43 @@ groups:
       - alert: KopiurSnapshotStale
         expr: |
           (
-            label_replace(
-              kopiur_snapshotpolicy_last_backup_success{
-                namespace="kopiur-system",
-                exported_namespace=~".+",
-                policy=~".+",
-                policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
-              },
-              "namespace", "$1", "exported_namespace", "(.+)"
-            ) == 1
-            and on (cluster, namespace, policy)
             (
               label_replace(
-                kopiur_policy_last_backup_success_timestamp_seconds{
+                kopiur_snapshotpolicy_last_backup_success{
                   namespace="kopiur-system",
                   exported_namespace=~".+",
-                  policy=~".+",
-                  policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
+                  policy=~".+"
                 },
                 "namespace", "$1", "exported_namespace", "(.+)"
-              ) > 0
-              and
-              time()
-                - label_replace(
-                    kopiur_policy_last_backup_success_timestamp_seconds{
-                      namespace="kopiur-system",
-                      exported_namespace=~".+",
-                      policy=~".+",
-                      policy!~"^bhaiya-teaspoon(-tailscale-state)?$"
-                    },
-                    "namespace", "$1", "exported_namespace", "(.+)"
-                  )
-                > 129600
+              ) == 1
+              and on (cluster, namespace, policy)
+              (
+                label_replace(
+                  kopiur_policy_last_backup_success_timestamp_seconds{
+                    namespace="kopiur-system",
+                    exported_namespace=~".+",
+                    policy=~".+"
+                  },
+                  "namespace", "$1", "exported_namespace", "(.+)"
+                ) > 0
+                and
+                time()
+                  - label_replace(
+                      kopiur_policy_last_backup_success_timestamp_seconds{
+                        namespace="kopiur-system",
+                        exported_namespace=~".+",
+                        policy=~".+"
+                      },
+                      "namespace", "$1", "exported_namespace", "(.+)"
+                    )
+                  > 129600
+              )
             )
+            and on (cluster)
+            (kopiur_leader_is_leader == 1)
           )
-          and on (cluster)
-          (kopiur_leader_is_leader == 1)
+          unless on (cluster, policy)
+          kopiur_intentionally_suspended_policy
         for: 10m
         labels:
           severity: critical

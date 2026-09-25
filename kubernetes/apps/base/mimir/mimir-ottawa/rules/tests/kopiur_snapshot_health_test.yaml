@@ -155,13 +155,26 @@ tests:
     input_series:
       - series: 'kopiur_leader_is_leader{cluster="talos-ottawa"}'
         values: "1+0x2250"
+      # Bhaiya's lifecycle gauge is the generic intent signal used by the
+      # production rule; this fixture deliberately does not name Teaspoon in
+      # the alert expression.
+      - series: 'bhaiya_workspace_state{cluster="talos-ottawa",workspace="teaspoon",state="idle"}'
+        values: "1+0x2250"
       - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-teaspoon-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon",phase="Pending"}'
+        values: "1+0x2250"
+      - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-teaspoon-tailscale-state-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon-tailscale-state",phase="Pending"}'
         values: "1+0x2250"
       - series: 'kopiur_snapshot_consecutive_failures{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",name="bhaiya-teaspoon"}'
         values: "1+0x2250"
+      - series: 'kopiur_snapshot_consecutive_failures{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",name="bhaiya-teaspoon-tailscale-state"}'
+        values: "1+0x2250"
       - series: 'kopiur_snapshotpolicy_last_backup_success{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon"}'
         values: "1+0x2250"
+      - series: 'kopiur_snapshotpolicy_last_backup_success{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon-tailscale-state"}'
+        values: "1+0x2250"
       - series: 'kopiur_policy_last_backup_success_timestamp_seconds{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon"}'
+        values: "1+0x2250"
+      - series: 'kopiur_policy_last_backup_success_timestamp_seconds{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon-tailscale-state"}'
         values: "1+0x2250"
     alert_rule_test:
       - eval_time: 37h
