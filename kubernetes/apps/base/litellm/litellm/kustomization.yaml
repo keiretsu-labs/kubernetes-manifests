@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: litellm
 resources:
   - namespace.yaml
-  - configmap.yaml
   - secret.sops.yaml
   - postgres.yaml
   - dragonfly.yaml
@@ -17,13 +16,18 @@ resources:
   - dashboard.yaml
 
 configMapGenerator:
+  # Keep the content hash on the runtime config. The Deployment mounts it via
+  # subPath, so a stable ConfigMap name would leave running pods on stale
+  # model routes after a config edit.
+  - name: litellm-config
+    files:
+      - config.yaml
   - name: litellm-dashboard
     files:
       - dashboard.json
     options:
+      disableNameSuffixHash: true
       labels:
         grafana_dashboard: "1"
       annotations:
         grafana_folder: litellm
-generatorOptions:
-  disableNameSuffixHash: true

@@ -1,0 +1,130 @@
+model_list:
+  # The served SP model is intentionally one line away from a model swap:
+  # keep the public LiteLLM names stable while changing only this upstream ID.
+  - model_name: vllm/default
+    litellm_params:
+      model: openai/GLM-5.3-Flash-EXL3
+      api_base: http://stpetersburg-vllm-upstream/v1
+      api_key: none
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: vllm/auto
+    litellm_params:
+      model: openai/GLM-5.3-Flash-EXL3
+      api_base: http://stpetersburg-vllm-upstream/v1
+      api_key: none
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+
+  # Explicitly named for the fallback chain below. CLIProxy includes the
+  # OAuth-pool prefix in the upstream model ID, so preserve it in both the
+  # public alias and the OpenAI-compatible passthrough model. A bare
+  # cli/* -> openai/* route would drop that prefix and advertise models
+  # that CLIProxy rejects.
+  - model_name: cli/codex-subscription/vllm-fallback
+    litellm_params:
+      model: openai/codex-subscription/vllm-fallback
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+
+  # These concrete aliases keep representative OAuth-backed models visible
+  # in /v1/models. LiteLLM's OpenAI model-cost catalog cannot enumerate the
+  # non-OpenAI names that CLIProxy publishes from its subscription pools.
+  - model_name: cli/codex-subscription/gpt-5.5
+    litellm_params:
+      model: openai/codex-subscription/gpt-5.5
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: cli/anthropic-subscription/claude-sonnet-4-6
+    litellm_params:
+      model: openai/anthropic-subscription/claude-sonnet-4-6
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+
+  # Keep each live CLIProxy namespace passthrough-capable without copying its
+  # OAuth-backed catalog into Git. The prefix-aware wildcards forward the same
+  # namespace to the OpenAI-compatible upstream.
+  - model_name: cli/codex-subscription/*
+    litellm_params:
+      model: openai/codex-subscription/*
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: cli/anthropic-subscription/*
+    litellm_params:
+      model: openai/anthropic-subscription/*
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: cli/grok-subscription/*
+    litellm_params:
+      model: openai/grok-subscription/*
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: cli/ai/*
+    litellm_params:
+      model: openai/ai/*
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: cli/ai-kartik/*
+    litellm_params:
+      model: openai/ai-kartik/*
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+  database_connection_pool_limit: 10
+  database_connection_timeout: 30
+  coordination_redis:
+    host: os.environ/REDIS_HOST
+    port: os.environ/REDIS_PORT
+    password: os.environ/REDIS_PASSWORD
+  proxy_batch_write_at: 60
+  maximum_spend_logs_retention_period: 30
+  disable_master_key_return: true
+  store_model_in_db: false
+  json_logs: true
+  block_robots: true
+
+router_settings:
+  routing_strategy: simple-shuffle
+  num_retries: 2
+  max_fallbacks: 1
+  retry_after: 5
+  allowed_fails: 3
+  cooldown_time: 30
+  fallbacks:
+    - vllm/default: [cli/codex-subscription/vllm-fallback]
+    - vllm/auto: [cli/codex-subscription/vllm-fallback]
+
+litellm_settings:
+  request_timeout: 600
+  success_callback: [prometheus]
+  failure_callback: [prometheus]
+  telemetry: false
