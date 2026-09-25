@@ -60,10 +60,21 @@ metadata:
   name: litellm-postgres-s3
 spec:
   schedule: "0 45 1 * * *"
-  immediate: true
+  immediate: false
   backupOwnerReference: self
   method: plugin
   pluginConfiguration:
     name: barman-cloud.cloudnative-pg.io
   cluster:
     name: litellm-postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Backup
+metadata:
+  name: litellm-postgres-initial-20260925
+spec:
+  cluster:
+    name: litellm-postgres
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
