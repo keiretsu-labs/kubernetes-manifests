@@ -82,25 +82,6 @@ spec:
       owner: true
 ---
 apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageBucket
-metadata:
-  name: firefly-postgres
-spec:
-  clusterRef:
-    name: garage
-  globalAlias: firefly-postgres
-  quotas:
-    maxSize: 200Gi
-    maxObjects: 1000000
-  keyPermissions:
-    - keyRef:
-        name: firefly-postgres-key
-        namespace: firefly
-      read: true
-      write: true
-      owner: true
----
-apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageReferenceGrant
 metadata:
   name: garage-bucket-to-firefly-key
