@@ -11,3 +11,4 @@ resources:
   - woodpecker-postgres-key.yaml
   - suwayomi-postgres-key.yaml
   - teslamate-postgres-key.yaml
+  - litellm-postgres-key.yaml

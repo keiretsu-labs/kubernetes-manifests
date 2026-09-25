@@ -32,6 +32,13 @@ exemptions:
       beyond the database cluster.
 
   - cluster: ottawa
+    namespace: litellm
+    reason: >-
+      Postgres-only namespace: CNPG ScheduledBackup and continuous WAL
+      archiving to Garage protect the LiteLLM database. No application PVC
+      beyond the database cluster.
+
+  - cluster: ottawa
     namespace: mimir
     reason: >-
       Metrics TSDB is product-native multi-replica storage; Kopiur FSB of

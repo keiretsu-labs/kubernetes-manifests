@@ -1,0 +1,13 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: garage-bucket-to-litellm-postgres-key
+  namespace: litellm
+spec:
+  from:
+    - kind: GarageBucket
+      namespace: garage
+  to:
+    - kind: GarageKey
+      name: litellm-postgres-key

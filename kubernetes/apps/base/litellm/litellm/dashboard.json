@@ -1,0 +1,49 @@
+{
+  "title": "LiteLLM Proxy",
+  "uid": "litellm-proxy",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "time": {"from": "now-6h", "to": "now"},
+  "refresh": "30s",
+  "tags": ["litellm", "ai"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Requests / second",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "gridPos": {"h": 5, "w": 8, "x": 0, "y": 0},
+      "targets": [{"refId": "A", "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "value", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"}
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Failed requests / second",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "gridPos": {"h": 5, "w": 8, "x": 8, "y": 0},
+      "targets": [{"refId": "A", "expr": "sum(rate(litellm_proxy_failed_requests_metric_total{namespace=\"litellm\"}[5m]))"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "value", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"}
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Tokens / second by model",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "gridPos": {"h": 9, "w": 16, "x": 0, "y": 5},
+      "targets": [{"refId": "A", "expr": "sum by (model) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\"}[5m]))", "legendFormat": "{{model}}"}],
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "fillOpacity": 12, "lineWidth": 2, "showPoints": "never"}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Requests by model",
+      "datasource": {"type": "prometheus", "uid": "mimir"},
+      "gridPos": {"h": 9, "w": 8, "x": 16, "y": 5},
+      "targets": [{"refId": "A", "expr": "sum by (model) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))", "format": "table", "instant": true}],
+      "options": {"showHeader": true, "sortBy": [{"displayName": "Value", "desc": true}]}
+    }
+  ]
+}

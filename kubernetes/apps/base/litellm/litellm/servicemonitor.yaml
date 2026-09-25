@@ -1,0 +1,19 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: litellm
+  labels:
+    app.kubernetes.io/component: metrics
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: proxy
+  namespaceSelector:
+    matchNames:
+      - litellm
+  endpoints:
+    - port: metrics
+      path: /metrics/
+      interval: 30s
+      scrapeTimeout: 10s

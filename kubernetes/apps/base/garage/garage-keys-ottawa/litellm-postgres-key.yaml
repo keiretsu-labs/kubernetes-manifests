@@ -1,0 +1,24 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: litellm-postgres-key
+  namespace: litellm
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: LiteLLM PostgreSQL Backup Key
+  secretTemplate:
+    name: litellm-postgres-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: litellm-postgres
+        namespace: garage
+      read: true
+      write: true
+      owner: true
