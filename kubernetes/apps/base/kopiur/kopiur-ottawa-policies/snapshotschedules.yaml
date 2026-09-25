@@ -26,18 +26,6 @@ spec:
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotSchedule
 metadata:
-  name: vault-data
-  namespace: keiretsu
-spec:
-  policyRef:
-    name: vault-data
-  schedule:
-    cron: 0 2 * * *
-    jitter: 30m
----
-apiVersion: kopiur.home-operations.com/v1alpha1
-kind: SnapshotSchedule
-metadata:
   name: forgejo-data
   namespace: forgejo
 spec:
