@@ -88,7 +88,6 @@ metadata:
 spec:
   clusterRef:
     name: garage
-    namespace: garage
   globalAlias: firefly-postgres
   quotas:
     maxSize: 200Gi
