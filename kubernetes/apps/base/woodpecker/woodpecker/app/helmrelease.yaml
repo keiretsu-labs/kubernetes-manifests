@@ -85,13 +85,17 @@ spec:
         WOODPECKER_BACKEND: kubernetes
         WOODPECKER_MAX_WORKFLOWS: "4"
         WOODPECKER_BACKEND_K8S_NAMESPACE: woodpecker
-        WOODPECKER_BACKEND_K8S_STORAGE_CLASS: ${STORAGECLASS_DEFAULT}
+        # Every step pod in a workflow mounts the same workspace claim. The
+        # RBD class is RWO, so parallel steps on different nodes otherwise
+        # produce Multi-Attach failures and leave old claims attached during
+        # cleanup. CephFS is the RWX backend in Ottawa.
+        WOODPECKER_BACKEND_K8S_STORAGE_CLASS: rook-cephfs
         # The workspace-image Tode/Herdr closure needs more than the former
         # 128Gi was insufficient once the full Tode/Hermes/Pi closure and
         # OCI archive were realized together; retain headroom for GC and
         # registry preparation on cold releases.
         WOODPECKER_BACKEND_K8S_VOLUME_SIZE: 256G
-        WOODPECKER_BACKEND_K8S_STORAGE_RWX: false
+        WOODPECKER_BACKEND_K8S_STORAGE_RWX: true
         WOODPECKER_LOG_LEVEL: info
       persistence:
         enabled: false
