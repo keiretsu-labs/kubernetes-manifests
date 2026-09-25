@@ -225,26 +225,6 @@ groups:
             alerts remain green. Inspect the Woodpecker FIFO lane and project
             cancellation setting; do not cancel an active release blindly.
 
-      - alert: BhaiyaWorkspaceImageReleaseVersionLagging
-        expr: |
-          max by (cluster, image) (
-            bhaiya_workspace_image_release_version_lag_releases > 1
-          )
-          and on (cluster)
-          max by (cluster) (
-            bhaiya_workspace_image_release_observer_configured == 1
-          )
-        for: 15m
-        labels:
-          severity: warning
-        annotations:
-          summary: Workspace image releases are behind main
-          description: >-
-            main's semantic workspace-image/VERSION is more than one release
-            ahead of the newest durable workspace-image tag for at least 15
-            minutes. Inspect the main queue, dispatcher, tag pipeline, and
-            registry before treating the semantic lag as a build failure.
-
       - alert: BhaiyaWorkspaceImageReleasePublicationLagging
         expr: |
           max by (cluster, image) (

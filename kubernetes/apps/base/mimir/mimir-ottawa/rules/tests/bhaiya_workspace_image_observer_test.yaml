@@ -77,8 +77,6 @@ tests:
         values: "1+0x20"
       - series: 'bhaiya_woodpecker_main_queue_head_status{cluster="talos-ottawa",image="oci.cdn.keiretsu.top/corp/workspace",status="stalled"}'
         values: "1+0x20"
-      - series: 'bhaiya_workspace_image_release_version_lag_releases{cluster="talos-ottawa",image="oci.cdn.keiretsu.top/corp/workspace"}'
-        values: "2+0x20"
     alert_rule_test:
       - eval_time: 4m
         alertname: BhaiyaWoodpeckerMainQueueStalled
@@ -98,32 +96,13 @@ tests:
                 minutes. Newer main pushes can accumulate behind it while release
                 alerts remain green. Inspect the Woodpecker FIFO lane and project
                 cancellation setting; do not cancel an active release blindly.
-      - eval_time: 14m
-        alertname: BhaiyaWorkspaceImageReleaseVersionLagging
-        exp_alerts: []
-      - eval_time: 15m
-        alertname: BhaiyaWorkspaceImageReleaseVersionLagging
-        exp_alerts:
-          - exp_labels:
-              cluster: talos-ottawa
-              image: oci.cdn.keiretsu.top/corp/workspace
-              severity: warning
-            exp_annotations:
-              summary: Workspace image releases are behind main
-              description: >-
-                main's semantic workspace-image/VERSION is more than one release
-                ahead of the newest durable workspace-image tag for at least 15
-                minutes. Inspect the main queue, dispatcher, tag pipeline, and
-                registry before treating the semantic lag as a build failure.
 
-  # Main and the durable Forgejo tag can both be current while the consumer
+  # The durable Forgejo tag can be current while the consumer
   # registry is still missing several newer manifests.
   - interval: 1m
     input_series:
       - series: 'bhaiya_workspace_image_release_observer_configured{cluster="talos-ottawa"}'
         values: "1+0x20"
-      - series: 'bhaiya_workspace_image_release_version_lag_releases{cluster="talos-ottawa",image="oci.cdn.keiretsu.top/corp/workspace"}'
-        values: "0+0x20"
       - series: 'bhaiya_workspace_image_release_publication_lag_releases{cluster="talos-ottawa",image="oci.cdn.keiretsu.top/corp/workspace"}'
         values: "3+0x20"
     alert_rule_test:
