@@ -10,7 +10,7 @@ tests:
   # controller endpoint's namespace label.
   - interval: 1m
     input_series:
-      - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-teaspoon-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon",phase="Pending"}'
+      - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-actionable-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-actionable",phase="Pending"}'
         values: "1+0x80"
     alert_rule_test:
       - eval_time: 59m
@@ -24,15 +24,15 @@ tests:
               exported_namespace: bhaiya
               kind: Snapshot
               namespace: bhaiya
-              policy: bhaiya-teaspoon
-              name: bhaiya-teaspoon-1789721339
+              policy: bhaiya-actionable
+              name: bhaiya-actionable-1789721339
               phase: Pending
               severity: critical
             exp_annotations:
-              summary: Kopiur snapshot bhaiya/bhaiya-teaspoon is not completing
+              summary: Kopiur snapshot bhaiya/bhaiya-actionable is not completing
               description: >-
-                Kopiur snapshot bhaiya-teaspoon-1789721339 for
-                bhaiya/bhaiya-teaspoon has remained in Pending for at least one
+                Kopiur snapshot bhaiya-actionable-1789721339 for
+                bhaiya/bhaiya-actionable has remained in Pending for at least one
                 hour. Inspect the Snapshot, SnapshotPolicy, mover Job, and
                 controller events. This catches a stalled Pending or Running
                 snapshot; a failure-state alert alone would not catch this
@@ -42,7 +42,7 @@ tests:
   # stalled-state alert, even after the one-hour hold.
   - interval: 1m
     input_series:
-      - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-teaspoon-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon",phase="Succeeded"}'
+      - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-actionable-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-actionable",phase="Succeeded"}'
         values: "1+0x80"
     alert_rule_test:
       - eval_time: 1h1m
@@ -55,9 +55,9 @@ tests:
     input_series:
       - series: 'kopiur_leader_is_leader{cluster="talos-ottawa"}'
         values: "1+0x20"
-      - series: 'kopiur_snapshot_consecutive_failures{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",name="bhaiya-teaspoon"}'
+      - series: 'kopiur_snapshot_consecutive_failures{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",name="bhaiya-actionable"}'
         values: "1+0x20"
-      - series: 'kopiur_snapshotpolicy_last_backup_success{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon"}'
+      - series: 'kopiur_snapshotpolicy_last_backup_success{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-actionable"}'
         values: "0+0x20"
     alert_rule_test:
       - eval_time: 4m
@@ -70,14 +70,14 @@ tests:
               cluster: talos-ottawa
               exported_namespace: bhaiya
               namespace: bhaiya
-              policy: bhaiya-teaspoon
-              name: bhaiya-teaspoon
+              policy: bhaiya-actionable
+              name: bhaiya-actionable
               severity: critical
             exp_annotations:
-              summary: Kopiur policy bhaiya/bhaiya-teaspoon has failed snapshots
+              summary: Kopiur policy bhaiya/bhaiya-actionable has failed snapshots
               description: >-
                 Kopiur reports 1 consecutive failed snapshots for
-                bhaiya/bhaiya-teaspoon since its latest success. Inspect the
+                bhaiya/bhaiya-actionable since its latest success. Inspect the
                 current Snapshot, mover Job, repository, and controller events.
                 This is separate from the stalled-state alert because Pending
                 is not Failed.
@@ -88,12 +88,12 @@ tests:
               cluster: talos-ottawa
               exported_namespace: bhaiya
               namespace: bhaiya
-              policy: bhaiya-teaspoon
+              policy: bhaiya-actionable
               severity: critical
             exp_annotations:
-              summary: Kopiur policy bhaiya-teaspoon reports a failed snapshot
+              summary: Kopiur policy bhaiya-actionable reports a failed snapshot
               description: >-
-                Kopiur's latest terminal snapshot for bhaiya/bhaiya-teaspoon is
+                Kopiur's latest terminal snapshot for bhaiya/bhaiya-actionable is
                 failed. This is a per-policy current-result signal; an old Failed
                 Snapshot object alone does not keep the alert firing after a later
                 success. Inspect the current Snapshot, SnapshotPolicy, mover Job, and
@@ -148,3 +148,34 @@ tests:
                 turn a zero gauge into an immediate stale alert. Inspect the
                 SnapshotSchedule, current Snapshot, mover Job, and repository
                 reachability.
+
+  # Teaspoon remains suspended by policy. Even pathological failure, stale,
+  # or Pending metrics must not page for either intentionally suspended policy.
+  - interval: 1m
+    input_series:
+      - series: 'kopiur_leader_is_leader{cluster="talos-ottawa"}'
+        values: "1+0x2250"
+      - series: 'kopiur_resource_phase{cluster="talos-ottawa",kind="Snapshot",name="bhaiya-teaspoon-1789721339",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon",phase="Pending"}'
+        values: "1+0x2250"
+      - series: 'kopiur_snapshot_consecutive_failures{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",name="bhaiya-teaspoon"}'
+        values: "1+0x2250"
+      - series: 'kopiur_snapshotpolicy_last_backup_success{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon"}'
+        values: "1+0x2250"
+      - series: 'kopiur_policy_last_backup_success_timestamp_seconds{cluster="talos-ottawa",namespace="kopiur-system",exported_namespace="bhaiya",policy="bhaiya-teaspoon"}'
+        values: "1+0x2250"
+    alert_rule_test:
+      - eval_time: 37h
+        alertname: KopiurSnapshotNotCompleting
+        exp_alerts: []
+      - eval_time: 37h
+        alertname: KopiurSnapshotFailureState
+        exp_alerts: []
+      - eval_time: 37h
+        alertname: KopiurSnapshotSuccessStale
+        exp_alerts: []
+      - eval_time: 37h
+        alertname: KopiurSnapshotFailed
+        exp_alerts: []
+      - eval_time: 37h
+        alertname: KopiurSnapshotStale
+        exp_alerts: []
