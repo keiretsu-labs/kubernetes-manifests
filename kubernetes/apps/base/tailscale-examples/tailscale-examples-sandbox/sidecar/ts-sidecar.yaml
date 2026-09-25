@@ -22,7 +22,7 @@ spec:
         command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
       - name: tailscale
         imagePullPolicy: Always
-        image: "ghcr.io/tailscale/tailscale:v1.102.4"
+        image: "ghcr.io/tailscale/tailscale:v1.102.5"
         securityContext:
           privileged: false
           capabilities:
