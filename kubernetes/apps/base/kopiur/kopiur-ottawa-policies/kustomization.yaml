@@ -6,7 +6,6 @@ resources:
   - ./tinyauth.yaml
   - ./cliproxy.yaml
   - ./firefly.yaml
-  - ./keiretsu.yaml
   - ./media.yaml
   - ./forgejo.yaml
   - ./snapshotschedules.yaml
