@@ -7,4 +7,8 @@ handler: kata
 overhead:
   podFixed:
     cpu: "250m"
-    memory: "130Mi"
+    # The Kata Cloud Hypervisor guest starts with 2GiB default_memory before
+    # the workload limit is hot-added. Reserve that base plus 512MiB for the
+    # VMM so the pod cgroup can back the full VM. RuntimeClass overhead is
+    # copied only onto newly admitted Pods; it does not mutate existing Pods.
+    memory: "2560Mi"
