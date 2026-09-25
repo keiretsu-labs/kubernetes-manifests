@@ -59,3 +59,5 @@ spec:
       namespace: teslamate
     - kind: GarageKey
       namespace: firefly
+    - kind: GarageKey
+      namespace: litellm
