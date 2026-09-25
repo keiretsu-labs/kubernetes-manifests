@@ -13,3 +13,4 @@ resources:
   - woodpecker-postgres.yaml
   - suwayomi-postgres.yaml
   - teslamate-postgres.yaml
+  - litellm-postgres.yaml

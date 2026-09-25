@@ -1,0 +1,69 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: litellm-postgres
+spec:
+  instances: 2
+  bootstrap:
+    initdb:
+      database: litellm
+      owner: litellm
+      dataChecksums: true
+  storage:
+    size: 10Gi
+    storageClass: ceph-block-replicated
+  monitoring:
+    enablePodMonitor: true
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: litellm-postgres-s3-store
+        serverName: litellm-postgres
+  backup:
+    retentionPolicy: "30d"
+  externalClusters:
+    - name: litellm-postgres-backup
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: litellm-postgres-s3-store
+          serverName: litellm-postgres
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: litellm-postgres-s3-store
+spec:
+  configuration:
+    destinationPath: s3://litellm-postgres/${LOCATION}/
+    endpointURL: http://${COMMON_S3_ENDPOINT}
+    s3Credentials:
+      accessKeyId:
+        name: litellm-postgres-s3
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: litellm-postgres-s3
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      maxParallel: 8
+  instanceSidecarConfiguration:
+    env:
+      - name: AWS_DEFAULT_REGION
+        value: garage
+  retentionPolicy: "30d"
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: litellm-postgres-s3
+spec:
+  schedule: "0 45 1 * * *"
+  immediate: true
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  cluster:
+    name: litellm-postgres

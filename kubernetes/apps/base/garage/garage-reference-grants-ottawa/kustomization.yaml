@@ -9,3 +9,4 @@ resources:
   - lobby-postgres-reference-grant.yaml
   - woodpecker-reference-grant.yaml
   - teslamate-reference-grant.yaml
+  - litellm-reference-grant.yaml

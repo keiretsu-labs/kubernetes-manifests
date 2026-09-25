@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stpetersburg-vllm-upstream
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: Override
+spec:
+  type: ExternalName
+  externalName: model-serving-mesh.ai.svc.clusterset.local
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cliproxy-upstream
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: Override
+spec:
+  type: ExternalName
+  externalName: cliproxy.cliproxy.svc.cluster.local
+  ports:
+    - name: http
+      port: 8317
+      protocol: TCP

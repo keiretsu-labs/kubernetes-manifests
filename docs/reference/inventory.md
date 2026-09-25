@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 58 | 122 |
+| `ottawa` | 4 | 59 | 123 |
 | `robbinsdale` | 3 | 43 | 91 |
 | `stpetersburg` | 3 | 39 | 81 |
-| **total** | **10** | **140** | **294** |
+| **total** | **10** | **141** | **295** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -118,6 +118,7 @@ diagram in the [README](../../README.md#architecture).
 | Application workloads | `homer-operator` | `homer-operator-install` |
 | Application workloads | `immich` | `immich` |
 | Application workloads | `kopiur` | `kopiur` → ns `kopiur-system`, `kopiur-ottawa-repo`, `kopiur-production` |
+| Application workloads | `litellm` | `litellm` |
 | Application workloads | `media` | `media-apps` |
 | Application workloads | `searxng` | `searxng` |
 | Application workloads | `tailscale-pam` | `tailscale-pam-lobby` |
