@@ -1,0 +1,54 @@
+rule_files:
+  - ../k8gb.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # k8gb retains metric series after a GSLB is removed. A retired object with
+  # no healthy records and only a NotFound service status must not page.
+  - interval: 1m
+    input_series:
+      - series: 'k8gb_gslb_healthy_records{cluster="talos-robbinsdale",name="velero",namespace="keiretsu-top"}'
+        values: "0+0x10"
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-robbinsdale",name="velero",namespace="keiretsu-top",status="Healthy"}'
+        values: "0+0x10"
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-robbinsdale",name="velero",namespace="keiretsu-top",status="Unhealthy"}'
+        values: "0+0x10"
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-robbinsdale",name="velero",namespace="keiretsu-top",status="NotFound"}'
+        values: "1+0x10"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: K8gbNoHealthyRecords
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: K8gbNoHealthyRecords
+        exp_alerts: []
+
+  # A live GSLB with an unhealthy backend remains actionable even though it
+  # has zero healthy DNS records.
+  - interval: 1m
+    input_series:
+      - series: 'k8gb_gslb_healthy_records{cluster="talos-ottawa",name="velero",namespace="keiretsu-top"}'
+        values: "0+0x10"
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-ottawa",name="velero",namespace="keiretsu-top",status="Healthy"}'
+        values: "0+0x10"
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-ottawa",name="velero",namespace="keiretsu-top",status="Unhealthy"}'
+        values: "1+0x10"
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-ottawa",name="velero",namespace="keiretsu-top",status="NotFound"}'
+        values: "0+0x10"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: K8gbNoHealthyRecords
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: K8gbNoHealthyRecords
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              name: velero
+              namespace: keiretsu-top
+              severity: critical
+            exp_annotations:
+              summary: >-
+                GSLB velero in keiretsu-top has zero healthy DNS records while
+                k8gb still reports a serving or unhealthy backend.
