@@ -1,0 +1,78 @@
+rule_files:
+  - ../bhaiya.yaml
+
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'kube_pod_container_status_restarts_total{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-raj-codes",container="workspace"}'
+        values: "0 0 1 1 1 1"
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: BhaiyaWorkspaceRestarting
+        exp_alerts: []
+      - eval_time: 4m
+        alertname: BhaiyaWorkspaceRestarting
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: bhaiya
+              pod: sandbox-raj-codes
+              severity: critical
+            exp_annotations:
+              summary: Bhaiya workspace sandbox-raj-codes restarted
+              description: >-
+                The workspace container in bhaiya/sandbox-raj-codes restarted
+                within the last 15 minutes. Check the previous termination
+                reason, pod cgroup memory, Kata RuntimeClass overhead, and node
+                OOM counters before restarting the workspace again.
+
+  - interval: 1m
+    input_series:
+      - series: 'container_memory_working_set_bytes{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-raj-codes",container="",image=""}'
+        values: "95 95 95 95 95 95 95"
+      - series: 'kube_pod_container_resource_limits{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-raj-codes",resource="memory",unit="byte"}'
+        values: "100 100 100 100 100 100 100"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: BhaiyaWorkspaceMemoryNearLimit
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: BhaiyaWorkspaceMemoryNearLimit
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: bhaiya
+              pod: sandbox-raj-codes
+              severity: warning
+            exp_annotations:
+              summary: Bhaiya workspace sandbox-raj-codes is near its memory limit
+              description: >-
+                The Kata pod cgroup for bhaiya/sandbox-raj-codes has exceeded
+                90 percent of the declared workspace container memory limit
+                for five minutes. The guest's apparent free RAM does not prove
+                that the host cgroup has reclaimable headroom; correlate
+                RuntimeClass overhead and node OOM counters.
+
+  - interval: 1m
+    input_series:
+      - series: 'node_vmstat_oom_kill{cluster="talos-ottawa",instance="shiro"}'
+        values: "0 1 1 1"
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: BhaiyaNodeOOMKill
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: BhaiyaNodeOOMKill
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              instance: shiro
+              severity: critical
+            exp_annotations:
+              summary: Node shiro recorded a kernel OOM kill
+              description: >-
+                The node's kernel OOM-kill counter increased within the last 15
+                minutes. Correlate this host signal with Bhaiya workspace
+                restarts and pod-level cgroup usage before taking action.
