@@ -25,9 +25,11 @@ data:
           stream_timeout: 3600
           max_retries: 2
 
-      # Explicitly named for the fallback chain below. The wildcard keeps the
-      # rest of the live CLIProxy OpenAI-compatible catalog passthrough-capable
-      # without copying an OAuth-backed catalog into this repository.
+      # Explicitly named for the fallback chain below. CLIProxy includes the
+      # OAuth-pool prefix in the upstream model ID, so preserve it in both the
+      # public alias and the OpenAI-compatible passthrough model. A bare
+      # cli/* -> openai/* route would drop that prefix and advertise models
+      # that CLIProxy rejects.
       - model_name: cli/codex-subscription/vllm-fallback
         litellm_params:
           model: openai/codex-subscription/vllm-fallback
@@ -36,9 +38,65 @@ data:
           timeout: 600
           stream_timeout: 3600
           max_retries: 2
-      - model_name: cli/*
+
+      # These concrete aliases keep representative OAuth-backed models visible
+      # in /v1/models. LiteLLM's OpenAI model-cost catalog cannot enumerate the
+      # non-OpenAI names that CLIProxy publishes from its subscription pools.
+      - model_name: cli/codex-subscription/gpt-5.5
         litellm_params:
-          model: openai/*
+          model: openai/codex-subscription/gpt-5.5
+          api_base: http://cliproxy-upstream:8317/v1
+          api_key: os.environ/CLIPROXY_API_KEY
+          timeout: 600
+          stream_timeout: 3600
+          max_retries: 2
+      - model_name: cli/anthropic-subscription/claude-sonnet-4-6
+        litellm_params:
+          model: openai/anthropic-subscription/claude-sonnet-4-6
+          api_base: http://cliproxy-upstream:8317/v1
+          api_key: os.environ/CLIPROXY_API_KEY
+          timeout: 600
+          stream_timeout: 3600
+          max_retries: 2
+
+      # Keep the Codex subscription pool passthrough-capable without copying
+      # its OAuth-backed catalog into Git. The prefix-aware wildcard expands
+      # to cli/codex-subscription/* and forwards the same prefix downstream.
+      - model_name: cli/codex-subscription/*
+        litellm_params:
+          model: openai/codex-subscription/*
+          api_base: http://cliproxy-upstream:8317/v1
+          api_key: os.environ/CLIPROXY_API_KEY
+          timeout: 600
+          stream_timeout: 3600
+          max_retries: 2
+      - model_name: cli/anthropic-subscription/*
+        litellm_params:
+          model: openai/anthropic-subscription/*
+          api_base: http://cliproxy-upstream:8317/v1
+          api_key: os.environ/CLIPROXY_API_KEY
+          timeout: 600
+          stream_timeout: 3600
+          max_retries: 2
+      - model_name: cli/grok-subscription/*
+        litellm_params:
+          model: openai/grok-subscription/*
+          api_base: http://cliproxy-upstream:8317/v1
+          api_key: os.environ/CLIPROXY_API_KEY
+          timeout: 600
+          stream_timeout: 3600
+          max_retries: 2
+      - model_name: cli/ai/*
+        litellm_params:
+          model: openai/ai/*
+          api_base: http://cliproxy-upstream:8317/v1
+          api_key: os.environ/CLIPROXY_API_KEY
+          timeout: 600
+          stream_timeout: 3600
+          max_retries: 2
+      - model_name: cli/ai-kartik/*
+        litellm_params:
+          model: openai/ai-kartik/*
           api_base: http://cliproxy-upstream:8317/v1
           api_key: os.environ/CLIPROXY_API_KEY
           timeout: 600
