@@ -324,6 +324,69 @@ groups:
   # OOM coverage for bhaiya pods comes from the kube-state-metrics-based
   # OomKilled rule in rules/monitoring.yaml, which is namespace-agnostic and
   # verified firing for forgejo-mcp.
+  - alert: BhaiyaWorkspaceRestarting
+    expr: |
+      max by (cluster, namespace, pod) (
+        increase(kube_pod_container_status_restarts_total{
+          namespace="bhaiya",
+          pod=~"sandbox-.+",
+          container="workspace"
+        }[15m])
+      ) > 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: Bhaiya workspace {{ $labels.pod }} restarted
+      description: >-
+        The workspace container in {{ $labels.namespace }}/{{ $labels.pod }}
+        restarted within the last 15 minutes. Check the previous termination
+        reason, pod cgroup memory, Kata RuntimeClass overhead, and node OOM
+        counters before restarting the workspace again.
+  - alert: BhaiyaWorkspaceMemoryNearLimit
+    expr: |
+      (
+        max by (cluster, namespace, pod) (
+          container_memory_working_set_bytes{
+            namespace="bhaiya",
+            pod=~"sandbox-.+",
+            container="",
+            image=""
+          }
+        )
+        /
+        on (cluster, namespace, pod)
+        sum by (cluster, namespace, pod) (
+          kube_pod_container_resource_limits{
+            namespace="bhaiya",
+            pod=~"sandbox-.+",
+            resource="memory",
+            unit="byte"
+          }
+        )
+      ) > 0.90
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bhaiya workspace {{ $labels.pod }} is near its memory limit
+      description: >-
+        The Kata pod cgroup for {{ $labels.namespace }}/{{ $labels.pod }} has
+        exceeded 90 percent of the declared workspace container memory limit
+        for five minutes. The guest's apparent free RAM does not prove that
+        the host cgroup has reclaimable headroom; correlate RuntimeClass
+        overhead and node OOM counters.
+  - alert: BhaiyaNodeOOMKill
+    expr: increase(node_vmstat_oom_kill{cluster=~"talos-.+"}[15m]) > 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Node {{ $labels.instance }} recorded a kernel OOM kill
+      description: >-
+        The node's kernel OOM-kill counter increased within the last 15
+        minutes. Correlate this host signal with Bhaiya workspace restarts and
+        pod-level cgroup usage before taking action.
   - alert: BhaiyaPVCNearFull
     expr: |
       (
