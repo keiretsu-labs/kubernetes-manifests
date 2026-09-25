@@ -12,6 +12,8 @@ spec:
   dependsOn:
     - name: cnpg-system
     - name: dragonfly-operator-system
+    - name: garage-bucket
+    - name: garage-keys
     - name: home-local-gateway
     - name: home-tailscale-gateway
     - name: monitoring
