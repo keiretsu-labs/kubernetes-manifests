@@ -34,6 +34,13 @@ spec:
       runAsGroup: 0
       runAsNonRoot: false
     privilegedMode: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
     # Do NOT put tolerations here — SnapshotPolicy.spec.mover has no
     # tolerations field (schema reject / Flux dry-run fail). Scheduling onto
     # tainted orin-0 is handled by Repository.sourceColocation Auto (default):
