@@ -32,7 +32,11 @@ spec:
       replicaCount: 4
       # Agent registration defaults to the pod hostname. Keep Robbinsdale
       # registrations distinct from Ottawa's woodpecker-agent-0/1/2 names.
-      nameOverride: robbinsdale-agent
+      # Renamed from robbinsdale-agent so Helm creates a fresh StatefulSet with
+      # the persistence volumeClaimTemplates below: Kubernetes forbids adding
+      # volumeClaimTemplates to an existing StatefulSet, which stalled the
+      # upgrade from #3258 (RetriesExceeded, rolled back).
+      nameOverride: robbinsdale-runner
       image:
         registry: docker.io
         repository: woodpeckerci/woodpecker-agent
@@ -54,6 +58,18 @@ spec:
         # the 20G default on a release build.
         WOODPECKER_BACKEND_K8S_VOLUME_SIZE: 256G
         WOODPECKER_BACKEND_K8S_STORAGE_RWX: false
+        # The per-workflow volume is RWO (ceph-block, STORAGE_RWX false), so
+        # every step pod of one workflow must run on the node where the volume
+        # is attached. Co-locate pods sharing a task-uuid on one hostname, per
+        # https://woodpecker-ci.org/docs/administration/configuration/backends/kubernetes
+        # (matchLabelKeys needs Kubernetes >= 1.33; Robbinsdale is v1.36).
+        WOODPECKER_BACKEND_K8S_POD_AFFINITY: |
+          podAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector: {}
+                matchLabelKeys:
+                  - woodpecker-ci.org/task-uuid
+                topologyKey: kubernetes.io/hostname
         WOODPECKER_LOG_LEVEL: info
       persistence:
         # Keep each agent's registration identity across StatefulSet pod
