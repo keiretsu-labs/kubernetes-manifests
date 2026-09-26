@@ -306,7 +306,6 @@ spec:
                   ("vllm", "http://stpetersburg-vllm-upstream/v1/models"),
               )
               metadata_alias_sources = {
-                  "codex-subscription/vllm-fallback": "codex-subscription/gpt-5.6-luna",
                   "vllm/GLM-5.3-Flash-EXL3": "vllm/GLM-5.3-Flash-EXL3",
               }
               # Facts the upstream /v1/models does not publish. Limits do NOT
