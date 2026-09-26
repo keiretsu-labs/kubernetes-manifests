@@ -96,9 +96,28 @@ spec:
         # registry preparation on cold releases.
         WOODPECKER_BACKEND_K8S_VOLUME_SIZE: 256G
         WOODPECKER_BACKEND_K8S_STORAGE_RWX: true
+        # Keep CI step pods off shiro. shiro hosts the raj-codes Kata
+        # workspace sandbox, and on 2026-09-25 every CI burst that landed
+        # there stalled the node runtime: the Kata VM and unrelated pods were
+        # killed and recreated four times. Workspace claims are CephFS RWX,
+        # so steps can run on any remaining node. The kube backend parses
+        # this with sigs.k8s.io/yaml into a core/v1 Affinity; step-level
+        # affinity stays disallowed (the default).
+        WOODPECKER_BACKEND_K8S_POD_AFFINITY: >-
+          {"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/hostname","operator":"NotIn","values":["shiro"]}]}]}}}
         WOODPECKER_LOG_LEVEL: info
       persistence:
         enabled: false
+      # Keep the agents themselves off shiro as well (see the step affinity above).
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - shiro
       serviceAccount:
         create: true
         rbac:
