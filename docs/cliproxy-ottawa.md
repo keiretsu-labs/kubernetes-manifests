@@ -45,9 +45,12 @@ Anthropic-compatible APIs.
   vLLM does not publish one in its model catalog.
 - Bhaiya serializes that unknown output as `0` in the OpenCode limit object
   because OpenCode requires both `context` and `output`.
-- `codex-subscription/vllm-fallback` is the GitOps-owned fallback model. It
-  maps to the live `gpt-5.6-luna` Codex subscription model and remains
-  available whether or not the St. Petersburg GLM endpoint is healthy.
+- `codex-subscription/vllm-fallback` is a GitOps-owned alias for the live
+  `gpt-5.6-luna` Codex subscription model and remains available whether or
+  not the St. Petersburg GLM endpoint is healthy. Bhaiya no longer has a
+  fallback model (it always uses `BHAIYA_CLIPROXY_DEFAULT_MODEL`); the alias
+  stays because LiteLLM's `cli/codex-subscription/vllm-fallback` route, the
+  Pi metadata alias map, and Bhaiya workspace-image fixtures still use it.
 - `force-model-prefix` is enabled and every route owns its client-visible
   prefix: `codex-subscription/<model>` for the logged-in Codex subscription,
   `anthropic-subscription/<model>` for the logged-in Claude subscription,
