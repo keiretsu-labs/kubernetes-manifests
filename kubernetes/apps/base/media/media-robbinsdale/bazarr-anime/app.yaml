@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: bazarr-anime
-        image: lscr.io/linuxserver/bazarr:1.6.1
+        image: lscr.io/linuxserver/bazarr:1.6.2
         ports:
         - name: http
           containerPort: 6767
