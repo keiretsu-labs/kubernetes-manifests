@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: litellm-virtual-keys
+    namespace: litellm
+    labels:
+        app.kubernetes.io/name: litellm
+        app.kubernetes.io/component: virtual-keys
+type: Opaque
+stringData:
+    raj-codes: ENC[AES256_GCM,data:KcyqvOzq2rEa5KeiSMmXfnFobFj/Kio+KtzSA4C7fTgBwdkOHXaHKjwerAI2Zt1mKhd3,iv:rrlrc7JGWnKdZqx9OpDhc4P8azxh/n7Aas219Uycchc=,tag:0JnjnobY0neFW2chAsF1Sg==,type:str]
+    raj-personal: ENC[AES256_GCM,data:uxEZINj75Sx7uXVuERWh6zy/+8PoubuWYIy/9EKsfeO9lgoL3tO4cjMPNWnHSUt1I9kg,iv:99ikF0JkXY5JAVDNPsRadZqc/7uAL5riVP5qOAECxx0=,tag:3SqEI0aFWkddun89ZzqYOQ==,type:str]
+    hermes: ENC[AES256_GCM,data:JPRHUQMZD4I2Vwwb+YbyVYfEwGQdNkzUQ+UhyNU0LuFAuRHQiabs8f0stsK1/wKeir6z,iv:sTi5s3A3wfqcvu83/UI9QYvjbtQqp21mU+8+O9Xhf0Y=,tag:weFr40YgormXZ8b7/LmK0w==,type:str]
+    opencode: ENC[AES256_GCM,data:4242+iGdhgVaX1/ibaaLMqr3diG80FcOENvF+PShUdYAoBNjKSmZYfI1A/zK0sereqeb,iv:/HqNTTpGab3nv45g2Eqb3mleqg5uSaqkxy5buj86WQQ=,tag:86K2ddP+IgROGroKdsvPIg==,type:str]
+    kartik-codes: ENC[AES256_GCM,data:ZtUux+A45fyGcV1FbkM8nW8KTnxDnG2C1/u653Ae8M98Z38eBdNkuOAFndtJgrCCVYdo,iv:KOWVgdK6BGVnmZ2bgvbaQagqQrc9ZsSckFTBIyKgl74=,tag:I4iZpJqBW6mjgJ6mtzdM7A==,type:str]
+    raj-trades: ENC[AES256_GCM,data:Ene7bRrj+BJ0+FxmDhneDIqUlkJWAHwUsC7Bko5k4FjRvt8+w+KHS/X8Ryj2VUCKEQPo,iv:q5TTiez9rA5Nl+i+pt0+nrI9ZH32c6GvOcHMS81C8nc=,tag:vkt/rTBOCkjPZhHdVK3IeA==,type:str]
+    codes-renovate: ENC[AES256_GCM,data:wCnFHIGmCWCPPufTWXwI5YJvim+eK+qsZ+3yAg3TkFy0eruve15Yt5V1PnW2RHpfwuYA,iv:nJoJA/KCWo73vzXIeWwq/cAN52VaaCeK6EOxSBHJACg=,tag:20EpNTJuAFR2h/3/x1Vn4Q==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-09-26T11:09:11Z"
+    mac: ENC[AES256_GCM,data:BdPLzLk+2jlzCN+HLIu8tv2uCNY+LZeCmjoHxOJqYsLKpJj3HmCmCxLTmViMu9n1rpDCXzB2GiNCzkO3gGrCthm2c5+zs5vB/aRzVTCEh8UZBhejvlD2nwLVZzbttVYArS0GoE9SMyZ8yUMbJuAEEZBS1gUa+hORVxxcd1Ugq78=,iv:Mc3RYEk07bw3jIg0iqL+9m8NXWoknpXeySlTR2ljkXU=,tag:05hluiiRWnfZYAXP0ZeN7Q==,type:str]
+    pgp:
+        - created_at: "2026-09-26T11:09:11Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveARAAkARUfQ9MMUPyaou650TK5+67pXrxI437cudqE+LYkme0
+            SgoQ4WW5vh0MqFbDXD82xzpvY8Gn1VDS81nMWS/U+GKNGW6FtibIPci+MdFR0Q/V
+            SVhj6RniSxhDwd/3Z9WZJXH1kb27CsdQH4xmJRVyqXwlig+7YD+XHE0jXN9X6oGX
+            VCmNjlITzxutLtIOFYUul+bWKSDFhYoPQLcPvPUnFi/y+J9uW0Klyg6snuI59fLr
+            1NtMGMjhKRrqTyDjgGx5Cp/q+z9PFOxgB9QaqS13rE3U4nfk6ZRewWGZlghE5+zg
+            SwG3JS95/gu++teCATDPekHvHqvekGUsB5CTlI6RpbemGyfpPpu4R5J6+4BwEDjP
+            0Zc6jvZrkfDwuPZ5vbm8svjwFPXByNeadFk2x/qQZqykMm8NXjTkMoRo66wxRAgE
+            kq63SAn43F4BVvvJwMU5NKY3YN1S2uDKEqGcJYdXySXFxTqVQj7bk3H3TkRFzmjE
+            NOtnKQC+kFwN58h4fp4LjlNQFRY28RRR4+iuZWAZhIea9KbfwEkPlJUlVSpTj7C/
+            WzHTTLrTxcxXVTa9l/Zo47N0iOyKiBeVlU06Vo8KECLEHfaq+z2o0xuYUOPcPV/e
+            S0eTDuBS6gNflEE/wFxQvCRDHjiSJFvXy5yhpD57WtZAHOZBe1cUlu3ba7nqToHS
+            XgGKkaPjlTHpgYFbHGLIf0QnwT4uNv5dX+4MP2GPCp0MhC0vZt7ZOl4biE+zoIHs
+            wJkU0E1FysSciKQdUfZ5cy6m0qL8F3oQE3PJoqdRJycNDOr8GSBZpL3Hy3uKA58=
+            =ioHp
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.3

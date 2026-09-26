@@ -5,6 +5,7 @@ namespace: litellm
 resources:
   - namespace.yaml
   - secret.sops.yaml
+  - virtual-keys.sops.yaml
   - postgres.yaml
   - dragonfly.yaml
   - upstreams.yaml

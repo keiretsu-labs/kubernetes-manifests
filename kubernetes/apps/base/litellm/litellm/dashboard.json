@@ -2,48 +2,424 @@
   "title": "LiteLLM Proxy",
   "uid": "litellm-proxy",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
-  "time": {"from": "now-6h", "to": "now"},
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
   "refresh": "30s",
-  "tags": ["litellm", "ai"],
+  "tags": [
+    "litellm",
+    "ai"
+  ],
   "panels": [
     {
       "id": 1,
       "type": "stat",
       "title": "Requests / second",
-      "datasource": {"type": "prometheus", "uid": "mimir"},
-      "gridPos": {"h": 5, "w": 8, "x": 0, "y": 0},
-      "targets": [{"refId": "A", "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))"}],
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "value", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
     },
     {
       "id": 2,
       "type": "stat",
       "title": "Failed requests / second",
-      "datasource": {"type": "prometheus", "uid": "mimir"},
-      "gridPos": {"h": 5, "w": 8, "x": 8, "y": 0},
-      "targets": [{"refId": "A", "expr": "sum(rate(litellm_proxy_failed_requests_metric_total{namespace=\"litellm\"}[5m]))"}],
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "value", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(litellm_proxy_failed_requests_metric_total{namespace=\"litellm\"}[5m]))"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
     },
     {
       "id": 3,
       "type": "timeseries",
       "title": "Tokens / second by model",
-      "datasource": {"type": "prometheus", "uid": "mimir"},
-      "gridPos": {"h": 9, "w": 16, "x": 0, "y": 5},
-      "targets": [{"refId": "A", "expr": "sum by (model) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\"}[5m]))", "legendFormat": "{{model}}"}],
-      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "fillOpacity": 12, "lineWidth": 2, "showPoints": "never"}}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 0,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\"}[5m]))",
+          "legendFormat": "{{model}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
     },
     {
       "id": 4,
       "type": "table",
       "title": "Requests by model",
-      "datasource": {"type": "prometheus", "uid": "mimir"},
-      "gridPos": {"h": 9, "w": 8, "x": 16, "y": 5},
-      "targets": [{"refId": "A", "expr": "sum by (model) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))", "format": "table", "instant": true}],
-      "options": {"showHeader": true, "sortBy": [{"displayName": "Value", "desc": true}]}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (requested_model) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Value",
+            "desc": true
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "type": "row",
+      "title": "By virtual key (key_alias)",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "panels": []
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Requests / second by key alias",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (api_key_alias) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))",
+          "legendFormat": "{{api_key_alias}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Tokens / second by key alias",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (api_key_alias) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\"}[5m]))",
+          "legendFormat": "{{api_key_alias}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Usage by key alias and model (last 24h)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (api_key_alias, requested_model) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[24h]))",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (api_key_alias, requested_model) (increase(litellm_total_tokens_metric_total{namespace=\"litellm\"}[24h]))",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value #A": "Requests",
+              "Value #B": "Tokens"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Tokens",
+            "desc": true
+          }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Remaining rate limit by key alias (requests / tokens per minute)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "min by (api_key_alias) (litellm_remaining_api_key_requests_for_model{namespace=\"litellm\"})",
+          "legendFormat": "{{api_key_alias}} RPM left"
+        },
+        {
+          "refId": "B",
+          "expr": "min by (api_key_alias) (litellm_remaining_api_key_tokens_for_model{namespace=\"litellm\"})",
+          "legendFormat": "{{api_key_alias}} TPM left"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Failed requests / second by key alias and status",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (api_key_alias, status_code) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", status_code!~\"2..\"}[5m]))",
+          "legendFormat": "{{api_key_alias}} {{status_code}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
     }
   ]
 }

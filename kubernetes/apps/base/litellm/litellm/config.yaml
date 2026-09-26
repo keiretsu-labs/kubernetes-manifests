@@ -1,12 +1,57 @@
 model_list:
-  # Explicitly named for Bhaiya's configured fallback. CLIProxy includes the
-  # OAuth-pool prefix in the upstream model ID, so preserve it in both the
-  # public alias and the OpenAI-compatible passthrough model. A bare
-  # cli/* -> openai/* route would drop that prefix and advertise models
-  # that CLIProxy rejects.
-  - model_name: cli/codex-subscription/vllm-fallback
+  # St. Petersburg vLLM, addressed by the real served model name. There is
+  # deliberately no generic alias (vllm/default, vllm/auto) and no fallback:
+  # a model swap on the St. Pete side must show up as a new name here.
+  - model_name: vllm/GLM-5.3-Flash-EXL3
     litellm_params:
-      model: openai/codex-subscription/vllm-fallback
+      model: openai/GLM-5.3-Flash-EXL3
+      api_base: http://stpetersburg-vllm-upstream/v1
+      api_key: none
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+    model_info:
+      max_input_tokens: 262144
+
+  # CLIProxy-native names. These mirror CLIProxy's own route prefixes so a
+  # client (for example a Bhaiya workspace agent) can switch its base URL
+  # between CLIProxy and LiteLLM without renaming any model. Rollback is
+  # flipping the base URL back; CLIProxy stays the upstream either way.
+  - model_name: codex-subscription/*
+    litellm_params:
+      model: openai/codex-subscription/*
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: anthropic-subscription/*
+    litellm_params:
+      model: openai/anthropic-subscription/*
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: grok-subscription/*
+    litellm_params:
+      model: openai/grok-subscription/*
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: ai/*
+    litellm_params:
+      model: openai/ai/*
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: ai-kartik/*
+    litellm_params:
+      model: openai/ai-kartik/*
       api_base: http://cliproxy-upstream:8317/v1
       api_key: os.environ/CLIPROXY_API_KEY
       timeout: 600
@@ -96,7 +141,6 @@ general_settings:
 router_settings:
   routing_strategy: simple-shuffle
   num_retries: 2
-  max_fallbacks: 1
   retry_after: 5
   allowed_fails: 3
   cooldown_time: 30
