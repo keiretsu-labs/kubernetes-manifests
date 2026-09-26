@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
         - name: airconnect
-          image: 1activegeek/airconnect:1.11.3
+          image: 1activegeek/airconnect:1.12.3
           env:
             - name: AIRUPNP_OPTS
               value: "-l 500:1000 -r 44100 -Z -x /config/airupnp.xml -I"
