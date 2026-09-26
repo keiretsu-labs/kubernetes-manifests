@@ -32,14 +32,6 @@ api-keys:
 # live in auth metadata; the generated compatible providers
 # declare the Tailscale-backed routes below.
 force-model-prefix: true
-# Keep a stable, GitOps-owned fallback in the Codex subscription
-# pool while the Vision-Exp route is unavailable.
-oauth-model-alias:
-  codex:
-    - name: "gpt-5.6-luna"
-      alias: "vllm-fallback"
-      display-name: "Codex subscription fallback"
-      fork: true
 plugins:
   enabled: true
   dir: "/CLIProxyAPI/plugins"

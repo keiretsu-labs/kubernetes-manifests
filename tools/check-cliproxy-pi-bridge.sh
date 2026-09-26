@@ -102,10 +102,8 @@ os.environ["MANAGEMENT_KEY"] = "test-management-key"
 namespace = {"__name__": "cliproxy_pi_bridge_contract"}
 exec(compile(script.split(sentinel, 1)[0], str(path), "exec"), namespace)
 
-fallback = "codex-subscription/vllm-fallback"
-source = "codex-subscription/gpt-5.6-luna"
-if namespace["metadata_alias_sources"].get(fallback) != source:
-    raise SystemExit(f"{fallback} must resolve metadata from {source}")
+if any("vllm-fallback" in alias for alias in namespace["metadata_alias_sources"]):
+    raise SystemExit("the retired codex-subscription/vllm-fallback alias must not return")
 
 glm_alias = "vllm/GLM-5.3-Flash-EXL3"
 glm_source = "vllm/GLM-5.3-Flash-EXL3"
@@ -131,23 +129,8 @@ glm_sources = namespace["route_sources"]({glm_alias})
 if glm_sources.get(glm_alias, {}).get("id") != "GLM-5.3-Flash-EXL3":
     raise SystemExit("GLM catalog did not resolve its canonical upstream source")
 
-if not re.search(
-    r'(?ms)oauth-model-alias:\s*\n\s*codex:\s*\n\s*- name: "gpt-5\.6-luna"\s*\n\s*alias: "vllm-fallback"',
-    render_script,
-):
-    raise SystemExit("CLIProxy fallback alias and metadata source are no longer aligned")
-
-seen = []
-def resolve_models_dev(entries, index, route_source):
-    seen.append(route_source)
-    return {"context_window": 1050000, "max_tokens": 128000, "reasoning": True}
-
-namespace["resolve_models_dev"] = resolve_models_dev
-metadata = namespace["resolved_metadata"](fallback, "codex", None, [], {})
-if metadata != {"context_window": 1050000, "max_tokens": 128000, "reasoning": True}:
-    raise SystemExit(f"fallback metadata was not resolved: {metadata!r}")
-if seen != [{"id": "gpt-5.6-luna", "provider": {"id": "codex"}, "direct": {}}]:
-    raise SystemExit(f"fallback metadata used the wrong source: {seen!r}")
+if "vllm-fallback" in render_script:
+    raise SystemExit("the retired CLIProxy vllm-fallback oauth-model-alias must not return")
 
 # A configured compatible-provider route must not inherit an old alias
 # override when its live upstream source is unavailable. Otherwise a stale
