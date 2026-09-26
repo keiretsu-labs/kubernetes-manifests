@@ -5,36 +5,6 @@ namespace: bhaiya-model
 groups:
   - name: bhaiya-model.rules
     rules:
-      - alert: BhaiyaCLIProxyDefaultModelFallback
-        expr: |
-          max by (cluster) (
-            bhaiya_cliproxy_default_model_resolution{
-              namespace="bhaiya", job="bhaiya", service="bhaiya",
-              container="bhaiya", source="fallback"
-            } == 1
-            and on (cluster, instance)
-            (
-              bhaiya_cliproxy_model_discovery_last_success_timestamp_seconds{
-                namespace="bhaiya", job="bhaiya", service="bhaiya", container="bhaiya"
-              } > 0
-              and on (cluster, instance)
-              (
-                time() - bhaiya_cliproxy_model_discovery_last_success_timestamp_seconds{
-                  namespace="bhaiya", job="bhaiya", service="bhaiya", container="bhaiya"
-                } < 300
-              )
-            )
-          )
-        for: 30m
-        labels:
-          severity: warning
-        annotations:
-          summary: Bhaiya CLIProxy is using its fallback model in {{ $labels.cluster }}
-          description: >-
-            A fresh successful CLIProxy discovery has selected the configured
-            fallback model for at least 30 minutes in {{ $labels.cluster }}.
-            Inspect the primary model provider and CLIProxy catalog.
-
       - alert: BhaiyaCLIProxyNoResolvedModel
         expr: |
           max by (cluster) (
@@ -59,10 +29,12 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: Bhaiya CLIProxy resolved no model in {{ $labels.cluster }}
+          summary: Bhaiya CLIProxy default model is not in the catalog in {{ $labels.cluster }}
           description: >-
-            A fresh successful CLIProxy discovery selected no usable built-in
-            model in {{ $labels.cluster }}. Inspect the live CLIProxy catalog.
+            A fresh successful CLIProxy discovery did not find a resolved
+            BHAIYA_CLIPROXY_DEFAULT_MODEL in {{ $labels.cluster }}. There is no
+            fallback model, so workspaces still use the configured default.
+            Inspect the live CLIProxy catalog.
 
       - alert: BhaiyaCLIProxyModelDiscoveryFailure
         expr: |

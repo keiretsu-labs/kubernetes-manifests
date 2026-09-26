@@ -10,8 +10,6 @@ tests:
     input_series:
       - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="never",cluster="talos-ottawa",source="primary"}'
         values: "0+0x40"
-      - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="never",cluster="talos-ottawa",source="fallback"}'
-        values: "0+0x40"
       - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="never",cluster="talos-ottawa",source="none"}'
         values: "0+0x40"
       - series: 'bhaiya_cliproxy_model_discovery_last_attempt_timestamp_seconds{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="never",cluster="talos-ottawa"}'
@@ -22,35 +20,11 @@ tests:
         values: "0+0x40"
     alert_rule_test:
       - eval_time: 40m
-        alertname: BhaiyaCLIProxyDefaultModelFallback
-        exp_alerts: []
-      - eval_time: 40m
         alertname: BhaiyaCLIProxyNoResolvedModel
         exp_alerts: []
       - eval_time: 40m
         alertname: BhaiyaCLIProxyModelDiscoveryFailure
         exp_alerts: []
-
-  - interval: 1m
-    input_series:
-      - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="a",cluster="talos-ottawa",source="fallback"}'
-        values: "1+0x40"
-      - series: 'bhaiya_cliproxy_model_discovery_last_success_timestamp_seconds{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="a",cluster="talos-ottawa"}'
-        values: "60+60x40"
-    alert_rule_test:
-      - eval_time: 29m
-        alertname: BhaiyaCLIProxyDefaultModelFallback
-        exp_alerts: []
-      - eval_time: 30m
-        alertname: BhaiyaCLIProxyDefaultModelFallback
-        exp_alerts:
-          - exp_labels: {cluster: talos-ottawa, severity: warning}
-            exp_annotations:
-              summary: Bhaiya CLIProxy is using its fallback model in talos-ottawa
-              description: >-
-                A fresh successful CLIProxy discovery has selected the configured
-                fallback model for at least 30 minutes in talos-ottawa. Inspect the
-                primary model provider and CLIProxy catalog.
 
   - interval: 1m
     input_series:
@@ -67,10 +41,12 @@ tests:
         exp_alerts:
           - exp_labels: {cluster: talos-ottawa, severity: critical}
             exp_annotations:
-              summary: Bhaiya CLIProxy resolved no model in talos-ottawa
+              summary: Bhaiya CLIProxy default model is not in the catalog in talos-ottawa
               description: >-
-                A fresh successful CLIProxy discovery selected no usable built-in
-                model in talos-ottawa. Inspect the live CLIProxy catalog.
+                A fresh successful CLIProxy discovery did not find a resolved
+                BHAIYA_CLIPROXY_DEFAULT_MODEL in talos-ottawa. There is no
+                fallback model, so workspaces still use the configured default.
+                Inspect the live CLIProxy catalog.
 
   - interval: 1m
     input_series:
@@ -96,7 +72,7 @@ tests:
                 startup failures; a never-attempted idle process remains quiet.
 
   # A prior success older than five minutes plus recent errors is an outage;
-  # recovery clears it. Idle old fallback is quiet.
+  # recovery clears it.
   - interval: 1m
     input_series:
       - series: 'bhaiya_cliproxy_model_discovery_errors_total{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="a",cluster="talos-ottawa"}'
@@ -125,45 +101,47 @@ tests:
 
   - interval: 1m
     input_series:
-      - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="idle",cluster="talos-ottawa",source="fallback"}'
+      - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="idle",cluster="talos-ottawa",source="none"}'
         values: "1+0x40"
       - series: 'bhaiya_cliproxy_model_discovery_last_success_timestamp_seconds{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="idle",cluster="talos-ottawa"}'
         values: "60+0x40"
     alert_rule_test:
       - eval_time: 40m
-        alertname: BhaiyaCLIProxyDefaultModelFallback
+        alertname: BhaiyaCLIProxyNoResolvedModel
         exp_alerts: []
 
   # A fresh nonleader remains visible despite an idle replica; replacement of
   # the old instance keeps the cluster-level identity stable.
   - interval: 1m
     input_series:
-      - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="old",cluster="talos-ottawa",source="fallback"}'
+      - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="old",cluster="talos-ottawa",source="none"}'
         values: "1+0x10 _x30"
       - series: 'bhaiya_cliproxy_model_discovery_last_success_timestamp_seconds{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="old",cluster="talos-ottawa"}'
         values: "60+60x10 _x30"
-      - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="new",cluster="talos-ottawa",source="fallback"}'
+      - series: 'bhaiya_cliproxy_default_model_resolution{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="new",cluster="talos-ottawa",source="none"}'
         values: "_x10 1+0x30"
       - series: 'bhaiya_cliproxy_model_discovery_last_success_timestamp_seconds{namespace="bhaiya",job="bhaiya",service="bhaiya",container="bhaiya",instance="new",cluster="talos-ottawa"}'
         values: "_x10 660+60x30"
     alert_rule_test:
       - eval_time: 30m
-        alertname: BhaiyaCLIProxyDefaultModelFallback
+        alertname: BhaiyaCLIProxyNoResolvedModel
         exp_alerts:
-          - exp_labels: {cluster: talos-ottawa, severity: warning}
+          - exp_labels: {cluster: talos-ottawa, severity: critical}
             exp_annotations:
-              summary: Bhaiya CLIProxy is using its fallback model in talos-ottawa
+              summary: Bhaiya CLIProxy default model is not in the catalog in talos-ottawa
               description: >-
-                A fresh successful CLIProxy discovery has selected the configured
-                fallback model for at least 30 minutes in talos-ottawa. Inspect the
-                primary model provider and CLIProxy catalog.
+                A fresh successful CLIProxy discovery did not find a resolved
+                BHAIYA_CLIPROXY_DEFAULT_MODEL in talos-ottawa. There is no
+                fallback model, so workspaces still use the configured default.
+                Inspect the live CLIProxy catalog.
       - eval_time: 40m
-        alertname: BhaiyaCLIProxyDefaultModelFallback
+        alertname: BhaiyaCLIProxyNoResolvedModel
         exp_alerts:
-          - exp_labels: {cluster: talos-ottawa, severity: warning}
+          - exp_labels: {cluster: talos-ottawa, severity: critical}
             exp_annotations:
-              summary: Bhaiya CLIProxy is using its fallback model in talos-ottawa
+              summary: Bhaiya CLIProxy default model is not in the catalog in talos-ottawa
               description: >-
-                A fresh successful CLIProxy discovery has selected the configured
-                fallback model for at least 30 minutes in talos-ottawa. Inspect the
-                primary model provider and CLIProxy catalog.
+                A fresh successful CLIProxy discovery did not find a resolved
+                BHAIYA_CLIPROXY_DEFAULT_MODEL in talos-ottawa. There is no
+                fallback model, so workspaces still use the configured default.
+                Inspect the live CLIProxy catalog.
