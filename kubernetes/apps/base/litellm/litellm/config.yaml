@@ -61,6 +61,24 @@ model_list:
   # These concrete aliases keep representative OAuth-backed models visible
   # in /v1/models. LiteLLM's OpenAI model-cost catalog cannot enumerate the
   # non-OpenAI names that CLIProxy publishes from its subscription pools.
+  # GPT 6 Luna is the current Codex subscription default; gpt-5.6-luna and
+  # gpt-5.5 stay listed so older clients and /v1/models scrapers keep working.
+  - model_name: cli/codex-subscription/gpt-6-luna
+    litellm_params:
+      model: openai/codex-subscription/gpt-6-luna
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: cli/codex-subscription/gpt-5.6-luna
+    litellm_params:
+      model: openai/codex-subscription/gpt-5.6-luna
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
   - model_name: cli/codex-subscription/gpt-5.5
     litellm_params:
       model: openai/codex-subscription/gpt-5.5
@@ -72,6 +90,78 @@ model_list:
   - model_name: cli/anthropic-subscription/claude-sonnet-4-6
     litellm_params:
       model: openai/anthropic-subscription/claude-sonnet-4-6
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+
+  # Bare Codex ids. Bhaiya writes prefixed ids (codex-subscription/...) into
+  # /etc/codex/config.toml, but Codex's built-in /model picker persists its
+  # bare preset id (e.g. model = "gpt-5.6-luna") into $CODEX_HOME/config.toml
+  # on the workspace PVC, which overrides the managed default. Without these
+  # entries LiteLLM answers "no healthy deployments ... Model Group=gpt-5.6-luna".
+  # Every bare id maps to the same Codex subscription pool as its prefixed
+  # form; there is still no fallback model.
+  - model_name: gpt-6-luna
+    litellm_params:
+      model: openai/codex-subscription/gpt-6-luna
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: gpt-5.6-luna
+    litellm_params:
+      model: openai/codex-subscription/gpt-5.6-luna
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: gpt-6-sol
+    litellm_params:
+      model: openai/codex-subscription/gpt-6-sol
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: gpt-5.6-sol
+    litellm_params:
+      model: openai/codex-subscription/gpt-5.6-sol
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: gpt-5.6-terra
+    litellm_params:
+      model: openai/codex-subscription/gpt-5.6-terra
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: gpt-6-astra
+    litellm_params:
+      model: openai/codex-subscription/gpt-6-astra
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: gpt-5.5
+    litellm_params:
+      model: openai/codex-subscription/gpt-5.5
+      api_base: http://cliproxy-upstream:8317/v1
+      api_key: os.environ/CLIPROXY_API_KEY
+      timeout: 600
+      stream_timeout: 3600
+      max_retries: 2
+  - model_name: codex-auto-review
+    litellm_params:
+      model: openai/codex-subscription/codex-auto-review
       api_base: http://cliproxy-upstream:8317/v1
       api_key: os.environ/CLIPROXY_API_KEY
       timeout: 600
