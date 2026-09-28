@@ -1,0 +1,74 @@
+name: Border0 sockets
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'terraform/border0/**'
+      - '.github/workflows/border0.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'terraform/border0/**'
+      - '.github/workflows/border0.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: border0-terraform
+  cancel-in-progress: false
+
+env:
+  TERRAFORM_VERSION: 1.16.4
+  SOPS_VERSION: v3.13.3
+  SOPS_SHA256: e5bec3346a873ae91d871550f3e698c1aad962aff462a080e40f25fde17fef6b
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/border0
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Install sops
+        run: |
+          curl -fsSL -o /tmp/sops "https://github.com/getsops/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux.amd64"
+          echo "${SOPS_SHA256}  /tmp/sops" | sha256sum -c -
+          sudo install -m 0755 /tmp/sops /usr/local/bin/sops
+
+      - name: Decrypt credentials
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          s3=../../kubernetes/apps/base/garage/garage-keys-ottawa/border0-terraform-s3.sops.yaml
+          for pair in \
+            "AWS_ACCESS_KEY_ID:$s3:[\"stringData\"][\"AWS_ACCESS_KEY_ID\"]" \
+            "AWS_SECRET_ACCESS_KEY:$s3:[\"stringData\"][\"AWS_SECRET_ACCESS_KEY\"]" \
+            "BORDER0_TOKEN:border0.sops.yaml:[\"border0_token\"]"; do
+            name=${pair%%:*}; rest=${pair#*:}; file=${rest%%:*}; path=${rest#*:}
+            value=$(sops -d --extract "$path" "$file")
+            echo "::add-mask::$value"
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done
+
+      - run: terraform fmt -check -recursive
+      - run: terraform init -input=false
+      - run: terraform validate
+
+      - name: Plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan -input=false
+
+      - name: Apply
+        if: github.event_name != 'pull_request'
+        run: terraform apply -input=false -auto-approve

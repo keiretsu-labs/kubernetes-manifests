@@ -1,0 +1,4 @@
+creation_rules:
+  - path_regex: .*\.sops\.yaml$
+    pgp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    age: age1acestur2qyjhpup8np6tcl66vga8a0ktlvaqnuzent4p7vx60q3sp39hxe
