@@ -72,6 +72,7 @@
 			"svc:tsdnsproxy": ["tag:k8s"],
 			"svc:tempvm": ["tag:k8s"],
 			"tag:border0-managed": ["tag:border0-managed"],
+			"svc:ottawa-k8s": ["tag:border0-managed"],
 		},
 	},
 	"ssh": [
@@ -102,6 +103,11 @@
 		{
 			"src": ["group:superuser"],
 			"dst": ["tag:border0-managed"],
+			"ip":  ["*"],
+		},
+		{
+			"src": ["group:superuser"],
+			"dst": ["svc:ottawa-k8s"],
 			"ip":  ["*"],
 		},
 		{

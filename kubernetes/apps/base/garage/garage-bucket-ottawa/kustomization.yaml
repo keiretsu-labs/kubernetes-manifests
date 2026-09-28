@@ -10,6 +10,7 @@ resources:
   - forgejo-postgres.yaml
   - lobby-postgres.yaml
   - nix-cache.yaml
+  - border0-terraform-state.yaml
   - woodpecker-postgres.yaml
   - suwayomi-postgres.yaml
   - teslamate-postgres.yaml

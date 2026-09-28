@@ -8,6 +8,8 @@ resources:
   - forgejo-postgres-key.yaml
   - lobby-postgres-key.yaml
   - nix-cache-keys.yaml
+  - border0-terraform-s3.sops.yaml
+  - border0-terraform-key.yaml
   - woodpecker-postgres-key.yaml
   - suwayomi-postgres-key.yaml
   - teslamate-postgres-key.yaml

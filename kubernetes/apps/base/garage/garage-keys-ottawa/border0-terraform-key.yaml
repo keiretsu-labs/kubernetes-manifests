@@ -1,0 +1,22 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: border0-terraform-key
+  namespace: garage
+spec:
+  clusterRef:
+    name: garage
+    namespace: garage
+  name: "Border0 Terraform State Key"
+  importKey:
+    secretRef:
+      name: border0-terraform-s3
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+  bucketPermissions:
+    - bucketRef:
+        name: border0-terraform-state
+        namespace: garage
+      read: true
+      write: true

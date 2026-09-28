@@ -1,0 +1,19 @@
+---
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: border0-terraform-state
+  namespace: garage
+spec:
+  clusterRef:
+    name: garage
+  globalAlias: border0-terraform-state
+  quotas:
+    maxSize: 1Gi
+    maxObjects: 10000
+  keyPermissions:
+    - keyRef:
+        name: border0-terraform-key
+        namespace: garage
+      read: true
+      write: true
