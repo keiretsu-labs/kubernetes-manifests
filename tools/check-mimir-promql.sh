@@ -4,8 +4,6 @@ set -euo pipefail
 
 ROOT="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 PROM_VERSION=3.14.0
-PROM_ARCHIVE="prometheus-${PROM_VERSION}.linux-amd64.tar.gz"
-PROM_SHA256=f665c6da19eb7ba399c915d30c7d9793c9b417bf8a749b504bc470678631478d
 CACHE_ROOT="${XDG_CACHE_HOME:-${HOME:-/tmp}/.cache}/cos-promtool/${PROM_VERSION}"
 DOWNLOAD_ATTEMPTS=3
 
@@ -44,16 +42,21 @@ promtool_path() {
     echo "notice: ignoring installed promtool because it is not Prometheus ${PROM_VERSION}" >&2
   fi
 
+  local platform PROM_SHA256
   case "$(uname -s):$(uname -m)" in
-    Linux:x86_64|Linux:amd64) ;;
+    Darwin:x86_64) platform=darwin-amd64 PROM_SHA256=a14307b9726e66cadb81be9a544732623af26dabeb7702c987aa9c3c062ada34 ;;
+    Darwin:arm64) platform=darwin-arm64 PROM_SHA256=a9623f7f4fe65b1b171b423c1a72bbf23dfdf41a171dcb33e7dd302af80dc01c ;;
+    Linux:x86_64|Linux:amd64) platform=linux-amd64 PROM_SHA256=f665c6da19eb7ba399c915d30c7d9793c9b417bf8a749b504bc470678631478d ;;
+    Linux:aarch64|Linux:arm64) platform=linux-arm64 PROM_SHA256=077f3781ab7245dc04c9a3c9b78ba120fc8e41aa0dc97489b0af67247e50ba83 ;;
     *)
-      echo "error: pinned promtool download supports Linux x86_64; set PROMTOOL_BIN to Prometheus ${PROM_VERSION} on this platform" >&2
+      echo "error: no pinned promtool download for $(uname -s)/$(uname -m); set PROMTOOL_BIN to Prometheus ${PROM_VERSION}" >&2
       return 1
       ;;
   esac
 
+  local PROM_ARCHIVE="prometheus-${PROM_VERSION}.${platform}.tar.gz"
   local archive="$CACHE_ROOT/$PROM_ARCHIVE"
-  local extracted="$CACHE_ROOT/prometheus-${PROM_VERSION}.linux-amd64/promtool"
+  local extracted="$CACHE_ROOT/prometheus-${PROM_VERSION}.${platform}/promtool"
   mkdir -p "$CACHE_ROOT"
   if [ ! -f "$archive" ] || [ "$(sha256 "$archive")" != "$PROM_SHA256" ]; then
     local attempt tmp curl_output curl_status last_error=""
