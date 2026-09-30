@@ -62,7 +62,7 @@ fi
 if [[ ! -e "${hermes_home}/config.yaml" && -n "${CLIPROXY_BASE_URL:-}" ]]; then
   cat > "${hermes_home}/config.yaml" <<YAML
 model:
-  default: "${CLIPROXY_HERMES_MODEL:-ai/deepseek/deepseek-v4-flash}"
+  default: "${CLIPROXY_HERMES_MODEL:-ai-kartik/deepseek/deepseek-v4-flash}"
   provider: openai
 YAML
 fi

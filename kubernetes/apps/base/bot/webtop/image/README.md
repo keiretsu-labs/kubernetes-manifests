@@ -123,9 +123,9 @@ and the prefix matters more than it looks:
 
 - `codex-subscription/*` is Codex's own backend, so cliproxy passes
   `/v1/responses` straight through. This is what `codex` wants.
-- `ai/*` and `ai-kartik/*` are openai-compatible providers that cliproxy
+- `ai-kartik/*` is an openai-compatible provider that cliproxy
   reaches over `chat/completions`. Fine for most models, but the `gpt-*-codex`
-  ones there reject that endpoint — `ai/gpt-5.3-codex` appears in
+  ones there reject that endpoint — `ai-kartik/gpt-5.3-codex` appears in
   `GET /v1/models` and still 400s for this CLI.
 
 So presence in the catalog is not proof a model works for a given client;
