@@ -144,6 +144,26 @@
       "automerge": true
     },
     {
+      "description": "Auto merge bot/webtop maintainer-image tool pins (Go, Node, uv, agents, CLIs). These only feed a manually triggered/weekly image build, not a cluster workload. Minor/patch only.",
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": ["kubernetes/apps/base/bot/webtop/image/versions.env"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "Cluster-coupled pins in the webtop image (kubectl tracks the fleet API server, talosctl tracks Talos, flux tracks the Flux operator) always need human review. Must stay after the webtop automerge rule.",
+      "matchFileNames": ["kubernetes/apps/base/bot/webtop/image/versions.env"],
+      "matchPackageNames": ["kubernetes/kubernetes", "siderolabs/talos", "fluxcd/flux2"],
+      "automerge": false
+    },
+    {
+      "description": "Auto merge the Tailscale client pinned in the workflow_dispatch-only status-check workflow.",
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": [".github/workflows/tailscale-full-config-status.yml"],
+      "matchPackageNames": ["tailscale/tailscale"],
+      "automerge": true
+    },
+    {
       "description": "Auto merge TeslaMate application and dashboard updates after the render gate passes.",
       "matchPackageNames": ["teslamate/teslamate", "teslamate-org/teslamate"],
       "matchFileNames": [
