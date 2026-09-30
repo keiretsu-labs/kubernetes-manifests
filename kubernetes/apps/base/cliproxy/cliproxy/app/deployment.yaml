@@ -301,7 +301,6 @@ spec:
               interval = 300
               models_dev_url = "https://models.dev/api.json"
               upstreams = (
-                  ("ai", "http://ai.keiretsu.ts.net/v1/models"),
                   ("ai-kartik", "http://ai-kartik.keiretsu.ts.net/v1/models"),
                   ("vllm", "http://stpetersburg-vllm-upstream/v1/models"),
               )
