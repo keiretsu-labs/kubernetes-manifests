@@ -39,6 +39,8 @@ spec:
   configuration:
     destinationPath: s3://litellm-postgres/${LOCATION}/
     endpointURL: http://${COMMON_S3_ENDPOINT}
+    data:
+      compression: gzip
     s3Credentials:
       accessKeyId:
         name: litellm-postgres-s3
@@ -47,6 +49,7 @@ spec:
         name: litellm-postgres-s3
         key: AWS_SECRET_ACCESS_KEY
     wal:
+      compression: zstd
       maxParallel: 8
   instanceSidecarConfiguration:
     env:

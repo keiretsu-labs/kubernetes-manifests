@@ -8,6 +8,10 @@ spec:
   configuration:
     destinationPath: s3://immich-postgres/${LOCATION}/
     endpointURL: http://${COMMON_S3_ENDPOINT}
+    data:
+      compression: gzip
+    wal:
+      compression: zstd
     s3Credentials:
       accessKeyId:
         name: immich-s3-backup

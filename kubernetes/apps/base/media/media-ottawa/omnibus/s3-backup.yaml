@@ -8,6 +8,8 @@ spec:
   configuration:
     destinationPath: s3://omnibus-postgres/${LOCATION}/
     endpointURL: http://${COMMON_S3_ENDPOINT}
+    data:
+      compression: gzip
     s3Credentials:
       accessKeyId:
         name: omnibus-s3-backup
@@ -16,6 +18,7 @@ spec:
         name: omnibus-s3-backup
         key: AWS_SECRET_ACCESS_KEY
     wal:
+      compression: zstd
       maxParallel: 8
   instanceSidecarConfiguration:
     env:
