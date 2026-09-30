@@ -239,12 +239,16 @@ tools/kc.sh ot delete namespace border0
 
 ## Inter-cluster networking
 
-The primary path between clusters is the UniFi-routed Pod/Service CIDR fabric,
-with Cilium BGP advertising the routes and Cilium ClusterMesh providing direct
-service and endpoint discovery. MCS exports are published under
-`*.svc.clusterset.local`, so internal federation does not traverse Tailscale.
-Tailscale remains a separate access and fallback overlay for cluster APIs,
-tailnet ingress, and dependencies that intentionally require tailnet identity.
+Cluster-to-cluster traffic rides the UniFi site-to-site VPN between the three
+UDMs. Pod, Service and LoadBalancer addresses are natively routed — Cilium runs
+no tunnel of its own — so a pod in one site dials a pod or ClusterIP in another
+directly. Cilium ClusterMesh adds service and endpoint discovery on top, and MCS
+exports are published under `*.svc.clusterset.local`. None of this touches
+Tailscale, and there is no Tailscale fallback for it: the tailnet is for access
+(cluster APIs, tailnet ingress, tailnet DNS) and for the few dependencies that
+need tailnet identity. How the sites are actually wired together, and why
+Robbinsdale to St. Petersburg goes through Ottawa, is under
+[How the sites reach each other](#how-the-sites-reach-each-other).
 
 The three home EnvoyProxy profiles use `routingType: Service`. This makes an
 Envoy Gateway `ServiceImport` backend use its local ClusterSetIP while Cilium
@@ -276,9 +280,9 @@ endpoint from being published back to Ottawa.
 
 ## Tailnet overlay
 
-The tailnet `keiretsu.ts.net` is an access and fallback overlay, not the primary
-path between clusters. Only dependencies that intentionally require tailnet
-identity or external tailnet access ride it.
+The tailnet `keiretsu.ts.net` is an access overlay, not a path between clusters.
+Only dependencies that intentionally require tailnet identity or external
+tailnet access ride it.
 
 ### `tailscale/policy.hujson` — central zero-trust policy
 
@@ -879,8 +883,9 @@ a path. The peer config selects which advertisements to send by the label
 label.
 
 Cilium ASNs are unique per cluster: Robbinsdale 64512, Ottawa 64514,
-St. Petersburg 64516. St. Petersburg used to share Ottawa's 64514. Its UDM
-stays ASN 64515; FRR `remote-as` on that UDM must move from 64514 to 64516.
+St. Petersburg 64516. St. Petersburg used to share Ottawa's 64514 and moved in
+#3105; its UDM stays ASN 64515, with `remote-as 64516` in its `frr.conf`
+(#3109).
 
 What that advertisement contains is the part worth reading twice. It advertises
 Service `ClusterIP`, `ExternalIP` and `LoadBalancerIP` — with a catch-all
@@ -898,6 +903,58 @@ Two things follow:
   look healthy from inside the cluster, while being unreachable from the LAN.
   That failure presents as "DNS resolves but nothing connects", which is easy to
   misdiagnose as an ingress or certificate problem.
+
+### How the sites reach each other
+
+BGP only gets a prefix as far as the local UDM. Getting it to the other two
+sites is UniFi's job, and none of that configuration lives in this repo —
+`clusters/talos-*/unifi/frr.conf` is only the BGP half.
+
+The UDMs are joined by UniFi site-to-site VPN tunnels and run OSPF over them.
+What OSPF advertises is not the Cilium routes but a set of UniFi networks that
+exist purely to be advertised. On Ottawa these are **Datacenter** (VLAN 2,
+`10.2.0.0/15`, the service and pod CIDRs together) and **Datacenter
+Loadbalancer** (VLAN 3, `10.169.0.0/16`), with no DHCP and nothing plugged
+into them. The other two sites do the same, so Ottawa learns `10.0.0.0/15`,
+`10.50.0.0/16` and `192.168.50.0/24` from Robbinsdale, and `10.4.0.0/15`,
+`10.73.0.0/16` and `192.168.73.0/24` from St. Petersburg. Once a packet
+arrives, the more specific `/24` and `/32` routes Cilium put there over BGP
+take it to the right node. Delete one of those UniFi networks and the other
+two sites lose the route to that site's pods, even though every cluster still
+looks healthy from the inside.
+
+**It is not a full mesh.** Ottawa's UDM has the only two tunnels that are up:
+
+| Tunnel | Ottawa end | Far end | OSPF router ID of far end |
+|---|---|---|---|
+| Ottawa – Robbinsdale | `192.168.0.3` | `192.168.0.2` | `192.168.0.0` |
+| Ottawa – St. Petersburg | `192.168.0.5` | `192.168.0.4` | `192.168.0.1` |
+
+There is no Robbinsdale – St. Petersburg tunnel, so traffic between those two
+goes through Ottawa's UDM. A traceroute from a Robbinsdale pod to one in
+St. Petersburg shows it plainly — `192.168.50.1`, then `192.168.0.3` at about
+38 ms, then `192.168.0.4` at about 108 ms — and the round trip is the two
+Ottawa legs added together. Two consequences:
+
+- Anything between Robbinsdale and St. Petersburg — their ClusterMesh peering,
+  Garage RPC between their nodes — pays the extra hop and depends on Ottawa's
+  UDM and WAN being up, even though neither end runs in Ottawa.
+- The Ottawa UDM also carries backup default routes over both tunnels
+  (Robbinsdale at metric 30, St. Petersburg at 31), so if Ottawa's own
+  internet drops, its egress quietly moves to another site.
+
+Path MTU between sites is 1420 while pods use 1500. Large transfers that stall
+while small requests work point here first; `tracepath` from
+`default/network-debug` shows the discovered MTU.
+
+To check the path from inside a cluster, use TCP rather than ping for a
+LoadBalancer VIP — ICMP to a VIP is not answered and loops between the UDM and
+a node until the TTL runs out:
+
+```bash
+tools/kc.sh rb -n default exec deploy/network-debug -- traceroute -n -I -m 8 <remote-pod-ip>
+tools/kc.sh rb -n default exec deploy/network-debug -- nc -zv -w 3 10.73.10.20 2379
+```
 
 ### Shared LoadBalancer CIDR
 
@@ -973,10 +1030,10 @@ resolves locally) and survives local storage loss by proxying reads to a
 surviving zone at `read_quorum=1`.
 
 The former per-node and gateway Tailscale LoadBalancer Services are retired.
-Garage federation and the internal health checks use the direct MCS Services;
-the public CDN HTTPRoutes use the shared `garage-gateway` MCS ServiceImport
-with local affinity, while the private S3/admin/web routes use the local
-Service. Garage no longer depends on `common-egress` or `common-ingress`.
+Garage federation and the internal health checks use the direct MCS Services.
+The S3 routes — `garage-s3` on `private` and `garage-s3-cdn` on `public` —
+and the public `garage-web-cdn` route use the shared `garage-gateway` MCS
+ServiceImport with local affinity; `garage-web` uses the local Service. Garage no longer depends on `common-egress` or `common-ingress`.
 
 ### Garage local pools
 
@@ -1597,6 +1654,7 @@ than merely removing itself:
 | Grafana | single deployment; the other sites only redirect to it | every dashboard, including the ones you would use to diagnose this |
 | The Zot registry | Ottawa-only, with the shared Dragonfly cache | image pulls fall back to upstream registries |
 | The Open Cluster Management hub | Ottawa is the hub; the others are agents | fleet view only; workloads keep running |
+| Robbinsdale ↔ St. Petersburg connectivity — only if the Ottawa **UDM** or its WAN is down, not just the cluster | the only tunnels are Ottawa–Robbinsdale and Ottawa–St. Petersburg (see [How the sites reach each other](#how-the-sites-reach-each-other)) | the two remaining clusters drop their ClusterMesh peering and Garage RPC to each other |
 
 Two things this table does **not** say, and both matter:
 
@@ -1608,8 +1666,10 @@ Two things this table does **not** say, and both matter:
   direct LAN access to the site SMB shares, and full-mesh Garage RPC over direct
   MCS to every remote storage node. The remaining tailnet egress here is for
   external identity-bound services, not cluster-internal traffic. The
-  relationship is asymmetric, not one-directional,
-  so "Ottawa is the hub" is a statement about singletons, not about traffic.
+  relationship is asymmetric, not one-directional. At the network layer
+  Ottawa's UDM *is* the hub, because it carries all Robbinsdale ↔
+  St. Petersburg traffic; at the application layer it is the home of the
+  singletons, not the destination of all traffic.
 
 ### If Robbinsdale or St. Petersburg is down
 

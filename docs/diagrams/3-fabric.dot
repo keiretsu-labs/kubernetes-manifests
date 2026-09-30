@@ -56,6 +56,9 @@ digraph fabric {
     p_rb [label=<<b>talos-robbinsdale</b><br align="left"/>home automation and media<br align="left"/>Rook-Ceph · SMB · Garage pools<br align="left"/>Borrows Ottawa's telemetry stack and Tinyauth;<br align="left"/>adds agent-only capacity to Ottawa's Woodpecker pool.<br align="left"/>>,
           fillcolor="#dbeafe", color="#0550ae", penwidth=1.6];
 
+    p_net [label=<<b>UniFi site-to-site VPN, OSPF between the UDMs</b><br align="left"/>Pods, Services and LB VIPs are natively routed. Cilium BGP<br align="left"/>hands them to the local UDM; OSPF carries per-site<br align="left"/>summary networks to the other two.<br align="left"/>NOT A FULL MESH: the only tunnels are Ottawa to<br align="left"/>Robbinsdale and Ottawa to St. Petersburg, so<br align="left"/>Robbinsdale to St. Petersburg goes through Ottawa's UDM.<br align="left"/>ClusterMesh peers dial each site's .10.20 VIP over it.<br align="left"/>>,
+           fillcolor="#fff8c5", color="#9a6700", penwidth=1.6];
+
     p_sp [label=<<b>talos-stpetersburg</b><br align="left"/>AI inference on two DGX Spark GB10 machines<br align="left"/>No Ceph at all — local-path for every tier,<br align="left"/>plus its own Garage pools.<br align="left"/>>,
           fillcolor="#ffe3ea", color="#a40e26", penwidth=1.6];
   }
@@ -82,6 +85,10 @@ digraph fabric {
     t_contract [label=<<b>The pod-side egress contract</b><br align="left"/>THE RULE THAT KEEPS BREAKING PEOPLE.<br align="left"/>For every remaining tailnet name a pod consumes,<br align="left"/>declare in that namespace an ExternalName Service<br align="left"/>annotated with the tailnet FQDN and proxy-group:<br align="left"/>common-egress. The operator rewrites it to a proxy<br align="left"/>address and ts-dns republishes the original name.<br align="left"/>ts-dns PUBLISHES ONLY NAMES AN EGRESS SERVICE<br align="left"/>DECLARES — not every MagicDNS device.<br align="left"/>Verify TailscaleEgressSvcReady=True AND resolve<br align="left"/>the name from a throwaway pod. A laptop dig proves<br align="left"/>nothing: laptops use MagicDNS, pods do not.<br align="left"/>Never publish tailnet CGNAT addresses in public DNS.<br align="left"/>>,
                  fillcolor="#fff8c5", color="#9a6700", penwidth=1.4];
   }
+
+  p_ot -> p_net [dir=both, style=bold, color="#1a7f37", label="both tunnels", constraint=false];
+  p_rb -> p_net [dir=both, style=bold, color="#0550ae", label="tunnel to Ottawa", constraint=false];
+  p_sp -> p_net [dir=both, style=bold, color="#a40e26", label="tunnel to Ottawa", constraint=false];
 
   p_ot -> t_op [style=dotted, color="#1a7f37", label="LOCATION=ottawa"];
   p_rb -> t_op [style=dotted, color="#0550ae"];

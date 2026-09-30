@@ -77,9 +77,8 @@ _Managed with Flux, Tailscale, and GitHub Actions_
 ---
 
 Multi-cluster Kubernetes infrastructure managed with FluxCD GitOps. The three
-Talos Linux clusters are connected by a UniFi-routed Cilium ClusterMesh as the
-primary inter-cluster path, with Tailscale as the access and fallback overlay,
-and share the same repository, platform conventions, and observability stack.
+Talos Linux clusters are connected by Cilium ClusterMesh over the UniFi
+site-to-site VPN, with Tailscale for access and tailnet ingress, and share the same repository, platform conventions, and observability stack.
 
 ## Architecture
 
@@ -120,7 +119,7 @@ DNS backed by k8gb CoreDNS. The pairing is by label where discovery is needed,
 so a route joins a tier by attaching to its Gateway. The trap the diagram calls out:
 `${CLUSTER_DOMAIN}` names get DNS for free, `${COMMON_DOMAIN}` names do not.
 
-### 3 · Runtime fabric — tailnet, storage and observability
+### 3 · Runtime fabric — site network, tailnet, storage and observability
 
 <a href="docs/diagrams/3-fabric.svg">
   <picture>
@@ -129,11 +128,13 @@ so a route joins a tier by attaching to its Gateway. The trap the diagram calls 
   </picture>
 </a>
 
-The UniFi-routed Cilium ClusterMesh is the primary path between sites, with
-Cilium MCS providing shared `clusterset.local` services. Tailscale remains the
-access and fallback overlay: Ottawa runs the singletons — Mimir, VictoriaLogs,
+Cilium ClusterMesh over the UniFi site-to-site VPN is the path between sites,
+with Cilium MCS providing shared `clusterset.local` services. The VPN is not a
+full mesh: Robbinsdale and St. Petersburg reach each other through Ottawa's UDM.
+Tailscale is for access, tailnet ingress and the dependencies that need tailnet
+identity. Ottawa runs the singletons — Mimir, VictoriaLogs,
 Grafana, Tinyauth, the Zot registry — that the other two borrow through the
-mesh or an explicitly tailnet-bound dependency. Storage is one federated
+mesh or the shared Gateways. Storage is one federated
 Garage S3 estate spanning all three zones, with Ceph and SMB per site. The
 amber boxes are constraints that have already caused an outage.
 

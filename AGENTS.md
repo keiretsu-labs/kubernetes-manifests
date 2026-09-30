@@ -2,8 +2,9 @@
 
 Production GitOps repo managing three Kubernetes clusters — Ottawa (primary:
 media, databases, Rook-Ceph), Robbinsdale (home automation, Rook-Ceph), and
-St. Petersburg (AI/ML: DGX Spark GPUs, vLLM on LeaderWorkerSet) — via Flux CD, with deep Tailscale
-integration for cross-cluster networking and access.
+St. Petersburg (AI/ML: DGX Spark GPUs, vLLM on LeaderWorkerSet) — via Flux CD.
+Cross-cluster traffic is Cilium ClusterMesh over the UniFi site-to-site VPN;
+Tailscale provides access, tailnet ingress and tailnet DNS.
 
 ## Ground rules
 
