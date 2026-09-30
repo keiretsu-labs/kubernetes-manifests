@@ -6,7 +6,7 @@ Anthropic-compatible APIs.
 
 ## Architecture and endpoints
 
-- Image: `eceasy/cli-proxy-api:v7.2.133`, pinned by digest in Git.
+- Image: `eceasy/cli-proxy-api:v8.0.7`, pinned by digest in Git.
 - The image and command were smoke-tested from the official amd64 OCI rootfs: port 8317 opened, `/management.html` returned 200, `/v1/models` returned 401 without the API key and 200 with it.
 - State: `cliproxy-data`, a 2 Gi `ceph-block-replicated` RWO PVC mounted at
   `/data`; OAuth files live in `/data/auth`.
