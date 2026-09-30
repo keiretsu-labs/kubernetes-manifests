@@ -21,15 +21,14 @@ Anthropic-compatible APIs.
 - `Service/cliproxy` exposes `8317`, `1455`, and `54545` inside the cluster.
   Only `8317` is routed permanently. The callback ports are for interactive
   login or an optional temporary port-forward.
-- OpenAI-compatible providers `ai` and `ai-kartik` point at
-  `http://ai.keiretsu.ts.net/v1` and
-  `http://ai-kartik.keiretsu.ts.net/v1`. Startup init containers discover each
-  upstream `/v1/models` catalog and expose the models under the `ai/` and
-  `ai-kartik/` prefixes. `Service/ai` and `Service/ai-kartik` register the
-  tailnet FQDNs with the shared `common-egress` ProxyGroup. Both provider
-  configs override CLIProxy's generic compatibility user agent because the
-  upstream gateways reject that agent while accepting the Bhaiya-specific
-  identifier.
+- OpenAI-compatible provider `ai-kartik` points at
+  `http://ai-kartik.keiretsu.ts.net/v1`. The static provider catalog exposes
+  its models under the `ai-kartik/` prefix. `Service/ai-kartik` registers the
+  tailnet FQDN with the shared `common-egress` ProxyGroup. The provider
+  config overrides CLIProxy's generic compatibility user agent because the
+  upstream gateway rejects that agent while accepting the Bhaiya-specific
+  identifier. The former `ai` provider (`ai.keiretsu.ts.net`, `ai/` prefix)
+  was removed when its owner left the tailnet.
 - OpenAI-compatible provider `vllm` points at the St. Petersburg model-serving
   service through the direct Cilium ClusterMesh alias
   `Service/stpetersburg-vllm-upstream`, which resolves to St. Petersburg's
@@ -54,8 +53,7 @@ Anthropic-compatible APIs.
 - `force-model-prefix` is enabled and every route owns its client-visible
   prefix: `codex-subscription/<model>` for the logged-in Codex subscription,
   `anthropic-subscription/<model>` for the logged-in Claude subscription,
-  `ai/<model>` for `ai.keiretsu.ts.net`, `ai-kartik/<model>` for
-  `ai-kartik.keiretsu.ts.net`, and `vllm/<model>` for the St. Petersburg vLLM
+  `ai-kartik/<model>` for `ai-kartik.keiretsu.ts.net`, and `vllm/<model>` for the St. Petersburg vLLM
   service. The two OAuth prefixes live
   in native per-credential metadata, so CLIProxyAPI itself owns listing,
   request routing, and subscription pooling.

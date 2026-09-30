@@ -41,14 +41,6 @@ model_list:
       timeout: 600
       stream_timeout: 3600
       max_retries: 2
-  - model_name: ai/*
-    litellm_params:
-      model: openai/ai/*
-      api_base: http://cliproxy-upstream:8317/v1
-      api_key: os.environ/CLIPROXY_API_KEY
-      timeout: 600
-      stream_timeout: 3600
-      max_retries: 2
   - model_name: ai-kartik/*
     litellm_params:
       model: openai/ai-kartik/*
@@ -190,14 +182,6 @@ model_list:
   - model_name: cli/grok-subscription/*
     litellm_params:
       model: openai/grok-subscription/*
-      api_base: http://cliproxy-upstream:8317/v1
-      api_key: os.environ/CLIPROXY_API_KEY
-      timeout: 600
-      stream_timeout: 3600
-      max_retries: 2
-  - model_name: cli/ai/*
-    litellm_params:
-      model: openai/ai/*
       api_base: http://cliproxy-upstream:8317/v1
       api_key: os.environ/CLIPROXY_API_KEY
       timeout: 600

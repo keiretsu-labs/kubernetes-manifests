@@ -12,15 +12,16 @@
 # Adding or removing a model upstream is a commit to this file. It is wired
 # through a configMapGenerator, so editing it rolls the Deployment.
 openai-compatibility:
-  # ai and ai-kartik front the same catalog through two tailnet identities.
-  # The anchor keeps the two lists from drifting apart.
-  - name: "ai"
-    prefix: "ai"
-    base-url: "http://ai.keiretsu.ts.net/v1"
+  # ai-kartik is the only Keiretsu tailnet gateway identity CLIProxy fronts.
+  # The former `ai` (ai.keiretsu.ts.net) provider was removed when its owner
+  # left the tailnet; do not re-add it.
+  - name: "ai-kartik"
+    prefix: "ai-kartik"
+    base-url: "http://ai-kartik.keiretsu.ts.net/v1"
     disable-cooling: false
     headers:
       User-Agent: "Bhaiya-CLIProxy/1.0"
-    models: &keiretsu_catalog
+    models:
       - name: "claude-fable-5"
       - name: "claude-fable-5-1"
       - name: "claude-haiku-4-5"
@@ -123,13 +124,6 @@ openai-compatibility:
       - name: "gpt-5.6-sol"
       - name: "gpt-5.6-terra"
       - name: "gpt-6-astra"
-  - name: "ai-kartik"
-    prefix: "ai-kartik"
-    base-url: "http://ai-kartik.keiretsu.ts.net/v1"
-    disable-cooling: false
-    headers:
-      User-Agent: "Bhaiya-CLIProxy/1.0"
-    models: *keiretsu_catalog
   # St. Petersburg GPU route. Existing vllm/GLM-5.3-Flash-EXL3 clients stay on the managed gateway.
   - name: "vllm"
     prefix: "vllm"
