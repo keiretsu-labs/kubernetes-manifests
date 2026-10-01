@@ -364,8 +364,8 @@ spec:
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
-          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "14.5" }
-          - { name: TF_GLM_CACHE_GIB, value: "4" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "6.5" }
+          - { name: TF_GLM_CACHE_GIB, value: "2" }
           - { name: TF_GLM_KV, value: "fp8" }
           - { name: TF_GLM_DENSE, value: "q4" }
           - { name: TF_GLM_COMM, value: "roce" }
@@ -508,8 +508,8 @@ spec:
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
-          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "14.5" }
-          - { name: TF_GLM_CACHE_GIB, value: "4" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "6.5" }
+          - { name: TF_GLM_CACHE_GIB, value: "2" }
           - { name: TF_GLM_KV, value: "fp8" }
           - { name: TF_GLM_DENSE, value: "q4" }
           - { name: TF_GLM_COMM, value: "roce" }
