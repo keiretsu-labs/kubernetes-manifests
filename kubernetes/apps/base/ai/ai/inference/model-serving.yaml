@@ -1,4 +1,4 @@
-# GLM-5.3-Flash EXL3/TR3 on 2× DGX Spark — conservative TensorFold profile.
+# GLM-5.3-Flash EXL3/TR3 on 2× DGX Spark — 1M-context TensorFold qualification profile.
 #
 # The workload and service identity is generic so future model swaps do not
 # bake a retired model name into the in-cluster Service, mesh export, or probes.
@@ -360,12 +360,12 @@ spec:
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 0 --master 192.168.74.1 --master-port 29551 \
               --name GLM-5.3-Flash-EXL3 --host 0.0.0.0 --port 8888 \
-              --drafter none --context 32768 --parallel 1 --thinking
+              --drafter none --context 1048576 --parallel 1 --thinking
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
-          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "32" }
-          - { name: TF_GLM_CACHE_GIB, value: "2" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "14.5" }
+          - { name: TF_GLM_CACHE_GIB, value: "4" }
           - { name: TF_GLM_KV, value: "fp8" }
           - { name: TF_GLM_DENSE, value: "q4" }
           - { name: TF_GLM_COMM, value: "roce" }
@@ -409,8 +409,8 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           resources:
-            requests: { memory: "90Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-            limits: { memory: "96Gi", cpu: "12000m", nvidia.com/gpu: "1" }
+            requests: { memory: "96Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "112Gi", cpu: "12000m", nvidia.com/gpu: "1" }
           volumeMounts:
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }
@@ -504,12 +504,12 @@ spec:
             set -euo pipefail
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 1 --master 192.168.74.1 --master-port 29551 \
-              --drafter none --context 32768 --parallel 1 --thinking
+              --drafter none --context 1048576 --parallel 1 --thinking
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
-          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "32" }
-          - { name: TF_GLM_CACHE_GIB, value: "2" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "14.5" }
+          - { name: TF_GLM_CACHE_GIB, value: "4" }
           - { name: TF_GLM_KV, value: "fp8" }
           - { name: TF_GLM_DENSE, value: "q4" }
           - { name: TF_GLM_COMM, value: "roce" }
@@ -535,8 +535,8 @@ spec:
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           resources:
-            requests: { memory: "90Gi", cpu: "8000m", nvidia.com/gpu: "1" }
-            limits: { memory: "96Gi", cpu: "12000m", nvidia.com/gpu: "1" }
+            requests: { memory: "96Gi", cpu: "8000m", nvidia.com/gpu: "1" }
+            limits: { memory: "112Gi", cpu: "12000m", nvidia.com/gpu: "1" }
           volumeMounts:
           - { name: models, mountPath: /models }
           - { name: shm, mountPath: /dev/shm }

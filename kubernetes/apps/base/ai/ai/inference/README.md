@@ -5,8 +5,8 @@
 - **Model:** `Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw`
 - **Cached revision:** `25a44fdbf16862a46b7cc9921142c6c81350af2f`
 - **TensorFold recipe revision:** `9eaebb7c4e96d983dcd538e18624622ba5b820a8`
-- **Runtime:** TensorFold v0.5.0, image pinned by digest:
-  `ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9`
+- **Runtime:** TensorFold v0.6.0, image pinned by digest:
+  `ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:22789f0cb3dc308f0b2ce52a33961b88bd624af1725e91e8aba0a74a671bb969`
 - **Topology:** the existing `vllm` LeaderWorkerSet identity is retained for an
   in-place update; rank 0/API runs on `spark-0`, rank 1 on `spark-1`, TP=2 over
   the existing `eth2` / `mlx5_1` RoCE link with rendezvous port `29551`.
@@ -27,17 +27,18 @@ Face token, or load DFlash2.
 | Setting | Initial value |
 | --- | --- |
 | `DRAFTER` | `mtp` (`--drafter none`); one concurrent stream |
-| `CONTEXT` | `32768` (`--context 32768`) |
+| `CONTEXT` | `1048576` (`--context 1048576`) |
 | Vision | disabled; language-only |
-| KV cache | FP8; `TF_GLM_CACHE_GIB=2` |
-| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=32` |
-| Per-rank pod resources | 90Gi request / 96Gi limit; one GPU |
+| KV cache | FP8; `TF_GLM_CACHE_GIB=4` |
+| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=14.5` |
+| Parallel requests | 1 (`--parallel 1`) |
+| Per-rank pod resources | 96Gi request / 112Gi limit; one GPU |
 | NCCL/RoCE | `eth2`, `mlx5_1`, GID 3; TensorFold small gathers use RoCE |
 
 DFlash2 is intentionally not used: its included license is CC BY-NC-ND and
-restricts commercial use. Keep `PARALLEL=1` with the checkpoint's MTP head.
-Do not raise context, parallelism, or the cache pool without a new measured
-qualification.
+restricts commercial use. This first 1M-context qualification keeps
+`PARALLEL=1` with the checkpoint's MTP head and a 4GiB KV pool. Increase
+parallelism or the cache pool only after measured memory qualification.
 
 The MemAvailable preflight init container remains enabled, and TensorFold's
 own pre-allocation check refuses profiles that do not fit its reserve. The
@@ -47,14 +48,19 @@ overlapping rollout on these shared-memory nodes.
 
 ### Qualification record
 
-Pre-rollout readings on 2026-10-01, while the old vLLM process was loaded (not
-idle), were `1,212,956 KiB` on `spark-0` and `1,830,772 KiB` on `spark-1`. A
-later sample was `417,300 kB` on `spark-0` and `1,691,688 kB` on `spark-1`,
-still with the old model loaded. Both samples were below the 2 GiB critical
-MemAvailable band. In response, the follow-up profile halves context to 32,768
-and raises the TensorFold memory reserve to 32 GiB. The model swap uses the
-no-overlap strategy and pre-allocation checks; it must not be treated as
-qualified until the post-rollout readings and completion tests are recorded.
+The earlier `MemAvailable` samples (`417,300 kB` on `spark-0` and `1,691,688 kB`
+on `spark-1`) were taken while the old vLLM model was loaded and are not current
+idle readings. The first TensorFold startup rejected context 32,768 with
+`TENSORFOLD_MEMORY_RESERVE_GIB=32`, reporting a zero-token fitting window before
+loading weights; no OOM was observed. This profile restores upstream's 14.5GiB
+reserve and 1M context, while keeping `PARALLEL=1`, reducing the KV pool to
+4GiB, and allowing up to 112GiB per rank. Current scheduler requests, including
+the old 90Gi rank pods, are 98,851Mi on `spark-0` and 100,235Mi on `spark-1`;
+the non-serving requests are 6,691Mi and 8,075Mi respectively. A 96Gi request
+fits on both nodes after the zero-surge replacement, with about 3.1Gi and 3.8Gi
+of allocatable memory left. No page-cache drop or unrelated workload change is
+included. This is an unqualified recovery profile until both ranks load and
+the post-rollout MemAvailable and completion tests are recorded.
 
 The upstream recipe reports roughly 2–6 minutes to load weights after CUDA
 kernels are cached, with a few more minutes for first-time kernel compilation.
@@ -69,7 +75,7 @@ after the first qualification rollout before considering any larger profile.
 - Probes and Gatus check `/health`, `/v1/models`, and `/metrics` on port 8888.
   The ServiceMonitor adds the deployed `model_name` and cluster labels for the
   TensorFold dashboard and alert rules.
-- CLIProxy advertises a 32,768-token context window and LiteLLM caps input at
+- CLIProxy advertises a 1,048,576-token context window and LiteLLM caps input at
   the same profile limit. Keep all worker `OPENAI_BASE_URL` values unchanged.
 - No St. Petersburg `sp-vllm` Envoy HTTPRoute is tracked in this repository;
   clients reach the model through the existing mesh and egress aliases.

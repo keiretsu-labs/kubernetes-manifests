@@ -312,7 +312,7 @@ spec:
               # clamped down when the upstream reports a smaller live value.
               metadata_overrides = {
                   "vllm/GLM-5.3-Flash-EXL3": {
-                      "context_window": 32768,
+                      "context_window": 1048576,
                       "max_tokens": 8192,
                       "name": "GLM-5.3 Flash EXL3",
                       "reasoning": True,

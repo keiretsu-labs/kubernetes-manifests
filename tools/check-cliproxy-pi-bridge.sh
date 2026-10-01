@@ -111,7 +111,7 @@ if namespace["metadata_alias_sources"].get(glm_alias) != glm_source:
     raise SystemExit(f"{glm_alias} must resolve metadata from {glm_source}")
 glm_override = namespace["metadata_override"](glm_alias)
 if glm_override != {
-    "context_window": 32768,
+    "context_window": 1048576,
     "max_tokens": 8192,
     "name": "GLM-5.3 Flash EXL3",
     "reasoning": True,
@@ -144,7 +144,7 @@ served = namespace["resolved_metadata"](
     [],
     {},
 )
-if served.get("context_window") != 32768:
+if served.get("context_window") != 1048576:
     raise SystemExit(f"published window must match TensorFold's configured context: {served!r}")
 if served.get("max_tokens") != 8192:
     raise SystemExit(f"curated output cap must clamp the catalog value: {served!r}")
