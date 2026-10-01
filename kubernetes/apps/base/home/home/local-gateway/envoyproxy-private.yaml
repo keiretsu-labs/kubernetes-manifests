@@ -82,6 +82,29 @@ spec:
             - type: File
               file:
                 path: /dev/stdout
+        # Gateway port 6923 is unprivileged, so Envoy Gateway preserves the
+        # listener port. This is the Bhaiya v2 workspace CONNECT mux.
+        - type: Listener
+          matches:
+            - "destination.port == 6923"
+          format:
+            type: JSON
+            json:
+              listener: "bhaiya-v2-workspace-ssh"
+              gateway: "private"
+              connection_id: "%CONNECTION_ID%"
+              start_time: "%START_TIME%"
+              duration: "%DURATION%"
+              connection_termination_details: "%CONNECTION_TERMINATION_DETAILS%"
+              downstream_detected_close_type: "%DOWNSTREAM_DETECTED_CLOSE_TYPE%"
+              upstream_detected_close_type: "%UPSTREAM_DETECTED_CLOSE_TYPE%"
+              downstream_local_close_reason: "%DOWNSTREAM_LOCAL_CLOSE_REASON%"
+              upstream_local_close_reason: "%UPSTREAM_LOCAL_CLOSE_REASON%"
+              response_flags: "%RESPONSE_FLAGS%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
     metrics:
       prometheus:
         compression:

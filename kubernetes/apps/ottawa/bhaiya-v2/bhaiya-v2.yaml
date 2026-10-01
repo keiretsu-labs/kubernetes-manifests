@@ -1,0 +1,35 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: bhaiya-v2
+  namespace: flux-system
+  labels:
+    notifications.keiretsu.top/github-status: disabled
+spec:
+  dependsOn:
+    - name: cnpg-system
+    - name: garage
+    - name: garage-keys
+    - name: agent-sandbox
+    - name: external-secrets-install
+    - name: cert-manager
+    - name: home-local-gateway
+  path: ./
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: bhaiya-v2-deploy
+  interval: 10m
+  retryInterval: 1m
+  timeout: 20m
+  wait: true
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: bhaiya-v2-control
+      namespace: bhaiya
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: bhaiya-v2-edge
+      namespace: bhaiya

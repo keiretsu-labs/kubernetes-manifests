@@ -6,6 +6,7 @@ resources:
   - ./agent-sandbox-system
   - ./arc-systems
   - ./bhaiya
+  - ./bhaiya-v2
   - ./border0
   - ./bot
   - ./cloudflare
