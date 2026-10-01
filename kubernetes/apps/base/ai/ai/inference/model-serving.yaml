@@ -360,11 +360,11 @@ spec:
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 0 --master 192.168.74.1 --master-port 29551 \
               --name GLM-5.3-Flash-EXL3 --host 0.0.0.0 --port 8888 \
-              --drafter none --context 65536 --parallel 1 --thinking
+              --drafter none --context 32768 --parallel 1 --thinking
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
-          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "24" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "32" }
           - { name: TF_GLM_CACHE_GIB, value: "2" }
           - { name: TF_GLM_KV, value: "fp8" }
           - { name: TF_GLM_DENSE, value: "q4" }
@@ -388,7 +388,6 @@ spec:
           - { name: FLASHINFER_CUDA_ARCH_LIST, value: "12.1a" }
           - { name: HF_HOME, value: "/models/huggingface" }
           - { name: LANGUAGE_MODEL_ONLY, value: "1" }
-          - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TRANSFORMERS_OFFLINE, value: "1" }
           - { name: GLM53_INDEXER_WORKSPACE, value: "rightsize" }
           - { name: EXL3_FAT_GROUPED, value: "1" }
@@ -505,11 +504,11 @@ spec:
             set -euo pipefail
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 1 --master 192.168.74.1 --master-port 29551 \
-              --drafter none --context 65536 --parallel 1 --thinking
+              --drafter none --context 32768 --parallel 1 --thinking
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
-          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "24" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "32" }
           - { name: TF_GLM_CACHE_GIB, value: "2" }
           - { name: TF_GLM_KV, value: "fp8" }
           - { name: TF_GLM_DENSE, value: "q4" }

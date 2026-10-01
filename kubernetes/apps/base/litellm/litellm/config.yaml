@@ -11,7 +11,7 @@ model_list:
       stream_timeout: 3600
       max_retries: 2
     model_info:
-      max_input_tokens: 65536
+      max_input_tokens: 32768
 
   # CLIProxy-native names. These mirror CLIProxy's own route prefixes so a
   # client (for example a Bhaiya workspace agent) can switch its base URL

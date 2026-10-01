@@ -27,10 +27,10 @@ Face token, or load DFlash2.
 | Setting | Initial value |
 | --- | --- |
 | `DRAFTER` | `mtp` (`--drafter none`); one concurrent stream |
-| `CONTEXT` | `65536` (`--context 65536`) |
+| `CONTEXT` | `32768` (`--context 32768`) |
 | Vision | disabled; language-only |
 | KV cache | FP8; `TF_GLM_CACHE_GIB=2` |
-| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=24` |
+| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=32` |
 | Per-rank pod resources | 90Gi request / 96Gi limit; one GPU |
 | NCCL/RoCE | `eth2`, `mlx5_1`, GID 3; TensorFold small gathers use RoCE |
 
@@ -48,11 +48,13 @@ overlapping rollout on these shared-memory nodes.
 ### Qualification record
 
 Pre-rollout readings on 2026-10-01, while the old vLLM process was loaded (not
-idle), were `1,212,956 KiB` on `spark-0` and `1,830,772 KiB` on `spark-1`. Both
-were below the 2 GiB critical MemAvailable band. The model swap therefore uses
-the no-overlap strategy and the pre-allocation checks above; it must not be
-treated as qualified until the post-rollout readings and completion tests are
-recorded.
+idle), were `1,212,956 KiB` on `spark-0` and `1,830,772 KiB` on `spark-1`. A
+later sample was `417,300 kB` on `spark-0` and `1,691,688 kB` on `spark-1`,
+still with the old model loaded. Both samples were below the 2 GiB critical
+MemAvailable band. In response, the follow-up profile halves context to 32,768
+and raises the TensorFold memory reserve to 32 GiB. The model swap uses the
+no-overlap strategy and pre-allocation checks; it must not be treated as
+qualified until the post-rollout readings and completion tests are recorded.
 
 The upstream recipe reports roughly 2–6 minutes to load weights after CUDA
 kernels are cached, with a few more minutes for first-time kernel compilation.
@@ -67,7 +69,7 @@ after the first qualification rollout before considering any larger profile.
 - Probes and Gatus check `/health`, `/v1/models`, and `/metrics` on port 8888.
   The ServiceMonitor adds the deployed `model_name` and cluster labels for the
   TensorFold dashboard and alert rules.
-- CLIProxy advertises a 65,536-token context window and LiteLLM caps input at
+- CLIProxy advertises a 32,768-token context window and LiteLLM caps input at
   the same profile limit. Keep all worker `OPENAI_BASE_URL` values unchanged.
 - No St. Petersburg `sp-vllm` Envoy HTTPRoute is tracked in this repository;
   clients reach the model through the existing mesh and egress aliases.
