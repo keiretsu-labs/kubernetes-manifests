@@ -29,16 +29,17 @@ Face token, or load DFlash2.
 | `DRAFTER` | `mtp` (`--drafter none`); one concurrent stream |
 | `CONTEXT` | `1048576` (`--context 1048576`) |
 | Vision | disabled; language-only |
-| KV cache | FP8; `TF_GLM_CACHE_GIB=4` |
-| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=14.5` |
+| KV cache | FP8; `TF_GLM_CACHE_GIB=2` |
+| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=6.5` |
 | Parallel requests | 1 (`--parallel 1`) |
 | Per-rank pod resources | 96Gi request / 112Gi limit; one GPU |
 | NCCL/RoCE | `eth2`, `mlx5_1`, GID 3; TensorFold small gathers use RoCE |
 
 DFlash2 is intentionally not used: its included license is CC BY-NC-ND and
-restricts commercial use. This first 1M-context qualification keeps
-`PARALLEL=1` with the checkpoint's MTP head and a 4GiB KV pool. Increase
-parallelism or the cache pool only after measured memory qualification.
+restricts commercial use. This 1M-context recovery qualification keeps
+`PARALLEL=1` with the checkpoint's MTP head and a 2GiB KV pool. Do not reduce
+the reserve below 6GiB; increase parallelism or the cache pool only after
+measured memory qualification.
 
 The MemAvailable preflight init container remains enabled, and TensorFold's
 own pre-allocation check refuses profiles that do not fit its reserve. The
@@ -50,17 +51,22 @@ overlapping rollout on these shared-memory nodes.
 
 The earlier `MemAvailable` samples (`417,300 kB` on `spark-0` and `1,691,688 kB`
 on `spark-1`) were taken while the old vLLM model was loaded and are not current
-idle readings. The first TensorFold startup rejected context 32,768 with
-`TENSORFOLD_MEMORY_RESERVE_GIB=32`, reporting a zero-token fitting window before
-loading weights; no OOM was observed. This profile restores upstream's 14.5GiB
-reserve and 1M context, while keeping `PARALLEL=1`, reducing the KV pool to
-4GiB, and allowing up to 112GiB per rank. Current scheduler requests, including
-the old 90Gi rank pods, are 98,851Mi on `spark-0` and 100,235Mi on `spark-1`;
-the non-serving requests are 6,691Mi and 8,075Mi respectively. A 96Gi request
-fits on both nodes after the zero-surge replacement, with about 3.1Gi and 3.8Gi
-of allocatable memory left. No page-cache drop or unrelated workload change is
-included. This is an unqualified recovery profile until both ranks load and
-the post-rollout MemAvailable and completion tests are recorded.
+idle readings. PR #3354's 32GiB reserve and PR #3357's 14.5GiB reserve both
+failed before loading weights with a zero-token fitting window; the #3357
+preflight measured `MemAvailable=101,039,676 KiB` (~96.36GiB) on rank 0. The
+pinned TensorFold v0.6.0 CUDA capacity code uses `MemAvailable - reserve` on
+unified-memory GPUs and sets the fitting window to zero when estimated resident
+weights plus staging exceed that budget, before context sizing. The reported
+rank-0 startup estimate is ~88.09GiB: reserve 14.5GiB left only ~81.86GiB,
+whereas reserve 6.5GiB gives ~89.86GiB (~1.77GiB estimate headroom). This
+iteration keeps context at 1,048,576, `PARALLEL=1`, FP8 KV, and a 2GiB pool to
+limit the subsequent cache geometry. TensorFold's CUDA allocations on Sparks
+are not capped by the container memory limit; the 96Gi request / 112Gi limit
+does not raise its startup budget. The current scheduler request totals include
+the 96Gi rank pods: 104,995Mi on `spark-0` and 106,379Mi on `spark-1`, leaving
+about 3.1Gi and 3.8Gi of allocatable memory. No page-cache drop or unrelated
+workload change is included. This profile remains unqualified until both ranks
+load and post-rollout memory and completion tests succeed.
 
 The upstream recipe reports roughly 2–6 minutes to load weights after CUDA
 kernels are cached, with a few more minutes for first-time kernel compilation.
