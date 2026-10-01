@@ -307,17 +307,12 @@ spec:
               metadata_alias_sources = {
                   "vllm/GLM-5.3-Flash-EXL3": "vllm/GLM-5.3-Flash-EXL3",
               }
-              # Facts the upstream /v1/models does not publish. Limits do NOT
-              # belong here: vLLM reports max_model_len and is the only thing
-              # that knows what it is actually serving, so context_window is
-              # always derived. A declared window outlives the flag it was
-              # copied from -- this table said 1048576 while the LWS ran
-              # --max-model-len 16384, and every harness budgeted a 1M context
-              # against a 16k server. max_tokens stays because vLLM publishes
-              # no output cap; it asserts that a stuck stream cannot legally
-              # decode the whole window.
+              # Keep the deployed TensorFold context limit aligned with
+              # --context in the St. Petersburg model-serving LWS. Limits are
+              # clamped down when the upstream reports a smaller live value.
               metadata_overrides = {
                   "vllm/GLM-5.3-Flash-EXL3": {
+                      "context_window": 65536,
                       "max_tokens": 8192,
                       "name": "GLM-5.3 Flash EXL3",
                       "reasoning": True,

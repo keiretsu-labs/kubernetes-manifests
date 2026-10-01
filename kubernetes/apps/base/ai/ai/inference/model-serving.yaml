@@ -1,11 +1,11 @@
-# GLM-5.3-Flash EXL3/TR3 on 2× DGX Spark — shared-cluster vLLM profile.
+# GLM-5.3-Flash EXL3/TR3 on 2× DGX Spark — conservative TensorFold profile.
 #
 # The workload and service identity is generic so future model swaps do not
 # bake a retired model name into the in-cluster Service, mesh export, or probes.
-# Upstream recipe: https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks
+# Upstream recipe: https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold
 # Model: Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw@25a44fdbf16862a46b7cc9921142c6c81350af2f
-# Image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor
-# Image digest: sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
+# Runtime image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold
+# Runtime image digest: sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -293,11 +293,16 @@ metadata:
     app: model-serving
 spec:
   replicas: 1
+  rolloutStrategy:
+    type: RollingUpdate
+    rollingUpdateConfiguration:
+      maxSurge: 0
+      maxUnavailable: 1
+      partition: 0
   startupPolicy: LeaderCreated
   leaderWorkerTemplate:
     size: 2
-    # Keep the head downloader alive if the worker has a transient failure; the
-    # 200Gi PVCs are resumable and the group must not erase active downloads.
+    # Keep the existing per-rank model PVCs intact during the in-place runtime swap.
     restartPolicy: None
     leaderTemplate:
       metadata:
@@ -314,28 +319,25 @@ spec:
         nodeSelector:
           kubernetes.io/hostname: spark-0
         initContainers:
-        - name: download-models
-          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
-          command: [/bin/bash]
-          args: [/scripts/download-and-validate.sh]
+        - name: validate-model
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9
+          command: [/bin/bash, -ec]
+          args:
+          - |
+            test "$$(cat /models/qwen38/.model-revision)" = "Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw@25a44fdbf16862a46b7cc9921142c6c81350af2f"
+            test "$$(find /models/qwen38 -maxdepth 1 -type f -name '*.safetensors' | wc -l)" -ge 120
+            test -s /models/qwen38/config.json
+            test -s /models/qwen38/model.safetensors.index.json
+            HF_HUB_OFFLINE=1 tensorfold info /models/qwen38
           env:
-          - { name: MODEL_DIR, value: "/models/qwen38" }
-          - { name: MODEL_REPO, value: "Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw" }
-          - { name: MODEL_REVISION, value: "25a44fdbf16862a46b7cc9921142c6c81350af2f" }
-          - { name: DFLASH_REPO, value: "incoai/GLM-5.3-Flash-DFlash2" }
-          - { name: DFLASH_REVISION, value: "dc77ff1c99eeb2df044ee3d4f0094eb033fee410" }
-          - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
-          - { name: HF_HOME, value: "/models/huggingface" }
-          - { name: HF_HUB_OFFLINE, value: "0" }
-          - { name: TRANSFORMERS_OFFLINE, value: "0" }
+          - { name: HF_HUB_OFFLINE, value: "1" }
           volumeMounts:
           - { name: models, mountPath: /models }
-          - { name: download-script, mountPath: /scripts }
           resources:
-            requests: { memory: "4Gi", cpu: "2000m" }
-            limits: { memory: "8Gi", cpu: "4000m" }
+            requests: { memory: "2Gi", cpu: "500m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
         - name: preflight-memory
-          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9
           command: [/bin/bash]
           args: [/scripts/preflight-memory.sh]
           env:
@@ -347,43 +349,34 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         containers:
-        - name: vllm
-          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
-          # Upstream MiaAI-Lab arm64 image with the recipe runtime baked in.
+        - name: tensorfold
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9
           command: [bash, -c]
           ports:
-          - { name: http, containerPort: 8000, protocol: TCP }
+          - { name: http, containerPort: 8888, protocol: TCP }
           args:
           - |
             set -euo pipefail
-            cp /glm-patches/patch_glm_video_placeholders.py /tmp/patch_glm_video_placeholders.py
-            python3 /tmp/patch_glm_video_placeholders.py
-            exec vllm serve /models/qwen38 \
-              --served-model-name GLM-5.3-Flash-EXL3 \
-              --host 0.0.0.0 --port 8000 \
-              --tensor-parallel-size 2 --nnodes 2 --node-rank 0 \
-              --master-addr 192.168.74.1 --master-port 26400 \
-              --distributed-timeout-seconds 3600 --cpu-distributed-timeout-seconds 3600 \
-              --distributed-executor-backend mp --quantization exl3 \
-              --enforce-eager \
-              --load-format instanttensor --gpu-memory-utilization 0.70 \
-              --kv-cache-memory-bytes ${MODEL_SERVING_KV_CACHE_BYTES:=4831838208} \
-              --max-model-len 262144 --max-num-seqs 2 --max-num-batched-tokens 1024 \
-              --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
-              --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
-              --limit-mm-per-prompt '{"image":48,"video":1}' \
-              --mm-processor-kwargs '{"max_image_tokens":2048}' \
-              --mm-processor-cache-gb 1 --skip-mm-profiling \
-              --enable-prompt-tokens-details
+            exec tensorfold serve /models/qwen38 \
+              --tp 2 --rank 0 --master 192.168.74.1 --master-port 29551 \
+              --name GLM-5.3-Flash-EXL3 --host 0.0.0.0 --port 8888 \
+              --drafter none --context 65536 --parallel 1 --thinking
           env:
-          - { name: VLLM_HOST_IP, value: "192.168.74.1" }
-          - { name: VLLM_ENGINE_READY_TIMEOUT_S, value: "3600" }
-          - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: HF_HUB_OFFLINE, value: "1" }
+          - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "24" }
+          - { name: TF_GLM_CACHE_GIB, value: "2" }
+          - { name: TF_GLM_KV, value: "fp8" }
+          - { name: TF_GLM_DENSE, value: "q4" }
+          - { name: TF_GLM_COMM, value: "roce" }
+          - { name: TF_ROCE_MAX_KB, value: "512" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: TP_SOCKET_IFNAME, value: "eth2" }
           - { name: NCCL_IB_HCA, value: "mlx5_1" }
           - { name: NCCL_IB_GID_INDEX, value: "3" }
+          - { name: NCCL_MIN_NCHANNELS, value: "4" }
+          - { name: NCCL_MAX_NCHANNELS, value: "4" }
           - { name: NCCL_IB_DISABLE, value: "0" }
           - { name: NCCL_IB_ROCE_VERSION_NUM, value: "2" }
           - { name: NCCL_NET, value: "IB" }
@@ -424,11 +417,10 @@ spec:
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
           - { name: sys-ib, mountPath: /sys/class/infiniband }
-          - { name: glm-patches, mountPath: /glm-patches }
           startupProbe:
             httpGet:
               path: /health
-              port: 8000
+              port: 8888
             initialDelaySeconds: 30
             periodSeconds: 30
             timeoutSeconds: 10
@@ -436,14 +428,14 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 8000
+              port: 8888
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /health
-              port: 8000
+              port: 8888
             periodSeconds: 15
             timeoutSeconds: 10
         volumes:
@@ -455,12 +447,6 @@ spec:
           hostPath: { path: /dev/infiniband, type: Directory }
         - name: sys-ib
           hostPath: { path: /sys/class/infiniband, type: Directory }
-        - name: glm-patches
-          configMap:
-            name: model-serving-download-script
-            items:
-            - key: patch_glm_video_placeholders.py
-              path: patch_glm_video_placeholders.py
         - name: models
           persistentVolumeClaim: { claimName: qwen38-head-models }
         - name: download-script
@@ -481,28 +467,25 @@ spec:
         nodeSelector:
           kubernetes.io/hostname: spark-1
         initContainers:
-        - name: download-models
-          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
-          command: [/bin/bash]
-          args: [/scripts/download-and-validate.sh]
+        - name: validate-model
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9
+          command: [/bin/bash, -ec]
+          args:
+          - |
+            test "$$(cat /models/qwen38/.model-revision)" = "Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw@25a44fdbf16862a46b7cc9921142c6c81350af2f"
+            test "$$(find /models/qwen38 -maxdepth 1 -type f -name '*.safetensors' | wc -l)" -ge 120
+            test -s /models/qwen38/config.json
+            test -s /models/qwen38/model.safetensors.index.json
+            HF_HUB_OFFLINE=1 tensorfold info /models/qwen38
           env:
-          - { name: MODEL_DIR, value: "/models/qwen38" }
-          - { name: MODEL_REPO, value: "Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw" }
-          - { name: MODEL_REVISION, value: "25a44fdbf16862a46b7cc9921142c6c81350af2f" }
-          - { name: DFLASH_REPO, value: "incoai/GLM-5.3-Flash-DFlash2" }
-          - { name: DFLASH_REVISION, value: "dc77ff1c99eeb2df044ee3d4f0094eb033fee410" }
-          - { name: HUGGING_FACE_HUB_TOKEN, valueFrom: { secretKeyRef: { name: hf-secret, key: HF_TOKEN } } }
-          - { name: HF_HOME, value: "/models/huggingface" }
-          - { name: HF_HUB_OFFLINE, value: "0" }
-          - { name: TRANSFORMERS_OFFLINE, value: "0" }
+          - { name: HF_HUB_OFFLINE, value: "1" }
           volumeMounts:
           - { name: models, mountPath: /models }
-          - { name: download-script, mountPath: /scripts }
           resources:
-            requests: { memory: "4Gi", cpu: "2000m" }
-            limits: { memory: "8Gi", cpu: "4000m" }
+            requests: { memory: "2Gi", cpu: "500m" }
+            limits: { memory: "4Gi", cpu: "2000m" }
         - name: preflight-memory
-          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9
           command: [/bin/bash]
           args: [/scripts/preflight-memory.sh]
           env:
@@ -514,43 +497,31 @@ spec:
             requests: { memory: "64Mi", cpu: "100m" }
             limits: { memory: "256Mi", cpu: "500m" }
         containers:
-        - name: vllm
-          image: ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d
-          # Upstream MiaAI-Lab arm64 image with the recipe runtime baked in.
+        - name: tensorfold
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9
           command: [bash, -c]
-          ports:
-          - { name: http, containerPort: 8000, protocol: TCP }
           args:
           - |
             set -euo pipefail
-            cp /glm-patches/patch_glm_video_placeholders.py /tmp/patch_glm_video_placeholders.py
-            python3 /tmp/patch_glm_video_placeholders.py
-            exec vllm serve /models/qwen38 \
-              --served-model-name GLM-5.3-Flash-EXL3 \
-              --host 0.0.0.0 --port 8000 \
-              --tensor-parallel-size 2 --nnodes 2 --node-rank 1 \
-              --master-addr 192.168.74.1 --master-port 26400 \
-              --distributed-timeout-seconds 3600 --cpu-distributed-timeout-seconds 3600 \
-              --distributed-executor-backend mp --headless --quantization exl3 \
-              --enforce-eager \
-              --load-format instanttensor --gpu-memory-utilization 0.70 \
-              --kv-cache-memory-bytes ${MODEL_SERVING_KV_CACHE_BYTES:=4831838208} \
-              --max-model-len 262144 --max-num-seqs 2 --max-num-batched-tokens 1024 \
-              --kv-cache-dtype fp8 --enable-prefix-caching --enable-chunked-prefill \
-              --tool-call-parser glm47 --reasoning-parser glm45 --enable-auto-tool-choice \
-              --limit-mm-per-prompt '{"image":48,"video":1}' \
-              --mm-processor-kwargs '{"max_image_tokens":2048}' \
-              --mm-processor-cache-gb 1 --skip-mm-profiling \
-              --enable-prompt-tokens-details
+            exec tensorfold serve /models/qwen38 \
+              --tp 2 --rank 1 --master 192.168.74.1 --master-port 29551 \
+              --drafter none --context 65536 --parallel 1 --thinking
           env:
-          - { name: VLLM_HOST_IP, value: "192.168.74.2" }
-          - { name: VLLM_ENGINE_READY_TIMEOUT_S, value: "3600" }
-          - { name: VLLM_ALLOW_LONG_MAX_MODEL_LEN, value: "1" }
+          - { name: HF_HUB_OFFLINE, value: "1" }
+          - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "24" }
+          - { name: TF_GLM_CACHE_GIB, value: "2" }
+          - { name: TF_GLM_KV, value: "fp8" }
+          - { name: TF_GLM_DENSE, value: "q4" }
+          - { name: TF_GLM_COMM, value: "roce" }
+          - { name: TF_ROCE_MAX_KB, value: "512" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: TP_SOCKET_IFNAME, value: "eth2" }
           - { name: NCCL_IB_HCA, value: "mlx5_1" }
           - { name: NCCL_IB_GID_INDEX, value: "3" }
+          - { name: NCCL_MIN_NCHANNELS, value: "4" }
+          - { name: NCCL_MAX_NCHANNELS, value: "4" }
           - { name: NCCL_IB_DISABLE, value: "0" }
           - { name: NCCL_IB_ROCE_VERSION_NUM, value: "2" }
           - { name: NCCL_NET, value: "IB" }
@@ -560,25 +531,6 @@ spec:
           - { name: NCCL_DEBUG, value: "WARN" }
           - { name: TORCH_CUDA_ARCH_LIST, value: "12.1a" }
           - { name: FLASHINFER_CUDA_ARCH_LIST, value: "12.1a" }
-          - { name: HF_HOME, value: "/models/huggingface" }
-          - { name: LANGUAGE_MODEL_ONLY, value: "1" }
-          - { name: HF_HUB_OFFLINE, value: "1" }
-          - { name: TRANSFORMERS_OFFLINE, value: "1" }
-          - { name: GLM53_INDEXER_WORKSPACE, value: "rightsize" }
-          - { name: EXL3_FAT_GROUPED, value: "1" }
-          - { name: EXL3_TEMP_ROWS_FUSED, value: "32" }
-          - { name: GLM53_EXL3_MOE_FAST, value: "1" }
-          - { name: GLM53_KDA_BF16_LARGE_M, value: "0" }
-          - { name: GLM53_DENSE_FP8, value: "dense,kda" }
-          - { name: GLM53_SPINWAIT_MS, value: "16" }
-          - { name: GLM53_ADAPTIVE_K, value: "off" }
-          - { name: GLM53_MIXED_PREFILL_CHUNK, value: "fair" }
-          - { name: GLM53_FAIR_PREFILL_CHUNK, value: "256" }
-          - { name: GLM53_FAIR_PREFILL_SHARE, value: "0.30" }
-          - { name: GLM53_FAIR_PREFILL_MAX_INTERVAL_MS, value: "2000" }
-          - { name: GLM53_FAIR_PREFILL_MAX_STEP_MS, value: "2000" }
-          - { name: GLM53_FAIR_PREFILL_MAX_CHUNKS, value: "1" }
-          - { name: GLM53_KV_CAPACITY_LOG, value: "1" }
           securityContext:
             privileged: true
             capabilities:
@@ -591,7 +543,6 @@ spec:
           - { name: shm, mountPath: /dev/shm }
           - { name: infiniband, mountPath: /dev/infiniband }
           - { name: sys-ib, mountPath: /sys/class/infiniband }
-          - { name: glm-patches, mountPath: /glm-patches }
           # Worker rank is headless and has no HTTP probes.
         volumes:
         - name: shm
@@ -602,12 +553,6 @@ spec:
           hostPath: { path: /dev/infiniband, type: Directory }
         - name: sys-ib
           hostPath: { path: /sys/class/infiniband, type: Directory }
-        - name: glm-patches
-          configMap:
-            name: model-serving-download-script
-            items:
-            - key: patch_glm_video_placeholders.py
-              path: patch_glm_video_placeholders.py
         - name: models
           persistentVolumeClaim: { claimName: qwen38-worker-models }
         - name: download-script
@@ -626,7 +571,7 @@ spec:
     app: model-serving
     role: head
   ports:
-  - { name: http, port: 8000, protocol: TCP, targetPort: http }
+  - { name: http, port: 8888, protocol: TCP, targetPort: http }
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -646,6 +591,9 @@ spec:
     - action: replace
       replacement: talos-stpetersburg
       targetLabel: cluster
+    - action: replace
+      replacement: GLM-5.3-Flash-EXL3
+      targetLabel: model_name
   selector:
     matchLabels:
       app: model-serving

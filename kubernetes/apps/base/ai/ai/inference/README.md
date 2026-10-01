@@ -1,57 +1,94 @@
 # AI inference on 2× NVIDIA DGX Spark
 
-## Active deployment: GLM-5.3-Flash EXL3/TR3
+## Active deployment: GLM-5.3-Flash EXL3/TR3 with TensorFold
 
 - **Model:** `Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw`
-- **Model revision:** `25a44fdbf16862a46b7cc9921142c6c81350af2f`
-- **Runtime:** generic `vllm` LeaderWorkerSet using the MiaAI-Lab TP=2 recipe
-  with conservative eager execution
-- **Image:** `ghcr.io/miaai-lab/glm-5.3-flash-2x-dgx-sparks:exl3-instanttensor@sha256:447114ee77d14c9b4732ee23978ada2a0ee9027868a231d6fd42700a8b25be1d`
-- **Draft model:** `incoai/GLM-5.3-Flash-DFlash2@dc77ff1c99eeb2df044ee3d4f0094eb033fee410`
-- **Topology:** one LeaderWorkerSet spanning `spark-0` and `spark-1`, TP=2, MP executor
-- **Serving ID:** `GLM-5.3-Flash-EXL3`
-- **Service:** `model-serving.ai:8000` (generic identity for future model swaps)
+- **Cached revision:** `25a44fdbf16862a46b7cc9921142c6c81350af2f`
+- **TensorFold recipe revision:** `9eaebb7c4e96d983dcd538e18624622ba5b820a8`
+- **Runtime:** TensorFold v0.5.0, image pinned by digest:
+  `ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9`
+- **Topology:** the existing `vllm` LeaderWorkerSet identity is retained for an
+  in-place update; rank 0/API runs on `spark-0`, rank 1 on `spark-1`, TP=2 over
+  the existing `eth2` / `mlx5_1` RoCE link with rendezvous port `29551`.
+- **Serving ID:** `GLM-5.3-Flash-EXL3` (client-facing CLIProxy/LiteLLM IDs stay
+  `vllm/GLM-5.3-Flash-EXL3`).
+- **API:** `model-serving.ai:8888`; the cross-cluster mesh Service remains
+  `model-serving-mesh:80` and existing egress aliases remain unchanged.
 
-**Mia source-aligned, shared-cluster serving profile:**
+The upstream recipe pins a newer Hugging Face revision than the cached
+checkpoint. Before rollout, the existing model files and their checksum index
+were verified on both PVCs; the cache and recipe revisions resolve to the same
+`SHA256SUMS` object. Startup validates the cached marker, model files, and
+`tensorfold info` in offline mode. It does not download weights, use a Hugging
+Face token, or load DFlash2.
 
-- [MiaAI-Lab's `tp2-long-coding.env`](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks/blob/main/examples/tp2-long-coding.env)
-  is the source for runtime improvements, but its clean-benchmark `.865`
-  utilization and automatic large KV pool are not safe assumptions here because
-  these Sparks also carry the rest of the St. Petersburg workload.
-- The deployed qualification target is 262,144 tokens per request, up to two
-  admitted sequences, and 1,024 batched prefill tokens. The fixed 4.5 GiB KV cap,
-  rather than the request limit, controls total cached context.
-- E3 grouped prefill (`EXL3_FAT_GROUPED=1`, temp rows 32) and fair scheduling;
-  eager execution is enabled for reliable startup because graph capture stalled
-  this cluster during the previous rescue boot.
-- DFlash2 artifacts remain cached for a future qualified rollout, but speculative
-  decoding is disabled in this shared-cluster profile; the init gate checks
-  `MemAvailable` before vLLM starts and the model runs in language-only mode to
-  leave memory for the other Spark workloads.
-- Explicit 4.5 GiB FP8 KV budget (`4831838208` bytes) is qualified for this
-  shared-cluster profile. A safe boot reported 568,971 logical KV tokens
-  (2.17 concurrent 262,144-token requests); the exact total is runtime-dependent
-  and must be confirmed from the vLLM capacity log after each rollout.
-- The TP ranks use a one-hour NCCL/Gloo distributed timeout and engine-ready
-  timeout so rank 1 is not evicted by the default 30-minute wait while rank 0
-  loads the 164 GiB InstantTensor checkpoint.
+## First shared-cluster profile
 
-This follows MiaAI-Lab's runtime/image recipe, with a lower memory profile
-qualified for this shared cluster. Do not raise context length, concurrency,
-KV budget, or GPU utilization without a new memory qualification.
+| Setting | Initial value |
+| --- | --- |
+| `DRAFTER` | `mtp` (`--drafter none`); one concurrent stream |
+| `CONTEXT` | `65536` (`--context 65536`) |
+| Vision | disabled; language-only |
+| KV cache | FP8; `TF_GLM_CACHE_GIB=2` |
+| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=24` |
+| Per-rank pod resources | 90Gi request / 96Gi limit; one GPU |
+| NCCL/RoCE | `eth2`, `mlx5_1`, GID 3; TensorFold small gathers use RoCE |
 
-The existing per-rank PVCs and `/models/qwen38` storage path retain their legacy
-names to reuse the downloaded checkpoint. The workload, pod, Service, mesh
-export, probes, and consumer route use generic `vllm`/`model-serving` names.
+DFlash2 is intentionally not used: its included license is CC BY-NC-ND and
+restricts commercial use. Keep `PARALLEL=1` with the checkpoint's MTP head.
+Do not raise context, parallelism, or the cache pool without a new measured
+qualification.
 
-## Safety and rollout notes
+The MemAvailable preflight init container remains enabled, and TensorFold's
+own pre-allocation check refuses profiles that do not fit its reserve. The
+LeaderWorkerSet explicitly uses `maxSurge: 0` and `maxUnavailable: 1`, so old
+ranks stop before the replacement group starts; never change it to an
+overlapping rollout on these shared-memory nodes.
 
-- Both Sparks are consumed by this single TP=2 workload; there is no spare GPU for a parallel model.
-- The TP ranks use the `ai-inference` priority class and remain pinned to
-  spark-0/spark-1 because the RDMA addresses and per-rank PVCs are node-specific.
-- Each rank keeps the existing 90Gi request / 96Gi limit and a bounded startup memory gate.
-- The workload identity is `vllm`; the `model-serving` Service and mesh identity are stable across model swaps.
-- Acceptance requires both ranks ready, `/health` 200, `/v1/models` advertising `GLM-5.3-Flash-EXL3`, and a bounded completion response.
-- CLIProxy advertises the deployed 262,144-token window; it does not infer
-  availability from the static catalog, so health and completion checks remain
-  part of rollout acceptance.
+### Qualification record
+
+Pre-rollout readings on 2026-10-01, while the old vLLM process was loaded (not
+idle), were `1,212,956 KiB` on `spark-0` and `1,830,772 KiB` on `spark-1`. Both
+were below the 2 GiB critical MemAvailable band. The model swap therefore uses
+the no-overlap strategy and the pre-allocation checks above; it must not be
+treated as qualified until the post-rollout readings and completion tests are
+recorded.
+
+The upstream recipe reports roughly 2–6 minutes to load weights after CUDA
+kernels are cached, with a few more minutes for first-time kernel compilation.
+This workload's startup probe allows up to 90 minutes for slower shared-node
+starts. Record actual startup time and idle/peak `MemAvailable` for both Sparks
+after the first qualification rollout before considering any larger profile.
+
+## Monitoring and clients
+
+- `/health` reports request, stream, and free-pool state; `/metrics` exports
+  `tensorfold:*` request/token/cache metrics and `tensorfold_health:*` gauges.
+- Probes and Gatus check `/health`, `/v1/models`, and `/metrics` on port 8888.
+  The ServiceMonitor adds the deployed `model_name` and cluster labels for the
+  TensorFold dashboard and alert rules.
+- CLIProxy advertises a 65,536-token context window and LiteLLM caps input at
+  the same profile limit. Keep all worker `OPENAI_BASE_URL` values unchanged.
+- No St. Petersburg `sp-vllm` Envoy HTTPRoute is tracked in this repository;
+  clients reach the model through the existing mesh and egress aliases.
+
+## Rollback
+
+The exact previous vLLM manifest and PVC references are recoverable from
+commit `06448cde4c5699be6166340efbef06b3802352c9`:
+
+```sh
+git show 06448cde4c5699be6166340efbef06b3802352c9:kubernetes/apps/base/ai/ai/inference/model-serving.yaml
+```
+
+To roll back, open a GitOps revert PR for the swap commit (use
+`git revert -m 1 <merge-commit>` only if the PR used a merge commit), run
+`tools/check.sh stpetersburg`, and merge the revert after CI passes. Flux then
+restores the vLLM LWS and existing services. Do not mutate the live cluster.
+Both 200Gi PVCs and `/models/qwen38` are preserved; rollback does not download
+or delete the checkpoint.
+
+Rollback also uses the zero-surge full-rank restart and the old vLLM startup
+checks. Expect endpoint downtime while ranks load; allow up to the existing
+one-hour engine-ready timeout and 90-minute startup-probe window. Actual
+TensorFold and rollback durations should be recorded after measured runs.

@@ -2,45 +2,36 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: vllm-rules
+  name: tensorfold-rules
 spec:
   groups:
-    - name: vllm.rules
+    - name: tensorfold.rules
       rules:
-        # Completions-only counter: rate() is 0 while requests are still
-        # running (huge prefill, or a decode that never EOS). A few minutes
-        # of that is a long prompt; 8m is past the ~4m 200K-token prefill
-        # this cluster has survived, and catches the !-forever wedge.
-        - alert: vLLMGenerationFlatline
+        - alert: TensorFoldGenerationFlatline
           expr: |
-            max by (cluster, namespace, pod, model_name) (vllm:num_running_reqs) > 0
+            max by (cluster, namespace, pod, model_name) (tensorfold:requests_running{namespace="ai"}) > 0
             and
-            sum by (cluster, namespace, pod, model_name) (rate(vllm:generation_tokens_total[2m])) == 0
+            sum by (cluster, namespace, pod, model_name) (increase(tensorfold_health:completion_tokens_total{namespace="ai"}[2m])) == 0
           for: 8m
           annotations:
-            summary: vLLM has running requests but generation_tokens_total is flat ({{ $labels.model_name }})
+            summary: TensorFold has running requests but no new completion tokens ({{ $$labels.model_name }})
             description: >-
-              num_running_reqs has been >0 while rate(vllm:generation_tokens_total)
-              is 0 for 8m on {{ $labels.pod }}. That is longer than a healthy 200K-token
-              chunked prefill on this cluster. Either prefill is stuck or decode is
-              emitting tokens that never finish the request (the !-forever NEXTN race).
+              requests_running has been positive while the health endpoint's
+              completion_tokens_total has not increased for 8m on {{ $$labels.pod }}.
+              This counter includes tokens from in-flight replies, so this points
+              to a stalled prefill or decode rather than a normal long completion.
           labels:
             severity: critical
 
-        # NEXTN target-verify collapse: spec_accept_length pins at 1.0 on the
-        # first decode sample and stays there while GPUs keep busy. Stale
-        # last-sample gauges during idle are excluded by num_running_reqs>0.
-        - alert: vLLMSpecAcceptPinned
+        - alert: TensorFoldKVPoolExhausted
           expr: |
-            max by (cluster, namespace, pod, model_name) (vllm:spec_accept_length) == 1
-            and
-            max by (cluster, namespace, pod, model_name) (vllm:num_running_reqs) > 0
-          for: 3m
+            tensorfold_health:pool_free_tokens{namespace="ai"} == 0
+          for: 5m
           annotations:
-            summary: vLLM spec_accept_length pinned at 1.0 with running requests ({{ $labels.model_name }})
+            summary: TensorFold KV pool has no free tokens on {{ $$labels.pod }}
             description: >-
-              spec_accept_length has been exactly 1.0 for 3m while num_running_reqs>0
-              on {{ $labels.pod }}. Healthy NEXTN on this cluster varies 1.7–3.0.
-              A pin at 1.0 with GPUs busy is the garbage-decode failure mode.
+              TensorFold's shared cache pool has had no free token rows for 5m.
+              New prompts may be unable to make progress; inspect MemAvailable,
+              tensorfold_health:pool_tokens, and the configured context/cache budget.
           labels:
             severity: warning

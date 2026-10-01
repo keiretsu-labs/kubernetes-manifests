@@ -58,9 +58,9 @@ spec:
           alerts:
             - type: discord
               send-on-resolved: true
-        - name: GLM-5.3 Flash EXL3 vLLM (StPetersburg)
+        - name: GLM-5.3 Flash EXL3 TensorFold (StPetersburg)
           group: AI
-          url: http://model-serving.ai:8000/health
+          url: http://model-serving.ai:8888/health
           interval: 60s
           conditions:
             - "[STATUS] == 200"

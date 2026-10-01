@@ -1,9 +1,9 @@
 ---
-# GLM-5.3-Flash EXL3 OpenAI-compatible inference server.
+# GLM-5.3-Flash EXL3 TensorFold OpenAI-compatible inference server.
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-vllm
+  name: app-tensorfold
 spec:
   jobName: blackbox
   module: http_2xx
@@ -12,8 +12,9 @@ spec:
   targets:
     staticConfig:
       static:
-        - http://model-serving.ai:8000/health
-        - http://model-serving.ai:8000/v1/models
+        - http://model-serving.ai:8888/health
+        - http://model-serving.ai:8888/v1/models
+        - http://model-serving.ai:8888/metrics
       labels:
         service: ai-inference
-        target: vllm
+        target: tensorfold

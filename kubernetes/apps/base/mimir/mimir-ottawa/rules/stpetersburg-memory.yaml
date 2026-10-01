@@ -34,7 +34,7 @@ groups:
             This is the tight-memory band for a GB10 unified-memory node.
             The node remains below the 8 GiB early-warning cushion but above
             the critical 2 GiB band; correlate MemAvailable with the GB10
-            allocation and vLLM serving state.
+            allocation and TensorFold serving state.
 
       - alert: StPetersburgSparkMemoryAvailableCritical
         expr: |
@@ -56,6 +56,6 @@ groups:
             of host memory available.
           description: >-
             The GB10 unified-memory host is in the critical absolute-memory
-            band. An OOM can kill a vLLM rank even while Kubernetes
+            band. An OOM can kill a TensorFold rank even while Kubernetes
             MemoryPressure remains False; protect the model endpoint and
             investigate immediately.
