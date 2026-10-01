@@ -12,7 +12,7 @@ spec:
     - name: garage
     - name: garage-keys
     - name: agent-sandbox
-    - name: external-secrets
+    - name: external-secrets-install
     - name: cert-manager
     - name: home-local-gateway
   path: ./
