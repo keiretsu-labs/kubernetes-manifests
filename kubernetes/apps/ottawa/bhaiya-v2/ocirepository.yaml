@@ -1,0 +1,11 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: bhaiya-v2-deploy
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: oci://oci.cdn.keiretsu.top/corp/bhaiya-v2-deploy
+  ref:
+    semver: ">=1.0.0"

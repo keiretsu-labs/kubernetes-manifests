@@ -98,3 +98,11 @@ spec:
         - kind: TCPRoute
         namespaces:
           from: All
+    - name: bhaiya-v2-workspace-ssh
+      protocol: TCP
+      port: 6923
+      allowedRoutes:
+        kinds:
+        - kind: TCPRoute
+        namespaces:
+          from: All

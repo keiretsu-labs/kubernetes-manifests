@@ -1,0 +1,52 @@
+rule_files:
+  - ../bhaiya-v2.yaml
+
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'kube_deployment_status_replicas_available{namespace="bhaiya",deployment="bhaiya-v2-control"}'
+        values: "0+0x10"
+      - series: 'kube_deployment_status_replicas_available{namespace="bhaiya",deployment="bhaiya-v2-edge"}'
+        values: "0+0x10"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: BhaiyaV2DeploymentUnavailable
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: BhaiyaV2DeploymentUnavailable
+        exp_alerts:
+          - exp_labels:
+              namespace: bhaiya
+              deployment: bhaiya-v2-control
+              severity: critical
+            exp_annotations:
+              summary: Bhaiya v2 deployment has no available replicas
+              description: >-
+                A Bhaiya v2 deployment has had fewer than one available replica
+                for at least five minutes. Check the bhaiya-v2-control and
+                bhaiya-v2-edge Deployments in the bhaiya namespace.
+          - exp_labels:
+              namespace: bhaiya
+              deployment: bhaiya-v2-edge
+              severity: critical
+            exp_annotations:
+              summary: Bhaiya v2 deployment has no available replicas
+              description: >-
+                A Bhaiya v2 deployment has had fewer than one available replica
+                for at least five minutes. Check the bhaiya-v2-control and
+                bhaiya-v2-edge Deployments in the bhaiya namespace.
+
+  - interval: 1m
+    input_series:
+      - series: 'kube_deployment_status_replicas_available{namespace="bhaiya",deployment="bhaiya-v2-control"}'
+        values: "2+0x10"
+      - series: 'kube_deployment_status_replicas_available{namespace="bhaiya",deployment="bhaiya-v2-edge"}'
+        values: "1+0x10"
+      - series: 'kube_deployment_status_replicas_available{namespace="bhaiya",deployment="bhaiya"}'
+        values: "0+0x10"
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: BhaiyaV2DeploymentUnavailable
+        exp_alerts: []

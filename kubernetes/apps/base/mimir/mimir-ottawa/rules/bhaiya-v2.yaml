@@ -1,0 +1,21 @@
+namespace: bhaiya-v2
+groups:
+  - name: bhaiya-v2.availability
+    rules:
+      - alert: BhaiyaV2DeploymentUnavailable
+        expr: |
+          max by (namespace, deployment) (
+            kube_deployment_status_replicas_available{
+              namespace="bhaiya",
+              deployment=~"bhaiya-v2-control|bhaiya-v2-edge"
+            }
+          ) < 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bhaiya v2 deployment has no available replicas
+          description: >-
+            A Bhaiya v2 deployment has had fewer than one available replica
+            for at least five minutes. Check the bhaiya-v2-control and
+            bhaiya-v2-edge Deployments in the bhaiya namespace.
