@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: garage-gateway
+  labels:
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/instance: garage
+    app.kubernetes.io/managed-by: garage-operator
+    app.kubernetes.io/name: garage
+    garage.rajsingh.info/cluster: garage
+    garage.rajsingh.info/tier: gateway
+spec:
+  # Garage S3 multipart uploads use POST/PATCH/PUT against one upload UUID.
+  # Keep a Zot client on one gateway for the upload lifetime; without this,
+  # the second request can reach another gateway and return NoSuchUpload.
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  ports:
+    - name: s3
+      port: 3900
+      protocol: TCP
+      targetPort: 3900
+    - name: admin
+      port: 3903
+      protocol: TCP
+      targetPort: 3903
+    - name: web
+      port: 3902
+      protocol: TCP
+      targetPort: 3902
+  selector:
+    app.kubernetes.io/instance: garage
+    app.kubernetes.io/name: garage
+    garage.rajsingh.info/tier: gateway
