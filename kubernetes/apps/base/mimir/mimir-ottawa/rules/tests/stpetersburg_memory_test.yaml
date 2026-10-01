@@ -1,0 +1,50 @@
+rule_files:
+  - ../stpetersburg-memory.yaml
+
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'node_memory_MemAvailable_bytes{cluster="talos-stpetersburg",instance="spark-0"}'
+        values: "3221225472+0x20"
+      - series: 'node_memory_MemAvailable_bytes{cluster="talos-stpetersburg",instance="spark-1"}'
+        values: "1073741824+0x20"
+      - series: 'node_memory_MemTotal_bytes{cluster="talos-stpetersburg",instance="spark-0"}'
+        values: "137438953472+0x20"
+      - series: 'node_memory_MemTotal_bytes{cluster="talos-stpetersburg",instance="spark-1"}'
+        values: "137438953472+0x20"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: StPetersburgSparkMemoryAvailableLow
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StPetersburgSparkMemoryAvailableCritical
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-stpetersburg
+              instance: spark-1
+              severity: critical
+            exp_annotations:
+              summary: St. Petersburg Spark node spark-1 has under 2 GiB of host memory available.
+              description: >-
+                The GB10 unified-memory host is in the critical absolute-memory
+                band. An OOM can kill a TensorFold rank even while Kubernetes
+                MemoryPressure remains False; protect the model endpoint and
+                investigate immediately.
+      - eval_time: 20m
+        alertname: StPetersburgSparkMemoryAvailableLow
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-stpetersburg
+              instance: spark-0
+              severity: warning
+            exp_annotations:
+              summary: >-
+                St. Petersburg Spark node spark-0 has 2–8 GiB of host memory
+                available.
+              description: >-
+                This is the tight-memory band for a GB10 unified-memory node.
+                The node remains below the 8 GiB early-warning cushion but above
+                the critical 2 GiB band; correlate MemAvailable with the GB10
+                allocation and TensorFold serving state.

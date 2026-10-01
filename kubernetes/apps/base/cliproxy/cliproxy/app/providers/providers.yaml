@@ -124,7 +124,7 @@ openai-compatibility:
       - name: "gpt-5.6-sol"
       - name: "gpt-5.6-terra"
       - name: "gpt-6-astra"
-  # St. Petersburg GPU route. Existing vllm/GLM-5.3-Flash-EXL3 clients stay on the managed gateway.
+  # St. Petersburg TensorFold route. Keep the client-facing vllm model ID stable.
   - name: "vllm"
     prefix: "vllm"
     base-url: "http://stpetersburg-vllm-upstream/v1"

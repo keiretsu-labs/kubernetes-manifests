@@ -10,9 +10,9 @@ spec:
       grafana.internal/instance: grafana
   folder: AI
   resyncPeriod: 30m
-  # Primary AI inference dashboard for the CURRENT St. Petersburg runtime (vLLM
+  # Primary AI inference dashboard for the current St. Petersburg TensorFold
   # container on the generic vllm LWS. The SGLang dashboard beside this file is
-  # kept for SGLang-metric eras only — it will look empty under vLLM.
+  # kept for SGLang-metric eras only — it will look empty under TensorFold.
   # Datasource uid mimir-stpetersburg is hard-pinned (tenant talos-stpetersburg).
   json: |
     {
@@ -95,7 +95,7 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "max(vllm:num_requests_running{job=~\"$${job}\",model_name=~\"$${model}\"})",
+              "expr": "max(tensorfold:requests_running{job=~\"$${job}\",model_name=~\"$${model}\"})",
               "legendFormat": "Running reqs"
             }
           ],
@@ -136,7 +136,7 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "max(vllm:num_requests_waiting{job=~\"$${job}\",model_name=~\"$${model}\"})",
+              "expr": "max(tensorfold:requests_waiting{job=~\"$${job}\",model_name=~\"$${model}\"})",
               "legendFormat": "Waiting reqs"
             }
           ],
@@ -177,7 +177,7 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "max(vllm:kv_cache_usage_perc{job=~\"$${job}\",model_name=~\"$${model}\"}) * 100",
+              "expr": "max(tensorfold:kv_cache_usage_ratio{job=~\"$${job}\",model_name=~\"$${model}\"}) * 100",
               "legendFormat": "KV cache %"
             }
           ],
@@ -218,7 +218,7 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "sum(rate(vllm:prompt_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "expr": "sum(rate(tensorfold:prompt_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
               "legendFormat": "Prompt tok/s"
             }
           ],
@@ -259,7 +259,7 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "sum(rate(vllm:generation_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "expr": "sum(rate(tensorfold:generation_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
               "legendFormat": "Gen tok/s"
             }
           ],
@@ -288,13 +288,13 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "max by (model_name) (vllm:num_requests_running{job=~\"$${job}\",model_name=~\"$${model}\"})",
+              "expr": "max by (model_name) (tensorfold:requests_running{job=~\"$${job}\",model_name=~\"$${model}\"})",
               "legendFormat": "running {{model_name}}",
               "range": true
             },
             {
               "refId": "B",
-              "expr": "max by (model_name) (vllm:num_requests_waiting{job=~\"$${job}\",model_name=~\"$${model}\"})",
+              "expr": "max by (model_name) (tensorfold:requests_waiting{job=~\"$${job}\",model_name=~\"$${model}\"})",
               "legendFormat": "waiting {{model_name}}",
               "range": true
             }
@@ -337,13 +337,13 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "sum by (model_name) (rate(vllm:prompt_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "expr": "sum by (model_name) (rate(tensorfold:prompt_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
               "legendFormat": "prompt {{model_name}}",
               "range": true
             },
             {
               "refId": "B",
-              "expr": "sum by (model_name) (rate(vllm:generation_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "expr": "sum by (model_name) (rate(tensorfold:generation_tokens_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
               "legendFormat": "generation {{model_name}}",
               "range": true
             }
@@ -371,7 +371,7 @@ spec:
         {
           "id": 9,
           "type": "timeseries",
-          "title": "Latency p95 (TTFT / E2E / queue)",
+          "title": "Latency p95 (TTFT / request)",
           "description": "",
           "datasource": {
             "type": "prometheus",
@@ -386,20 +386,14 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "histogram_quantile(0.95, sum by (le, model_name) (rate(vllm:time_to_first_token_seconds_bucket{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(0.95, sum by (le, model_name) (rate(tensorfold:time_to_first_token_seconds_bucket{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval])))",
               "legendFormat": "TTFT {{model_name}}",
               "range": true
             },
             {
               "refId": "B",
-              "expr": "histogram_quantile(0.95, sum by (le, model_name) (rate(vllm:e2e_request_latency_seconds_bucket{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval])))",
-              "legendFormat": "E2E {{model_name}}",
-              "range": true
-            },
-            {
-              "refId": "C",
-              "expr": "histogram_quantile(0.95, sum by (le, model_name) (rate(vllm:request_queue_time_seconds_bucket{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval])))",
-              "legendFormat": "Queue {{model_name}}",
+              "expr": "histogram_quantile(0.95, sum by (le, model_name) (rate(tensorfold:request_latency_seconds_bucket{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval])))",
+              "legendFormat": "Request {{model_name}}",
               "range": true
             }
           ],
@@ -441,7 +435,7 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "max by (model_name) (vllm:kv_cache_usage_perc{job=~\"$${job}\",model_name=~\"$${model}\"}) * 100",
+              "expr": "max by (model_name) (tensorfold:kv_cache_usage_ratio{job=~\"$${job}\",model_name=~\"$${model}\"}) * 100",
               "legendFormat": "KV% {{model_name}}",
               "range": true
             }
@@ -469,7 +463,7 @@ spec:
         {
           "id": 11,
           "type": "timeseries",
-          "title": "Success rate",
+          "title": "Finished requests / s",
           "description": "",
           "datasource": {
             "type": "prometheus",
@@ -484,8 +478,8 @@ spec:
           "targets": [
             {
               "refId": "A",
-              "expr": "sum by (model_name) (rate(vllm:request_success_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
-              "legendFormat": "success {{model_name}}",
+              "expr": "sum by (model_name) (rate(tensorfold_health:requests_total{job=~\"$${job}\",model_name=~\"$${model}\"}[$__rate_interval]))",
+              "legendFormat": "completed {{model_name}}",
               "range": true
             }
           ],
@@ -513,7 +507,7 @@ spec:
           "id": 12,
           "type": "timeseries",
           "title": "OOM / restarts (workload container)",
-          "description": "Uses generic K8s identity ($workload=model-serving) and runtime container ($container=vllm|sglang).",
+          "description": "Filters LWS pods by workload name (vllm) and the TensorFold runtime container.",
           "datasource": {
             "type": "prometheus",
             "uid": "mimir-stpetersburg"
@@ -649,7 +643,7 @@ spec:
       "schemaVersion": 39,
       "tags": [
         "AI",
-        "vLLM",
+        "TensorFold",
         "DGX Spark",
         "inference"
       ],
@@ -663,9 +657,9 @@ spec:
               "type": "prometheus",
               "uid": "mimir-stpetersburg"
             },
-            "definition": "label_values(vllm:num_requests_running{namespace=\"ai\"}, job)",
+            "definition": "label_values(tensorfold:requests_running{namespace=\"ai\"}, job)",
             "query": {
-              "query": "label_values(vllm:num_requests_running{namespace=\"ai\"}, job)",
+              "query": "label_values(tensorfold:requests_running{namespace=\"ai\"}, job)",
               "refId": "job"
             },
             "current": {
@@ -687,9 +681,9 @@ spec:
               "type": "prometheus",
               "uid": "mimir-stpetersburg"
             },
-            "definition": "label_values(vllm:num_requests_running{job=~\"$job\"}, model_name)",
+            "definition": "label_values(tensorfold:requests_running{job=~\"$job\"}, model_name)",
             "query": {
-              "query": "label_values(vllm:num_requests_running{job=~\"$job\"}, model_name)",
+              "query": "label_values(tensorfold:requests_running{job=~\"$job\"}, model_name)",
               "refId": "model"
             },
             "includeAll": true,
@@ -703,27 +697,7 @@ spec:
             "name": "workload",
             "label": "Workload",
             "type": "custom",
-            "query": "model-serving",
-            "current": {
-              "selected": true,
-              "text": "model-serving",
-              "value": "model-serving"
-            },
-            "options": [
-              {
-                "selected": true,
-                "text": "model-serving",
-                "value": "model-serving"
-              }
-            ],
-            "includeAll": false,
-            "multi": false
-          },
-          {
-            "name": "container",
-            "label": "Container",
-            "type": "custom",
-            "query": "vllm,sglang",
+            "query": "vllm",
             "current": {
               "selected": true,
               "text": "vllm",
@@ -734,15 +708,30 @@ spec:
                 "selected": true,
                 "text": "vllm",
                 "value": "vllm"
-              },
+              }
+            ],
+            "includeAll": false,
+            "multi": false
+          },
+          {
+            "name": "container",
+            "label": "Container",
+            "type": "custom",
+            "query": "tensorfold",
+            "current": {
+              "selected": true,
+              "text": "tensorfold",
+              "value": "tensorfold"
+            },
+            "options": [
               {
-                "selected": false,
-                "text": "sglang",
-                "value": "sglang"
+                "selected": true,
+                "text": "tensorfold",
+                "value": "tensorfold"
               }
             ],
             "includeAll": true,
-            "allValue": "vllm|sglang",
+            "allValue": "tensorfold",
             "multi": true
           }
         ]
@@ -761,7 +750,7 @@ spec:
         ]
       },
       "timezone": "",
-      "title": "vLLM Inference",
+      "title": "TensorFold Inference",
       "uid": "vllm-inference",
       "version": 1
     }

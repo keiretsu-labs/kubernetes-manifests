@@ -110,17 +110,13 @@ glm_source = "vllm/GLM-5.3-Flash-EXL3"
 if namespace["metadata_alias_sources"].get(glm_alias) != glm_source:
     raise SystemExit(f"{glm_alias} must resolve metadata from {glm_source}")
 glm_override = namespace["metadata_override"](glm_alias)
-if "context_window" in glm_override:
-    raise SystemExit(
-        "GLM must not declare a context_window: vLLM reports max_model_len and a "
-        "declared window outlives the flag it was copied from"
-    )
 if glm_override != {
+    "context_window": 65536,
     "max_tokens": 8192,
     "name": "GLM-5.3 Flash EXL3",
     "reasoning": True,
 }:
-    raise SystemExit("GLM alias metadata lost its curated serving facts")
+    raise SystemExit("GLM alias metadata must match the TensorFold serving profile")
 
 namespace["fetch_json"] = lambda url: {
     "data": [{"id": "GLM-5.3-Flash-EXL3"}]
@@ -138,21 +134,34 @@ if "vllm-fallback" in render_script:
 if namespace["resolved_metadata"](glm_alias, "vllm", None, [], {}) is not None:
     raise SystemExit("unavailable vLLM route inherited stale metadata")
 
-# The live upstream is authoritative for limits. A catalog guess or a curated
-# override may lower the published window but must never raise it: this bridge
-# once advertised a 1M context while the LWS served --max-model-len 16384, and
-# every harness budgeted against a window 64x larger than the one it had.
+# TensorFold's /v1/models response omits its configured context limit, so the
+# curated value supplies the effective window when no live value is present.
+# Any smaller live limit still wins; a catalog guess or override cannot raise it.
 served = namespace["resolved_metadata"](
     glm_alias,
     "vllm",
-    {"id": "GLM-5.3-Flash-EXL3", "provider": {"id": "vllm"}, "direct": {"context_window": 16384}},
+    {"id": "GLM-5.3-Flash-EXL3", "provider": {"id": "vllm"}, "direct": {}},
     [],
     {},
 )
-if served.get("context_window") != 16384:
-    raise SystemExit(f"published window must track the live upstream: {served!r}")
+if served.get("context_window") != 65536:
+    raise SystemExit(f"published window must match TensorFold's configured context: {served!r}")
 if served.get("max_tokens") != 8192:
     raise SystemExit(f"curated output cap must clamp the catalog value: {served!r}")
+
+smaller_window = namespace["resolved_metadata"](
+    glm_alias,
+    "vllm",
+    {
+        "id": "GLM-5.3-Flash-EXL3",
+        "provider": {"id": "vllm"},
+        "direct": {"context_window": 32768},
+    },
+    [],
+    {},
+)
+if smaller_window.get("context_window") != 32768:
+    raise SystemExit(f"a smaller live context must take precedence: {smaller_window!r}")
 
 # An upstream that reports a *smaller* output cap than the curated one wins.
 # This is what separates clamping from a plain dict update, so it is the case

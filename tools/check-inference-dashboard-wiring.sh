@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Fail if AI inference Grafana dashboards drift out of the vllm kustomization,
-# or if the primary vLLM dashboard loses required variables / hard-codes models.
+# or if the primary TensorFold dashboard loses required variables / metrics.
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd -- "$ROOT"
@@ -16,7 +16,7 @@ missing = [name for name in siblings if name not in kust]
 if missing:
     sys.exit(f"UNLISTED inference dashboards (would orphan on Flux apply): {missing}")
 
-# SGLang dashboard intentionally removed — runtime is vLLM only.
+# SGLang dashboard intentionally removed — runtime is TensorFold only.
 if "sglang.yaml" in siblings or "sglang.yaml" in kust:
     sys.exit("sglang.yaml must stay removed (no live SGLang runtime; use vllm-inference)")
 
@@ -28,8 +28,8 @@ vllm = (kdir / "vllm-inference.yaml").read_text()
 for var in ("job", "model", "workload", "container"):
     if f'"name": "{var}"' not in vllm:
         sys.exit(f"vllm-inference dashboard missing templating variable {var}")
-if "vllm:num_requests_running" not in vllm:
-    sys.exit("vllm-inference dashboard missing vllm:num_requests_running panels")
+if "tensorfold:requests_running" not in vllm:
+    sys.exit("vllm-inference dashboard missing tensorfold:requests_running panels")
 if "mimir-stpetersburg" not in vllm:
     sys.exit("vllm-inference must pin datasource uid mimir-stpetersburg")
 
@@ -42,5 +42,5 @@ if "datasourceName:" in dash:
     if "Mimir-StPetersburg" in after:
         sys.exit("dashboards.yaml must not use display name Mimir-StPetersburg as datasourceName")
 
-print("✓ inference Grafana dashboard wiring (vLLM primary; SGLang removed)")
+print("✓ inference Grafana dashboard wiring (TensorFold primary; SGLang removed)")
 PY
