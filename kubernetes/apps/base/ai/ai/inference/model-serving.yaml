@@ -367,6 +367,10 @@ spec:
           - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "6.5" }
           - { name: TF_GLM_CACHE_GIB, value: "2" }
           - { name: TF_GLM_KV, value: "fp8" }
+          # Prefill speed-ups from the upstream recipe (scripts/config.sh SPLIT=1, KDA_CHUNKED=1). Both ranks must match.
+          - { name: TF_GLM_HC_SPLIT, value: "1" }
+          - { name: TF_GLM_PREFILL_OVERLAP, value: "2" }
+          - { name: TF_GLM_KDA_CHUNKED, value: "1" }
           - { name: TF_GLM_DENSE, value: "q4" }
           - { name: TF_GLM_COMM, value: "roce" }
           - { name: TF_ROCE_MAX_KB, value: "512" }
@@ -511,6 +515,10 @@ spec:
           - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "6.5" }
           - { name: TF_GLM_CACHE_GIB, value: "2" }
           - { name: TF_GLM_KV, value: "fp8" }
+          # Prefill speed-ups from the upstream recipe (scripts/config.sh SPLIT=1, KDA_CHUNKED=1). Both ranks must match.
+          - { name: TF_GLM_HC_SPLIT, value: "1" }
+          - { name: TF_GLM_PREFILL_OVERLAP, value: "2" }
+          - { name: TF_GLM_KDA_CHUNKED, value: "1" }
           - { name: TF_GLM_DENSE, value: "q4" }
           - { name: TF_GLM_COMM, value: "roce" }
           - { name: TF_ROCE_MAX_KB, value: "512" }
