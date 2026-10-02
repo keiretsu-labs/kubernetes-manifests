@@ -1,4 +1,11 @@
 ---
+# bhaiya control plane (v2 serves this host since the traffic switch; v1 is kept
+# running as the fallback). ROLLBACK = revert the commit that switched this file:
+# the lanes below go back to Service bhaiya (v1) and the v2 bearer route at the
+# end of the file disappears; nothing else changes. v1 keeps /oauth/* (its
+# GitHub/Forgejo/Tailscale callbacks), the OIDC + health + v1 API routes in the
+# bhaiya namespace, and every per-workspace host.
+#
 # bhaiya admin console. bhaiya is ottawa-only, so DNS points straight at the
 # ottawa edge (CNAME in cnames.yaml) — no k8gb GSLB, which handed back a broken
 # second WAN edge that 404'd ~50% of requests. Access is gated by tinyauth
@@ -59,6 +66,30 @@ spec:
             value: /
           method: CONNECT
       backendRefs:
+        - name: bhaiya-v2-control
+          namespace: bhaiya
+          port: 8080
+      timeouts:
+        request: 3600s
+    # v2 Computer streams (browser/desktop/coder/dashboard). Kept on this route,
+    # not the plain lane, so the plain lane's request buffer and rate limit never
+    # apply to streams; "/s/" outranks "/" in both lanes by prefix length.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /s/
+      backendRefs:
+        - name: bhaiya-v2-edge
+          namespace: bhaiya
+          port: 8080
+      timeouts:
+        request: 3600s
+    # v1-only OAuth callbacks (forgejo, github, tailscale) stay on v1.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /oauth/
+      backendRefs:
         - name: bhaiya
           namespace: bhaiya
           port: 80
@@ -88,9 +119,45 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: bhaiya
+        - name: bhaiya-v2-control
           namespace: bhaiya
-          port: 80
+          port: 8080
+      timeouts:
+        request: 3600s
+---
+# Programmatic v2 clients (bhaiyactl, scripts) send a persistent
+# "Authorization: Bearer bht_..." token that v2 control authenticates itself, so
+# this route has no tinyauth policy. The header match outranks the browser lanes
+# for "/"; v1's own /api/ and /bhaiya.v1.WorkspaceService/ bearer routes (more
+# specific prefixes) still win for v1 clients. Mixed bearer + Remote-* requests
+# are rejected by control. Admin-scope tokens are honoured only on the admin host.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bhaiya-cdn-v2-api
+  namespace: keiretsu-top
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+  hostnames:
+    - "bhaiya.${COMMON_DOMAIN}"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+          headers:
+            - type: RegularExpression
+              name: Authorization
+              value: "^Bearer bht_[A-Za-z0-9_-]+$"
+      backendRefs:
+        - name: bhaiya-v2-control
+          namespace: bhaiya
+          port: 8080
       timeouts:
         request: 3600s
 ---
