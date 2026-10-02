@@ -106,3 +106,30 @@ Rollback also uses the zero-surge full-rank restart and the old vLLM startup
 checks. Expect endpoint downtime while ranks load; allow up to the existing
 one-hour engine-ready timeout and 90-minute startup-probe window. Actual
 TensorFold and rollback durations should be recorded after measured runs.
+
+## Prefill tuning (proposed; needs a coordinated restart of both ranks)
+
+Measured against `vllm-0:8888` on 2026-10-01 with the profile above (no `TF_GLM_HC_SPLIT`,
+`TF_GLM_PREFILL_OVERLAP` or `TF_GLM_KDA_CHUNKED`, which are off by default in TensorFold v0.6.0):
+
+| Prompt | Prefill rate (server-side) |
+| ---: | ---: |
+| 20k | 1,335 tok/s |
+| 50k | 1,309 tok/s |
+| 100k | 1,275 tok/s |
+| 987k | ~797 tok/s (1,238 s) |
+
+The upstream recipe reports ~1,950 tok/s at 8-65k and ~1,015 tok/s at 981k with `SPLIT=1`
+(`TF_GLM_HC_SPLIT=1`, `TF_GLM_PREFILL_OVERLAP=2`) and `KDA_CHUNKED=1`; its own patch notes give
+~1,270 -> ~1,730 tok/s at 50k for SPLIT and a further ~8-10% for KDA chunking. These three variables
+are what this change adds to both ranks. Expected gain: roughly +25-35% prefill, i.e. a ~987k prompt
+in about 15-16 min instead of ~20.6 min (an estimate; not measured on this cluster).
+
+Risks: the startup estimate has only ~0.14GiB headroom (88.07GiB within 88.21GiB on rank 0), and the
+split/overlap and chunked-KDA paths may need extra scratch, in which case TensorFold refuses to start
+before loading weights (no data loss, but both ranks crash-loop until rolled back). `KDA_CHUNKED` is
+close to, not bit-identical with, the serial kernel (prompt arithmetic differs). Both ranks must
+carry identical values. Applying it restarts both GLM pods (zero-surge LWS rollout, ~6.5 min load).
+Do not merge without approval to restart.
+
+Rollback: revert this PR; Flux restores the previous env and the pods restart again.
