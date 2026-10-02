@@ -95,41 +95,107 @@ commit `06448cde4c5699be6166340efbef06b3802352c9`:
 git show 06448cde4c5699be6166340efbef06b3802352c9:kubernetes/apps/base/ai/ai/inference/model-serving.yaml
 ```
 
-To roll back, open a GitOps revert PR for the swap commit (use
-`git revert -m 1 <merge-commit>` only if the PR used a merge commit), run
-`tools/check.sh stpetersburg`, and merge the revert after CI passes. Flux then
-restores the vLLM LWS and existing services. Do not mutate the live cluster.
-Both 200Gi PVCs and `/models/qwen38` are preserved; rollback does not download
-or delete the checkpoint.
+To roll back to vLLM, open GitOps revert PRs (never mutate the live cluster),
+run `tools/check.sh stpetersburg`, and merge after CI passes. Flux then
+restores the vLLM LWS and existing services. Both 200Gi PVCs and
+`/models/qwen38` are preserved; rollback does not download or delete the
+checkpoint.
 
-Rollback also uses the zero-surge full-rank restart and the old vLLM startup
-checks. Expect endpoint downtime while ranks load; allow up to the existing
-one-hour engine-ready timeout and 90-minute startup-probe window. Actual
-TensorFold and rollback durations should be recorded after measured runs.
+### Revert order
 
-## Prefill tuning (proposed; needs a coordinated restart of both ranks)
+Undo the stack newest-first so each revert applies cleanly:
 
-Measured against `vllm-0:8888` on 2026-10-01 with the profile above (no `TF_GLM_HC_SPLIT`,
-`TF_GLM_PREFILL_OVERLAP` or `TF_GLM_KDA_CHUNKED`, which are off by default in TensorFold v0.6.0):
+1. Revert #3370 (`3f1bd8fd`): TensorFold `TF_GLM_HC_SPLIT`, `TF_GLM_PREFILL_OVERLAP`
+   and `TF_GLM_KDA_CHUNKED`. Stop here if only the prefill tuning regresses; this
+   alone returns to the qualified 1M profile.
+2. Revert #3358 (`755cab89`): iteration-2 fit profile (reserve 6.5GiB, 2GiB KV
+   pool, `PARALLEL=1`, 96Gi request / 112Gi limit).
+3. Revert #3357 (`0513bf3f`): 1M-context recovery profile.
+4. Revert #3354 (`2e4a1509`): the 32,768-context / 32GiB-reserve backoff.
+5. Revert the #3349 merge commit `b556050b` last, with
+   `git revert -m 1 b556050b`. That restores the vLLM LWS and services.
 
-| Prompt | Prefill rate (server-side) |
-| ---: | ---: |
-| 20k | 1,335 tok/s |
-| 50k | 1,309 tok/s |
-| 100k | 1,275 tok/s |
-| 987k | ~797 tok/s (1,238 s) |
+PR #3350 (`a673f8eb`, TensorFold image digest bump) sits between #3349 and
+#3354; it edits the image digest that #3349 introduced, so expect a conflict on that
+line when reverting #3349 and resolve it by restoring the pre-#3349 state.
 
-The upstream recipe reports ~1,950 tok/s at 8-65k and ~1,015 tok/s at 981k with `SPLIT=1`
-(`TF_GLM_HC_SPLIT=1`, `TF_GLM_PREFILL_OVERLAP=2`) and `KDA_CHUNKED=1`; its own patch notes give
-~1,270 -> ~1,730 tok/s at 50k for SPLIT and a further ~8-10% for KDA chunking. These three variables
-are what this change adds to both ranks. Expected gain: roughly +25-35% prefill, i.e. a ~987k prompt
-in about 15-16 min instead of ~20.6 min (an estimate; not measured on this cluster).
+Every step restarts both GLM ranks (zero-surge LWS rollout; ~6.5 min TensorFold
+load, and the old vLLM startup checks and up to 90-minute startup probe on the
+final step). Expect endpoint downtime while ranks load, and get approval before
+merging any revert.
 
-Risks: the startup estimate has only ~0.14GiB headroom (88.07GiB within 88.21GiB on rank 0), and the
-split/overlap and chunked-KDA paths may need extra scratch, in which case TensorFold refuses to start
-before loading weights (no data loss, but both ranks crash-loop until rolled back). `KDA_CHUNKED` is
-close to, not bit-identical with, the serial kernel (prompt arithmetic differs). Both ranks must
-carry identical values. Applying it restarts both GLM pods (zero-surge LWS rollout, ~6.5 min load).
-Do not merge without approval to restart.
+## Prefill tuning (applied via #3370)
 
-Rollback: revert this PR; Flux restores the previous env and the pods restart again.
+TensorFold v0.6.0 ships `TF_GLM_HC_SPLIT=0`, `TF_GLM_PREFILL_OVERLAP=0` and
+`TF_GLM_KDA_CHUNKED=0` by default; the upstream recipe turns all three on. #3370
+sets them on both ranks (they must match on both):
+
+| Variable | Value | Effect |
+| --- | --- | --- |
+| `TF_GLM_HC_SPLIT` | `1` | Hyper-connection split path (upstream recipe default) |
+| `TF_GLM_PREFILL_OVERLAP` | `2` | Prefill overlap, used together with the split (upstream recipe pairs `SPLIT=1` with overlap 2) |
+| `TF_GLM_KDA_CHUNKED` | `1` | Chunked KDA prefill kernel; close to, not bit-identical with, the serial kernel |
+
+Other TensorFold settings that stay off or unchanged: `TF_GLM_SHARED_PREFIX=0`
+(a shared system prompt across different conversations is not reused),
+`TF_GLM_CACHE_ENTRIES=8`, `TF_GLM_PREFILL_ROWS` at its 2048 default (a larger chunk
+needs buffer memory this profile does not have). The `GLM53_*` variables
+that older vLLM manifests carried are not read by this TensorFold image.
+
+Measured on 2026-10-01/02 (server-side for 20k-100k, wall-clock via direct pod
+port for 500k; rollout of #3370 loaded in ~415 s on rank 0, 0 restarts):
+
+| Prompt | Before | After | Change |
+| ---: | ---: | ---: | ---: |
+| 20k | 1,335 tok/s | 1,623 tok/s | +22% |
+| 50k | 1,309 tok/s | 1,610 tok/s | +23% |
+| 100k | 1,275 tok/s | 1,578 tok/s | +24% |
+| 500k | 998 tok/s | 1,171 tok/s | +17% |
+| 987k | 797 tok/s (1,238 s) | not re-run; ~1,000 s projected | |
+
+Memory under load after #3370: 20k-100k bottoms at 4.52 GiB (rank 0) / 3.88 GiB
+(rank 1) `MemAvailable`; 500k at 3.06 / 3.39 GiB. A single 5 s sample at 1.79 GiB on
+rank 1 occurred while the pods were still loading weights, before serving began.
+The ~1M floor measured before #3370 was ~2.4 GiB on rank 0 and has not been
+re-measured. Prefix caching still works: an identical resend or a multi-turn
+follow-up with an exact shared prefix hits the cache, while a different leading
+prompt does not.
+
+Startup estimate headroom is small (88.07GiB estimated within 88.21GiB budget
+on rank 0 before the change; 91.39 / 90.32GiB on ranks 0 / 1 after). If
+TensorFold ever refuses to start with a zero fitting window, revert #3370 first.
+
+## Client route (St. Petersburg GLM)
+
+Codex and other workers reach the GLM model through CLIProxy, not the model
+Service directly:
+
+| Item | Value |
+| --- | --- |
+| Base URL | `http://cliproxy.cliproxy.svc.cluster.local:8317/v1` |
+| Model | `vllm/GLM-5.3-Flash-EXL3` |
+| `wire_api` | `responses` (Codex custom providers use the Responses API) |
+| Context window | 1,048,576 tokens |
+
+Example Codex provider block:
+
+```toml
+[model_providers.cliproxy]
+name = "CLIProxy"
+base_url = "http://cliproxy.cliproxy.svc.cluster.local:8317/v1"
+wire_api = "responses"
+```
+
+Keep worker `OPENAI_BASE_URL` values unchanged. CLIProxy forwards the model to
+`model-serving.ai:8888` through the mesh and egress aliases described above.
+
+Operational notes from the 1M-context qualification:
+
+- Largest proven prompt: 987,104 server tokens (~94% of the window), with a
+  passphrase at token 0 retrieved at the end. No pod restarts.
+- No timeout was found on the CLIProxy path (a 750k request ran 850 s). The risk
+  for ~1M prompts (about 1,000 s of prefill) is a Renovate- or Flux-driven CLIProxy
+  rollout mid-request: its Deployment uses `Recreate`, so an in-flight request
+  is dropped as "Remote end closed connection without response".
+- TensorFold does not implement `POST /tokenize`; use `usage.prompt_tokens` in
+  completions and `prompt_tokens_total` on `/health` or `/metrics` for exact counts.
