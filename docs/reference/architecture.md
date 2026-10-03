@@ -1008,7 +1008,7 @@ reason needs two patches because both halves of the mismatch have to move:
 
 One per site; together, one logical S3 estate.
 
-- image `dxflrs/garage` v2.3.0, zone `${LOCATION}`
+- image `dxflrs/garage` v2.4.1, zone `${LOCATION}`
 - replication factor 3, `consistencyMode: degraded`
 - `s3Api` rootDomain `.s3.keiretsu.top`; `webApi` rootDomain `.keiretsu.top`
 - `rpcPublicAddr ${LOCATION}-garage-mesh.garage.svc.clusterset.local:3901`
