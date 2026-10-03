@@ -10,8 +10,8 @@
 # separate migration lane; v2 operations has no payments service.
 #
 # Keep v1's existing per-workspace HTTPRoutes until each hostname has a matching
-# v2 app route and healthy backend. v1 ExposeRoute owns the live exact and
-# wildcard workspace hosts; v2 creates exact app routes as apps are published.
+# v2 app route and healthy backend. v1 provisioning owns the exact app routes
+# and per-workspace wildcard catch-alls; v2 creates exact routes as apps publish.
 # Do not send the whole workspace wildcard to the v2 control or edge Service.
 #
 # bhaiya admin console. bhaiya is ottawa-only, so DNS points straight at the
