@@ -2,9 +2,17 @@
 # bhaiya control plane (v2 serves this host since the traffic switch; v1 is kept
 # running as the fallback). ROLLBACK = revert the commit that switched this file:
 # the lanes below go back to Service bhaiya (v1) and the v2 bearer route at the
-# end of the file disappears; nothing else changes. v1 keeps /oauth/* (its
-# GitHub/Forgejo/Tailscale callbacks), the OIDC + health + v1 API routes in the
-# bhaiya namespace, and every per-workspace host.
+# end of the file disappears; nothing else changes. v1 still owns the legacy
+# routes that have no verified v2 replacement: /oauth/* callbacks,
+# /api/health, bearer-authenticated /api/* and
+# /bhaiya.v1.WorkspaceService/*, OIDC discovery/JWKS/authorize/token, and the
+# payments.bhaiya.keiretsu.top Stripe webhook. The OIDC issuer stays with its
+# separate migration lane; v2 operations has no payments service.
+#
+# Keep v1's existing per-workspace HTTPRoutes until each hostname has a matching
+# v2 app route and healthy backend. v1 ExposeRoute owns the live exact and
+# wildcard workspace hosts; v2 creates exact app routes as apps are published.
+# Do not send the whole workspace wildcard to the v2 control or edge Service.
 #
 # bhaiya admin console. bhaiya is ottawa-only, so DNS points straight at the
 # ottawa edge (CNAME in cnames.yaml) — no k8gb GSLB, which handed back a broken
