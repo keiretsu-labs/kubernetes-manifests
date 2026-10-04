@@ -31,7 +31,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m]))"
+          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))"
         }
       ],
       "fieldConfig": {
@@ -73,7 +73,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\", status_code!~\"2..\"}[5m]))"
+          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[5m]))"
         }
       ],
       "fieldConfig": {
@@ -115,7 +115,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\", status_code!~\"2..\"}[5m])) / clamp_min(sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m])), 1e-9)"
+          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[5m])) / clamp_min(sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m])), 1e-9)"
         }
       ],
       "fieldConfig": {
@@ -157,7 +157,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(litellm_total_tokens_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m]))"
+          "expr": "sum(rate(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))"
         }
       ],
       "fieldConfig": {
@@ -199,7 +199,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(increase(litellm_spend_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[$__range]))"
+          "expr": "sum(increase(litellm_spend_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))"
         }
       ],
       "fieldConfig": {
@@ -242,7 +242,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "count(sum by (user, api_key_alias) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m])) > 0)"
+          "expr": "count(sum by (owner, bot) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m])) > 0)"
         }
       ],
       "fieldConfig": {
@@ -266,7 +266,7 @@
         "graphMode": "area",
         "justifyMode": "auto"
       },
-      "description": "Distinct virtual keys (one per bot, plus service keys) that made a request in the last 5 minutes."
+      "description": "Distinct bots (virtual keys) that made a request in the last 5 minutes."
     },
     {
       "id": 7,
@@ -298,7 +298,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
           "legendFormat": "{{owner}}"
         }
       ],
@@ -346,7 +346,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
           "legendFormat": "{{owner}}"
         }
       ],
@@ -394,7 +394,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner) (3600 * (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (rate(litellm_spend_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\")))",
+          "expr": "3600 * sum by (owner) (rate(litellm_spend_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
           "legendFormat": "{{owner}}"
         }
       ],
@@ -442,7 +442,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner, status_code) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias, status_code) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\", status_code!~\"2..\"}[5m])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, status_code) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[5m]))",
           "legendFormat": "{{owner}} {{status_code}}"
         }
       ],
@@ -503,7 +503,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner, bot) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, bot) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
           "legendFormat": "{{owner}}/{{bot}}"
         }
       ],
@@ -551,7 +551,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner, bot) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, bot) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
           "legendFormat": "{{owner}}/{{bot}}"
         }
       ],
@@ -599,7 +599,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner, bot) (3600 * (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (rate(litellm_spend_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\")))",
+          "expr": "3600 * sum by (owner, bot) (rate(litellm_spend_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
           "legendFormat": "{{owner}}/{{bot}}"
         }
       ],
@@ -647,7 +647,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner, bot, status_code) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias, status_code) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\", status_code!~\"2..\"}[5m])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, bot, status_code) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[5m]))",
           "legendFormat": "{{owner}}/{{bot}} {{status_code}}"
         }
       ],
@@ -708,25 +708,25 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner, bot) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[$__range])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, bot) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
           "format": "table",
           "instant": true
         },
         {
           "refId": "B",
-          "expr": "sum by (owner, bot) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (increase(litellm_total_tokens_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[$__range])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, bot) (increase(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
           "format": "table",
           "instant": true
         },
         {
           "refId": "C",
-          "expr": "sum by (owner, bot) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (increase(litellm_spend_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[$__range])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, bot) (increase(litellm_spend_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
           "format": "table",
           "instant": true
         },
         {
           "refId": "D",
-          "expr": "sum by (owner, bot) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\", status_code!~\"2..\"}[$__range])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, bot) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[$__range]))",
           "format": "table",
           "instant": true
         }
@@ -816,7 +816,7 @@
           }
         ]
       },
-      "description": "One row per owner and bot (the virtual key alias is <owner>/<bot>). Service and legacy keys without that form appear under their own alias."
+      "description": "One row per owner and bot. Bhaiya bot keys are aliased <owner>/<bot>; service keys appear under their own alias; requests with the proxy master key appear as admin / (master key)."
     },
     {
       "id": 19,
@@ -848,7 +848,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (model) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[5m]))",
+          "expr": "sum by (model) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
           "legendFormat": "{{model}}"
         }
       ],
@@ -896,13 +896,13 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (owner, bot, requested_model) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias, requested_model) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[$__range])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, bot, requested_model) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
           "format": "table",
           "instant": true
         },
         {
           "refId": "B",
-          "expr": "sum by (owner, bot, requested_model) (label_replace(label_replace(label_replace(label_replace(sum by (user, api_key_alias, requested_model) (increase(litellm_total_tokens_metric_total{namespace=\"litellm\", user=~\"$owner\", api_key_alias=~\"$bot\"}[$__range])), \"owner\", \"$1\", \"user\", \"(.+)\"), \"owner\", \"$1\", \"api_key_alias\", \"([^/~]+)/.*\"), \"bot\", \"$1\", \"api_key_alias\", \"(?:[^/]*/)?([^~]*).*\"), \"bot\", \"(master key)\", \"api_key_alias\", \"None\"))",
+          "expr": "sum by (owner, bot, requested_model) (increase(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
           "format": "table",
           "instant": true
         }
@@ -973,13 +973,13 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "min by (api_key_alias) (litellm_remaining_api_key_requests_for_model{namespace=\"litellm\", api_key_alias=~\"$bot\"})",
-          "legendFormat": "{{api_key_alias}} RPM left"
+          "expr": "min by (owner, bot) (litellm_remaining_api_key_requests_for_model{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"})",
+          "legendFormat": "{{owner}}/{{bot}} RPM left"
         },
         {
           "refId": "B",
-          "expr": "min by (api_key_alias) (litellm_remaining_api_key_tokens_for_model{namespace=\"litellm\", api_key_alias=~\"$bot\"})",
-          "legendFormat": "{{api_key_alias}} TPM left"
+          "expr": "min by (owner, bot) (litellm_remaining_api_key_tokens_for_model{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"})",
+          "legendFormat": "{{owner}}/{{bot}} TPM left"
         }
       ],
       "fieldConfig": {
@@ -1010,7 +1010,7 @@
       }
     }
   ],
-  "description": "LiteLLM usage by owner and bot. Each Bhaiya bot has one virtual key aliased <owner>/<bot> whose user is the owner, so spend, requests, tokens and errors are attributed without raw key hashes.",
+  "description": "LiteLLM usage by owner and bot. Each Bhaiya bot has one virtual key aliased <owner>/<bot>; the ServiceMonitor derives the owner and bot labels from that alias, so spend, requests, tokens and errors are attributed without raw key hashes.",
   "templating": {
     "list": [
       {
@@ -1022,11 +1022,11 @@
           "uid": "mimir"
         },
         "query": {
-          "query": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}, user)",
+          "query": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}, owner)",
           "refId": "var-owner",
           "qryType": 1
         },
-        "definition": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}, user)",
+        "definition": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}, owner)",
         "refresh": 2,
         "sort": 1,
         "multi": true,
@@ -1041,7 +1041,7 @@
             "$__all"
           ]
         },
-        "description": "Key owner (the LiteLLM user_id on each bot key). \"None\" is a key issued before attribution."
+        "description": "Key owner, from the <owner>/<bot> key alias. \"unattributed\" is a key alias without that form."
       },
       {
         "name": "bot",
@@ -1052,11 +1052,11 @@
           "uid": "mimir"
         },
         "query": {
-          "query": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\"}, api_key_alias)",
+          "query": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\"}, bot)",
           "refId": "var-bot",
           "qryType": 1
         },
-        "definition": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", user=~\"$owner\"}, api_key_alias)",
+        "definition": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\"}, bot)",
         "refresh": 2,
         "sort": 1,
         "multi": true,
@@ -1071,7 +1071,7 @@
             "$__all"
           ]
         },
-        "description": "Virtual key alias, <owner>/<bot>."
+        "description": "Bot, from the <owner>/<bot> key alias."
       }
     ]
   }
