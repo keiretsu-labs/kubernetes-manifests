@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 125 |
+| `ottawa` | 4 | 61 | 126 |
 | `robbinsdale` | 3 | 43 | 91 |
 | `stpetersburg` | 3 | 39 | 81 |
-| **total** | **10** | **143** | **297** |
+| **total** | **10** | **143** | **298** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -91,7 +91,7 @@ diagram in the [README](../../README.md#architecture).
 | Storage and data services | `csi-addons` | `csi-addons`, `csi-addons-config` |
 | Storage and data services | `csi-driver-smb` | `csi-driver-smb` → ns `kube-system` |
 | Storage and data services | `dragonfly-operator-system` | `dragonfly-operator-system` |
-| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-exporter`, `garage-keys`, `garage-kopiur-ottawa-bucket`, `garage-nodes`, `garage-ottawa-reference-grants`, `garage-reference-grants`, `garage-webui` |
+| Storage and data services | `garage` | `garage`, `garage-bucket`, `garage-config`, `garage-exporter`, `garage-keys`, `garage-kopiur-ottawa-bucket`, `garage-nodes`, `garage-ottawa-reference-grants`, `garage-reference-grants`, `garage-rpc-egress-guard`, `garage-webui` |
 | Storage and data services | `garage-operator-system` | `garage-operator-system-install` |
 | Storage and data services | `local-path-storage` | `local-path-storage` |
 | Storage and data services | `rook-ceph` | `rook-ceph-cluster-config`, `rook-ceph-operator` |
