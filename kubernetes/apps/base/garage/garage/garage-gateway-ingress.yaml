@@ -47,16 +47,50 @@ spec:
     # Cross-cluster Garage peers (ClusterMesh). Match gateway + storage tiers
     # only — not every remote identity — on RPC and admin ports required by
     # GarageCluster.remoteClusters (3901 RPC, 3903 admin API).
+    #
+    # Every selector below pins io.cilium.k8s.policy.cluster explicitly. The
+    # fleet runs Cilium with policy-default-local-cluster=true, which silently
+    # scopes any fromEndpoints selector WITHOUT that label to the local cluster
+    # only; remote Ottawa/Robbinsdale/St. Pete Garage pods then hit
+    # "Policy denied" on 3901 and gateway pods never peer across sites.
+    # Keep the cluster list in sync with the ClusterMesh member names.
     - fromEndpoints:
         - matchLabels:
             app.kubernetes.io/instance: garage
             garage.rajsingh.info/tier: gateway
+            io.cilium.k8s.policy.cluster: ottawa
+        - matchLabels:
+            app.kubernetes.io/instance: garage
+            garage.rajsingh.info/tier: gateway
+            io.cilium.k8s.policy.cluster: robbinsdale
+        - matchLabels:
+            app.kubernetes.io/instance: garage
+            garage.rajsingh.info/tier: gateway
+            io.cilium.k8s.policy.cluster: stpetersburg
         - matchLabels:
             app.kubernetes.io/instance: garage
             garage.rajsingh.info/tier: storage
+            io.cilium.k8s.policy.cluster: ottawa
+        - matchLabels:
+            app.kubernetes.io/instance: garage
+            garage.rajsingh.info/tier: storage
+            io.cilium.k8s.policy.cluster: robbinsdale
+        - matchLabels:
+            app.kubernetes.io/instance: garage
+            garage.rajsingh.info/tier: storage
+            io.cilium.k8s.policy.cluster: stpetersburg
         - matchLabels:
             garage.rajsingh.info/cluster: garage
             garage.rajsingh.info/tier: storage
+            io.cilium.k8s.policy.cluster: ottawa
+        - matchLabels:
+            garage.rajsingh.info/cluster: garage
+            garage.rajsingh.info/tier: storage
+            io.cilium.k8s.policy.cluster: robbinsdale
+        - matchLabels:
+            garage.rajsingh.info/cluster: garage
+            garage.rajsingh.info/tier: storage
+            io.cilium.k8s.policy.cluster: stpetersburg
       toPorts:
         - ports:
             - port: "3901"

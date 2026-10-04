@@ -60,6 +60,21 @@ for rule in ingress:
 if peer_rule is None:
     raise SystemExit("missing fromEndpoints peer rule covering gateway+storage tiers")
 
+# policy-default-local-cluster=true scopes selectors lacking the cluster label to
+# the local cluster, so every peer selector must name the ClusterMesh members.
+want_clusters = {"ottawa", "robbinsdale", "stpetersburg"}
+by_tier = {}
+for ep in peer_rule.get("fromEndpoints") or []:
+    lbl = ep.get("matchLabels") or {}
+    cl = lbl.get("io.cilium.k8s.policy.cluster")
+    if cl is None:
+        raise SystemExit(f"peer selector missing io.cilium.k8s.policy.cluster: {lbl}")
+    key = (lbl.get("garage.rajsingh.info/tier"), lbl.get("app.kubernetes.io/instance") or lbl.get("garage.rajsingh.info/cluster"))
+    by_tier.setdefault(key, set()).add(cl)
+for key, cls in by_tier.items():
+    if cls != want_clusters:
+        raise SystemExit(f"peer selector {key} must cover clusters {sorted(want_clusters)}, got {sorted(cls)}")
+
 peer_ports = ports_of(peer_rule)
 need = {("3901", "TCP"), ("3903", "TCP")}
 if not need.issubset(peer_ports):
