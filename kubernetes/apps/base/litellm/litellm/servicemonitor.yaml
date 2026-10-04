@@ -17,3 +17,40 @@ spec:
       path: /metrics/
       interval: 30s
       scrapeTimeout: 10s
+      # Bhaiya aliases each bot's virtual key "<owner>/<bot>" (a collision gets a
+      # "~<slug>" suffix). Derive owner and bot labels from it so dashboards and
+      # alerts group by person and bot instead of key hashes. LiteLLM's own "user"
+      # label is the request's end user, not the key's user_id, so it cannot carry
+      # the owner. Rules run in order: defaults, then the owner/bot override.
+      metricRelabelings:
+        - action: replace
+          sourceLabels: [api_key_alias]
+          regex: (.+)
+          targetLabel: owner
+          replacement: unattributed
+        - action: replace
+          sourceLabels: [api_key_alias]
+          regex: (.+)
+          targetLabel: bot
+          replacement: $1
+        - action: replace
+          sourceLabels: [api_key_alias]
+          regex: ([^/]+)/([^~]+)(?:~.*)?
+          targetLabel: owner
+          replacement: $1
+        - action: replace
+          sourceLabels: [api_key_alias]
+          regex: ([^/]+)/([^~]+)(?:~.*)?
+          targetLabel: bot
+          replacement: $2
+        # Requests made with the proxy master key carry no key alias.
+        - action: replace
+          sourceLabels: [api_key_alias]
+          regex: "None"
+          targetLabel: owner
+          replacement: admin
+        - action: replace
+          sourceLabels: [api_key_alias]
+          regex: "None"
+          targetLabel: bot
+          replacement: (master key)

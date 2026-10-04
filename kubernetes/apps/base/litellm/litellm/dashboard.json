@@ -2,7 +2,7 @@
   "title": "LiteLLM Proxy",
   "uid": "litellm-proxy",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "editable": true,
   "time": {
     "from": "now-6h",
@@ -23,17 +23,24 @@
         "uid": "mimir"
       },
       "gridPos": {
-        "h": 5,
-        "w": 8,
+        "h": 4,
+        "w": 4,
         "x": 0,
         "y": 0
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))"
+          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))"
         }
       ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2
+        },
+        "overrides": []
+      },
       "options": {
         "reduceOptions": {
           "calcs": [
@@ -58,17 +65,24 @@
         "uid": "mimir"
       },
       "gridPos": {
-        "h": 5,
-        "w": 8,
-        "x": 8,
+        "h": 4,
+        "w": 4,
+        "x": 4,
         "y": 0
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(litellm_proxy_failed_requests_metric_total{namespace=\"litellm\"}[5m]))"
+          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[5m]))"
         }
       ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 3
+        },
+        "overrides": []
+      },
       "options": {
         "reduceOptions": {
           "calcs": [
@@ -86,6 +100,739 @@
     },
     {
       "id": 3,
+      "type": "stat",
+      "title": "Error rate",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[5m])) / clamp_min(sum(rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m])), 1e-9)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Tokens / second",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Spend ($, range)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(litellm_spend_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "description": "Cost LiteLLM attributes over the selected time range, from its model price catalog."
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Active bots",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(sum by (owner, bot) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m])) > 0)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "description": "Distinct bots (virtual keys) that made a request in the last 5 minutes."
+    },
+    {
+      "id": 7,
+      "type": "row",
+      "title": "By owner",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "panels": []
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Requests / second by owner",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (owner) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
+          "legendFormat": "{{owner}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Tokens / second by owner",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (owner) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
+          "legendFormat": "{{owner}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Spend ($ / hour) by owner",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "3600 * sum by (owner) (rate(litellm_spend_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
+          "legendFormat": "{{owner}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Failed requests / second by owner and status",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (owner, status_code) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[5m]))",
+          "legendFormat": "{{owner}} {{status_code}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "row",
+      "title": "By bot",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "panels": []
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Requests / second by bot",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (owner, bot) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
+          "legendFormat": "{{owner}}/{{bot}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Tokens / second by bot",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (owner, bot) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
+          "legendFormat": "{{owner}}/{{bot}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Spend ($ / hour) by bot",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "3600 * sum by (owner, bot) (rate(litellm_spend_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
+          "legendFormat": "{{owner}}/{{bot}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Failed requests / second by bot and status",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 30
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (owner, bot, status_code) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[5m]))",
+          "legendFormat": "{{owner}}/{{bot}} {{status_code}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "type": "row",
+      "title": "Usage by owner and bot (selected range)",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "panels": []
+    },
+    {
+      "id": 18,
+      "type": "table",
+      "title": "Owner / bot usage",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (owner, bot) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (owner, bot) (increase(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "C",
+          "expr": "sum by (owner, bot) (increase(litellm_spend_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "refId": "D",
+          "expr": "sum by (owner, bot) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\", status_code!~\"2..\"}[$__range]))",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "owner": "Owner",
+              "bot": "Bot",
+              "Value #A": "Requests",
+              "Value #B": "Tokens",
+              "Value #C": "Spend ($)",
+              "Value #D": "Errors"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Spend ($)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tokens"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Requests"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errors"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Requests",
+            "desc": true
+          }
+        ]
+      },
+      "description": "One row per owner and bot. Bhaiya bot keys are aliased <owner>/<bot>; service keys appear under their own alias; requests with the proxy master key appear as admin / (master key)."
+    },
+    {
+      "id": 19,
+      "type": "row",
+      "title": "Models",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "panels": []
+    },
+    {
+      "id": 20,
       "type": "timeseries",
       "title": "Tokens / second by model",
       "datasource": {
@@ -93,15 +840,15 @@
         "uid": "mimir"
       },
       "gridPos": {
-        "h": 9,
-        "w": 16,
+        "h": 8,
+        "w": 12,
         "x": 0,
-        "y": 5
+        "y": 51
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (model) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\"}[5m]))",
+          "expr": "sum by (model) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[5m]))",
           "legendFormat": "{{model}}"
         }
       ],
@@ -119,94 +866,6 @@
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      }
-    },
-    {
-      "id": 4,
-      "type": "table",
-      "title": "Requests by model",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "mimir"
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 16,
-        "y": 5
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (requested_model) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))",
-          "format": "table",
-          "instant": true
-        }
-      ],
-      "options": {
-        "showHeader": true,
-        "sortBy": [
-          {
-            "displayName": "Value",
-            "desc": true
-          }
-        ]
-      }
-    },
-    {
-      "id": 5,
-      "type": "row",
-      "title": "By virtual key (key_alias)",
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 14
-      },
-      "panels": []
-    },
-    {
-      "id": 6,
-      "type": "timeseries",
-      "title": "Requests / second by key alias",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "mimir"
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 15
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (api_key_alias) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[5m]))",
-          "legendFormat": "{{api_key_alias}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "reqps",
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 12,
-            "lineWidth": 2,
-            "showPoints": "never"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
           "displayMode": "table",
           "placement": "right",
           "calcs": [
@@ -215,81 +874,35 @@
           ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       }
     },
     {
-      "id": 7,
-      "type": "timeseries",
-      "title": "Tokens / second by key alias",
+      "id": 21,
+      "type": "table",
+      "title": "Usage by owner, bot and model (selected range)",
       "datasource": {
         "type": "prometheus",
         "uid": "mimir"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 51
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (api_key_alias) (rate(litellm_total_tokens_metric_total{namespace=\"litellm\"}[5m]))",
-          "legendFormat": "{{api_key_alias}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 12,
-            "lineWidth": 2,
-            "showPoints": "never"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      }
-    },
-    {
-      "id": 8,
-      "type": "table",
-      "title": "Usage by key alias and model (last 24h)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "mimir"
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 24
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (api_key_alias, requested_model) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}[24h]))",
+          "expr": "sum by (owner, bot, requested_model) (increase(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
           "format": "table",
           "instant": true
         },
         {
           "refId": "B",
-          "expr": "sum by (api_key_alias, requested_model) (increase(litellm_total_tokens_metric_total{namespace=\"litellm\"}[24h]))",
+          "expr": "sum by (owner, bot, requested_model) (increase(litellm_total_tokens_metric_total{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"}[$__range]))",
           "format": "table",
           "instant": true
         }
@@ -305,47 +918,68 @@
             "excludeByName": {
               "Time": true
             },
+            "indexByName": {},
             "renameByName": {
+              "owner": "Owner",
+              "bot": "Bot",
+              "requested_model": "Model",
               "Value #A": "Requests",
               "Value #B": "Tokens"
             }
           }
         }
       ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "options": {
         "showHeader": true,
         "sortBy": [
           {
-            "displayName": "Tokens",
+            "displayName": "Requests",
             "desc": true
           }
         ]
       }
     },
     {
-      "id": 9,
+      "id": 22,
+      "type": "row",
+      "title": "Rate limits",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 59
+      },
+      "panels": []
+    },
+    {
+      "id": 23,
       "type": "timeseries",
-      "title": "Remaining rate limit by key alias (requests / tokens per minute)",
+      "title": "Remaining rate limit by bot (requests / tokens per minute)",
       "datasource": {
         "type": "prometheus",
         "uid": "mimir"
       },
       "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 24
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 60
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "min by (api_key_alias) (litellm_remaining_api_key_requests_for_model{namespace=\"litellm\"})",
-          "legendFormat": "{{api_key_alias}} RPM left"
+          "expr": "min by (owner, bot) (litellm_remaining_api_key_requests_for_model{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"})",
+          "legendFormat": "{{owner}}/{{bot}} RPM left"
         },
         {
           "refId": "B",
-          "expr": "min by (api_key_alias) (litellm_remaining_api_key_tokens_for_model{namespace=\"litellm\"})",
-          "legendFormat": "{{api_key_alias}} TPM left"
+          "expr": "min by (owner, bot) (litellm_remaining_api_key_tokens_for_model{namespace=\"litellm\", owner=~\"$owner\", bot=~\"$bot\"})",
+          "legendFormat": "{{owner}}/{{bot}} TPM left"
         }
       ],
       "fieldConfig": {
@@ -370,56 +1004,75 @@
           ]
         },
         "tooltip": {
-          "mode": "multi"
-        }
-      }
-    },
-    {
-      "id": 10,
-      "type": "timeseries",
-      "title": "Failed requests / second by key alias and status",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "mimir"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 33
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum by (api_key_alias, status_code) (rate(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", status_code!~\"2..\"}[5m]))",
-          "legendFormat": "{{api_key_alias}} {{status_code}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "reqps",
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 12,
-            "lineWidth": 2,
-            "showPoints": "never"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       }
     }
-  ]
+  ],
+  "description": "LiteLLM usage by owner and bot. Each Bhaiya bot has one virtual key aliased <owner>/<bot>; the ServiceMonitor derives the owner and bot labels from that alias, so spend, requests, tokens and errors are attributed without raw key hashes.",
+  "templating": {
+    "list": [
+      {
+        "name": "owner",
+        "label": "Owner",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "query": {
+          "query": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}, owner)",
+          "refId": "var-owner",
+          "qryType": 1
+        },
+        "definition": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\"}, owner)",
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "description": "Key owner, from the <owner>/<bot> key alias. \"unattributed\" is a key alias without that form."
+      },
+      {
+        "name": "bot",
+        "label": "Bot",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "query": {
+          "query": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\"}, bot)",
+          "refId": "var-bot",
+          "qryType": 1
+        },
+        "definition": "label_values(litellm_proxy_total_requests_metric_total{namespace=\"litellm\", owner=~\"$owner\"}, bot)",
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "description": "Bot, from the <owner>/<bot> key alias."
+      }
+    ]
+  }
 }
