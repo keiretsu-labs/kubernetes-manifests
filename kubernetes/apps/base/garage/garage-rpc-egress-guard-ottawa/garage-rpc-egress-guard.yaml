@@ -1,0 +1,41 @@
+---
+# Ottawa only. Stops Ottawa Garage pods from dialing Garage RPC (3901) through
+# the *other* clusters' Service CIDRs (Robbinsdale 10.0.0.0/16, St. Petersburg
+# 10.4.0.0/16).
+#
+# Why: Garage's peer-exchange gossip shares each peer's currently-connected
+# address, and remote operators call ConnectNode with addresses resolved from
+# their own cluster-local ClusterSet DNS. Ottawa nodes therefore learn, for
+# Ottawa-local peers, ClusterIPs that belong to another site's imported
+# Service. Dialing those hairpins Ottawa<->Ottawa traffic through
+# Robbinsdale/St. Pete (~78 ms TCP connect vs ~0.2 ms local), inflating Garage
+# RPC to 300 ms-4 s and stalling zot (POST /blobs/uploads/ 24-60 s).
+#
+# Legitimate Ottawa dials never use these ranges: remote *names* resolve to
+# Ottawa-local imported ClusterIPs (10.2.0.0/16) and remote *pod* IPs are in
+# 10.1.0.0/16 / 10.5.0.0/16. Denied connects fail fast and Garage falls back to
+# the correct address. Only TCP/3901 and only these two CIDRs are denied.
+# The explicit allow-all egress rule keeps this from becoming a default-deny.
+#
+# Rollback: delete this directory + the Flux Kustomization (git revert).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: garage-rpc-egress-guard
+spec:
+  description: Deny Garage RPC dials via other sites' Service CIDRs (gossip-poisoned hairpin addresses)
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/instance: garage
+      app.kubernetes.io/name: garage
+  egress:
+    - toEntities:
+        - all
+  egressDeny:
+    - toCIDR:
+        - 10.0.0.0/16
+        - 10.4.0.0/16
+      toPorts:
+        - ports:
+            - port: "3901"
+              protocol: TCP
