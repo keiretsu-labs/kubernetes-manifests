@@ -1,11 +1,12 @@
-# GLM-5.3-Flash EXL3/TR3 on 2× DGX Spark — 1M-context TensorFold qualification profile.
+# GLM-5.3-Flash EXL3 (Mia quant) on 2x DGX Spark — TensorFold recipe v1.7 profile.
 #
 # The workload and service identity is generic so future model swaps do not
 # bake a retired model name into the in-cluster Service, mesh export, or probes.
 # Upstream recipe: https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold
-# Model: Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw@25a44fdbf16862a46b7cc9921142c6c81350af2f
-# Runtime image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold
-# Runtime image digest: sha256:6ee3c6e0430040b69ddcb0c96c7fbbcb94a5bed47d48a8ba092626369ae533b9
+# Model (ABLIT=0): Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold@078455ffe6472f9a52fbc1139f58b9db2881b25c
+# Model (ABLIT=1): Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit@57edefd2f5d9b371c8345883304d5af68b52fa24 (gated; needs HF_TOKEN + terms)
+# Runtime image digest: sha256:b47c19d66633f27cbe37da13fbc580363f466c08b9529feab1eecb1a4b904bf1
+# Drafter: MTP (--drafter none). DFlash2 is CC BY-NC-ND; REQUIRE_DFLASH=0.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -16,25 +17,35 @@ data:
   download-and-validate.sh: |
     #!/bin/bash
     set -euo pipefail
+    # ABLIT=0 (default): Mia published EXL3 quant. ABLIT=1: gated Ablit (HF_TOKEN + terms).
+    ABLIT="$${ABLIT:-0}"
     MODEL_DIR="$${MODEL_DIR:-/models/qwen38}"
-    MODEL_REPO="$${MODEL_REPO:-Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw}"
-    MODEL_REVISION="$${MODEL_REVISION:-25a44fdbf16862a46b7cc9921142c6c81350af2f}"
+    if [ "$${ABLIT}" = "1" ]; then
+      MODEL_REPO="$${MODEL_REPO:-Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit}"
+      MODEL_REVISION="$${MODEL_REVISION:-57edefd2f5d9b371c8345883304d5af68b52fa24}"
+      if [ -z "$${HUGGING_FACE_HUB_TOKEN:-}$${HF_TOKEN:-}" ]; then
+        echo "[download] ABLIT=1 requires HF_TOKEN (Secret hf-secret) and accepted Ablit terms" >&2
+        exit 1
+      fi
+    else
+      MODEL_REPO="$${MODEL_REPO:-Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold}"
+      MODEL_REVISION="$${MODEL_REVISION:-078455ffe6472f9a52fbc1139f58b9db2881b25c}"
+    fi
+    # DFlash2 is CC BY-NC-ND; keep REQUIRE_DFLASH=0 unless licensing is cleared.
+    REQUIRE_DFLASH="$${REQUIRE_DFLASH:-0}"
     DFLASH_REPO="$${DFLASH_REPO:-incoai/GLM-5.3-Flash-DFlash2}"
-    DFLASH_REVISION="$${DFLASH_REVISION:-dc77ff1c99eeb2df044ee3d4f0094eb033fee410}"
+    DFLASH_REVISION="$${DFLASH_REVISION:-bf582e4eacc1810f76656d1811693ff6c6737d2a}"
     MODEL_MARKER="$${MODEL_DIR}/.model-revision"
     EXPECTED_MARKER="$${MODEL_REPO}@$${MODEL_REVISION}"
     DFLASH_MARKER="$${MODEL_DIR}/dflash2/.model-revision"
     EXPECTED_DFLASH_MARKER="$${DFLASH_REPO}@$${DFLASH_REVISION}"
+    TOKEN="$${HUGGING_FACE_HUB_TOKEN:-}$${HF_TOKEN:-}"
+    export HUGGING_FACE_HUB_TOKEN="$${TOKEN}"
     mkdir -p "$${MODEL_DIR}"
     current="$$(cat "$${MODEL_MARKER}" 2>/dev/null || true)"
-    if [ "$${current}" != "$${EXPECTED_MARKER}" ]; then
-      echo "[download] replacing previous model $${current:-unmarked} with $${EXPECTED_MARKER}"
-      find "$${MODEL_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-      mkdir -p "$${MODEL_DIR}"
-    fi
     count="$$(find "$${MODEL_DIR}" -maxdepth 1 -type f -name '*.safetensors' | wc -l)"
-    if [ "$${count}" -lt 100 ] || [ ! -f "$${MODEL_DIR}/config.json" ]; then
-      echo "[download] fetching $${MODEL_REPO}@$${MODEL_REVISION}"
+    if [ "$${current}" != "$${EXPECTED_MARKER}" ] || [ "$${count}" -lt 100 ] || [ ! -f "$${MODEL_DIR}/config.json" ]; then
+      echo "[download] fetching $${MODEL_REPO}@$${MODEL_REVISION} (was $${current:-unmarked}; resume-safe, no wipe)"
       python3 - "$${MODEL_DIR}" "$${MODEL_REPO}" "$${MODEL_REVISION}" <<'PY'
     import os, sys
     from huggingface_hub import snapshot_download
@@ -46,20 +57,23 @@ data:
     test -s "$${MODEL_DIR}/config.json"
     test -s "$${MODEL_DIR}/model.safetensors.index.json"
     printf '%s\n' "$${EXPECTED_MARKER}" > "$${MODEL_MARKER}"
-    mkdir -p "$${MODEL_DIR}/dflash2"
-    dcurrent="$$(cat "$${DFLASH_MARKER}" 2>/dev/null || true)"
-    if [ "$${dcurrent}" != "$${EXPECTED_DFLASH_MARKER}" ]; then
-      echo "[download] fetching $${DFLASH_REPO}@$${DFLASH_REVISION}"
-      python3 - "$${MODEL_DIR}/dflash2" "$${DFLASH_REPO}" "$${DFLASH_REVISION}" <<'PY'
+    if [ "$${REQUIRE_DFLASH}" = "1" ]; then
+      mkdir -p "$${MODEL_DIR}/dflash2"
+      dcurrent="$$(cat "$${DFLASH_MARKER}" 2>/dev/null || true)"
+      if [ "$${dcurrent}" != "$${EXPECTED_DFLASH_MARKER}" ] || [ ! -f "$${MODEL_DIR}/dflash2/config.json" ]; then
+        echo "[download] fetching $${DFLASH_REPO}@$${DFLASH_REVISION} (REQUIRE_DFLASH=1)"
+        python3 - "$${MODEL_DIR}/dflash2" "$${DFLASH_REPO}" "$${DFLASH_REVISION}" <<'PY'
     import os, sys
     from huggingface_hub import snapshot_download
     snapshot_download(repo_id=sys.argv[2], revision=sys.argv[3], local_dir=sys.argv[1], token=os.environ.get("HUGGING_FACE_HUB_TOKEN") or None, max_workers=8)
     PY
-      printf '%s\n' "$${EXPECTED_DFLASH_MARKER}" > "$${DFLASH_MARKER}"
+        printf '%s\n' "$${EXPECTED_DFLASH_MARKER}" > "$${DFLASH_MARKER}"
+      fi
+      test -s "$${MODEL_DIR}/dflash2/config.json"
+      echo "[validate] GLM model files=$${count} and DFlash2 present"
+    else
+      echo "[validate] GLM model files=$${count}; DFlash2 skipped (REQUIRE_DFLASH=0, MTP drafter)"
     fi
-    test -s "$${MODEL_DIR}/dflash2/config.json"
-    # DFlash2 uses safetensors or a single model file depending on revision; config is the required gate.
-    echo "[validate] GLM model files=$${count} and DFlash2 present"
 
   patch_glm_video_placeholders.py: |
     # Align GLM-5.3 video prompt placeholders to encoder grid_t.
@@ -319,18 +333,45 @@ spec:
         nodeSelector:
           kubernetes.io/hostname: spark-0
         initContainers:
+        - name: download-model
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:b47c19d66633f27cbe37da13fbc580363f466c08b9529feab1eecb1a4b904bf1
+          command: [/bin/bash]
+          args: [/scripts/download-and-validate.sh]
+          env:
+          - { name: ABLIT, value: "0" }
+          - { name: REQUIRE_DFLASH, value: "0" }
+          - { name: MODEL_DIR, value: "/models/qwen38" }
+          - name: HUGGING_FACE_HUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: hf-secret
+                key: HF_TOKEN
+                optional: true
+          volumeMounts:
+          - { name: models, mountPath: /models }
+          - { name: download-script, mountPath: /scripts }
+          resources:
+            requests: { memory: "2Gi", cpu: "500m" }
+            limits: { memory: "8Gi", cpu: "4000m" }
         - name: validate-model
           image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:b47c19d66633f27cbe37da13fbc580363f466c08b9529feab1eecb1a4b904bf1
           command: [/bin/bash, -ec]
           args:
           - |
-            test "$$(cat /models/qwen38/.model-revision)" = "Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw@25a44fdbf16862a46b7cc9921142c6c81350af2f"
+            ABLIT="$${ABLIT:-0}"
+            if [ "$${ABLIT}" = "1" ]; then
+              EXPECTED="Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit@57edefd2f5d9b371c8345883304d5af68b52fa24"
+            else
+              EXPECTED="Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold@078455ffe6472f9a52fbc1139f58b9db2881b25c"
+            fi
+            test "$$(cat /models/qwen38/.model-revision)" = "$${EXPECTED}"
             test "$$(find /models/qwen38 -maxdepth 1 -type f -name '*.safetensors' | wc -l)" -ge 120
             test -s /models/qwen38/config.json
             test -s /models/qwen38/model.safetensors.index.json
             HF_HUB_OFFLINE=1 tensorfold info /models/qwen38
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
+          - { name: ABLIT, value: "0" }
           volumeMounts:
           - { name: models, mountPath: /models }
           resources:
@@ -357,10 +398,17 @@ spec:
           args:
           - |
             set -euo pipefail
+            # ABLIT=1 defaults thinking off (recipe v1.7); THINKING=1 forces it on.
+            THINKING_FLAG=--thinking
+            if [ "$${ABLIT:-0}" = "1" ] && [ "$${THINKING:-0}" != "1" ]; then
+              THINKING_FLAG=--no-thinking
+            elif [ "$${THINKING:-1}" = "0" ]; then
+              THINKING_FLAG=--no-thinking
+            fi
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 0 --master 192.168.74.1 --master-port 29551 \
               --name GLM-5.3-Flash-EXL3 --host 0.0.0.0 --port 8888 \
-              --drafter none --context 1048576 --parallel 1 --thinking
+              --drafter none --context 1048576 --parallel 1 $${THINKING_FLAG}
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
@@ -374,6 +422,21 @@ spec:
           - { name: TF_GLM_DENSE, value: "q4" }
           - { name: TF_GLM_COMM, value: "roce" }
           - { name: TF_ROCE_MAX_KB, value: "512" }
+          - { name: TF_ROCE_WAIT_S, value: "300" }
+          - { name: TF_GLM_SHARED_PREFIX, value: "1" }
+          - { name: TF_GLM_CACHE_ENTRIES, value: "32" }
+          - { name: TF_GLM_ASSISTANT_ENDS, value: "1" }
+          - { name: TF_GLM_L2PF, value: "1" }
+          - { name: TF_GLM_EXL3_LOADS, value: "nc" }
+          - { name: TF_GLM_CLEAR_THINKING, value: "0" }
+          - { name: TF_GLM_STREAM_SMOOTH, value: "1" }
+          - { name: TF_GLM_STREAM_SMOOTH_MS, value: "400" }
+          - { name: TF_GLM_FILL_BUDGET_MS, value: "200" }
+          - { name: TF_GLM_FILL_DRAFTS, value: "1" }
+          - { name: TF_GLM_MULTI_PREFILL, value: "1" }
+          - { name: ABLIT, value: "0" }
+          - { name: THINKING, value: "1" }
+          - { name: REQUIRE_DFLASH, value: "0" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: TP_SOCKET_IFNAME, value: "eth2" }
@@ -470,18 +533,45 @@ spec:
         nodeSelector:
           kubernetes.io/hostname: spark-1
         initContainers:
+        - name: download-model
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:b47c19d66633f27cbe37da13fbc580363f466c08b9529feab1eecb1a4b904bf1
+          command: [/bin/bash]
+          args: [/scripts/download-and-validate.sh]
+          env:
+          - { name: ABLIT, value: "0" }
+          - { name: REQUIRE_DFLASH, value: "0" }
+          - { name: MODEL_DIR, value: "/models/qwen38" }
+          - name: HUGGING_FACE_HUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: hf-secret
+                key: HF_TOKEN
+                optional: true
+          volumeMounts:
+          - { name: models, mountPath: /models }
+          - { name: download-script, mountPath: /scripts }
+          resources:
+            requests: { memory: "2Gi", cpu: "500m" }
+            limits: { memory: "8Gi", cpu: "4000m" }
         - name: validate-model
           image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:b47c19d66633f27cbe37da13fbc580363f466c08b9529feab1eecb1a4b904bf1
           command: [/bin/bash, -ec]
           args:
           - |
-            test "$$(cat /models/qwen38/.model-revision)" = "Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw@25a44fdbf16862a46b7cc9921142c6c81350af2f"
+            ABLIT="$${ABLIT:-0}"
+            if [ "$${ABLIT}" = "1" ]; then
+              EXPECTED="Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit@57edefd2f5d9b371c8345883304d5af68b52fa24"
+            else
+              EXPECTED="Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold@078455ffe6472f9a52fbc1139f58b9db2881b25c"
+            fi
+            test "$$(cat /models/qwen38/.model-revision)" = "$${EXPECTED}"
             test "$$(find /models/qwen38 -maxdepth 1 -type f -name '*.safetensors' | wc -l)" -ge 120
             test -s /models/qwen38/config.json
             test -s /models/qwen38/model.safetensors.index.json
             HF_HUB_OFFLINE=1 tensorfold info /models/qwen38
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
+          - { name: ABLIT, value: "0" }
           volumeMounts:
           - { name: models, mountPath: /models }
           resources:
@@ -506,9 +596,16 @@ spec:
           args:
           - |
             set -euo pipefail
+            # ABLIT=1 defaults thinking off (recipe v1.7); THINKING=1 forces it on.
+            THINKING_FLAG=--thinking
+            if [ "$${ABLIT:-0}" = "1" ] && [ "$${THINKING:-0}" != "1" ]; then
+              THINKING_FLAG=--no-thinking
+            elif [ "$${THINKING:-1}" = "0" ]; then
+              THINKING_FLAG=--no-thinking
+            fi
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 1 --master 192.168.74.1 --master-port 29551 \
-              --drafter none --context 1048576 --parallel 1 --thinking
+              --drafter none --context 1048576 --parallel 1 $${THINKING_FLAG}
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
@@ -522,6 +619,21 @@ spec:
           - { name: TF_GLM_DENSE, value: "q4" }
           - { name: TF_GLM_COMM, value: "roce" }
           - { name: TF_ROCE_MAX_KB, value: "512" }
+          - { name: TF_ROCE_WAIT_S, value: "300" }
+          - { name: TF_GLM_SHARED_PREFIX, value: "1" }
+          - { name: TF_GLM_CACHE_ENTRIES, value: "32" }
+          - { name: TF_GLM_ASSISTANT_ENDS, value: "1" }
+          - { name: TF_GLM_L2PF, value: "1" }
+          - { name: TF_GLM_EXL3_LOADS, value: "nc" }
+          - { name: TF_GLM_CLEAR_THINKING, value: "0" }
+          - { name: TF_GLM_STREAM_SMOOTH, value: "1" }
+          - { name: TF_GLM_STREAM_SMOOTH_MS, value: "400" }
+          - { name: TF_GLM_FILL_BUDGET_MS, value: "200" }
+          - { name: TF_GLM_FILL_DRAFTS, value: "1" }
+          - { name: TF_GLM_MULTI_PREFILL, value: "1" }
+          - { name: ABLIT, value: "0" }
+          - { name: THINKING, value: "1" }
+          - { name: REQUIRE_DFLASH, value: "0" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
           - { name: TP_SOCKET_IFNAME, value: "eth2" }
