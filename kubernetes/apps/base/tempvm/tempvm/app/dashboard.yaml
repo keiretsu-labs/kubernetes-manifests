@@ -1,0 +1,98 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: tempvm-sessions
+  labels:
+    app.kubernetes.io/name: tempvm
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  resyncPeriod: 30m
+  folder: TempVM
+  json: |
+    {
+      "title": "TempVM Sessions",
+      "uid": "tempvm-sessions",
+      "schemaVersion": 39,
+      "version": 1,
+      "time": {"from": "now-24h", "to": "now"},
+      "refresh": "1m",
+      "tags": ["tempvm", "sessions", "audit"],
+      "panels": [
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Active Sessions (latest audit event)",
+          "description": "Latest active_sessions value reported by the gateway audit stream. Sessions have a four-hour maximum TTL.",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+          "targets": [{
+            "refId": "A",
+            "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+            "query": "kubernetes.namespace_name:tempvm and kubernetes.container_name:gateway and active_sessions:* | stats last(active_sessions) active_sessions",
+            "queryType": "stats"
+          }],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "value", "colorMode": "value", "graphMode": "none", "justifyMode": "auto"}
+        },
+        {
+          "id": 2,
+          "type": "timeseries",
+          "title": "Starts, Refusals, and TTL Kills",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 8, "w": 18, "x": 6, "y": 0},
+          "targets": [
+            {"refId": "A", "legendFormat": "starts", "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"}, "query": "kubernetes.namespace_name:tempvm and kubernetes.container_name:gateway and event:session_start | stats by (_time:5m) count() starts", "queryType": "stats"},
+            {"refId": "B", "legendFormat": "refusals", "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"}, "query": "kubernetes.namespace_name:tempvm and kubernetes.container_name:gateway and event:session_refused | stats by (_time:5m) count() refusals", "queryType": "stats"},
+            {"refId": "C", "legendFormat": "TTL kills", "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"}, "query": "kubernetes.namespace_name:tempvm and kubernetes.container_name:gateway and event:session_ttl_expired | stats by (_time:5m) count() ttl_kills", "queryType": "stats"}
+          ],
+          "fieldConfig": {"defaults": {"custom": {"drawStyle": "line", "lineWidth": 2, "showPoints": "never", "spanNulls": false}}, "overrides": []},
+          "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}}
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Session Duration p50 / p95 (seconds)",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 5, "w": 8, "x": 0, "y": 8},
+          "targets": [{
+            "refId": "A",
+            "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+            "query": "kubernetes.namespace_name:tempvm and kubernetes.container_name:gateway and event:session_stop | stats quantile(0.5, duration_seconds) p50, quantile(0.95, duration_seconds) p95",
+            "queryType": "stats"
+          }],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "orientation": "auto", "textMode": "value", "colorMode": "value", "graphMode": "none", "justifyMode": "auto"}
+        },
+        {
+          "id": 4,
+          "type": "table",
+          "title": "Sessions by Tailnet Identity and Source IP",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 10, "w": 16, "x": 8, "y": 8},
+          "targets": [{
+            "refId": "A",
+            "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+            "query": "kubernetes.namespace_name:tempvm and kubernetes.container_name:gateway and event:session_start | stats by (login_name, node_name, source_ip) count() sessions | sort by (sessions desc) | limit 50",
+            "queryType": "stats",
+            "format": "table"
+          }],
+          "options": {"showHeader": true, "sortBy": [{"displayName": "sessions", "desc": true}]}
+        },
+        {
+          "id": 5,
+          "type": "logs",
+          "title": "Gateway Audit Events",
+          "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 18},
+          "targets": [{
+            "refId": "A",
+            "datasource": {"type": "victoriametrics-logs-datasource", "uid": "victorialogs"},
+            "query": "kubernetes.namespace_name:tempvm and kubernetes.container_name:gateway and event:*",
+            "queryType": "range"
+          }],
+          "options": {"showTime": true, "showLabels": true, "showCommonLabels": false, "wrapLogMessage": true, "prettifyLogMessage": true, "enableLogDetails": true, "dedupStrategy": "none", "sortOrder": "Descending"}
+        }
+      ]
+    }
