@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 127 |
+| `ottawa` | 4 | 61 | 128 |
 | `robbinsdale` | 3 | 43 | 91 |
 | `stpetersburg` | 3 | 39 | 81 |
-| **total** | **10** | **143** | **299** |
+| **total** | **10** | **143** | **300** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -78,7 +78,7 @@ diagram in the [README](../../README.md#architecture).
 | Node runtime, scheduling and sandboxing | `spegel` | `spegel` |
 | Node runtime, scheduling and sandboxing | `vpa-system` | `vpa` |
 | Networking, ingress and identity | `auth` | `tinyauth` → ns `tinyauth`, `tinyauth-killinit` → ns `tinyauth` |
-| Networking, ingress and identity | `cloudflare` | `cloudflare-app` |
+| Networking, ingress and identity | `cloudflare` | `cloudflare-app`, `cloudflared-bhaiya-ssh` |
 | Networking, ingress and identity | `envoy-gateway-system` | `envoy-gateway-system-install` |
 | Networking, ingress and identity | `home` | `home-apps-ottawa`, `home-dnsrecords`, `home-homepage`, `home-homer`, `home-local-gateway`, `home-tailscale-gateway` |
 | Networking, ingress and identity | `hubble-ui` | `hubble-ui` |
