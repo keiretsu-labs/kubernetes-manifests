@@ -8,3 +8,8 @@ resources:
   - clusterrolebinding.yaml
   - token-secret.yaml
   - apiserver-egress.yaml
+  - kubeconfig-secret.yaml
+  - sync-rbac.yaml
+  - sync-script-configmap.yaml
+  - sync-egress.yaml
+  - sync-cronjob.yaml

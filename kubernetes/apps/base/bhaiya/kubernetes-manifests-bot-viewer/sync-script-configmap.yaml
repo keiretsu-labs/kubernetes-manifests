@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-manifests-bot-viewer-sync
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: kubernetes-manifests-bot-viewer
+    app.kubernetes.io/part-of: bhaiya
+data:
+  sync.py: |
+    import base64
+    import json
+    import ssl
+    import urllib.error
+    import urllib.request
+    from pathlib import Path
+
+    def read(path):
+        return Path(path).read_bytes().strip()
+
+    source = Path("/var/run/kman-viewer-token")
+    token = read(source / "token").decode("utf-8")
+    ca = read(source / "ca.crt")
+    if not token or not ca:
+        raise SystemExit("viewer credential Secret is missing token or CA data")
+
+    kubeconfig = {
+        "apiVersion": "v1",
+        "kind": "Config",
+        "clusters": [{
+            "name": "ottawa",
+            "cluster": {
+                "server": "https://kubernetes.default.svc",
+                "certificate-authority-data": base64.b64encode(ca).decode("ascii"),
+            },
+        }],
+        "contexts": [{
+            "name": "kubernetes-manifests-bot-viewer",
+            "context": {
+                "cluster": "ottawa",
+                "user": "kubernetes-manifests-bot-viewer",
+            },
+        }],
+        "current-context": "kubernetes-manifests-bot-viewer",
+        "users": [{
+            "name": "kubernetes-manifests-bot-viewer",
+            "user": {"token": token},
+        }],
+    }
+    config = json.dumps(kubeconfig, separators=(",", ":")).encode("utf-8")
+    patch = json.dumps({
+        "data": {"config": base64.b64encode(config).decode("ascii")},
+    }).encode("utf-8")
+
+    namespace = "bhaiya"
+    secret_name = "bh-b-wwhxmfbs-kubeconfig"
+    url = (
+        f"https://kubernetes.default.svc/api/v1/namespaces/{namespace}/secrets/"
+        f"{secret_name}"
+    )
+    api_token = read("/var/run/secrets/kubernetes.io/serviceaccount/token").decode("utf-8")
+    api_ca = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+    request = urllib.request.Request(
+        url,
+        data=patch,
+        method="PATCH",
+        headers={
+            "Authorization": f"Bearer {api_token}",
+            "Content-Type": "application/merge-patch+json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(
+            request,
+            context=ssl.create_default_context(cafile=api_ca),
+            timeout=20,
+        ) as response:
+            if response.status != 200:
+                raise SystemExit(f"Secret sync failed with HTTP {response.status}")
+    except urllib.error.HTTPError as error:
+        raise SystemExit(f"Secret sync failed with HTTP {error.code}") from None
+    except urllib.error.URLError as error:
+        raise SystemExit(f"Secret sync request failed: {error.reason}") from None
+
+    print("viewer kubeconfig Secret synchronized")

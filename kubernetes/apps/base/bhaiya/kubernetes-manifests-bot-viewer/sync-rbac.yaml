@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubernetes-manifests-bot-viewer-sync
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: kubernetes-manifests-bot-viewer
+    app.kubernetes.io/part-of: bhaiya
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubernetes-manifests-bot-viewer-sync
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: kubernetes-manifests-bot-viewer
+    app.kubernetes.io/part-of: bhaiya
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["bh-b-wwhxmfbs-kubeconfig"]
+    verbs: ["patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubernetes-manifests-bot-viewer-sync
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: kubernetes-manifests-bot-viewer
+    app.kubernetes.io/part-of: bhaiya
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kubernetes-manifests-bot-viewer-sync
+subjects:
+  - kind: ServiceAccount
+    name: kubernetes-manifests-bot-viewer-sync
+    namespace: bhaiya
