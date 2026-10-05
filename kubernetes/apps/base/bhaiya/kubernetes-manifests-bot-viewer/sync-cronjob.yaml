@@ -1,0 +1,76 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kubernetes-manifests-bot-viewer-sync
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: kubernetes-manifests-bot-viewer
+    app.kubernetes.io/part-of: bhaiya
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 120
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kubernetes-manifests-bot-viewer-sync
+        app.kubernetes.io/part-of: bhaiya
+    spec:
+      activeDeadlineSeconds: 90
+      backoffLimit: 1
+      ttlSecondsAfterFinished: 3600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: kubernetes-manifests-bot-viewer-sync
+            app.kubernetes.io/part-of: bhaiya
+        spec:
+          serviceAccountName: kubernetes-manifests-bot-viewer-sync
+          automountServiceAccountToken: true
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: sync
+              image: python:3.13.7-alpine3.22
+              imagePullPolicy: IfNotPresent
+              command: ["python3", "/scripts/sync.py"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              volumeMounts:
+                - name: script
+                  mountPath: /scripts
+                  readOnly: true
+                - name: viewer-token
+                  mountPath: /var/run/kman-viewer-token
+                  readOnly: true
+          volumes:
+            - name: script
+              configMap:
+                name: kubernetes-manifests-bot-viewer-sync
+                defaultMode: 0444
+            - name: viewer-token
+              secret:
+                secretName: kubernetes-manifests-bot-viewer-token
+                defaultMode: 0444
+                items:
+                  - key: token
+                    path: token
+                  - key: ca.crt
+                    path: ca.crt

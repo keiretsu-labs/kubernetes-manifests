@@ -9,17 +9,26 @@ Read-only cluster identity for the Bhaiya V2 bot `kubernetes-manifests`.
 
 No create/update/patch/delete/exec. Manifest changes still go through PRs here.
 
-## Delivering the kubeconfig to the bot
-After Flux reconciles Ottawa:
+## Durable kubeconfig Secret
 
-```bash
-# on an operator host with Ottawa kubectl (tools/kc.sh ot)
-TOKEN=$(tools/kc.sh ot -n bhaiya get secret kubernetes-manifests-bot-viewer-token -o jsonpath='.data.token' | base64 -d)
-CA=$(tools/kc.sh ot -n bhaiya get secret kubernetes-manifests-bot-viewer-token -o jsonpath='.data.ca\.crt')
-# Write kubeconfig into the bot via bhaiyactl bots exec/cp (never print TOKEN).
-```
+Flux creates the metadata-only Secret `bhaiya/bh-b-wwhxmfbs-kubeconfig`. A
+CronJob reads only `token` and `ca.crt` from
+`kubernetes-manifests-bot-viewer-token`, builds a kubeconfig for
+`https://kubernetes.default.svc`, and patches only `data.config` on that one
+Secret every five minutes. The credential never enters Git, a ConfigMap, job
+arguments, or logs. The sync ServiceAccount can patch only the named target
+Secret; it cannot read Secrets through the API or change cluster resources.
 
-Server URL: use the Ottawa operator API (`ottawa-k8s-operator.keiretsu.ts.net` or the in-repo kubeconfig server). Do not commit the token.
+After the ExtraSecretMounts allowlist is enabled in the Bhaiya control-plane
+Deployment, the bot receives that Secret read-only at `/workspace/.kube/config`.
+Use `KUBECONFIG=/workspace/.kube/config kubectl ...` from inside the bot. The
+existing in-bot `get`-allowed / `create`-denied viewer RBAC remains the source
+of authority. Flux still owns cluster changes; use PRs and normal GitOps.
+
+The PVC copy currently in the bot remains compatible until the deployment
+allowlist is enabled. The mount activation follows successful Secret sync so a
+required Secret volume never makes the Computer fail to start while the target
+key is absent.
 
 ## Follow-ups
 - Replace the long-lived Secret with a TokenRequest broker / bot secret once that API exists.
@@ -30,3 +39,7 @@ Server URL: use the Ottawa operator API (`ottawa-k8s-operator.keiretsu.ts.net` o
 `apiserver-egress.yaml` adds a Cilium allow to entity `kube-apiserver` for
 computer slug `b-wwhxmfbs`. Without it, in-pod kubectl to
 `https://kubernetes.default.svc` times out even with a valid viewer kubeconfig.
+
+`sync-egress.yaml` separately lets only the credential sync Job reach the
+Kubernetes API to patch its one Secret. It does not widen the bot's read-only
+authorization or network policy.
