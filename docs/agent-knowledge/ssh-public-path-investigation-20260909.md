@@ -128,3 +128,35 @@ therefore remain open.
 
 The next discriminating action is Raj's UniFi offload A/B test. No further
 in-cluster candidate remains open on the evidence above.
+
+## Corroboration — Kartik public SSH kicks (2026-10-05)
+
+Kartik's interactive `kartik-codes` Herdr session on public `:22` was kicked
+while actively typing (~5:12 PM CT). Same day, an in-box active soak
+(`while true; do date; sleep 5; done` with `ServerAliveInterval 15`) died at
+~150s with `Connection closed by remote host` / `Broken pipe`.
+
+Matched Envoy `forgejo-ssh` records on `envoy-home-public…6txdx` (rei):
+
+| start (UTC) | duration | close | peer | notes |
+| --- | ---: | --- | --- | --- |
+| 21:59:01 | 133943 ms | RemoteReset/Normal | 68.67.47.152 | Kartik; bhaiya `client_close` 133161 ms, 4 keepalives |
+| 22:01:26 | 75900 ms | RemoteReset/Normal | 68.67.47.152 | Kartik |
+| 22:03:18 | 453740 ms | RemoteReset/Normal | 68.67.47.152 | Kartik survived ~7.5 min once |
+| 22:16:40 | 150406 ms | RemoteReset/Normal | 3.217.165.30 | box active soak |
+
+Ruled out for this incident (same day):
+
+- idle timeout / missing keepalives (`BHAIYA_SSH_KEEPALIVE_INTERVAL=30s`; soak was active every 5s);
+- Envoy/bhaiya-ssh restarts (public Envoy 6d up, 0 restarts; bhaiya-ssh stable for hours);
+- V2 SSH authz recheck (0 `session_recheck` failures; terminations are `client_close`/`read_eof`, not `authorization_unavailable`);
+- fixed 120s route/`max_connection_duration` (durations 24s–453s; one Envoy idle close was `tcp_session_idle_timeout` at ~1h).
+
+`externalTrafficPolicy` remains `Local` after #2980. The :22-only cutover
+(#3402, 2026-10-04) removed the dedicated `bhaiya-workspace-ssh` :6922
+listener that was the preferred durable workspace path; clients fell back onto
+public `:22` / UniFi WAN:22 and re-hit this RemoteReset signature. Restore
+:6922 as the preferred workspace entrypoint (Gateway listener + TCPRoute
+parentRef); keep `:22` for Forgejo + legacy CONNECT. UniFi must still forward
+WAN:6922 → `10.169.10.15:6922`. Tailscale `100.76.8.70` remains the working
+client workaround if public :6922 is not yet forwarded.
