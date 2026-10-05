@@ -22,6 +22,8 @@ spec:
           args:
             - --guest-image=ghcr.io/keiretsu-labs/tempvm-linux:sha-b430a7b22247578484081c08a8bbaf91958bf2e5@sha256:b371e749f4693f3dc4303c08db7cad26670e1901eaf2e8d3c971f10e732f4867
             - --runtime-class=kata-clh
+            - --max-session-ttl=4h
+            - --max-sessions=3
           env:
             - name: POD_NAME
               valueFrom:

@@ -7,3 +7,4 @@ resources:
   - ./networkpolicy.yaml
   - ./rbac.yaml
   - ./service.yaml
+  - ./dashboard.yaml
