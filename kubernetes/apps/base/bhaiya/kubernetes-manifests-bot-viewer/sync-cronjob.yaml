@@ -38,7 +38,7 @@ spec:
               type: RuntimeDefault
           containers:
             - name: sync
-              image: python:3.13.7-alpine3.22
+              image: python:3.14.5-alpine3.22
               imagePullPolicy: IfNotPresent
               command: ["python3", "/scripts/sync.py"]
               securityContext:
