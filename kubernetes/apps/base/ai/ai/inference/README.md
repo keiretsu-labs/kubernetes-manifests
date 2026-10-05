@@ -29,8 +29,8 @@ terms. Serving still runs `HF_HUB_OFFLINE=1`. DFlash2 is not downloaded
 | `DRAFTER` | `mtp` (`--drafter none`); one concurrent stream |
 | `CONTEXT` | `1048576` (`--context 1048576`) |
 | Vision | disabled; language-only (`LANGUAGE_MODEL_ONLY=1`) |
-| KV cache | FP8; `TF_GLM_CACHE_GIB=2` |
-| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=6.5` |
+| KV cache | FP8; `TF_GLM_CACHE_GIB=1` |
+| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=6.0` |
 | Parallel requests | 1 (`--parallel 1`) |
 | `ABLIT` | `0` (flip to `1` on download+validate+both ranks after HF terms) |
 | Prompt reuse | `TF_GLM_SHARED_PREFIX=1`, `TF_GLM_CACHE_ENTRIES=32` |
@@ -75,9 +75,12 @@ pinned TensorFold v0.6.0 CUDA capacity code uses `MemAvailable - reserve` on
 unified-memory GPUs and sets the fitting window to zero when estimated resident
 weights plus staging exceed that budget, before context sizing. The reported
 rank-0 startup estimate is ~88.09GiB: reserve 14.5GiB left only ~81.86GiB,
-whereas reserve 6.5GiB gives ~89.86GiB (~1.77GiB estimate headroom). This
-iteration keeps context at 1,048,576, `PARALLEL=1`, FP8 KV, and a 2GiB pool to
-limit the subsequent cache geometry. TensorFold's CUDA allocations on Sparks
+whereas reserve 6.5GiB gives ~89.86GiB (~1.77GiB estimate headroom). After
+#3412 (Mia EXL3 quant), both ranks CrashLoop'd before weight load with
+`cannot fit requested context 1048576; estimated largest fitting … 950391`.
+This iteration keeps context at 1,048,576 and `PARALLEL=1`, drops reserve to
+6.0GiB (README floor) and the FP8 pool to 1GiB to reclaim ~1.5GiB for the
+1M window (~0.2GiB short under the prior 6.5/2 profile). TensorFold's CUDA allocations on Sparks
 are not capped by the container memory limit; the 96Gi request / 112Gi limit
 does not raise its startup budget. The current scheduler request totals include
 the 96Gi rank pods: 104,995Mi on `spark-0` and 106,379Mi on `spark-1`, leaving
