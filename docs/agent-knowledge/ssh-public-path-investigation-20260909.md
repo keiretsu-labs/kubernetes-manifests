@@ -160,3 +160,69 @@ public `:22` / UniFi WAN:22 and re-hit this RemoteReset signature. Restore
 parentRef); keep `:22` for Forgejo + legacy CONNECT. UniFi must still forward
 WAN:6922 → `10.169.10.15:6922`. Tailscale `100.76.8.70` remains the working
 client workaround if public :6922 is not yet forwarded.
+
+## Packet capture — UniFi-sourced forged client RST (2026-10-05)
+
+Read-only capture on Ottawa node `rei` (`bond0`, hostNetwork) during a
+reproduced public `:6922` active soak from the agent box
+(`while true; do date; sleep 5; done`, `ServerAliveInterval 15`).
+
+| Field | Value |
+| --- | --- |
+| Flow | `32.192.134.193:1135 → 10.169.10.15:6922` |
+| Envoy | `bhaiya-workspace-ssh`, start `22:36:06.334Z`, dur `130909` ms, `RemoteReset/Normal` |
+| Client symptom | `Connection closed by remote host` / `Broken pipe` at `22:38:17Z` |
+| Ethernet src of RST | `94:2a:6f:f6:4b:25` = UniFi LAN gateway `192.168.169.1` (ARP) |
+| Ethernet dst | `38:05:25:36:56:39` = `rei` |
+| RST IP | `id=0`, `ttl=114`, `win=0`, no TCP options, length 40 |
+| Preceding client data IP IDs | `35404`…`35407` (incrementing) on the same 5-tuple |
+| Immediate prelude | server retransmit of `seq 4340:4400` at `22:38:16.985` and `22:38:17.220`, then RST |
+
+**Interpretation.** Every client→server frame on this flow (SYN, data, ACK,
+RST) arrives from the UniFi MAC — expected for WAN-sourced traffic. TTL `114`
+is the path TTL (same on SYN/data/RST) and does **not** by itself prove
+forgery. The kill packet’s **IP ID reset to 0** while the live flow was in the
+`3540x` range, plus bare `win=0` RST with no options, is inconsistent with the
+same end-host stack that had been sending data. Combined with Envoy
+`RemoteReset` and the client seeing a remote close, this matches a
+**middlebox dual-RST**: UniFi (or its offload engine) aborts the flow and
+emits an RST toward the VIP that spoofs the client address.
+
+Prior read-only UniFi API work already found IPS/advanced filtering off and a
+7440s TCP session timeout — so those are not the timer. Hardware/flow offload
+remains the leading UniFi feature to A/B (no per-rule switch; global only).
+
+### What this is not
+
+- Not Envoy generating the RST (`RemoteReset` + upstream `Normal`).
+- Not Cilium/node conntrack exhaustion (previously eliminated).
+- Not workspace pod OOM/sshd (kartik-codes: 0 restarts, no OOM; architecture
+  has no in-pod sshd).
+- Not fixed by restoring `:6922` alone — same public VIP/UniFi path; this
+  capture was on `:6922`.
+
+### Separate bug (do not conflate)
+
+Changing Gateway listeners / EnvoyProxy access-log blocks triggers an Envoy
+reload that can purge live TCPRoute sockets
+(`purging_socket_that_have_not_progressed_to_connections` on ts Envoy during
+the 2026-10-05 `:6922` restore). That killed a Tailscale SSH at ~`22:29Z`.
+**Do not change public/ts Gateway listeners during working hours** until drain
+preserves established TCP connections.
+
+### Fix options (ordered)
+
+1. **UniFi (needs Raj, not GitOps):** disable global hardware/flow offload,
+   soak public SSH/HTTPS, then re-enable if needed. Exact UI path varies by
+   UniFi OS version; on current UniFi Network / UniFi OS gateways look under
+   **Settings → System / Advanced** (or **Internet / Network Acceleration**)
+   for **Hardware Offload** / **Flow Offloading** / **Network Acceleration**.
+   Rollback = re-enable the same toggle. Expect CPU forwarding cost and lower
+   multi-gig throughput while off.
+2. **GitOps-only public path that avoids UniFi WAN DNAT:** terminate SSH on an
+   outbound tunnel (Cloudflare Tunnel private TCP origin, or Border0 SSH
+   socket) and publish `ssh.bhaiya.keiretsu.top` (or Spectrum in front of the
+   tunnel). Cloudflare Spectrum pointed at the public WAN IP alone still
+   traverses UniFi port-forward and does **not** fix this.
+3. **Client workaround:** Tailscale `100.76.8.70:6922` (ts Envoy) for users on
+   the tailnet — bypasses UniFi WAN; still subject to Envoy reload purges.
