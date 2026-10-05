@@ -1521,6 +1521,7 @@ Companions:
 | App | Notes |
 |---|---|
 | `bhaiya` | workspace/sandbox control plane. Reconciled from its **own** GitRepository (Forgejo), not from this repo. This repo keeps the GitRepository, Forgejo credentials, and the Flux pointer (`dependsOn` garage, garage-keys, cnpg-system, agent-sandbox, cert-manager). The Receiver, Firefly MCP secret, and home Gateway editor Role live in `corp/bhaiya`. Platform TLS (`*.bhaiya`), k8gb apex route, GarageKey, Kopiur repositories and policies, and Mimir rules stay here. |
+| `kubernetes-manifests-bot-viewer` | Read-only ServiceAccount + ClusterRole (get/list/watch) for the Bhaiya V2 bot `kubernetes-manifests`. Token Secret stays in-cluster; kubeconfig is delivered into the bot as a private file, never committed. |
 | `hermes` | agent runtime (`hermes-agent`); reaches St. Petersburg's vLLM through the direct MCS alias. The old `aperture` tailnet dependency is retained only in the retired rollback material |
 | `firecrawl` | web-scraping stack, reconciled straight from the upstream GitHub repo's `examples/kubernetes/cluster-install` path |
 | `cliproxy` | LLM API proxy (`cli-proxy-api`); reaches St. Petersburg's vLLM through the direct MCS alias |
