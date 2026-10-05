@@ -1,9 +1,9 @@
 # AI inference on 2× NVIDIA DGX Spark
 
-## Active deployment: GLM-5.3-Flash EXL3 (Mia quant) with TensorFold recipe v1.7
+## Active deployment: GLM-5.3-Flash EXL3 Ablit with TensorFold recipe v1.7
 
-- **Model (ABLIT=0):** `Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold@078455ffe6472f9a52fbc1139f58b9db2881b25c`
-- **Model (ABLIT=1):** `Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit@57edefd2f5d9b371c8345883304d5af68b52fa24` (gated; off by default)
+- **Model (ABLIT=0):** `Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold@078455ffe6472f9a52fbc1139f58b9db2881b25c` (rollback)
+- **Model (ABLIT=1, live):** `Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit@57edefd2f5d9b371c8345883304d5af68b52fa24` (gated)
 - **Upstream recipe:** [MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold) v1.7
 - **Runtime:** TensorFold v0.6.0 + 75 patches, image pinned by digest:
   `ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:b47c19d66633f27cbe37da13fbc580363f466c08b9529feab1eecb1a4b904bf1`
@@ -32,7 +32,7 @@ terms. Serving still runs `HF_HUB_OFFLINE=1`. DFlash2 is not downloaded
 | KV cache | FP8; `TF_GLM_CACHE_GIB=1` |
 | Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=6.0` |
 | Parallel requests | 1 (`--parallel 1`) |
-| `ABLIT` | `0` (flip to `1` on download+validate+both ranks after HF terms) |
+| `ABLIT` | `1` (gated Ablit; HF terms accepted) |
 | Prompt reuse | `TF_GLM_SHARED_PREFIX=1`, `TF_GLM_CACHE_ENTRIES=32` |
 | v1.6 server knobs | `TF_ROCE_WAIT_S=300`, `TF_GLM_ASSISTANT_ENDS=1`, smooth stream + sliced fill |
 | Per-rank pod resources | 96Gi request / 112Gi limit; one GPU |
@@ -46,17 +46,17 @@ also be required for `PARALLEL>1`. Flip path: set `REQUIRE_DFLASH=1`, change
 Do not reduce the reserve below 6GiB; increase parallelism or the cache pool
 only after measured memory qualification.
 
-### Ablit weights (wired, not live)
+### Ablit weights (live)
 
-`ABLIT=0` by default. To serve the gated Ablit build:
+`ABLIT=1` on `download-model` / `validate-model` and both ranks. Hugging Face
+Responsible Use terms were accepted for
+`Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit`; `HF_TOKEN` comes from
+`hf-secret` via `common-secrets.sops.yaml` (do not print it). `THINKING=0`
+follows the Ablit recipe default (`THINKING=1` forces thinking on).
 
-1. Accept terms at https://huggingface.co/Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit
-2. Confirm `HF_TOKEN` in `common-secrets.sops.yaml` can read gated repos (do not
-   print the token).
-3. GitOps: set `ABLIT=1` on the `download-model` / `validate-model` init
-   containers and both rank env lists (and optionally `THINKING=0`, which is the
-   recipe default for Ablit). Merge on green; Flux restarts both ranks and
-   downloads ~176 GB beside any cached published quant.
+Flux restarts both ranks and downloads ~176 GB beside any cached published
+quant when the PVC marker does not match. Roll back by setting `ABLIT=0`
+(and optionally `THINKING=1`) in a follow-up GitOps PR.
 
 The MemAvailable preflight init container remains enabled, and TensorFold's
 own pre-allocation check refuses profiles that do not fit its reserve. The
