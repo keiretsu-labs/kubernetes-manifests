@@ -1,12 +1,12 @@
 # AI inference on 2× NVIDIA DGX Spark
 
-## Active deployment: GLM-5.3-Flash EXL3/TR3 with TensorFold
+## Active deployment: GLM-5.3-Flash EXL3 (Mia quant) with TensorFold recipe v1.7
 
-- **Model:** `Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw`
-- **Cached revision:** `25a44fdbf16862a46b7cc9921142c6c81350af2f`
-- **TensorFold recipe revision:** `9eaebb7c4e96d983dcd538e18624622ba5b820a8`
-- **Runtime:** TensorFold v0.6.0, image pinned by digest:
-  `ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:22789f0cb3dc308f0b2ce52a33961b88bd624af1725e91e8aba0a74a671bb969`
+- **Model (ABLIT=0):** `Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold@078455ffe6472f9a52fbc1139f58b9db2881b25c`
+- **Model (ABLIT=1):** `Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit@57edefd2f5d9b371c8345883304d5af68b52fa24` (gated; off by default)
+- **Upstream recipe:** [MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold) v1.7
+- **Runtime:** TensorFold v0.6.0 + 75 patches, image pinned by digest:
+  `ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:b47c19d66633f27cbe37da13fbc580363f466c08b9529feab1eecb1a4b904bf1`
 - **Topology:** the existing `vllm` LeaderWorkerSet identity is retained for an
   in-place update; rank 0/API runs on `spark-0`, rank 1 on `spark-1`, TP=2 over
   the existing `eth2` / `mlx5_1` RoCE link with rendezvous port `29551`.
@@ -15,12 +15,12 @@
 - **API:** `model-serving.ai:8888`; the cross-cluster mesh Service remains
   `model-serving-mesh:80` and existing egress aliases remain unchanged.
 
-The upstream recipe pins a newer Hugging Face revision than the cached
-checkpoint. Before rollout, the existing model files and their checksum index
-were verified on both PVCs; the cache and recipe revisions resolve to the same
-`SHA256SUMS` object. Startup validates the cached marker, model files, and
-`tensorfold info` in offline mode. It does not download weights, use a Hugging
-Face token, or load DFlash2.
+A `download-model` init container fetches the configured checkpoint when the
+PVC marker does not match (resume-safe; no wipe). The published Mia quant is
+public; Ablit weights need `hf-secret`/`HF_TOKEN` (already substituted from
+`clusters/common/flux/vars/common-secrets.sops.yaml`) plus accepted Hugging Face
+terms. Serving still runs `HF_HUB_OFFLINE=1`. DFlash2 is not downloaded
+(`REQUIRE_DFLASH=0`).
 
 ## First shared-cluster profile
 
@@ -28,18 +28,35 @@ Face token, or load DFlash2.
 | --- | --- |
 | `DRAFTER` | `mtp` (`--drafter none`); one concurrent stream |
 | `CONTEXT` | `1048576` (`--context 1048576`) |
-| Vision | disabled; language-only |
+| Vision | disabled; language-only (`LANGUAGE_MODEL_ONLY=1`) |
 | KV cache | FP8; `TF_GLM_CACHE_GIB=2` |
 | Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=6.5` |
 | Parallel requests | 1 (`--parallel 1`) |
+| `ABLIT` | `0` (flip to `1` on download+validate+both ranks after HF terms) |
+| Prompt reuse | `TF_GLM_SHARED_PREFIX=1`, `TF_GLM_CACHE_ENTRIES=32` |
+| v1.6 server knobs | `TF_ROCE_WAIT_S=300`, `TF_GLM_ASSISTANT_ENDS=1`, smooth stream + sliced fill |
 | Per-rank pod resources | 96Gi request / 112Gi limit; one GPU |
 | NCCL/RoCE | `eth2`, `mlx5_1`, GID 3; TensorFold small gathers use RoCE |
 
-DFlash2 is intentionally not used: its included license is CC BY-NC-ND and
-restricts commercial use. This 1M-context recovery qualification keeps
-`PARALLEL=1` with the checkpoint's MTP head and a 2GiB KV pool. Do not reduce
-the reserve below 6GiB; increase parallelism or the cache pool only after
-measured memory qualification.
+DFlash2 is intentionally not used: its license is CC BY-NC-ND (non-commercial).
+Commercial / homelab-commercial use is unclear for this stack, so we keep the
+checkpoint MTP head (`--drafter none`) and `PARALLEL=1`. Enabling DFlash2 would
+also be required for `PARALLEL>1`. Flip path: set `REQUIRE_DFLASH=1`, change
+`--drafter` to the DFlash2 snapshot, raise `PARALLEL`, and re-qualify memory.
+Do not reduce the reserve below 6GiB; increase parallelism or the cache pool
+only after measured memory qualification.
+
+### Ablit weights (wired, not live)
+
+`ABLIT=0` by default. To serve the gated Ablit build:
+
+1. Accept terms at https://huggingface.co/Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit
+2. Confirm `HF_TOKEN` in `common-secrets.sops.yaml` can read gated repos (do not
+   print the token).
+3. GitOps: set `ABLIT=1` on the `download-model` / `validate-model` init
+   containers and both rank env lists (and optionally `THINKING=0`, which is the
+   recipe default for Ablit). Merge on green; Flux restarts both ranks and
+   downloads ~176 GB beside any cached published quant.
 
 The MemAvailable preflight init container remains enabled, and TensorFold's
 own pre-allocation check refuses profiles that do not fit its reserve. The
@@ -87,6 +104,15 @@ after the first qualification rollout before considering any larger profile.
   clients reach the model through the existing mesh and egress aliases.
 
 ## Rollback
+
+### Snapshot before this Mia-quant / v1.7 adopt
+
+- Pre-change commit: `8732383a4` (image already at recipe v1.7 digest via #3410;
+  still serving TR3-4bpw with MTP / PARALLEL=1).
+- Revert this PR to restore TR3 marker + prior env; the `download-model` init
+  will re-fetch TR3 if the PVC marker no longer matches (~176 GB).
+- Serving restart is expected on merge (zero-surge LWS; ~6–20+ min including
+  first-time Mia quant download).
 
 The exact previous vLLM manifest and PVC references are recoverable from
 commit `06448cde4c5699be6166340efbef06b3802352c9`:
@@ -136,11 +162,13 @@ sets them on both ranks (they must match on both):
 | `TF_GLM_PREFILL_OVERLAP` | `2` | Prefill overlap, used together with the split (upstream recipe pairs `SPLIT=1` with overlap 2) |
 | `TF_GLM_KDA_CHUNKED` | `1` | Chunked KDA prefill kernel; close to, not bit-identical with, the serial kernel |
 
-Other TensorFold settings that stay off or unchanged: `TF_GLM_SHARED_PREFIX=0`
-(a shared system prompt across different conversations is not reused),
-`TF_GLM_CACHE_ENTRIES=8`, `TF_GLM_PREFILL_ROWS` at its 2048 default (a larger chunk
-needs buffer memory this profile does not have). The `GLM53_*` variables
-that older vLLM manifests carried are not read by this TensorFold image.
+Recipe v1.6+ prompt-reuse and pool fixes are enabled: `TF_GLM_SHARED_PREFIX=1`
+and `TF_GLM_CACHE_ENTRIES=32` (next-turn / shared system prompt reuse; parallel
+agents no longer overwrite each other's kept history). Also on:
+`TF_ROCE_WAIT_S=300`, `TF_GLM_ASSISTANT_ENDS=1`, `TF_GLM_L2PF=1`,
+`TF_GLM_EXL3_LOADS=nc`, smooth streaming and sliced fill. The `GLM53_*`
+variables that older vLLM manifests carried are not read by this TensorFold
+image.
 
 Measured on 2026-10-01/02 (server-side for 20k-100k, wall-clock via direct pod
 port for 500k; rollout of #3370 loaded in ~415 s on rank 0, 0 restarts):
