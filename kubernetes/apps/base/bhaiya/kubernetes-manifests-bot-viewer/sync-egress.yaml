@@ -1,5 +1,6 @@
-# The credential sync Job only needs the in-cluster API endpoint to patch its
-# one target Secret. The bot's separate viewer policy remains read-only.
+# The credential sync Job needs cluster DNS to resolve the in-cluster API
+# endpoint and kube-apiserver access to patch its one target Secret. The bot's
+# separate viewer policy remains read-only.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -13,6 +14,26 @@ spec:
     matchLabels:
       app.kubernetes.io/name: kubernetes-manifests-bot-viewer-sync
   egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: node-local-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
     - toEntities:
         - kube-apiserver
       toPorts:

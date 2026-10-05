@@ -40,6 +40,6 @@ key is absent.
 computer slug `b-wwhxmfbs`. Without it, in-pod kubectl to
 `https://kubernetes.default.svc` times out even with a valid viewer kubeconfig.
 
-`sync-egress.yaml` separately lets only the credential sync Job reach the
-Kubernetes API to patch its one Secret. It does not widen the bot's read-only
-authorization or network policy.
+`sync-egress.yaml` lets only the credential sync Job reach cluster DNS
+on port 53 and the Kubernetes API on port 443 to patch its one Secret. It does
+not widen the bot's read-only authorization or network policy.
