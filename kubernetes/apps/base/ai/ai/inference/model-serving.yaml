@@ -338,7 +338,7 @@ spec:
           command: [/bin/bash]
           args: [/scripts/download-and-validate.sh]
           env:
-          - { name: ABLIT, value: "0" }
+          - { name: ABLIT, value: "1" }
           - { name: REQUIRE_DFLASH, value: "0" }
           - { name: MODEL_DIR, value: "/models/qwen38" }
           - name: HUGGING_FACE_HUB_TOKEN
@@ -371,7 +371,7 @@ spec:
             HF_HUB_OFFLINE=1 tensorfold info /models/qwen38
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
-          - { name: ABLIT, value: "0" }
+          - { name: ABLIT, value: "1" }
           volumeMounts:
           - { name: models, mountPath: /models }
           resources:
@@ -434,8 +434,8 @@ spec:
           - { name: TF_GLM_FILL_BUDGET_MS, value: "200" }
           - { name: TF_GLM_FILL_DRAFTS, value: "1" }
           - { name: TF_GLM_MULTI_PREFILL, value: "1" }
-          - { name: ABLIT, value: "0" }
-          - { name: THINKING, value: "1" }
+          - { name: ABLIT, value: "1" }
+          - { name: THINKING, value: "0" }
           - { name: REQUIRE_DFLASH, value: "0" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
@@ -538,7 +538,7 @@ spec:
           command: [/bin/bash]
           args: [/scripts/download-and-validate.sh]
           env:
-          - { name: ABLIT, value: "0" }
+          - { name: ABLIT, value: "1" }
           - { name: REQUIRE_DFLASH, value: "0" }
           - { name: MODEL_DIR, value: "/models/qwen38" }
           - name: HUGGING_FACE_HUB_TOKEN
@@ -571,7 +571,7 @@ spec:
             HF_HUB_OFFLINE=1 tensorfold info /models/qwen38
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
-          - { name: ABLIT, value: "0" }
+          - { name: ABLIT, value: "1" }
           volumeMounts:
           - { name: models, mountPath: /models }
           resources:
@@ -631,8 +631,8 @@ spec:
           - { name: TF_GLM_FILL_BUDGET_MS, value: "200" }
           - { name: TF_GLM_FILL_DRAFTS, value: "1" }
           - { name: TF_GLM_MULTI_PREFILL, value: "1" }
-          - { name: ABLIT, value: "0" }
-          - { name: THINKING, value: "1" }
+          - { name: ABLIT, value: "1" }
+          - { name: THINKING, value: "0" }
           - { name: REQUIRE_DFLASH, value: "0" }
           - { name: NCCL_SOCKET_IFNAME, value: "eth2" }
           - { name: GLOO_SOCKET_IFNAME, value: "eth2" }
