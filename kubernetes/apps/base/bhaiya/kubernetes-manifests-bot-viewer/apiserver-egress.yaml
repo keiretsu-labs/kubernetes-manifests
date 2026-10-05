@@ -1,0 +1,21 @@
+# Additive Cilium allow: managed bot sandboxes deny cluster API by default
+# (BuildComputerNetworkPolicy only admits DNS/world/litellm/edge). The
+# kubernetes-manifests bot needs read-only kubectl via its viewer SA token.
+# Cilium ORs policies on the same endpoint, so this does not weaken the
+# controller-owned bh-b-wwhxmfbs policy.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: kubernetes-manifests-bot-viewer-apiserver
+  namespace: bhaiya
+  labels:
+    app.kubernetes.io/name: kubernetes-manifests-bot-viewer
+    app.kubernetes.io/part-of: bhaiya
+spec:
+  endpointSelector:
+    matchLabels:
+      bhaiya.corp/computer-slug: b-wwhxmfbs
+      bhaiya.corp/workload: workspace
+  egress:
+    - toEntities:
+        - kube-apiserver

@@ -7,3 +7,4 @@ resources:
   - clusterrole.yaml
   - clusterrolebinding.yaml
   - token-secret.yaml
+  - apiserver-egress.yaml

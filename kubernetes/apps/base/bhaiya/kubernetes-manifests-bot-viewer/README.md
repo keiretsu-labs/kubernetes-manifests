@@ -24,3 +24,9 @@ Server URL: use the Ottawa operator API (`ottawa-k8s-operator.keiretsu.ts.net` o
 ## Follow-ups
 - Replace the long-lived Secret with a TokenRequest broker / bot secret once that API exists.
 - Do not add this SA to `tailnet-readers-ops` (that group can patch Deployments/Flux).
+
+## API server egress
+
+`apiserver-egress.yaml` adds a Cilium allow to entity `kube-apiserver` for
+computer slug `b-wwhxmfbs`. Without it, in-pod kubectl to
+`https://kubernetes.default.svc` times out even with a valid viewer kubeconfig.
