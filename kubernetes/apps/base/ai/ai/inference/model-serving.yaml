@@ -412,8 +412,8 @@ spec:
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
-          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "6.5" }
-          - { name: TF_GLM_CACHE_GIB, value: "2" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "6.0" }
+          - { name: TF_GLM_CACHE_GIB, value: "1" }
           - { name: TF_GLM_KV, value: "fp8" }
           # Prefill speed-ups from the upstream recipe (scripts/config.sh SPLIT=1, KDA_CHUNKED=1). Both ranks must match.
           - { name: TF_GLM_HC_SPLIT, value: "1" }
@@ -609,8 +609,8 @@ spec:
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
-          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "6.5" }
-          - { name: TF_GLM_CACHE_GIB, value: "2" }
+          - { name: TENSORFOLD_MEMORY_RESERVE_GIB, value: "6.0" }
+          - { name: TF_GLM_CACHE_GIB, value: "1" }
           - { name: TF_GLM_KV, value: "fp8" }
           # Prefill speed-ups from the upstream recipe (scripts/config.sh SPLIT=1, KDA_CHUNKED=1). Both ranks must match.
           - { name: TF_GLM_HC_SPLIT, value: "1" }
