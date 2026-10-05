@@ -1,0 +1,16 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernetes-manifests-bot-viewer
+  labels:
+    app.kubernetes.io/name: kubernetes-manifests-bot-viewer
+    app.kubernetes.io/part-of: bhaiya
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubernetes-manifests-bot-viewer
+subjects:
+  - kind: ServiceAccount
+    name: kubernetes-manifests-bot-viewer
+    namespace: bhaiya
