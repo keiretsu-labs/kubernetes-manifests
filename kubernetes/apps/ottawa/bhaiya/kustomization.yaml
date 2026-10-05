@@ -7,3 +7,4 @@ resources:
   - ./gitrepository.yaml
   - ./forgejo-auth.sops.yaml
   - ./bhaiya.yaml
+  - ./kubernetes-manifests-bot-viewer.yaml
