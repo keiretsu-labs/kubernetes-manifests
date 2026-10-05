@@ -169,6 +169,43 @@ spec:
       timeouts:
         request: 3600s
 ---
+# Public installer, CLI catalog, and agent skills. Path matches outrank the
+# tinyauth browser catch-all on bhaiya-cdn-plain. This route has no
+# SecurityPolicy and no ext-auth; control serves GET /install.sh, /dl/*, and
+# /skills* on the public mux (OIDC metadata shape). The next.bhaiya host
+# allowlist lives in corp/bhaiya v2/deploy. ROLLBACK = delete this route.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bhaiya-cdn-cli-public
+  namespace: keiretsu-top
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+  hostnames:
+    - "bhaiya.${COMMON_DOMAIN}"
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /install.sh
+        - path:
+            type: PathPrefix
+            value: /dl
+        - path:
+            type: PathPrefix
+            value: /skills
+      backendRefs:
+        - name: bhaiya-v2-control
+          namespace: bhaiya
+          port: 8080
+      timeouts:
+        request: 3600s
+---
 # admin console access control via tinyauth. tinyauth does authN (Google login,
 # injects Remote-Email); bhaiya does its own authZ in-process against its users
 # table (admin/member roles, per-owner workspace caps). No EG authorization
