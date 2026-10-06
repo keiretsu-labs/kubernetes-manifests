@@ -62,4 +62,6 @@ spec:
       port: 21084
       targetPort: 21084
   type: LoadBalancer
+  # Local: preserve real client source IP (no SNAT), BGP only from the HA node.
+  externalTrafficPolicy: Local
   loadBalancerIP: 10.50.10.13

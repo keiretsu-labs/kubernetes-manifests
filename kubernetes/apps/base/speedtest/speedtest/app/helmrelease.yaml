@@ -20,4 +20,16 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
-  # values: {} # Original valuesFile was empty 
+  # values: {} # Original valuesFile was empty
+  # Chart renders a LoadBalancer Service; force eTP Local so the backend sees
+  # the real client source IP (no SNAT) and BGP is advertised only from the pod node.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Service
+              name: speedtest-openspeedtest
+            patch: |
+              - op: add
+                path: /spec/externalTrafficPolicy
+                value: Local
