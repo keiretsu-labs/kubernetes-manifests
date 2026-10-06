@@ -78,7 +78,7 @@ Before every step:
    - `cilium-dbg bpf lb maglev list` should show the tables for the new frontends.
 3. The UDM now has up to 4 next hops. Moved flows hit nodes that do not host the backend
    and must be DSR-forwarded to the single Envoy. This is the real test.
-4. Verify (see below). Then capture memory at +15 min and +1 h.
+4. Run the client IP gate (below) at once, then the full verification. Capture memory at +15 min and +1 h.
 5. Rollback: revert #3451. EG recreates `envoy-home-public-ea71a69f` with eTP Local and no
    annotations, deletes `-dsr`, and the VIP moves back. That is the #3449 state, verified
    2026-10-06.
@@ -96,6 +96,36 @@ For each cluster, the Cilium flags and the Service change are separate PRs, the 
 - Verify with Hubble and a test against that cluster's VIP. Their public SSH is not in
   DNS, so test through the site WAN :22 if it is forwarded, otherwise from a LAN host.
 - Rollback: revert the Service PR, then the flags PR.
+
+## Client IP gate (hard requirement, Kartik/Raj 2026-10-06 10:00 CT)
+A public Service may only move from eTP Local to Cluster when DSR is live on that cluster and
+the backend is verified to see the real external client IP. Run this immediately after each
+Service PR (O2, R2, S2). If any check fails, roll back at once.
+1. **Hubble (raj-codes):** every ingress flow from the WAN to the public Envoy pods on
+   10022/10080/10443/8555 must have source identity `reserved:world` and the real client IP.
+   - A source of `reserved:remote-node` or `reserved:host`, or a 192.168.x/10.x address,
+     means SNAT.
+   - With 1 replica in O2, about 3 of 4 flows enter through a node without the Envoy pod.
+     Those are the DSR-forwarded ones and must still show the client IP.
+2. **SSH:** for the box test sessions, the Envoy forgejo-ssh access log
+   `downstream_remote_address` must be the box's public egress IP.
+3. **HTTP:** `curl https://plex.killinit.cc/identity` from the box.
+   - Envoy's `downstream_remote_address` and the last `x-forwarded-for` entry must be the
+     box's public IP.
+   - Tracearr and Plex must show real IPs for new sessions.
+4. **UDP 8555:** send datagrams from the box to the site WAN:8555. Hubble must show the box
+   IP as the source at the Envoy pod. Per-Service `forwarding-mode: dsr` is real DSR for UDP
+   too, not hybrid, so UDP is not SNATed.
+   - Datagrams over 1492 B forwarded across nodes would drop because of the IP option.
+5. Not a substitute: `sessionAffinity: ClientIP`.
+6. If DSR is not feasible on a cluster, that cluster keeps eTP Local. All three are feasible
+   today.
+
+Related draft PRs (need Raj's approval; after 18:00):
+- #3458: gateways trust X-Forwarded-For only from 10.0.0.0/8. Today `numTrustedHops: 1` lets
+  WAN clients spoof the client IP.
+- #3459: Plex LoadBalancer eTP Local. Today it is Cluster and SNATs flows that land on
+  non-Plex nodes.
 
 ## Verification (must pass before moving to the next step)
 - **From the box over the WAN** (nohup), using the `/workspace/sshdbg/v1` harness and the
