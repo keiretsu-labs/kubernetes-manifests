@@ -8,6 +8,7 @@ resources:
   - pvc.yaml
   - logs-pvc.yaml
   - deployment.yaml
+  - quota-exporter.yaml
   - dashboard.yaml
   - service.yaml
   - egress.yaml

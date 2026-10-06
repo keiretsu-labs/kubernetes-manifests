@@ -6,7 +6,7 @@ Anthropic-compatible APIs.
 
 ## Architecture and endpoints
 
-- Image: `eceasy/cli-proxy-api:v8.0.7`, pinned by digest in Git.
+- Image: `eceasy/cli-proxy-api` v8 (Renovate-managed), pinned by digest in Git.
 - The image and command were smoke-tested from the official amd64 OCI rootfs: port 8317 opened, `/management.html` returned 200, `/v1/models` returned 401 without the API key and 200 with it.
 - State: `cliproxy-data`, a 2 Gi `ceph-block-replicated` RWO PVC mounted at
   `/data`; OAuth files live in `/data/auth`.
@@ -293,3 +293,21 @@ separately because it is the source for API and management keys.
 The former generic vLLM front door is retired. The active St. Petersburg model
 remains available through CLIProxy as `vllm/GLM-5.3-Flash-EXL3`; CLIProxy remains
 the OAuth + Pi-bridge path and default `OPENAI_BASE_URL`.
+
+## Codex quota exporter
+
+CLIProxy v8 records the passive `x-codex-primary-*` / `x-codex-secondary-*`
+response headers for each Codex auth and returns them from
+`GET /v0/management/auth-files`. `cliproxy-quota-exporter` (same namespace) is
+the only reader: it holds the management key, exports gauges only (labels are
+`auth="codex-<id8>"` and `window`; no emails or tokens), and a
+CiliumNetworkPolicy limits it to that single GET on `cliproxy:8317` plus DNS,
+and limits ingress to the Prometheus agent on `:9464`.
+
+Metrics: `codex_quota_used_percent{window="primary|secondary"}`,
+`codex_quota_reset_seconds`, `codex_quota_observed_timestamp_seconds`,
+`codex_quota_auth_unavailable`, `codex_quota_source_count`,
+`codex_quota_exporter_scrape_success`. Values appear only after CLIProxy has
+proxied a Codex response; check the observation timestamp for freshness.
+
+Pacer query (Ottawa Mimir): `max by (window) (codex_quota_used_percent)`.

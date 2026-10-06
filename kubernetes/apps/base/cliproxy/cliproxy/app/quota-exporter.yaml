@@ -1,0 +1,310 @@
+# Read-only Codex quota gauges for the burn pacer. CLIProxy v8 records the
+# passive x-codex-primary-*/secondary-* response headers per auth and returns
+# them from GET /v0/management/auth-files. This exporter is the only consumer
+# that holds the management key; it exports gauges only (no auth payloads,
+# no emails), and Cilium limits it to that one GET and Prometheus to /metrics.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cliproxy-quota-exporter
+  labels:
+    app.kubernetes.io/name: cliproxy-quota-exporter
+data:
+  exporter.py: |
+    import json
+    import os
+    import time
+    from datetime import datetime, timezone
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from urllib.request import ProxyHandler, Request, build_opener
+
+    API_URL = "http://cliproxy.cliproxy.svc.cluster.local:8317/v0/management/auth-files"
+    WINDOWS = ("primary", "secondary")
+    OPENER = build_opener(ProxyHandler({}))
+
+    def number(value):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def timestamp(value):
+        numeric = number(value)
+        if numeric is not None:
+            return numeric
+        if not isinstance(value, str) or not value.strip():
+            return None
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.timestamp()
+
+    def label_value(value):
+        return "".join(ch for ch in str(value) if ch.isalnum() or ch in "-_.")[:64]
+
+    def sample(name, value, **labels):
+        text = format(float(value), ".12g")
+        if labels:
+            inner = ",".join(k + '="' + label_value(v) + '"' for k, v in sorted(labels.items()))
+            return name + "{" + inner + "} " + text
+        return name + " " + text
+
+    FAMILIES = (
+        ("codex_quota_exporter_scrape_success", "Whether the read-only CLIProxy fetch succeeded."),
+        ("codex_quota_source_count", "Codex auths returned by CLIProxy."),
+        ("codex_quota_auth_unavailable", "1 when CLIProxy marks the auth unavailable (cooldown)."),
+        ("codex_quota_used_percent", "Last observed Codex window usage (0-100)."),
+        ("codex_quota_reset_seconds", "Seconds until the observed window resets."),
+        ("codex_quota_observed_timestamp_seconds", "Unix time of the upstream quota observation."),
+    )
+
+    def render(samples):
+        lines = []
+        for family, text in FAMILIES:
+            lines.append("# HELP " + family + " " + text)
+            lines.append("# TYPE " + family + " gauge")
+            lines.extend(samples.get(family, []))
+        return "\n".join(lines) + "\n"
+
+    def collect():
+        key = os.environ.get("MANAGEMENT_KEY", "")
+        if not key:
+            raise RuntimeError("management key unavailable")
+        request = Request(API_URL, headers={"Authorization": "Bearer " + key, "Accept": "application/json"})
+        with OPENER.open(request, timeout=10) as response:
+            payload = json.loads(response.read(8 << 20))
+        files = payload.get("files") or []
+        codex = [f for f in files if str(f.get("provider") or f.get("type") or "").strip().lower() == "codex"]
+        out = {}
+
+        def add(family, value, **labels):
+            out.setdefault(family, []).append(sample(family, value, **labels))
+
+        add("codex_quota_exporter_scrape_success", 1)
+        add("codex_quota_source_count", len(codex))
+        now = time.time()
+        for entry in codex:
+            # "codex-09b410d2-user@example.com-pro.json" -> "codex-09b410d2" (no email in labels)
+            name = str(entry.get("name") or entry.get("id") or "")
+            auth = "-".join(name.split("-")[:2]) or label_value(entry.get("auth_index", "unknown"))
+            add("codex_quota_auth_unavailable", 1 if entry.get("unavailable") else 0, auth=auth)
+            if entry.get("disabled"):
+                continue
+            quota = entry.get("quota") or {}
+            observed_at = timestamp(quota.get("observed_at"))
+            if observed_at is None:
+                continue
+            signals = {str(k).strip().lower(): v for k, v in (quota.get("signals") or {}).items()}
+            age = max(0.0, now - observed_at)
+            for window in WINDOWS:
+                prefix = "x-codex-" + window + "-"
+                used = number(signals.get(prefix + "used-percent"))
+                reset_after = number(signals.get(prefix + "reset-after-seconds"))
+                reset_at = timestamp(signals.get(prefix + "reset-at"))
+                if used is None and reset_after is None and reset_at is None:
+                    continue
+                add("codex_quota_observed_timestamp_seconds", observed_at, auth=auth, window=window)
+                if used is not None and 0 <= used <= 100:
+                    add("codex_quota_used_percent", used, auth=auth, window=window)
+                if reset_at is not None:
+                    add("codex_quota_reset_seconds", max(0.0, reset_at - now), auth=auth, window=window)
+                elif reset_after is not None:
+                    add("codex_quota_reset_seconds", max(0.0, reset_after - age), auth=auth, window=window)
+        return render(out)
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path == "/healthz":
+                body = b"ok\n"
+            elif self.path == "/metrics":
+                try:
+                    body = collect().encode()
+                except Exception:
+                    body = render({"codex_quota_exporter_scrape_success": ["codex_quota_exporter_scrape_success 0"]}).encode()
+            else:
+                self.send_error(404)
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, _format, *_args):
+            return
+
+    ThreadingHTTPServer(("0.0.0.0", 9464), Handler).serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cliproxy-quota-exporter
+  labels:
+    app.kubernetes.io/name: cliproxy-quota-exporter
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cliproxy-quota-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cliproxy-quota-exporter
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          image: python:3.14-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
+          command:
+            - python
+            - /app/exporter.py
+          env:
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: MANAGEMENT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cliproxy-credentials
+                  key: management-key
+          ports:
+            - name: metrics
+              containerPort: 9464
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 96Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: exporter-script
+              mountPath: /app
+              readOnly: true
+      volumes:
+        - name: exporter-script
+          configMap:
+            name: cliproxy-quota-exporter
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cliproxy-quota-exporter
+  labels:
+    app.kubernetes.io/name: cliproxy-quota-exporter
+spec:
+  selector:
+    app.kubernetes.io/name: cliproxy-quota-exporter
+  ports:
+    - name: metrics
+      port: 9464
+      targetPort: metrics
+      protocol: TCP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cliproxy-quota-exporter
+  labels:
+    app.kubernetes.io/name: cliproxy-quota-exporter
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cliproxy-quota-exporter
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 60s
+      scrapeTimeout: 15s
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: cliproxy-quota-exporter
+  labels:
+    app.kubernetes.io/name: cliproxy-quota-exporter
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: cliproxy-quota-exporter
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: prometheus-agent
+            operator.prometheus.io/name: kube-prometheus-stack
+      toPorts:
+        - ports:
+            - port: "9464"
+              protocol: TCP
+    # kubelet probes
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "9464"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: cliproxy
+            app.kubernetes.io/name: cliproxy
+      toPorts:
+        - ports:
+            - port: "8317"
+              protocol: TCP
+          rules:
+            http:
+              - method: GET
+                path: /v0/management/auth-files
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: node-local-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
