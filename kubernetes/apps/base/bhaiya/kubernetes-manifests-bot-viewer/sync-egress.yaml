@@ -34,9 +34,13 @@ spec:
               protocol: TCP
             - port: "53"
               protocol: UDP
+    # The in-cluster Service listens on 443; its API server endpoints listen
+    # on 6443.
     - toEntities:
         - kube-apiserver
       toPorts:
         - ports:
             - port: "443"
+              protocol: TCP
+            - port: "6443"
               protocol: TCP
