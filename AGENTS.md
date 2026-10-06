@@ -264,6 +264,13 @@ the label `substitution.flux.home.arpa/disabled=true`.
   scheduled onto a node without the extension will fail to start rather than be
   kept away. If you add such a selector, add the matching node label in the same
   change.
+- **Immutable Secrets cannot be rotated in place.** Kubernetes rejects `data`
+  updates when `immutable: true`. Flux server-side dry-run of an unchanged
+  immutable Secret reports the same error and is not evidence of a failed
+  rotation. Rotate with a new Secret name and a coordinated consumer
+  reference swap. Do not blanket-add `kustomize.toolkit.fluxcd.io/force:
+  enabled` on host keys, signing keys, or shared credentials. See
+  `docs/agent-knowledge/immutable-secret-rotation.md`.
 - **SOPS:** run `sops` from the directory whose `.sops.yaml` carries the
   creation rules. Edit with `sops <file>.sops.yaml`.
 
@@ -356,6 +363,8 @@ flux reconcile kustomization <app> -n flux-system
   scripts, CI workflows
 - `docs/reference/tsdb.md` — historical tsdb connector notes
 - `docs/prompt-notes.md` — prompt patterns that worked/failed for build agents
+- `docs/agent-knowledge/immutable-secret-rotation.md` — name-based rotation for
+  immutable Secrets and how to read Flux server-side dry-run rejections
 
 ## Command output hygiene
 
