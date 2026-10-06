@@ -1780,6 +1780,23 @@ check can otherwise hang a node upgrade indefinitely. It is also why Rook's
 placement tolerates `tuppr.home-operations.com/outdated` — see the Robbinsdale
 note under [Storage and data](#storage-and-data).
 
+### Immutable Secrets rotate by new name, not in-place data edits
+
+Kubernetes rejects updates to `data` when a Secret has `immutable: true`
+(`data: Forbidden: field is immutable when immutable is set`). Flux
+server-side dry-run of an **unchanged** immutable Secret reports the same
+error and is not evidence that a rotation happened or that the Kustomization
+is broken. Changing encrypted payload under the existing name *will* fail
+the apply path and, with `prune: true`, can withhold unrelated objects.
+
+Rotate by adding a new SOPS Secret name and swapping every consumer
+reference in one GitOps change. Do not blanket-add
+`kustomize.toolkit.fluxcd.io/force: enabled` on host keys, signing keys, or
+shared credentials. Procedure, dry-run reading, and the Bhaiya Secret
+inventory (SSH host key, SSH auth, session capability, OIDC signing key,
+MCP control token) are in
+[`docs/agent-knowledge/immutable-secret-rotation.md`](../agent-knowledge/immutable-secret-rotation.md).
+
 ### Run SOPS from the directory that owns the creation rules
 
 `.sops.yaml` files sit beside the trees they govern, and SOPS resolves rules

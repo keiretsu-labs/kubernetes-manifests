@@ -86,6 +86,7 @@ failed resource or missing history, and treat it as a new release failure. A
 healthy Deployment does not make an arbitrary reset or force-reset safe.
 
 This runbook is deliberately separate from the immutable-Secret rotation
-procedure in issue `#2908`: both are Flux state hazards, but the Secret fix is
-name-based rotation, while this HelmRelease case is an owner-approved,
-one-off remediation reset.
+procedure in `docs/agent-knowledge/immutable-secret-rotation.md` (issue
+`#2908`): both are Flux state hazards, but the Secret fix is name-based
+rotation, while this HelmRelease case is an owner-approved, one-off
+remediation reset.
