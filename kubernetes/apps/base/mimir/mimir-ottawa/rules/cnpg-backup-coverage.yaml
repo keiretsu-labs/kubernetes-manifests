@@ -2,6 +2,8 @@ namespace: cnpg-backup-coverage
 groups:
   - name: cnpg-backup-coverage.rules
     rules:
+      # The in-tree cnpg_collector_last_available_backup_timestamp remains 0
+      # with barman-cloud plugin backups. Use completed Backup CR status instead.
       - alert: CNPGBackupStale
         expr: |
           (
@@ -11,7 +13,7 @@ groups:
                 and on (cluster, namespace, backup, cnpg_cluster)
                 cnpg_cr_backup_info{phase="completed"}
               )
-          ) > 172800
+          ) > 93600
           and on (cluster, namespace, cnpg_cluster)
           max by (cluster, namespace, cnpg_cluster) (
             cnpg_cr_cluster_info
@@ -23,7 +25,7 @@ groups:
           summary: CNPG cluster {{ $labels.namespace }}/{{ $labels.cnpg_cluster }} has a stale backup
           description: >-
             The newest completed CloudNativePG Backup custom resource for
-            {{ $labels.namespace }}/{{ $labels.cnpg_cluster }} is more than 48
+            {{ $labels.namespace }}/{{ $labels.cnpg_cluster }} is more than 26
             hours old. Inspect the Backup phase and completion details, the
             barman-cloud plugin, and the object-store path. This proves CR
             freshness only; it does not prove that the object-store backup is
@@ -102,8 +104,8 @@ groups:
         expr: |
           (
             max by (cluster, namespace, pod) (
-              time() - barman_cloud_cloudnative_pg_io_last_available_backup_timestamp
-            ) > 172800
+              time() - (barman_cloud_cloudnative_pg_io_last_available_backup_timestamp > 0)
+            ) > 93600
           )
           and on (cluster, namespace, pod)
           (
@@ -118,7 +120,7 @@ groups:
           summary: CNPG {{ $labels.namespace }}/{{ $labels.pod }} current-store base backup is stale
           description: >-
             The current ObjectStore last-available backup for
-            {{ $labels.namespace }}/{{ $labels.pod }} is older than 48 hours while
+            {{ $labels.namespace }}/{{ $labels.pod }} is older than 26 hours while
             WAL archival is still succeeding. A Completed Backup CR on a different
             destination does not clear this. Inspect ScheduledBackup, the verify
             Backup path, and ObjectStore status.serverRecoveryWindow before

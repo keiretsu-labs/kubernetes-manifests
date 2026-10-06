@@ -14,9 +14,28 @@ routingMode: native
 bpf:
   masquerade: true
   lbExternalClusterIP: true # https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/#external-access-to-clusterip-services
+  # Per-service LB mode / algorithm (service.cilium.io/forwarding-mode and
+  # service.cilium.io/lb-algorithm). Only Services carrying the annotations
+  # change behaviour; everything else stays on the defaults below.
+  lbModeAnnotation: true
+  lbAlgorithmAnnotation: true
 ipv4:
   enabled: true
 ipv4NativeRoutingCIDR: 10.0.0.0/8
+# Flow-consistent forwarding for the public Envoy VIP (same as cilium-ottawa).
+# The UDM ECMPs BGP-advertised LB VIPs (`maximum-paths 4`) and can move
+# established flows between nodes; Maglev (same backend on every node) + DSR
+# (client tuple preserved) keeps a moved flow on its existing socket. Defaults
+# stay random/SNAT; only annotated Services opt in. dsrDispatch=opt: native
+# routing + autoDirectNodeRoutes on one L2, option only on TCP SYN (no MTU
+# change), BIG TCP compatible. See docs/ops/ottawa-public-envoy-maglev-dsr.md.
+loadBalancer:
+  mode: snat
+  algorithm: random
+  dsrDispatch: opt
+maglev:
+  # Explicit cluster-wide seed (every agent must share it). Not a credential.
+  hashSeed: "g+3Vu35JxUGO3jNK"
 bandwidthManager:
   enabled: true
   bbr: true
@@ -48,6 +67,11 @@ operator:
         - targetLabel: cluster
           replacement: ${CLUSTER_NAME}
 rollOutCiliumPods: true
+# Roll agents one node at a time (chart default is 2).
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
 localRedirectPolicy: true
 bgpControlPlane:
   enabled: true
