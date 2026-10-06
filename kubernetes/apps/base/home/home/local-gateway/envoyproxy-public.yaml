@@ -98,6 +98,17 @@ spec:
             - key: node-role.kubernetes.io/control-plane
               operator: Exists
               effect: NoSchedule
+            # Fail over off a dead node in ~30s instead of the 300s
+            # DefaultTolerationSeconds. Ottawa runs a single public replica
+            # (#3449), so this bounds a node-loss outage of public ingress.
+            - key: node.kubernetes.io/not-ready
+              operator: Exists
+              effect: NoExecute
+              tolerationSeconds: 30
+            - key: node.kubernetes.io/unreachable
+              operator: Exists
+              effect: NoExecute
+              tolerationSeconds: 30
           topologySpreadConstraints:
             - maxSkew: 1
               topologyKey: kubernetes.io/hostname
