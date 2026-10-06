@@ -4,6 +4,161 @@ rule_files:
 evaluation_interval: 1m
 
 tests:
+  # The newest completed Backup CR is the success signal. A newer failed CR
+  # must not hide a stale success; a cluster without any Backup must alert too.
+  # Include two tenant labels to catch accidental cross-cluster joins.
+  - interval: 1m
+    input_series:
+      - series: 'cnpg_cr_cluster_info{cluster="talos-ottawa",namespace="woodpecker",cnpg_cluster="woodpecker-postgres"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_backup_info{cluster="talos-ottawa",namespace="woodpecker",cnpg_cluster="woodpecker-postgres",backup="woodpecker-old",phase="completed"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_backup_completed_timestamp{cluster="talos-ottawa",namespace="woodpecker",cnpg_cluster="woodpecker-postgres",backup="woodpecker-old"}'
+        values: "600+0x1600"
+      - series: 'cnpg_cr_backup_info{cluster="talos-ottawa",namespace="woodpecker",cnpg_cluster="woodpecker-postgres",backup="woodpecker-failed",phase="failed"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_backup_completed_timestamp{cluster="talos-ottawa",namespace="woodpecker",cnpg_cluster="woodpecker-postgres",backup="woodpecker-failed"}'
+        values: "93000+0x1600"
+      - series: 'cnpg_cr_cluster_info{cluster="talos-robbinsdale",namespace="immich",cnpg_cluster="immich-postgres"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_backup_info{cluster="talos-robbinsdale",namespace="immich",cnpg_cluster="immich-postgres",backup="immich-old",phase="completed"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_backup_completed_timestamp{cluster="talos-robbinsdale",namespace="immich",cnpg_cluster="immich-postgres",backup="immich-old"}'
+        values: "600+0x1600"
+      - series: 'cnpg_cr_cluster_info{cluster="talos-ottawa",namespace="bhaiya",cnpg_cluster="bhaiya-postgres"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_backup_info{cluster="talos-ottawa",namespace="bhaiya",cnpg_cluster="bhaiya-postgres",backup="bhaiya-fresh",phase="completed"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_backup_completed_timestamp{cluster="talos-ottawa",namespace="bhaiya",cnpg_cluster="bhaiya-postgres",backup="bhaiya-fresh"}'
+        values: "36000+0x1600"
+      - series: 'cnpg_cr_cluster_info{cluster="talos-ottawa",namespace="forgejo",cnpg_cluster="forgejo-postgres"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_cluster_info{cluster="talos-ottawa",namespace="media",cnpg_cluster="failed-only-postgres"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_backup_info{cluster="talos-ottawa",namespace="media",cnpg_cluster="failed-only-postgres",backup="failed-only",phase="failed"}'
+        values: "1+0x1600"
+      - series: 'cnpg_cr_backup_completed_timestamp{cluster="talos-ottawa",namespace="media",cnpg_cluster="failed-only-postgres",backup="failed-only"}'
+        values: "93000+0x1600"
+    alert_rule_test:
+      - eval_time: 26h
+        alertname: CNPGBackupStale
+        exp_alerts: []
+      - eval_time: 26h20m
+        alertname: CNPGBackupStale
+        exp_alerts: []
+      - eval_time: 26h21m
+        alertname: CNPGBackupStale
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: woodpecker
+              cnpg_cluster: woodpecker-postgres
+              severity: critical
+            exp_annotations:
+              summary: CNPG cluster woodpecker/woodpecker-postgres has a stale backup
+              description: >-
+                The newest completed CloudNativePG Backup custom resource for
+                woodpecker/woodpecker-postgres is more than 26
+                hours old. Inspect the Backup phase and completion details, the
+                barman-cloud plugin, and the object-store path. This proves CR
+                freshness only; it does not prove that the object-store backup is
+                complete, restorable, or contains every database object. This rule
+                also shares the Mimir ruler and kube-state-metrics query path, so it
+                is not protection against a complete observation-path outage.
+          - exp_labels:
+              cluster: talos-robbinsdale
+              namespace: immich
+              cnpg_cluster: immich-postgres
+              severity: critical
+            exp_annotations:
+              summary: CNPG cluster immich/immich-postgres has a stale backup
+              description: >-
+                The newest completed CloudNativePG Backup custom resource for
+                immich/immich-postgres is more than 26
+                hours old. Inspect the Backup phase and completion details, the
+                barman-cloud plugin, and the object-store path. This proves CR
+                freshness only; it does not prove that the object-store backup is
+                complete, restorable, or contains every database object. This rule
+                also shares the Mimir ruler and kube-state-metrics query path, so it
+                is not protection against a complete observation-path outage.
+      - eval_time: 9m
+        alertname: CNPGBackupMissing
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: CNPGBackupMissing
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: forgejo
+              cnpg_cluster: forgejo-postgres
+              severity: critical
+            exp_annotations:
+              summary: CNPG cluster forgejo/forgejo-postgres has no completed backup
+              description: >-
+                No completed CloudNativePG Backup custom resource is observed for
+                forgejo/forgejo-postgres. This catches a
+                cluster with no ScheduledBackup or Backup at all instead of treating
+                the missing series as healthy. Inspect the Cluster, Backup and
+                ScheduledBackup resources and configure the intended backup path.
+                This proves CR coverage only; it does not prove object-store
+                contents or restore capability, and it is not protection against a
+                complete Mimir or kube-state-metrics observation-path outage.
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: media
+              cnpg_cluster: failed-only-postgres
+              severity: critical
+            exp_annotations:
+              summary: CNPG cluster media/failed-only-postgres has no completed backup
+              description: >-
+                No completed CloudNativePG Backup custom resource is observed for
+                media/failed-only-postgres. This catches a
+                cluster with no ScheduledBackup or Backup at all instead of treating
+                the missing series as healthy. Inspect the Cluster, Backup and
+                ScheduledBackup resources and configure the intended backup path.
+                This proves CR coverage only; it does not prove object-store
+                contents or restore capability, and it is not protection against a
+                complete Mimir or kube-state-metrics observation-path outage.
+
+  # The plugin's current-store timestamp has the same 26h age limit, provided
+  # WAL archival is still observable. Fresh and zero-timestamp stores stay out
+  # of the stale alert; the latter belongs to CNPGCurrentStoreBackupMissing.
+  - interval: 1m
+    input_series:
+      - series: 'barman_cloud_cloudnative_pg_io_last_available_backup_timestamp{cluster="talos-ottawa",namespace="woodpecker",pod="woodpecker-postgres-1"}'
+        values: "600+0x1600"
+      - series: 'cnpg_pg_stat_archiver_seconds_since_last_archival{cluster="talos-ottawa",namespace="woodpecker",pod="woodpecker-postgres-1"}'
+        values: "300+0x1600"
+      - series: 'barman_cloud_cloudnative_pg_io_last_available_backup_timestamp{cluster="talos-ottawa",namespace="bhaiya",pod="bhaiya-postgres-1"}'
+        values: "36000+0x1600"
+      - series: 'cnpg_pg_stat_archiver_seconds_since_last_archival{cluster="talos-ottawa",namespace="bhaiya",pod="bhaiya-postgres-1"}'
+        values: "300+0x1600"
+      - series: 'barman_cloud_cloudnative_pg_io_last_available_backup_timestamp{cluster="talos-ottawa",namespace="forgejo",pod="forgejo-postgres-1"}'
+        values: "0+0x1600"
+      - series: 'cnpg_pg_stat_archiver_seconds_since_last_archival{cluster="talos-ottawa",namespace="forgejo",pod="forgejo-postgres-1"}'
+        values: "300+0x1600"
+    alert_rule_test:
+      - eval_time: 26h20m
+        alertname: CNPGCurrentStoreBackupStale
+        exp_alerts: []
+      - eval_time: 26h41m
+        alertname: CNPGCurrentStoreBackupStale
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: woodpecker
+              pod: woodpecker-postgres-1
+              severity: critical
+            exp_annotations:
+              summary: CNPG woodpecker/woodpecker-postgres-1 current-store base backup is stale
+              description: >-
+                The current ObjectStore last-available backup for
+                woodpecker/woodpecker-postgres-1 is older than 26 hours while
+                WAL archival is still succeeding. A Completed Backup CR on a different
+                destination does not clear this. Inspect ScheduledBackup, the verify
+                Backup path, and ObjectStore status.serverRecoveryWindow before
+                treating the database as restorable.
+
   # A persistent ready-WAL queue on the primary points to an archive stall.
   # A replica's archive-status series must not page as a primary failure.
   - interval: 1m
