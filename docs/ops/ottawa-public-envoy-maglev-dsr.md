@@ -38,9 +38,9 @@ worked around this with a single public replica in Ottawa.
 |---|---|---|
 | O1 | #3450 | Ottawa Cilium flags: lbModeAnnotation, lbAlgorithmAnnotation, dsrDispatch opt, hashSeed, maxUnavailable 1 |
 | O2 | #3451 | Ottawa public Service: rename + annotations + eTP Cluster; stays at 1 replica |
-| O3 | (replicas PR) | Ottawa public Envoy back to 2 replicas |
-| R | (robbinsdale PR) | Robbinsdale Cilium flags + public Service (2 replicas already) |
-| S | (stpetersburg PR) | St. Pete Cilium flags + public Service (2 replicas already) |
+| O3 | #3453 (stacked on #3451) | Ottawa public Envoy back to 2 replicas |
+| R1 / R2 | #3454 / #3455 | Robbinsdale Cilium flags, then public Service (2 replicas already) |
+| S1 / S2 | #3456 / #3457 | St. Pete Cilium flags, then public Service (2 replicas already) |
 | T | #3452 | public Envoy 30s not-ready/unreachable tolerations (independent; pod roll) |
 
 Before every step:
@@ -90,18 +90,12 @@ Before every step:
 3. Rollback: revert. Ottawa goes back to 1 replica.
 
 ## Steps R and S: Robbinsdale, then St. Pete
-For each cluster:
-- Merge its PR. It contains the Cilium flags and the Service patch.
-- Watch that the agents finish rolling. The flags must be live on all agents before the
-  Service renames.
-  - Flux applies both Kustomizations independently, and the Service can be renamed
-    before every agent has restarted. If that happens, a lagging agent loads the
-    already-annotated Service when it restarts, which is equivalent to creation.
-  - If that is undesirable, split the PR. Better: merge the Cilium part first and the
-    Service part after the roll.
+For each cluster, the Cilium flags and the Service change are separate PRs, the same as O1 and O2:
+- Merge the flags PR (#3454 for Robbinsdale, #3456 for St. Pete) and wait until every agent has rolled and the flags show in cilium-config.
+- Then merge the Service PR (#3455 / #3457).
 - Verify with Hubble and a test against that cluster's VIP. Their public SSH is not in
   DNS, so test through the site WAN :22 if it is forwarded, otherwise from a LAN host.
-- Rollback: revert the cluster's PR.
+- Rollback: revert the Service PR, then the flags PR.
 
 ## Verification (must pass before moving to the next step)
 - **From the box over the WAN** (nohup), using the `/workspace/sshdbg/v1` harness and the
