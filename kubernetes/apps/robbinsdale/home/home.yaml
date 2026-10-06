@@ -56,6 +56,34 @@ spec:
   dependsOn:
     - name: envoy-gateway-system-install
   path: ./kubernetes/apps/base/home/home/local-gateway
+  patches:
+    # Public Envoy VIP: Maglev + DSR, externalTrafficPolicy Cluster.
+    # UDM ECMP (`maximum-paths 4`) can move established flows between nodes;
+    # Maglev picks the same backend on every node and DSR keeps the client
+    # tuple, so a moved flow lands on its existing socket (no RST). Cilium only
+    # honours the annotations from Service creation, so the Service is renamed:
+    # Envoy Gateway creates envoy-home-public-dsr with the annotations and
+    # deletes the old Service (DeleteAllExcept); LB-IPAM hands the pinned VIP
+    # to the new Service once the old one is gone. Needs the cilium agent
+    # flags (bpf.lbModeAnnotation / lbAlgorithmAnnotation / dsrDispatch) rolled
+    # first. Runbook + rollback: docs/ops/ottawa-public-envoy-maglev-dsr.md.
+    - target:
+        group: gateway.envoyproxy.io
+        version: v1alpha1
+        kind: EnvoyProxy
+        name: public
+      patch: |-
+        - op: replace
+          path: /spec/provider/kubernetes/envoyService/externalTrafficPolicy
+          value: Cluster
+        - op: add
+          path: /spec/provider/kubernetes/envoyService/name
+          value: envoy-home-public-dsr
+        - op: add
+          path: /spec/provider/kubernetes/envoyService/annotations
+          value:
+            service.cilium.io/forwarding-mode: dsr
+            service.cilium.io/lb-algorithm: maglev
   prune: true
   sourceRef:
     kind: GitRepository
