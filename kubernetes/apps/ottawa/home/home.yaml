@@ -56,44 +56,10 @@ spec:
   dependsOn:
     - name: envoy-gateway-system-install
   path: ./kubernetes/apps/base/home/home/local-gateway
-  # One public Envoy replica = one BGP next hop for the public VIP.
-  #
-  # The UDM reaches 10.169.10.15/32 over Cilium BGP with `maximum-paths 4`, and
-  # with externalTrafficPolicy: Local every node holding a ready public Envoy
-  # advertises the /32. Two replicas (rei + shiro) gave the UDM two next hops,
-  # and it moves established WAN flows between them mid-stream. Hubble on
-  # 2026-10-06 showed 10/10 dropped public :22 sessions SYN'd on rei, then
-  # their next packets arriving at shiro, where the shiro Envoy has no socket
-  # and answers RST (client: "Connection closed by remote host" / exit 255;
-  # rei Envoy: downstream RemoteReset). Several flows of different ages moved
-  # in the same second, so this is a UDM next-hop event, not a per-flow timer.
-  # With a single advertiser the UDM has nothing to move a flow to.
-  #
-  # Trade-off: no second public Envoy. A pod restart is a few seconds of
-  # public-ingress outage, and a lost node waits out the default 300s taint
-  # tolerations before the pod reschedules. Keeping two replicas needs
-  # flow-consistent forwarding instead (Cilium Maglev + DSR with
-  # externalTrafficPolicy: Cluster). Plain Cluster/SNAT was A/B'd in #2761 /
-  # #2980 and did not help: SNAT changes the source tuple the backend sees, so
-  # a moved flow still misses its socket.
-  # See docs/agent-knowledge/ssh-public-path-investigation-20260909.md.
   patches:
-    - target:
-        group: gateway.envoyproxy.io
-        version: v1alpha1
-        kind: EnvoyProxy
-        name: public
-      patch: |-
-        - op: replace
-          path: /spec/provider/kubernetes/envoyDeployment/replicas
-          value: 1
-    # Public Envoy VIP: Maglev + DSR, externalTrafficPolicy Cluster (handoff
-    # step 2 of 2; step 1 made the old Service ClusterIP so the VIP is free).
-    # UDM ECMP (`maximum-paths 4`) moves established flows between nodes; Maglev
-    # picks the same backend on every node and DSR keeps the client tuple (real
-    # client IP, existing socket), so a moved flow is not reset. Cilium honours
-    # forwarding-mode / lb-algorithm only at Service creation, hence the rename.
-    # Retry after #3475/#3476 false-fail rollback (#3487/#3488): gate parser bug.
+    # Public Envoy VIP: Maglev + DSR, externalTrafficPolicy Cluster.
+    # Base replicas=2 restored (drops #3449 1-replica stopgap). Supersedes #3453/#3480.
+    # UDM ECMP moves flows; Maglev+DSR keep client tuple so second advertiser is safe.
     - target:
         group: gateway.envoyproxy.io
         version: v1alpha1
