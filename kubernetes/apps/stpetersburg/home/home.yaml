@@ -86,6 +86,16 @@ spec:
               requests:
                 cpu: 100m
                 memory: 256Mi
+        # orin-0 is memory-request-exhausted and the base topologySpread (maxSkew 1,
+        # DoNotSchedule) blocks a surge pod on the Sparks, so a 25% surge rollout
+        # deadlocks (seen 2026-10-06 with #3452). Replace one pod at a time instead.
+        - op: add
+          path: /spec/provider/kubernetes/envoyDeployment/strategy
+          value:
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 0
+              maxUnavailable: 1
   prune: true
   sourceRef:
     kind: GitRepository

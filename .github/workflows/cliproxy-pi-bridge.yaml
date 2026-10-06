@@ -1,0 +1,38 @@
+name: cliproxy-pi-bridge
+
+# Fast source-level contract. It used to ride only the flate pull_request
+# matrix, so a push to main never ran it and a broken contract on main
+# stayed green (#2708). Keep this job off the render matrix: no cluster,
+# seconds, PyYAML only.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "kubernetes/apps/base/cliproxy/**"
+      - "tools/check-cliproxy-pi-bridge.sh"
+      - ".github/workflows/cliproxy-pi-bridge.yaml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "kubernetes/apps/base/cliproxy/**"
+      - "tools/check-cliproxy-pi-bridge.sh"
+      - ".github/workflows/cliproxy-pi-bridge.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: cliproxy-pi-bridge-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install PyYAML
+        run: pip3 install pyyaml --quiet
+
+      - name: Check cliproxy Pi bridge contract
+        run: tools/check-cliproxy-pi-bridge.sh

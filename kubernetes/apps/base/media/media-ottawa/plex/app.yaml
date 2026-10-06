@@ -101,6 +101,10 @@ spec:
   selector:
     app: plex
   type: LoadBalancer
+  # Keep the real client IP (anti-abuse / Tracearr). Default Cluster SNATs any
+  # flow the UDM ECMPs to a node without the (single) Plex pod; Local makes
+  # only the Plex node advertise the VIP and never SNATs, TCP and UDP alike.
+  externalTrafficPolicy: Local
   loadBalancerIP: ${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.10.32
   ports:
     - name: plex-tcp-32400

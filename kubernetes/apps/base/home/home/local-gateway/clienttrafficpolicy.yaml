@@ -12,8 +12,16 @@ spec:
       kind: Gateway
       name: private
   clientIPDetection:
+    # Trust X-Forwarded-For only when the peer is an in-cluster hop (pods /
+    # services / LB IPs live in 10.0.0.0/8). The public gateway takes WAN
+    # clients directly (eTP Local / DSR keep the real source), so
+    # numTrustedHops: 1 let any Internet client pick its own "client IP" by
+    # sending X-Forwarded-For (verified 2026-10-06: XFF 203.0.113.7 became
+    # downstream_remote_address). LAN clients (192.168.x) are not trusted
+    # either, so their real address is used.
     xForwardedFor:
-      numTrustedHops: 1
+      trustedCIDRs:
+        - 10.0.0.0/8
   timeout:
     http:
       requestReceivedTimeout: 0s 
