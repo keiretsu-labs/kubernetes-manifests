@@ -334,7 +334,7 @@ spec:
           kubernetes.io/hostname: spark-0
         initContainers:
         - name: download-model
-          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:a8067cd7e14c14fa83d1dbed60261428f6d1737cec4554445573354af040dd7c
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:cbb4b3c66273e2965dd40a7227e7a5243db333fe250113fb3987462ad4f12588
           command: [/bin/bash]
           args: [/scripts/download-and-validate.sh]
           env:
@@ -354,7 +354,7 @@ spec:
             requests: { memory: "2Gi", cpu: "500m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: validate-model
-          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:a8067cd7e14c14fa83d1dbed60261428f6d1737cec4554445573354af040dd7c
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:cbb4b3c66273e2965dd40a7227e7a5243db333fe250113fb3987462ad4f12588
           command: [/bin/bash, -ec]
           args:
           - |
@@ -378,7 +378,7 @@ spec:
             requests: { memory: "2Gi", cpu: "500m" }
             limits: { memory: "4Gi", cpu: "2000m" }
         - name: preflight-memory
-          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:a8067cd7e14c14fa83d1dbed60261428f6d1737cec4554445573354af040dd7c
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:cbb4b3c66273e2965dd40a7227e7a5243db333fe250113fb3987462ad4f12588
           command: [/bin/bash]
           args: [/scripts/preflight-memory.sh]
           env:
@@ -391,7 +391,7 @@ spec:
             limits: { memory: "256Mi", cpu: "500m" }
         containers:
         - name: tensorfold
-          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:a8067cd7e14c14fa83d1dbed60261428f6d1737cec4554445573354af040dd7c
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:cbb4b3c66273e2965dd40a7227e7a5243db333fe250113fb3987462ad4f12588
           command: [bash, -c]
           ports:
           - { name: http, containerPort: 8888, protocol: TCP }
@@ -534,7 +534,7 @@ spec:
           kubernetes.io/hostname: spark-1
         initContainers:
         - name: download-model
-          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:a8067cd7e14c14fa83d1dbed60261428f6d1737cec4554445573354af040dd7c
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:cbb4b3c66273e2965dd40a7227e7a5243db333fe250113fb3987462ad4f12588
           command: [/bin/bash]
           args: [/scripts/download-and-validate.sh]
           env:
@@ -554,7 +554,7 @@ spec:
             requests: { memory: "2Gi", cpu: "500m" }
             limits: { memory: "8Gi", cpu: "4000m" }
         - name: validate-model
-          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:a8067cd7e14c14fa83d1dbed60261428f6d1737cec4554445573354af040dd7c
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:cbb4b3c66273e2965dd40a7227e7a5243db333fe250113fb3987462ad4f12588
           command: [/bin/bash, -ec]
           args:
           - |
@@ -578,7 +578,7 @@ spec:
             requests: { memory: "2Gi", cpu: "500m" }
             limits: { memory: "4Gi", cpu: "2000m" }
         - name: preflight-memory
-          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:a8067cd7e14c14fa83d1dbed60261428f6d1737cec4554445573354af040dd7c
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:cbb4b3c66273e2965dd40a7227e7a5243db333fe250113fb3987462ad4f12588
           command: [/bin/bash]
           args: [/scripts/preflight-memory.sh]
           env:
@@ -591,7 +591,7 @@ spec:
             limits: { memory: "256Mi", cpu: "500m" }
         containers:
         - name: tensorfold
-          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:a8067cd7e14c14fa83d1dbed60261428f6d1737cec4554445573354af040dd7c
+          image: ghcr.io/miaai-lab/glm-5.3-flash-exl3-2x-dgx-sparks-tensorfold@sha256:cbb4b3c66273e2965dd40a7227e7a5243db333fe250113fb3987462ad4f12588
           command: [bash, -c]
           args:
           - |
