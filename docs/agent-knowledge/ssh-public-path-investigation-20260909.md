@@ -226,3 +226,71 @@ preserves established TCP connections.
    traverses UniFi port-forward and does **not** fix this.
 3. **Client workaround:** Tailscale `100.76.8.70:6922` (ts Envoy) for users on
    the tailnet — bypasses UniFi WAN; still subject to Envoy reload purges.
+
+## Root cause — UDM ECMP moves established flows between public Envoy nodes (2026-10-06)
+
+This supersedes the "UniFi-sourced forged RST" reading above. The RST that
+reaches the rei Envoy is the client's own kernel answering a retransmit for a
+socket it already closed. The connection was killed one step earlier, on
+**shiro**.
+
+**Mechanism.** The UDM reaches the public VIP `10.169.10.15/32` over Cilium
+BGP (`maximum-paths 4` in `clusters/talos-ottawa/unifi/frr.conf`). The public
+Envoy Service is `externalTrafficPolicy: Local`, so every node with a ready
+public Envoy advertises the /32. With two replicas (rei and shiro), the UDM
+has two next hops. Every so often it moves established WAN flows from one
+next hop to the other. The moved flow's packets land on shiro, Cilium
+delivers them to shiro's local Envoy (Local policy), that Envoy has no socket
+for the tuple and replies RST, and the client's `nc`/ssh exits ("Connection
+closed by remote host", exit 255). The client's kernel then RSTs rei's next
+retransmit, so rei logs `RemoteReset/Normal`. That RST has the IP ID 0 and
+win 0 signature seen in the pcap above.
+
+**Evidence** (Hubble on the public Envoy pods, port 10022, box client over
+WAN :22, ssh with and without `ServerAliveInterval`):
+
+| client flow | SYN seen on | later packet seen on | shiro Envoy RST | client exit |
+| --- | --- | --- | --- | --- |
+| 3.217.165.30:53083 | rei | shiro 13:32:22.362Z | 13:32:22.362Z | 13:32:22Z |
+| 52.200.44.199:31544 | rei | shiro 13:32:22.371Z | 13:32:22.371Z | 13:32:22Z |
+| 3.217.165.30:1285 (SA 30s) | rei | shiro 13:34:52.371Z | 13:34:52.371Z | 13:34:52Z |
+| 23.21.140.149:53122 | rei | shiro 13:36:02.517Z | 13:36:02.517Z | 13:36:02Z |
+| 35.153.65.178:17945 | rei | shiro 13:36:05.990Z | 13:36:05.990Z | 13:36:06Z |
+| 23.21.140.149:41741 | rei | shiro 13:36:06.330Z | 13:36:06.330Z | 13:36:06Z |
+| 4 more, 13:36:51–13:37:00Z | rei | shiro | same instant | same instant |
+
+That is 10 of 10 drops. Flows aged 61s to 10 min moved within the same few
+seconds, so this is a UDM next-hop event, not a per-flow timer, and not a
+fixed duration or byte count. That fits the 2:54–13:45 duration spread
+recorded earlier. Cilium logged no BGP or session change at those instants,
+the BGP sessions date from 2026-09-18, and the public Envoy and bhaiya-ssh
+pods did not restart. Hairpin flows from in-cluster clients (source
+`192.168.169.1`) all landed on shiro and never moved, which is why in-cluster
+soaks rarely reproduced the drop. The Cloudflare tunnel path enters the
+cluster through cloudflared pods, never touches the UDM or the VIP, and
+therefore never dropped.
+
+**Why the earlier fixes failed.** `externalTrafficPolicy: Cluster` (#2761)
+does not survive a moved flow either. The receiving node SNATs to its own IP,
+or delivers locally with the client IP, and the original socket never sees
+that tuple. Restoring :6922 (#3425) used the same VIP and ECMP set.
+
+**Fix (Ottawa).** The public Envoy runs with one replica
+(`kubernetes/apps/ottawa/home/home.yaml` patch), so only one node advertises
+the VIP and the UDM has one next hop. To bring back a second replica without
+the bug, use flow-consistent forwarding: Cilium
+`bpf.lbAlgorithmAnnotation` + `bpf.lbModeAnnotation` (+ `loadBalancer.dsrDispatch`),
+then annotate the public Service with `service.cilium.io/lb-algorithm: maglev`
+and `service.cilium.io/forwarding-mode: dsr` and use
+`externalTrafficPolicy: Cluster`. That rolls every Cilium agent and has to be
+set when the Service is created, so it needs a maintenance window. The other
+option is `maximum-paths 1` on the UDM, which is a UniFi change outside
+GitOps.
+
+**Separate, still true:** changing a TCP Gateway listener or its TCPRoute
+makes Envoy drain that listener, and the drain kills live SSH after about
+60s (`purging_socket_that_have_not_progressed_to_connections`, ts Envoy
+2026-10-05 22:29Z). That is what dropped the Tailscale session. The
+envoy-gateway controller's ~30-minute leader-election restarts do **not**
+re-push the SSH listeners. Their `last_updated` stayed at 2026-10-05T22:28Z
+through dozens of controller restarts.
