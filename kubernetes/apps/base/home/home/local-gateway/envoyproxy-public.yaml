@@ -106,12 +106,13 @@ spec:
                 matchLabels:
                   gateway.envoyproxy.io/owning-gateway-name: public
       envoyService:
-        # Cluster (not Local): UniFi ECMP advertises 10.169.10.15/32 from both
-        # rei and kaji. With Local, a mid-flow hash flip lands packets on a node
-        # with no established tuple and that node RSTs (#661/#677). Cluster lets
-        # either node forward to either Envoy backend. Trade-off: backends see
-        # the node IP (SNAT), not the real client — observability only; authZ is
-        # Remote-Email / SSH key (see docs/incidents/677-*). Private and ts
-        # gateways stay Local.
+        # Local keeps the real client IP. Each node with a ready public Envoy
+        # advertises the VIP over BGP, and the UDM does ECMP across those next
+        # hops and moves established flows between them mid-stream. The node
+        # that receives a moved flow has no socket for it and answers RST
+        # (#661/#677). Plain Cluster/SNAT does not fix that (A/B #2761 /
+        # #2980): SNAT changes the source tuple the backend sees.
+        # Ottawa therefore runs one public replica so there is a single next
+        # hop (see kubernetes/apps/ottawa/home/home.yaml).
         externalTrafficPolicy: Local
         loadBalancerIP: ${CLUSTER_LOAD_BALANCER_CIDR%.*.*/*}.10.15
