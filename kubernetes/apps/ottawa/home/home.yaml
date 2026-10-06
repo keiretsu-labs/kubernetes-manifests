@@ -87,12 +87,12 @@ spec:
         - op: replace
           path: /spec/provider/kubernetes/envoyDeployment/replicas
           value: 1
-    # Maglev+DSR handoff, step 1 of 2: make the public Envoy Service ClusterIP so
-    # the pinned VIP and its Cilium LB frontends are released in place (same
-    # Service object). Step 2 (next PR) renames it to envoy-home-public-dsr as
-    # LoadBalancer + DSR + Maglev. Doing it in one step livelocks Cilium v1.20.2:
-    # "frontend already owned by another service" (Ottawa #3451, 2026-10-06).
-    # Public ingress for this cluster is down between step 1 and step 2.
+    # Public Envoy VIP: Maglev + DSR, externalTrafficPolicy Cluster (handoff
+    # step 2 of 2; step 1 made the old Service ClusterIP so the VIP is free).
+    # UDM ECMP (`maximum-paths 4`) moves established flows between nodes; Maglev
+    # picks the same backend on every node and DSR keeps the client tuple (real
+    # client IP, existing socket), so a moved flow is not reset. Cilium honours
+    # forwarding-mode / lb-algorithm only at Service creation, hence the rename.
     # Retry after #3475/#3476 false-fail rollback (#3487/#3488): gate parser bug.
     - target:
         group: gateway.envoyproxy.io
@@ -100,13 +100,17 @@ spec:
         kind: EnvoyProxy
         name: public
       patch: |-
-        - op: add
-          path: /spec/provider/kubernetes/envoyService/type
-          value: ClusterIP
-        - op: remove
-          path: /spec/provider/kubernetes/envoyService/loadBalancerIP
-        - op: remove
+        - op: replace
           path: /spec/provider/kubernetes/envoyService/externalTrafficPolicy
+          value: Cluster
+        - op: add
+          path: /spec/provider/kubernetes/envoyService/name
+          value: envoy-home-public-dsr
+        - op: add
+          path: /spec/provider/kubernetes/envoyService/annotations
+          value:
+            service.cilium.io/forwarding-mode: dsr
+            service.cilium.io/lb-algorithm: maglev
   prune: true
   sourceRef:
     kind: GitRepository
