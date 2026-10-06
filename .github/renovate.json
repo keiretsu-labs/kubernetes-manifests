@@ -83,7 +83,6 @@
         "clusters/**/apps/local-path-storage/**",
         "clusters/**/apps/snapshot-controller/**",
         "clusters/**/apps/garage*/**",
-        "clusters/**/apps/kopiur*/**",
         "clusters/**/apps/cnpg-system/**",
         "clusters/**/apps/dragonfly-operator-system/**",
         "clusters/**/apps/garage-operator-system/**",
@@ -103,7 +102,6 @@
         "kubernetes/apps/**/local-path-storage*/**",
         "kubernetes/apps/**/snapshot-controller*/**",
         "kubernetes/apps/**/garage*/**",
-        "kubernetes/apps/**/kopiur*/**",
         "kubernetes/apps/**/cnpg-system*/**",
         "kubernetes/apps/**/dragonfly-operator*/**",
         "kubernetes/apps/**/garage-operator*/**",
@@ -119,6 +117,13 @@
         "kubernetes/apps/**/immich*/**"
       ],
       "automerge": false
+    },
+    {
+      "description": "Auto merge Kopiur chart upgrades. The published chart carries the controller, webhook, and mover image digests for the chart release; inherit them so Renovate opens one effective update.",
+      "matchManagers": ["flux"],
+      "matchDepNames": ["kopiur"],
+      "matchFileNames": ["kubernetes/apps/base/kopiur/kopiur/helmrelease.yaml"],
+      "automerge": true
     },
     {
       "description": "Group ARC controller and runner scale set together",
@@ -179,6 +184,13 @@
       "prBodyNotes": [
         "Run `aqua update-checksum --prune` and commit `aqua-checksums.json` before merging."
       ]
+    },
+    {
+      "description": "Auto merge Aqua registry updates after the generated checksum file is updated and verification passes.",
+      "matchManagers": ["custom.regex"],
+      "matchDepNames": ["aquaproj/aqua-registry"],
+      "matchFileNames": ["aqua.yaml"],
+      "automerge": true
     },
     {
       "description": "Do not update runtime images independently inside generated or vendored manifests; regenerate the complete upstream bundle instead. Review-by: 2026-10-10.",
