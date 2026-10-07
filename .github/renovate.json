@@ -13,6 +13,7 @@
     "41898282+github-actions[bot]@users.noreply.github.com"
   ],
   "rebaseWhen": "behind-base-branch",
+  "timezone": "America/Chicago",
   "ignoreTests": false,
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
@@ -64,13 +65,37 @@
       "automerge": true
     },
     {
-      "description": "Auto merge non-critical-infrastructure cluster updates",
+      "description": "Auto merge non-critical-infrastructure cluster updates. Renovate (not GitHub-native automerge) does the merge, so every reported check (validate, flate test/diff, renovate/stability-days) must be green, not just the required validate check. Releases must be 3 days old, and merges land in the 6 PM-6 AM CT window that running-workload changes already follow.",
       "matchManagers": ["flux", "helm-values", "kubernetes", "kustomize"],
       "matchFileNames": ["clusters/**", "kubernetes/**"],
-      "automerge": true
+      "automerge": true,
+      "platformAutomerge": false,
+      "automergeSchedule": ["after 6pm", "before 6am"],
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
-      "description": "Require human review for safety-relevant CNI, storage/CSI, backup, and operator families; routine application and CLIProxy updates remain eligible for automerge",
+      "description": "Custom managers track nonstandard sources; require review unless a later rule opts them in (cluster-tree minor/patch below, Kometa, webtop tool pins, Tailscale workflow pin, Aqua registry).",
+      "matchManagers": ["custom.regex"],
+      "automerge": false
+    },
+    {
+      "description": "Auto merge minor/patch updates from custom managers that track plain app images, tools, and release-tagged assets in the cluster tree. Majors still need review. Coupled or critical custom-manager deps (Talos/kubelet pins, CNPG engine images, CNI, storage, backups, cluster-coupled webtop pins) are switched back off by later rules.",
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": [
+        "clusters/**",
+        "kubernetes/**",
+        "!kubernetes/apps/base/bot/webtop/image/versions.env"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "platformAutomerge": false,
+      "automergeSchedule": ["after 6pm", "before 6am"],
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
+    },
+    {
+      "description": "Require human review for genuinely critical infrastructure: Talos/Kubernetes bootstrap, Flux, CNI (Cilium, Multus, Whereabouts, Spiderpool), storage/CSI (Rook-Ceph, cephcsi, csi-addons, local-path, snapshot-controller), Garage and garage-operator, CNPG and its barman backup plugin, Kopiur backups, cert-manager, Tailscale, tuppr, and GPU operator/DRA. Everything else is eligible for automerge. Applies to every manager, so it must stay after the automerge rules above.",
       "matchFileNames": [
         "clusters/**/bootstrap/**",
         "clusters/**/flux/**",
@@ -84,10 +109,8 @@
         "clusters/**/apps/snapshot-controller/**",
         "clusters/**/apps/garage*/**",
         "clusters/**/apps/cnpg-system/**",
-        "clusters/**/apps/dragonfly-operator-system/**",
         "clusters/**/apps/garage-operator-system/**",
         "clusters/**/apps/gpu-operator/**",
-        "clusters/**/apps/homer-operator/**",
         "clusters/**/apps/tailscale-system/**",
         "clusters/**/apps/tuppr/**",
         "clusters/**/apps/cert-manager/**",
@@ -103,18 +126,14 @@
         "kubernetes/apps/**/snapshot-controller*/**",
         "kubernetes/apps/**/garage*/**",
         "kubernetes/apps/**/cnpg-system*/**",
-        "kubernetes/apps/**/dragonfly-operator*/**",
         "kubernetes/apps/**/garage-operator*/**",
         "kubernetes/apps/**/gpu-operator*/**",
-        "kubernetes/apps/**/homer-operator*/**",
         "kubernetes/apps/**/k8s-gpu-dra-driver*/**",
-        "kubernetes/apps/base/mimir/**",
-        "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/**",
         "kubernetes/apps/**/tailscale-system*/**",
         "kubernetes/apps/**/tailscale/**",
         "kubernetes/apps/**/tuppr*/**",
         "kubernetes/apps/**/cert-manager*/**",
-        "kubernetes/apps/**/immich*/**"
+        "kubernetes/apps/**/kopiur*/**"
       ],
       "automerge": false
     },
@@ -134,11 +153,6 @@
       ],
       "groupName": "actions-runner-controller",
       "minimumGroupSize": 2,
-      "automerge": false
-    },
-    {
-      "description": "Custom managers track nonstandard and coupled sources; always require review.",
-      "matchManagers": ["custom.regex"],
       "automerge": false
     },
     {
@@ -176,6 +190,39 @@
         "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate/**"
       ],
       "automerge": true
+    },
+    {
+      "description": "CloudNativePG compound/engine image tags encode the PostgreSQL major and extension version; database engine images always need review.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/tensorchord/cloudnative-vectorchord",
+        "ghcr.io/cloudnative-pg/postgresql"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Non-CNI components that live in the cilium-* and csi-* trees (Intel GPU device plugin, NodeLocal DNSCache, Secrets Store CSI driver) may automerge minor/patch after the gates pass. Majors still need review. Must stay after the critical review rule.",
+      "matchPackageNames": [
+        "intel/intel-device-plugins-for-kubernetes",
+        "registry.k8s.io/dns/k8s-dns-node-cache",
+        "secrets-store-csi-driver",
+        "registry.k8s.io/csi-secrets-store/**"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "Apps released from the review list (Immich, Mimir and its dashboards, homer-operator, dragonfly-operator) automerge minor/patch only; majors still need review.",
+      "matchFileNames": [
+        "kubernetes/apps/**/immich*/**",
+        "kubernetes/apps/base/mimir/**",
+        "kubernetes/apps/*/mimir/**",
+        "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/**",
+        "kubernetes/apps/**/homer-operator*/**",
+        "kubernetes/apps/**/dragonfly-operator*/**"
+      ],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
     },
     {
       "description": "Aqua package updates require a matching generated checksum file.",
