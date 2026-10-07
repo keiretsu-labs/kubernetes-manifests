@@ -5,13 +5,16 @@ evaluation_interval: 1m
 
 tests:
   # A Bhaiya home volume above 85 percent used must fire after the 15-minute
-  # hold so a workspace can be expanded before writes fail.
+  # hold so a workspace can be expanded before writes fail. The recorded
+  # PVC-to-pod join supplies the owning sandbox on the alert.
   - interval: 1m
     input_series:
-      - series: 'kubelet_volume_stats_used_bytes{namespace="bhaiya",persistentvolumeclaim="ws-raj-codes-home"}'
+      - series: 'kubelet_volume_stats_used_bytes{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="ws-raj-codes-home"}'
         values: "460000000000+0x20"
-      - series: 'kubelet_volume_stats_capacity_bytes{namespace="bhaiya",persistentvolumeclaim="ws-raj-codes-home"}'
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="ws-raj-codes-home"}'
         values: "528239525888+0x20"
+      - series: 'kube_pod_spec_volumes_persistentvolumeclaims_info{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-raj-codes",persistentvolumeclaim="ws-raj-codes-home",volume="home"}'
+        values: "1+0x20"
     alert_rule_test:
       - eval_time: 14m
         alertname: BhaiyaPVCNearFull
@@ -20,22 +23,28 @@ tests:
         alertname: BhaiyaPVCNearFull
         exp_alerts:
           - exp_labels:
+              cluster: talos-ottawa
               namespace: bhaiya
+              node: asuka
               persistentvolumeclaim: ws-raj-codes-home
+              pod: sandbox-raj-codes
+              volume: home
               severity: warning
             exp_annotations:
-              summary: Bhaiya PVC ws-raj-codes-home is near full
-              description: PVC ws-raj-codes-home is above 85 percent used for fifteen
-                minutes. Inspect the owning workload and storage class, remove safe data or expand
-                the claim before writes fail.
+              summary: Bhaiya PVC ws-raj-codes-home on sandbox-raj-codes is near full
+              description: PVC ws-raj-codes-home mounted by bhaiya/sandbox-raj-codes
+                as home is above 85 percent used for fifteen minutes. Inspect the
+                owning workload and storage class, remove safe data or expand the claim before writes fail.
 
   # A volume at half capacity must stay quiet.
   - interval: 1m
     input_series:
-      - series: 'kubelet_volume_stats_used_bytes{namespace="bhaiya",persistentvolumeclaim="ws-kartik-codes-home"}'
+      - series: 'kubelet_volume_stats_used_bytes{cluster="talos-ottawa",namespace="bhaiya",node="kaji",persistentvolumeclaim="ws-kartik-codes-home"}'
         values: "58245324800+0x20"
-      - series: 'kubelet_volume_stats_capacity_bytes{namespace="bhaiya",persistentvolumeclaim="ws-kartik-codes-home"}'
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-ottawa",namespace="bhaiya",node="kaji",persistentvolumeclaim="ws-kartik-codes-home"}'
         values: "528239525888+0x20"
+      - series: 'kube_pod_spec_volumes_persistentvolumeclaims_info{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-kartik-codes",persistentvolumeclaim="ws-kartik-codes-home",volume="home"}'
+        values: "1+0x20"
     alert_rule_test:
       - eval_time: 20m
         alertname: BhaiyaPVCNearFull

@@ -1,0 +1,143 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: bhaiya-kata-disk
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Bhaiya
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: mimir-local
+  json: |
+    {
+      "title": "Bhaiya Kata disk attribution",
+      "uid": "bhaiya-kata-disk",
+      "tags": ["bhaiya", "kata", "disk"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "refresh": "1m",
+      "time": { "from": "now-6h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "datasource",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": { "text": "Mimir-Ottawa", "value": "mimir-ottawa" }
+          },
+          {
+            "name": "cluster",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+            "query": "label_values(kubelet:volume_stats_used_bytes:pod{namespace=\"bhaiya\"}, cluster)",
+            "includeAll": true,
+            "multi": true,
+            "current": { "text": "All", "value": "$$__all" }
+          }
+        ]
+      },
+      "annotations": {
+        "list": [
+          {
+            "name": "Kata PVC alerts",
+            "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+            "enable": true,
+            "expr": "ALERTS{alertname=~\"KataPVCNearFull|BhaiyaPVCNearFull\",alertstate=\"firing\",cluster=~\"$$cluster\"}",
+            "iconColor": "orange"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Kata PVC used bytes by pod",
+          "type": "timeseries",
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+          "gridPos": { "x": 0, "y": 0, "w": 16, "h": 8 },
+          "fieldConfig": { "defaults": { "unit": "bytes" } },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "kata:volume_stats_used_bytes{cluster=~\"$$cluster\",namespace=\"bhaiya\"}",
+              "legendFormat": "{{pod}} {{persistentvolumeclaim}} {{runtimeclass_name}}"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Kata PVC used ratio",
+          "type": "timeseries",
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+          "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "max": 1,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 0.85 },
+                  { "color": "red", "value": 0.95 }
+                ]
+              }
+            }
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "kata:volume_stats_used_ratio{cluster=~\"$$cluster\",namespace=\"bhaiya\"}",
+              "legendFormat": "{{pod}} {{persistentvolumeclaim}}"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "PVC used bytes with pod (all Bhaiya, including runc)",
+          "type": "timeseries",
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "fieldConfig": { "defaults": { "unit": "bytes" } },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "kubelet:volume_stats_used_bytes:pod{cluster=~\"$$cluster\",namespace=\"bhaiya\"}",
+              "legendFormat": "{{pod}} {{persistentvolumeclaim}}"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Named-container block-I/O write rate (runc; empty for Kata)",
+          "type": "timeseries",
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+          "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+          "fieldConfig": { "defaults": { "unit": "Bps" } },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "container:blkio_device_bytes:rate5m{cluster=~\"$$cluster\",namespace=\"bhaiya\",operation=\"Write\"}",
+              "legendFormat": "{{pod}} {{container}} {{device}}"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Kata pods missing named-container blkio (1 = gap)",
+          "type": "timeseries",
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+          "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "kata:blkio_attribution_missing{cluster=~\"$$cluster\",namespace=\"bhaiya\"}",
+              "legendFormat": "{{pod}} {{runtimeclass_name}}"
+            }
+          ]
+        }
+      ]
+    }

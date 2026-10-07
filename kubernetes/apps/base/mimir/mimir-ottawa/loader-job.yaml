@@ -54,6 +54,7 @@ spec:
             - /rules/media.yaml
             - /rules/mimir-loader.yaml
             - /rules/job-failures.yaml
+            - /rules/kata-disk.yaml
             - /rules/mimir-queryable-window.yaml
             - /rules/monitoring.yaml
             - /rules/stpetersburg-memory.yaml
@@ -99,6 +100,7 @@ spec:
             - /rules/media.yaml
             - /rules/mimir-loader.yaml
             - /rules/job-failures.yaml
+            - /rules/kata-disk.yaml
             - /rules/mimir-queryable-window.yaml
             - /rules/monitoring.yaml
             - /rules/stpetersburg-memory.yaml
@@ -140,6 +142,7 @@ spec:
             - /rules/media.yaml
             - /rules/mimir-loader.yaml
             - /rules/job-failures.yaml
+            - /rules/kata-disk.yaml
             - /rules/mimir-queryable-window.yaml
             - /rules/monitoring.yaml
             - /rules/stpetersburg-memory.yaml
