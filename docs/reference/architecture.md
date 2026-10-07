@@ -1168,9 +1168,15 @@ Kopiur is the current volume-backup plane. Ottawa and Robbinsdale use
 per-PVC `SnapshotPolicy` objects against their Ceph-backed workloads, with
 writer-owned Kopia repositories in the dedicated `kopiur-${LOCATION}` Garage
 buckets. St. Petersburg uses a namespaced `Repository` and an explicit
-`copyMethod: Direct` policy for Home Assistant's local-path-to-hostPath PVC;
+`copyMethod: Direct` policy for Home Assistant's local-path-to-hostPath PVC
+(`home-assistant/homeassistant-config`, declared in Git under the HA app);
 the read-only source mount and privileged mover are intentional for that
-storage boundary.
+storage boundary. `tools/check-velero-pvc-coverage.sh` fails if a Git-declared
+`local-path` PVC is protected by a Snapshot copyMethod: CSI snapshots cannot
+capture rancher.io/local-path hostPath volumes. Other St. Petersburg
+local-path claims (vLLM model caches, Garage gateway identity, Alertmanager /
+VictoriaLogs, leftover Woodpecker agent and Zot PVCs) are documented
+exemptions or out-of-band leftovers, not Kopiur restore paths.
 
 The production policies use 14 daily, 4 weekly, and 3 monthly retained
 snapshots. `SnapshotSchedule` objects are explicit and are not themselves
