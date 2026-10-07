@@ -4,6 +4,101 @@ rule_files:
 evaluation_interval: 1m
 
 tests:
+  # Replay the original #2646 publication gap: intended 0.3.243 is a
+  # definitive registry 404. The stale alert waits 75m so a normal tag
+  # pipeline does not page. probe_error must stay a separate unknown.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_workspace_image_intended_info{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.243"}'
+        values: "1+0x80"
+      - series: 'bhaiya_workspace_image_registry_probe_status{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.243",status="missing"}'
+        values: "1+0x80"
+      - series: 'bhaiya_workspace_image_registry_probe_status{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.243",status="published"}'
+        values: "0+0x80"
+      - series: 'bhaiya_workspace_image_registry_probe_status{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.243",status="probe_error"}'
+        values: "0+0x80"
+    alert_rule_test:
+      - eval_time: 74m
+        alertname: BhaiyaWorkspaceImagePublicationStale
+        exp_alerts: []
+      - eval_time: 75m
+        alertname: BhaiyaWorkspaceImagePublicationStale
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              image: oci.cdn.keiretsu.top/corp/workspace
+              version: "0.3.243"
+              severity: critical
+            exp_annotations:
+              summary: Intended workspace image 0.3.243 is not published
+              description: >-
+                Bhaiya's workspace-image dispatcher intended
+                oci.cdn.keiretsu.top/corp/workspace:0.3.243, but its bounded registry
+                probe has received a definitive HTTP 404 for at least 75 minutes.
+                Inspect the workspace-image-v0.3.243 Woodpecker tag
+                pipeline, especially admission failures and missing registry
+                credentials, then verify the manifest and adoption handoff. This
+                is distinct from a probe error: network, auth, and registry errors
+                are reported by the separate unknown-state alert.
+      - eval_time: 75m
+        alertname: BhaiyaWorkspaceImagePublicationProbeUnavailable
+        exp_alerts: []
+
+  # A known published intended tag stays quiet for both publication alerts.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_workspace_image_intended_info{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.242"}'
+        values: "1+0x80"
+      - series: 'bhaiya_workspace_image_registry_probe_status{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.242",status="published"}'
+        values: "1+0x80"
+      - series: 'bhaiya_workspace_image_registry_probe_status{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.242",status="missing"}'
+        values: "0+0x80"
+      - series: 'bhaiya_workspace_image_registry_probe_status{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.242",status="probe_error"}'
+        values: "0+0x80"
+    alert_rule_test:
+      - eval_time: 75m
+        alertname: BhaiyaWorkspaceImagePublicationStale
+        exp_alerts: []
+      - eval_time: 75m
+        alertname: BhaiyaWorkspaceImagePublicationProbeUnavailable
+        exp_alerts: []
+
+  # Auth/network/registry failure is unknown. It must never page as stale.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_workspace_image_intended_info{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.243"}'
+        values: "1+0x20"
+      - series: 'bhaiya_workspace_image_registry_probe_status{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.243",status="probe_error"}'
+        values: "1+0x20"
+      - series: 'bhaiya_workspace_image_registry_probe_status{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.243",status="missing"}'
+        values: "0+0x20"
+      - series: 'bhaiya_workspace_image_registry_probe_status{cluster="talos-ottawa",job="bhaiya",container="bhaiya",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.243",status="published"}'
+        values: "0+0x20"
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: BhaiyaWorkspaceImagePublicationProbeUnavailable
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: BhaiyaWorkspaceImagePublicationProbeUnavailable
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              image: oci.cdn.keiretsu.top/corp/workspace
+              version: "0.3.243"
+              severity: warning
+            exp_annotations:
+              summary: Workspace image publication status is unknown
+              description: >-
+                Bhaiya cannot determine whether the intended workspace image
+                oci.cdn.keiretsu.top/corp/workspace:0.3.243 is published. The
+                registry probe is failing (network, authentication, or server
+                error), so this alert does not claim the tag is missing. Restore
+                registry reachability and inspect Bhaiya's probe status before
+                treating the release as stale.
+      - eval_time: 15m
+        alertname: BhaiyaWorkspaceImagePublicationStale
+        exp_alerts: []
+
   - interval: 1m
     input_series:
       - series: 'bhaiya_workspace_image_release_status{cluster="talos-ottawa",image="oci.cdn.keiretsu.top/corp/workspace",version="0.3.299",status="failed"}'

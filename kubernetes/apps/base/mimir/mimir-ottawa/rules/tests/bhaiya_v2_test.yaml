@@ -50,3 +50,104 @@ tests:
       - eval_time: 10m
         alertname: BhaiyaV2DeploymentUnavailable
         exp_alerts: []
+
+  # Approved image older than 7 days. time() is eval_time from t=0, so a
+  # since timestamp of -700000 already exceeds 7d at t=0. The 1h hold is
+  # what this fixture proves.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.100",state="approved"}'
+        values: "1+0x70"
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.100",state="canary_passed"}'
+        values: "0+0x70"
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.100",state="unknown"}'
+        values: "0+0x70"
+      - series: 'bhaiya_image_release_state_since_seconds{cluster="talos-ottawa",tag="0.3.100",state="approved"}'
+        values: "-700000+0x70"
+    alert_rule_test:
+      - eval_time: 59m
+        alertname: BhaiyaImageReleaseApprovedStale
+        exp_alerts: []
+      - eval_time: 1h
+        alertname: BhaiyaImageReleaseApprovedStale
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              tag: "0.3.100"
+              severity: warning
+            exp_annotations:
+              summary: Approved workspace image 0.3.100 is older than 7 days
+              description: >-
+                Bhaiya v2 still reports 0.3.100 as the approved
+                workspace image, and bhaiya_image_release_state_since_seconds
+                says that approval is more than seven days old. Inspect the
+                workspace-image-v0.3.100 pipeline, the v2 image
+                catalog, and whether a newer canary_passed digest is waiting
+                on promotion. This alert stays quiet when the timestamp series
+                is absent or the probe reports unknown.
+
+  # Fresh approval stays quiet. since tracks eval time so age stays ~0.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.500",state="approved"}'
+        values: "1+0x70"
+      - series: 'bhaiya_image_release_state_since_seconds{cluster="talos-ottawa",tag="0.3.500",state="approved"}'
+        values: "0+60x70"
+    alert_rule_test:
+      - eval_time: 1h
+        alertname: BhaiyaImageReleaseApprovedStale
+        exp_alerts: []
+
+  # Missing timestamp series is unknown, not stale.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.100",state="approved"}'
+        values: "1+0x70"
+    alert_rule_test:
+      - eval_time: 1h
+        alertname: BhaiyaImageReleaseApprovedStale
+        exp_alerts: []
+
+  # canary_passed held for 2h is a promotion stall. unknown never pages as
+  # that stall, and a scrape gap (no series) stays quiet.
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.534",state="canary_passed"}'
+        values: "1+0x130"
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.534",state="approved"}'
+        values: "0+0x130"
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.534",state="unknown"}'
+        values: "0+0x130"
+    alert_rule_test:
+      - eval_time: 1h59m
+        alertname: BhaiyaImageReleaseCanaryPassedNotPromoted
+        exp_alerts: []
+      - eval_time: 2h
+        alertname: BhaiyaImageReleaseCanaryPassedNotPromoted
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              tag: "0.3.534"
+              severity: warning
+            exp_annotations:
+              summary: Workspace image 0.3.534 passed canary but was not promoted
+              description: >-
+                Bhaiya v2 has reported 0.3.534 as canary_passed for at
+                least two hours without promotion to approved. Inspect the v2
+                image catalog, hold/pin settings, and the workspace-image
+                promotion path. Unknown and missing series do not fire this
+                alert; a scrape or catalog outage is not a promotion stall.
+
+  - interval: 1m
+    input_series:
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.534",state="unknown"}'
+        values: "1+0x130"
+      - series: 'bhaiya_image_release_state{cluster="talos-ottawa",tag="0.3.534",state="canary_passed"}'
+        values: "0+0x130"
+    alert_rule_test:
+      - eval_time: 2h
+        alertname: BhaiyaImageReleaseCanaryPassedNotPromoted
+        exp_alerts: []
+      - eval_time: 2h
+        alertname: BhaiyaImageReleaseApprovedStale
+        exp_alerts: []

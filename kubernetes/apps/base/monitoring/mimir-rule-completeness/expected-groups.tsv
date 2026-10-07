@@ -45,6 +45,7 @@ kopiur-backups	kopiur-backups.inventory
 kopiur-backups	kopiur-backups.rules
 bhaiya	bhaiya.payments
 bhaiya-v2	bhaiya-v2.availability
+bhaiya-v2	bhaiya-v2.image-freshness
 smartctl	smartctl-exporter.rules
 stpetersburg-memory	stpetersburg-memory.rules
 running-workload-images	running-workload-images.rules
