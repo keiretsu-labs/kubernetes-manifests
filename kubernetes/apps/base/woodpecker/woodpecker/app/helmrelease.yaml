@@ -36,7 +36,12 @@ spec:
         WOODPECKER_OPEN: "true"
         WOODPECKER_HOST: https://woodpecker.${COMMON_DOMAIN}
         WOODPECKER_FORGEJO: "true"
-        WOODPECKER_FORGEJO_URL: https://forgejo.${COMMON_DOMAIN}
+        # Keep status/API calls on the in-cluster Service. During the 2026-10-06
+        # incident, the public Gateway VIP returned "no route to host" and left
+        # successful pipelines with pending Forgejo commit statuses.
+        WOODPECKER_FORGEJO_URL: http://forgejo-http.forgejo.svc.cluster.local:3000
+        # OAuth authorization remains on Forgejo's public, canonical URL.
+        WOODPECKER_EXPERT_FORGE_OAUTH_HOST: https://forgejo.${COMMON_DOMAIN}
         WOODPECKER_FORGEJO_CLIENT: ${WOODPECKER_FORGEJO_CLIENT}
         WOODPECKER_FORGEJO_SECRET: ${WOODPECKER_FORGEJO_SECRET}
         WOODPECKER_LOG_LEVEL: info
