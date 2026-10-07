@@ -1394,8 +1394,13 @@ public Gateway — this is what renders the shields at the top of the README.
   `ProbeSlowResponse` (>5s), plus `SSLCertExpiringSoon` and `SSLCertExpired`,
   which is where certificate expiry is actually caught — cert-manager renewal
   failures surface here rather than in the cert-manager section above.
-- `smartctl-exporter` — disk health, Ottawa and Robbinsdale (they have the
-  disks)
+- `smartctl-exporter` — disk health on all three clusters. Image pin is
+  `quay.io/prometheuscommunity/smartctl-exporter:v0.15.0` (linux/amd64 +
+  linux/arm64; chart 0.17.1 still defaults to v0.14.0). Composite temperature
+  alerts compare against per-device `op_limit_max` / `critical_limit_max`
+  when those series exist; nested NVMe sensors still come from node-exporter
+  hwmon (`SmartDeviceNVMeSensorHigh` / `Critical`) because the exporter does
+  not mine `nvme_smart_health_information_log.temperature_sensors` (#2936).
 - `unpoller` — UniFi controller metrics, all three clusters
 - `opencost` — cost attribution, Ottawa
 - `k8gb-prometheus` / `k8gb-monitoring` / `k8gb-dashboard` — GSLB visibility,

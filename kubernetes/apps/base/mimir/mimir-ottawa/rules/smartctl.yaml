@@ -5,24 +5,72 @@ namespace: smartctl
 groups:
   - name: smartctl-exporter.rules
     rules:
+      # Composite current temperature vs a fleet-wide 65°C, but only for
+      # devices that do not export an operating limit. v0.15.0 adds
+      # temperature_type="op_limit_max" / "critical_limit_max" once smartctl
+      # is invoked with --capabilities; applying 65°C to those NVMe
+      # composites pages chronically (stone nvme0, #2737 / #2936).
       - alert: SmartDeviceHighTemperature
         expr: |-
           smartctl_device_temperature{temperature_type="current"} > 65
+          unless on (device, instance, namespace, pod)
+            smartctl_device_temperature{temperature_type="op_limit_max"}
         for: 5m
         annotations:
           summary: >-
             Mounted drive {{ $labels.device }} on device {{ $labels.instance }} has a temperature higher than 65°C
+          description: >-
+            Composite current temperature is above 65°C and this device does
+            not export an operating-limit series. NVMe drives that report
+            op_limit_max use SmartDeviceOverOperatingLimit instead.
         labels:
           severity: critical
 
-      # Interim per-sensor path for the smartctl-exporter gap tracked in #2936.
-      # node-exporter labels the NVMe hwmon sensors explicitly: temp1 is the
-      # composite, while temp2/temp3 are Sensor 1/Sensor 2. The temp_max and
-      # temp_crit series on temp1 carry each device's own reported component
-      # limits, so these comparisons do not use one fleet-wide temperature.
-      # This also supplies thermal coverage in St Petersburg, where
-      # smartctl-exporter is not deployed. Remove this path when the
-      # smartctl-exporter gains nested NVMe sensor support (upstream #303/#304).
+      - alert: SmartDeviceOverOperatingLimit
+        expr: |-
+          smartctl_device_temperature{temperature_type="current"}
+          >= on (device, instance, namespace, pod) group_left
+            smartctl_device_temperature{temperature_type="op_limit_max"}
+        for: 5m
+        annotations:
+          summary: >-
+            Drive {{ $labels.device }} on {{ $labels.instance }} is at or above
+            its reported operating temperature limit
+          description: >-
+            Composite current temperature is at or above this device's
+            smartctl op_limit_max (warning component threshold). Nested NVMe
+            sensors are still not exported by smartctl-exporter v0.15.0; those
+            stay on SmartDeviceNVMeSensorHigh. See #2936.
+        labels:
+          severity: warning
+
+      - alert: SmartDeviceOverCriticalLimit
+        expr: |-
+          smartctl_device_temperature{temperature_type="current"}
+          >= on (device, instance, namespace, pod) group_left
+            smartctl_device_temperature{temperature_type="critical_limit_max"}
+        for: 5m
+        annotations:
+          summary: >-
+            Drive {{ $labels.device }} on {{ $labels.instance }} is at or above
+            its reported critical temperature limit
+          description: >-
+            Composite current temperature is at or above this device's
+            smartctl critical_limit_max. Nested NVMe sensors stay on
+            SmartDeviceNVMeSensorCritical until the exporter grows a sensor
+            label. See #2936.
+        labels:
+          severity: critical
+
+      # Interim per-sensor path for the nested NVMe array that
+      # smartctl-exporter still omits (v0.15.0 mines only the top-level
+      # temperature object; upstream #303). node-exporter labels the NVMe
+      # hwmon sensors explicitly: temp1 is the composite, while temp2/temp3
+      # are Sensor 1/Sensor 2. The temp_max and temp_crit series on temp1
+      # carry each device's own reported component limits, so these
+      # comparisons do not use one fleet-wide temperature. This also
+      # supplies thermal coverage if a cluster has no smartctl-exporter.
+      # Remove this path when the exporter grows a sensor label.
       - alert: SmartDeviceNVMeSensorHigh
         expr: |-
           (
@@ -44,9 +92,9 @@ groups:
           description: >-
             The {{ $labels.label }} reading for {{ $labels.chip }} is at or above
             that device's node-exporter hwmon warning/component limit. This is
-            an interim per-sensor alert because smartctl-exporter v0.14.0
-            omits nested NVMe sensors; see manifests issue #2936 and upstream
-            smartctl-exporter issues #303/#304.
+            an interim per-sensor alert because smartctl-exporter v0.15.0
+            still omits nested NVMe sensors; see manifests issue #2936 and
+            upstream smartctl-exporter issue #303.
         labels:
           severity: warning
 
@@ -72,9 +120,9 @@ groups:
           description: >-
             The {{ $labels.label }} reading for {{ $labels.chip }} is at or above
             that device's node-exporter hwmon critical/component limit. This
-            is an interim per-sensor alert because smartctl-exporter v0.14.0
-            omits nested NVMe sensors; see manifests issue #2936 and upstream
-            smartctl-exporter issues #303/#304.
+            is an interim per-sensor alert because smartctl-exporter v0.15.0
+            still omits nested NVMe sensors; see manifests issue #2936 and
+            upstream smartctl-exporter issue #303.
         labels:
           severity: critical
 

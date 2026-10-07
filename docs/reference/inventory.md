@@ -30,8 +30,8 @@ diagram in the [README](../../README.md#architecture).
 |---|---:|---:|---:|
 | `ottawa` | 4 | 61 | 128 |
 | `robbinsdale` | 3 | 43 | 91 |
-| `stpetersburg` | 3 | 39 | 81 |
-| **total** | **10** | **143** | **300** |
+| `stpetersburg` | 3 | 39 | 83 |
+| **total** | **10** | **143** | **302** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -292,7 +292,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Observability | `fluent-bit` | `fluent-bit` |
 | Observability | `gatus` | `gatus`, `gatus-mcs` |
 | Observability | `mimir` | `mimir-egress` |
-| Observability | `monitoring` | `blackbox-exporter`, `blackbox-exporter-config`, `blackbox-exporter-stpetersburg`, `config`, `grafana-redirect`, `kromgo`, `monitoring`, `unpoller` |
+| Observability | `monitoring` | `blackbox-exporter`, `blackbox-exporter-config`, `blackbox-exporter-stpetersburg`, `config`, `grafana-redirect`, `kromgo`, `monitoring`, `smartctl-exporter`, `smartctl-exporter-config`, `unpoller` |
 | Observability | `victoria-logs` | `victoria-logs` → ns `monitoring` |
 | Certificates and secrets | `cert-manager` | `cert-manager`, `cert-manager-common-issuers` |
 | Certificates and secrets | `external-secrets` | `external-secrets-config`, `external-secrets-install` |

@@ -10,6 +10,21 @@ spec:
   interval: 1h
   values:
     fullnameOverride: *app
+    # Chart 0.17.1 still ships appVersion v0.14.0. Pin v0.15.0 for
+    # --capabilities temperature limits (op_limit_max / critical_limit_max)
+    # and linux/arm64 (St. Petersburg). Nested NVMe sensors are still
+    # omitted; those stay on the node-exporter hwmon path (#2936).
+    image:
+      # renovate: datasource=docker depName=quay.io/prometheuscommunity/smartctl-exporter
+      tag: v0.15.0
+    # Chart declares none. Live Ottawa/Robbinsdale pods sit at 12–17Mi;
+    # St. Petersburg is capacity-constrained, so every cluster gets a bound.
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 64Mi
     serviceMonitor:
       enabled: true
     prometheusRules:
