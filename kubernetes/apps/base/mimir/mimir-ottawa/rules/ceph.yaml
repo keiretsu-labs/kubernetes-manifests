@@ -24,6 +24,28 @@ groups:
         labels:
           severity: critical
 
+      # BLUESTORE_SLOW_OP_ALERT latches for bluestore_slow_ops_warn_lifetime
+      # (86400s) after a single >10s KV commit, so ceph_health_status stays 1
+      # long after the stall. Page on a fresh increase instead. Threshold 20
+      # in 15m skips isolated 1-count noise and still catches the Ottawa
+      # cluster-wide bursts (hundreds to thousands of commits).
+      - alert: CephBlueStoreSlowKV
+        expr: |
+          increase(ceph_bluestore_slow_committed_kv_count[15m]) >= 20
+        for: 5m
+        annotations:
+          summary: Ceph OSD {{ $labels.ceph_daemon }} is recording BlueStore slow KV commits
+          description: >-
+            {{ $labels.ceph_daemon }} recorded new BlueStore slow KV commits in
+            the last 15 minutes. This is a live recurrence, not the 24h-latched
+            BLUESTORE_SLOW_OP_ALERT. Follow
+            docs/agent-knowledge/ottawa-ceph-bluestore-slow-ops.md: dump
+            historic slow ops, map the OSD to its node/device, and inspect
+            client versus MDS writers. Do not mute the health check or raise
+            bluestore_slow_ops_warn_threshold.
+        labels:
+          severity: warning
+
       - alert: CephOSDWatchTimeouts
         expr: |
           sum by (cluster) (increase(ceph_osd_watch_timeouts[5m])) > 0
