@@ -179,6 +179,13 @@ mover:
     runAsUser: 0
     runAsGroup: 0
     runAsNonRoot: false
+    allowPrivilegeEscalation: true
+    capabilities:
+      add:
+        - CHOWN
+        - FOWNER
+        - DAC_OVERRIDE
+        - DAC_READ_SEARCH
   privilegedMode: true
 ```
 
@@ -187,9 +194,16 @@ permits the privileged mover path but does not set the mover’s UID or GID. The
 ownership attempt demonstrated this: the mover could reach the restore but an
 inherited non-root identity could not apply the original ownership. For this
 Home Assistant source, relying on `inheritSecurityContextFrom.snapshot: {}`
-also does not guarantee a pinned UID; the image identity was non-root. Keep
-the source mount read-only, and use the explicit root fields only in an
-isolated, approved restore namespace.
+also does not guarantee a pinned UID; the image identity was non-root.
+
+Root is still not enough. Kopiur’s hardened mover base always
+`capabilities.drop: [ALL]`, so uid 0 without `CAP_CHOWN` fails
+`chown …: operation not permitted` (km#2940; Ottawa
+`bhaiya-juthi-hermes-restore-1791299498` ran as uid 0 and still EPERM’d).
+`MutatingAdmissionPolicy` `kopiur-restore-owner` pins this root + CHOWN/FOWNER
+set on Restore CREATE when `skipOwners` is absent or false. Keep the source
+mount read-only, and use the explicit root fields only in an isolated,
+approved restore namespace.
 
 ### Keep restore movers off the memory-starved Spark
 

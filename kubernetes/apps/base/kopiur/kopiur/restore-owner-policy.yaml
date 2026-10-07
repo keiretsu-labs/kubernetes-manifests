@@ -1,0 +1,81 @@
+---
+# Cluster-wide restore-job capability floor for Kopiur ownership-preserving
+# Restores (km#2940).
+#
+# Evidence:
+#   - inheritSecurityContextFrom.snapshot + privilegedMode: true still ran the
+#     mover as the recorded non-root uid (10000). kopia then failed on
+#     `chown …: operation not permitted`.
+#   - A later Restore of the same snapshot with skipOwners/skipPermissions/
+#     skipTimes: true succeeded — content path works; metadata path does not.
+#   - Ottawa 2026-10-06 `bhaiya-juthi-hermes-restore-1791299498` already pinned
+#     runAsUser/runAsGroup 0 and privilegedMode: true and still EPERM'd on
+#     chown. The stamped mover Job drops ALL capabilities and only adds
+#     DAC_OVERRIDE + DAC_READ_SEARCH. uid 0 without CAP_CHOWN cannot chown.
+#   - Kopiur's hardened mover base always drop:[ALL]. privilegedMode is a
+#     namespace gate, not a capability grant. Field-wise merge never injects
+#     CHOWN/FOWNER.
+#
+# Why a MutatingAdmissionPolicy instead of ClusterRepository.moverDefaults:
+#   moverDefaults apply to every mover (backup, restore, maintenance). Adding
+#   capabilities there marks every SnapshotPolicy in that repository as
+#   privileged, including cliproxy/firefly which have not opted into
+#   privileged-movers. Restore CREATE is the only surface that needs chown.
+#
+# Behaviour: on Restore CREATE, when skipOwners is absent or false, pin a
+# root mover and add CHOWN/FOWNER (plus the existing DAC_* set). Content-only
+# restores that set skipOwners: true are left alone so they keep running in
+# namespaces that have not opted into privileged movers.
+#
+# The target namespace must still carry
+# kopiur.home-operations.com/privileged-movers=true (and a PSA that allows
+# root). The policy does not bypass that gate.
+#
+# Cluster-scoped; kustomize's `namespace: kopiur-system` on this directory
+# does not attach a namespace to these objects.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: kopiur-restore-owner
+spec:
+  failurePolicy: Ignore
+  reinvocationPolicy: IfNeeded
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["kopiur.home-operations.com"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE"]
+        resources: ["restores"]
+  matchConditions:
+    - name: preserve-owners
+      expression: >-
+        !has(object.spec.options) ||
+        !has(object.spec.options.skipOwners) ||
+        object.spec.options.skipOwners == false
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >
+          Object{
+            spec: Object.spec{
+              mover: Object.spec.mover{
+                privilegedMode: true,
+                securityContext: Object.spec.mover.securityContext{
+                  runAsUser: 0,
+                  runAsGroup: 0,
+                  runAsNonRoot: false,
+                  allowPrivilegeEscalation: true,
+                  capabilities: Object.spec.mover.securityContext.capabilities{
+                    add: ["CHOWN", "FOWNER", "DAC_OVERRIDE", "DAC_READ_SEARCH"]
+                  }
+                }
+              }
+            }
+          }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: kopiur-restore-owner
+spec:
+  policyName: kopiur-restore-owner
