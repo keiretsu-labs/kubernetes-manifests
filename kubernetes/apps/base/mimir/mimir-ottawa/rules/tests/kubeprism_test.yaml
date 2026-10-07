@@ -1,0 +1,151 @@
+rule_files:
+  - ../kubeprism.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # Healthy baseline: 200/201 traffic, zero 5xx/<error>. Neither alert fires.
+  - interval: 1m
+    input_series:
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="200",host="127.0.0.1:7445",instance="192.168.169.116:10250",job="kubelet",node="shiro"}'
+        values: "0+60x40"
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="201",host="127.0.0.1:7445",instance="192.168.169.116:10250",job="kubelet",node="shiro"}'
+        values: "0+6x40"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: KubePrismClientErrorRatioHigh
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: KubePrismClientDialErrors
+        exp_alerts: []
+    promql_expr_test:
+      - eval_time: 20m
+        expr: kubeprism:client_error_ratio5m{job="kubelet",instance="192.168.169.116:10250"}
+        exp_samples:
+          - labels: 'kubeprism:client_error_ratio5m{cluster="talos-ottawa",instance="192.168.169.116:10250",job="kubelet"}'
+            value: 0
+
+  # Sustained 5xx on shiro (worker: every API call is via KubePrism). Ratio
+  # is 0.2, request rate is well above the 0.1 floor, so the ratio alert
+  # pages after 10m. Dial-error alert stays quiet because code is 500.
+  - interval: 1m
+    input_series:
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="200",host="127.0.0.1:7445",instance="192.168.169.116:10250",job="kubelet",node="shiro"}'
+        values: "0+48x40"
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="500",host="127.0.0.1:7445",instance="192.168.169.116:10250",job="kubelet",node="shiro"}'
+        values: "0+12x40"
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: KubePrismClientErrorRatioHigh
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: KubePrismClientErrorRatioHigh
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              instance: 192.168.169.116:10250
+              job: kubelet
+              severity: warning
+            exp_annotations:
+              summary: >-
+                KubePrism client error ratio is high for kubelet on
+                192.168.169.116:10250
+              description: >-
+                More than 5% of Kubernetes client requests through the node-local
+                KubePrism proxy (127.0.0.1:7445) are 5xx or transport errors
+                (0.2). This is the kubelet / controller path to the apiserver,
+                not a KubePrism metrics endpoint. On a worker such as Ottawa
+                shiro every API call traverses this hop. Inspect that node's
+                kubelet logs, apiserver health, and whether other nodes on the
+                same cluster are failing the same way.
+      - eval_time: 20m
+        alertname: KubePrismClientDialErrors
+        exp_alerts: []
+
+  # Recovery: errors stop after 12m; the ratio alert must clear once the
+  # 5-minute rate window is all successes again.
+  - interval: 1m
+    input_series:
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="200",host="127.0.0.1:7445",instance="192.168.169.116:10250",job="kubelet",node="shiro"}'
+        values: "0+48x12 576+60x28"
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="500",host="127.0.0.1:7445",instance="192.168.169.116:10250",job="kubelet",node="shiro"}'
+        values: "0+12x12 144+0x28"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: KubePrismClientErrorRatioHigh
+        exp_alerts: []
+
+  # A single 5xx on a quiet instance (request rate under 0.1/s) must not
+  # fire: that is the floor that keeps a 100% ratio on idle scrapes quiet.
+  - interval: 1m
+    input_series:
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="500",host="127.0.0.1:7445",instance="192.168.169.118:10259",job="kube-scheduler"}'
+        values: "0+1x40"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: KubePrismClientErrorRatioHigh
+        exp_alerts: []
+
+  # 409/403/404 are ordinary apiserver answers, not KubePrism failures.
+  - interval: 1m
+    input_series:
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="200",host="127.0.0.1:7445",instance="192.168.169.119:10257",job="kube-controller-manager"}'
+        values: "0+50x40"
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="409",host="127.0.0.1:7445",instance="192.168.169.119:10257",job="kube-controller-manager"}'
+        values: "0+20x40"
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="403",host="127.0.0.1:7445",instance="192.168.169.119:10257",job="kube-controller-manager"}'
+        values: "0+5x40"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: KubePrismClientErrorRatioHigh
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: KubePrismClientDialErrors
+        exp_alerts: []
+
+  # Sustained code="<error>" is the dial/proxy failure that maps to
+  # kopiur-style lease-renew storms when the local proxy cannot reach a
+  # backend. Rate is 0.05/s (> 0.02) so the dial alert pages after 10m.
+  - interval: 1m
+    input_series:
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="<error>",host="127.0.0.1:7445",instance="192.168.169.116:10250",job="kubelet",node="shiro"}'
+        values: "0+3x40"
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="200",host="127.0.0.1:7445",instance="192.168.169.116:10250",job="kubelet",node="shiro"}'
+        values: "0+57x40"
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: KubePrismClientDialErrors
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: KubePrismClientDialErrors
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              instance: 192.168.169.116:10250
+              job: kubelet
+              node: shiro
+              severity: warning
+            exp_annotations:
+              summary: >-
+                KubePrism dial/proxy errors on kubelet
+                192.168.169.116:10250
+              description: >-
+                Kubernetes clients on 192.168.169.116:10250 are recording
+                rest_client transport errors (code="<error>") through
+                127.0.0.1:7445 at 0.050 per second for 10 minutes. That is a
+                KubePrism or backend-apiserver reachability failure, not an
+                HTTP status from kube-apiserver. Correlate with kubelet lease
+                renewals and control-plane Ready.
+      - eval_time: 20m
+        alertname: KubePrismClientErrorRatioHigh
+        exp_alerts: []
+
+  # Brief burst of dial errors shorter than `for: 10m` must not page.
+  - interval: 1m
+    input_series:
+      - series: 'rest_client_requests_total{cluster="talos-ottawa",code="<error>",host="127.0.0.1:7445",instance="192.168.169.117:10250",job="kubelet",node="asuka"}'
+        values: "0+3x4 12+0x20"
+    alert_rule_test:
+      - eval_time: 16m
+        alertname: KubePrismClientDialErrors
+        exp_alerts: []
