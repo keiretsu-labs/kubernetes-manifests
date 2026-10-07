@@ -1,0 +1,90 @@
+# KubePrism (Talos node-local apiserver proxy on 127.0.0.1:7445) has no
+# Prometheus endpoint of its own: Talos v1.13 / go-loadbalancer v0.5.0 only
+# retain aggregate Host/Healthy in a singleton status resource, and the
+# child logger is clamped to Error so Warn-level backend/dial/proxy lines
+# never reach VictoriaLogs. kubelet, kube-controller-manager, and
+# kube-scheduler already talk through that proxy and export
+# rest_client_requests_total{host="127.0.0.1:7445"} from the existing
+# kube-prometheus-stack scrapes. These rules attribute apiserver-path
+# failures (dial, 5xx, 504) to that hop without a new DaemonSet or Probe.
+#
+# Keep this namespace unique across every file passed to mimirtool.
+namespace: kubeprism
+groups:
+  - name: kubeprism.rules
+    rules:
+      - record: kubeprism:client_requests:rate5m
+        expr: |
+          sum by (cluster, job, instance, node, code) (
+            rate(rest_client_requests_total{host="127.0.0.1:7445"}[5m])
+          )
+
+      - record: kubeprism:client_error_ratio5m
+        expr: |
+          (
+            sum by (cluster, job, instance) (
+              rate(rest_client_requests_total{host="127.0.0.1:7445",code=~"5..|<error>"}[5m])
+            )
+            or
+            (
+              sum by (cluster, job, instance) (
+                rate(rest_client_requests_total{host="127.0.0.1:7445"}[5m])
+              )
+              * 0
+            )
+          )
+          /
+          sum by (cluster, job, instance) (
+            rate(rest_client_requests_total{host="127.0.0.1:7445"}[5m])
+          )
+
+      - record: kubeprism:client_dial_errors:rate5m
+        expr: |
+          sum by (cluster, job, instance, node) (
+            rate(rest_client_requests_total{host="127.0.0.1:7445",code="<error>"}[5m])
+          )
+
+      # Transport and backend failures through KubePrism, not 4xx from the
+      # apiserver (409/403/404 are ordinary). The request-rate floor keeps a
+      # single 5xx on a quiet instance from looking like a 100% outage.
+      - alert: KubePrismClientErrorRatioHigh
+        expr: |
+          kubeprism:client_error_ratio5m > 0.05
+          and
+          sum by (cluster, job, instance) (
+            kubeprism:client_requests:rate5m
+          ) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            KubePrism client error ratio is high for {{ $labels.job }} on
+            {{ $labels.instance }}
+          description: >-
+            More than 5% of Kubernetes client requests through the node-local
+            KubePrism proxy (127.0.0.1:7445) are 5xx or transport errors
+            ({{ printf "%.1f" $value }}). This is the kubelet / controller
+            path to the apiserver, not a KubePrism metrics endpoint. On a
+            worker such as Ottawa shiro every API call traverses this hop.
+            Inspect that node's kubelet logs, apiserver health, and whether
+            other nodes on the same cluster are failing the same way.
+
+      # code="<error>" is a client-side dial/proxy failure, the shape of a
+      # lease-renew storm when the local proxy cannot reach a backend.
+      - alert: KubePrismClientDialErrors
+        expr: kubeprism:client_dial_errors:rate5m > 0.02
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            KubePrism dial/proxy errors on {{ $labels.job }}
+            {{ $labels.instance }}
+          description: >-
+            Kubernetes clients on {{ $labels.instance }} are recording
+            rest_client transport errors (code="<error>") through
+            127.0.0.1:7445 at {{ printf "%.3f" $value }} per second for 10
+            minutes. That is a KubePrism or backend-apiserver reachability
+            failure, not an HTTP status from kube-apiserver. Correlate with
+            kubelet lease renewals and control-plane Ready.

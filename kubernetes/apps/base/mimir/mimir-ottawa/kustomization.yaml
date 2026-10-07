@@ -39,6 +39,7 @@ configMapGenerator:
       - rules/garage.yaml
       - rules/k8gb.yaml
       - rules/k8gb-dns.yaml
+      - rules/kubeprism.yaml
       - rules/media.yaml
       - rules/mimir-loader.yaml
       - rules/job-failures.yaml
