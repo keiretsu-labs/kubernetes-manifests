@@ -49,9 +49,9 @@ tests:
               description: >-
                 The Sensor 1 reading for nvme_nvme0 is at or above that device's
                 node-exporter hwmon warning/component limit. This is an
-                interim per-sensor alert because smartctl-exporter v0.14.0
-                omits nested NVMe sensors; see manifests issue #2936 and
-                upstream smartctl-exporter issues #303/#304.
+                interim per-sensor alert because smartctl-exporter v0.15.0
+                still omits nested NVMe sensors; see manifests issue #2936
+                and upstream smartctl-exporter issue #303.
           - exp_labels:
               cluster: talos-robbinsdale
               chip: nvme_nvme0
@@ -68,9 +68,9 @@ tests:
               description: >-
                 The Sensor 2 reading for nvme_nvme0 is at or above that device's
                 node-exporter hwmon warning/component limit. This is an
-                interim per-sensor alert because smartctl-exporter v0.14.0
-                omits nested NVMe sensors; see manifests issue #2936 and
-                upstream smartctl-exporter issues #303/#304.
+                interim per-sensor alert because smartctl-exporter v0.15.0
+                still omits nested NVMe sensors; see manifests issue #2936
+                and upstream smartctl-exporter issue #303.
       - eval_time: 6m
         alertname: SmartDeviceNVMeSensorCritical
         exp_alerts:
@@ -90,9 +90,9 @@ tests:
               description: >-
                 The Sensor 2 reading for nvme_nvme0 is at or above that device's
                 node-exporter hwmon critical/component limit. This is an
-                interim per-sensor alert because smartctl-exporter v0.14.0
-                omits nested NVMe sensors; see manifests issue #2936 and
-                upstream smartctl-exporter issues #303/#304.
+                interim per-sensor alert because smartctl-exporter v0.15.0
+                still omits nested NVMe sensors; see manifests issue #2936
+                and upstream smartctl-exporter issue #303.
       - eval_time: 8m
         alertname: SmartDeviceNVMeSensorHigh
         exp_alerts: []
