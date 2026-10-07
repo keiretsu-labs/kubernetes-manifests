@@ -69,6 +69,49 @@ spec:
         - op: replace
           path: /spec/provider/kubernetes/envoyService/externalTrafficPolicy
           value: Cluster
+        # Keep data-plane pods off the request-full control-plane node. With
+        # both Spark workers occupied, topology spread otherwise places a
+        # rollout surge on orin-0, where kubelet rejects the 544Mi request.
+        - op: add
+          path: /spec/provider/kubernetes/envoyDeployment/pod/affinity
+          value:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: DoesNotExist
+        - op: add
+          path: /spec/provider/kubernetes/envoyDeployment/strategy
+          value:
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 0
+              maxUnavailable: 1
+    - target:
+        group: gateway.envoyproxy.io
+        version: v1alpha1
+        kind: EnvoyProxy
+        name: ts
+      patch: |-
+        # Tailscale ingress has one replica on orin-0 today; move replacements
+        # to the Spark workers and keep one replica available during the move.
+        - op: add
+          path: /spec/provider/kubernetes/envoyDeployment/pod/affinity
+          value:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: DoesNotExist
+        - op: add
+          path: /spec/provider/kubernetes/envoyDeployment/strategy
+          value:
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 0
+              maxUnavailable: 1
     # St. Pete's orin-0 is request-exhausted. Keep the public Envoy's existing
     # CPU request and sidecar request, but lower only the data-plane memory
     # request; the generated deployment has no memory limit today, so none is
@@ -86,6 +129,15 @@ spec:
               requests:
                 cpu: 100m
                 memory: 256Mi
+        - op: add
+          path: /spec/provider/kubernetes/envoyDeployment/pod/affinity
+          value:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: DoesNotExist
         # orin-0 is memory-request-exhausted and the base topologySpread (maxSkew 1,
         # DoNotSchedule) blocks a surge pod on the Sparks, so a 25% surge rollout
         # deadlocks (seen 2026-10-06 with #3452). Replace one pod at a time instead.
