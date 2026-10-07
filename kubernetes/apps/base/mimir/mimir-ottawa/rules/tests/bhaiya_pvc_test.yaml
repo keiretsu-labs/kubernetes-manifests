@@ -1,0 +1,42 @@
+rule_files:
+  - ../bhaiya.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # A Bhaiya home volume above 85 percent used must fire after the 15-minute
+  # hold so a workspace can be expanded before writes fail.
+  - interval: 1m
+    input_series:
+      - series: 'kubelet_volume_stats_used_bytes{namespace="bhaiya",persistentvolumeclaim="ws-raj-codes-home"}'
+        values: "460000000000+0x20"
+      - series: 'kubelet_volume_stats_capacity_bytes{namespace="bhaiya",persistentvolumeclaim="ws-raj-codes-home"}'
+        values: "528239525888+0x20"
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: BhaiyaPVCNearFull
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: BhaiyaPVCNearFull
+        exp_alerts:
+          - exp_labels:
+              namespace: bhaiya
+              persistentvolumeclaim: ws-raj-codes-home
+              severity: warning
+            exp_annotations:
+              summary: Bhaiya PVC ws-raj-codes-home is near full
+              description: PVC ws-raj-codes-home is above 85 percent used for fifteen
+                minutes. Inspect the owning workload and storage class, remove safe data or expand
+                the claim before writes fail.
+
+  # A volume at half capacity must stay quiet.
+  - interval: 1m
+    input_series:
+      - series: 'kubelet_volume_stats_used_bytes{namespace="bhaiya",persistentvolumeclaim="ws-kartik-codes-home"}'
+        values: "58245324800+0x20"
+      - series: 'kubelet_volume_stats_capacity_bytes{namespace="bhaiya",persistentvolumeclaim="ws-kartik-codes-home"}'
+        values: "528239525888+0x20"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: BhaiyaPVCNearFull
+        exp_alerts: []
