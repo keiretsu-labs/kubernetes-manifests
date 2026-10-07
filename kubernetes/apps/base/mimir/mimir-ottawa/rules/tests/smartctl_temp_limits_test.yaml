@@ -10,25 +10,61 @@ tests:
       # pages after 5m.
       - series: 'smartctl_device_temperature{cluster="talos-robbinsdale",device="sda",instance="10.1.0.24:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-zvrhf",service="smartctl-exporter",temperature_type="current"}'
         values: "66+0x12"
+      - series: 'kube_pod_info{cluster="talos-robbinsdale",namespace="monitoring",node="tank",pod="smartctl-exporter-0-zvrhf"}'
+        values: "1+0x12"
 
-      # Stone nvme0: composite 75°C with Samsung 980 Pro limits 82/85. Must
-      # NOT fire the fleet 65°C rule. 75 < 82 so limit alerts stay quiet.
+      # Tank nvme0: composite 75°C with 82/85 limits and no nested sensors.
+      # Must NOT fire the fleet 65°C rule. 75 < 82 so limit alerts stay quiet.
+      - series: 'smartctl_device_temperature{cluster="talos-robbinsdale",device="nvme0",instance="10.1.0.24:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-zvrhf",service="smartctl-exporter",temperature_type="current"}'
+        values: "75+0x12"
+      - series: 'smartctl_device_temperature{cluster="talos-robbinsdale",device="nvme0",instance="10.1.0.24:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-zvrhf",service="smartctl-exporter",temperature_type="op_limit_max"}'
+        values: "82+0x12"
+      - series: 'smartctl_device_temperature{cluster="talos-robbinsdale",device="nvme0",instance="10.1.0.24:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-zvrhf",service="smartctl-exporter",temperature_type="critical_limit_max"}'
+        values: "85+0x12"
+
+      # Stone nvme0: composite 75°C is below Samsung 980 Pro 82/85, but
+      # Sensor 2 is 94°C. Hottest-sensor alerts must page; 65°C must not.
       - series: 'smartctl_device_temperature{cluster="talos-robbinsdale",device="nvme0",instance="10.1.1.1:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-qdw85",service="smartctl-exporter",temperature_type="current"}'
         values: "75+0x12"
       - series: 'smartctl_device_temperature{cluster="talos-robbinsdale",device="nvme0",instance="10.1.1.1:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-qdw85",service="smartctl-exporter",temperature_type="op_limit_max"}'
         values: "82+0x12"
       - series: 'smartctl_device_temperature{cluster="talos-robbinsdale",device="nvme0",instance="10.1.1.1:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-qdw85",service="smartctl-exporter",temperature_type="critical_limit_max"}'
         values: "85+0x12"
+      - series: 'kube_pod_info{cluster="talos-robbinsdale",namespace="monitoring",node="stone",pod="smartctl-exporter-0-qdw85"}'
+        values: "1+0x12"
+      - series: 'kube_pod_info{cluster="talos-robbinsdale",namespace="monitoring",node="stone",pod="node-stone"}'
+        values: "1+0x12"
+      - series: 'node_hwmon_temp_celsius{cluster="talos-robbinsdale",chip="nvme_nvme0",instance="192.168.50.82:9100",job="node-exporter",namespace="monitoring",pod="node-stone",sensor="temp3",service="node-exporter"}'
+        values: "94+0x12"
+      - series: 'node_hwmon_sensor_label{cluster="talos-robbinsdale",chip="nvme_nvme0",instance="192.168.50.82:9100",job="node-exporter",label="Sensor 2",namespace="monitoring",pod="node-stone",sensor="temp3",service="node-exporter"}'
+        values: "1+0x12"
+      - series: 'node_hwmon_temp_max_celsius{cluster="talos-robbinsdale",chip="nvme_nvme0",instance="192.168.50.82:9100",job="node-exporter",namespace="monitoring",pod="node-stone",sensor="temp1",service="node-exporter"}'
+        values: "82+0x12"
+      - series: 'node_hwmon_temp_crit_celsius{cluster="talos-robbinsdale",chip="nvme_nvme0",instance="192.168.50.82:9100",job="node-exporter",namespace="monitoring",pod="node-stone",sensor="temp1",service="node-exporter"}'
+        values: "85+0x12"
 
-      # Shiro nvme0: composite at the operating limit, below critical.
+      # Shiro nvme0: Sensor 1 at the operating limit, below critical.
       - series: 'smartctl_device_temperature{cluster="talos-ottawa",device="nvme0",instance="10.3.3.136:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-6tjmp",service="smartctl-exporter",temperature_type="current"}'
-        values: "84+0x12"
+        values: "63+0x12"
       - series: 'smartctl_device_temperature{cluster="talos-ottawa",device="nvme0",instance="10.3.3.136:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-6tjmp",service="smartctl-exporter",temperature_type="op_limit_max"}'
         values: "84+0x12"
       - series: 'smartctl_device_temperature{cluster="talos-ottawa",device="nvme0",instance="10.3.3.136:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-6tjmp",service="smartctl-exporter",temperature_type="critical_limit_max"}'
         values: "88+0x12"
+      - series: 'kube_pod_info{cluster="talos-ottawa",namespace="monitoring",node="shiro",pod="smartctl-exporter-0-6tjmp"}'
+        values: "1+0x12"
+      - series: 'kube_pod_info{cluster="talos-ottawa",namespace="monitoring",node="shiro",pod="node-shiro"}'
+        values: "1+0x12"
+      - series: 'node_hwmon_temp_celsius{cluster="talos-ottawa",chip="nvme_nvme0",instance="192.168.169.116:9100",job="node-exporter",namespace="monitoring",pod="node-shiro",sensor="temp2",service="node-exporter"}'
+        values: "84+0x12"
+      - series: 'node_hwmon_sensor_label{cluster="talos-ottawa",chip="nvme_nvme0",instance="192.168.169.116:9100",job="node-exporter",label="Sensor 1",namespace="monitoring",pod="node-shiro",sensor="temp2",service="node-exporter"}'
+        values: "1+0x12"
+      - series: 'node_hwmon_temp_max_celsius{cluster="talos-ottawa",chip="nvme_nvme0",instance="192.168.169.116:9100",job="node-exporter",namespace="monitoring",pod="node-shiro",sensor="temp1",service="node-exporter"}'
+        values: "84+0x12"
+      - series: 'node_hwmon_temp_crit_celsius{cluster="talos-ottawa",chip="nvme_nvme0",instance="192.168.169.116:9100",job="node-exporter",namespace="monitoring",pod="node-shiro",sensor="temp1",service="node-exporter"}'
+        values: "88+0x12"
 
-      # Stone nvme1 analogue: composite at/above both limits.
+      # Stone nvme1: composite already at/above both limits (no nested
+      # sensors). Hottest falls back to the smartctl composite.
       - series: 'smartctl_device_temperature{cluster="talos-robbinsdale",device="nvme1",instance="10.1.1.1:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-qdw85",service="smartctl-exporter",temperature_type="current"}'
         values: "86+0x12"
       - series: 'smartctl_device_temperature{cluster="talos-robbinsdale",device="nvme1",instance="10.1.1.1:9633",job="smartctl-exporter",namespace="monitoring",pod="smartctl-exporter-0-qdw85",service="smartctl-exporter",temperature_type="op_limit_max"}'
@@ -57,7 +93,8 @@ tests:
               description: >-
                 Composite current temperature is above 65°C and this device does
                 not export an operating-limit series. NVMe drives that report
-                op_limit_max use SmartDeviceOverOperatingLimit instead.
+                op_limit_max use SmartDeviceOverOperatingLimit instead, which
+                compares the hottest nested sensor against that limit.
       - eval_time: 4m
         alertname: SmartDeviceOverOperatingLimit
         exp_alerts: []
@@ -67,54 +104,66 @@ tests:
           - exp_labels:
               cluster: talos-ottawa
               device: nvme0
-              instance: 10.3.3.136:9633
-              job: smartctl-exporter
-              namespace: monitoring
-              pod: smartctl-exporter-0-6tjmp
-              service: smartctl-exporter
-              temperature_type: current
+              node: shiro
               severity: warning
             exp_annotations:
-              summary: Drive nvme0 on 10.3.3.136:9633 is at or above its reported operating temperature limit
+              summary: Drive nvme0 on shiro is at or above its reported operating temperature limit
               description: >-
-                Composite current temperature is at or above this device's
-                smartctl op_limit_max (warning component threshold). Nested NVMe
-                sensors are still not exported by smartctl-exporter v0.15.0; those
-                stay on SmartDeviceNVMeSensorHigh. See #2936.
+                Hottest reading (nested NVMe sensors from node-exporter hwmon,
+                else the smartctl composite) is at or above this device's
+                warning limit (smartctl op_limit_max, else hwmon temp1 max).
+                smartctl-exporter v0.15.0 still omits
+                nvme_smart_health_information_log.temperature_sensors; see #2936.
+          - exp_labels:
+              cluster: talos-robbinsdale
+              device: nvme0
+              node: stone
+              severity: warning
+            exp_annotations:
+              summary: Drive nvme0 on stone is at or above its reported operating temperature limit
+              description: >-
+                Hottest reading (nested NVMe sensors from node-exporter hwmon,
+                else the smartctl composite) is at or above this device's
+                warning limit (smartctl op_limit_max, else hwmon temp1 max).
+                smartctl-exporter v0.15.0 still omits
+                nvme_smart_health_information_log.temperature_sensors; see #2936.
           - exp_labels:
               cluster: talos-robbinsdale
               device: nvme1
-              instance: 10.1.1.1:9633
-              job: smartctl-exporter
-              namespace: monitoring
-              pod: smartctl-exporter-0-qdw85
-              service: smartctl-exporter
-              temperature_type: current
+              node: stone
               severity: warning
             exp_annotations:
-              summary: Drive nvme1 on 10.1.1.1:9633 is at or above its reported operating temperature limit
+              summary: Drive nvme1 on stone is at or above its reported operating temperature limit
               description: >-
-                Composite current temperature is at or above this device's
-                smartctl op_limit_max (warning component threshold). Nested NVMe
-                sensors are still not exported by smartctl-exporter v0.15.0; those
-                stay on SmartDeviceNVMeSensorHigh. See #2936.
+                Hottest reading (nested NVMe sensors from node-exporter hwmon,
+                else the smartctl composite) is at or above this device's
+                warning limit (smartctl op_limit_max, else hwmon temp1 max).
+                smartctl-exporter v0.15.0 still omits
+                nvme_smart_health_information_log.temperature_sensors; see #2936.
       - eval_time: 6m
         alertname: SmartDeviceOverCriticalLimit
         exp_alerts:
           - exp_labels:
               cluster: talos-robbinsdale
-              device: nvme1
-              instance: 10.1.1.1:9633
-              job: smartctl-exporter
-              namespace: monitoring
-              pod: smartctl-exporter-0-qdw85
-              service: smartctl-exporter
-              temperature_type: current
+              device: nvme0
+              node: stone
               severity: critical
             exp_annotations:
-              summary: Drive nvme1 on 10.1.1.1:9633 is at or above its reported critical temperature limit
+              summary: Drive nvme0 on stone is at or above its reported critical temperature limit
               description: >-
-                Composite current temperature is at or above this device's
-                smartctl critical_limit_max. Nested NVMe sensors stay on
-                SmartDeviceNVMeSensorCritical until the exporter grows a sensor
-                label. See #2936.
+                Hottest reading (nested NVMe sensors from node-exporter hwmon,
+                else the smartctl composite) is at or above this device's
+                critical limit (smartctl critical_limit_max, else hwmon temp1
+                crit). See #2936.
+          - exp_labels:
+              cluster: talos-robbinsdale
+              device: nvme1
+              node: stone
+              severity: critical
+            exp_annotations:
+              summary: Drive nvme1 on stone is at or above its reported critical temperature limit
+              description: >-
+                Hottest reading (nested NVMe sensors from node-exporter hwmon,
+                else the smartctl composite) is at or above this device's
+                critical limit (smartctl critical_limit_max, else hwmon temp1
+                crit). See #2936.

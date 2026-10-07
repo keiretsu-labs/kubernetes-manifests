@@ -7,6 +7,93 @@ spec:
   groups:
     - name: smartctl-exporter.rules
       rules:
+        - record: smartctl_nvme_sensor_temperature_celsius
+          expr: |-
+            label_replace(
+              node_hwmon_temp_celsius{chip=~"nvme_.*",sensor!="temp1"}
+              * on (cluster, instance, chip, sensor) group_left(label)
+                node_hwmon_sensor_label{
+                  chip=~"nvme_.*",
+                  sensor!="temp1",
+                  label=~"Sensor .*",
+                }
+            , "device", "$$1", "chip", "nvme_(.+)")
+
+        - record: smartctl_device_temperature:hottest
+          expr: |-
+            max by (cluster, node, device) (
+              (
+                smartctl_nvme_sensor_temperature_celsius
+                * on (cluster, pod) group_left(node)
+                  max by (cluster, pod, node) (kube_pod_info{namespace="monitoring"})
+              )
+              or
+              (
+                smartctl_nvme_sensor_temperature_celsius
+                * on (cluster, instance) group_left(node)
+                  label_replace(
+                    max by (cluster, node) (kube_node_info),
+                    "instance", "$$1:9100", "node", "(.*)"
+                  )
+              )
+              or
+              (
+                smartctl_device_temperature{temperature_type="current"}
+                * on (cluster, pod) group_left(node)
+                  max by (cluster, pod, node) (kube_pod_info{namespace="monitoring"})
+              )
+            )
+
+        - record: smartctl_device_temperature:warning_limit
+          expr: |-
+            max by (cluster, node, device) (
+              (
+                smartctl_device_temperature{temperature_type="op_limit_max"}
+                * on (cluster, pod) group_left(node)
+                  max by (cluster, pod, node) (kube_pod_info{namespace="monitoring"})
+              )
+              or
+              label_replace(
+                node_hwmon_temp_max_celsius{chip=~"nvme_.*",sensor="temp1"}
+                * on (cluster, pod) group_left(node)
+                  max by (cluster, pod, node) (kube_pod_info{namespace="monitoring"})
+              , "device", "$$1", "chip", "nvme_(.+)")
+              or
+              label_replace(
+                node_hwmon_temp_max_celsius{chip=~"nvme_.*",sensor="temp1"}
+                * on (cluster, instance) group_left(node)
+                  label_replace(
+                    max by (cluster, node) (kube_node_info),
+                    "instance", "$$1:9100", "node", "(.*)"
+                  )
+              , "device", "$$1", "chip", "nvme_(.+)")
+            )
+
+        - record: smartctl_device_temperature:critical_limit
+          expr: |-
+            max by (cluster, node, device) (
+              (
+                smartctl_device_temperature{temperature_type="critical_limit_max"}
+                * on (cluster, pod) group_left(node)
+                  max by (cluster, pod, node) (kube_pod_info{namespace="monitoring"})
+              )
+              or
+              label_replace(
+                node_hwmon_temp_crit_celsius{chip=~"nvme_.*",sensor="temp1"}
+                * on (cluster, pod) group_left(node)
+                  max by (cluster, pod, node) (kube_pod_info{namespace="monitoring"})
+              , "device", "$$1", "chip", "nvme_(.+)")
+              or
+              label_replace(
+                node_hwmon_temp_crit_celsius{chip=~"nvme_.*",sensor="temp1"}
+                * on (cluster, instance) group_left(node)
+                  label_replace(
+                    max by (cluster, node) (kube_node_info),
+                    "instance", "$$1:9100", "node", "(.*)"
+                  )
+              , "device", "$$1", "chip", "nvme_(.+)")
+            )
+
         - alert: SmartDeviceHighTemperature
           expr: |-
             smartctl_device_temperature{temperature_type="current"} > 65
@@ -19,43 +106,45 @@ spec:
             description: >-
               Composite current temperature is above 65°C and this device does
               not export an operating-limit series. NVMe drives that report
-              op_limit_max use SmartDeviceOverOperatingLimit instead.
+              op_limit_max use SmartDeviceOverOperatingLimit instead, which
+              compares the hottest nested sensor against that limit.
           labels:
             severity: critical
 
         - alert: SmartDeviceOverOperatingLimit
           expr: |-
-            smartctl_device_temperature{temperature_type="current"}
-            >= on (device, instance, namespace, pod) group_left
-              smartctl_device_temperature{temperature_type="op_limit_max"}
+            smartctl_device_temperature:hottest
+            >= on (cluster, node, device) group_left
+              smartctl_device_temperature:warning_limit
           for: 5m
           annotations:
             summary: >-
-              Drive {{ $labels.device }} on {{ $labels.instance }} is at or above
+              Drive {{ $labels.device }} on {{ $labels.node }} is at or above
               its reported operating temperature limit
             description: >-
-              Composite current temperature is at or above this device's
-              smartctl op_limit_max (warning component threshold). Nested NVMe
-              sensors are still not exported by smartctl-exporter v0.15.0; those
-              stay on SmartDeviceNVMeSensorHigh. See #2936.
+              Hottest reading (nested NVMe sensors from node-exporter hwmon,
+              else the smartctl composite) is at or above this device's
+              warning limit (smartctl op_limit_max, else hwmon temp1 max).
+              smartctl-exporter v0.15.0 still omits
+              nvme_smart_health_information_log.temperature_sensors; see #2936.
           labels:
             severity: warning
 
         - alert: SmartDeviceOverCriticalLimit
           expr: |-
-            smartctl_device_temperature{temperature_type="current"}
-            >= on (device, instance, namespace, pod) group_left
-              smartctl_device_temperature{temperature_type="critical_limit_max"}
+            smartctl_device_temperature:hottest
+            >= on (cluster, node, device) group_left
+              smartctl_device_temperature:critical_limit
           for: 5m
           annotations:
             summary: >-
-              Drive {{ $labels.device }} on {{ $labels.instance }} is at or above
+              Drive {{ $labels.device }} on {{ $labels.node }} is at or above
               its reported critical temperature limit
             description: >-
-              Composite current temperature is at or above this device's
-              smartctl critical_limit_max. Nested NVMe sensors stay on
-              SmartDeviceNVMeSensorCritical until the exporter grows a sensor
-              label. See #2936.
+              Hottest reading (nested NVMe sensors from node-exporter hwmon,
+              else the smartctl composite) is at or above this device's
+              critical limit (smartctl critical_limit_max, else hwmon temp1
+              crit). See #2936.
           labels:
             severity: critical
 
