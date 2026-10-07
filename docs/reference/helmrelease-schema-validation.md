@@ -1,13 +1,14 @@
 # Offline HelmRelease schema validation
 
-The repository validates rendered `helm.toolkit.fluxcd.io/v2` `HelmRelease`
-objects with `tools/check-helmrelease-schema.sh`. It uses Flate's rendered
-Kustomization YAML from the location application tree (the `build all` output
-is final chart resources and does not contain the HelmRelease CRs), selects the
-raw HelmRelease documents, then runs the pinned kubeconform binary against the
-checked-in schema. The complete cluster render gate remains responsible for
-chart/source reconciliation failures. Schema lookup has no HTTP fallback and
-does not contact a cluster.
+The repository validates authored `helm.toolkit.fluxcd.io/v2` `HelmRelease`
+objects with `tools/check-helmrelease-schema.sh`. It selects the raw
+HelmRelease documents from the canonical `kubernetes/apps/base` tree and runs
+the pinned kubeconform binary against the checked-in schema. Flate renders
+HelmReleases into their chart resources, so its output does not retain the CRs
+this schema check needs. Validating source objects also avoids resolving
+unrelated charts here. The complete Flate cluster render remains responsible
+for overlays, substitutions, chart sources, and reconciliation failures.
+Schema lookup has no HTTP fallback and does not contact a cluster.
 
 The schema is the complete `HelmRelease` v2 OpenAPI schema from
 `helm-controller` v1.6.4, selected by the Flux v2.9.5 bootstrap pin:
@@ -35,5 +36,5 @@ this provenance record together. JSON Schema cannot enforce Kubernetes CEL
 `x-kubernetes-validations`, defaulting, or admission behavior; this is a
 structural prevention slice, not server equivalence. The checker mechanically
 verifies the generated artifact hash and local Flux bootstrap pin, rejects
-unsupported HelmRelease API versions, and fails when a selected render emits
+unsupported HelmRelease API versions, and fails when the source tree contains
 zero HelmReleases. Never add a remote schema location to the checker.
