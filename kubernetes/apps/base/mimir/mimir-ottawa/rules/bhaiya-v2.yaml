@@ -19,3 +19,72 @@ groups:
             A Bhaiya v2 deployment has had fewer than one available replica
             for at least five minutes. Check the bhaiya-v2-control and
             bhaiya-v2-edge Deployments in the bhaiya namespace.
+
+  # Image-release freshness. bhaiya_image_release_state is the one-hot v2
+  # control-plane series (tag, state). Age of an approved release needs
+  # bhaiya_image_release_state_since_seconds from corp/bhaiya; without it
+  # the age alert stays quiet instead of paging on absent timestamps.
+  # canary_passed held for 2h is the promotion stall and does not require
+  # the timestamp series. Unknown and scrape gaps must not look like stale.
+  - name: bhaiya-v2.image-freshness
+    rules:
+      - record: bhaiya_image_release_approved
+        expr: |
+          max by (cluster, tag) (
+            bhaiya_image_release_state{state="approved"} == 1
+          )
+
+      - record: bhaiya_image_release_canary_passed
+        expr: |
+          max by (cluster, tag) (
+            bhaiya_image_release_state{state="canary_passed"} == 1
+          )
+
+      - record: bhaiya_image_release_unknown
+        expr: |
+          max by (cluster, tag) (
+            bhaiya_image_release_state{state="unknown"} == 1
+          )
+
+      - alert: BhaiyaImageReleaseApprovedStale
+        expr: |
+          max by (cluster, tag) (
+            bhaiya_image_release_state{state="approved"} == 1
+          )
+          and on (cluster, tag)
+          (
+            time()
+            - max by (cluster, tag) (
+                bhaiya_image_release_state_since_seconds{state="approved"}
+              )
+          ) > 604800
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: Approved workspace image {{ $labels.tag }} is older than 7 days
+          description: >-
+            Bhaiya v2 still reports {{ $labels.tag }} as the approved
+            workspace image, and bhaiya_image_release_state_since_seconds
+            says that approval is more than seven days old. Inspect the
+            workspace-image-v{{ $labels.tag }} pipeline, the v2 image
+            catalog, and whether a newer canary_passed digest is waiting
+            on promotion. This alert stays quiet when the timestamp series
+            is absent or the probe reports unknown.
+
+      - alert: BhaiyaImageReleaseCanaryPassedNotPromoted
+        expr: |
+          max by (cluster, tag) (
+            bhaiya_image_release_state{state="canary_passed"} == 1
+          )
+        for: 2h
+        labels:
+          severity: warning
+        annotations:
+          summary: Workspace image {{ $labels.tag }} passed canary but was not promoted
+          description: >-
+            Bhaiya v2 has reported {{ $labels.tag }} as canary_passed for at
+            least two hours without promotion to approved. Inspect the v2
+            image catalog, hold/pin settings, and the workspace-image
+            promotion path. Unknown and missing series do not fire this
+            alert; a scrape or catalog outage is not a promotion stall.

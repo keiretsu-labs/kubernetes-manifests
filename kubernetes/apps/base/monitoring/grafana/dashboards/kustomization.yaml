@@ -9,5 +9,6 @@ resources:
   - ./mimir
   - ./cnpg
   - ./k6
+  - ./bhaiya
   - ./vllm
   - ./teslamate

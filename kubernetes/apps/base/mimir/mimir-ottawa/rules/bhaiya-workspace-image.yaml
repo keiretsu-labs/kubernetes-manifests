@@ -5,11 +5,15 @@
 #
 # Keep this namespace unique across every file passed to mimirtool. A repeated
 # namespace aborts the complete rule sync for every tenant.
+#
+# Publication recording rules collapse the intended-release gauge with the
+# one-hot registry probe so dashboards and alerts share one predicate.
+# missing is a definitive HTTP 404; probe_error is unknown, never stale.
 namespace: bhaiya-workspace-image
 groups:
   - name: bhaiya-workspace-image.rules
     rules:
-      - alert: BhaiyaWorkspaceImagePublicationStale
+      - record: bhaiya_workspace_image_publication_missing
         expr: |
           max by (cluster, image, version) (
             bhaiya_workspace_image_intended_info{
@@ -25,6 +29,44 @@ groups:
               status="missing"
             } == 1
           )
+
+      - record: bhaiya_workspace_image_publication_published
+        expr: |
+          max by (cluster, image, version) (
+            bhaiya_workspace_image_intended_info{
+              job="bhaiya",
+              container="bhaiya"
+            }
+          )
+          and on (cluster, image, version)
+          max by (cluster, image, version) (
+            bhaiya_workspace_image_registry_probe_status{
+              job="bhaiya",
+              container="bhaiya",
+              status="published"
+            } == 1
+          )
+
+      - record: bhaiya_workspace_image_publication_unknown
+        expr: |
+          max by (cluster, image, version) (
+            bhaiya_workspace_image_intended_info{
+              job="bhaiya",
+              container="bhaiya"
+            }
+          )
+          and on (cluster, image, version)
+          max by (cluster, image, version) (
+            bhaiya_workspace_image_registry_probe_status{
+              job="bhaiya",
+              container="bhaiya",
+              status="probe_error"
+            } == 1
+          )
+
+      - alert: BhaiyaWorkspaceImagePublicationStale
+        expr: |
+          bhaiya_workspace_image_publication_missing
         for: 75m
         labels:
           severity: critical
@@ -42,20 +84,7 @@ groups:
 
       - alert: BhaiyaWorkspaceImagePublicationProbeUnavailable
         expr: |
-          max by (cluster, image, version) (
-            bhaiya_workspace_image_intended_info{
-              job="bhaiya",
-              container="bhaiya"
-            }
-          )
-          and on (cluster, image, version)
-          max by (cluster, image, version) (
-            bhaiya_workspace_image_registry_probe_status{
-              job="bhaiya",
-              container="bhaiya",
-              status="probe_error"
-            } == 1
-          )
+          bhaiya_workspace_image_publication_unknown
         for: 15m
         labels:
           severity: warning

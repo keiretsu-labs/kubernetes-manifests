@@ -1,0 +1,98 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: bhaiya-workspace-image
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  folder: Bhaiya
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: mimir-local
+  json: |
+    {
+      "title": "Bhaiya workspace-image freshness",
+      "uid": "bhaiya-workspace-image",
+      "tags": ["bhaiya", "workspace-image"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "refresh": "1m",
+      "time": { "from": "now-12h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "datasource",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": { "text": "Mimir-Ottawa", "value": "mimir-ottawa" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Intended publication (missing / published / unknown)",
+          "type": "timeseries",
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+          "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "bhaiya_workspace_image_publication_missing",
+              "legendFormat": "missing {{image}}:{{version}}"
+            },
+            {
+              "refId": "B",
+              "expr": "bhaiya_workspace_image_publication_published",
+              "legendFormat": "published {{image}}:{{version}}"
+            },
+            {
+              "refId": "C",
+              "expr": "bhaiya_workspace_image_publication_unknown",
+              "legendFormat": "unknown {{image}}:{{version}}"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Registry probe status",
+          "type": "timeseries",
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max by (version, status) (bhaiya_workspace_image_registry_probe_status{job=\"bhaiya\",container=\"bhaiya\"})",
+              "legendFormat": "{{version}} {{status}}"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "v2 image release state",
+          "type": "timeseries",
+          "datasource": { "type": "prometheus", "uid": "$${datasource}" },
+          "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "bhaiya_image_release_approved",
+              "legendFormat": "approved {{tag}}"
+            },
+            {
+              "refId": "B",
+              "expr": "bhaiya_image_release_canary_passed",
+              "legendFormat": "canary_passed {{tag}}"
+            },
+            {
+              "refId": "C",
+              "expr": "bhaiya_image_release_unknown",
+              "legendFormat": "unknown {{tag}}"
+            }
+          ]
+        }
+      ]
+    }
