@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - ./ocirepository.yaml
   - ./bhaiya-v2.yaml
-  - ./control-endpointslices-rbac.yaml
