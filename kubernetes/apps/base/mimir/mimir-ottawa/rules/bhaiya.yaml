@@ -391,17 +391,24 @@ groups:
     expr: |
       (
         kubelet_volume_stats_used_bytes{namespace="bhaiya"}
-        / on(namespace, persistentvolumeclaim)
+        * on (cluster, namespace, persistentvolumeclaim) group_left(pod, volume)
+        kube_pod_spec_volumes_persistentvolumeclaims_info{namespace="bhaiya"}
+      )
+      / on (cluster, namespace, node, persistentvolumeclaim, pod, volume)
+      (
         kubelet_volume_stats_capacity_bytes{namespace="bhaiya"}
-      ) > 0.85
+        * on (cluster, namespace, persistentvolumeclaim) group_left(pod, volume)
+        kube_pod_spec_volumes_persistentvolumeclaims_info{namespace="bhaiya"}
+      )
+      > 0.85
     for: 15m
     labels:
       severity: warning
     annotations:
-      summary: Bhaiya PVC {{ $labels.persistentvolumeclaim }} is near full
-      description: PVC {{ $labels.persistentvolumeclaim }} is above 85 percent used for fifteen
-        minutes. Inspect the owning workload and storage class, remove safe data or expand
-        the claim before writes fail.
+      summary: Bhaiya PVC {{ $labels.persistentvolumeclaim }} on {{ $labels.pod }} is near full
+      description: PVC {{ $labels.persistentvolumeclaim }} mounted by {{ $labels.namespace }}/{{ $labels.pod }}
+        as {{ $labels.volume }} is above 85 percent used for fifteen minutes. Inspect the
+        owning workload and storage class, remove safe data or expand the claim before writes fail.
   - alert: BhaiyaNamespaceQuotaNearExhaustion
     expr: |
       (

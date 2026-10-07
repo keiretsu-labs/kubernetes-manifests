@@ -2,7 +2,10 @@
 # tools/check-velero-pvc-coverage.sh — repo-side contract: every namespace that
 # declares durable volume intent in Git must have a Kopiur SnapshotPolicy on
 # that cluster, or a committed exemption. Filename kept so CI/make still call
-# it; the oracle is SnapshotPolicy, not Velero Schedule.
+# it; the oracle is SnapshotPolicy, not Velero Schedule. Git-declared
+# local-path PVCs (rancher.io/local-path hostPath) additionally require an
+# explicit Kopiur copyMethod: Direct — CSI Snapshot cannot capture them
+# (km#2877 / corp/bhaiya#695).
 #
 # See kubernetes/apps/base/kopiur/pvc-policy-exemptions.yaml. The gate
 # treats PVC, VCT, CNPG storage, GarageCluster storage, Grafana PVC, Helm
@@ -214,6 +217,96 @@ def pvc_namespaces(cluster: str) -> set[str]:
     return found
 
 
+def is_local_path_storage(cluster: str, storage_class) -> bool:
+    """rancher.io/local-path (and SP cluster default, which is local-path)."""
+    if storage_class == "local-path":
+        return True
+    if cluster == "stpetersburg" and not storage_class:
+        return True
+    if (
+        cluster == "stpetersburg"
+        and isinstance(storage_class, str)
+        and "STORAGECLASS" in storage_class
+    ):
+        return True
+    return False
+
+
+def local_path_pvcs(cluster: str) -> list[tuple[str, str]]:
+    """(namespace, pvc name) for Git-declared local-path PVCs on a cluster."""
+    found: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    cluster_root = ROOT / f"kubernetes/apps/{cluster}"
+    for path in cluster_root.rglob("*.yaml"):
+        for doc in load_docs(path):
+            if not is_flux_kustomization(doc):
+                continue
+            spec = doc.get("spec") or {}
+            target = spec.get("targetNamespace")
+            source_path = spec.get("path")
+            if not isinstance(target, str) or not target:
+                continue
+            if not isinstance(source_path, str) or not source_path:
+                continue
+            src = normalize_repo_path(source_path)
+            if not src.exists():
+                continue
+            files = list(src.rglob("*.yaml")) + list(src.rglob("*.yml"))
+            for file_path in files:
+                try:
+                    text = file_path.read_text()
+                except OSError:
+                    continue
+                if "PersistentVolumeClaim" not in text:
+                    continue
+                try:
+                    volumes = list(load_docs(file_path))
+                except SystemExit:
+                    # Non-Kubernetes YAML (e.g. configarr !secret) is not a PVC.
+                    continue
+                for vol in volumes:
+                    if vol.get("kind") != "PersistentVolumeClaim":
+                        continue
+                    name = (vol.get("metadata") or {}).get("name")
+                    if not isinstance(name, str) or not name:
+                        continue
+                    sc = (vol.get("spec") or {}).get("storageClassName")
+                    if not is_local_path_storage(cluster, sc):
+                        continue
+                    key = (target, name)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    found.append(key)
+    return found
+
+
+def policy_pvc_copy_methods(cluster: str) -> dict[tuple[str, str], set[str]]:
+    """(namespace, pvc name) -> copyMethod values from SnapshotPolicies."""
+    out: dict[tuple[str, str], set[str]] = {}
+    for policy_dir in POLICY_PATHS[cluster]:
+        if not policy_dir.is_dir():
+            continue
+        files = list(policy_dir.glob("*.yaml")) + list(policy_dir.glob("*.yml"))
+        for path in files:
+            for doc in load_docs(path):
+                if not is_snapshot_policy(doc):
+                    continue
+                spec = doc.get("spec") or {}
+                method = spec.get("copyMethod") or "Snapshot"
+                ns = (doc.get("metadata") or {}).get("namespace")
+                if not isinstance(ns, str) or not ns:
+                    continue
+                for src in spec.get("sources") or []:
+                    if not isinstance(src, dict):
+                        continue
+                    pvc = src.get("pvc") or {}
+                    name = pvc.get("name") if isinstance(pvc, dict) else None
+                    if isinstance(name, str) and name:
+                        out.setdefault((ns, name), set()).add(str(method))
+    return out
+
+
 def load_exemptions() -> dict[str, dict[str, str]]:
     """cluster -> {namespace: reason}."""
     if not EXEMPTIONS_PATH.is_file():
@@ -287,6 +380,25 @@ def main() -> int:
                 f"{cluster}/{namespace}: exempted but also has a SnapshotPolicy "
                 f"(drop the exemption or the policy)"
             )
+
+        methods = policy_pvc_copy_methods(cluster)
+        for namespace, pvc_name in local_path_pvcs(cluster):
+            if namespace in exempt:
+                continue
+            used = methods.get((namespace, pvc_name), set())
+            if not used:
+                if namespace in covered:
+                    failures.append(
+                        f"{cluster}/{namespace}/{pvc_name}: Git-declared "
+                        f"local-path PVC is not listed as a SnapshotPolicy source"
+                    )
+                continue
+            if used != {"Direct"}:
+                failures.append(
+                    f"{cluster}/{namespace}/{pvc_name}: local-path/hostPath PVC "
+                    f"requires Kopiur copyMethod: Direct (got {sorted(used)}); "
+                    f"CSI Snapshot cannot capture rancher.io/local-path volumes"
+                )
 
     if failures or stale:
         print("kopiur PVC policy coverage check failed:", file=sys.stderr)

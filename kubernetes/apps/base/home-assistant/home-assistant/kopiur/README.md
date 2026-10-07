@@ -1,6 +1,8 @@
 # StP Home Assistant — kopiur (Direct)
 
 Narrow protect for `homeassistant-config` (local-path → hostPath on orin-0).
+The PVC itself lives in `../app/pvc.yaml` so Git declares the volume; this
+directory is the Kopiur Repository / SnapshotPolicy / SnapshotSchedule.
 
 Constraints (also comments on the CRs):
 
@@ -31,6 +33,9 @@ Root mover (`runAsUser: 0` + `privilegedMode: true`) and Namespace
 `privileged-movers` annotation: live `/config` has root-owned `0600` files;
 mount stays read-only. `inheritSecurityContextFrom` is unusable — HA pins no
 `runAsUser` in the pod spec (image USER only → InheritPinnedNoUid / empty tree).
+Ownership-preserving Restore also needs `CAP_CHOWN`/`CAP_FOWNER` because the
+hardened mover drops ALL; `kopiur-restore-owner` injects those on Restore
+CREATE when `skipOwners` is false (km#2940).
 
 **Scheduling:** `SnapshotPolicy.spec.mover` has **no** `tolerations` field
 (schema reject). Direct movers reach tainted orin-0 via

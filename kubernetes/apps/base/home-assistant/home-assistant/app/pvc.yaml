@@ -1,0 +1,18 @@
+---
+# Live claim on St Petersburg (orin-0 hostPath via local-path-provisioner).
+# Copied from the Bound PVC so Flux owns the object; spec matches the
+# cluster (10Gi, RWO, local-path). Do not change storageClassName: Kopiur
+# Snapshot copyMethod fails on hostPath (SourceNotCSIProvisioned). Coverage
+# is kubernetes/apps/base/home-assistant/home-assistant/kopiur with
+# copyMethod: Direct. See km#2877 / corp/bhaiya#695.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: homeassistant-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: local-path

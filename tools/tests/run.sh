@@ -865,6 +865,39 @@ cp "$exbak" "$expath"
 rm -f "$exbak"
 exits  "restored garage exemption passes again" 0 "$T/check-velero-pvc-coverage.sh"
 
+hapvc="$ROOT/kubernetes/apps/base/home-assistant/home-assistant/app/pvc.yaml"
+assert "SP HA PVC is local-path in Git" \
+  grep -q 'storageClassName: local-path' "$hapvc"
+assert "SP HA app kustomization lists pvc.yaml" \
+  grep -q './pvc.yaml' "$ROOT/kubernetes/apps/base/home-assistant/home-assistant/app/kustomization.yaml"
+
+hapol="$ROOT/kubernetes/apps/base/home-assistant/home-assistant/kopiur/snapshotpolicy.yaml"
+habak="$(mktemp)"
+cp "$hapol" "$habak"
+sed -i 's/copyMethod: Direct/copyMethod: Snapshot/' "$hapol"
+exits  "SP HA Snapshot copyMethod fails the local-path gate" 1 "$T/check-velero-pvc-coverage.sh"
+assert "failure names homeassistant-config Direct" \
+  grep -q 'homeassistant-config' <<<"$("$T/check-velero-pvc-coverage.sh" 2>&1 || true)"
+assert "failure mentions copyMethod Direct" \
+  grep -q 'copyMethod: Direct' <<<"$("$T/check-velero-pvc-coverage.sh" 2>&1 || true)"
+cp "$habak" "$hapol"
+rm -f "$habak"
+exits  "restored Direct copyMethod passes again" 0 "$T/check-velero-pvc-coverage.sh"
+
+assert "SP woodpecker leftover is a documented out-of-band exemption" \
+  python3 - "$ROOT/kubernetes/apps/base/kopiur/pvc-policy-exemptions.yaml" <<'PY'
+from pathlib import Path
+import sys, yaml
+doc = yaml.safe_load(Path(sys.argv[1]).read_text())
+ok = any(
+    e.get("cluster") == "stpetersburg"
+    and e.get("namespace") == "woodpecker"
+    and e.get("outOfBand") is True
+    for e in doc.get("exemptions") or []
+)
+raise SystemExit(0 if ok else 1)
+PY
+
 # ---------------------------------------------------------------- Renovate exclusion ledger
 # Disabled rules are allowed only when their paths and a review-by date are
 # visible in the ledger. Advance the fixture date past the current review date

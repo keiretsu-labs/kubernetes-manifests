@@ -26,6 +26,8 @@ garage	garage.rules
 job-failures	kubernetes.jobs.rules
 k8gb-dns	k8gb-dns.rules
 k8gb	k8gb.rules
+kata-disk-attribution	kata-disk-attribution.rules
+kubeprism	kubeprism.rules
 media	media.rules
 mimir-loader	mimir-rule-loader.rules
 mimir-queryable-window	mimir.queryable-window
