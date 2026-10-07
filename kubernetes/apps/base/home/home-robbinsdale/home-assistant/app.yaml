@@ -21,7 +21,7 @@ spec:
         kubernetes.io/hostname: stone
       containers:
         - name: homeassistant
-          image: homeassistant/home-assistant:2026.9
+          image: homeassistant/home-assistant:2026.10
           lifecycle:
             postStart:
               exec:

@@ -81,7 +81,7 @@ spec:
               add: ["NET_ADMIN"]
       containers:
         - name: homeassistant
-          image: homeassistant/home-assistant:2026.9
+          image: homeassistant/home-assistant:2026.10
           # Guaranteed QoS prevents HA from being selected before Burstable workloads.
           resources:
             requests:
