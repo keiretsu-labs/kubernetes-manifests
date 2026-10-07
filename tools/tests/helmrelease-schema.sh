@@ -27,7 +27,8 @@ make_checker_root() {
   local schema_root="$root/tools/schemas/helm-controller-v1.6.4"
   mkdir -p "$root/tools" \
     "$schema_root" \
-    "$root/clusters/common/bootstrap/flux"
+    "$root/clusters/common/bootstrap/flux" \
+    "$root/kubernetes/apps/base/fixture"
   cp "$T/check-helmrelease-schema.sh" "$root/tools/check-helmrelease-schema.sh"
   cp "$T/schemas/helm-controller-v1.6.4/provenance.json" "$schema_root/provenance.json"
   cp "$T/schemas/helm-controller-v1.6.4/helmrelease-helm-v2-strict.json" \
@@ -37,10 +38,10 @@ make_checker_root() {
   chmod +x "$root/tools/check-helmrelease-schema.sh"
 }
 
-section "real checker selects raw rendered multi-document output"
+section "real checker selects source documents without chart resolution"
 raw_root="$tmp_root/raw-render"
 make_checker_root "$raw_root"
-cat >"$raw_root/rendered.yaml" <<'EOF'
+cat >"$raw_root/kubernetes/apps/base/fixture/resources.yaml" <<'EOF'
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -73,9 +74,9 @@ metadata:
 EOF
 cat >"$raw_root/tools/flate.sh" <<'EOF'
 #!/usr/bin/env bash
-set -euo pipefail
-printf '%s\n' "$*" >>"${FAKE_FLATE_ARGS:?}"
-cat "${FAKE_RENDERED:?}"
+printf '%s\n' "$*" >"${FAKE_FLATE_ARGS:?}"
+echo 'schema checker must not resolve HelmRelease chart sources' >&2
+exit 99
 EOF
 cat >"$raw_root/tools/kubeconform.sh" <<'EOF'
 #!/usr/bin/env bash
@@ -107,19 +108,18 @@ raw_flate_args="$raw_root/flate.args"
 raw_kubeconform_args="$raw_root/kubeconform.args"
 (
   cd "$raw_root"
-  FAKE_RENDERED="$raw_root/rendered.yaml" \
   FAKE_FLATE_ARGS="$raw_flate_args" \
   FAKE_KUBECONFORM_ARGS="$raw_kubeconform_args" \
   tools/check-helmrelease-schema.sh talos-ottawa >"$raw_out" 2>"$raw_err"
 )
 raw_rc=$?
 assert "raw multi-document checker passes" test "$raw_rc" = 0
-assert "raw Flate path is the targeted cluster" \
-  grep -q -- '--path kubernetes/apps/ottawa' "$raw_flate_args"
+assert "schema validation does not resolve charts through Flate" \
+  test ! -e "$raw_flate_args"
 assert "raw selection passes exactly one HelmRelease with opaque values" \
   grep -q '^fake kubeconform OK$' "$raw_out"
 assert "raw checker reports one validated resource" \
-  grep -q 'validated 1 rendered resources' "$raw_out"
+  grep -q 'validated 1 source resources' "$raw_out"
 
 section "provenance guards"
 hash_root="$tmp_root/hash-mismatch"

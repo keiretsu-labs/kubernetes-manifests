@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Validate rendered Flux HelmRelease v2 objects against the pinned local CRD.
-# This intentionally validates Flate output, not source files: substitutions,
-# overlays, and generated resource shape must be checked together.
+# Validate authored Flux HelmRelease v2 objects against the pinned local CRD.
+# Flate renders HelmRelease charts into their workload resources, so its output
+# does not retain the HelmRelease CRs this schema gate needs to inspect.
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
@@ -44,57 +44,42 @@ elif [ "$#" = 1 ]; then
   esac
 fi
 
-total=0
-for cluster in "${targets[@]}"; do
-  rendered="$tmp/$cluster.yaml"
-  flate_err="$tmp/$cluster-flate.err"
-  selected="$tmp/$cluster-helmreleases.yaml"
-  location="${cluster#talos-}"
-  # `build all` emits the final chart resources for HelmReleases; it does not
-  # emit the HelmRelease CRs themselves. The location application tree's
-  # Kustomization artifacts retain those post-build CR documents, which are
-  # the objects this CRD gate validates. The full cluster render gate below
-  # remains authoritative for chart/source reconciliation failures.
-  flate_rc=0
-  # CI exports FLATE_BASE=main for changed-only render gates. This focused
-  # schema view must inspect the existing full location tree even when the PR
-  # changes only tooling, or it would legitimately emit zero app documents.
-  env -u FLATE_BASE tools/flate.sh build ks --path "kubernetes/apps/$location" \
-    --allow-missing-secrets --no-progress >"$rendered" 2>"$flate_err" || flate_rc=$?
-  if [ ! -s "$rendered" ]; then
-    echo "error: Flate emitted no rendered Kustomization output for $cluster (exit $flate_rc)" >&2
-    tail -30 "$flate_err" >&2 || true
-    exit 1
-  fi
-  # Flate can retain usable Kustomization output while reporting unrelated
-  # chart/source failures in this source-only view. Do not turn that partial
-  # output into a false zero-resource schema failure; tools/check.sh runs the
-  # complete cluster render immediately after this focused check and reports
-  # those failures there.
-  count="$(python3 - "$rendered" "$selected" <<'PY'
+selected="$tmp/helmreleases.yaml"
+# HelmRelease objects are authored once in kubernetes/apps/base. Validate those
+# CRs directly: resolving charts here is unnecessary and can fail on unrelated
+# sources before kubeconform gets the objects. The full Flate cluster render
+# remains responsible for overlays, substitutions, chart sources, and readiness.
+count="$(python3 - "$ROOT/kubernetes/apps/base" "$selected" <<'PY'
 import pathlib, sys, yaml
-source, target = map(pathlib.Path, sys.argv[1:])
-text = source.read_text()
-try:
-    # BaseLoader inspects the node tree without applying PyYAML's YAML 1.1
-    # scalar constructors. Flate can legitimately emit plain values such as
-    # `=` that Kubernetes' YAML decoder accepts but SafeLoader rejects.
-    documents = list(yaml.load_all(text, Loader=yaml.BaseLoader))
-    nodes = list(yaml.compose_all(text, Loader=yaml.BaseLoader))
-except yaml.YAMLError as error:
-    raise SystemExit(f"rendered Flate YAML is invalid: {error}")
-if len(documents) != len(nodes):
-    raise SystemExit("rendered YAML document accounting mismatch")
+root, target = map(pathlib.Path, sys.argv[1:])
 selected = []
-for document, node in zip(documents, nodes):
-    if not isinstance(document, dict) or document.get("kind") != "HelmRelease":
+files = sorted(
+    path for suffix in ("*.yaml", "*.yml") for path in root.rglob(suffix)
+    if path.is_file()
+)
+for source in files:
+    text = source.read_text()
+    if "kind: HelmRelease" not in text:
         continue
-    api_version = document.get("apiVersion")
-    if api_version != "helm.toolkit.fluxcd.io/v2":
-        raise SystemExit(
-            f"unsupported HelmRelease API version {api_version!r}; update the pinned schema"
-        )
-    selected.append(text[node.start_mark.index:node.end_mark.index])
+    try:
+        documents = list(yaml.load_all(text, Loader=yaml.BaseLoader))
+        nodes = list(yaml.compose_all(text, Loader=yaml.BaseLoader))
+    except yaml.YAMLError as error:
+        raise SystemExit(f"{source.relative_to(root)}: invalid YAML: {error}")
+    if len(documents) != len(nodes):
+        raise SystemExit(f"{source.relative_to(root)}: YAML document accounting mismatch")
+    for document, node in zip(documents, nodes):
+        if not isinstance(document, dict) or document.get("kind") != "HelmRelease":
+            continue
+        api_version = document.get("apiVersion")
+        if api_version != "helm.toolkit.fluxcd.io/v2":
+            raise SystemExit(
+                f"{source.relative_to(root)}: unsupported HelmRelease API version "
+                f"{api_version!r}; update the pinned schema"
+            )
+        selected.append(text[node.start_mark.index:node.end_mark.index])
+if not selected:
+    raise SystemExit(f"no HelmRelease v2 source documents found under {root}")
 with target.open("w") as stream:
     for document in selected:
         stream.write("---\n")
@@ -103,11 +88,9 @@ with target.open("w") as stream:
             stream.write("\n")
 print(len(selected))
 PY
-  )"
-  case "$count" in ''|*[!0-9]*) echo "error: invalid HelmRelease count for $cluster: $count" >&2; exit 2;; esac
-  [ "$count" -gt 0 ] || { echo "error: Flate emitted no HelmRelease v2 resources for $cluster" >&2; exit 1; }
-  tools/kubeconform.sh -strict -schema-location "$schema_location" \
-    -output text -summary "$selected"
-  total=$((total + count))
-done
-echo "HelmRelease v2 schema OK (validated $total rendered resources)"
+)"
+case "$count" in ''|*[!0-9]*) echo "error: invalid HelmRelease count: $count" >&2; exit 2;; esac
+[ "$count" -gt 0 ] || { echo "error: no HelmRelease v2 source resources found" >&2; exit 1; }
+tools/kubeconform.sh -strict -schema-location "$schema_location" \
+  -output text -summary "$selected"
+echo "HelmRelease v2 schema OK (validated $count source resources)"
