@@ -1,7 +1,9 @@
 name: aqua-checksums
 
 on:
-  pull_request:
+  # Checksum commits use github-actions[bot], whose pull_request runs require
+  # manual contributor approval. The base workflow handles PRs without that gate.
+  pull_request_target:
     branches: [main]
     paths:
       - "aqua.yaml"
@@ -16,23 +18,27 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: aqua-checksums-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 jobs:
-  verify:
+  update:
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.user.login == 'renovate[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'renovate/')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
         with:
-          # Renovate PRs are same-repository branches. Check out the head so a
-          # generated checksum commit can be pushed to that branch instead of
-          # attempting to push GitHub's synthetic merge ref.
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Install Aqua
         uses: aquaproj/aqua-installer@82d0e83878a8657c4a6f2ff1755d3bfbfc67f329 # v4.1.0
@@ -41,17 +47,9 @@ jobs:
           enable_aqua_install: false
 
       - name: Update generated checksums on Renovate branches
-        if: >-
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          startsWith(github.event.pull_request.head.ref, 'renovate/')
         run: aqua update-checksum --prune
 
       - name: Commit generated checksums on Renovate branches
-        if: >-
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          startsWith(github.event.pull_request.head.ref, 'renovate/')
         env:
           RENOVATE_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
@@ -64,6 +62,26 @@ jobs:
           git add aqua-checksums.json
           git commit -m "chore(deps): update aqua checksums"
           git push origin "HEAD:${RENOVATE_HEAD_REF}"
+
+  verify:
+    if: >-
+      always() &&
+      (needs.update.result == 'success' || needs.update.result == 'skipped')
+    needs: update
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          # The update job may have pushed a new checksum commit.
+          ref: ${{ github.event.pull_request.head.ref || github.sha }}
+          persist-credentials: false
+
+      - name: Install Aqua
+        uses: aquaproj/aqua-installer@82d0e83878a8657c4a6f2ff1755d3bfbfc67f329 # v4.1.0
+        with:
+          aqua_version: v2.64.0
+          enable_aqua_install: false
 
       - name: Verify checksums
         run: |
