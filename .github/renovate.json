@@ -95,56 +95,6 @@
       "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
-      "description": "Require human review for genuinely critical infrastructure: Talos/Kubernetes bootstrap, Flux, CNI (Cilium, Multus, Whereabouts, Spiderpool), storage/CSI (Rook-Ceph, cephcsi, csi-addons, local-path, snapshot-controller), Garage and garage-operator, CNPG and its barman backup plugin, Kopiur backups, cert-manager, Tailscale, tuppr, and GPU operator/DRA. Everything else is eligible for automerge. Applies to every manager, so it must stay after the automerge rules above.",
-      "matchFileNames": [
-        "clusters/**/bootstrap/**",
-        "clusters/**/flux/**",
-        "clusters/**/apps/cilium/**",
-        "clusters/**/apps/whereabouts/**",
-        "clusters/**/apps/spiderpool/**",
-        "clusters/**/apps/multus/**",
-        "clusters/**/apps/rook-ceph/**",
-        "clusters/**/apps/csi-*/**",
-        "clusters/**/apps/local-path-storage/**",
-        "clusters/**/apps/snapshot-controller/**",
-        "clusters/**/apps/garage*/**",
-        "clusters/**/apps/cnpg-system/**",
-        "clusters/**/apps/garage-operator-system/**",
-        "clusters/**/apps/gpu-operator/**",
-        "clusters/**/apps/tailscale-system/**",
-        "clusters/**/apps/tuppr/**",
-        "clusters/**/apps/cert-manager/**",
-        "kubernetes/**/bootstrap/**",
-        "kubernetes/apps/**/flux-system*/**",
-        "kubernetes/apps/**/cilium-*/**",
-        "kubernetes/apps/**/whereabouts*/**",
-        "kubernetes/apps/**/spiderpool*/**",
-        "kubernetes/apps/**/multus*/**",
-        "kubernetes/apps/**/rook-ceph*/**",
-        "kubernetes/apps/**/csi-*/**",
-        "kubernetes/apps/**/local-path-storage*/**",
-        "kubernetes/apps/**/snapshot-controller*/**",
-        "kubernetes/apps/**/garage*/**",
-        "kubernetes/apps/**/cnpg-system*/**",
-        "kubernetes/apps/**/garage-operator*/**",
-        "kubernetes/apps/**/gpu-operator*/**",
-        "kubernetes/apps/**/k8s-gpu-dra-driver*/**",
-        "kubernetes/apps/**/tailscale-system*/**",
-        "kubernetes/apps/**/tailscale/**",
-        "kubernetes/apps/**/tuppr*/**",
-        "kubernetes/apps/**/cert-manager*/**",
-        "kubernetes/apps/**/kopiur*/**"
-      ],
-      "automerge": false
-    },
-    {
-      "description": "Auto merge Kopiur chart upgrades. The published chart carries the controller, webhook, and mover image digests for the chart release; inherit them so Renovate opens one effective update.",
-      "matchManagers": ["flux"],
-      "matchDepNames": ["kopiur"],
-      "matchFileNames": ["kubernetes/apps/base/kopiur/kopiur/helmrelease.yaml"],
-      "automerge": true
-    },
-    {
       "description": "Group ARC controller and runner scale set together",
       "matchPackageNames": ["gha-runner-scale-set", "gha-runner-scale-set-controller"],
       "matchFileNames": [
@@ -189,26 +139,6 @@
         "kubernetes/apps/base/teslamate/teslamate/app/deployment.yaml",
         "kubernetes/apps/base/monitoring/grafana/dashboards/teslamate/**"
       ],
-      "automerge": true
-    },
-    {
-      "description": "CloudNativePG compound/engine image tags encode the PostgreSQL major and extension version; database engine images always need review.",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": [
-        "ghcr.io/tensorchord/cloudnative-vectorchord",
-        "ghcr.io/cloudnative-pg/postgresql"
-      ],
-      "automerge": false
-    },
-    {
-      "description": "Non-CNI components that live in the cilium-* and csi-* trees (Intel GPU device plugin, NodeLocal DNSCache, Secrets Store CSI driver) may automerge minor/patch after the gates pass. Majors still need review. Must stay after the critical review rule.",
-      "matchPackageNames": [
-        "intel/intel-device-plugins-for-kubernetes",
-        "registry.k8s.io/dns/k8s-dns-node-cache",
-        "secrets-store-csi-driver",
-        "registry.k8s.io/csi-secrets-store/**"
-      ],
-      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },
     {
@@ -294,6 +224,115 @@
       "description": "CloudNativePG compound tags encode PostgreSQL major and extension version; keep Renovate on the current compatibility line.",
       "matchPackageNames": ["ghcr.io/tensorchord/cloudnative-vectorchord"],
       "allowedVersions": "/^15-/"
+    },
+    {
+      "description": "CRITICAL REVIEW BLOCK (keep last). Presets in extends (groups.json) are applied before this file, so any automerge rule here overrides a group-level automerge:false; the review rules therefore sit at the end and win. Only the narrow, explicitly non-critical exceptions after them may re-enable automerge. Paths: Talos/Kubernetes bootstrap, Flux, CNI (Cilium, Multus, Whereabouts, Spiderpool), storage/CSI (Rook-Ceph, cephcsi, csi-addons, local-path, snapshot-controller), Garage and garage-operator, CNPG and its barman backup plugin, Kopiur backups, cert-manager, Tailscale, tuppr, GPU operator/DRA, and Envoy Gateway (public ingress with Maglev+DSR and the real-client-IP rule: chart, CRDs, EnvoyProxy/Gateway config).",
+      "matchFileNames": [
+        "clusters/**/bootstrap/**",
+        "clusters/**/flux/**",
+        "clusters/**/apps/cilium/**",
+        "clusters/**/apps/whereabouts/**",
+        "clusters/**/apps/spiderpool/**",
+        "clusters/**/apps/multus/**",
+        "clusters/**/apps/rook-ceph/**",
+        "clusters/**/apps/csi-*/**",
+        "clusters/**/apps/local-path-storage/**",
+        "clusters/**/apps/snapshot-controller/**",
+        "clusters/**/apps/garage*/**",
+        "clusters/**/apps/cnpg-system/**",
+        "clusters/**/apps/garage-operator-system/**",
+        "clusters/**/apps/gpu-operator/**",
+        "clusters/**/apps/tailscale-system/**",
+        "clusters/**/apps/tuppr/**",
+        "clusters/**/apps/cert-manager/**",
+        "kubernetes/**/bootstrap/**",
+        "kubernetes/apps/**/flux-system*/**",
+        "kubernetes/apps/**/cilium-*/**",
+        "kubernetes/apps/**/whereabouts*/**",
+        "kubernetes/apps/**/spiderpool*/**",
+        "kubernetes/apps/**/multus*/**",
+        "kubernetes/apps/**/rook-ceph*/**",
+        "kubernetes/apps/**/csi-*/**",
+        "kubernetes/apps/**/local-path-storage*/**",
+        "kubernetes/apps/**/snapshot-controller*/**",
+        "kubernetes/apps/**/garage*/**",
+        "kubernetes/apps/**/cnpg-system*/**",
+        "kubernetes/apps/**/garage-operator*/**",
+        "kubernetes/apps/**/gpu-operator*/**",
+        "kubernetes/apps/**/k8s-gpu-dra-driver*/**",
+        "kubernetes/apps/**/tailscale-system*/**",
+        "kubernetes/apps/**/tailscale/**",
+        "kubernetes/apps/**/tuppr*/**",
+        "kubernetes/apps/**/cert-manager*/**",
+        "kubernetes/apps/**/kopiur*/**",
+        "kubernetes/apps/**/envoy-gateway-system/**",
+        "kubernetes/apps/**/local-gateway/envoyproxy*.yaml",
+        "kubernetes/apps/**/local-gateway/gateway*.yaml",
+        "kubernetes/apps/**/tailscale-gateway/**"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Critical families by package, wherever they appear. Restates the automerge:false intent of the critical groups in .renovate/groups.json (Talos, Kubernetes, Rook, Ceph, tuppr, Flux, flux-operator/instance, Multus, csi-driver-smb, Talhelper, snapshot-controller, CNPG engine images) plus Envoy Gateway, so a broad automerge rule in this file can never silently override them.",
+      "matchPackageNames": [
+        "ghcr.io/siderolabs/installer",
+        "ghcr.io/siderolabs/kubelet",
+        "budimanjojo/talhelper",
+        "tuppr",
+        "rook-ceph",
+        "rook/rook",
+        "quay.io/ceph/ceph",
+        "/^ghcr\\.io\\/fluxcd\\//",
+        "fluxcd/flux2",
+        "/^ghcr\\.io\\/controlplaneio-fluxcd\\/charts\\/flux-(operator|instance)$/",
+        "k8snetworkplumbingwg/multus-cni",
+        "ghcr.io/k8snetworkplumbingwg/multus-cni",
+        "kubernetes-csi/csi-driver-smb",
+        "csi-driver-smb",
+        "snapshot-controller",
+        "kubernetes-csi/external-snapshotter",
+        "ghcr.io/tensorchord/cloudnative-vectorchord",
+        "ghcr.io/cloudnative-pg/postgresql",
+        "gateway-helm",
+        "docker.io/envoyproxy/gateway-helm",
+        "envoyproxy/gateway",
+        "docker.io/envoyproxy/gateway",
+        "envoyproxy/envoy",
+        "docker.io/envoyproxy/envoy",
+        "kubernetes-sigs/gateway-api"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Never automerge commit-pinned Git references (restates the groups.json rule so it wins).",
+      "matchDatasources": ["git-refs"],
+      "automerge": false
+    },
+    {
+      "description": "Auto merge Kopiur chart upgrades. The published chart carries the controller, webhook, and mover image digests for the chart release; inherit them so Renovate opens one effective update.",
+      "matchManagers": ["flux"],
+      "matchDepNames": ["kopiur"],
+      "matchFileNames": ["kubernetes/apps/base/kopiur/kopiur/helmrelease.yaml"],
+      "automerge": true
+    },
+    {
+      "description": "Non-CNI components that live in the cilium-* and csi-* trees (Intel GPU device plugin, NodeLocal DNSCache, Secrets Store CSI driver) may automerge minor/patch after the gates pass. Majors still need review. Must stay after the critical review block.",
+      "matchPackageNames": [
+        "intel/intel-device-plugins-for-kubernetes",
+        "registry.k8s.io/dns/k8s-dns-node-cache",
+        "secrets-store-csi-driver",
+        "registry.k8s.io/csi-secrets-store/**"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "Envoy Gateway Grafana dashboards are release-tagged JSON assets, not ingress; they may automerge minor/patch after the gates pass. Majors still need review.",
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": ["kubernetes/apps/base/envoy-gateway-system/envoy-gw-common/install/dashboard-*.yaml"],
+      "matchPackageNames": ["envoyproxy/gateway"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
     }
   ]
 }

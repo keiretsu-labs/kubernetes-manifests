@@ -321,7 +321,7 @@
       "labels": ["Immich", "cluster:robbinsdale"]
     },
     {
-      "description": "Keep Grafana Mimir and mimirtool on the same upstream release.",
+      "description": "Keep Grafana Mimir and mimirtool on the same upstream release. Not critical: automerges minor/patch per .github/renovate.json; majors need review.",
       "matchDatasources": ["docker", "github-releases"],
       "matchPackageNames": [
         "grafana/mimir",
@@ -334,11 +334,10 @@
       "versioning": "regex:^(?:mimir-)?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
       "groupName": "grafana-mimir",
       "minimumGroupSize": 10,
-      "automerge": false,
       "labels": ["Mimir"]
     },
     {
-      "description": "Keep the Kromgo runtime image and configuration schema on the same upstream release.",
+      "description": "Keep the Kromgo runtime image and configuration schema on the same upstream release. Not critical: eligible for automerge after the gates.",
       "matchPackageNames": [
         "ghcr.io/home-operations/kromgo",
         "home-operations/kromgo"
@@ -348,11 +347,10 @@
       ],
       "groupName": "kromgo",
       "minimumGroupSize": 2,
-      "automerge": false,
       "labels": ["Monitoring"]
     },
     {
-      "description": "Keep the OCM hub and all klusterlet agents on the same OCM release.",
+      "description": "Keep the OCM hub and all klusterlet agents on the same OCM release. Not on the critical review list: automerges after the gates (decision 2026-10-07).",
       "matchDatasources": ["helm"],
       "matchPackageNames": ["cluster-manager", "klusterlet"],
       "matchFileNames": [
@@ -361,7 +359,6 @@
       ],
       "groupName": "open-cluster-management",
       "minimumGroupSize": 2,
-      "automerge": false,
       "labels": ["OCM", "Critical-Infrastructure"]
     },
     {
@@ -396,14 +393,13 @@
       "labels": ["CNI", "Critical-Infrastructure"]
     },
     {
-      "description": "Keep Envoy Gateway dashboards aligned with the deployed chart release.",
+      "description": "Keep Envoy Gateway dashboards aligned with the deployed chart release. In practice this only matches the release-tagged dashboards (the OCI chart resolves as docker.io/envoyproxy/gateway-helm), which may automerge minor/patch; the chart, CRDs and EnvoyProxy/Gateway config are held for review by the critical block at the end of .github/renovate.json.",
       "matchPackageNames": ["gateway-helm", "envoyproxy/gateway"],
       "matchFileNames": [
         "kubernetes/apps/base/envoy-gateway-system/envoy-gw-common/install/**"
       ],
       "groupName": "envoy-gateway",
       "minimumGroupSize": 2,
-      "automerge": false,
       "labels": ["Envoy-Gateway", "Critical-Infrastructure"]
     },
     {
