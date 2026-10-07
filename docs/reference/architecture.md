@@ -1402,11 +1402,15 @@ public Gateway — this is what renders the shields at the top of the README.
   failures surface here rather than in the cert-manager section above.
 - `smartctl-exporter` — disk health on all three clusters. Image pin is
   `quay.io/prometheuscommunity/smartctl-exporter:v0.15.0` (linux/amd64 +
-  linux/arm64; chart 0.17.1 still defaults to v0.14.0). Composite temperature
-  alerts compare against per-device `op_limit_max` / `critical_limit_max`
-  when those series exist; nested NVMe sensors still come from node-exporter
-  hwmon (`SmartDeviceNVMeSensorHigh` / `Critical`) because the exporter does
-  not mine `nvme_smart_health_information_log.temperature_sensors` (#2936).
+  linux/arm64; chart 0.17.1 still defaults to v0.14.0). Nested NVMe sensors
+  (`nvme_smart_health_information_log.temperature_sensors`) are still omitted
+  by the exporter, so Mimir records each hwmon Sensor N as
+  `smartctl_nvme_sensor_temperature_celsius` and
+  `smartctl_device_temperature:hottest`. `SmartDeviceOverOperatingLimit` /
+  `Critical` compare that hottest reading to per-device `op_limit_max` /
+  `critical_limit_max` (else hwmon temp1 max/crit); the fleet 65°C composite
+  rule applies only to devices with no operating-limit series. Per-sensor
+  pages remain `SmartDeviceNVMeSensorHigh` / `Critical` (#2936).
 - `unpoller` — UniFi controller metrics, all three clusters
 - `opencost` — cost attribution, Ottawa
 - `k8gb-prometheus` / `k8gb-monitoring` / `k8gb-dashboard` — GSLB visibility,
