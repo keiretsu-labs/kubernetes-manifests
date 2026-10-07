@@ -6,6 +6,12 @@ on:
   # runs for those commits, including this required check.
   pull_request_target:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Renovate PR to validate after a checksum commit
+        required: true
+        type: number
 
 permissions:
   contents: read
@@ -17,35 +23,49 @@ jobs:
     steps:
       - name: Skip non-Renovate PRs
         if: >-
-          github.event.pull_request.user.login != 'renovate[bot]' ||
-          github.event.pull_request.head.repo.full_name != github.repository ||
-          !startsWith(github.head_ref, 'renovate/')
+          !(
+            (github.event_name == 'pull_request_target' &&
+              github.event.pull_request.user.login == 'renovate[bot]' &&
+              github.event.pull_request.head.repo.full_name == github.repository &&
+              startsWith(github.head_ref, 'renovate/')) ||
+            (github.event_name == 'workflow_dispatch' &&
+              startsWith(github.ref_name, 'renovate/'))
+          )
         run: echo "Not a Renovate PR, skipping validation"
 
       - uses: actions/checkout@v7
         if: >-
-          github.event.pull_request.user.login == 'renovate[bot]' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          startsWith(github.head_ref, 'renovate/')
+          (github.event_name == 'pull_request_target' &&
+            github.event.pull_request.user.login == 'renovate[bot]' &&
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            startsWith(github.head_ref, 'renovate/')) ||
+          (github.event_name == 'workflow_dispatch' &&
+            startsWith(github.ref_name, 'renovate/'))
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - name: Install PyYAML
         if: >-
-          github.event.pull_request.user.login == 'renovate[bot]' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          startsWith(github.head_ref, 'renovate/')
+          (github.event_name == 'pull_request_target' &&
+            github.event.pull_request.user.login == 'renovate[bot]' &&
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            startsWith(github.head_ref, 'renovate/')) ||
+          (github.event_name == 'workflow_dispatch' &&
+            startsWith(github.ref_name, 'renovate/'))
         run: pip3 install pyyaml --quiet
 
       - name: Validate changed YAML files
         if: >-
-          github.event.pull_request.user.login == 'renovate[bot]' &&
-          github.event.pull_request.head.repo.full_name == github.repository &&
-          startsWith(github.head_ref, 'renovate/')
+          (github.event_name == 'pull_request_target' &&
+            github.event.pull_request.user.login == 'renovate[bot]' &&
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            startsWith(github.head_ref, 'renovate/')) ||
+          (github.event_name == 'workflow_dispatch' &&
+            startsWith(github.ref_name, 'renovate/'))
         run: |
-          files=$(gh pr diff "${{ github.event.pull_request.number }}" --name-only \
+          files=$(gh pr diff "${{ github.event.pull_request.number || inputs.pr_number }}" --name-only \
             | grep -E '\.ya?ml$' || true)
           if [ -z "$files" ]; then
             echo "No YAML files changed"

@@ -34,6 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -62,6 +63,17 @@ jobs:
           git add aqua-checksums.json
           git commit -m "chore(deps): update aqua checksums"
           git push origin "HEAD:${RENOVATE_HEAD_REF}"
+
+      # GITHUB_TOKEN pushes do not reliably emit another pull_request_target
+      # event. Dispatch checks at the new head so required contexts report.
+      - name: Run checks on the Renovate head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RENOVATE_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh workflow run validate.yaml --ref "$RENOVATE_HEAD_REF" -f pr_number="$PR_NUMBER"
+          gh workflow run aqua-checksums.yaml --ref "$RENOVATE_HEAD_REF"
 
   verify:
     if: >-
