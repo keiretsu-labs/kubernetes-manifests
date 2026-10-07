@@ -1,6 +1,11 @@
 name: Validate YAML
 
 on:
+  # Keep a check on PRs that edit this workflow while changing trigger types.
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/validate.yaml"
   # In-repository Renovate branches receive checksum commits from
   # github-actions[bot]. GitHub's contributor approval gate blocks pull_request
   # runs for those commits, including this required check.
