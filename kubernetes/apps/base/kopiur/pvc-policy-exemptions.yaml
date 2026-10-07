@@ -78,3 +78,12 @@ exemptions:
     reason: >-
       Model-weight caches on local-path (vLLM); rebuildable from registry,
       not application state.
+
+  - cluster: stpetersburg
+    namespace: woodpecker
+    outOfBand: true
+    reason: >-
+      No Woodpecker Git pointer on this cluster. agent-config-woodpecker-agent-0/1
+      are leftover 1Gi local-path identity PVCs with no running pods. Ottawa
+      owns the Woodpecker server PVC and woodpecker-postgres (CNPG/Barman).
+      Delete the claims if agents are not coming back.

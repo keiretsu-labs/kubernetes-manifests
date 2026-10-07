@@ -1,6 +1,8 @@
 # StP Home Assistant — kopiur (Direct)
 
 Narrow protect for `homeassistant-config` (local-path → hostPath on orin-0).
+The PVC itself lives in `../app/pvc.yaml` so Git declares the volume; this
+directory is the Kopiur Repository / SnapshotPolicy / SnapshotSchedule.
 
 Constraints (also comments on the CRs):
 
