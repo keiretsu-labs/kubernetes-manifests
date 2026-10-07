@@ -844,6 +844,27 @@ cp "$hsbak" "$hspol"
 rm -f "$hsbak"
 exits  "restored SnapshotPolicy passes again" 0 "$T/check-velero-pvc-coverage.sh"
 
+exbak="$(mktemp)"
+expath="$ROOT/kubernetes/apps/base/kopiur/pvc-policy-exemptions.yaml"
+cp "$expath" "$exbak"
+python3 - "$expath" <<'PY'
+from pathlib import Path
+import sys, yaml
+p = Path(sys.argv[1])
+doc = yaml.safe_load(p.read_text())
+doc["exemptions"] = [
+    e for e in doc["exemptions"]
+    if not (e.get("cluster") == "ottawa" and e.get("namespace") == "garage")
+]
+p.write_text(yaml.safe_dump(doc, sort_keys=False))
+PY
+exits  "dropping garage exemption fails the gate" 1 "$T/check-velero-pvc-coverage.sh"
+assert "failure names ottawa/garage" \
+  grep -q 'ottawa/garage' <<<"$("$T/check-velero-pvc-coverage.sh" 2>&1 || true)"
+cp "$exbak" "$expath"
+rm -f "$exbak"
+exits  "restored garage exemption passes again" 0 "$T/check-velero-pvc-coverage.sh"
+
 hapvc="$ROOT/kubernetes/apps/base/home-assistant/home-assistant/app/pvc.yaml"
 assert "SP HA PVC is local-path in Git" \
   grep -q 'storageClassName: local-path' "$hapvc"

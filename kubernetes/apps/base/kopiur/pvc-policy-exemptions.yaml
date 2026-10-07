@@ -3,9 +3,10 @@
 # Consumed only by tools/check-velero-pvc-coverage.sh (now Kopiur-backed).
 # NOT a Flux resource — do not add this file to kustomization.yaml.
 #
-# The check fails when a namespace that declares a PersistentVolumeClaim,
-# volumeClaimTemplate, or CNPG Cluster storage in Git has no SnapshotPolicy
-# on that cluster — unless listed here with a non-empty reason.
+# The check fails when a namespace that declares durable volume intent in Git
+# (PVC, VCT, CNPG storage, GarageCluster storage, Grafana PVC, Helm
+# persistence, or a workload claimName) has no SnapshotPolicy on that cluster
+# — unless listed here with a non-empty reason.
 apiVersion: keiretsu.top/v1alpha1
 kind: KopiurPVCPolicyExemptions
 metadata:
@@ -20,10 +21,29 @@ exemptions:
       CNPG/Barman dumps.
 
   - cluster: ottawa
-    namespace: woodpecker
+    namespace: garage
     reason: >-
-      CI workspace/nix-cache PVCs are rebuildable; woodpecker-postgres is
-      CNPG/Barman on Garage. No Kopiur volume policy.
+      Garage is the Kopiur/CNPG destination (ADR 0007). Backing
+      garage/data-garage-0 (2Ti smb) or Ceph metadata PVCs into Kopiur
+      is circular. Data sits on smb while metadata is Ceph — a genuine
+      if accidental failure-domain split; the independent-object-store
+      question stays in corp/bhaiya#423 / #571 rather than a schedule
+      here.
+
+  - cluster: ottawa
+    namespace: monitoring
+    reason: >-
+      Reconstructible observability: Grafana dashboards live in Git,
+      Alertmanager PVC is 1Gi of silences/notification state, VictoriaLogs
+      is short-retention (7d). Kopiur FSB of these volumes is not the
+      restore path.
+
+  - cluster: ottawa
+    namespace: hermes
+    reason: >-
+      Deployment scaled to 0 after the Discord gateway moved to the
+      Bhaiya teaspoon workspace. hermes-data is a leftover 10Gi claim
+      kept as a rollback anchor, not a live data plane.
 
   - cluster: ottawa
     namespace: teslamate
@@ -60,6 +80,22 @@ exemptions:
       volumes are ephemeral session disks. bhaiya-postgres is CNPG/Barman
       on Garage. GitOps rebuilds the control plane.
 
+  - cluster: ottawa
+    namespace: zot
+    outOfBand: true
+    reason: >-
+      Helm persistence is false; live registry writes Garage bucket zot
+      via the S3 driver. zot-pvc-zot-0 is an orphan leftover, not the
+      restore path. Durability is Garage RF3 (ADR 0007 / bhaiya#423/#571).
+
+  - cluster: ottawa
+    namespace: cartography
+    outOfBand: true
+    reason: >-
+      data-neo4j-0 is a leftover 50Gi claim with no Git app and no live
+      workload. Do not spend Kopiur budget on a retired volume; delete
+      the claim if the app is not coming back.
+
   # --- Robbinsdale ---
   - cluster: robbinsdale
     namespace: immich
@@ -68,9 +104,37 @@ exemptions:
       corp/bhaiya#718. immich-postgres remains CNPG/Barman on Garage.
 
   - cluster: robbinsdale
+    namespace: garage
+    reason: >-
+      Garage is the Kopiur/CNPG destination (ADR 0007). Backing the 2Ti
+      smb data volume or Ceph metadata PVCs into Kopiur is circular. The
+      smb-vs-Ceph split is the same failure-domain question as
+      corp/bhaiya#423 / #571.
+
+  - cluster: robbinsdale
+    namespace: monitoring
+    reason: >-
+      Reconstructible observability: Alertmanager silences and
+      VictoriaLogs short-retention local store. Not a Kopiur restore path.
+
+  - cluster: robbinsdale
+    namespace: woodpecker
+    reason: >-
+      Agent-only cluster: 1Gi agent.conf identity PVCs and ephemeral
+      workflow workspace claims. Ottawa owns the Woodpecker server PVC
+      (Kopiur) and woodpecker-postgres (CNPG/Barman).
+
+  - cluster: robbinsdale
     namespace: tailscale-examples
     reason: >-
       Demo/sandbox tsidp volumeClaimTemplate; not a production data plane.
+
+  - cluster: robbinsdale
+    namespace: zot
+    outOfBand: true
+    reason: >-
+      No Zot Git pointer on this cluster. zot-pvc-zot-0 is an orphan
+      leftover; live registry data is the Garage zot bucket, not this PVC.
 
   # --- St Petersburg ---
   - cluster: stpetersburg
@@ -80,6 +144,20 @@ exemptions:
       not application state.
 
   - cluster: stpetersburg
+    namespace: garage
+    reason: >-
+      Garage is the Kopiur/CNPG destination (ADR 0007). Gateway metadata
+      PVCs are node identity, not application data; backing them into
+      Kopiur is circular. Independent-object-store work remains
+      corp/bhaiya#423 / #571.
+
+  - cluster: stpetersburg
+    namespace: monitoring
+    reason: >-
+      Reconstructible observability: Alertmanager silences and
+      VictoriaLogs short-retention local store. Not a Kopiur restore path.
+
+  - cluster: stpetersburg
     namespace: woodpecker
     outOfBand: true
     reason: >-
@@ -87,3 +165,10 @@ exemptions:
       are leftover 1Gi local-path identity PVCs with no running pods. Ottawa
       owns the Woodpecker server PVC and woodpecker-postgres (CNPG/Barman).
       Delete the claims if agents are not coming back.
+
+  - cluster: stpetersburg
+    namespace: zot
+    outOfBand: true
+    reason: >-
+      No Zot Git pointer on this cluster. zot-pvc-zot-0 is an orphan
+      leftover; live registry data is the Garage zot bucket, not this PVC.

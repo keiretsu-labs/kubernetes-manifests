@@ -37,6 +37,7 @@ spec:
     - name: firefly
     - name: media-apps
     - name: forgejo
+    - name: woodpecker
   commonMetadata:
     labels:
       app.kubernetes.io/name: kopiur-production
