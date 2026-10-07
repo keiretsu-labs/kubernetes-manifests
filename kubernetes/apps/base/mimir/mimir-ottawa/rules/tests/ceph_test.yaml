@@ -1,0 +1,57 @@
+rule_files:
+  - ../ceph.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # Isolated 1-count noise in a 15m window must not page. The latched
+  # BLUESTORE_SLOW_OP_ALERT health status is also not this alert.
+  - interval: 1m
+    input_series:
+      - series: 'ceph_bluestore_slow_committed_kv_count{cluster="rook-ceph",ceph_daemon="osd.0",instance="192.168.169.118:9926",job="rook-ceph-exporter",namespace="rook-ceph"}'
+        values: "100 101 101 101 101 101 101 101 101 101 101 101"
+      - series: 'ceph_health_status{cluster="rook-ceph",job="rook-ceph-mgr"}'
+        values: "1+0x12"
+      - series: 'ceph_healthcheck_slow_ops{cluster="rook-ceph",job="rook-ceph-mgr"}'
+        values: "0+0x12"
+    alert_rule_test:
+      - eval_time: 11m
+        alertname: CephBlueStoreSlowKV
+        exp_alerts: []
+      - eval_time: 11m
+        alertname: CephSlowOps
+        exp_alerts: []
+
+  # A cluster-wide burst (the 2026-10-06T22:11Z Ottawa shape) pages after the
+  # five-minute hold and recovers once the 15m increase window empties.
+  - interval: 1m
+    input_series:
+      - series: 'ceph_bluestore_slow_committed_kv_count{cluster="rook-ceph",ceph_daemon="osd.3",instance="192.168.169.118:9926",job="rook-ceph-exporter",namespace="rook-ceph"}'
+        values: "1000 1000 1000 1240 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480 1480"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: CephBlueStoreSlowKV
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: CephBlueStoreSlowKV
+        exp_alerts:
+          - exp_labels:
+              cluster: rook-ceph
+              ceph_daemon: osd.3
+              instance: 192.168.169.118:9926
+              job: rook-ceph-exporter
+              namespace: rook-ceph
+              severity: warning
+            exp_annotations:
+              summary: Ceph OSD osd.3 is recording BlueStore slow KV commits
+              description: >-
+                osd.3 recorded new BlueStore slow KV commits in
+                the last 15 minutes. This is a live recurrence, not the 24h-latched
+                BLUESTORE_SLOW_OP_ALERT. Follow
+                docs/agent-knowledge/ottawa-ceph-bluestore-slow-ops.md: dump
+                historic slow ops, map the OSD to its node/device, and inspect
+                client versus MDS writers. Do not mute the health check or raise
+                bluestore_slow_ops_warn_threshold.
+      - eval_time: 24m
+        alertname: CephBlueStoreSlowKV
+        exp_alerts: []
