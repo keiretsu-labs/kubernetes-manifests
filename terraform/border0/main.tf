@@ -4,7 +4,7 @@ terraform {
   required_providers {
     border0 = {
       source  = "borderzero/border0"
-      version = "3.0.37"
+      version = "3.0.38"
     }
   }
 
