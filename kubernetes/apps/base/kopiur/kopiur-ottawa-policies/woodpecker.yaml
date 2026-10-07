@@ -1,0 +1,28 @@
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: woodpecker-server
+  namespace: woodpecker
+spec:
+  repository:
+    kind: ClusterRepository
+    name: kopiur-ottawa
+  credentialProjection:
+    enabled: true
+  copyMethod: Snapshot
+  groupBy: None
+  sources:
+    # Server gRPC JWT / agent-registration state on the chart PVC. Postgres
+    # is CNPG/Barman on Garage. Agent identity, CI workspaces, and the
+    # former nix-cache claims are rebuildable and are not included.
+    - pvc:
+        name: data-woodpecker-server-0
+      readOnly: true
+  retention:
+    keepDaily: 14
+    keepWeekly: 4
+    keepMonthly: 3
+  deletion:
+    onPolicyDelete: Retain
+  adoption: Ignore

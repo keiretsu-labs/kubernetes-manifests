@@ -4,7 +4,9 @@
 # that cluster, or a committed exemption. Filename kept so CI/make still call
 # it; the oracle is SnapshotPolicy, not Velero Schedule.
 #
-# See kubernetes/apps/base/kopiur/pvc-policy-exemptions.yaml.
+# See kubernetes/apps/base/kopiur/pvc-policy-exemptions.yaml. The gate
+# treats PVC, VCT, CNPG storage, GarageCluster storage, Grafana PVC, Helm
+# persistence, and workload claimName as durable volume intent.
 set -euo pipefail
 cd -- "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -68,29 +70,84 @@ def normalize_repo_path(path: str) -> Path:
     return ROOT / path
 
 
+def walk_mappings(obj):
+    if isinstance(obj, dict):
+        yield obj
+        for value in obj.values():
+            yield from walk_mappings(value)
+    elif isinstance(obj, list):
+        for value in obj:
+            yield from walk_mappings(value)
+
+
+def mapping_enables_volume(block) -> bool:
+    """True for a Helm persistence/persistentVolume mapping that creates a PVC."""
+    if not isinstance(block, dict):
+        return False
+    if block.get("enabled") is False:
+        return False
+    if block.get("enabled") is True:
+        return True
+    return bool(
+        block.get("size")
+        or block.get("storageClass")
+        or block.get("storageClassName")
+        or block.get("existingClaim")
+    )
+
+
+def helm_values_declare_volume(values) -> bool:
+    if not isinstance(values, dict):
+        return False
+    for node in walk_mappings(values):
+        if mapping_enables_volume(node.get("persistentVolume")):
+            return True
+        if mapping_enables_volume(node.get("persistence")):
+            return True
+        if node.get("volumeClaimTemplate") or node.get("volumeClaimTemplates"):
+            return True
+    return False
+
+
 def path_declares_durable_volume(path: Path) -> bool:
-    """True when Git under the Flux path declares a PVC, VCT, or CNPG storage."""
+    """True when Git under the Flux path declares durable volume intent."""
     if not path.exists():
         return False
     files = list(path.rglob("*.yaml")) + list(path.rglob("*.yml"))
     for file_path in files:
         for doc in load_docs(file_path):
             kind = doc.get("kind")
+            spec = doc.get("spec") if isinstance(doc.get("spec"), dict) else {}
             if kind == "PersistentVolumeClaim":
                 return True
-            spec = doc.get("spec")
-            if isinstance(spec, dict) and spec.get("volumeClaimTemplates"):
+            if spec.get("volumeClaimTemplates"):
                 return True
             if (
                 kind == "Cluster"
                 and str(doc.get("apiVersion", "")).startswith("postgresql.cnpg.io/")
             ):
-                storage = spec.get("storage") if isinstance(spec, dict) else None
-                wal = spec.get("walStorage") if isinstance(spec, dict) else None
+                storage = spec.get("storage")
+                wal = spec.get("walStorage")
                 if isinstance(storage, dict) and storage.get("size"):
                     return True
                 if isinstance(wal, dict) and wal.get("size"):
                     return True
+            if kind == "GarageCluster":
+                storage = spec.get("storage")
+                if isinstance(storage, dict):
+                    for key in ("metadata", "data"):
+                        block = storage.get(key)
+                        if isinstance(block, dict) and block.get("size"):
+                            return True
+            if kind == "Grafana" and spec.get("persistentVolumeClaim"):
+                return True
+            if kind == "HelmRelease" and helm_values_declare_volume(spec.get("values")):
+                return True
+            if kind in ("Deployment", "StatefulSet", "DaemonSet"):
+                for node in walk_mappings(doc):
+                    claim = node.get("persistentVolumeClaim")
+                    if isinstance(claim, dict) and claim.get("claimName"):
+                        return True
     return False
 
 
