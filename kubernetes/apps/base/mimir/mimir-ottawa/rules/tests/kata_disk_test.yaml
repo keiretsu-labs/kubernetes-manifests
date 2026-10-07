@@ -1,0 +1,112 @@
+rule_files:
+  - ../kata-disk.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # PVC used/capacity join to the mounting Kata pod, including runtimeclass.
+  # A runc postgres PVC is attributed to its pod but omitted from kata:*.
+  - interval: 1m
+    input_series:
+      - series: 'kubelet_volume_stats_used_bytes{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="ws-raj-codes-home"}'
+        values: "450000000000+0x20"
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="ws-raj-codes-home"}'
+        values: "528239525888+0x20"
+      - series: 'kube_pod_spec_volumes_persistentvolumeclaims_info{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-raj-codes",persistentvolumeclaim="ws-raj-codes-home",volume="home"}'
+        values: "1+0x20"
+      - series: 'kube_pod_runtimeclass_name_info{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-raj-codes",runtimeclass_name="kata-tailscale"}'
+        values: "1+0x20"
+      - series: 'kube_pod_status_phase{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-raj-codes",phase="Running"}'
+        values: "1+0x20"
+      - series: 'kubelet_volume_stats_used_bytes{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="bhaiya-postgres-1"}'
+        values: "726003712+0x20"
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="bhaiya-postgres-1"}'
+        values: "10737418240+0x20"
+      - series: 'kube_pod_spec_volumes_persistentvolumeclaims_info{cluster="talos-ottawa",namespace="bhaiya",pod="bhaiya-postgres-1",persistentvolumeclaim="bhaiya-postgres-1",volume="pgdata"}'
+        values: "1+0x20"
+    promql_expr_test:
+      - eval_time: 1m
+        expr: kubelet:volume_stats_used_bytes:pod{pod="sandbox-raj-codes"}
+        exp_samples:
+          - labels: 'kubelet:volume_stats_used_bytes:pod{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="ws-raj-codes-home",pod="sandbox-raj-codes",volume="home"}'
+            value: 450000000000
+      - eval_time: 1m
+        expr: kubelet:volume_stats_used_bytes:pod{pod="bhaiya-postgres-1"}
+        exp_samples:
+          - labels: 'kubelet:volume_stats_used_bytes:pod{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="bhaiya-postgres-1",pod="bhaiya-postgres-1",volume="pgdata"}'
+            value: 726003712
+      - eval_time: 1m
+        expr: kata:volume_stats_used_bytes
+        exp_samples:
+          - labels: 'kata:volume_stats_used_bytes{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="ws-raj-codes-home",pod="sandbox-raj-codes",runtimeclass_name="kata-tailscale",volume="home"}'
+            value: 450000000000
+      - eval_time: 1m
+        expr: kata:volume_stats_used_ratio
+        exp_samples:
+          - labels: 'kata:volume_stats_used_ratio{cluster="talos-ottawa",namespace="bhaiya",node="asuka",persistentvolumeclaim="ws-raj-codes-home",pod="sandbox-raj-codes",runtimeclass_name="kata-tailscale",volume="home"}'
+            value: 0.8518862711826136
+      - eval_time: 1m
+        expr: kata:blkio_attribution_missing
+        exp_samples:
+          - labels: 'kata:blkio_attribution_missing{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-raj-codes",runtimeclass_name="kata-tailscale"}'
+            value: 1
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: KataPVCNearFull
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: KataPVCNearFull
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: bhaiya
+              node: asuka
+              persistentvolumeclaim: ws-raj-codes-home
+              pod: sandbox-raj-codes
+              runtimeclass_name: kata-tailscale
+              volume: home
+              severity: warning
+            exp_annotations:
+              summary: >-
+                Kata PVC ws-raj-codes-home on
+                bhaiya/sandbox-raj-codes is near full
+              description: >-
+                Workspace volume home
+                (ws-raj-codes-home) for Kata pod
+                bhaiya/sandbox-raj-codes
+                (kata-tailscale on asuka) is above
+                85 percent used for fifteen minutes. This is kubelet filesystem
+                usage attributed through the PVC-to-pod join, not guest block-I/O
+                on a physical host device.
+
+  # A named-container blkio series clears the gap recording and produces a
+  # write rate. KataPVCNearFull stays quiet at half capacity.
+  - interval: 1m
+    input_series:
+      - series: 'kubelet_volume_stats_used_bytes{cluster="talos-ottawa",namespace="bhaiya",node="kaji",persistentvolumeclaim="ws-kartik-codes-home"}'
+        values: "58245324800+0x20"
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-ottawa",namespace="bhaiya",node="kaji",persistentvolumeclaim="ws-kartik-codes-home"}'
+        values: "528239525888+0x20"
+      - series: 'kube_pod_spec_volumes_persistentvolumeclaims_info{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-kartik-codes",persistentvolumeclaim="ws-kartik-codes-home",volume="home"}'
+        values: "1+0x20"
+      - series: 'kube_pod_runtimeclass_name_info{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-kartik-codes",runtimeclass_name="kata-tailscale"}'
+        values: "1+0x20"
+      - series: 'kube_pod_status_phase{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-kartik-codes",phase="Running"}'
+        values: "1+0x20"
+      - series: 'container_blkio_device_usage_total{cluster="talos-ottawa",namespace="bhaiya",pod="sandbox-kartik-codes",container="workspace",node="kaji",device="/dev/nvme1n1",operation="Write"}'
+        values: "0+4096x20"
+      - series: 'container_blkio_device_usage_total{cluster="talos-ottawa",namespace="monitoring",pod="prom-agent-kube-prometheus-stack-0",container="prometheus",node="asuka",device="/dev/nvme1n1",operation="Write"}'
+        values: "0+1048576x20"
+    promql_expr_test:
+      - eval_time: 5m
+        expr: kata:blkio_attribution_missing{pod="sandbox-kartik-codes"}
+        exp_samples: []
+      - eval_time: 5m
+        expr: container:blkio_device_bytes:rate5m{pod="prom-agent-kube-prometheus-stack-0",operation="Write"}
+        exp_samples:
+          - labels: 'container:blkio_device_bytes:rate5m{cluster="talos-ottawa",container="prometheus",device="/dev/nvme1n1",namespace="monitoring",node="asuka",operation="Write",pod="prom-agent-kube-prometheus-stack-0"}'
+            value: 17476.266666666666
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: KataPVCNearFull
+        exp_alerts: []
