@@ -8,7 +8,8 @@
   ],
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
-  "platformAutomerge": true,
+  "platformAutomerge": false,
+  "automergeSchedule": ["after 6pm", "before 6am"],
   "gitIgnoredAuthors": [
     "41898282+github-actions[bot]@users.noreply.github.com"
   ],
@@ -226,7 +227,7 @@
       "allowedVersions": "/^15-/"
     },
     {
-      "description": "CRITICAL REVIEW BLOCK (keep last). Presets in extends (groups.json) are applied before this file, so any automerge rule here overrides a group-level automerge:false; the review rules therefore sit at the end and win. Only the narrow, explicitly non-critical exceptions after them may re-enable automerge. Paths: Talos/Kubernetes bootstrap, Flux, CNI (Cilium, Multus, Whereabouts, Spiderpool), storage/CSI (Rook-Ceph, cephcsi, csi-addons, local-path, snapshot-controller), Garage and garage-operator, CNPG and its barman backup plugin, Kopiur backups, cert-manager, Tailscale, tuppr, GPU operator/DRA, and Envoy Gateway (public ingress with Maglev+DSR and the real-client-IP rule: chart, CRDs, EnvoyProxy/Gateway config).",
+      "description": "CRITICAL REVIEW BLOCK (keep last). Presets in extends (groups.json) are applied before this file, so any automerge rule here overrides a group-level automerge:false; the review rules therefore sit at the end and win. Only the narrow, explicitly non-critical exceptions after them may re-enable automerge. Paths: Talos/Kubernetes bootstrap, Flux, CNI (Cilium, Multus, Whereabouts, Spiderpool), storage/CSI (Rook-Ceph, cephcsi, csi-addons, local-path, snapshot-controller), Garage and garage-operator, CNPG and its barman backup plugin, Kopiur backups, cert-manager, Tailscale, tuppr, GPU operator/DRA, Woodpecker CI (a server/agent rollout orphans running pipelines), and Envoy Gateway (public ingress with Maglev+DSR and the real-client-IP rule: chart, CRDs, EnvoyProxy/Gateway config).",
       "matchFileNames": [
         "clusters/**/bootstrap/**",
         "clusters/**/flux/**",
@@ -268,12 +269,14 @@
         "kubernetes/apps/**/envoy-gateway-system/**",
         "kubernetes/apps/**/local-gateway/envoyproxy*.yaml",
         "kubernetes/apps/**/local-gateway/gateway*.yaml",
-        "kubernetes/apps/**/tailscale-gateway/**"
+        "kubernetes/apps/**/tailscale-gateway/**",
+        "clusters/**/apps/woodpecker*/**",
+        "kubernetes/apps/**/woodpecker*/**"
       ],
       "automerge": false
     },
     {
-      "description": "Critical families by package, wherever they appear. Restates the automerge:false intent of the critical groups in .renovate/groups.json (Talos, Kubernetes, Rook, Ceph, tuppr, Flux, flux-operator/instance, Multus, csi-driver-smb, Talhelper, snapshot-controller, CNPG engine images) plus Envoy Gateway, so a broad automerge rule in this file can never silently override them.",
+      "description": "Critical families by package, wherever they appear. Restates the automerge:false intent of the critical groups in .renovate/groups.json (Talos, Kubernetes, Rook, Ceph, tuppr, Flux, flux-operator/instance, Multus, csi-driver-smb, Talhelper, snapshot-controller, CNPG engine images) plus Envoy Gateway, Woodpecker CI, Cilium, cert-manager and the CNPG operator/backup plugin, so a broad automerge rule in this file can never silently override them.",
       "matchPackageNames": [
         "ghcr.io/siderolabs/installer",
         "ghcr.io/siderolabs/kubelet",
@@ -299,7 +302,17 @@
         "docker.io/envoyproxy/gateway",
         "envoyproxy/envoy",
         "docker.io/envoyproxy/envoy",
-        "kubernetes-sigs/gateway-api"
+        "kubernetes-sigs/gateway-api",
+        "woodpecker",
+        "/^(docker\\.io\\/)?woodpeckerci\\/woodpecker-(server|agent)$/",
+        "cilium",
+        "/^quay\\.io\\/cilium\\//",
+        "cert-manager",
+        "/^quay\\.io\\/jetstack\\/cert-manager-/",
+        "cloudnative-pg",
+        "ghcr.io/cloudnative-pg/cloudnative-pg",
+        "plugin-barman-cloud",
+        "ghcr.io/cloudnative-pg/plugin-barman-cloud"
       ],
       "automerge": false
     },
