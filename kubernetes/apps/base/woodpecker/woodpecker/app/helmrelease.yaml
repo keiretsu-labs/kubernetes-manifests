@@ -95,11 +95,16 @@ spec:
         # produce Multi-Attach failures and leave old claims attached during
         # cleanup. CephFS is the RWX backend in Ottawa.
         WOODPECKER_BACKEND_K8S_STORAGE_CLASS: rook-cephfs
-        # The workspace-image Tode/Herdr closure needs more than the former
-        # 128Gi was insufficient once the full Tode/Hermes/Pi closure and
-        # OCI archive were realized together; retain headroom for GC and
-        # registry preparation on cold releases.
-        WOODPECKER_BACKEND_K8S_VOLUME_SIZE: 256G
+        # Ordinary corp/bhaiya workflows (test/build/deliver/checks/ship)
+        # need a few GiB: checkout, Go build cache, npm, kaniko context. They
+        # ran on the 20G default until 2026-09-21. The workspace-image
+        # realize/build/push workflows, which put a cold Nix closure and OCI
+        # archive on this claim (that is what drove 20G -> 256G), now run on
+        # the local-path woodpecker-image-runner pool (helmrelease-image-
+        # runner.yaml, label ci-volume=large). CephFS claims are quotas, not
+        # reservations, so this caps how much one workflow can write into Ceph:
+        # a near-full OSD crashed every Kata workspace VM on 2026-10-08.
+        WOODPECKER_BACKEND_K8S_VOLUME_SIZE: 32G
         WOODPECKER_BACKEND_K8S_STORAGE_RWX: true
         # Keep CI step pods off shiro. shiro hosts the raj-codes Kata
         # workspace sandbox, and on 2026-09-25 every CI burst that landed
