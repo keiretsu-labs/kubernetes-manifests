@@ -13,6 +13,7 @@ spec:
     - name: tinyauth
     - name: home-local-gateway
     - name: home-tailscale-gateway
+    - name: external-secrets-config
   path: ./kubernetes/apps/base/cliproxy/cliproxy/app
   prune: true
   sourceRef:

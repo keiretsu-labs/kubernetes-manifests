@@ -10,8 +10,50 @@
 # CLIProxyAPI watches this path with fsnotify and compares a content hash, so
 # the swap at the end must be atomic: a half-written file would otherwise be
 # read as a live config.
+#
+# Workspace client keys live in /workspace-keys (one file per V1 slug, from
+# Secret/cliproxy-workspace-keys). They must be written into api-keys here:
+# a catalog reload replaces the in-memory list with this file, and V1 no
+# longer re-PATCHes /v0/management/api-keys afterward.
 set -eu
 umask 077
+
+append_workspace_api_keys() {
+  keys_dir=/workspace-keys
+  if [ ! -d "$${keys_dir}" ]; then
+    echo "render-config: workspace keys directory missing" >&2
+    return 1
+  fi
+  found=0
+  for f in "$${keys_dir}"/*; do
+    [ -e "$${f}" ] || {
+      echo "render-config: no workspace key files under $${keys_dir}" >&2
+      return 1
+    }
+    [ -f "$${f}" ] || continue
+    name=$$(basename "$${f}")
+    case "$${name}" in
+      ..*) continue ;;
+    esac
+    key=$$(tr -d '\n' < "$${f}")
+    if [ -z "$${key}" ]; then
+      echo "render-config: empty workspace key file $${name}" >&2
+      return 1
+    fi
+    case "$${key}" in
+      *\"*|*"'"*|*"\\"*|*"$$"*)
+        echo "render-config: workspace key file $${name} is not a plain token" >&2
+        return 1
+        ;;
+    esac
+    printf '  - "%s"\n' "$${key}" >> /config/.config.yaml.tmp
+    found=$$((found + 1))
+  done
+  if [ "$${found}" -eq 0 ]; then
+    echo "render-config: no workspace key files under $${keys_dir}" >&2
+    return 1
+  fi
+}
 
 cat > /config/.config.yaml.tmp <<EOF
 host: ""
@@ -26,8 +68,6 @@ remote-management:
   secret-key: "$${MANAGEMENT_KEY}"
   disable-control-panel: false
   disable-auto-update-panel: true
-api-keys:
-  - "$${API_KEY}"
 # Every credential owns its native route prefix. OAuth prefixes
 # live in auth metadata; the generated compatible providers
 # declare the Tailscale-backed routes below.
@@ -81,6 +121,12 @@ payload:
           protocol: "openai"
       params:
         'messages.#(role=="developer")#.role': system
+# api-keys is last in this head so append_workspace_api_keys can extend
+# the list without splicing the rest of the document. A catalog reload
+# replaces the in-memory list with this file.
+api-keys:
+  - "$${API_KEY}"
 EOF
+append_workspace_api_keys
 cat /provider/providers.yaml >> /config/.config.yaml.tmp
 mv /config/.config.yaml.tmp /config/config.yaml

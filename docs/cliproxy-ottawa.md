@@ -12,7 +12,13 @@ Anthropic-compatible APIs.
   `/data`; OAuth files live in `/data/auth`.
 - Configuration: an init container reads `Secret/cliproxy-credentials` and
   writes `/config/config.yaml` into a memory-backed `emptyDir`. The file is not
-  stored in a ConfigMap or in plaintext in Git.
+  stored in a ConfigMap or in plaintext in Git. `api-keys` always includes the
+  master key plus the V1 per-workspace client keys copied from
+  `bhaiya/ws-<slug>-cliproxy` into `Secret/cliproxy-workspace-keys` (ESO
+  `kubernetes-bhaiya`). catalog-watch re-renders that file on catalog or
+  workspace-key changes; CLIProxy reloads replace the in-memory list from the
+  file, so keys that exist only via `PATCH /v0/management/api-keys` do not
+  survive a reload. V2 computers authenticate to LiteLLM, not this list.
 - Management UI asset: pinned to CPAMC `v1.19.1`, downloaded by a hardened init
   container and verified against SHA-256
   `c8c8a2cf2b4ca87b38ac885821c94f03601ae3c09eb2eca651bd0f82180e6743`.
@@ -230,9 +236,13 @@ Both UI routes also require an authenticated tinyauth browser session.
 ## Configuration and key rotation
 
 The generated configuration is **GitOps-owned**. Do not treat configuration
-edits made in the management panel as authoritative: the next pod recreation
-regenerates `/config/config.yaml` from the Deployment template and Secret.
-Change configuration in this repository and let Flux reconcile it.
+edits made in the management panel as authoritative: the next catalog-watch
+re-render or pod recreation regenerates `/config/config.yaml` from the
+Deployment template, `Secret/cliproxy-credentials`, and
+`Secret/cliproxy-workspace-keys`. Change configuration in this repository and
+let Flux reconcile it. Adding a V1 workspace client key means adding its
+`ws-<slug>-cliproxy` copy to `workspace-keys.yaml`; do not PATCH the live
+management API as the durable path.
 
 To rotate either key, edit the existing SOPS file from the directory whose
 `.sops.yaml` rules apply:
