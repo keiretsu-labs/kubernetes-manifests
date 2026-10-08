@@ -1,0 +1,107 @@
+---
+# Agent-only Woodpecker release for the workspace-image Nix lanes.
+#
+# Why a second agent pool: Woodpecker's Kubernetes backend has one
+# per-agent workspace volume size and storage class; a pipeline cannot ask
+# for its own. The workspace-image realize/build/push workflows mount the
+# workflow volume at /nix and write a cold Nix closure plus OCI archive into
+# it, so they need a large scratch volume. Every other corp/bhaiya workflow
+# needs a few GiB.
+#
+# On 2026-10-08 those Nix writes landed on the rook-cephfs workspace claims
+# of the main pool. Ottawa Ceph had one near-full OSD; each 'full' episode
+# blocks writes to four pools and crashed every Kata workspace VM (waves at
+# 06:33, 08:06/08:14, 09:08 and 10:26 CT, with a 10:17 CT episode during
+# realize 9889, which itself died on ENOSPC). Ceph is not scratch space.
+#
+# This pool keeps the Nix scratch off Ceph entirely: local-path (node-local
+# /var/local-path-provisioner on asuka/kaji/rei, ~675-725 GiB free each on
+# 2026-10-08) instead of rook-cephfs. local-path is RWO and pins the claim's
+# PV to one node, so every step pod of a workflow is scheduled onto that node
+# by the PV node affinity; there is no attach step, so the Multi-Attach
+# failures that ruled out RBD do not apply. local-path does not enforce the
+# requested size; VOLUME_SIZE below is the documented budget, and the node's
+# kubelet disk-pressure eviction remains the hard backstop.
+#
+# Selection: the agent label '!ci-volume=large' makes the label REQUIRED
+# (Woodpecker >= 3.x scheduler, server/scheduler/filter.go
+# requiredLabelsMissing), so these agents only take workflows that declare
+#   labels:
+#     cluster: "ottawa"
+#     ci-volume: "large"
+# and never pick up ordinary PR/test workflows. The main pool lacks the
+# label, so it never takes those heavy workflows.
+#
+# Capacity: 2 agents x 2 workflows = 4 slots, matching the corp/bhaiya
+# concurrency groups that use it (bhaiya-release limit 2 for realize+build,
+# bhaiya-v2-release limit 2 for push).
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: woodpecker-image-runner
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: woodpecker
+      version: 3.7.5
+      sourceRef:
+        kind: HelmRepository
+        name: woodpecker
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    # Agent-only: the 'woodpecker' release owns the server, the agent secret
+    # (woodpecker-default-agent-secret, mapped by the agent chart) and the DB.
+    server:
+      enabled: false
+      createAgentSecret: false
+    agent:
+      enabled: true
+      replicaCount: 2
+      nameOverride: image-runner
+      env:
+        WOODPECKER_SERVER: woodpecker-server:9000
+        WOODPECKER_AGENT_LABELS: "cluster=ottawa,!ci-volume=large"
+        WOODPECKER_BACKEND: kubernetes
+        WOODPECKER_MAX_WORKFLOWS: "2"
+        WOODPECKER_BACKEND_K8S_NAMESPACE: woodpecker
+        WOODPECKER_BACKEND_K8S_STORAGE_CLASS: local-path
+        WOODPECKER_BACKEND_K8S_STORAGE_RWX: false
+        # Budget carried over from the main pool (128G was too small once the
+        # cold closure and OCI archive were realized in one workflow). Not
+        # enforced by local-path; see above.
+        WOODPECKER_BACKEND_K8S_VOLUME_SIZE: 256G
+        # Same node exclusion as the main pool: keep CI off shiro, which hosts
+        # the raj-codes Kata sandbox (2026-09-25 runtime stalls).
+        WOODPECKER_BACKEND_K8S_POD_AFFINITY: >-
+          {"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.io/hostname","operator":"NotIn","values":["shiro"]}]}]}}}
+        WOODPECKER_LOG_LEVEL: info
+      persistence:
+        enabled: false
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - shiro
+      serviceAccount:
+        create: true
+        rbac:
+          create: true
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+        limits:
+          cpu: 1
+          memory: 1Gi
