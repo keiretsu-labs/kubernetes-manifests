@@ -130,6 +130,9 @@ spec:
             - name: render-script
               mountPath: /render
               readOnly: true
+            - name: workspace-keys
+              mountPath: /workspace-keys
+              readOnly: true
           resources:
             requests:
               cpu: 5m
@@ -227,13 +230,15 @@ spec:
             - |
               # The catalog mount is not subPath, so kubelet swaps it
               # atomically in place; CLIProxyAPI then picks the rendered file
-              # up through its own fsnotify watcher.
+              # up through its own fsnotify watcher. Workspace client keys
+              # are hashed with the catalog so an ESO refresh also re-renders
+              # instead of leaving a stale api-keys list.
               #
               # State is a marker file compared with cmp rather than a shell
               # variable: Flux envsubst eats bare $ in this manifest, so the
               # loop avoids expansions entirely.
               while :; do
-                sha256sum /provider/providers.yaml > /config/.catalog.sha.new
+                sha256sum /provider/providers.yaml /workspace-keys/* > /config/.catalog.sha.new
                 if cmp -s /config/.catalog.sha.new /config/.catalog.sha; then
                   rm -f /config/.catalog.sha.new
                 else
@@ -262,6 +267,9 @@ spec:
               readOnly: true
             - name: render-script
               mountPath: /render
+              readOnly: true
+            - name: workspace-keys
+              mountPath: /workspace-keys
               readOnly: true
           resources:
             requests:
@@ -953,6 +961,9 @@ spec:
           configMap:
             name: cliproxy-render
             defaultMode: 0555
+        - name: workspace-keys
+          secret:
+            secretName: cliproxy-workspace-keys
         - name: data
           persistentVolumeClaim:
             claimName: cliproxy-data

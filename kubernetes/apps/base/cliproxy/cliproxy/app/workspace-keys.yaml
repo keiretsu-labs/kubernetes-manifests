@@ -1,0 +1,52 @@
+---
+# Copy V1 per-workspace CLIProxy client keys into this namespace so the
+# GitOps-rendered config can list them. V1 used to PATCH them into the
+# running process through /v0/management/api-keys; catalog-watch re-renders
+# /config/config.yaml from only the master key, and CLIProxy's reload
+# replaces the in-memory list, so those keys 401 until something
+# re-registers them. V2 computers use LiteLLM virtual keys and are not
+# listed here.
+#
+# Affected workspaces (all still mount ws-<slug>-cliproxy and send
+# OpenAI traffic to cliproxy): juthi-hermes, kartik-codes, raj-codes,
+# raj-trades, teaspoon.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cliproxy-workspace-keys
+  namespace: cliproxy
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: kubernetes-bhaiya
+    kind: ClusterSecretStore
+  target:
+    name: cliproxy-workspace-keys
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      metadata:
+        labels:
+          app.kubernetes.io/name: cliproxy
+          app.kubernetes.io/component: workspace-keys
+  data:
+    - secretKey: juthi-hermes
+      remoteRef:
+        key: ws-juthi-hermes-cliproxy
+        property: api-key
+    - secretKey: kartik-codes
+      remoteRef:
+        key: ws-kartik-codes-cliproxy
+        property: api-key
+    - secretKey: raj-codes
+      remoteRef:
+        key: ws-raj-codes-cliproxy
+        property: api-key
+    - secretKey: raj-trades
+      remoteRef:
+        key: ws-raj-trades-cliproxy
+        property: api-key
+    - secretKey: teaspoon
+      remoteRef:
+        key: ws-teaspoon-cliproxy
+        property: api-key

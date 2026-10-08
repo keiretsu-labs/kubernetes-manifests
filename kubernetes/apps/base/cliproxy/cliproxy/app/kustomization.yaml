@@ -16,6 +16,7 @@ resources:
   - httproute-api.yaml
   - securitypolicy.yaml
   - tinyauth-redirect-lua.yaml
+  - workspace-keys.yaml
 
 configMapGenerator:
   # Deliberately NOT hash-suffixed. The catalog-watch sidecar re-renders

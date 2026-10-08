@@ -40,6 +40,57 @@ if watcher is None:
     raise SystemExit("catalog-watch sidecar must re-render the config on catalog changes")
 if "render-config.sh" not in watcher["args"][0]:
     raise SystemExit("catalog-watch must reuse the shared render script, not inline its own")
+if "/workspace-keys/*" not in watcher["args"][0]:
+    raise SystemExit("catalog-watch must re-render when workspace client keys change")
+volumes = {volume["name"]: volume for volume in deployment["spec"]["template"]["spec"]["volumes"]}
+workspace_keys_volume = volumes.get("workspace-keys")
+if not workspace_keys_volume or workspace_keys_volume.get("secret", {}).get("secretName") != "cliproxy-workspace-keys":
+    raise SystemExit("cliproxy must mount Secret/cliproxy-workspace-keys as /workspace-keys")
+for container in (render_config, watcher):
+    mounts = {mount["mountPath"]: mount for mount in container.get("volumeMounts", [])}
+    mount = mounts.get("/workspace-keys")
+    if not mount or mount.get("name") != "workspace-keys" or not mount.get("readOnly"):
+        raise SystemExit(f"{container['name']} must read /workspace-keys from the workspace-keys volume")
+workspace_keys_path = pathlib.Path("kubernetes/apps/base/cliproxy/cliproxy/app/workspace-keys.yaml")
+workspace_keys = yaml.safe_load(workspace_keys_path.read_text())
+if workspace_keys.get("kind") != "ExternalSecret" or workspace_keys["metadata"]["name"] != "cliproxy-workspace-keys":
+    raise SystemExit("workspace-keys.yaml must define ExternalSecret/cliproxy-workspace-keys")
+if workspace_keys["spec"]["secretStoreRef"] != {"name": "kubernetes-bhaiya", "kind": "ClusterSecretStore"}:
+    raise SystemExit("workspace keys must be copied from ClusterSecretStore/kubernetes-bhaiya")
+expected_workspace_keys = {
+    "juthi-hermes": "ws-juthi-hermes-cliproxy",
+    "kartik-codes": "ws-kartik-codes-cliproxy",
+    "raj-codes": "ws-raj-codes-cliproxy",
+    "raj-trades": "ws-raj-trades-cliproxy",
+    "teaspoon": "ws-teaspoon-cliproxy",
+}
+got_workspace_keys = {
+    item["secretKey"]: item["remoteRef"]["key"]
+    for item in workspace_keys["spec"]["data"]
+}
+if got_workspace_keys != expected_workspace_keys:
+    raise SystemExit(f"workspace key copy set drifted: {got_workspace_keys}")
+if any(item["remoteRef"].get("property") != "api-key" for item in workspace_keys["spec"]["data"]):
+    raise SystemExit("workspace key copies must read the api-key property only")
+stores = list(
+    yaml.safe_load_all(
+        pathlib.Path(
+            "kubernetes/apps/base/external-secrets/external-secrets/config/cluster-secret-stores.yaml"
+        ).read_text()
+    )
+)
+bhaiya_store = next(
+    (
+        document
+        for document in stores
+        if document
+        and document.get("kind") == "ClusterSecretStore"
+        and document["metadata"]["name"] == "kubernetes-bhaiya"
+    ),
+    None,
+)
+if bhaiya_store is None or bhaiya_store["spec"]["provider"]["kubernetes"].get("remoteNamespace") != "bhaiya":
+    raise SystemExit("ClusterSecretStore/kubernetes-bhaiya must read the bhaiya namespace")
 render_script = render_path.read_text()
 rendered_config_match = re.search(
     r"(?ms)^[ \t]*cat > /config/\.config\.yaml\.tmp <<EOF\n(.*?)^[ \t]*EOF[ \t]*$",
@@ -51,6 +102,12 @@ if "mv /config/.config.yaml.tmp /config/config.yaml" not in render_script:
     raise SystemExit(
         "render-config.sh must swap the config atomically: CLIProxyAPI watches "
         "the path with fsnotify and would otherwise read a half-written file"
+    )
+eof_end = render_script.find("EOF", render_script.find("<<EOF"))
+if eof_end == -1 or "append_workspace_api_keys" not in render_script[eof_end:]:
+    raise SystemExit(
+        "render-config.sh must append V1 workspace client keys after the "
+        "static config head so a catalog reload cannot drop them"
     )
 
 # The catalog ConfigMap must stay unhashed. A hash suffix puts the catalog in
