@@ -75,8 +75,8 @@ check_aqua_checksums() {
 
 check_schema_provenance() {
   python3 - \
-    "$ROOT/tools/schemas/helm-controller-v1.6.4/provenance.json" \
-    "$ROOT/tools/schemas/helm-controller-v1.6.4/helmrelease-helm-v2-strict.json" \
+    "$ROOT/tools/schemas/helm-controller-v1.6.5/provenance.json" \
+    "$ROOT/tools/schemas/helm-controller-v1.6.5/helmrelease-helm-v2-strict.json" \
     "$ROOT/clusters/common/bootstrap/flux/kustomization.yaml" <<'PY'
 import hashlib
 import json

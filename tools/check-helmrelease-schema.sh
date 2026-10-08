@@ -6,7 +6,7 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-schema_root="$ROOT/tools/schemas/helm-controller-v1.6.4"
+schema_root="$ROOT/tools/schemas/helm-controller-v1.6.5"
 schema="$schema_root/helmrelease-helm-v2-strict.json"
 schema_location="$schema"
 provenance="$schema_root/provenance.json"

@@ -24,14 +24,14 @@ trap 'rm -rf -- "$tmp_root"' EXIT INT TERM
 
 make_checker_root() {
   local root="$1"
-  local schema_root="$root/tools/schemas/helm-controller-v1.6.4"
+  local schema_root="$root/tools/schemas/helm-controller-v1.6.5"
   mkdir -p "$root/tools" \
     "$schema_root" \
     "$root/clusters/common/bootstrap/flux" \
     "$root/kubernetes/apps/base/fixture"
   cp "$T/check-helmrelease-schema.sh" "$root/tools/check-helmrelease-schema.sh"
-  cp "$T/schemas/helm-controller-v1.6.4/provenance.json" "$schema_root/provenance.json"
-  cp "$T/schemas/helm-controller-v1.6.4/helmrelease-helm-v2-strict.json" \
+  cp "$T/schemas/helm-controller-v1.6.5/provenance.json" "$schema_root/provenance.json"
+  cp "$T/schemas/helm-controller-v1.6.5/helmrelease-helm-v2-strict.json" \
     "$schema_root/helmrelease-helm-v2-strict.json"
   cp "$ROOT/clusters/common/bootstrap/flux/kustomization.yaml" \
     "$root/clusters/common/bootstrap/flux/kustomization.yaml"
@@ -124,7 +124,7 @@ assert "raw checker reports one validated resource" \
 section "provenance guards"
 hash_root="$tmp_root/hash-mismatch"
 make_checker_root "$hash_root"
-python3 - "$hash_root/tools/schemas/helm-controller-v1.6.4/provenance.json" <<'PY'
+python3 - "$hash_root/tools/schemas/helm-controller-v1.6.5/provenance.json" <<'PY'
 import json
 import pathlib
 import sys
@@ -153,7 +153,7 @@ import sys
 
 path = pathlib.Path(sys.argv[1])
 text = path.read_text()
-old = "flux2/manifests/install?ref=v2.9.5"
+old = "flux2/manifests/install?ref=v2.9.6"
 new = "flux2/manifests/install?ref=v2.9.4"
 if old not in text:
     raise SystemExit("bootstrap fixture did not contain the expected Flux pin")
@@ -168,7 +168,7 @@ pin_err="$pin_root/check.stderr"
 pin_rc=$?
 assert "Flux pin mismatch fails" test "$pin_rc" = 1
 assert "Flux pin mismatch is explained" \
-  grep -q 'Flux bootstrap is v2.9.4, schema provenance is v2.9.5' "$pin_err"
+  grep -q 'Flux bootstrap is v2.9.4, schema provenance is v2.9.6' "$pin_err"
 
 make_gate_root() {
   local root="$1"
