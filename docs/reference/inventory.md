@@ -253,7 +253,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Metadata StorageClass | `local-path` |
 | Long-term StorageClass | `local-path` |
 | Talos cluster name | `k8s.stpetersburg.internal` |
-| Talos version | `v1.13.8` |
+| Talos version | `v1.13.11` |
 | Kubernetes version | `v1.36.3` |
 | Tailscale 4via6 range | `fd7a:115c:a1e0:b1a:0:3::/96` |
 
