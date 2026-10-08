@@ -964,7 +964,7 @@ spec:
     remediation:
       unexpectedField: true
 EOF
-schema="$ROOT/tools/schemas/helm-controller-v1.6.4/helmrelease-helm-v2-strict.json"
+schema="$ROOT/tools/schemas/helm-controller-v1.6.5/helmrelease-helm-v2-strict.json"
 exits "valid HelmRelease and opaque values pass" 0 \
   "$T/kubeconform.sh" -strict -schema-location "$schema" "$hrfixture/valid.yaml"
 exits "invalid remediation enum fails" 1 \

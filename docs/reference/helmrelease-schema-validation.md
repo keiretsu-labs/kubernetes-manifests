@@ -11,11 +11,11 @@ for overlays, substitutions, chart sources, and reconciliation failures.
 Schema lookup has no HTTP fallback and does not contact a cluster.
 
 The schema is the complete `HelmRelease` v2 OpenAPI schema from
-`helm-controller` v1.6.4, selected by the Flux v2.9.5 bootstrap pin:
+`helm-controller` v1.6.5, selected by the Flux v2.9.6 bootstrap pin:
 
-* Flux source: `https://github.com/fluxcd/flux2/releases/tag/v2.9.5`
-* Flux bootstrap base: `https://github.com/fluxcd/flux2/tree/v2.9.5/manifests/bases/helm-controller`
-* CRD source: `https://github.com/fluxcd/helm-controller/releases/download/v1.6.4/helm-controller.crds.yaml`
+* Flux source: `https://github.com/fluxcd/flux2/releases/tag/v2.9.6`
+* Flux bootstrap base: `https://github.com/fluxcd/flux2/tree/v2.9.6/manifests/bases/helm-controller`
+* CRD source: `https://github.com/fluxcd/helm-controller/releases/download/v1.6.5/helm-controller.crds.yaml`
 * CRD SHA-256: `8af19966e63cccde7d2c62e24c7bd3466010dd53e9d063e2ce22d1391e11f272`
 * validator: kubeconform v0.8.0, bootstrapped by `tools/kubeconform.sh`
 * kubeconform schema filename: `helmrelease-helm-v2-strict.json` (an explicit
@@ -25,7 +25,7 @@ The checked-in JSON is generated with:
 
 ```sh
 tools/update-helmrelease-schema.py /path/to/helm-controller.crds.yaml \
-  tools/schemas/helm-controller-v1.6.4/helmrelease-helm-v2-strict.json
+  tools/schemas/helm-controller-v1.6.5/helmrelease-helm-v2-strict.json
 ```
 
 The conversion closes declared object maps for kubeconform strict mode but
