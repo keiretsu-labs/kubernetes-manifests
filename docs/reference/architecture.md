@@ -526,9 +526,12 @@ Both live in `kubernetes/apps/base/k8gb/k8gb-common/config/cnames.yaml`.
   `ns1.dns.cdn.keiretsu.top` which has no A glue, so in-cluster lookups via
   CoreDNS/NodeLocal (the `keiretsu.top` stub forwarded to a public recursor)
   NXDOMAIN and Woodpecker cannot POST `/login/oauth/access_token`. Ottawa
-  CoreDNS/NodeLocal also answer `forgejo.keiretsu.top` as the public Envoy
-  Gateway VIP and forward `cdn.keiretsu.top` to the site k8gb CoreDNS VIP so
-  pods never wait on that glue.
+  CoreDNS/NodeLocal also answer `forgejo.keiretsu.top` as the **private**
+  Envoy Gateway VIP (`10.169.10.14`, eTP Local / SNAT) and forward
+  `cdn.keiretsu.top` to the site k8gb CoreDNS VIP so pods never wait on that
+  glue. The public Envoy VIP (`10.169.10.15`) is Maglev+DSR; a pod hairpin
+  onto it is SNATed by the UDM and DSR replies skip that NAT state, which
+  kills in-cluster HTTPS/git streams. Public/WAN DNS is unchanged.
 
 **`keiretsu-top-wildcards`** (labels `dns-target=cloudflare`,
 `dns-scope=public-only`):
