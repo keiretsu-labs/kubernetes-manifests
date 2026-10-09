@@ -53,7 +53,7 @@ diagram in the [README](../../README.md#architecture).
 | Metadata StorageClass | `ceph-block-replicated` |
 | Long-term StorageClass | `smb` |
 | Talos cluster name | `k8s.killinit.internal` |
-| Talos version | `v1.13.7` |
+| Talos version | `v1.13.11` |
 | Kubernetes version | `v1.36.3` |
 | Tailscale 4via6 range | `fd7a:115c:a1e0:b1a:0:2::/96` |
 
