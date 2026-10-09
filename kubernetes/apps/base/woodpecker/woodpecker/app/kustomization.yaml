@@ -8,3 +8,5 @@ resources:
   - helmrelease-image-runner.yaml
   - httproute.yaml
   - tailnet-secret-sync-rbac.yaml
+  - stranded-janitor-token.sops.yaml
+  - stranded-janitor.yaml

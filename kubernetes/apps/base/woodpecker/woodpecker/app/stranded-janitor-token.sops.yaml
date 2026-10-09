@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: woodpecker-stranded-janitor-token
+    labels:
+        app.kubernetes.io/name: woodpecker-stranded-janitor
+        app.kubernetes.io/part-of: woodpecker
+type: Opaque
+stringData:
+    token: ENC[AES256_GCM,data:NiiAVY0g5LZcuDXTPD7n83Fai0ZATsZWvkaSQv9mWySrOyjNvz0Mh0VxnLSDCGHpJCpTur+NuuaXb5aIG52i4TphhaxvglILhGzl6ncwMwt1N/IkYgPFK+riSPoD2YXJz/ttxvrnD8pgEoYtm2z3AW3kmW8q3N3X,iv:eJeCN9VbDjchZKXRlbh/hv7XU02GGPjrFHIKVr6ZEpE=,tag:XvENTfHbeoX0rop9ZtUmLw==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-09T03:06:45Z"
+    mac: ENC[AES256_GCM,data:814PUHupQzUEfspN254GLr1mXp1tyGCpRkKZml692v3biH5OAlypUCp2GhI5vAvioAMwn8MyHLQIxbijIQ0JOuW5S3UOuK1XVXDfmk/9OAVEBHLQC3tug2LbD1Nsu32mEkRGPSzRue99d6RVxfSI2BZ3F5hSx7UBQYt8eVzFI6o=,iv:ztM5SCMUR7MPMHoMLd3aFSgbszd+pJFe4Xr6IELMFmQ=,tag:KsqNHzkjk1JBFOECY8J0yw==,type:str]
+    pgp:
+        - created_at: "2026-10-09T03:06:45Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveAQ/+PUoFQ3CxUMuOkPlgnSaQPdOlMn3WdgFjX7BPAgOKzFz3
+            a/y/Vh9kYL54/bpiZRGn9PudLlgrDPG+Hi+QhXpr7rckvI/MyRm60Qwewg1LqxfH
+            xHv/PBvZn0pId2Mhh7BvqQxYR7j3p9w5ZgQ84JE5pfH/UnjLJPrqIAlC3fiGOzHT
+            yeixyfEu0/q8br23BDxEVdGGfgUyoizwjsAAV9Xk889MDwcVi2KlceGY2vqTOKGg
+            lKBajhFqHoXy9m3qPBkGVuOVs9hRn1Wl2Wq2HnMJ55bjtvXf8vtQXWSpxxFuVMI5
+            Cv0n1kmLoEuknXqxG7qATcSfZnyJdXXuSwJjU37OQYKAvYHzew2DdeIlfxiEB3TO
+            p4W7BOKVkzd0PwVBxcOmIKaBMWYG8LLE0FzuLPXuHDrErmTo4pQ2pcEJdgYD2Q2N
+            GhDwrWwEPR/dA2U7kvMx+jI0PA0yM3UJYB0gVllZiyrNGsrkkhB3f96L+HmL0qW+
+            bVNCn6t2MtjiyH6wRT7yTeq0zbmkFQw8icY+aJIhSW5T0st/YbIdms9b5mEBS2d9
+            eGX5hvDQjNkEipSixMRuOTRtsU1YjAS+HK+/tzk5IPeIJUy4OSNxB6g1BneryXG/
+            wixT0sLRWIH87RO9cGSaZFjrkwXB0MtYZZ1b0O/Zh13nqY2VfOJvinE/5qZMzK7S
+            XgHIzuZFVNhjl0pXbJEGyPAuoNQkIgM8wUBEzkyRoSIw3n8aeX4vbVHb/hO5AvKq
+            dDHZfD9NpeC6xlpr/51v8Va2jDXB3yz6JFb9uYi+eTIPq3emXzMr9sjWo4uovDc=
+            =jNe3
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.3
