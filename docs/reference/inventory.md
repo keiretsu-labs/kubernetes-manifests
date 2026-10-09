@@ -54,7 +54,7 @@ diagram in the [README](../../README.md#architecture).
 | Long-term StorageClass | `smb` |
 | Talos cluster name | `k8s.killinit.internal` |
 | Talos version | `v1.13.7` |
-| Kubernetes version | `v1.36.3` |
+| Kubernetes version | `v1.37.1` |
 | Tailscale 4via6 range | `fd7a:115c:a1e0:b1a:0:2::/96` |
 
 | Machine | Role | Address |
