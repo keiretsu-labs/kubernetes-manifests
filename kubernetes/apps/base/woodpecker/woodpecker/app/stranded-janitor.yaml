@@ -1,0 +1,384 @@
+---
+# Self-healing janitor for stranded Woodpecker pipelines.
+#
+# Woodpecker v3.19.0 (latest) still has upstream bug
+# https://github.com/woodpecker-ci/woodpecker/issues/7063: the server deletes a
+# task's DB backup row when an agent polls it, and when the 1-minute lease
+# expires (agent restarted, crashed, or lost its gRPC stream) the in-memory
+# resubmit is dropped as "not found in backup, dropping stale task". A server
+# restart loses every polled task the same way. The workflow row stays
+# pending/running forever, the 120m repo timeout never fires (the agent
+# enforces it and no agent owns the task), and the pipeline needs a manual
+# cancel. 2026-10-07/08: 9015 9041 9058 9059 9172 9205 9218 (16:03 CT server
+# upgrade) and 9849 9860 9862 (06:33 CT Ceph/Kata crash wave).
+#
+# No server/agent setting changes this path (the lease is hard-coded), and
+# persisting Ottawa agent config would only keep agent IDs stable. Until a
+# fixed release ships, this CronJob cancels pipelines that provably can no
+# longer finish (rules R1-R5 in the script) through the normal Woodpecker
+# cancel API, so Forgejo commit statuses are resolved too. It never touches
+# pending work that has not been handed to an agent, and never restarts
+# push/tag/deploy pipelines.
+#
+# Identity: Forgejo user bot-ci-janitor (restricted, private, no SSH keys or
+# Forgejo API tokens) in team corp/ci-janitors = Write on repo.code for
+# corp/bhaiya only, which is the minimum Woodpecker maps to repo "push", the
+# permission its cancel endpoint requires. Its Woodpecker user token is in
+# stranded-janitor-token.sops.yaml. Revoke: remove the team membership in
+# Forgejo and DELETE /api/user/token with the token.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: woodpecker-stranded-janitor
+  labels:
+    app.kubernetes.io/name: woodpecker-stranded-janitor
+    app.kubernetes.io/part-of: woodpecker
+---
+# Read-only pod list in this namespace: lets rule R4 tell a live
+# cluster=ottawa step pod from one that is gone.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: woodpecker-stranded-janitor
+  labels:
+    app.kubernetes.io/name: woodpecker-stranded-janitor
+    app.kubernetes.io/part-of: woodpecker
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: woodpecker-stranded-janitor
+  labels:
+    app.kubernetes.io/name: woodpecker-stranded-janitor
+    app.kubernetes.io/part-of: woodpecker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: woodpecker-stranded-janitor
+subjects:
+  - kind: ServiceAccount
+    name: woodpecker-stranded-janitor
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: woodpecker-stranded-janitor
+  labels:
+    app.kubernetes.io/name: woodpecker-stranded-janitor
+    app.kubernetes.io/part-of: woodpecker
+data:
+  janitor.py: |
+    #!/usr/bin/env python3
+    """Woodpecker stranded-pipeline janitor.
+
+    Woodpecker v3.x loses workflows whose agent dies or whose server restarts
+    (upstream woodpecker-ci/woodpecker#7063): the queue drops the task but the
+    workflow row stays pending/running forever, the agent-enforced repo timeout
+    never fires, and the pipeline sits at "running" until someone cancels it.
+
+    Every run this script lists running/pending pipelines of the repos the token
+    can see and cancels a pipeline only when one of these holds for a non-terminal
+    workflow (all times relative to the newest activity in the pipeline):
+
+      R1 timeout     running workflow started more than repo timeout + GRACE ago
+                     (the agent would have killed it at the timeout);
+      R2 dropped     pending workflow already handed to an agent (agent_id > 0)
+                     but never started, and the pipeline idle for IDLE minutes;
+      R3 unacked     running workflow whose steps are all finished, idle IDLE;
+      R4 podless     running workflow pinned to cluster=ottawa whose running
+                     steps have no pod in this namespace, idle IDLE;
+      R5 orphan      pipeline running/pending with every workflow finished,
+                     idle IDLE.
+
+    Pending workflows that were never handed to an agent (agent_id == 0) are
+    normal queue waits and are never touched. Optionally (RESTART_EVENTS) a
+    cancelled pipeline is restarted once: only for the listed events, only if it
+    is not itself a restart (parent == 0) and it is still the newest pipeline for
+    its ref. Push/tag/deploy are never restarted by default.
+
+    Only stdlib. Env: WOODPECKER_SERVER, WOODPECKER_TOKEN_FILE, IDLE_MINUTES (30),
+    GRACE_MINUTES (30), DRY_RUN (false), RESTART_EVENTS (""), REPOS (optional
+    comma list of repo ids), K8S_NAMESPACE (pod check; skipped if no in-cluster SA).
+    """
+    import json
+    import os
+    import re
+    import ssl
+    import sys
+    import time
+    import urllib.error
+    import urllib.request
+
+    SERVER = os.environ.get("WOODPECKER_SERVER", "http://woodpecker-server.woodpecker.svc.cluster.local").rstrip("/")
+    TOKEN_FILE = os.environ.get("WOODPECKER_TOKEN_FILE", "/var/run/secrets/woodpecker-janitor/token")
+    IDLE = int(os.environ.get("IDLE_MINUTES", "30")) * 60
+    GRACE = int(os.environ.get("GRACE_MINUTES", "30")) * 60
+    DRY = os.environ.get("DRY_RUN", "false").lower() in ("1", "true", "yes")
+    RESTART_EVENTS = {e.strip() for e in os.environ.get("RESTART_EVENTS", "").split(",") if e.strip()}
+    REPOS = [int(r) for r in os.environ.get("REPOS", "").split(",") if r.strip()]
+    NS = os.environ.get("K8S_NAMESPACE", "woodpecker")
+    SA_DIR = "/var/run/secrets/kubernetes.io/serviceaccount"
+
+    TERMINAL = {"success", "failure", "killed", "canceled", "skipped", "error", "declined"}
+    NOW = int(time.time())
+
+
+    def log(**kv):
+        kv.setdefault("ts", time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+        print(json.dumps(kv, sort_keys=True), flush=True)
+
+
+    with open(TOKEN_FILE) as fh:
+        TOKEN = fh.read().strip()
+
+
+    def wp(method, path, body=None):
+        req = urllib.request.Request(SERVER + path, method=method,
+                                     headers={"Authorization": "Bearer " + TOKEN,
+                                              "Content-Type": "application/json"},
+                                     data=None if body is None else json.dumps(body).encode())
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            raw = resp.read()
+            return json.loads(raw) if raw.strip() else None
+
+
+    def live_pods():
+        """Names of non-terminal pods in NS, or None when the pod check is unavailable."""
+        try:
+            tok = open(SA_DIR + "/token").read().strip()
+        except OSError:
+            return None
+        host = os.environ.get("KUBERNETES_SERVICE_HOST")
+        port = os.environ.get("KUBERNETES_SERVICE_PORT", "443")
+        if not host:
+            return None
+        ctx = ssl.create_default_context(cafile=SA_DIR + "/ca.crt")
+        req = urllib.request.Request(f"https://{host}:{port}/api/v1/namespaces/{NS}/pods",
+                                     headers={"Authorization": "Bearer " + tok})
+        try:
+            with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
+                items = json.load(resp)["items"]
+        except Exception as exc:  # pod check is an optimisation only
+            log(level="warn", msg="pod list failed; R4 disabled this run", error=str(exc))
+            return None
+        return {p["metadata"]["name"] for p in items
+                if p.get("status", {}).get("phase") not in ("Succeeded", "Failed")}
+
+
+    def dns(name):
+        # mirrors pipeline/backend/kubernetes toDNSName (lowercase, [^a-z0-9-.] -> -)
+        return re.sub(r"[^a-z0-9\-.]", "-", name.lower())[:253]
+
+
+    def step_pod_names(step):
+        uuid = step.get("uuid", "")
+        if step.get("type") == "service":
+            return {dns("wp-svc-" + uuid + "-" + step.get("name", "")), dns("wp-" + uuid)}
+        return {dns("wp-" + uuid)}
+
+
+    def ottawa_pinned(repo_id, number, cache={}):
+        """Workflow names whose config pins labels cluster=ottawa."""
+        key = (repo_id, number)
+        if key not in cache:
+            names = set()
+            try:
+                import base64
+                for f in wp("GET", f"/api/repos/{repo_id}/pipelines/{number}/config") or []:
+                    data = base64.b64decode(f.get("data", "")).decode("utf-8", "replace")
+                    m = re.search(r"^labels:\s*\n((?:[ \t]+.*\n?)+)", data, re.M)
+                    if m and re.search(r"^\s+cluster:\s*['\"]?ottawa['\"]?\s*$", m.group(1), re.M):
+                        name = f.get("name", "")
+                        names.add(re.sub(r"\.ya?ml$", "", name.split("/")[-1]))
+            except Exception as exc:
+                log(level="warn", msg="config fetch failed; R4 skipped for pipeline", number=number, error=str(exc))
+            cache[key] = names
+        return cache[key]
+
+
+    def last_activity(p):
+        ts = [p.get("created", 0), p.get("started", 0), p.get("finished", 0), p.get("updated", 0)]
+        for w in p.get("workflows") or []:
+            ts += [w.get("started", 0), w.get("finished", 0)]
+            for s in w.get("children") or []:
+                ts += [s.get("started", 0), s.get("finished", 0)]
+        return max(t or 0 for t in ts)
+
+
+    def verdict(repo, p, pods):
+        idle = NOW - last_activity(p)
+        timeout = int(repo.get("timeout") or 60) * 60
+        wfs = p.get("workflows") or []
+        open_wfs = [w for w in wfs if w.get("state") not in TERMINAL]
+        if not wfs:
+            return None
+        if not open_wfs:
+            return ("R5", "all workflows finished but pipeline still " + p["status"]) if idle > IDLE else None
+        for w in open_wfs:
+            st, steps = w.get("state"), w.get("children") or []
+            if st == "running" and w.get("started") and NOW - w["started"] > timeout + GRACE:
+                return ("R1", f"workflow {w['name']} running {(NOW - w['started']) // 60}m > timeout {timeout // 60}m + {GRACE // 60}m")
+            if idle <= IDLE:
+                continue
+            if st == "pending" and (w.get("agent_id") or 0) > 0 and not w.get("started"):
+                return ("R2", f"workflow {w['name']} handed to agent {w['agent_id']} but never started; idle {idle // 60}m")
+            if st == "running" and steps and all(s.get("state") in TERMINAL for s in steps):
+                return ("R3", f"workflow {w['name']} steps all finished, never acked; idle {idle // 60}m")
+            if st == "running" and pods is not None and w.get("name") in ottawa_pinned(repo["id"], p["number"]):
+                active = [s for s in steps if s.get("state") == "running"]
+                if active and not any(step_pod_names(s) & pods for s in active):
+                    return ("R4", f"workflow {w['name']} (cluster=ottawa) has no step pod; idle {idle // 60}m")
+        return None
+
+
+    def newest_for_ref(repo_id, p):
+        try:
+            recent = wp("GET", f"/api/repos/{repo_id}/pipelines?per_page=50") or []
+        except Exception:
+            return False
+        same = [q for q in recent if q.get("ref") == p.get("ref") and q.get("event") == p.get("event")]
+        return bool(same) and max(q["number"] for q in same) == p["number"]
+
+
+    def main():
+        repo_ids = REPOS or [r["id"] for r in (wp("GET", "/api/user/repos") or []) if r.get("active")]
+        pods = live_pods()
+        acted = errors = 0
+        for rid in repo_ids:
+            repo = wp("GET", f"/api/repos/{rid}")
+            perm = wp("GET", f"/api/repos/{rid}/permissions") or {}
+            cands = []
+            for status in ("running", "pending"):
+                cands += wp("GET", f"/api/repos/{rid}/pipelines?status={status}&per_page=100") or []
+            for summary in cands:
+                p = wp("GET", f"/api/repos/{rid}/pipelines/{summary['number']}")
+                if p.get("status") not in ("running", "pending"):
+                    continue
+                v = verdict(repo, p, pods)
+                if not v:
+                    continue
+                rule, why = v
+                info = dict(repo=repo["full_name"], number=p["number"], event=p.get("event"), ref=p.get("ref"), rule=rule, reason=why)
+                if DRY or not perm.get("push"):
+                    log(action="would-cancel", dry_run=DRY, push=perm.get("push"), **info)
+                    continue
+                try:
+                    wp("POST", f"/api/repos/{rid}/pipelines/{p['number']}/cancel")
+                    acted += 1
+                    log(action="cancelled", **info)
+                except urllib.error.HTTPError as exc:
+                    errors += 1
+                    log(level="error", action="cancel-failed", status=exc.code, **info)
+                    continue
+                if p.get("event") in RESTART_EVENTS and not p.get("parent") and newest_for_ref(rid, p):
+                    try:
+                        new = wp("POST", f"/api/repos/{rid}/pipelines/{p['number']}")
+                        log(action="restarted", new_number=(new or {}).get("number"), **info)
+                    except urllib.error.HTTPError as exc:
+                        log(level="error", action="restart-failed", status=exc.code, **info)
+        log(action="summary", repos=repo_ids, cancelled=acted, errors=errors, dry_run=DRY, pod_check=pods is not None)
+        return 1 if errors else 0
+
+
+    if __name__ == "__main__":
+        sys.exit(main())
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: woodpecker-stranded-janitor
+  labels:
+    app.kubernetes.io/name: woodpecker-stranded-janitor
+    app.kubernetes.io/part-of: woodpecker
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: woodpecker-stranded-janitor
+        app.kubernetes.io/part-of: woodpecker
+    spec:
+      activeDeadlineSeconds: 300
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: woodpecker-stranded-janitor
+            app.kubernetes.io/part-of: woodpecker
+        spec:
+          serviceAccountName: woodpecker-stranded-janitor
+          automountServiceAccountToken: true
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            fsGroup: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: janitor
+              image: python:3.14.5-alpine3.22
+              imagePullPolicy: IfNotPresent
+              command: ["python3", "/scripts/janitor.py"]
+              env:
+                - name: WOODPECKER_SERVER
+                  value: http://woodpecker-server.woodpecker.svc.cluster.local
+                - name: WOODPECKER_TOKEN_FILE
+                  value: /var/run/secrets/woodpecker-janitor/token
+                - name: K8S_NAMESPACE
+                  value: woodpecker
+                # Cancel only after the pipeline has been idle this long
+                # (R2-R5), and a running workflow only after repo timeout +
+                # GRACE_MINUTES (R1).
+                - name: IDLE_MINUTES
+                  value: "30"
+                - name: GRACE_MINUTES
+                  value: "30"
+                # Comma list of events to restart once after cancelling
+                # (e.g. "pull_request"). Empty: cancel only.
+                - name: RESTART_EVENTS
+                  value: ""
+                - name: DRY_RUN
+                  value: "false"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
+              volumeMounts:
+                - name: script
+                  mountPath: /scripts
+                  readOnly: true
+                - name: token
+                  mountPath: /var/run/secrets/woodpecker-janitor
+                  readOnly: true
+          volumes:
+            - name: script
+              configMap:
+                name: woodpecker-stranded-janitor
+                defaultMode: 0444
+            - name: token
+              secret:
+                secretName: woodpecker-stranded-janitor-token
+                defaultMode: 0440
+                items:
+                  - key: token
+                    path: token
