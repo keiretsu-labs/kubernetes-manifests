@@ -2,8 +2,9 @@
 # bhaiya control plane (v2 serves this host since the traffic switch; v1 is kept
 # running as the fallback). ROLLBACK = revert the commit that switched this file:
 # the lanes below go back to Service bhaiya (v1) and the v2 bearer route at the
-# end of the file disappears; nothing else changes. v1 still owns the legacy
-# routes that have no verified v2 replacement: /oauth/* callbacks,
+# end of the file disappears; nothing else changes. The v1-only /oauth/* rule
+# was removed on 2026-10-09 (0 requests in 24h; V1 retirement), so /oauth/ now
+# falls through to v2 control like every other path. Remaining legacy paths:
 # /api/health, bearer-authenticated /api/* and
 # /bhaiya.v1.WorkspaceService/*, OIDC discovery/JWKS/authorize/token, and the
 # payments.bhaiya.keiretsu.top Stripe webhook. The OIDC issuer stays with its
@@ -90,17 +91,6 @@ spec:
         - name: bhaiya-v2-edge
           namespace: bhaiya
           port: 8080
-      timeouts:
-        request: 3600s
-    # v1-only OAuth callbacks (forgejo, github, tailscale) stay on v1.
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /oauth/
-      backendRefs:
-        - name: bhaiya
-          namespace: bhaiya
-          port: 80
       timeouts:
         request: 3600s
 ---
