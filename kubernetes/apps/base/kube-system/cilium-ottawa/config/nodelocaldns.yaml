@@ -99,8 +99,11 @@ data:
       reload
       loop
       bind 0.0.0.0
+      # Same split-horizon as cilium-ottawa/config/coredns.yaml: private
+      # Envoy VIP, not the public DSR VIP. Keep these two hosts stanzas in
+      # lockstep.
       hosts {
-        10.169.10.15 forgejo.keiretsu.top
+        10.169.10.14 forgejo.keiretsu.top
         ttl 30
         fallthrough
       }

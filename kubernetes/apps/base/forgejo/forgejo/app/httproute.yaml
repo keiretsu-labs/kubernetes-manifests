@@ -37,3 +37,34 @@ spec:
         - path:
             type: PathPrefix
             value: /
+---
+# Split-horizon for forgejo.${COMMON_DOMAIN} on the private/ts gateways.
+# Ottawa CoreDNS/NodeLocal pin this name to 10.169.10.14 (private Envoy VIP,
+# eTP Local / SNAT) so in-cluster clients skip the public Maglev+DSR VIP.
+# WAN/k8gb stays on HTTPRoute forgejo-cdn (gateway/public).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: forgejo-internal
+spec:
+  hostnames:
+    - forgejo.${COMMON_DOMAIN}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+  rules:
+    - backendRefs:
+        - name: forgejo-http
+          port: 3000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

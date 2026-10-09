@@ -51,10 +51,16 @@ data:
     keiretsu.top:53 {
       errors
       cache 30
-      # Split-horizon: pods must not hairpin the WAN VIP for Forgejo.
-      # forgejo-cdn HTTPRoute is on gateway/public (10.169.10.15).
+      # Split-horizon: pods must not hairpin the public DSR VIP
+      # (envoy-home-public-dsr 10.169.10.15, Maglev+DSR, eTP Cluster).
+      # Pod -> that VIP is SNATed by the UDM (CT source 192.168.169.1) and
+      # DSR replies skip the NAT state, so HTTPS/git streams die mid-transfer
+      # (~79-85%; curl 56 unexpected eof). Point at the private Envoy VIP
+      # instead (envoy-home-private, 10.169.10.14, eTP Local, cluster-default
+      # SNAT). HTTPRoute forgejo-internal parentRefs private/ts so SNI
+      # matches. Public/WAN DNS is unchanged (cnames.yaml -> ottawa).
       hosts {
-        10.169.10.15 forgejo.keiretsu.top
+        10.169.10.14 forgejo.keiretsu.top
         ttl 30
         fallthrough
       }
