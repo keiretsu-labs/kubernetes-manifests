@@ -38,7 +38,7 @@ spec:
         - name: observer
           # This is the already deployed Ceph-CSI image. It is used only for
           # its small shell/curl/jq runtime; it does not start the CSI driver.
-          image: quay.io/cephcsi/cephcsi:v3.17.1@sha256:0b62db8afc9b174619186c87084a8952157daa719415c598603be22b63cc1293
+          image: quay.io/cephcsi/cephcsi:v3.18.1@sha256:a8c0653a9565049ee7b36a585753e5e0e8fe2e4e5a67e9db3a5f8d9d7e890635
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "/config/observe.sh"]
           env:
