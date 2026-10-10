@@ -24,12 +24,5 @@ spec:
   retryInterval: 1m
   timeout: 20m
   wait: true
-  healthChecks:
-    - apiVersion: apps/v1
-      kind: Deployment
-      name: bhaiya-v2-control
-      namespace: bhaiya
-    - apiVersion: apps/v1
-      kind: Deployment
-      name: bhaiya-v2-edge
-      namespace: bhaiya
+  # wait: true health-checks every applied object, so the Deployments are
+  # covered without naming them (lets Bhaiya rename bhaiya-v2-edge/-control).
