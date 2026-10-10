@@ -25,8 +25,8 @@ tests:
               summary: Bhaiya v2 deployment has no available replicas
               description: >-
                 A Bhaiya v2 deployment has had fewer than one available replica
-                for at least five minutes. Check the bhaiya-v2-control and
-                bhaiya-v2-edge Deployments in the bhaiya namespace.
+                for at least five minutes. Check the bhaiya-control and
+                bhaiya-edge Deployments (formerly bhaiya-v2-*) in the bhaiya namespace.
           - exp_labels:
               namespace: bhaiya
               deployment: bhaiya-v2-edge
@@ -35,8 +35,8 @@ tests:
               summary: Bhaiya v2 deployment has no available replicas
               description: >-
                 A Bhaiya v2 deployment has had fewer than one available replica
-                for at least five minutes. Check the bhaiya-v2-control and
-                bhaiya-v2-edge Deployments in the bhaiya namespace.
+                for at least five minutes. Check the bhaiya-control and
+                bhaiya-edge Deployments (formerly bhaiya-v2-*) in the bhaiya namespace.
 
   - interval: 1m
     input_series:

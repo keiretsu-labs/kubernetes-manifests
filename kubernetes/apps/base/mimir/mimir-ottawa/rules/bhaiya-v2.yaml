@@ -7,7 +7,7 @@ groups:
           max by (namespace, deployment) (
             kube_deployment_status_replicas_available{
               namespace="bhaiya",
-              deployment=~"bhaiya-v2-control|bhaiya-v2-edge"
+              deployment=~"bhaiya-control|bhaiya-edge|bhaiya-v2-control|bhaiya-v2-edge"
             }
           ) < 1
         for: 5m
@@ -17,8 +17,8 @@ groups:
           summary: Bhaiya v2 deployment has no available replicas
           description: >-
             A Bhaiya v2 deployment has had fewer than one available replica
-            for at least five minutes. Check the bhaiya-v2-control and
-            bhaiya-v2-edge Deployments in the bhaiya namespace.
+            for at least five minutes. Check the bhaiya-control and
+            bhaiya-edge Deployments (formerly bhaiya-v2-*) in the bhaiya namespace.
 
   # Image-release freshness. bhaiya_image_release_state is the one-hot v2
   # control-plane series (tag, state). Age of an approved release needs
