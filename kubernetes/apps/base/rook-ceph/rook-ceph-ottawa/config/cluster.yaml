@@ -22,7 +22,7 @@ spec:
       # NVMe discard/trim support
       bdev_enable_discard: "true"
       # bdev_async_discard: "true"
-      bdev_async_discard_threads: "2"
+      bdev_async_discard_threads: "1"
       # Cap queued discards (default 1000000). Slow-TRIM SSDs fell behind and
       # raised BLUESTORE_SLOW_OP_ALERT; overflow blocks are freed without TRIM.
       # Applied live 2026-10-10 18:2x CT; this persists it.
