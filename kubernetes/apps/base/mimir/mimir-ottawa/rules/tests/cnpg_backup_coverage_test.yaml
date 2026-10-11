@@ -25,11 +25,11 @@ tests:
         values: "1+0x1600"
       - series: 'cnpg_cr_backup_completed_timestamp{cluster="talos-robbinsdale",namespace="immich",cnpg_cluster="immich-postgres",backup="immich-old"}'
         values: "600+0x1600"
-      - series: 'cnpg_cr_cluster_info{cluster="talos-ottawa",namespace="bhaiya",cnpg_cluster="bhaiya-postgres"}'
+      - series: 'cnpg_cr_cluster_info{cluster="talos-ottawa",namespace="bhaiya",cnpg_cluster="bhaiya-v2-postgres"}'
         values: "1+0x1600"
-      - series: 'cnpg_cr_backup_info{cluster="talos-ottawa",namespace="bhaiya",cnpg_cluster="bhaiya-postgres",backup="bhaiya-fresh",phase="completed"}'
+      - series: 'cnpg_cr_backup_info{cluster="talos-ottawa",namespace="bhaiya",cnpg_cluster="bhaiya-v2-postgres",backup="bhaiya-fresh",phase="completed"}'
         values: "1+0x1600"
-      - series: 'cnpg_cr_backup_completed_timestamp{cluster="talos-ottawa",namespace="bhaiya",cnpg_cluster="bhaiya-postgres",backup="bhaiya-fresh"}'
+      - series: 'cnpg_cr_backup_completed_timestamp{cluster="talos-ottawa",namespace="bhaiya",cnpg_cluster="bhaiya-v2-postgres",backup="bhaiya-fresh"}'
         values: "36000+0x1600"
       - series: 'cnpg_cr_cluster_info{cluster="talos-ottawa",namespace="forgejo",cnpg_cluster="forgejo-postgres"}'
         values: "1+0x1600"
@@ -129,9 +129,9 @@ tests:
         values: "600+0x1600"
       - series: 'cnpg_pg_stat_archiver_seconds_since_last_archival{cluster="talos-ottawa",namespace="woodpecker",pod="woodpecker-postgres-1"}'
         values: "300+0x1600"
-      - series: 'barman_cloud_cloudnative_pg_io_last_available_backup_timestamp{cluster="talos-ottawa",namespace="bhaiya",pod="bhaiya-postgres-1"}'
+      - series: 'barman_cloud_cloudnative_pg_io_last_available_backup_timestamp{cluster="talos-ottawa",namespace="bhaiya",pod="bhaiya-v2-postgres-1"}'
         values: "36000+0x1600"
-      - series: 'cnpg_pg_stat_archiver_seconds_since_last_archival{cluster="talos-ottawa",namespace="bhaiya",pod="bhaiya-postgres-1"}'
+      - series: 'cnpg_pg_stat_archiver_seconds_since_last_archival{cluster="talos-ottawa",namespace="bhaiya",pod="bhaiya-v2-postgres-1"}'
         values: "300+0x1600"
       - series: 'barman_cloud_cloudnative_pg_io_last_available_backup_timestamp{cluster="talos-ottawa",namespace="forgejo",pod="forgejo-postgres-1"}'
         values: "0+0x1600"
