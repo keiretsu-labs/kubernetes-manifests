@@ -143,6 +143,15 @@
       "automerge": true
     },
     {
+      "description": "Mimir chart upgrades require a rule fixture update in the same PR; the CI render gate enforces this before merge.",
+      "matchManagers": ["flux"],
+      "matchPackageNames": ["mimir-distributed"],
+      "matchFileNames": ["kubernetes/apps/base/mimir/mimir-ottawa/helmrelease.yaml"],
+      "prBodyNotes": [
+        "Update at least one `kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/*_test.yaml` fixture in this PR. The CI render gate rejects this chart bump without a fixture change."
+      ]
+    },
+    {
       "description": "Apps released from the review list (Immich, Mimir and its dashboards, homer-operator, dragonfly-operator) automerge minor/patch only; majors still need review.",
       "matchFileNames": [
         "kubernetes/apps/**/immich*/**",

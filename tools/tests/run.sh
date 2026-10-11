@@ -1076,6 +1076,35 @@ assert "runner retains second promtool error" \
   grep -q 'FAILED: deliberate fixture B' <<<"$runner_output"
 rm -rf "$runner_fixture_root" "$runner_promtool_root"
 
+# -------------------------------------------------------------- Mimir version fixture gate
+# Stub only the changed-file discovery. The real checker still parses the
+# shipped rules and fixtures for each case.
+section "Mimir version fixture gate"
+mimir_git_stub="$(mktemp -d)"
+cat >"$mimir_git_stub/git" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+  merge-base) echo synthetic-base ;;
+  diff) printf '%s\n' "$MIMIR_CHANGED_PATHS" ;;
+  ls-files) : ;;
+  *) exit 2 ;;
+esac
+EOF
+chmod +x "$mimir_git_stub/git"
+mimir_chart="kubernetes/apps/base/mimir/mimir-ottawa/helmrelease.yaml"
+mimir_image="kubernetes/apps/base/mimir/mimir-ottawa/loader-job.yaml"
+mimir_dashboard="kubernetes/apps/base/monitoring/grafana/dashboards/mimir/dashboards.yaml"
+mimir_fixture="kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/node_health_test.yaml"
+exits "unrelated change needs no Mimir fixture" 0 \
+  env PATH="$mimir_git_stub:$PATH" MIMIR_CHANGED_PATHS="tools/README.md" "$T/check-mimir-rules.sh"
+for mimir_source in "$mimir_chart" "$mimir_image" "$mimir_dashboard"; do
+  exits "$(basename "$mimir_source") bump without fixture fails" 1 \
+    env PATH="$mimir_git_stub:$PATH" MIMIR_CHANGED_PATHS="$mimir_source" "$T/check-mimir-rules.sh"
+  exits "$(basename "$mimir_source") bump with fixture passes" 0 \
+    env PATH="$mimir_git_stub:$PATH" MIMIR_CHANGED_PATHS="$(printf '%s\n%s' "$mimir_source" "$mimir_fixture")" "$T/check-mimir-rules.sh"
+done
+rm -rf "$mimir_git_stub"
+
 # ---------------------------------------------------------------- gitops invariants (shipped manifests)
 # These assert the ClusterMesh/route/bloat/Kopiur GitOps contracts against
 # the real tree, not fixtures. Keep them in lockstep with AGENTS.md gotchas.
