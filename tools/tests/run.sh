@@ -906,7 +906,7 @@ section "Renovate exclusion ledger"
 exits "current exclusions are visible and unexpired" 0 \
   "$T/check-renovate-exclusions.sh"
 exits "expired exclusion review date fails" 1 \
-  env RENOVATE_EXCLUSIONS_TODAY=2026-10-11 "$T/check-renovate-exclusions.sh"
+  env RENOVATE_EXCLUSIONS_TODAY=2026-10-19 "$T/check-renovate-exclusions.sh"
 
 # ---------------------------------------------------------------- HelmRelease schema
 # Offline fixture tests use the repository-pinned kubeconform wrapper and the

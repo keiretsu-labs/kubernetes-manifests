@@ -171,7 +171,7 @@
       "automerge": true
     },
     {
-      "description": "Do not update runtime images independently inside generated or vendored manifests; regenerate the complete upstream bundle instead. Review-by: 2026-10-10.",
+      "description": "Do not update runtime images independently inside generated or vendored manifests; regenerate the complete upstream bundle instead. Review-by: 2026-10-18.",
       "matchDatasources": ["docker"],
       "matchFileNames": [
         "kubernetes/apps/base/agent-sandbox/agent-sandbox/app/raw-manifest.yaml",
@@ -182,7 +182,7 @@
       "enabled": false
     },
     {
-      "description": "Do not update Docker-like image or version values in Mimir alert-rule test fixtures; rules/tests/ contains promtool data, not deployed images. Review-by: 2026-10-10.",
+      "description": "Do not update Docker-like image or version values in Mimir alert-rule test fixtures; rules/tests/ contains promtool data, not deployed images. Review-by: 2026-10-18.",
       "matchDatasources": ["docker"],
       "matchFileNames": [
         "kubernetes/apps/base/mimir/*/rules/tests/**"
