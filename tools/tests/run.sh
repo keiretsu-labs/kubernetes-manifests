@@ -1184,6 +1184,10 @@ exits "garage gateway CNP keeps peer RPC/admin scoped" 0 \
   bash "$T/check-garage-gateway-ingress.sh"
 
 
+# ---------------------------------------------------------------- merge-one.sh
+section "merge-one.sh"
+if "$T/tests/test_merge_one.sh"; then ok "merge-one offline integration"; else bad "merge-one offline integration"; fi
+
 # ---------------------------------------------------------------- summary
 printf '\n== %d passed, %d failed ==\n' "$pass" "$fail"
 [ "$fail" = 0 ]
