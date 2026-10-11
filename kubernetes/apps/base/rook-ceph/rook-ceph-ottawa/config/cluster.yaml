@@ -322,7 +322,7 @@ spec:
     useAllNodes: false
     useAllDevices: true
     config:
-      osdsPerDevice: "4"
+      osdsPerDevice: "1"
     allowDeviceClassUpdate: true # whether to allow changing the device class of an OSD after it is created
     allowOsdCrushWeightUpdate: true # whether to allow resizing the OSD crush weight after osd pvc is increased
     nodes:
@@ -330,8 +330,6 @@ spec:
       - name: kaji
       - name: rei
       - name: shiro
-        config:
-          osdsPerDevice: "1"
     # Whether to always schedule OSD pods on nodes declared explicitly in the "nodes" section, even if they are
     # temporarily not schedulable. If set to true, consider adding placement tolerations for unschedulable nodes.
     scheduleAlways: false
