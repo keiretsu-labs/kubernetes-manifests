@@ -38,7 +38,7 @@ trap 'rm -rf "$tmp"' EXIT
 api() {
   local output=$1 method=$2 path=$3 body=${4:-}
   "$KGH" "$method" "$path" "$body" >"$output" || die "App API request failed: $method $path"
-  jq -e '(type == "object" or type == "array") and (if type == "object" then .message? == null else true end)' "$output" >/dev/null ||
+  jq -e '(type == "object" or type == "array") and (if type == "object" then (.message? == null or .merged? == true) else true end)' "$output" >/dev/null ||
     die "App API rejected $method $path: $(jq -r '.message // "invalid response"' "$output" 2>/dev/null || echo 'invalid response')"
 }
 
