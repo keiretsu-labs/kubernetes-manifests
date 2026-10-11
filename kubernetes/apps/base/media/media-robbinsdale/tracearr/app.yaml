@@ -15,6 +15,9 @@ spec:
       labels:
         app: tracearr
     spec:
+      securityContext:
+        fsGroup: 65533
+        fsGroupChangePolicy: OnRootMismatch
       containers:
       - name: tracearr
         image: ghcr.io/connorgallopo/tracearr:2.7.1
