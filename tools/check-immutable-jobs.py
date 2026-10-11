@@ -78,8 +78,9 @@ def source_file(files, name):
                  (str(path).startswith("kubernetes/") or str(path).startswith("clusters/"))]
     name_line = re.compile(r"^\s*name:\s*" + re.escape(name) + r"\s*(?:#.*)?$", re.M)
     for path in manifests:
-        if path.is_file():
-            data = path.read_text(errors="replace")
+        source = ROOT / path
+        if source.is_file():
+            data = source.read_text(errors="replace")
             if re.search(r"^kind:\s*Job\s*$", data, re.M) and name_line.search(data):
                 return str(path)
     return ", ".join(map(str, manifests[:4])) or "rendered chart/resource"
