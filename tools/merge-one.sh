@@ -158,6 +158,20 @@ done
 snapshot "$tmp/after"
 new=$(comm -13 "$BASELINE" "$tmp/after")
 if [[ -n $new ]]; then
+  # Child Kustomizations can briefly report Ready=Unknown while the new source
+  # revision propagates. Wait only for newly unhealthy resources, then take a
+  # fresh snapshot. A persistent failure consumes the remaining time budget.
+  while IFS=/ read -r cluster kind namespace name; do
+    left=$((deadline - SECONDS))
+    ((left > 0)) || break
+    "$ROOT/tools/kc.sh" "$cluster" -n "$namespace" wait \
+      "${kind,,}/$name" --for=condition=Ready=True \
+      "--timeout=${left}s" >/dev/null 2>&1 || true
+  done <<<"$new"
+  snapshot "$tmp/after"
+  new=$(comm -13 "$BASELINE" "$tmp/after")
+fi
+if [[ -n $new ]]; then
   echo "merge-one: STOP: newly not-ready Flux resources after PR #$PR ($merged_sha):" >&2
   printf '%s\n' "$new" >&2
   echo "merge-one: no automatic revert; baseline: $BASELINE" >&2

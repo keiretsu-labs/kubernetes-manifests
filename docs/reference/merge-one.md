@@ -30,8 +30,9 @@ GitRepository artifact and `kubernetes-apps` Kustomization to attempt the merge
 SHA in each cluster. It uses read-only `kubectl wait`, with a 30-minute overall
 timeout (`--timeout SECONDS` to change it). A transient `Ready=Unknown` during
 reconciliation is allowed to settle. Once the root Kustomizations finish or
-the timeout is reached, the tool reads Flux health again and reports newly
-not-ready resources. A new failure stops the one-at-a-time merge sequence; the
+the timeout is reached, the tool reads Flux health again. It waits for newly
+not-ready children within the remaining timeout, then takes a final snapshot.
+A persistent new failure stops the one-at-a-time merge sequence; the
 operator investigates and repairs it through GitOps. If Flux never observes the
 exact merge SHA, the command exits with the PR already merged and directs the
 operator to inspect the clusters before merging another PR. Another commit that

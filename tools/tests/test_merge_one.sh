@@ -44,43 +44,48 @@ echo "$*" >>"$KUBE_CALLS"
 case " $* " in
   *' get '* )
     if [[ ${CASE:-} == baseline_fail ]]; then exit 1; fi
-    if [[ ${CASE:-} == new_unhealthy && -f $MERGED_MARKER ]]; then
-      echo '{"items":[{"kind":"Kustomization","metadata":{"namespace":"flux-system","name":"broken"},"status":{"conditions":[{"type":"Ready","status":"False"}]}}]}'
+    if [[ ( ${CASE:-} == new_unhealthy || ${CASE:-} == transient ) && -f $MERGED_MARKER && ! -f $RECOVERED_MARKER ]]; then
+      echo '{"items":[{"kind":"Kustomization","metadata":{"namespace":"flux-system","name":"broken"},"status":{"conditions":[{"type":"Ready","status":"Unknown"}]}}]}'
     else
       echo '{"items":[{"kind":"Kustomization","metadata":{"namespace":"flux-system","name":"old"},"status":{"conditions":[{"type":"Ready","status":"False"}]}}]}'
     fi ;;
   *' wait '* )
+    if [[ ${CASE:-} == transient && " $* " == *' kustomization/broken '* ]]; then touch "$RECOVERED_MARKER"; fi
     [[ ${CASE:-} != wait_fail ]] ;;
   *) exit 3 ;;
 esac
 STUB
 chmod +x "$T/kgh" "$T/bin/kubectl"
-export PATH="$T/bin:$PATH" MERGE_ONE_TEST_KGH="$T/kgh" CALLS="$T/calls" KUBE_CALLS="$T/kubecalls" MERGED_MARKER="$T/merged"
+export PATH="$T/bin:$PATH" MERGE_ONE_TEST_KGH="$T/kgh" CALLS="$T/calls" KUBE_CALLS="$T/kubecalls" MERGED_MARKER="$T/merged" RECOVERED_MARKER="$T/recovered"
 pass=0
 run_case() {
   local scenario=$1 expected=$2
   export CASE=$scenario
-  : >"$CALLS"; : >"$KUBE_CALLS"; rm -f "$MERGED_MARKER" "$T/baseline"
+  : >"$CALLS"; : >"$KUBE_CALLS"; rm -f "$MERGED_MARKER" "$RECOVERED_MARKER" "$T/baseline"
   set +e
   "$ROOT/tools/merge-one.sh" --pr 7 --baseline "$T/baseline" --timeout 30 >"$T/output" 2>&1
   got=$?
   set -e
   if [[ $got != "$expected" ]]; then cat "$T/output"; echo "FAIL $scenario: exit $got expected $expected"; exit 1; fi
-  if [[ $scenario == success || $scenario == new_unhealthy || $scenario == wait_fail || $scenario == merge_rejected ]]; then
+  if [[ $scenario == success || $scenario == transient || $scenario == new_unhealthy || $scenario == wait_fail || $scenario == merge_rejected ]]; then
     [[ -f $T/baseline ]] || { echo "FAIL $scenario: no baseline"; exit 1; }
   else
     [[ ! -f $T/baseline ]] || { echo "FAIL $scenario: unexpected baseline"; exit 1; }
   fi
-  if [[ $scenario == success || $scenario == new_unhealthy || $scenario == wait_fail || $scenario == merge_rejected ]]; then
+  if [[ $scenario == success || $scenario == transient || $scenario == new_unhealthy || $scenario == wait_fail || $scenario == merge_rejected ]]; then
     grep -q 'PUT .*/pulls/7/merge' "$CALLS" || { echo "FAIL $scenario: no merge"; exit 1; }
   else
     ! grep -q 'PUT .*/pulls/7/merge' "$CALLS" || { echo "FAIL $scenario: unsafe merge"; exit 1; }
   fi
-  if [[ $scenario == success ]]; then
+  if [[ $scenario == success || $scenario == transient ]]; then
     ! grep -E ' (apply|patch|delete|create|edit|replace) ' "$KUBE_CALLS" || exit 1
     grep -q 'passed Flux health gate' "$T/output" || exit 1
   fi
   if [[ $scenario == new_unhealthy ]]; then grep -q 'newly not-ready Flux resources' "$T/output" || exit 1; fi
+  if [[ $scenario == transient ]]; then
+    [[ -f $RECOVERED_MARKER ]] || { echo 'FAIL transient: did not wait for child'; exit 1; }
+    grep -q 'kustomization/broken.*condition=Ready' "$KUBE_CALLS" || exit 1
+  fi
   pass=$((pass+1))
 }
 run_case success 0
@@ -91,6 +96,7 @@ run_case unsafe_rename 1
 run_case red 1
 run_case baseline_fail 1
 run_case new_unhealthy 1
+run_case transient 0
 run_case wait_fail 1
 run_case merge_rejected 1
 set +e
