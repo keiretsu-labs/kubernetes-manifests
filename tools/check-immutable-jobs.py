@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -134,7 +135,13 @@ def render_raw(tree, app):
     directory = tree / app
     if not directory.is_dir():
         return []
-    result = run(["kustomize", "build", "--enable-helm", str(directory)], cwd=tree)
+    if shutil.which("kustomize"):
+        command = ["kustomize", "build", "--enable-helm", str(directory)]
+    elif shutil.which("kubectl"):
+        command = ["kubectl", "kustomize", str(directory), "--enable-helm"]
+    else:
+        raise RuntimeError("raw Job render needs kustomize or kubectl")
+    result = run(command, cwd=tree)
     if result.returncode:
         raise RuntimeError(f"kustomize build {app} failed: {result.stderr.strip()[-1500:]}")
     try:
