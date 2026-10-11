@@ -900,13 +900,13 @@ PY
 
 # ---------------------------------------------------------------- Renovate exclusion ledger
 # Disabled rules are allowed only when their paths and a review-by date are
-# visible in the ledger. Advance the fixture date past the current review date
+# visible in the ledger. Use a far-future fixture date (past any review date)
 # to prove the expiry is a real failing condition rather than documentation.
 section "Renovate exclusion ledger"
 exits "current exclusions are visible and unexpired" 0 \
   "$T/check-renovate-exclusions.sh"
 exits "expired exclusion review date fails" 1 \
-  env RENOVATE_EXCLUSIONS_TODAY=2026-10-11 "$T/check-renovate-exclusions.sh"
+  env RENOVATE_EXCLUSIONS_TODAY=2099-12-31 "$T/check-renovate-exclusions.sh"
 
 # ---------------------------------------------------------------- HelmRelease schema
 # Offline fixture tests use the repository-pinned kubeconform wrapper and the
