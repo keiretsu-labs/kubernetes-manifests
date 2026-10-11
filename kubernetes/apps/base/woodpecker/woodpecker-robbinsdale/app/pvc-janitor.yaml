@@ -64,6 +64,8 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: woodpecker-pvc-janitor
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
 spec:
   schedule: "17 * * * *"
   concurrencyPolicy: Forbid
