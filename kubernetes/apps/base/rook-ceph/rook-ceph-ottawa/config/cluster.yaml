@@ -30,6 +30,7 @@ spec:
       device_failure_prediction_mode: local
       # Disable class update on start to avoid unnecessary overhead
       osd_class_update_on_start: "false"
+      target_max_misplaced_ratio: "0.3"
     # Ceph v20.2.2 logs full Rook PodList responses into the recent-log ring.
     # Bound the ring until the upstream logging fix reaches Tentacle.
     # https://github.com/rook/rook/issues/17786
@@ -37,6 +38,9 @@ spec:
       log_max_recent: "100"
     mds:
       mds_wipe_ino_prealloc: "true"
+    osd:
+      osd_mclock_override_recovery_settings: "true"
+      osd_max_backfills: "4"
     mon:
       mon_osd_down_out_interval: "300"
       mon_osd_auto_mark_in: "true"
