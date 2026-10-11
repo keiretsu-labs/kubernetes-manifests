@@ -4,6 +4,7 @@
 # file omitted from the loader still remains an expected live group.
 bhaiya-sandbox-telemetry	bhaiya-sandbox-telemetry.rules
 bhaiya-ssh	bhaiya-ssh.rules
+bhaiya-workspace-image	bhaiya-workspace-image.rules
 bhaiya-fleet	bhaiya.fleet.availability
 bhaiya-fleet	bhaiya.fleet.ssh
 bhaiya-fleet	bhaiya.fleet.resources

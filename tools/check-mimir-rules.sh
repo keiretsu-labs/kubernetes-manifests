@@ -455,6 +455,7 @@ for filename in sorted(changed_rule_files()):
 
 required = {
     "bhaiya-sandbox-telemetry.yaml": "bhaiya-sandbox-telemetry",
+    "bhaiya-workspace-image.yaml": "bhaiya-workspace-image",
 }
 for filename, namespace in required.items():
     path = RULES / filename

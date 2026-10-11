@@ -35,6 +35,7 @@ spec:
             - /rules/bhaiya-v2.yaml
             - /rules/bhaiya-ssh.yaml
             - /rules/bhaiya-sandbox-telemetry.yaml
+            - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
             - /rules/cnpg-backup-coverage.yaml
@@ -75,6 +76,7 @@ spec:
             - /rules/bhaiya-v2.yaml
             - /rules/bhaiya-ssh.yaml
             - /rules/bhaiya-sandbox-telemetry.yaml
+            - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
             - /rules/cnpg-backup-coverage.yaml
@@ -111,6 +113,7 @@ spec:
             - /rules/bhaiya-v2.yaml
             - /rules/bhaiya-ssh.yaml
             - /rules/bhaiya-sandbox-telemetry.yaml
+            - /rules/bhaiya-workspace-image.yaml
             - /rules/blackbox.yaml
             - /rules/ceph.yaml
             - /rules/cnpg-backup-coverage.yaml
