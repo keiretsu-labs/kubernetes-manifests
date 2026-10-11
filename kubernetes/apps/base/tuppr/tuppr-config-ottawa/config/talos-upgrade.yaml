@@ -23,9 +23,6 @@ spec:
     rebootMode: default
     placement: soft
     timeout: 30m
-  drain:
-    enabled: true
-    disableEviction: false
   healthChecks:
     - apiVersion: v1
       kind: Node
