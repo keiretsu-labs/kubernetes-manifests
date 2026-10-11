@@ -22,7 +22,7 @@ spec:
         barmanObjectName: firefly-s3-store
         serverName: firefly-postgres
   backup:
-    retentionPolicy: "30d"
+    retentionPolicy: "7d"
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
@@ -61,7 +61,7 @@ spec:
     env:
       - name: AWS_DEFAULT_REGION
         value: garage
-  retentionPolicy: "30d"
+  retentionPolicy: "7d"
 ---
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
