@@ -41,7 +41,7 @@ spec:
         barmanObjectName: bookorbit-s3-store
         serverName: bookorbit-postgres
   backup:
-    retentionPolicy: "30d"
+    retentionPolicy: "7d"
   externalClusters:
     - name: keiretsu
       plugin:

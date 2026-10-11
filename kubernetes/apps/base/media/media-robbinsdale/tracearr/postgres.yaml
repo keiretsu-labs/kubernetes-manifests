@@ -30,7 +30,7 @@ spec:
         barmanObjectName: tracearr-s3-store
         serverName: tracearr-postgres
   backup:
-    retentionPolicy: "30d"
+    retentionPolicy: "7d"
   externalClusters:
   - name: keiretsu
     plugin:
