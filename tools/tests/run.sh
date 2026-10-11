@@ -377,7 +377,7 @@ cp "$T/check.sh" "$gate_root/tools/check.sh"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
-  check-mimir-rules.sh check-velero-pvc-coverage.sh \
+  check-mimir-rules.sh check-velero-pvc-coverage.sh check-flux-envsubst.py \
   check-helmrelease-schema.sh check-immutable-jobs.py; do
   printf '#!/usr/bin/env bash\nexit 0\n' >"$gate_root/tools/$helper"
   chmod +x "$gate_root/tools/$helper"
@@ -392,7 +392,6 @@ exits  "quick + cluster -> exit 2"      2 "$gate_root/tools/check.sh" --quick ot
 assert "help -> concise usage"           grep -q '^Usage:' <<<"$("$gate_root/tools/check.sh" --help)"
 aliasout="$(PATH="$mstub:$PATH" "$gate_root/tools/check.sh" ot 2>/dev/null)"
 assert "short cluster alias accepted"   grep -q '^✓ render OK: talos-ottawa$' <<<"$aliasout"
-rm -rf "$gate_root"
 
 # ---------------------------------------------------------------- Mimir rule completeness replay
 section "Mimir rule completeness replay"
@@ -427,7 +426,7 @@ cp "$T/check.sh" "$watchdog_tmp/tools/check.sh"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
-  check-mimir-rules.sh check-velero-pvc-coverage.sh \
+  check-mimir-rules.sh check-velero-pvc-coverage.sh check-flux-envsubst.py \
   check-helmrelease-schema.sh check-immutable-jobs.py; do
   cat >"$watchdog_tmp/tools/$helper" <<'EOF'
 #!/usr/bin/env bash
@@ -500,7 +499,7 @@ exec 8>&-
 rm -rf "$watchdog_tmp"
 
 printf '#!/usr/bin/env bash\necho "render Error: boom"; exit 1\n' >"$mstub/make"; chmod +x "$mstub/make"
-fout="$(PATH="$mstub:$PATH" "$T/check.sh" 2>/dev/null)"; fec=$?
+fout="$(PATH="$mstub:$PATH" "$gate_root/tools/check.sh" 2>/dev/null)"; fec=$?
 assert "failure -> exit 1"              test "$fec" = 1
 assert "failure -> nothing on stdout"   test -z "$fout"
 
@@ -523,7 +522,7 @@ cp "$T/check.sh" "$wedge_gate_root/tools/check.sh"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
-  check-mimir-rules.sh check-velero-pvc-coverage.sh \
+  check-mimir-rules.sh check-velero-pvc-coverage.sh check-flux-envsubst.py \
   check-helmrelease-schema.sh check-immutable-jobs.py; do
   printf '#!/usr/bin/env bash\nexit 0\n' >"$wedge_gate_root/tools/$helper"
   chmod +x "$wedge_gate_root/tools/$helper"
@@ -597,6 +596,7 @@ exec 8>&-
 exec 9>&-
 rm -f "$wedge_ready" "$wedge_stopped" "$wedge_result" "$wedge_output" "$wedge_pid_file"
 rm -rf "$mstub"
+rm -rf "$gate_root"
 
 # ---------------------------------------------------------------- flate.sh env pruning
 section "flate.sh environment pruning"
@@ -1184,6 +1184,79 @@ assert "St. Petersburg Kopiur SnapshotPolicy remains" \
 section "garage-gateway-ingress peer scope"
 exits "garage gateway CNP keeps peer RPC/admin scoped" 0 \
   bash "$T/check-garage-gateway-ingress.sh"
+
+# ---------------------------------------------------------------- Flux strict postBuild envsubst
+section "flux-envsubst"
+envfixture="$(mktemp -d)"
+mkdir -p "$envfixture/clusters/talos-robbinsdale/flux/config" \
+  "$envfixture/clusters/common/flux/vars" \
+  "$envfixture/kubernetes/apps/robbinsdale/woodpecker" \
+  "$envfixture/kubernetes/apps/base/woodpecker"
+cat >"$envfixture/clusters/talos-robbinsdale/flux/config/cluster.yaml" <<'EOF'
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata: {name: kubernetes-apps}
+spec:
+  patches:
+    - patch: |
+        spec:
+          postBuild:
+            substituteFrom:
+              - {kind: ConfigMap, name: common-settings}
+EOF
+cat >"$envfixture/clusters/common/flux/vars/common-settings.yaml" <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: common-settings}
+data: {KNOWN: value}
+EOF
+cat >"$envfixture/kubernetes/apps/robbinsdale/woodpecker/woodpecker.yaml" <<'EOF'
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata: {name: woodpecker}
+spec:
+  path: ./kubernetes/apps/base/woodpecker
+  sourceRef: {kind: GitRepository, name: kubernetes-manifests}
+EOF
+cat >"$envfixture/kubernetes/apps/base/woodpecker/kustomization.yaml" <<'EOF'
+resources:
+  - cronjob.yaml
+EOF
+cat >"$envfixture/kubernetes/apps/base/woodpecker/cronjob.yaml" <<'EOF'
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: woodpecker-pvc-janitor}
+spec:
+  schedule: "17 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: janitor
+              image: alpine
+              command: [sh, -c]
+              args:
+                - |
+                  age=42
+                  echo "reap $pvc (age ${age}s)"
+                  echo "${KNOWN} ${OPTIONAL:-fallback} $${LITERAL} $bare"
+          restartPolicy: Never
+EOF
+envout="$(python3 "$T/check-flux-envsubst.py" --root "$envfixture" robbinsdale 2>&1)"; envec=$?
+assert "#3580 fixture: unescaped shell variable fails" test "$envec" = 1
+assert "#3580 fixture: reports age and CronJob" grep -q 'CronJob/woodpecker-pvc-janitor.*unresolved ${age}' <<<"$envout"
+refute "provided/default/escaped/bare variables pass" grep -qE 'KNOWN|OPTIONAL|LITERAL|bare' <<<"$envout"
+python3 - "$envfixture/kubernetes/apps/base/woodpecker/cronjob.yaml" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
+p.write_text(p.read_text().replace('metadata: {name: woodpecker-pvc-janitor}',
+    'metadata:\n  name: woodpecker-pvc-janitor\n  annotations: {kustomize.toolkit.fluxcd.io/substitute: disabled}'))
+PY
+exits "#3588 fixture: object annotation disables substitution" 0 \
+  python3 "$T/check-flux-envsubst.py" --root "$envfixture" robbinsdale
+rm -rf "$envfixture"
 
 
 # ---------------------------------------------------------------- merge-one.sh
