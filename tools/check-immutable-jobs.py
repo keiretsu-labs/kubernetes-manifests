@@ -148,7 +148,16 @@ def main():
     if any(cluster not in CLUSTERS for cluster in target):
         raise RuntimeError(f"unknown cluster: {target}")
     base_ref = os.environ.get("FLATE_BASE") or "origin/main"
-    resolved = run(["git", "rev-parse", "--verify", f"{base_ref}^{{commit}}"])
+    # GitHub's checkout has origin/main but no local main branch, while the
+    # Flate action exports FLATE_BASE=main. Prefer that remote-tracking ref
+    # locally too: a stale local main must not widen this comparison.
+    candidates = [base_ref]
+    if re.fullmatch(r"[A-Za-z][A-Za-z0-9._-]*", base_ref) and not base_ref.startswith("origin/"):
+        candidates.insert(0, f"origin/{base_ref}")
+    for candidate in candidates:
+        resolved = run(["git", "rev-parse", "--verify", f"{candidate}^{{commit}}"])
+        if not resolved.returncode:
+            break
     if resolved.returncode:
         raise RuntimeError(f"cannot resolve base {base_ref}: {resolved.stderr.strip()}")
     base = resolved.stdout.strip()
