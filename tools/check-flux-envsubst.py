@@ -76,7 +76,7 @@ def tokens(value):
                     yield match.group(), value[pos:end + 1], False
                 elif suffix.startswith((":-", ":=", ":+")):
                     pass  # These are the supported Flux default/alternate forms.
-                elif suffix.startswith(("-", "?", ":")):
+                elif suffix.startswith(("-", "+", "?", ":")):
                     yield match.group(), value[pos:end + 1], True
                 else:
                     # Shell expansions such as ${age##...} are not evaluated

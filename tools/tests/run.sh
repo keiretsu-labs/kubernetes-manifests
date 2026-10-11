@@ -1251,6 +1251,15 @@ python3 - "$envfixture/kubernetes/apps/base/woodpecker/cronjob.yaml" <<'PY'
 from pathlib import Path
 import sys
 p = Path(sys.argv[1])
+p.write_text(p.read_text().replace('${age}s', '$${age}s').replace('${KNOWN} ', '${KNOWN+alternate} '))
+PY
+envout="$(python3 "$T/check-flux-envsubst.py" --root "$envfixture" robbinsdale 2>&1)"; envec=$?
+assert "unsupported shell expansion fails even with a provided key" test "$envec" = 1
+assert "unsupported shell expansion is reported" grep -q 'unresolved ${KNOWN+alternate}' <<<"$envout"
+python3 - "$envfixture/kubernetes/apps/base/woodpecker/cronjob.yaml" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
 p.write_text(p.read_text().replace('metadata: {name: woodpecker-pvc-janitor}',
     'metadata:\n  name: woodpecker-pvc-janitor\n  annotations: {kustomize.toolkit.fluxcd.io/substitute: disabled}'))
 PY
