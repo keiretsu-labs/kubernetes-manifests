@@ -9,7 +9,10 @@ spec:
     version: v1.13.11
   policy:
     debug: true
-    force: true
+    # force=false: keep talosctl etcd health/member checks.
+    force: false
+    # Bound eviction-based drain so a stuck PDB fails the node instead of hanging.
+    drainTimeout: 20m
     rebootMode: default
     placement: soft
     # Give the recovered cluster a fresh, slightly longer retry window.
@@ -19,7 +22,9 @@ spec:
     waitForVolumeDetach: true
   drain:
     enabled: true
-    disableEviction: true
+    # Use the eviction API so PDBs are respected (Rook managePodBudgets
+    # makes this Ceph-aware: OSD/mon PDBs only allow one failure domain down).
+    disableEviction: false
   healthChecks:
     - apiVersion: v1
       kind: Node
@@ -30,6 +35,6 @@ spec:
       kind: CephCluster
       name: rook-ceph
       namespace: rook-ceph
-      expr: status.ceph.health != "HEALTH_ERR" && !(has(status.ceph.details) && "PG_AVAILABILITY" in status.ceph.details)
-      description: Ceph must have no inactive PGs before upgrading next node
+      expr: status.ceph.health != "HEALTH_ERR" && !(has(status.ceph.details) && ("PG_AVAILABILITY" in status.ceph.details || "PG_DEGRADED" in status.ceph.details || "MON_DOWN" in status.ceph.details || "OSD_DOWN" in status.ceph.details))
+      description: Ceph fully recovered (no inactive/degraded PGs, all mons in quorum, no OSD down) before next node
       timeout: 30m
