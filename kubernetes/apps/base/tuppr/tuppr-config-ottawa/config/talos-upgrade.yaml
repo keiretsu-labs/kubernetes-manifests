@@ -18,7 +18,7 @@ spec:
     # and uncordoned, racing Rook forever (2026-10-11). Keep spec.drain unset
     # and waitForVolumeDetach off so tuppr does not take the drain back.
     drainTimeout: 20m
-    rebootMode: default
+    rebootMode: powercycle
     placement: soft
     timeout: 30m
   healthChecks:
