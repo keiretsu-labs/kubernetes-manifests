@@ -184,6 +184,11 @@ run_capped "zot-upload-affinity" tools/check-zot-upload-affinity.sh
 run_capped "bhaiya-limits" bash tools/check-bhaiya-limits.sh
 run_capped "mimir-rule-load-path" tools/check-mimir-rules.sh
 run_capped "velero-pvc-coverage" tools/check-velero-pvc-coverage.sh
+if [ -n "$TARGET" ]; then
+  run_capped "flux-envsubst" tools/check-flux-envsubst.py "${TARGET#talos-}"
+else
+  run_capped "flux-envsubst" tools/check-flux-envsubst.py
+fi
 
 if [ "$QUICK" = 1 ]; then
   # Quick syntax check: validate kustomize build on a representative sample
@@ -202,6 +207,12 @@ if [ -n "$TARGET" ]; then
   run_capped "helmrelease-schema" tools/check-helmrelease-schema.sh "$TARGET"
 else
   run_capped "helmrelease-schema" tools/check-helmrelease-schema.sh
+fi
+
+if [ -n "$TARGET" ]; then
+  run_capped "immutable-jobs" tools/check-immutable-jobs.py "$TARGET"
+else
+  run_capped "immutable-jobs" tools/check-immutable-jobs.py
 fi
 
 if [ -n "$TARGET" ]; then

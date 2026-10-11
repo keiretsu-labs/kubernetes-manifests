@@ -22,7 +22,7 @@ spec:
         barmanObjectName: litellm-postgres-s3-store
         serverName: litellm-postgres
   backup:
-    retentionPolicy: "30d"
+    retentionPolicy: "7d"
   externalClusters:
     - name: litellm-postgres-backup
       plugin:
@@ -55,7 +55,7 @@ spec:
     env:
       - name: AWS_DEFAULT_REGION
         value: garage
-  retentionPolicy: "30d"
+  retentionPolicy: "7d"
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup

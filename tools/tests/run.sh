@@ -367,6 +367,8 @@ rm -rf "$fstub"
 
 # ---------------------------------------------------------------- check.sh (stubbed make; no real render)
 section "check.sh (stubbed make)"
+exits "mimir-rules immutable Job fixture and remedies" 0 \
+  python3 "$T/tests/test_immutable_jobs.py"
 mstub="$(mktemp -d)"
 printf '#!/usr/bin/env bash\nexit 0\n' >"$mstub/make"; chmod +x "$mstub/make"
 gate_root="$(mktemp -d)"
@@ -375,8 +377,8 @@ cp "$T/check.sh" "$gate_root/tools/check.sh"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
-  check-mimir-rules.sh check-velero-pvc-coverage.sh \
-  check-helmrelease-schema.sh; do
+  check-mimir-rules.sh check-velero-pvc-coverage.sh check-flux-envsubst.py \
+  check-helmrelease-schema.sh check-immutable-jobs.py; do
   printf '#!/usr/bin/env bash\nexit 0\n' >"$gate_root/tools/$helper"
   chmod +x "$gate_root/tools/$helper"
 done
@@ -390,7 +392,6 @@ exits  "quick + cluster -> exit 2"      2 "$gate_root/tools/check.sh" --quick ot
 assert "help -> concise usage"           grep -q '^Usage:' <<<"$("$gate_root/tools/check.sh" --help)"
 aliasout="$(PATH="$mstub:$PATH" "$gate_root/tools/check.sh" ot 2>/dev/null)"
 assert "short cluster alias accepted"   grep -q '^✓ render OK: talos-ottawa$' <<<"$aliasout"
-rm -rf "$gate_root"
 
 # ---------------------------------------------------------------- Mimir rule completeness replay
 section "Mimir rule completeness replay"
@@ -425,8 +426,8 @@ cp "$T/check.sh" "$watchdog_tmp/tools/check.sh"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
-  check-mimir-rules.sh check-velero-pvc-coverage.sh \
-  check-helmrelease-schema.sh; do
+  check-mimir-rules.sh check-velero-pvc-coverage.sh check-flux-envsubst.py \
+  check-helmrelease-schema.sh check-immutable-jobs.py; do
   cat >"$watchdog_tmp/tools/$helper" <<'EOF'
 #!/usr/bin/env bash
 IFS= read -r _ <"$WATCHDOG_READY"
@@ -498,7 +499,7 @@ exec 8>&-
 rm -rf "$watchdog_tmp"
 
 printf '#!/usr/bin/env bash\necho "render Error: boom"; exit 1\n' >"$mstub/make"; chmod +x "$mstub/make"
-fout="$(PATH="$mstub:$PATH" "$T/check.sh" 2>/dev/null)"; fec=$?
+fout="$(PATH="$mstub:$PATH" "$gate_root/tools/check.sh" 2>/dev/null)"; fec=$?
 assert "failure -> exit 1"              test "$fec" = 1
 assert "failure -> nothing on stdout"   test -z "$fout"
 
@@ -521,8 +522,8 @@ cp "$T/check.sh" "$wedge_gate_root/tools/check.sh"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
-  check-mimir-rules.sh check-velero-pvc-coverage.sh \
-  check-helmrelease-schema.sh; do
+  check-mimir-rules.sh check-velero-pvc-coverage.sh check-flux-envsubst.py \
+  check-helmrelease-schema.sh check-immutable-jobs.py; do
   printf '#!/usr/bin/env bash\nexit 0\n' >"$wedge_gate_root/tools/$helper"
   chmod +x "$wedge_gate_root/tools/$helper"
 done
@@ -595,6 +596,7 @@ exec 8>&-
 exec 9>&-
 rm -f "$wedge_ready" "$wedge_stopped" "$wedge_result" "$wedge_output" "$wedge_pid_file"
 rm -rf "$mstub"
+rm -rf "$gate_root"
 
 # ---------------------------------------------------------------- flate.sh env pruning
 section "flate.sh environment pruning"
@@ -900,13 +902,13 @@ PY
 
 # ---------------------------------------------------------------- Renovate exclusion ledger
 # Disabled rules are allowed only when their paths and a review-by date are
-# visible in the ledger. Advance the fixture date past the current review date
-# to prove the expiry is a real failing condition rather than documentation.
+# visible in the ledger. A far-future fixture date proves the expiry check
+# without becoming stale whenever the current exclusions are reviewed.
 section "Renovate exclusion ledger"
 exits "current exclusions are visible and unexpired" 0 \
   "$T/check-renovate-exclusions.sh"
 exits "expired exclusion review date fails" 1 \
-  env RENOVATE_EXCLUSIONS_TODAY=2026-10-19 "$T/check-renovate-exclusions.sh"
+  env RENOVATE_EXCLUSIONS_TODAY=9999-12-31 "$T/check-renovate-exclusions.sh"
 
 # ---------------------------------------------------------------- HelmRelease schema
 # Offline fixture tests use the repository-pinned kubeconform wrapper and the
@@ -1061,7 +1063,8 @@ runner_output="$(
     "$ROOT/kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/run.sh" 2>&1
 )"
 runner_exit=$?
-printf '%s\n' "$runner_output" | grep -E '^(Mimir rule fixture failures:|--- |FAILED: deliberate fixture)'
+# The failures below are synthetic success-path inputs. Keep their diagnostics
+# available to the assertions without making a green CI job look broken.
 assert "runner returns nonzero when fixtures fail" test "$runner_exit" != 0
 assert "runner reports first broken fixture" \
   grep -q -- '^--- a_broken_test.yaml ---$' <<<"$runner_output"
@@ -1074,6 +1077,35 @@ assert "runner retains first promtool error" \
 assert "runner retains second promtool error" \
   grep -q 'FAILED: deliberate fixture B' <<<"$runner_output"
 rm -rf "$runner_fixture_root" "$runner_promtool_root"
+
+# -------------------------------------------------------------- Mimir version fixture gate
+# Stub only the changed-file discovery. The real checker still parses the
+# shipped rules and fixtures for each case.
+section "Mimir version fixture gate"
+mimir_git_stub="$(mktemp -d)"
+cat >"$mimir_git_stub/git" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+  merge-base) echo synthetic-base ;;
+  diff) printf '%s\n' "$MIMIR_CHANGED_PATHS" ;;
+  ls-files) : ;;
+  *) exit 2 ;;
+esac
+EOF
+chmod +x "$mimir_git_stub/git"
+mimir_chart="kubernetes/apps/base/mimir/mimir-ottawa/helmrelease.yaml"
+mimir_image="kubernetes/apps/base/mimir/mimir-ottawa/loader-job.yaml"
+mimir_dashboard="kubernetes/apps/base/monitoring/grafana/dashboards/mimir/dashboards.yaml"
+mimir_fixture="kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/node_health_test.yaml"
+exits "unrelated change needs no Mimir fixture" 0 \
+  env PATH="$mimir_git_stub:$PATH" MIMIR_CHANGED_PATHS="tools/README.md" "$T/check-mimir-rules.sh"
+for mimir_source in "$mimir_chart" "$mimir_image" "$mimir_dashboard"; do
+  exits "$(basename "$mimir_source") bump without fixture fails" 1 \
+    env PATH="$mimir_git_stub:$PATH" MIMIR_CHANGED_PATHS="$mimir_source" "$T/check-mimir-rules.sh"
+  exits "$(basename "$mimir_source") bump with fixture passes" 0 \
+    env PATH="$mimir_git_stub:$PATH" MIMIR_CHANGED_PATHS="$(printf '%s\n%s' "$mimir_source" "$mimir_fixture")" "$T/check-mimir-rules.sh"
+done
+rm -rf "$mimir_git_stub"
 
 # ---------------------------------------------------------------- gitops invariants (shipped manifests)
 # These assert the ClusterMesh/route/bloat/Kopiur GitOps contracts against
@@ -1153,6 +1185,92 @@ section "garage-gateway-ingress peer scope"
 exits "garage gateway CNP keeps peer RPC/admin scoped" 0 \
   bash "$T/check-garage-gateway-ingress.sh"
 
+# ---------------------------------------------------------------- Flux strict postBuild envsubst
+section "flux-envsubst"
+envfixture="$(mktemp -d)"
+mkdir -p "$envfixture/clusters/talos-robbinsdale/flux/config" \
+  "$envfixture/clusters/common/flux/vars" \
+  "$envfixture/kubernetes/apps/robbinsdale/woodpecker" \
+  "$envfixture/kubernetes/apps/base/woodpecker"
+cat >"$envfixture/clusters/talos-robbinsdale/flux/config/cluster.yaml" <<'EOF'
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata: {name: kubernetes-apps}
+spec:
+  patches:
+    - patch: |
+        spec:
+          postBuild:
+            substituteFrom:
+              - {kind: ConfigMap, name: common-settings}
+EOF
+cat >"$envfixture/clusters/common/flux/vars/common-settings.yaml" <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: common-settings}
+data: {KNOWN: value}
+EOF
+cat >"$envfixture/kubernetes/apps/robbinsdale/woodpecker/woodpecker.yaml" <<'EOF'
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata: {name: woodpecker}
+spec:
+  path: ./kubernetes/apps/base/woodpecker
+  sourceRef: {kind: GitRepository, name: kubernetes-manifests}
+EOF
+cat >"$envfixture/kubernetes/apps/base/woodpecker/kustomization.yaml" <<'EOF'
+resources:
+  - cronjob.yaml
+EOF
+cat >"$envfixture/kubernetes/apps/base/woodpecker/cronjob.yaml" <<'EOF'
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: woodpecker-pvc-janitor}
+spec:
+  schedule: "17 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: janitor
+              image: alpine
+              command: [sh, -c]
+              args:
+                - |
+                  age=42
+                  echo "reap $pvc (age ${age}s)"
+                  echo "${KNOWN} ${OPTIONAL:-fallback} $${LITERAL} $bare"
+          restartPolicy: Never
+EOF
+envout="$(python3 "$T/check-flux-envsubst.py" --root "$envfixture" robbinsdale 2>&1)"; envec=$?
+assert "#3580 fixture: unescaped shell variable fails" test "$envec" = 1
+assert "#3580 fixture: reports age and CronJob" grep -q 'CronJob/woodpecker-pvc-janitor.*unresolved ${age}' <<<"$envout"
+refute "provided/default/escaped/bare variables pass" grep -qE 'KNOWN|OPTIONAL|LITERAL|bare' <<<"$envout"
+python3 - "$envfixture/kubernetes/apps/base/woodpecker/cronjob.yaml" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
+p.write_text(p.read_text().replace('${age}s', '$${age}s').replace('${KNOWN} ', '${KNOWN+alternate} '))
+PY
+envout="$(python3 "$T/check-flux-envsubst.py" --root "$envfixture" robbinsdale 2>&1)"; envec=$?
+assert "unsupported shell expansion fails even with a provided key" test "$envec" = 1
+assert "unsupported shell expansion is reported" grep -q 'unresolved ${KNOWN+alternate}' <<<"$envout"
+python3 - "$envfixture/kubernetes/apps/base/woodpecker/cronjob.yaml" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
+p.write_text(p.read_text().replace('metadata: {name: woodpecker-pvc-janitor}',
+    'metadata:\n  name: woodpecker-pvc-janitor\n  annotations: {kustomize.toolkit.fluxcd.io/substitute: disabled}'))
+PY
+exits "#3588 fixture: object annotation disables substitution" 0 \
+  python3 "$T/check-flux-envsubst.py" --root "$envfixture" robbinsdale
+rm -rf "$envfixture"
+
+
+# ---------------------------------------------------------------- merge-one.sh
+section "merge-one.sh"
+if "$T/tests/test_merge_one.sh"; then ok "merge-one offline integration"; else bad "merge-one offline integration"; fi
 
 # ---------------------------------------------------------------- summary
 printf '\n== %d passed, %d failed ==\n' "$pass" "$fail"

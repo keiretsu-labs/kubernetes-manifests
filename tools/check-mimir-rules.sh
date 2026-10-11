@@ -76,14 +76,8 @@ def git_output(*args):
     return result.stdout.strip()
 
 
-def changed_rule_files():
-    """Return production rule files added or changed from the PR base.
-
-    The repository intentionally has a legacy fixture backlog. This check is
-    therefore diff-scoped: a new or modified source must have a fixture, while
-    untouched sources without one remain allowed. Include untracked files so a
-    local pre-commit run exercises the same guard as CI.
-    """
+def changed_paths():
+    """Return added or modified paths from the PR base, including untracked files."""
     configured_base = os.environ.get("FLATE_BASE")
     candidates = []
     if configured_base:
@@ -99,29 +93,30 @@ def changed_rule_files():
             break
     if merge_base is None:
         fail(
-            "cannot determine the Mimir rule diff base; set FLATE_BASE to a "
+            "cannot determine the Mimir diff base; set FLATE_BASE to a "
             "branch or commit available to git"
         )
         return set()
 
-    relative_rules = RULES.relative_to(ROOT).as_posix()
     changed = git_output(
         "diff",
         "--name-only",
         "--diff-filter=AMR",
         merge_base,
-        "--",
-        relative_rules,
     )
-    untracked = git_output(
-        "ls-files", "--others", "--exclude-standard", "--", relative_rules
-    )
+    untracked = git_output("ls-files", "--others", "--exclude-standard")
     if changed is None or untracked is None:
-        fail("cannot inspect the Mimir rule diff with git")
+        fail("cannot inspect the Mimir diff with git")
         return set()
+    return set(changed.splitlines()) | set(untracked.splitlines())
 
+
+def changed_rule_files(paths):
+    """Return changed production rule files; older untested rules stay allowed."""
+
+    relative_rules = RULES.relative_to(ROOT).as_posix()
     names = set()
-    for raw_path in (*changed.splitlines(), *untracked.splitlines()):
+    for raw_path in paths:
         path = Path(raw_path)
         if path.parent == Path(relative_rules) and path.suffix in {".yaml", ".yml"}:
             names.add(path.name)
@@ -446,12 +441,34 @@ else:
                 continue
             fixture_rules.setdefault(source.name, set()).add(fixture.name)
 
-for filename in sorted(changed_rule_files()):
+paths = changed_paths()
+for filename in sorted(changed_rule_files(paths)):
     if filename in on_disk and filename not in fixture_rules:
         fail(
             f"{RULES / filename}: changed production rule has no corresponding "
             "fixture in rules/tests"
         )
+
+# Renovate updates to the Mimir chart, runtime image, or dashboard mixin must
+# include an updated behavioral fixture in the same PR. The flate render gate
+# runs this check for every cluster, so an unpaired bump fails before merge.
+version_sources = {
+    "kubernetes/apps/base/mimir/mimir-ottawa/helmrelease.yaml",
+    "kubernetes/apps/base/mimir/mimir-ottawa/loader-job.yaml",
+    "kubernetes/apps/base/monitoring/grafana/dashboards/mimir/dashboards.yaml",
+}
+fixture_dir = TEST_FIXTURES.relative_to(ROOT).as_posix()
+changed_fixtures = {
+    path
+    for path in paths
+    if Path(path).parent == Path(fixture_dir)
+    and Path(path).name.endswith("_test.yaml")
+}
+if paths & version_sources and not changed_fixtures:
+    fail(
+        "Mimir chart/runtime/dashboard updates must change a "
+        "rules/tests/*_test.yaml fixture in the same PR"
+    )
 
 required = {
     "bhaiya-sandbox-telemetry.yaml": "bhaiya-sandbox-telemetry",

@@ -321,7 +321,7 @@
       "labels": ["Immich", "cluster:robbinsdale"]
     },
     {
-      "description": "Keep Grafana Mimir and mimirtool on the same upstream release. Not critical: automerges minor/patch per .github/renovate.json; majors need review.",
+      "description": "Keep Grafana Mimir and mimirtool on the same upstream release. Mimir version bumps must update a rule fixture in the same PR; the CI render gate enforces this. Majors need review.",
       "matchDatasources": ["docker", "github-releases"],
       "matchPackageNames": [
         "grafana/mimir",
@@ -334,7 +334,10 @@
       "versioning": "regex:^(?:mimir-)?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
       "groupName": "grafana-mimir",
       "minimumGroupSize": 10,
-      "labels": ["Mimir"]
+      "labels": ["Mimir"],
+      "prBodyNotes": [
+        "Update at least one `kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/*_test.yaml` fixture in this PR. The CI render gate rejects Mimir version bumps without a fixture change."
+      ]
     },
     {
       "description": "Keep the Kromgo runtime image and configuration schema on the same upstream release. Not critical: eligible for automerge after the gates.",

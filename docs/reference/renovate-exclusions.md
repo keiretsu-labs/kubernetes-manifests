@@ -10,15 +10,10 @@ ledger. An expired date fails the repository's offline self-tests.
 
 | Rule and paths | Why Renovate is disabled | Exit condition | Review by |
 | --- | --- | --- | --- |
-| `.github/renovate.json` generated/vendor rule: `kubernetes/apps/base/agent-sandbox/agent-sandbox/app/raw-manifest.yaml`; `kubernetes/apps/base/node-feature-discovery/nfd-common/install/intel-nfd.yaml`; `kubernetes/apps/base/kube-system/cilium-*/app/descheduler-cronjob.yaml`; `kubernetes/apps/base/local-path-storage/local-path-storage-*/app/local-path-provisioner.yaml` | These are vendored or generated upstream bundles. A one-line image edit can leave the controller, CRDs, or companion manifests on a different upstream release. The Agent Sandbox controller is running `v0.5.4`; the compatible release line has reached `v0.5.6`, while `v1.0.1` is a separate major line. | Add a reproducible upstream-bundle regeneration command and a render/schema test for each bundle, then replace the broad exclusion with a manager that updates the source reference and regenerates the complete bundle. | 2026-10-18 |
-| `.github/renovate.json` Docker rule: `kubernetes/apps/base/mimir/*/rules/tests/**` | These are `promtool` fixture directories. Their `input_series`, expected alert labels, and annotations are test data rather than deployed images; the directory is not included by the Mimir production kustomization. | Keep deployed manifests outside `rules/tests/**`; if a fixture-aware Renovate manager is added that updates repeated input and expected data atomically, remove this blanket exclusion. | 2026-10-18 |
+| `.github/renovate.json` generated/vendor rule: `kubernetes/apps/base/agent-sandbox/agent-sandbox/app/raw-manifest.yaml`; `kubernetes/apps/base/node-feature-discovery/nfd-common/install/intel-nfd.yaml`; `kubernetes/apps/base/kube-system/cilium-*/app/descheduler-cronjob.yaml`; `kubernetes/apps/base/local-path-storage/local-path-provisioner.yaml` | These are vendored or generated upstream bundles. A one-line image edit can leave the controller, CRDs, or companion manifests on a different upstream release. The Agent Sandbox controller is running `v0.5.4`; the compatible release line has reached `v0.5.6`, while `v1.0.1` is a separate major line. Reviewed 2026-10-11: the local-path match path was stale and now points at the actual vendored bundle. | Add a reproducible upstream-bundle regeneration command and a render/schema test for each bundle, then replace the broad exclusion with a manager that updates the source reference and regenerates the complete bundle. | 2026-11-11 |
+| `.github/renovate.json` Docker rule: `kubernetes/apps/base/mimir/*/rules/tests/**` | These are `promtool` fixture directories. Their `input_series`, expected alert labels, and annotations are test data rather than deployed images; the directory is not included by the Mimir production kustomization. Reviewed 2026-10-11: the fixture directory remains test-only. | Keep deployed manifests outside `rules/tests/**`; if a fixture-aware Renovate manager is added that updates repeated input and expected data atomically, remove this blanket exclusion. | 2026-11-11 |
 
 The Agent Sandbox row is currently a legitimate hold, not a claim that
 `v0.5.4` is current. The next owner should either return the bundle to
-Renovate with that generator/test or record a new, dated decision before this
-date expires.
-
-Reviewed 2026-10-11: the repository still has no reproducible regeneration
-tool or schema gate for the listed upstream bundles, and `rules/tests/**`
-still contains only promtool fixtures. The two exclusions remain scoped to
-those paths for one more week.
+Renovate with that generator/test or record a new, dated decision before the
+review date expires.
