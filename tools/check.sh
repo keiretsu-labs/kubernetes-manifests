@@ -205,6 +205,12 @@ else
 fi
 
 if [ -n "$TARGET" ]; then
+  run_capped "immutable-jobs" tools/check-immutable-jobs.py "$TARGET"
+else
+  run_capped "immutable-jobs" tools/check-immutable-jobs.py
+fi
+
+if [ -n "$TARGET" ]; then
   run_capped "render" make "test-$TARGET"
   echo "✓ render OK: $TARGET"
 else
