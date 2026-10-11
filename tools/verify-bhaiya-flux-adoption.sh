@@ -58,8 +58,11 @@ if [[ "$old_revision" != "$new_revision" || "$new_revision" != "$source_revision
   exit 1
 fi
 
-if [[ "$(jq -Sc '.spec.healthChecks' "$WORK/old-runtime.json")" != "$(jq -Sc '.spec.healthChecks' "$WORK/new-runtime.json")" ]]; then
-  echo 'FAIL: runtime health checks differ' >&2
+old_spec="$(jq -Sc '.spec | del(.sourceRef.name, .prune, .deletionPolicy, .suspend)' "$WORK/old-runtime.json")"
+new_spec="$(jq -Sc '.spec | del(.sourceRef.name, .prune, .deletionPolicy, .suspend)' "$WORK/new-runtime.json")"
+if [[ "$old_spec" != "$new_spec" ]] ||
+   [[ "$(jq -Sc '.metadata.labels' "$WORK/old-runtime.json")" != "$(jq -Sc '.metadata.labels' "$WORK/new-runtime.json")" ]]; then
+  echo 'FAIL: runtime spec or labels differ beyond the planned handoff fields' >&2
   exit 1
 fi
 
@@ -83,5 +86,5 @@ fi
 echo "PASS: OCI revision $new_revision"
 echo "PASS: OCI digest $(jq -r '.status.artifact.digest' "$WORK/new-source.json")"
 echo "PASS: runtime inventory adopted: $(wc -l < "$WORK/new-runtime.inventory") identical entries; no Git activation overlap"
-echo 'PASS: both runtime owners Ready at current generation with identical health checks; replacement pruning disabled'
+echo 'PASS: both runtime owners Ready at current generation with matching spec and labels; replacement pruning disabled'
 echo 'NEXT: inspect live object UIDs and prune events before a separate commit disarms the old owner'
