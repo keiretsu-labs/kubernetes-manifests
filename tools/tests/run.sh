@@ -900,13 +900,13 @@ PY
 
 # ---------------------------------------------------------------- Renovate exclusion ledger
 # Disabled rules are allowed only when their paths and a review-by date are
-# visible in the ledger. Advance the fixture date past the current review date
-# to prove the expiry is a real failing condition rather than documentation.
+# visible in the ledger. A far-future fixture date proves the expiry check
+# without becoming stale whenever the current exclusions are reviewed.
 section "Renovate exclusion ledger"
 exits "current exclusions are visible and unexpired" 0 \
   "$T/check-renovate-exclusions.sh"
 exits "expired exclusion review date fails" 1 \
-  env RENOVATE_EXCLUSIONS_TODAY=2026-10-11 "$T/check-renovate-exclusions.sh"
+  env RENOVATE_EXCLUSIONS_TODAY=9999-12-31 "$T/check-renovate-exclusions.sh"
 
 # ---------------------------------------------------------------- HelmRelease schema
 # Offline fixture tests use the repository-pinned kubeconform wrapper and the
@@ -1061,7 +1061,8 @@ runner_output="$(
     "$ROOT/kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/run.sh" 2>&1
 )"
 runner_exit=$?
-printf '%s\n' "$runner_output" | grep -E '^(Mimir rule fixture failures:|--- |FAILED: deliberate fixture)'
+# The failures below are synthetic success-path inputs. Keep their diagnostics
+# available to the assertions without making a green CI job look broken.
 assert "runner returns nonzero when fixtures fail" test "$runner_exit" != 0
 assert "runner reports first broken fixture" \
   grep -q -- '^--- a_broken_test.yaml ---$' <<<"$runner_output"
