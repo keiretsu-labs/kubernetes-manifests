@@ -4,8 +4,7 @@
 # in the bhaiya namespace apply cleanly and then never fire. They live here
 # instead, alongside rules/payments.yaml which already followed this pattern.
 #
-# Covers the control plane, provider-fence, the MCP and SSH edges, payments,
-# CNPG, the OpenCost cost pipeline, and release-path freshness.
+# Covers the active control plane, SSH and payments edges, and workspace resources.
 #
 # The Mimir rule namespace below must be unique across every file listed in
 # loader-job.yaml: mimirtool rejects the whole sync with "repeated namespace
@@ -16,71 +15,19 @@ namespace: bhaiya-fleet
 groups:
 - name: bhaiya.fleet.availability
   rules:
-  - alert: BhaiyaProviderFenceUnavailable
-    expr: |
-      kube_deployment_spec_replicas{
-        namespace="bhaiya",
-        deployment="bhaiya-provider-fence"
-      } > 0
-      and on(namespace, deployment)
-      kube_deployment_status_replicas_available{
-        namespace="bhaiya",
-        deployment="bhaiya-provider-fence"
-      } < 1
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      summary: Bhaiya provider fence has no available replica
-      description: >-
-        The provider-fence Deployment is configured to run but has no
-        available replica. Its fail-closed webhook can reject Bhaiya mutations;
-        inspect pod readiness, Deployment events, and the active rollout.
-  - alert: BhaiyaProviderFenceRolloutStalled
-    expr: |
-      kube_deployment_status_condition{
-        namespace="bhaiya",
-        deployment="bhaiya-provider-fence",
-        condition="Progressing",
-        status="false",
-        reason="ProgressDeadlineExceeded"
-      } == 1
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      summary: Bhaiya provider-fence rollout is stalled
-      description: >-
-        Kubernetes has not observed progress for the provider-fence rollout
-        within its deadline. Because its webhook fails closed, inspect image
-        availability, readiness, TLS, and Deployment events immediately.
-  - alert: BhaiyaProviderFencePDBAtRisk
-    expr: |
-      kube_poddisruptionbudget_status_current_healthy{
-        namespace="bhaiya",
-        poddisruptionbudget="bhaiya-provider-fence"
-      } < 1
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      summary: Bhaiya provider-fence disruption budget is unavailable
-      description: >-
-        The provider-fence PDB has had no healthy pod for 5 minutes; voluntary
-        disruption protection cannot preserve the fail-closed admission path.
   - alert: BhaiyaServiceNoReadyReplicas
     expr: |
       (
         kube_deployment_spec_replicas{
           namespace="bhaiya",
-          deployment=~"bhaiya(-mcp|-ssh|-payments)?"
+          deployment=~"bhaiya-(ssh|payments)"
         } > 0
       )
       and on(namespace, deployment)
       (
         kube_deployment_status_replicas_ready{
           namespace="bhaiya",
-          deployment=~"bhaiya(-mcp|-ssh|-payments)?"
+          deployment=~"bhaiya-(ssh|payments)"
         } == 0
       )
     for: 10m
@@ -123,7 +70,7 @@ groups:
         sum by (service) (
           rate(
             bhaiya_http_requests_total{
-              service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments",
+              service=~"bhaiya-ssh|bhaiya-payments",
               code=~"5.."
             }[10m]
           )
@@ -132,7 +79,7 @@ groups:
         sum by (service) (
           rate(
             bhaiya_http_requests_total{
-              service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments"
+              service=~"bhaiya-ssh|bhaiya-payments"
             }[10m]
           )
         )
@@ -141,7 +88,7 @@ groups:
       sum by (service) (
         rate(
           bhaiya_http_requests_total{
-            service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments"
+            service=~"bhaiya-ssh|bhaiya-payments"
           }[10m]
         )
       ) > 0.1
@@ -153,36 +100,6 @@ groups:
       description: More than five percent of {{ $labels.service }} requests have returned
         5xx for ten minutes with meaningful traffic. Inspect the service logs and route-level
         errors, then compare the current rollout with the last known good image.
-  - alert: BhaiyaMCPProviderUpstreamErrorRatio
-    expr: |
-      (
-        sum by (cluster, provider) (
-          rate(
-            bhaiya_mcp_proxy_requests_total{
-              result="upstream_error"
-            }[5m]
-          )
-        )
-        /
-        sum by (cluster, provider) (
-          rate(bhaiya_mcp_proxy_requests_total[5m])
-        )
-      ) > 0.05
-      and on(cluster, provider)
-      sum by (cluster, provider) (
-        rate(bhaiya_mcp_proxy_requests_total[5m])
-      ) > 0.1
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      summary: Bhaiya MCP provider {{ $labels.provider }} has a high upstream error ratio
-      description: >-
-        More than five percent of {{ $labels.provider }} MCP proxy requests in
-        {{ $labels.cluster }} have been classified as upstream_error for five
-        minutes with meaningful traffic. Inspect the provider and the MCP
-        proxy body-copy path; a response can have status 2xx and still fail
-        while its streaming body is being copied.
   - alert: BhaiyaServiceP99LatencyRegression
     expr: |
       histogram_quantile(
@@ -190,7 +107,7 @@ groups:
         sum by (service, le) (
           rate(
             bhaiya_http_request_duration_seconds_bucket{
-              service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments"
+              service=~"bhaiya-ssh|bhaiya-payments"
             }[10m]
           )
         )
@@ -199,7 +116,7 @@ groups:
       sum by (service) (
         rate(
           bhaiya_http_requests_total{
-            service=~"bhaiya|bhaiya-mcp|bhaiya-ssh|bhaiya-payments"
+            service=~"bhaiya-ssh|bhaiya-payments"
           }[10m]
         )
       ) > 0.1
@@ -295,26 +212,6 @@ groups:
         command completion, ordinary connection closure, drain shutdowns, and
         expected client disconnects are excluded; inspect the affected edge,
         session agent, and workspace stream.
-- name: bhaiya.fleet.release
-  rules:
-  - alert: BhaiyaDeploymentCurrencyStale
-    expr: |
-      bhaiya_deployment_currency_status{
-        namespace="bhaiya",
-        service="bhaiya",
-        status="behind"
-      } == 1
-    for: 75m
-    labels:
-      severity: critical
-    annotations:
-      summary: Bhaiya control plane is behind the main branch
-      description: >-
-        The running Bhaiya control-plane source SHA has differed from Forgejo's
-        main branch for 75 minutes after a definitive probe. This is the
-        independent release-path guard; inspect the Woodpecker publish and
-        bookkeeping handoff plus Flux convergence. A probe_error is deliberately
-        not treated as deployment lag.
 - name: bhaiya.fleet.resources
   rules:
   # NOTE: no cAdvisor-based OOM rule here. Bhaiya workloads run under Kata, and
@@ -424,90 +321,3 @@ groups:
       description: ResourceQuota {{ $labels.resourcequota }} is above 85 percent for {{ $labels.resource
         }}. Identify the largest consumers and remove or resize safe workloads before namespace
         admission is rejected.
-- name: bhaiya.postgresql
-  rules:
-  - alert: BhaiyaPostgresReplicationLag
-    expr: |
-      max by (namespace, cluster, pod) (
-        cnpg_pg_replication_lag{
-          namespace="bhaiya",
-          cluster="bhaiya-postgres"
-        }
-      ) > 60
-    for: 10m
-    labels:
-      severity: warning
-    annotations:
-      summary: Bhaiya PostgreSQL replica {{ $labels.pod }} is lagging
-      description: The bhaiya-postgres replica has been more than 60 seconds behind for ten
-        minutes. Check CNPG pod health, WAL/archive pressure, and node or storage latency
-        before a failover is required.
-  - alert: BhaiyaPostgresClusterDown
-    expr: |
-      (
-        min by (namespace, cluster) (
-          cnpg_collector_up{
-            namespace="bhaiya",
-            cluster="bhaiya-postgres"
-          }
-        ) == 0
-      )
-      or
-      (
-        up{
-          namespace="bhaiya",
-          job="bhaiya/bhaiya-postgres"
-        } == 0
-      )
-    for: 5m
-    labels:
-      severity: critical
-    annotations:
-      summary: Bhaiya PostgreSQL cluster is down
-      description: CNPG has not reported a healthy collector for bhaiya-postgres for five
-        minutes. Check the primary and replica pods, CNPG events, storage, and the PostgreSQL
-        Service before restarting anything.
-- name: bhaiya.opencost
-  rules:
-  - alert: BhaiyaOpenCostCacheStale
-    expr: |
-      (time() - bhaiya_opencost_cache_last_success_timestamp_seconds{window="24h"} > 7200)
-      or
-      (time() - bhaiya_opencost_cache_last_success_timestamp_seconds{window="7d"} > 43200)
-    for: 15m
-    labels:
-      severity: warning
-    annotations:
-      summary: Bhaiya OpenCost {{ $labels.window }} snapshot is stale
-      description: The latest successful OpenCost {{ $labels.window }} snapshot is older than
-        two normal refresh intervals. Bhaiya is serving stale cost data; check its refresh
-        errors and the OpenCost/Mimir path.
-  - alert: BhaiyaOpenCostRepeatedRefreshFailures
-    expr: increase(bhaiya_opencost_refresh_total{result="error"}[1h]) >= 2
-    for: 5m
-    labels:
-      severity: warning
-    annotations:
-      summary: Bhaiya OpenCost {{ $labels.window }} refresh is failing
-      description: At least two OpenCost refresh attempts failed in the last hour. The last
-        durable snapshot remains available to users.
-  - alert: BhaiyaOpenCostRefreshCadenceRegression
-    expr: sum(increase(bhaiya_opencost_refresh_total{result="success"}[1h])) > 4
-    for: 10m
-    labels:
-      severity: warning
-    annotations:
-      summary: Bhaiya is refreshing OpenCost too frequently
-      description: Bhaiya performed more than four successful OpenCost refreshes in one hour.
-        Expected failure retries are excluded; this guard detects a return to the high-frequency
-        query pattern that caused sustained Mimir and Garage reads.
-  - alert: BhaiyaOpenCostSnapshotPersistenceFailing
-    expr: increase(bhaiya_opencost_snapshot_operations_total{operation="save",result="error"}[1h])
-      > 0
-    for: 5m
-    labels:
-      severity: warning
-    annotations:
-      summary: Bhaiya cannot persist OpenCost snapshots
-      description: A successful OpenCost response could not be saved to PostgreSQL. Restarts
-        may lose the warm cache until persistence recovers.

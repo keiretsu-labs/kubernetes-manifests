@@ -2,21 +2,11 @@
 # Keep this independent from the loader's mimir-rules.files list. The
 # check-mimir-rules gate verifies it against every rule source on disk so a
 # file omitted from the loader still remains an expected live group.
-bhaiya-model	bhaiya-model.rules
-bhaiya-provider-provisioning	bhaiya.provider-fence
-bhaiya-provider-provisioning	bhaiya.workspace-provisioning
-bhaiya-reconciler	bhaiya-reconciler.rules
 bhaiya-sandbox-telemetry	bhaiya-sandbox-telemetry.rules
 bhaiya-ssh	bhaiya-ssh.rules
-bhaiya-workspace-endpoints	bhaiya-workspace-endpoints.rules
-bhaiya-workspace-image	bhaiya-workspace-image.rules
-bhaiya-workspace-backup	bhaiya-workspace-backup.rules
 bhaiya-fleet	bhaiya.fleet.availability
 bhaiya-fleet	bhaiya.fleet.ssh
-bhaiya-fleet	bhaiya.fleet.release
 bhaiya-fleet	bhaiya.fleet.resources
-bhaiya-fleet	bhaiya.postgresql
-bhaiya-fleet	bhaiya.opencost
 blackbox	blackbox-exporter.rules
 ceph	ceph.rules
 ceph	bhaiya-sandbox.rules

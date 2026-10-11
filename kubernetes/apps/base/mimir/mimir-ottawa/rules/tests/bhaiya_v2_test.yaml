@@ -44,7 +44,7 @@ tests:
         values: "2+0x10"
       - series: 'kube_deployment_status_replicas_available{namespace="bhaiya",deployment="bhaiya-v2-edge"}'
         values: "1+0x10"
-      - series: 'kube_deployment_status_replicas_available{namespace="bhaiya",deployment="bhaiya"}'
+      - series: 'kube_deployment_status_replicas_available{namespace="bhaiya",deployment="bhaiya-unrelated"}'
         values: "0+0x10"
     alert_rule_test:
       - eval_time: 10m
