@@ -7,9 +7,16 @@ spec:
   talos:
     # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
     version: v1.13.8
+  drain:
+    enabled: true
+    # Use the eviction API so PDBs are respected.
+    disableEviction: false
   policy:
     debug: true
-    force: true
+    # force=false: keep talosctl etcd health/member checks.
+    force: false
+    # Bound eviction-based drain so a stuck PDB fails the node instead of hanging.
+    drainTimeout: 20m
     rebootMode: default
     placement: soft
     timeout: 30m
