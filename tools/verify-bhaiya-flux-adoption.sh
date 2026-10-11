@@ -12,9 +12,9 @@ get_flux() {
 }
 
 ready_at_current_generation() {
-  jq -e '(.status.observedGeneration == .metadata.generation) and
+  jq -e '. as $object | (.status.observedGeneration == .metadata.generation) and
     ([.status.conditions[]? | select(.type == "Ready" and .status == "True" and
-      .observedGeneration == .metadata.generation)] | length == 1)' "$WORK/$1.json" > /dev/null
+      .observedGeneration == $object.metadata.generation)] | length == 1)' "$WORK/$1.json" > /dev/null
 }
 
 inventory() {
