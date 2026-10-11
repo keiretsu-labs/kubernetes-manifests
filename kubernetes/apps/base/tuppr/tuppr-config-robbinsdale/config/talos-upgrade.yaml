@@ -3,11 +3,6 @@ apiVersion: tuppr.home-operations.com/v1alpha1
 kind: TalosUpgrade
 metadata:
   name: talos
-  annotations:
-    # HOLD (2026-10-11): Robbinsdale Talos rollout paused while tank is unstable
-    # (Ceph mon move / CPU starvation). tuppr checks this before any drain.
-    # Remove only when tank is stable and Raj/ops approve resuming.
-    tuppr.home-operations.com/suspend: "tank-unstable-2026-10-11"
 spec:
   talos:
     # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
