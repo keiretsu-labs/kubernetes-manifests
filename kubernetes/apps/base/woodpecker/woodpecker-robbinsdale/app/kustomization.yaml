@@ -5,3 +5,4 @@ namespace: woodpecker
 resources:
   - helmrelease.yaml
   - service.yaml
+  - pvc-janitor.yaml
