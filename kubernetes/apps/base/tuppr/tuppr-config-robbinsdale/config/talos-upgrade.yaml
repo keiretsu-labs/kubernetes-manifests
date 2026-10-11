@@ -3,6 +3,10 @@ apiVersion: tuppr.home-operations.com/v1alpha1
 kind: TalosUpgrade
 metadata:
   name: talos
+  annotations:
+    # HOLD (2026-10-11 01:45 CT): stone drain re-overloaded tank (osd.10 crash, PGs briefly inactive).
+    # Remove only after tank capacity is fixed so a node drain does not starve it.
+    tuppr.home-operations.com/suspend: "pg-inactive-0145"
 spec:
   talos:
     # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
