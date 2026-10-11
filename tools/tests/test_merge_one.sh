@@ -15,10 +15,15 @@ merge=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 case "$path" in
   */pulls/7/files*)
     if [[ ${CASE:-} == unsafe ]]; then name=kubernetes/apps/base/home/x/helmrelease.yaml; else name=tools/merge-one.sh; fi
-    printf '[{"filename":"%s","status":"modified"}]\n' "$name" ;;
+    if [[ ${CASE:-} == unsafe_rename ]]; then
+      echo '[{"filename":"tools/merge-one.sh","previous_filename":"kubernetes/apps/base/home/x/helmrelease.yaml","status":"renamed"}]'
+    else
+      printf '[{"filename":"%s","status":"modified"}]\n' "$name"
+    fi ;;
   */pulls/7/merge)
+    if [[ ${CASE:-} == merge_rejected ]]; then echo '{"message":"Merge blocked"}'; exit 0; fi
     touch "$MERGED_MARKER"
-    printf '{"merged":true,"sha":"%s"}\n' "$merge" ;;
+    printf '{"merged":true,"message":"Pull Request successfully merged","sha":"%s"}\n' "$merge" ;;
   */pulls/7)
     login=keiretsu-kman-bot; title='Add tool'; state=clean
     [[ ${CASE:-} == renovate ]] && login=renovate-bot
@@ -61,12 +66,12 @@ run_case() {
   got=$?
   set -e
   if [[ $got != "$expected" ]]; then cat "$T/output"; echo "FAIL $scenario: exit $got expected $expected"; exit 1; fi
-  if [[ $scenario == success || $scenario == new_unhealthy || $scenario == wait_fail ]]; then
+  if [[ $scenario == success || $scenario == new_unhealthy || $scenario == wait_fail || $scenario == merge_rejected ]]; then
     [[ -f $T/baseline ]] || { echo "FAIL $scenario: no baseline"; exit 1; }
   else
     [[ ! -f $T/baseline ]] || { echo "FAIL $scenario: unexpected baseline"; exit 1; }
   fi
-  if [[ $scenario == success || $scenario == new_unhealthy || $scenario == wait_fail ]]; then
+  if [[ $scenario == success || $scenario == new_unhealthy || $scenario == wait_fail || $scenario == merge_rejected ]]; then
     grep -q 'PUT .*/pulls/7/merge' "$CALLS" || { echo "FAIL $scenario: no merge"; exit 1; }
   else
     ! grep -q 'PUT .*/pulls/7/merge' "$CALLS" || { echo "FAIL $scenario: unsafe merge"; exit 1; }
@@ -82,10 +87,12 @@ run_case success 0
 run_case renovate 1
 run_case held 1
 run_case unsafe 1
+run_case unsafe_rename 1
 run_case red 1
 run_case baseline_fail 1
 run_case new_unhealthy 1
 run_case wait_fail 1
+run_case merge_rejected 1
 set +e
 "$ROOT/tools/merge-one.sh" --pr 7 >"$T/output" 2>&1
 missing=$?
