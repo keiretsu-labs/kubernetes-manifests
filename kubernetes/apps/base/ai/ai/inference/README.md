@@ -30,7 +30,7 @@ terms. Serving still runs `HF_HUB_OFFLINE=1`. DFlash2 is not downloaded
 | `CONTEXT` | `1048576` (`--context 1048576`) |
 | Vision | disabled; language-only (`LANGUAGE_MODEL_ONLY=1`) |
 | KV cache | FP8; `TF_GLM_CACHE_GIB=1` |
-| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=6.0` |
+| Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=4.5` |
 | Parallel requests | 1 (`--parallel 1`) |
 | `ABLIT` | `1` (gated Ablit; HF terms accepted) |
 | Prompt reuse | `TF_GLM_SHARED_PREFIX=1`, `TF_GLM_CACHE_ENTRIES=32` |
