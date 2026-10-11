@@ -4,5 +4,4 @@ kind: Kustomization
 namespace: hermes
 resources:
   - app.yaml
-  - egress.yaml
   - secret.sops.yaml
