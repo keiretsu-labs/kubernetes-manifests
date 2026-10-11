@@ -5,6 +5,7 @@ metadata:
   namespace: tailscale-pam
 spec:
   instances: 1
+  enablePDB: false
   imageName: ghcr.io/cloudnative-pg/postgresql:16
   bootstrap:
     initdb:
