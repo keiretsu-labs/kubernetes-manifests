@@ -15,7 +15,11 @@ merge=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 case "$path" in
   */pulls/7/files*)
     if [[ ${CASE:-} == unsafe ]]; then name=kubernetes/apps/base/home/x/helmrelease.yaml; else name=tools/merge-one.sh; fi
-    printf '[{"filename":"%s","status":"modified"}]\n' "$name" ;;
+    if [[ ${CASE:-} == unsafe_rename ]]; then
+      echo '[{"filename":"tools/merge-one.sh","previous_filename":"kubernetes/apps/base/home/x/helmrelease.yaml","status":"renamed"}]'
+    else
+      printf '[{"filename":"%s","status":"modified"}]\n' "$name"
+    fi ;;
   */pulls/7/merge)
     if [[ ${CASE:-} == merge_rejected ]]; then echo '{"message":"Merge blocked"}'; exit 0; fi
     touch "$MERGED_MARKER"
@@ -83,6 +87,7 @@ run_case success 0
 run_case renovate 1
 run_case held 1
 run_case unsafe 1
+run_case unsafe_rename 1
 run_case red 1
 run_case baseline_fail 1
 run_case new_unhealthy 1

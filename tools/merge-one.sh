@@ -68,7 +68,7 @@ check_paths() {
     type == "array" and length == $count and all(.[];
       .status != "removed" and
       (.filename | test("^(tools/|docs/|\\.renovate/|README\\.md$|\\.github/renovate\\.json$)")) and
-      ((.previous_filename // "") | test("^(|tools/|docs/|\\.renovate/|README\\.md$|\\.github/renovate\\.json$)"))
+      ((.previous_filename // "") | . == "" or test("^(tools/|docs/|\\.renovate/|README\\.md$|\\.github/renovate\\.json$)"))
     )
   ' "$tmp/files.json" >/dev/null || die "PR changes a cluster-applied, held, removed, or unreviewed path"
 }
