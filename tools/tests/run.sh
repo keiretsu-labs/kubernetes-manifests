@@ -1061,7 +1061,8 @@ runner_output="$(
     "$ROOT/kubernetes/apps/base/mimir/mimir-ottawa/rules/tests/run.sh" 2>&1
 )"
 runner_exit=$?
-printf '%s\n' "$runner_output" | grep -E '^(Mimir rule fixture failures:|--- |FAILED: deliberate fixture)'
+# The failures below are synthetic success-path inputs. Keep their diagnostics
+# available to the assertions without making a green CI job look broken.
 assert "runner returns nonzero when fixtures fail" test "$runner_exit" != 0
 assert "runner reports first broken fixture" \
   grep -q -- '^--- a_broken_test.yaml ---$' <<<"$runner_output"
