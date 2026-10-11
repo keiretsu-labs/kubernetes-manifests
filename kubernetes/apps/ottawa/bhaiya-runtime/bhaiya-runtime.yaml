@@ -1,0 +1,41 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: bhaiya-runtime
+  namespace: flux-system
+  labels:
+    notifications.keiretsu.top/github-status: disabled
+spec:
+  dependsOn:
+    - name: cnpg-system
+    - name: garage
+    - name: garage-keys
+    - name: agent-sandbox
+    - name: external-secrets-install
+    - name: cert-manager
+    - name: home-local-gateway
+  path: ./
+  # Share the existing runtime inventory during the handoff. Enable pruning
+  # only after the old owner is disarmed and removed in later GitOps commits.
+  prune: false
+  deletionPolicy: Orphan
+  # Keep the new owner idle until bhaiya-deploy is Ready at the old digest.
+  # A later reviewed GitOps commit removes this after the source gate passes.
+  suspend: true
+  sourceRef:
+    kind: OCIRepository
+    name: bhaiya-deploy
+  interval: 10m
+  retryInterval: 1m
+  timeout: 20m
+  wait: true
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: bhaiya-control
+      namespace: bhaiya
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: bhaiya-edge
+      namespace: bhaiya
