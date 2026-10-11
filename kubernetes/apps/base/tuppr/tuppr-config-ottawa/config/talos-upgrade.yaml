@@ -3,6 +3,8 @@ apiVersion: tuppr.home-operations.com/v1alpha1
 kind: TalosUpgrade
 metadata:
   name: talos
+  annotations:
+    tuppr.home-operations.com/suspend: "land-3613"
 spec:
   talos:
     # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
@@ -21,6 +23,9 @@ spec:
     rebootMode: default
     placement: soft
     timeout: 30m
+  drain:
+    enabled: true
+    disableEviction: false
   healthChecks:
     - apiVersion: v1
       kind: Node
