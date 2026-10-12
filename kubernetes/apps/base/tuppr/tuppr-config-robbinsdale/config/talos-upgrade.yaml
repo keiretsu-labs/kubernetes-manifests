@@ -3,8 +3,6 @@ apiVersion: tuppr.home-operations.com/v1alpha1
 kind: TalosUpgrade
 metadata:
   name: talos
-  annotations:
-    tuppr.home-operations.com/suspend: "osd-failure-domain-1852"
 spec:
   talos:
     # renovate: datasource=custom.talos-factory depName=siderolabs/talos
@@ -19,14 +17,6 @@ spec:
     placement: soft
     # Give the recovered cluster a fresh, slightly longer retry window.
     timeout: 31m
-    # Ensure RBD mounts are fully detached before the Talos reboot so a
-    # rescheduled workload cannot inherit an orphaned kernel mapping.
-    waitForVolumeDetach: true
-  drain:
-    enabled: true
-    # Use the eviction API so PDBs are respected (Rook managePodBudgets
-    # makes this Ceph-aware: OSD/mon PDBs only allow one failure domain down).
-    disableEviction: false
   healthChecks:
     - apiVersion: v1
       kind: Node
