@@ -54,8 +54,8 @@ spec:
                   ' && exec /usr/src/app/server/bin/start.sh
               resources:
                 requests:
-                  cpu: "2"
-                  memory: 4Gi
+                  cpu: 750m
+                  memory: 2Gi
                 limits:
                   cpu: "8"
                   memory: 8Gi
