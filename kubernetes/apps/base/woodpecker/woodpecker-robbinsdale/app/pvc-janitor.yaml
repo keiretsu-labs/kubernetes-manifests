@@ -9,6 +9,9 @@
 # Rule: delete a wp-* PVC only when it is older than 4h (repo timeout is 120m),
 # no Pending/Running pod mounts it, and no VolumeAttachment holds its PV.
 # Succeeded/Failed pods that still mount it are deleted first.
+# CI pods older than 4h in any phase are orphans too: a lost workflow's service
+# pods (wp-svc-*-postgres) never exit and pin the PVC (2026-10-12: one ran 42h
+# on tank).
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -100,6 +103,8 @@ spec:
               args:
                 - |
                   now=$(date +%s)
+                  kubectl get pods -l woodpecker-ci.org/task-uuid -o json | jq -r --argjson now "$now" '.items[]|select(($now - (.metadata.creationTimestamp|fromdateiso8601)) > 14400)|.metadata.name' |
+                  while read -r pod; do echo "reap orphan pod $pod"; kubectl delete pod "$pod" --wait=false; done
                   pods=$(kubectl get pods -o json)
                   att=$(kubectl get volumeattachments -o json | jq -r '.items[].spec.source.persistentVolumeName')
                   kubectl get pvc -o json | jq -r '.items[]|select(.metadata.name|test("^wp-.*-default$"))|"\(.metadata.name) \(.spec.volumeName) \(.metadata.creationTimestamp)"' |
