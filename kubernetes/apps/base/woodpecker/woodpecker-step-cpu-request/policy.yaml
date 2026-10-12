@@ -1,0 +1,47 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: woodpecker-step-cpu-request
+spec:
+  failurePolicy: Ignore
+  reinvocationPolicy: IfNeeded
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >
+          Object{
+            spec: Object.spec{
+              containers: object.spec.containers.map(c,
+                (has(c.resources) && has(c.resources.limits) && "cpu" in c.resources.limits)
+                  ? Object.spec.containers{
+                      name: c.name,
+                      resources: Object.spec.containers.resources{
+                        requests: {"cpu": c.resources.limits["cpu"]}
+                      }
+                    }
+                  : Object.spec.containers{name: c.name}
+              )
+            }
+          }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: woodpecker-step-cpu-request
+spec:
+  policyName: woodpecker-step-cpu-request
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: woodpecker
+    objectSelector:
+      matchExpressions:
+        - key: woodpecker-ci.org/task-uuid
+          operator: Exists

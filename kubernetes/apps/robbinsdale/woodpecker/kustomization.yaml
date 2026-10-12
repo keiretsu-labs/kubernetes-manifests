@@ -5,3 +5,4 @@ resources:
   - namespace.yaml
   - woodpecker-secret-sync.yaml
   - woodpecker.yaml
+  - woodpecker-step-cpu-request.yaml
