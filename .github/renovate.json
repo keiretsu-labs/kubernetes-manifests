@@ -355,6 +355,13 @@
       "matchPackageNames": ["envoyproxy/gateway"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
+    },
+    {
+      "description": "The Woodpecker PVC janitor CronJob's kubectl image is not part of the server/agent rollout; it may automerge minor/patch after the gates pass. Majors still need review. Must stay after the critical review block.",
+      "matchFileNames": ["kubernetes/apps/base/woodpecker/woodpecker-robbinsdale/app/pvc-janitor.yaml"],
+      "matchPackageNames": ["alpine/k8s"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
     }
   ]
 }
