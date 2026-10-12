@@ -29,9 +29,9 @@ diagram in the [README](../../README.md#architecture).
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
 | `ottawa` | 4 | 61 | 128 |
-| `robbinsdale` | 3 | 43 | 91 |
+| `robbinsdale` | 3 | 43 | 92 |
 | `stpetersburg` | 3 | 39 | 83 |
-| **total** | **10** | **143** | **302** |
+| **total** | **10** | **143** | **303** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -219,7 +219,7 @@ Pointers whose objects land outside their directory's namespace — use the righ
 | Application workloads | `kopiur` | `kopiur` → ns `kopiur-system`, `kopiur-production`, `kopiur-robbinsdale-repo` |
 | Application workloads | `media` | `media-apps` |
 | Application workloads | `speedtest` | `speedtest` |
-| Application workloads | `woodpecker` | `woodpecker`, `woodpecker-secret-sync` |
+| Application workloads | `woodpecker` | `woodpecker`, `woodpecker-secret-sync`, `woodpecker-step-cpu-request` |
 
 Pointers whose objects land outside their directory's namespace — use the right-hand column with `kubectl -n`:
 
