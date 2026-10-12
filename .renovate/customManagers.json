@@ -1,5 +1,19 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customDatasources": {
+    "talos-factory": {
+      "defaultRegistryUrlTemplate": "https://factory.talos.dev/versions",
+      "format": "json",
+      "transformTemplates": ["{\"releases\": [$.{\"version\": $}]}"]
+    }
+  },
+  "packageRules": [
+    {
+      "description": "Talos versions come from the Image Factory, which builds every node's installer. ghcr.io/siderolabs/installer stopped publishing at v1.14.0. semver versioning keeps -alpha/-beta/-rc out via ignoreUnstable.",
+      "matchDatasources": ["custom.talos-factory"],
+      "versioning": "semver"
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",

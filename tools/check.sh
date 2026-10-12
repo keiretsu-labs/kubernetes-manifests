@@ -12,6 +12,8 @@
 #   tools/check.sh <cluster>             # single cluster, e.g. tools/check.sh talos-ottawa
 #   tools/check.sh --quick               # quick check (just syntax, no full render)
 set -euo pipefail
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 cd -- "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
 usage() {

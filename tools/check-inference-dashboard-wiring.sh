@@ -2,6 +2,8 @@
 # Fail if AI inference Grafana dashboards drift out of the vllm kustomization,
 # or if the primary TensorFold dashboard loses required variables / metrics.
 set -euo pipefail
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd -- "$ROOT"
 

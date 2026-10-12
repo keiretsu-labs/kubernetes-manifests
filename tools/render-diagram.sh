@@ -25,6 +25,8 @@
 #   tools/render-diagram.sh                  # every docs/diagrams/*.dot
 #   tools/render-diagram.sh <file.dot> ...   # only those files
 set -euo pipefail
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 DIAGRAMS="$ROOT/docs/diagrams"
 

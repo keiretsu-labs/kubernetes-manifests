@@ -51,6 +51,8 @@
 #
 # Offline: reads tracked YAML only, no cluster calls. Exit 1 on any violation.
 set -uo pipefail
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 

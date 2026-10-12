@@ -23,6 +23,8 @@
 #
 # Exit 0 = up to date / written, 1 = stale (--check), 2 = bad usage.
 set -uo pipefail
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$ROOT/docs/reference/inventory.md"
 

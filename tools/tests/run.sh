@@ -3,6 +3,8 @@
 # No live cluster calls: kubectl/make are stubbed on PATH; orphans/where use
 # temp fixtures and read-only repo lookups. Run: tools/tests/run.sh
 set -u
+# shellcheck source=SCRIPTDIR/../lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/../lib/pyyaml.sh"
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 T="$ROOT/tools"
@@ -374,6 +376,7 @@ printf '#!/usr/bin/env bash\nexit 0\n' >"$mstub/make"; chmod +x "$mstub/make"
 gate_root="$(mktemp -d)"
 mkdir -p "$gate_root/tools"
 cp "$T/check.sh" "$gate_root/tools/check.sh"
+cp -R "$T/lib" "$gate_root/tools/lib"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
@@ -423,6 +426,7 @@ exits "candidate filter, KubeletDown fixture, and stale pending state" 0 \
 watchdog_tmp="$(mktemp -d)"
 mkdir -p "$watchdog_tmp/tools" "$watchdog_tmp/stub"
 cp "$T/check.sh" "$watchdog_tmp/tools/check.sh"
+cp -R "$T/lib" "$watchdog_tmp/tools/lib"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
@@ -519,6 +523,7 @@ mkfifo "$wedge_ready" "$wedge_stopped" "$wedge_result"
 wedge_gate_root="$mstub/gate"
 mkdir -p "$wedge_gate_root/tools"
 cp "$T/check.sh" "$wedge_gate_root/tools/check.sh"
+cp -R "$T/lib" "$wedge_gate_root/tools/lib"
 for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
@@ -876,7 +881,7 @@ assert "SP HA app kustomization lists pvc.yaml" \
 hapol="$ROOT/kubernetes/apps/base/home-assistant/home-assistant/kopiur/snapshotpolicy.yaml"
 habak="$(mktemp)"
 cp "$hapol" "$habak"
-sed -i 's/copyMethod: Direct/copyMethod: Snapshot/' "$hapol"
+sed -i.bak 's/copyMethod: Direct/copyMethod: Snapshot/' "$hapol" && rm -f "$hapol.bak"
 exits  "SP HA Snapshot copyMethod fails the local-path gate" 1 "$T/check-velero-pvc-coverage.sh"
 assert "failure names homeassistant-config Direct" \
   grep -q 'homeassistant-config' <<<"$("$T/check-velero-pvc-coverage.sh" 2>&1 || true)"

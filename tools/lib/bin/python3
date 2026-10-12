@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+shim_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PATH="${PATH//"$shim_dir:"/}" exec uv run --quiet --no-project --with pyyaml python3 "$@"

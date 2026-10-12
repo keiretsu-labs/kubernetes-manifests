@@ -37,6 +37,14 @@
 #    files: runtime, charts, release manifests, schemas, dashboards, and CRDs
 #    must resolve to the same normalized upstream version.
 #
+# 5. talconfig kubernetesVersion vs what its talosVersion supports.
+#    Each Talos minor compiles a Minimum/MaximumKubernetesVersion into
+#    pkg/machinery/compatibility/talosXY, and talosctl upgrade-k8s refuses
+#    anything outside it. Renovate tracks kubelet and Talos independently, so a
+#    kubelet minor can land before the Talos minor that supports it (v1.37.1
+#    was offered while every cluster ran Talos 1.13, which stops at 1.36).
+#    The bounds are read at the declared Talos tag.
+#
 # Deliberate mismatches: put '# version-sync: ignore' in the tuppr, toolbox, or
 # CephCluster file.
 #
@@ -46,12 +54,8 @@ set -euo pipefail
 cd -- "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Locate pyyaml in the user nix profile if the system python doesn't have it
-if ! python3 -c "import yaml" 2>/dev/null; then
-  _yaml_site=$(find /workspace/.local/share/nix/root/nix/store -maxdepth 1 -name "*pyyaml*" -not -name "*.drv" -type d 2>/dev/null | head -1)
-  if [ -n "$_yaml_site" ]; then
-    export PYTHONPATH="${_yaml_site}/lib/python3.14/site-packages${PYTHONPATH:+:$PYTHONPATH}"
-  fi
-fi
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 
 python3 - <<'PY'
 import os
@@ -101,13 +105,18 @@ ROOK_SRC = (
     "https://raw.githubusercontent.com/rook/rook/{tag}"
     "/pkg/operator/ceph/version/version.go"
 )
-PIRAEUS_INDEX = "https://piraeus.io/helm-charts/index.yaml"
+TALOS_SRC = (
+    "https://raw.githubusercontent.com/siderolabs/talos/{tag}"
+    "/pkg/machinery/compatibility/{pkg}/{pkg}.go"
+)
+PIRAEUS_INDEX ="https://piraeus.io/helm-charts/index.yaml"
 # Ceph release type lives in the minor field; x.2.z is the stable line.
 CEPH_STABLE_MINOR = 2
 
 failures = []
 skipped = []
 rook_verified = []
+talos_k8s_verified = []
 
 for cluster in CLUSTERS:
     talconfig = pathlib.Path(f"clusters/talos-{cluster}/bootstrap/talos/talconfig.yaml")
@@ -242,6 +251,62 @@ for cluster in CEPH_CLUSTERS:
             f"    that Rook release supports Ceph majors {supported}\n"
             f"    Rook fails its version check before initializing and stops\n"
             f"    reconciling this cluster entirely. Upgrade Rook first."
+        )
+
+for cluster in CLUSTERS:
+    crfile = pathlib.Path(
+        f"kubernetes/apps/base/tuppr/tuppr-config-{cluster}/config/kubernetes-upgrade.yaml"
+    )
+    if MARKER in crfile.read_text():
+        skipped.append(f"{cluster}/kubernetes-upgrade.yaml (talos k8s support)")
+        continue
+
+    talconfig = pathlib.Path(f"clusters/talos-{cluster}/bootstrap/talos/talconfig.yaml")
+    declared = yaml.safe_load(talconfig.read_text())
+    talos, k8s = declared["talosVersion"], declared["kubernetesVersion"]
+
+    talos_parsed = re.fullmatch(r"v(\d+)\.(\d+)\.\d+", talos)
+    k8s_parsed = re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)", k8s)
+    if not talos_parsed or not k8s_parsed:
+        failures.append(
+            f"  {cluster}: {talconfig}\n"
+            f"    talosVersion: {talos}, kubernetesVersion: {k8s}\n"
+            f"    not vX.Y.Z releases — cannot check them against Talos"
+        )
+        continue
+    pkg = f"talos{talos_parsed[1]}{talos_parsed[2]}"
+    url = TALOS_SRC.format(tag=talos, pkg=pkg)
+
+    try:
+        src = fetch_url(url)
+    except (urllib.error.URLError, OSError) as err:
+        note = f"{cluster}/talconfig.yaml (could not read {url}: {err})"
+        if os.environ.get("CI"):
+            failures.append(f"  {note}")
+        else:
+            skipped.append(f"{note} — offline, Talos k8s support NOT verified")
+        continue
+
+    bounds = dict(
+        re.findall(r'(Minimum|Maximum)KubernetesVersion\s*=\s*semver\.MustParse\("([^"]+)"\)', src)
+    )
+    if set(bounds) != {"Minimum", "Maximum"}:
+        failures.append(f"  {cluster}: could not parse Kubernetes bounds from {url}")
+        continue
+
+    def triple(v):
+        return tuple(int(x) for x in v.lstrip("v").split("."))
+
+    lo, hi = bounds["Minimum"], bounds["Maximum"]
+    if triple(lo) <= triple(k8s) <= triple(hi):
+        talos_k8s_verified.append(cluster)
+    else:
+        failures.append(
+            f"  {cluster}: {talconfig}\n"
+            f"    kubernetesVersion: {k8s}\n"
+            f"    talosVersion: {talos} supports Kubernetes {lo} – {hi}\n"
+            f"    ({url})\n"
+            f"    talosctl upgrade-k8s refuses it on every node. Upgrade Talos first."
         )
 
 SEMVER = re.compile(r"^(?:mimir-)?v?(\d+\.\d+\.\d+)(?:-thick)?$")
@@ -514,5 +579,7 @@ print(
     f" | ceph {' '.join(CEPH_CLUSTERS)}"
     f" | ceph supported by deployed rook"
     f" {' '.join(rook_verified) if rook_verified else '(none verified)'}"
+    f" | kubernetes supported by talos"
+    f" {' '.join(talos_k8s_verified) if talos_k8s_verified else '(none verified)'}"
 )
 PY

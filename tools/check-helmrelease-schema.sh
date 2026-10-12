@@ -3,6 +3,8 @@
 # Flate renders HelmRelease charts into their workload resources, so its output
 # does not retain the HelmRelease CRs this schema gate needs to inspect.
 set -euo pipefail
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 

@@ -34,6 +34,8 @@
 #   tools/check-diagram.sh <file.dot>     # one diagram
 #   tools/check-diagram.sh <file.md>      # ```dot blocks inside a markdown file
 set -uo pipefail
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 DIAGRAMS="$ROOT/docs/diagrams"
 
