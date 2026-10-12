@@ -275,6 +275,17 @@ spec:
         - ports:
             - port: "9464"
               protocol: TCP
+    # API-server service proxy (bhaiya-cos burn pacer reads /metrics via
+    # kubectl get --raw .../services/cliproxy-quota-exporter:9464/proxy/metrics).
+    # "host" only matches the pod's own node, so the proxy timed out whenever
+    # the serving apiserver ran on a different node than this pod.
+    - fromEntities:
+        - kube-apiserver
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "9464"
+              protocol: TCP
   egress:
     - toEndpoints:
         - matchLabels:
