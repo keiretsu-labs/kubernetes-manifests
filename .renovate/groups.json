@@ -418,6 +418,16 @@
       "labels": ["TeslaMate"]
     },
     {
+      "description": "Keep the LiteLLM database-migrations init container and the proxy on one release.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/berriai/litellm",
+        "ghcr.io/berriai/litellm-database"
+      ],
+      "matchFileNames": ["kubernetes/apps/base/litellm/litellm/deployment.yaml"],
+      "groupName": "litellm"
+    },
+    {
       "description": "Keep the CSI SMB Helm repository index and both deployed chart versions on one release.",
       "matchPackageNames": [
         "kubernetes-csi/csi-driver-smb",
