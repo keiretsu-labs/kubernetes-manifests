@@ -3,6 +3,8 @@ apiVersion: tuppr.home-operations.com/v1alpha1
 kind: TalosUpgrade
 metadata:
   name: talos
+  annotations:
+    tuppr.home-operations.com/suspend: "osd-failure-domain-1852"
 spec:
   talos:
     # renovate: datasource=custom.talos-factory depName=siderolabs/talos
