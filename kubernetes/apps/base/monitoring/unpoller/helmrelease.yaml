@@ -66,6 +66,12 @@ spec:
     - kustomize:
         patches:
           - target:
+              kind: PodMonitor
+            patch: |
+              - op: add
+                path: /spec/podMetricsEndpoints/0/interval
+                value: 4m
+          - target:
               kind: GrafanaDashboard
             patch: |
               - op: replace
