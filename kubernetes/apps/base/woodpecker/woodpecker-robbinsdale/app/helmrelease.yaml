@@ -70,6 +70,17 @@ spec:
                 matchLabelKeys:
                   - woodpecker-ci.org/task-uuid
                 topologyKey: kubernetes.io/hostname
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: woodpecker-ci.org/task-uuid
+                        operator: Exists
+                  mismatchLabelKeys:
+                    - woodpecker-ci.org/task-uuid
+                  topologyKey: kubernetes.io/hostname
         WOODPECKER_LOG_LEVEL: info
       persistence:
         # Keep each agent's registration identity across StatefulSet pod
