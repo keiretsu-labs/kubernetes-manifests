@@ -118,6 +118,8 @@ data:
     apiVersion: "descheduler/v1alpha2"
     kind: "DeschedulerPolicy"
     maxNoOfPodsToEvictPerNode: 15
+    metricsProviders:
+      - source: KubernetesMetrics
     profiles:
       - name: ProfileName
         pluginConfig:
@@ -158,6 +160,23 @@ data:
               "pods": 8
             targetThresholds:
               "pods": 10
+        plugins:
+          balance:
+            enabled:
+              - "LowNodeUtilization"
+      - name: ActualCPUBalance
+        pluginConfig:
+        - name: "DefaultEvictor"
+          args:
+            nodeFit: true
+        - name: "LowNodeUtilization"
+          args:
+            thresholds:
+              "cpu": 40
+            targetThresholds:
+              "cpu": 90
+            metricsUtilization:
+              source: KubernetesMetrics
         plugins:
           balance:
             enabled:
