@@ -19,22 +19,18 @@ spec:
           Object{
             spec: Object.spec{
               containers: object.spec.containers.map(c,
-                (has(c.resources) && has(c.resources.limits) && "cpu" in c.resources.limits)
+                (!has(c.resources) || !has(c.resources.requests) || !("cpu" in c.resources.requests)
+                    || quantity(string(c.resources.requests["cpu"])).isLessThan(quantity("500m")))
                   ? Object.spec.containers{
                       name: c.name,
                       resources: Object.spec.containers.resources{
-                        requests: {"cpu": c.resources.limits["cpu"]}
+                        requests: {"cpu":
+                          (has(c.resources) && has(c.resources.limits) && "cpu" in c.resources.limits
+                            && quantity(string(c.resources.limits["cpu"])).isLessThan(quantity("500m")))
+                          ? string(c.resources.limits["cpu"]) : "500m"}
                       }
                     }
-                  : (!has(c.resources) || !has(c.resources.requests) || !("cpu" in c.resources.requests)
-                      || quantity(string(c.resources.requests["cpu"])).isLessThan(quantity("500m")))
-                    ? Object.spec.containers{
-                        name: c.name,
-                        resources: Object.spec.containers.resources{
-                          requests: {"cpu": "500m"}
-                        }
-                      }
-                    : Object.spec.containers{name: c.name}
+                  : Object.spec.containers{name: c.name}
               )
             }
           }
