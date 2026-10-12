@@ -3,6 +3,8 @@
 # copied roots, replacing only Flate and kubeconform where a deterministic
 # fixture is required. The full tools/tests/run.sh suite invokes this script.
 set -u
+# shellcheck source=SCRIPTDIR/../lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/../lib/pyyaml.sh"
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 T="$ROOT/tools"
@@ -30,6 +32,7 @@ make_checker_root() {
     "$root/clusters/common/bootstrap/flux" \
     "$root/kubernetes/apps/base/fixture"
   cp "$T/check-helmrelease-schema.sh" "$root/tools/check-helmrelease-schema.sh"
+  cp -R "$T/lib" "$root/tools/lib"
   cp "$T/schemas/helm-controller-v1.6.5/provenance.json" "$schema_root/provenance.json"
   cp "$T/schemas/helm-controller-v1.6.5/helmrelease-helm-v2-strict.json" \
     "$schema_root/helmrelease-helm-v2-strict.json"
@@ -175,6 +178,7 @@ make_gate_root() {
   local result="$2"
   mkdir -p "$root/tools" "$root/bin"
   cp "$T/check.sh" "$root/tools/check.sh"
+  cp -R "$T/lib" "$root/tools/lib"
   for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.sh \
     check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
     check-zot-upload-affinity.sh check-bhaiya-limits.sh \

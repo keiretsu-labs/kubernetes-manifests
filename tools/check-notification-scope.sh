@@ -13,12 +13,8 @@ cd -- "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 # Keep this helper usable in the same minimal environments as the version
 # checker. The CI image normally already has PyYAML; the fallback matches its
 # user-profile lookup when it does not.
-if ! python3 -c "import yaml" 2>/dev/null; then
-  _yaml_site=$(find /workspace/.local/share/nix/root/nix/store -maxdepth 1 -name "*pyyaml*" -not -name "*.drv" -type d 2>/dev/null | head -1)
-  if [ -n "$_yaml_site" ]; then
-    export PYTHONPATH="${_yaml_site}/lib/python3.14/site-packages${PYTHONPATH:+:$PYTHONPATH}"
-  fi
-fi
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 
 python3 - <<'PY'
 from pathlib import Path

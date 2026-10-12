@@ -5,6 +5,8 @@
 # carry a future Review-by date. This keeps a safe temporary hold from becoming
 # an invisible permanent pin.
 set -euo pipefail
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG="${RENOVATE_CONFIG_PATH:-$ROOT/.github/renovate.json}"

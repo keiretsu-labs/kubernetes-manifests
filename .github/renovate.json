@@ -287,7 +287,7 @@
     {
       "description": "Critical families by package, wherever they appear. Restates the automerge:false intent of the critical groups in .renovate/groups.json (Talos, Kubernetes, Rook, Ceph, tuppr, Flux, flux-operator/instance, Multus, csi-driver-smb, Talhelper, snapshot-controller, CNPG engine images) plus Envoy Gateway, Woodpecker CI, Cilium, cert-manager and the CNPG operator/backup plugin, so a broad automerge rule in this file can never silently override them.",
       "matchPackageNames": [
-        "ghcr.io/siderolabs/installer",
+        "siderolabs/talos",
         "ghcr.io/siderolabs/kubelet",
         "budimanjojo/talhelper",
         "tuppr",

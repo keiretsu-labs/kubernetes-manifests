@@ -6,6 +6,8 @@
 # earlier artifact is stale, so one bad generated file cannot hide another.
 # The workflow that calls this script must install Aqua first.
 set -u -o pipefail
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 CHECK_TMP="$(mktemp -d)"

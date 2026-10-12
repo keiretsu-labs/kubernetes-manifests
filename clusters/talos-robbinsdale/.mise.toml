@@ -181,16 +181,10 @@ description = "Reset a single node to maintenance mode (DESTRUCTIVE)"
 
 [tasks.upgrade]
 run = """
-TALOS_VERSION="${1:-v1.13.3}"
-echo "Upgrading cluster to Talos $TALOS_VERSION"
-for node in tank stone titan; do
-  echo "Upgrading $node..."
-  talosctl upgrade --nodes $node --image ghcr.io/siderolabs/installer:${TALOS_VERSION} -e $node --wait --debug
-  echo "Waiting for node to be ready..."
-  sleep 60
-done
+cd bootstrap/talos
+talhelper gencommand upgrade --extra-flags=--wait,--debug | bash -e
 """
-description = "Upgrade Talos version on all nodes"
+description = "Upgrade Talos on all nodes to talconfig.yaml talosVersion (per-node factory image)"
 
 [tasks.iso]
 run = """

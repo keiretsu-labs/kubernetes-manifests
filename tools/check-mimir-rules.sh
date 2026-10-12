@@ -11,12 +11,8 @@ cd -- "$ROOT"
 
 # Match the other repository checks: PyYAML is normally in the CI image, but
 # the user profile contains the pinned package in minimal local environments.
-if ! python3 -c "import yaml" 2>/dev/null; then
-  yaml_site="$(find /workspace/.local/share/nix/root/nix/store -maxdepth 1 -name "*pyyaml*" -not -name "*.drv" -type d 2>/dev/null | head -1)"
-  if [ -n "$yaml_site" ]; then
-    export PYTHONPATH="$yaml_site/lib/python3.14/site-packages${PYTHONPATH:+:$PYTHONPATH}"
-  fi
-fi
+# shellcheck source=SCRIPTDIR/lib/pyyaml.sh
+. "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
 
 python3 - <<'PY'
 import os
