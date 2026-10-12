@@ -47,24 +47,19 @@ Gotchas (from operations):
 - Talos v1.13 blocks file creation outside `/var` — use `op: overwrite` on the
   existing `20-customization.part` for containerd config dropins.
 
-## Robbinsdale tuppr rollout: cordon tank during drains (2026-10-11)
+## Robbinsdale tuppr rollout (2026-10-11/12)
 
-Robbinsdale has 3 nodes (stone 20c/64Gi, tank 12c/64Gi, titan 12c/32Gi). On
-2026-10-10/11 each tuppr drain of stone pushed ~80-100 pods onto tank (up to 163
-pods, load ~130 on 12 cores): osd.10 liveness-flapped, PGs went briefly inactive,
-new pods failed sandbox networking. tuppr's PreferNoSchedule
-`tuppr.home-operations.com/outdated` taint on not-yet-upgraded nodes makes the
-already-upgraded node the only preferred target.
+Robbinsdale has 3 nodes (stone 20c/64Gi, tank 12c/64Gi, titan 12c/32Gi). The
+v1.13.11 rollout stalled twice. Every cause and its fix:
 
-When resuming (remove the `tuppr.home-operations.com/suspend` annotation on
-`TalosUpgrade/talos` in
-`kubernetes/apps/base/tuppr/tuppr-config-robbinsdale/config/talos-upgrade.yaml`):
+| Symptom | Cause | Fix |
+|---|---|---|
+| stone drained, uncordoned and re-drained every ~15s; its OSDs bounced, PGs inactive; tank absorbed ~80-100 pods per cycle (2026-10-11) | `spec.drain.enabled` / `policy.waitForVolumeDetach` make tuppr drain the node itself; it gives up on the first PDB 429 and rolls back | Removed on all clusters. `tools/check-versions.sh` invariant 6 fails CI if either returns. talosctl now drains with `--drain-timeout`. |
+| drain of stone blocked on `rook-ceph-mds-test-b` | MDS pods carry required anti-affinity against every `app=rook-ceph-mds` pod; 4 MDS (`filesystem` + orphan `test` CephFilesystem) on 3 nodes leaves the 4th unschedulable, so the `test` PDB never allows an eviction | Orphan `test` filesystem (not in Git, 0 clients, 0 bytes) slated for removal |
+| drain of titan blocked on `immich-postgres-2` / `tracearr-postgres-2` | CNPG only switches a primary off an unschedulable node to a replica on a schedulable node; the replicas were on a manually cordoned tank | Do not cordon nodes by hand during a rollout |
+| PGs inactive (`undersized+peered`) while one host is down | `filesystem-replicated` and the orphan rgw pools use CRUSH rules that `choose_firstn type osd`, so two replicas can share a host; the git spec says `failureDomain: host` but the live rule was never changed | Pending: host-based rule for `filesystem-replicated`, remove orphan rgw pools |
 
-1. Gates: all PGs active+clean, mons 3/3 on 3 nodes, no OSD restarts for 1h,
-   pods per node roughly even (descheduler PodCountBalance profile).
-2. Before each drain of stone or titan, `kubectl cordon tank` (unless tank is
-   the node being upgraded) so displaced pods go to the other node.
-3. Watch `ceph pg stat` / `ceph mon stat`. On any inactive PG or mon down,
-   re-add the suspend annotation in Git (a live annotation is stripped by Flux),
-   then cordon/evict to rebalance.
-4. After the node is back Ready and Ceph is active+clean, `kubectl uncordon tank`.
+Do not cordon tank (or any node) by hand during a rollout. It strands CNPG
+switchover candidates and MDS standbys. Resume by removing the
+`tuppr.home-operations.com/suspend` annotation in Git once all PGs are
+active+clean and mons are 3/3.

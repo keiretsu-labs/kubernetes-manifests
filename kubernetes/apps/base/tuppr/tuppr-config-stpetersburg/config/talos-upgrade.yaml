@@ -7,10 +7,6 @@ spec:
   talos:
     # renovate: datasource=custom.talos-factory depName=siderolabs/talos
     version: v1.13.11
-  drain:
-    enabled: true
-    # Use the eviction API so PDBs are respected.
-    disableEviction: false
   policy:
     debug: true
     # force=false: keep talosctl etcd health/member checks.
