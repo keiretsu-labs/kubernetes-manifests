@@ -13,7 +13,7 @@
   "gitIgnoredAuthors": [
     "41898282+github-actions[bot]@users.noreply.github.com"
   ],
-  "rebaseWhen": "behind-base-branch",
+  "rebaseWhen": "automerging",
   "timezone": "America/Chicago",
   "ignoreTests": false,
   "prConcurrentLimit": 0,
