@@ -117,6 +117,7 @@ data:
   policy.yaml: |
     apiVersion: "descheduler/v1alpha2"
     kind: "DeschedulerPolicy"
+    maxNoOfPodsToEvictPerNode: 15
     profiles:
       - name: ProfileName
         pluginConfig:
@@ -141,6 +142,26 @@ data:
           deschedule:
             enabled:
               - "RemovePodsViolatingInterPodAntiAffinity"
+      # Pod-count balance (2026-10-11): request-based LNU never sees titan as
+      # underutilized, so a node drain piled ~150 pods onto tank (CPU starvation,
+      # Ceph OSD flaps). Deviation thresholds vs the cluster mean pod count:
+      # under = mean-8% of capacity, over = mean+10%.
+      - name: PodCountBalance
+        pluginConfig:
+        - name: "DefaultEvictor"
+          args:
+            nodeFit: true
+        - name: "LowNodeUtilization"
+          args:
+            useDeviationThresholds: true
+            thresholds:
+              "pods": 8
+            targetThresholds:
+              "pods": 10
+        plugins:
+          balance:
+            enabled:
+              - "LowNodeUtilization"
 kind: ConfigMap
 metadata:
   name: descheduler-policy-configmap

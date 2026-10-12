@@ -1,0 +1,114 @@
+---
+# Reaps leaked per-workflow Woodpecker volumes (wp-*-0-default).
+#
+# When an agent loses a workflow (upstream woodpecker-ci/woodpecker#7063,
+# agent restart, node pressure), the k8s backend never runs its cleanup, so the
+# 256G RWO workflow PVC and its Completed step pods stay forever. 2026-10-11:
+# 12 such PVCs (~2.8 TB requested) had piled up on the Robbinsdale NVMe pool.
+#
+# Rule: delete a wp-* PVC only when it is older than 4h (repo timeout is 120m),
+# no Pending/Running pod mounts it, and no VolumeAttachment holds its PV.
+# Succeeded/Failed pods that still mount it are deleted first.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: woodpecker-pvc-janitor
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: woodpecker-pvc-janitor
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["list", "delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: woodpecker-pvc-janitor
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: woodpecker-pvc-janitor
+subjects:
+  - kind: ServiceAccount
+    name: woodpecker-pvc-janitor
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: woodpecker-pvc-janitor-attachments
+rules:
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: woodpecker-pvc-janitor-attachments
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: woodpecker-pvc-janitor-attachments
+subjects:
+  - kind: ServiceAccount
+    name: woodpecker-pvc-janitor
+    namespace: woodpecker
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: woodpecker-pvc-janitor
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+spec:
+  schedule: "17 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 600
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          serviceAccountName: woodpecker-pvc-janitor
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: janitor
+              image: alpine/k8s:1.34.12
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests: {cpu: 10m, memory: 32Mi}
+                limits: {memory: 128Mi}
+              command: ["/bin/sh", "-ec"]
+              args:
+                - |
+                  now=$(date +%s)
+                  pods=$(kubectl get pods -o json)
+                  att=$(kubectl get volumeattachments -o json | jq -r '.items[].spec.source.persistentVolumeName')
+                  kubectl get pvc -o json | jq -r '.items[]|select(.metadata.name|test("^wp-.*-default$"))|"\(.metadata.name) \(.spec.volumeName) \(.metadata.creationTimestamp)"' |
+                  while read -r pvc pv ts; do
+                    age=$(( now - $(date -d "$(echo "$ts" | sed 's/T/ /;s/Z//')" +%s) ))
+                    [ "$age" -lt 14400 ] && continue
+                    echo "$att" | grep -qx "$pv" && { echo "skip $pvc: attached"; continue; }
+                    users=$(echo "$pods" | jq -r --arg c "$pvc" '.items[]|select(any(.spec.volumes[]?; .persistentVolumeClaim.claimName==$c))|"\(.metadata.name) \(.status.phase)"')
+                    echo "$users" | awk '$2!="" && $2!="Succeeded" && $2!="Failed"{f=1} END{exit !f}' && { echo "skip $pvc: live pod"; continue; }
+                    echo "$users" | awk '$1!=""{print $1}' | xargs -r kubectl delete pod --wait=false
+                    echo "reap $pvc (age ${age}s)"; kubectl delete pvc "$pvc" --wait=false
+                  done

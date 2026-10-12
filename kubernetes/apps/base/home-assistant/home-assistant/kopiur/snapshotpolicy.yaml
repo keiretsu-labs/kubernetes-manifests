@@ -36,8 +36,10 @@ spec:
     privilegedMode: true
     resources:
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 50m
+        # orin-0 sits at ~97% memory requests; 128Mi left the mover
+        # Unschedulable (MoverPodWedged) every night since 2026-09-29.
+        memory: 32Mi
       limits:
         cpu: 500m
         memory: 512Mi

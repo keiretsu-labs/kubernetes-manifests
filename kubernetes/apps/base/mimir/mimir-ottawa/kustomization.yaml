@@ -22,14 +22,9 @@ configMapGenerator:
     files:
       - rules/bhaiya.yaml
       - rules/bhaiya-v2.yaml
-      - rules/bhaiya-model.yaml
-      - rules/bhaiya-reconciler.yaml
-      - rules/bhaiya-provider-provisioning.yaml
       - rules/bhaiya-ssh.yaml
       - rules/bhaiya-sandbox-telemetry.yaml
       - rules/bhaiya-workspace-image.yaml
-      - rules/bhaiya-workspace-backup.yaml
-      - rules/bhaiya-workspace-endpoints.yaml
       - rules/blackbox.yaml
       - rules/ceph.yaml
       - rules/cnpg-backup-coverage.yaml

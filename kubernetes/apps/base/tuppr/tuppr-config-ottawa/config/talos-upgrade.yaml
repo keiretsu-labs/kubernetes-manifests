@@ -6,21 +6,21 @@ metadata:
 spec:
   talos:
     # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-    version: v1.13.7
+    version: v1.13.11
   policy:
     debug: true
     # force=false: keep talosctl etcd health/member checks.
     force: false
     # Bound eviction-based drain so a stuck PDB fails the node instead of hanging.
+    # talosctl (v1.13+) owns the drain: it cordons and retries PDB-blocked
+    # evictions until drainTimeout, giving Rook time to swap its OSD PDBs to
+    # per-host ones. tuppr-owned drain (spec.drain) gave up on the first 429
+    # and uncordoned, racing Rook forever (2026-10-11). Keep spec.drain unset
+    # and waitForVolumeDetach off so tuppr does not take the drain back.
     drainTimeout: 20m
-    rebootMode: default
+    rebootMode: powercycle
     placement: soft
     timeout: 30m
-  drain:
-    enabled: true
-    # Use the eviction API so PDBs are respected (Rook managePodBudgets
-    # makes this Ceph-aware: OSD/mon PDBs only allow one failure domain down).
-    disableEviction: false
   healthChecks:
     - apiVersion: v1
       kind: Node

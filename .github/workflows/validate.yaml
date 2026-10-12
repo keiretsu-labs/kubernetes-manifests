@@ -21,6 +21,10 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  # workflow_dispatch check runs are not matched by the main ruleset, so the
+  # dispatched run also reports the required `validate` context as a commit
+  # status (attributed to GitHub Actions, integration 15368).
+  statuses: write
 
 jobs:
   validate:
@@ -90,3 +94,18 @@ jobs:
           exit $failed
         env:
           GH_TOKEN: ${{ github.token }}
+
+      - name: Report required validate status for dispatched runs
+        if: >-
+          always() &&
+          github.event_name == 'workflow_dispatch' &&
+          startsWith(github.ref_name, 'renovate/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [ "$JOB_STATUS" = "success" ]; then state=success; else state=failure; fi
+          gh api "repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            -f state="$state" -f context=validate \
+            -f description="Validate YAML (dispatched for PR #${{ inputs.pr_number }})" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

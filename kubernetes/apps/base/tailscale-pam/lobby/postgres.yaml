@@ -5,6 +5,7 @@ metadata:
   namespace: tailscale-pam
 spec:
   instances: 1
+  enablePDB: false
   imageName: ghcr.io/cloudnative-pg/postgresql:16
   bootstrap:
     initdb:
@@ -20,7 +21,7 @@ spec:
         barmanObjectName: lobby-postgres-s3-store
         serverName: lobby-postgres
   backup:
-    retentionPolicy: "30d"
+    retentionPolicy: "7d"
   externalClusters:
     - name: lobby-postgres-backup
       plugin:
@@ -56,7 +57,7 @@ spec:
     env:
       - name: AWS_DEFAULT_REGION
         value: garage
-  retentionPolicy: "30d"
+  retentionPolicy: "7d"
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup

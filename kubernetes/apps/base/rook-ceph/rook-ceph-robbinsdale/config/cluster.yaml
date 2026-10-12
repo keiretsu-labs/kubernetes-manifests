@@ -259,6 +259,20 @@ spec:
   #   monitoring:
   #   crashcollector:
   resources:
+    # Requests only (no limits => osd_memory_target unchanged), sized from observed
+    # usage 2026-10-11 so the scheduler sees real Ceph load (tank was CPU-starved).
+    mgr:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+    mon:
+      requests:
+        cpu: "150m"
+        memory: "384Mi"
+    osd:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
   #The requests and limits set here, allow the mgr pod to use half of one CPU core and 1 gigabyte of memory
   #   mgr:
   #     limits:
