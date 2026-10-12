@@ -45,6 +45,11 @@
 #    was offered while every cluster ran Talos 1.13, which stops at 1.36).
 #    The bounds are read at the declared Talos tag.
 #
+# 6. tuppr TalosUpgrade must leave the drain to talosctl. spec.drain.enabled or
+#    policy.waitForVolumeDetach make tuppr drain first; on a PDB 429 it rolls
+#    back and retries (Robbinsdale 2026-10-11 and 2026-10-12, 12 attempts in
+#    10 minutes, each one evicting the node's OSDs).
+#
 # Deliberate mismatches: put '# version-sync: ignore' in the tuppr, toolbox, or
 # CephCluster file.
 #
@@ -307,6 +312,25 @@ for cluster in CLUSTERS:
             f"    talosVersion: {talos} supports Kubernetes {lo} – {hi}\n"
             f"    ({url})\n"
             f"    talosctl upgrade-k8s refuses it on every node. Upgrade Talos first."
+        )
+
+for cluster in CLUSTERS:
+    crfile = pathlib.Path(
+        f"kubernetes/apps/base/tuppr/tuppr-config-{cluster}/config/talos-upgrade.yaml"
+    )
+    spec = yaml.safe_load(crfile.read_text())["spec"]
+    owned = []
+    if (spec.get("drain") or {}).get("enabled"):
+        owned.append("spec.drain.enabled: true")
+    if (spec.get("policy") or {}).get("waitForVolumeDetach"):
+        owned.append("spec.policy.waitForVolumeDetach: true")
+    if owned:
+        failures.append(
+            f"  {cluster}: {crfile}\n"
+            f"    {', '.join(owned)}\n"
+            f"    makes tuppr drain the node itself: it gives up on the first PDB\n"
+            f"    429, uncordons, and retries, bouncing the node's OSDs every cycle.\n"
+            f"    Remove it so talosctl drains with --drain-timeout instead."
         )
 
 SEMVER = re.compile(r"^(?:mimir-)?v?(\d+\.\d+\.\d+)(?:-thick)?$")
