@@ -1,0 +1,18 @@
+---
+machine:
+  certSANs:
+    - 192.168.169.25
+    - k8s.killinit.internal
+    - default-kubernetes-ottawa-ingress.keiretsu.ts.net
+    - kubernetes-ottawa.keiretsu.ts.net
+    - kubernetes.ottawa.rajsingh.info
+    - kubernetes-ottawa.default.svc.cluster.local
+    - 127.0.0.1
+cluster:
+  network:
+    cni:
+      name: none
+    podSubnets:
+      - 10.3.0.0/16
+    serviceSubnets:
+      - 10.2.0.0/16

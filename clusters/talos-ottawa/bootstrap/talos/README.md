@@ -1,6 +1,6 @@
 # Talos Kubernetes Cluster (Ottawa)
 
-3 control planes + 1 worker running Talos Linux, managed via `mise` and `talhelper`.
+3 control planes + 1 worker running Talos Linux, managed via `mise` and [topf](https://postfinance.github.io/topf).
 
 | Node   | Role         | IP              | Boot Disk Serial    |
 |--------|-------------|-----------------|---------------------|
@@ -17,7 +17,7 @@
 
 ```bash
 brew install mise gpg
-mise install  # talhelper, talosctl, sops, kubectl, task
+mise install  # topf, talosctl, sops, kubectl, task
 ```
 
 Import PGP key (`FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5`) and trust it:
@@ -68,12 +68,12 @@ for node in rei asuka kaji shiro; do
 done
 ```
 
-Update serial numbers in `talconfig.yaml` to match actual hardware.
+Update serial numbers in `node/<host>/00-install.yaml` to match actual hardware.
 
 ### 5. Generate and Deploy Configurations
 
 ```bash
-mise run genconfig                  # generates clusterconfig/*.yaml
+mise run genconfig                  # renders clusterconfig/<host>.yaml + talosconfig
 ../../scripts/verify-disks.sh       # verify disk selections match hardware
 mise run apply-insecure             # apply to nodes in maintenance mode
 # Wait for nodes to reboot (~90s)
@@ -95,7 +95,8 @@ Flux is bootstrapped from `../../../common/bootstrap/flux/`. No manual `kubectl 
 | Command | Description |
 |---|---|
 | `mise run init` | Generate and encrypt Talos secrets |
-| `mise run genconfig` | Generate node configs from talconfig |
+| `mise run genconfig` | Render node configs and talosconfig from topf.yaml |
+| `mise run diff` | Show what apply would change on each node |
 | `mise run apply` | Apply configs to running cluster |
 | `mise run apply-insecure` | Apply configs in maintenance mode (initial install) |
 | `mise run apply-staged` | Stage configs for next reboot |
@@ -135,11 +136,12 @@ export KUBECONFIG=$(pwd)/kubeconfig
 clusters/talos-ottawa/
 ├── .mise.toml              # Mise config: tools, tasks, env vars
 ├── bootstrap/talos/
-│   ├── talconfig.yaml      # Node definitions, patches, schematic
+│   ├── topf.yaml           # Cluster, versions, nodes, schematic refs
+│   ├── schematic*.yaml     # Image Factory customizations
 │   ├── talsecret.sops.yaml # PGP-encrypted cluster secrets
 │   ├── Taskfile.yaml       # Task runner (called by mise)
-│   ├── clusterconfig/      # Generated per-node configs (git-ignored)
-│   └── patches/            # Global, controller, and node patches
+│   ├── all/ control-plane/ worker/ node/<host>/   # layered patches
+│   └── clusterconfig/      # Rendered per-node configs (git-ignored)
 ├── scripts/
 │   └── verify-disks.sh     # Verify disk config vs hardware
 ├── flux/                   # GitOps config
@@ -150,4 +152,4 @@ clusters/talos-ottawa/
 
 ## GitOps Philosophy
 
-All cluster state is Git-managed. Never `kubectl apply` or `helm install` manually for persistent resources. Commit changes, let Flux reconcile. Talos node configs (`talconfig.yaml`) and patches are the exception — they bootstrap the cluster before Flux can run.
+All cluster state is Git-managed. Never `kubectl apply` or `helm install` manually for persistent resources. Commit changes, let Flux reconcile. Talos node configs (`topf.yaml`) and patches are the exception — they bootstrap the cluster before Flux can run.

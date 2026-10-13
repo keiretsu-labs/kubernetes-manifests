@@ -1,0 +1,23 @@
+---
+clusterName: k8s.killinit.internal
+clusterEndpoint: https://k8s.killinit.internal:6443
+# renovate: datasource=custom.talos-factory depName=siderolabs/talos
+talosVersion: v1.13.11
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+kubernetesVersion: v1.36.3
+schematicId: "@schematic.yaml"
+secretsPath: talsecret.sops.yaml
+nodes:
+  - host: rei
+    ip: 192.168.169.118
+    role: control-plane
+  - host: asuka
+    ip: 192.168.169.117
+    role: control-plane
+  - host: kaji
+    ip: 192.168.169.119
+    role: control-plane
+  - host: shiro
+    ip: 192.168.169.116
+    role: worker
+    schematicId: "@schematic-shiro.yaml"

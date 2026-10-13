@@ -1,0 +1,4 @@
+cluster:
+  extraManifests:
+    # renovate: datasource=github-releases depName=kubernetes-sigs/metrics-server
+    - https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.9.0/components.yaml

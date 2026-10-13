@@ -1,0 +1,10 @@
+---
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: nut-client
+configFiles:
+  - content: |
+      MONITOR ups@localhost 1 monuser pass slave
+      SHUTDOWNCMD "/sbin/poweroff"
+      NOCOMMWARNTIME 86400
+    mountPath: /usr/local/etc/nut/upsmon.conf

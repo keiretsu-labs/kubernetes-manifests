@@ -201,7 +201,8 @@ files that only change when someone commits.
 
 The shared domain is <code>keiretsu.top</code>. Cluster-specific Talos
 versions, Kubernetes versions, node schematics, VIPs, and CIDRs are maintained
-in each cluster's <code>bootstrap/talos/talconfig.yaml</code> and Flux settings,
+in each cluster's <code>bootstrap/talos/topf.yaml</code> (plus its schematic and
+patch files) and Flux settings,
 and reported per cluster in
 [<code>docs/reference/inventory.md</code>](docs/reference/inventory.md), which is
 generated from those files. The table above is a summary; when the two disagree,
@@ -226,7 +227,7 @@ to the clusters whose location tree contains that pointer.
 │   │   ├── bootstrap/flux/           # one-time Flux install bundle
 │   │   └── flux/                     # shared sources and settings
 │   ├── talos-ottawa/
-│   │   ├── bootstrap/talos/          # talhelper config and patches
+│   │   ├── bootstrap/talos/          # topf config, schematics and patches
 │   │   ├── flux/                     # cluster Flux entrypoint and variables
 │   │   ├── jobs/                     # site-specific diagnostic jobs
 │   │   └── scripts/                  # site operations
@@ -363,7 +364,7 @@ cd clusters/talos-<location>
 mise install
 ~~~
 
-The per-cluster <code>.mise.toml</code> installs Task, talhelper, talosctl,
+The per-cluster <code>.mise.toml</code> installs Task, topf, talosctl,
 SOPS, kubectl, and Helmfile. Install the Flux CLI separately if you need the
 live Flux commands below. Import and trust the repository's SOPS key:
 
@@ -389,7 +390,7 @@ mise install
 # Fresh installations only: create new cluster CA/etcd/node secrets.
 mise run init
 
-# Generate clusterconfig/ from talconfig.yaml and the encrypted secret.
+# Render clusterconfig/ (machine configs + talosconfig) from topf.yaml and the encrypted secret.
 mise run genconfig
 
 # Nodes must be in Talos maintenance mode for the initial apply.
@@ -399,7 +400,8 @@ mise run kubeconfig
 mise run health
 ~~~
 
-For an already-installed cluster, use <code>mise run apply</code> for a normal
+For an already-installed cluster, run <code>mise run diff</code> first, then
+<code>mise run apply</code> for a normal
 configuration change or <code>mise run apply-staged</code> when the change
 should wait for the next reboot. Generated <code>clusterconfig/</code> files
 and kubeconfigs are ignored and must not be committed.
@@ -701,7 +703,7 @@ route.
 
 - [FluxCD Documentation](https://fluxcd.io/docs/)
 - [Talos Linux](https://www.talos.dev/latest/)
-- [Talhelper](https://github.com/budimanjojo/talhelper)
+- [topf](https://postfinance.github.io/topf)
 - [SOPS](https://github.com/getsops/sops)
 - [Tailscale Kubernetes Operator](https://tailscale.com/kb/1236/kubernetes-operator)
 - [Flate](https://github.com/home-operations/flate) — offline Flux manifest renderer

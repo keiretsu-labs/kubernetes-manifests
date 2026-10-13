@@ -253,7 +253,7 @@ the label `substitution.flux.home.arpa/disabled=true`.
   from workspace and subnet-router traffic; source workspace policy cannot see
   final destinations carried inside accepted Tailscale routes.
 - **Adding Kata workers:** give each new Talos machine the
-  `siderolabs/kata-containers` system extension in `talconfig.yaml`, and install
+  `siderolabs/kata-containers` system extension in its `schematic*.yaml`, and install
   and boot that extension image before scheduling Kata work onto the node —
   a staged machine config can make labels effective on a plain reboot without
   installing the new OS image. Confirm with `talosctl get extensions` before
@@ -322,7 +322,7 @@ the label `substitution.flux.home.arpa/disabled=true`.
 tools/check.sh [cluster]   # CI render gate — the sole verify command
                            # (one ✓ line on success; accepts ot/rb/sp aliases;
                            #  scope by cluster if only one changed)
-tools/check-versions.sh    # talconfig↔tuppr and CephCluster↔toolbox version sync
+tools/check-versions.sh    # topf.yaml↔tuppr and CephCluster↔toolbox version sync
 tools/check-domain-dns.sh  # gateway listeners ↔ the three DNS planes: private/ts
                            # hostname parity, per-plane domainFilter coverage, a
                            # tailnet answer for every internal zone, and
@@ -358,7 +358,7 @@ flux reconcile kustomization <app> -n flux-system
   cluster, machine, pointer directory and Flux Kustomization, plus the pointers
   whose objects land in a different namespace than their directory suggests.
 - `kubernetes/README.md` — authoritative layout description
-- `docs/reference/talos.md` — Talos/talhelper bootstrap structure
+- `docs/reference/talos.md` — Talos/topf bootstrap structure
 - `docs/reference/tailscale-integration.md` — operator resources, ACL policy,
   scripts, CI workflows
 - `docs/reference/tsdb.md` — historical tsdb connector notes

@@ -1,0 +1,66 @@
+# Node-specific configuration for spark-0 (DGX Spark).
+# All NVIDIA discrete-style GPU bits live here so orin-0 (Tegra, no PCIe NVIDIA modules) doesn't get them.
+# NOTE: arm64.nobti is baked into the schematic kernel args (factory.talos.dev) because
+# Talos v1.13 uses UKI which forbids runtime install.extraKernelArgs. See schematic-spark.yaml.
+machine:
+  nodeLabels:
+    node.kubernetes.io/instance-type: dgx-spark
+    nvidia.com/gpu.product: Blackwell
+    nvidia.com/gpu.present: "true"
+    # gpu-operator NFD-style labels — our NFD doesn't synthesize these on Talos
+    # so they're set manually here. Without them gpu-operator's ClusterPolicy
+    # reconciler can't find the GPU nodes and refuses to deploy device-plugin DS.
+    feature.node.kubernetes.io/pci-10de.present: "true"
+    feature.node.kubernetes.io/system-os_release.ID: ubuntu
+    feature.node.kubernetes.io/system-os_release.VERSION_ID: "24.04"
+    feature.node.kubernetes.io/system-os_release.VERSION_ID.major: "24"
+    feature.node.kubernetes.io/cpu-model.vendor_id: NVIDIA
+  # Keep explicit HugeTLB pages disabled. No St. Petersburg workload requests
+  # hugepages, and the former 4Gi reservation reduced the unified-memory pool.
+  sysctls:
+    vm.nr_hugepages: "0"
+  network:
+    interfaces:
+      # ConnectX-7 RDMA rail to spark-1 (single 200G DAC link, /30 subnet)
+      # Pinned by MAC — net.ifnames=0 ordering isn't stable across reboots
+      - deviceSelector:
+          hardwareAddr: "4c:bb:47:2d:95:35"
+        mtu: 9000
+        addresses:
+          - 192.168.74.1/30
+  kernel:
+    modules:
+      - name: nvidia
+      - name: nvidia_uvm
+      - name: nvidia_drm
+        parameters:
+          - modeset=1
+          - fbdev=1
+      - name: nvidia_modeset
+      # RDMA / RoCE stack (mlx5_core + mlx5_ib + ib_uverbs already loaded by kernel
+      # via PCI probe; these complete the userspace verbs/CM API)
+      - name: ib_core
+      - name: rdma_cm
+      - name: rdma_ucm
+  files:
+    # 20-customization.part merges with Talos's own /etc/cri/conf.d fragments at containerd startup.
+    # discard_unpacked_layers=false is required by spegel so peers can serve content blobs.
+    # op: overwrite (not create) — Talos v1.13 blocks file create outside /var.
+    - content: |
+        [plugins."io.containerd.grpc.v1.cri"]
+          enable_unprivileged_ports = true
+          enable_unprivileged_icmp = true
+        [plugins."io.containerd.cri.v1.runtime"]
+          [plugins."io.containerd.cri.v1.runtime".containerd]
+            default_runtime_name = "nvidia"
+        [plugins."io.containerd.cri.v1.images"]
+          discard_unpacked_layers = false
+      path: /etc/cri/conf.d/20-customization.part
+      op: overwrite
+  udev:
+    rules:
+      # NVIDIA GPU - set permissions for render devices
+      - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
+      # NVIDIA GPU - character devices
+      - KERNEL=="nvidia*", MODE="0666"
+      - KERNEL=="nvidia-uvm*", MODE="0666"

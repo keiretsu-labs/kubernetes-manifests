@@ -1,0 +1,15 @@
+---
+customization:
+  extraKernelArgs:
+    - apparmor=0
+    - init_on_alloc=0
+    - init_on_free=0
+    - mitigations=off
+    - security=none
+    - talos.auditd.disabled=1
+    - net.ifnames=0
+    - talos.logging.kernel=tcp://10.73.69.51:5170/
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/gvisor
+      - siderolabs/util-linux-tools

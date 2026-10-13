@@ -1,0 +1,13 @@
+---
+apiVersion: v1alpha1
+kind: Layer2VIPConfig
+name: 192.168.50.25
+link: enp3s0
+---
+apiVersion: v1alpha1
+kind: LinkConfig
+name: enp3s0
+addresses:
+  - address: 192.168.50.112/24
+routes:
+  - gateway: 192.168.50.1

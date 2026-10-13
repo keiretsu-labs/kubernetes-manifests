@@ -1,6 +1,6 @@
 [tools]
 task = "3"
-talhelper = "latest"
+"github:postfinance/topf" = "0.6.1"
 talosctl = "latest"
 sops = "latest"
 kubectl = "latest"
@@ -33,6 +33,10 @@ description = "Apply Talos configuration to nodes"
 run = "task -d bootstrap/talos apply-insecure"
 description = "Apply Talos configuration to nodes in maintenance mode (initial install)"
 
+[tasks.diff]
+run = "task -d bootstrap/talos diff"
+description = "Show what apply would change on each node (exit 2 when anything differs)"
+
 [tasks.apply-staged]
 run = "task -d bootstrap/talos apply-staged"
 description = "Stage Talos config — applied on each node's next reboot (no immediate disruption)"
@@ -60,7 +64,7 @@ commands_file=$(mktemp)
 for node in tank stone titan; do
   echo "=== $node ==="
 
-  # Boot disk serial for each node from talconfig.yaml
+  # Boot disk serial for each node from bootstrap/talos/node/<host>/00-install.yaml
   case $node in
     tank) boot_serial="242849CDEFAC" ;;
     stone) boot_serial="S5P2NG0R940019Z" ;;
@@ -182,22 +186,22 @@ description = "Reset a single node to maintenance mode (DESTRUCTIVE)"
 [tasks.upgrade]
 run = """
 cd bootstrap/talos
-talhelper gencommand upgrade --extra-flags=--wait,--debug | bash -e
+topf upgrade
 """
-description = "Upgrade Talos on all nodes to talconfig.yaml talosVersion (per-node factory image)"
+description = "Upgrade Talos node by node to topf.yaml talosVersion (per-node factory image)"
 
 [tasks.iso]
 run = """
-echo "Generating ISO from talconfig schematic..."
-SCHEMATIC_ID=$(talhelper genurl installer --config-file bootstrap/talos/talconfig.yaml | grep -oE 'factory.talos.dev/installer/[^:]+' | cut -d'/' -f3)
-TALOS_VERSION=$(grep talosVersion bootstrap/talos/talconfig.yaml | awk '{print $2}')
+echo "Generating ISO from the control-plane schematic..."
+SCHEMATIC_ID=$(cd bootstrap/talos && topf schematic-ids --nodes-filter '^tank$')
+TALOS_VERSION=$(grep '^talosVersion:' bootstrap/talos/topf.yaml | awk '{print $2}')
 echo "Schematic ID: $SCHEMATIC_ID"
 echo "Talos Version: $TALOS_VERSION"
 echo "Downloading ISO..."
 curl -O "https://factory.talos.dev/image/${SCHEMATIC_ID}/${TALOS_VERSION}/metal-amd64.iso"
 echo "ISO downloaded: metal-amd64.iso"
 """
-description = "Download custom ISO with extensions from talconfig"
+description = "Download custom ISO with extensions from the control-plane schematic"
 
 [tasks.nodes]
 run = "kubectl get nodes -o wide"

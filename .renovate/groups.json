@@ -14,7 +14,7 @@
       "prBodyNotes": [
         "## Talos Upgrade — Ottawa",
         "",
-        "Updates `talconfig.yaml` and the tuppr `TalosUpgrade` CR together. Both must",
+        "Updates `topf.yaml` and the tuppr `TalosUpgrade` CR together. Both must",
         "move in the same commit: tuppr rolls every node to whatever the CR says once",
         "any spec change bumps its generation, so a CR left behind is a downgrade.",
         "",
@@ -38,7 +38,7 @@
       "prBodyNotes": [
         "## Talos Upgrade — Robbinsdale",
         "",
-        "Updates `talconfig.yaml` and the tuppr `TalosUpgrade` CR together. Both must",
+        "Updates `topf.yaml` and the tuppr `TalosUpgrade` CR together. Both must",
         "move in the same commit: tuppr rolls every node to whatever the CR says once",
         "any spec change bumps its generation, so a CR left behind is a downgrade.",
         "",
@@ -62,7 +62,7 @@
       "prBodyNotes": [
         "## Talos Upgrade — St. Petersburg",
         "",
-        "Updates `talconfig.yaml` and the tuppr `TalosUpgrade` CR together. Both must",
+        "Updates `topf.yaml` and the tuppr `TalosUpgrade` CR together. Both must",
         "move in the same commit: tuppr rolls every node to whatever the CR says once",
         "any spec change bumps its generation, so a CR left behind is a downgrade.",
         "",
@@ -86,7 +86,7 @@
       "prBodyNotes": [
         "## Kubernetes Upgrade — Ottawa",
         "",
-        "Updates `talconfig.yaml` and the tuppr `KubernetesUpgrade` CR together.",
+        "Updates `topf.yaml` and the tuppr `KubernetesUpgrade` CR together.",
         "",
         "### Before merging:",
         "- [ ] Review [Kubernetes release notes](https://github.com/kubernetes/kubernetes/releases)",
@@ -109,11 +109,11 @@
       "prBodyNotes": [
         "## Kubernetes Upgrade — Robbinsdale",
         "",
-        "Updates `talconfig.yaml` and the tuppr `KubernetesUpgrade` CR together.",
+        "Updates `topf.yaml` and the tuppr `KubernetesUpgrade` CR together.",
         "",
         "The tuppr CR carries a deliberate hold and a `# version-sync: ignore` marker.",
         "If this PR touches it, confirm the hold is meant to be lifted and drop the",
-        "marker; otherwise keep the CR pinned and let only `talconfig.yaml` move.",
+        "marker; otherwise keep the CR pinned and let only `topf.yaml` move.",
         "",
         "### Before merging:",
         "- [ ] Review [Kubernetes release notes](https://github.com/kubernetes/kubernetes/releases)",
@@ -136,7 +136,7 @@
       "prBodyNotes": [
         "## Kubernetes Upgrade — St. Petersburg",
         "",
-        "Updates `talconfig.yaml` and the tuppr `KubernetesUpgrade` CR together.",
+        "Updates `topf.yaml` and the tuppr `KubernetesUpgrade` CR together.",
         "",
         "### Before merging:",
         "- [ ] Review [Kubernetes release notes](https://github.com/kubernetes/kubernetes/releases)",
@@ -441,17 +441,6 @@
       "minimumGroupSize": 2,
       "automerge": false,
       "labels": ["Storage", "Critical-Infrastructure"]
-    },
-    {
-      "description": "Group Talhelper schema references across all cluster configurations.",
-      "matchDatasources": ["github-releases"],
-      "matchPackageNames": ["budimanjojo/talhelper"],
-      "matchFileNames": [
-        "clusters/talos-*/bootstrap/talos/talconfig.yaml"
-      ],
-      "groupName": "talhelper-schema",
-      "automerge": false,
-      "labels": ["Talos"]
     },
     {
       "description": "Review snapshot-controller chart and external-snapshotter CRD releases together for API compatibility.",

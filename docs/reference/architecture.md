@@ -77,7 +77,7 @@ The local gate must pass before commit:
 | Command | What it checks |
 |---|---|
 | `tools/check.sh [cluster]` | CI-pinned Flate changed-only render of all three clusters |
-| `tools/check-versions.sh` | `talconfig` ↔ tuppr, `CephCluster` ↔ toolbox |
+| `tools/check-versions.sh` | `topf.yaml` ↔ tuppr, `CephCluster` ↔ toolbox |
 | `tools/orphans.sh` | kustomization ↔ disk drift |
 | `tools/check-diagram.sh` | the architecture docs: syntax, secrets, staleness, coverage, links |
 | `tools/gen-inventory.sh` | regenerates `docs/reference/inventory.md` from the tree |
@@ -1337,11 +1337,11 @@ One per cluster.
 - **inputs** — tail of container logs (`kube.*`), plus a TCP listener on 5170
   that receives Talos logs. All three clusters ship *service* logs there via a
   `machine.logging.destinations` patch
-  (`bootstrap/talos/patches/global/machine-logging.yaml`, `json_lines`, tagged
+  (`bootstrap/talos/all/*-machine-logging.yaml`, `json_lines`, tagged
   `cluster=<location>`). The **kernel** stream is the part that is not
   universal: Ottawa and St. Petersburg add
   `talos.logging.kernel=tcp://<site>.69.51:5170/` as a kernel arg in
-  `talconfig.yaml`, and **Robbinsdale does not** — so Robbinsdale contributes
+  their `schematic*.yaml`, and **Robbinsdale does not** — so Robbinsdale contributes
   service logs but no kernel logs, and an empty kernel view for those nodes is
   expected rather than a broken collector
 - **filters** — Kubernetes metadata is merged into the record and its
@@ -1872,7 +1872,7 @@ Talos machines (amd64):
 | `kaji` | control plane | 192.168.169.119, holds VIP | `bond0` 802.3ad LACP, Intel X710 SFP+ |
 | `shiro` | worker | 192.168.169.116 | `bond0` 802.3ad LACP, Intel X710 SFP+; label `workload-class=specialized`; Intel platform: i915 + intel-ucode, `hwp_dynamic_boost` |
 
-Talos machine config (talhelper):
+Talos machine config (topf):
 
 - **control-plane extensions** — `amd-ucode`, `amdgpu`, `gvisor`,
   `kata-containers`, `nut-client`, `binfmt-misc`, `util-linux-tools`
@@ -1903,7 +1903,7 @@ failover target ottawa · `America/Chicago`. 86 Flux Kustomizations across 43
 namespaces.
 
 - `clusterName k8s.robbinsdale.local`, endpoint `:6443`
-- Talos v1.13.8 · Kubernetes v1.36.3, matching `talconfig` and both siblings.
+- Talos v1.13.8 · Kubernetes v1.36.3, matching `topf.yaml` and both siblings.
   It was pinned at v1.36.1 while the `TalosUpgrade` was failing; that upgrade
   now reports Completed with all three nodes on v1.13.8, so the hold and its
   `version-sync: ignore` marker were lifted and Renovate tracking restored.
@@ -1927,7 +1927,7 @@ Talos machines (amd64, heterogeneous):
 | `stone` | control plane | 192.168.50.82 (DHCP), holds VIP | single 1 TB NVMe |
 | `titan` | control plane | 192.168.50.112 static, gw 192.168.50.1, holds VIP | moved off SFP after a multicast storm; the static address is what keeps the Ceph mons stable. Most disks of the three nodes. |
 
-Talos machine config (talhelper):
+Talos machine config (topf):
 
 - **extensions** — `amd-ucode`, `amdgpu`, `gvisor`, `i915`, `intel-ucode`,
   `realtek-firmware`, `thunderbolt`, `binfmt-misc`, `util-linux-tools` (a
@@ -1977,10 +1977,11 @@ The `spark-0` ↔ `spark-1` RDMA / RoCE link is a direct point-to-point /30 with
 MTU 9000, modules `ib_core`, `rdma_cm`, `rdma_ucm`, exposed to pods by
 `rdma-shared-dp`.
 
-Talos machine config (talhelper):
+Talos machine config (topf):
 
-- **extensions** — `gvisor`, `nonfree-kmod-nvidia-lts`,
-  `nvidia-container-toolkit-lts`, `binfmt-misc`, `util-linux-tools`
+- **extensions** — sparks: `gvisor`, `nonfree-kmod-nvidia-lts`,
+  `nvidia-container-toolkit-lts`, `util-linux-tools` (`schematic-spark.yaml`);
+  orin-0: `gvisor`, `util-linux-tools` (`schematic-orin.yaml`)
 - **driver choice** — **nonfree**, not open-kernel-modules: the open modules
   crashed the GB10 on boot and the rollback was done over UEFI. The spark
   schematic also bakes in the `arm64.nobti` workaround.
@@ -1995,7 +1996,7 @@ Talos machine config (talhelper):
   `evictionHard memory.available` 6Gi — added after `spark-0` was wedged twice
   by a 74 GB weight load with no reservations
 - **containerd** — per-node; `default_runtime_name=nvidia` on the sparks only
-- **GPU labels** — set by hand in `patches/node/spark-*.yaml` because NFD does
+- **GPU labels** — set by hand in `node/spark-*/10-spark-*.yaml` because NFD does
   not synthesize them on Talos (NFD itself does run, as `nfd-install` /
   `nfd-rules`): `nvidia.com/gpu.present`, `gpu.product=Blackwell`,
   `feature.node.kubernetes.io/pci-10de.present`, plus the

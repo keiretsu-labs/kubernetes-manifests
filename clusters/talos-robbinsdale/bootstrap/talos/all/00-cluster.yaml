@@ -1,0 +1,29 @@
+---
+machine:
+  certSANs:
+    - 192.168.50.25
+    - k8s.robbinsdale.local
+    - default-kubernetes-robbinsdale-ingress.keiretsu.ts.net
+    - kubernetes-robbinsdale.keiretsu.ts.net
+    - k8s.robbinsdale.rajsingh.info
+    - k8s.robbinsdale.lukehouge.com
+    - kubernetes-robbinsdale.default.svc.cluster.local
+    - 127.0.0.1
+cluster:
+  network:
+    cni:
+      name: none
+    podSubnets:
+      - 10.1.0.0/16
+    serviceSubnets:
+      - 10.0.0.0/16
+  apiServer:
+    certSANs:
+      - 192.168.50.25
+      - default-kubernetes-robbinsdale-ingress.keiretsu.ts.net
+      - kubernetes-robbinsdale.keiretsu.ts.net
+      - k8s.robbinsdale.rajsingh.info
+      - k8s.robbinsdale.lukehouge.com
+      - kubernetes-robbinsdale.default.svc.cluster.local
+      - 127.0.0.1
+  allowSchedulingOnControlPlanes: true

@@ -17,7 +17,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Process annotated dependencies (tuppr, talos configs, talconfig, etc)",
+      "description": "Process annotated dependencies (tuppr, talos configs, topf.yaml, etc)",
       "managerFilePatterns": [
         "/^(?:clusters|kubernetes)/.+\\.ya?ml$/"
       ],

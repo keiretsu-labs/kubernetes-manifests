@@ -1,0 +1,34 @@
+---
+apiVersion: v1alpha1
+kind: LinkAliasConfig
+name: bond0-m0
+selector:
+  match: glob("38:05:25:36:56:05", mac(link.permanent_addr))
+---
+apiVersion: v1alpha1
+kind: LinkAliasConfig
+name: bond0-m1
+selector:
+  match: glob("38:05:25:36:56:06", mac(link.permanent_addr))
+---
+apiVersion: v1alpha1
+kind: BondConfig
+name: bond0
+links:
+  - bond0-m0
+  - bond0-m1
+bondMode: 802.3ad
+miimon: 100
+updelay: 200
+downdelay: 200
+xmitHashPolicy: layer3+4
+lacpRate: fast
+---
+apiVersion: v1alpha1
+kind: DHCPv4Config
+name: bond0
+---
+apiVersion: v1alpha1
+kind: Layer2VIPConfig
+name: 192.168.169.25
+link: bond0

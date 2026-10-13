@@ -7,7 +7,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "clusters/*/bootstrap/talos/talconfig.yaml"
+      - "clusters/*/bootstrap/talos/topf.yaml"
       - "kubernetes/apps/base/tuppr/**"
       - "kubernetes/apps/base/rook-ceph/**"
       - "kubernetes/apps/base/mimir/**"
@@ -30,7 +30,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "clusters/*/bootstrap/talos/talconfig.yaml"
+      - "clusters/*/bootstrap/talos/topf.yaml"
       - "kubernetes/apps/base/tuppr/**"
       - "kubernetes/apps/base/rook-ceph/**"
       - "kubernetes/apps/base/mimir/**"
