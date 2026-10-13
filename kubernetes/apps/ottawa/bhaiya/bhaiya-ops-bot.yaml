@@ -1,0 +1,24 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app bhaiya-ops-bot
+  namespace: flux-system
+  labels:
+    app.kubernetes.io/name: *app
+    app.kubernetes.io/part-of: bhaiya
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+      app.kubernetes.io/part-of: bhaiya
+  dependsOn:
+    - name: bhaiya
+  path: ./kubernetes/apps/base/bhaiya/bhaiya-ops-bot
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kubernetes-manifests
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
