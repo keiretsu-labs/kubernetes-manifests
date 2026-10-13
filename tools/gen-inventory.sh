@@ -25,7 +25,10 @@
 set -uo pipefail
 # shellcheck source=SCRIPTDIR/lib/pyyaml.sh
 . "$(dirname -- "${BASH_SOURCE[0]}")/lib/pyyaml.sh"
-ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+# The Renovate inventory workflow runs this trusted copy from main against a
+# separate checkout of the PR head. Keep script execution on main while reading
+# the inventory inputs from that checkout.
+ROOT="${KMAN_INVENTORY_ROOT:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)}"
 OUT="$ROOT/docs/reference/inventory.md"
 
 mode="write"
