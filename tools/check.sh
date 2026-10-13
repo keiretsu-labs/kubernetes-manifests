@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # tools/check.sh — the kubernetes-manifests acceptance gate for kustomize/flux.
-# Prints exactly one line on success; on failure prints only the first ~50 lines
-# of the failing step, so build agents don't dump full output into their context.
+# Prints exactly one success line on stdout and phase progress on stderr.
+# On failure prints only the first ~50 lines of the failing step, so build
+# agents don't dump full output into their context.
 # Anchored to the repo root, so it runs from any cwd.
 #
 # The full gate renders all three clusters concurrently. If only one cluster
@@ -106,9 +107,10 @@ run_capped() {
   local out timedout rc=0
   out="$(mktemp)"
   timedout="$(mktemp)"
+  echo "=== checking $label ===" >&2
 
   set -m
-  "$@" >"$out" 2>&1 &
+  "$@" 3>&2 >"$out" 2>&1 &
   local pid=$!
   set +m
 
@@ -181,7 +183,7 @@ run_capped "version-sync" tools/check-versions.sh
 run_capped "notification-scope" tools/check-notification-scope.sh
 run_capped "cliproxy-pi-bridge" tools/check-cliproxy-pi-bridge.sh
 run_capped "inference-dashboard-wiring" tools/check-inference-dashboard-wiring.sh
-run_capped "orphans" tools/orphans.sh
+run_capped "orphans" env KMAN_ORPHANS_PROGRESS=1 KMAN_ORPHANS_PROGRESS_FD=3 tools/orphans.sh
 run_capped "zot-upload-affinity" tools/check-zot-upload-affinity.sh
 run_capped "bhaiya-limits" bash tools/check-bhaiya-limits.sh
 run_capped "mimir-rule-load-path" tools/check-mimir-rules.sh
