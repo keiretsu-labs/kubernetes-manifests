@@ -30,7 +30,14 @@ spec:
                           ? string(c.resources.limits["cpu"]) : "500m"}
                       }
                     }
-                  : Object.spec.containers{name: c.name}
+                  : quantity(string(c.resources.requests["cpu"])).isGreaterThan(quantity("1"))
+                    ? Object.spec.containers{
+                        name: c.name,
+                        resources: Object.spec.containers.resources{
+                          requests: {"cpu": "1"}
+                        }
+                      }
+                    : Object.spec.containers{name: c.name}
               )
             }
           }
