@@ -251,6 +251,9 @@ EOF
 : >"$fx/clean/a.yaml"; : >"$fx/clean/b.yaml"
 exits  "clean fixture -> exit 0"    0 "$T/orphans.sh" "$fx/clean"
 assert "clean fixture -> no output" test -z "$("$T/orphans.sh" "$fx/clean" 2>&1)"
+KMAN_ORPHANS_PROGRESS=1 "$T/orphans.sh" "$fx/clean" >"$fx/progress.out" 2>"$fx/progress.err"
+assert "progress leaves report empty" test ! -s "$fx/progress.out"
+assert "progress reports scan completion" grep -q 'checked 1 kustomizations' "$fx/progress.err"
 
 mkdir -p "$fx/parent/child"
 cat >"$fx/parent/kustomization.yaml" <<'EOF'
