@@ -1,8 +1,0 @@
-cluster:
-  apiServer:
-    admissionControl:
-      - name: PodSecurity
-        configuration:
-          exemptions:
-            runtimeClasses:
-              - kata-tailscale

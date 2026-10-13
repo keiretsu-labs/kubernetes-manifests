@@ -1,3 +1,4 @@
+{{- if not (semverCompare ">= 1.14.0-0" (.Node.RuntimeData.TalosVersion | default .TalosVersion)) }}
 cluster:
   discovery:
     enabled: true
@@ -9,3 +10,4 @@ cluster:
         disabled: true
       service:
         disabled: false
+{{- end }}
