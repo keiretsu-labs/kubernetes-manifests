@@ -1930,7 +1930,7 @@ Talos machines (amd64, heterogeneous):
 Talos machine config (topf):
 
 - **extensions** — `amd-ucode`, `amdgpu`, `gvisor`, `i915`, `intel-ucode`,
-  `realtek-firmware`, `thunderbolt`, `binfmt-misc`, `util-linux-tools` (a
+  `realtek-firmware`, `thunderbolt`, `util-linux-tools` (a
   mixed AMD+Intel set, for mixed hardware in one node group)
 - **kernel args** — `talos.platform=metal` only; no perf/mitigation tuning
   here

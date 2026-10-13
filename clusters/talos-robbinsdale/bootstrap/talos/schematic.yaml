@@ -9,7 +9,6 @@ customization:
       - siderolabs/intel-ucode
       - siderolabs/realtek-firmware
       - siderolabs/thunderbolt
-      - siderolabs/binfmt-misc
       - siderolabs/util-linux-tools
   extraKernelArgs:
     - talos.platform=metal
