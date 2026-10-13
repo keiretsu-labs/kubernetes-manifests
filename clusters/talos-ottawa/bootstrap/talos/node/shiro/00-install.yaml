@@ -1,7 +1,0 @@
----
-machine:
-  install:
-    disk:
-      $patch: delete
-    diskSelector:
-      serial: "2316E6CC4FC6"

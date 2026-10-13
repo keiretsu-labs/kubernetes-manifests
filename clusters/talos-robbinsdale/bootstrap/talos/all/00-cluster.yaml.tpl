@@ -17,6 +17,20 @@ cluster:
       - 10.1.0.0/16
     serviceSubnets:
       - 10.0.0.0/16
+  allowSchedulingOnControlPlanes: true
+{{- if semverCompare ">= 1.14.0-0" (.Node.RuntimeData.TalosVersion | default .TalosVersion) }}
+---
+apiVersion: v1alpha1
+kind: KubeAPIServerConfig
+certExtraSANs:
+  - 192.168.50.25
+  - default-kubernetes-robbinsdale-ingress.keiretsu.ts.net
+  - kubernetes-robbinsdale.keiretsu.ts.net
+  - k8s.robbinsdale.rajsingh.info
+  - k8s.robbinsdale.lukehouge.com
+  - kubernetes-robbinsdale.default.svc.cluster.local
+  - 127.0.0.1
+{{- else }}
   apiServer:
     certSANs:
       - 192.168.50.25
@@ -26,4 +40,4 @@ cluster:
       - k8s.robbinsdale.lukehouge.com
       - kubernetes-robbinsdale.default.svc.cluster.local
       - 127.0.0.1
-  allowSchedulingOnControlPlanes: true
+{{- end }}

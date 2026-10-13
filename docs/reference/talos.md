@@ -72,8 +72,32 @@ Gotchas (from operations):
   existing `20-customization.part` for containerd config dropins.
 - Talos 1.14 config documents (`KubeletConfig`, `UnattendedInstallConfig`, ...)
   conflict with the classic v1alpha1 fields. topf picks the config contract from
-  the node's running version, so a cluster mid-upgrade needs patches that branch
-  on `.Node.RuntimeData.TalosVersion`.
+  each node's running version, so patches that 1.14 rejects are `.yaml.tpl`
+  files branching on `.Node.RuntimeData.TalosVersion | default .TalosVersion`.
+
+## Talos 1.14 (version-gated patches)
+
+The same tree renders the classic contract for 1.13 nodes and the 1.14
+contract for 1.14 nodes, so a tuppr rollout can stop half way and
+`mise run diff` still works on every node.
+
+- `all/99-talos-114.yaml.tpl`, `control-plane/90-talos-114.yaml.tpl` and
+  `control-plane/91-talos-114-authn.yaml.tpl` only render on 1.14. They delete
+  the generated documents that our classic patches still own
+  (`KubeletConfig`, `KubeNodeConfig`, `KubeNetworkConfig`, `ResolverConfig`,
+  `KubePrismConfig` on control planes) and pin every new 1.14 default to the
+  pre-1.14 behaviour: workload isolation off, no Flannel, no weekly trim, no
+  EPHEMERAL `secure` mount, no API server startup probes, anonymous auth off.
+- The kubelet stays classic on purpose: the 1.14 `KubeletConfig` document has
+  no extra mounts, and `/var/local-path-provisioner` is a kubelet bind mount.
+- Install disk, discovery, API server, controller-manager, scheduler, proxy
+  and PodSecurity patches emit the 1.14 document on 1.14 nodes and the classic
+  field on 1.13 nodes.
+- Effective settings were compared with the Talos 1.14.2 `config.Provider`
+  accessors for every node. The only differences are representation changes
+  (discovery endpoint name, explicit Node/RBAC authorizers, the etcd encryption
+  document carrying the same `key2` secretbox key) plus one hard-coded 1.14
+  addition: a read-only `/etc/ssl/certs` mount in kube-apiserver.
 
 ## Robbinsdale tuppr rollout (2026-10-11/12)
 
