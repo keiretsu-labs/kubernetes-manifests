@@ -14,7 +14,7 @@ for node in rei asuka kaji; do
     echo "========================================="
     
     # Get the serial from the generated config
-    config_file="$CLUSTER_DIR/bootstrap/talos/clusterconfig/k8s.ottawa.local-${node}.yaml"
+    config_file="$CLUSTER_DIR/bootstrap/talos/clusterconfig/${node}.yaml"
     if [[ -f "$config_file" ]]; then
         # Extract serial number
         serial=$(/usr/bin/grep -A2 "diskSelector:" "$config_file" | /usr/bin/grep "serial:" | /usr/bin/sed 's/.*serial: *//')

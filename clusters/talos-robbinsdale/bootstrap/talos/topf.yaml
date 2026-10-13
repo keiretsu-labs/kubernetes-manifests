@@ -1,0 +1,19 @@
+---
+clusterName: k8s.robbinsdale.local
+clusterEndpoint: https://k8s.robbinsdale.local:6443
+# renovate: datasource=custom.talos-factory depName=siderolabs/talos
+talosVersion: v1.13.11
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+kubernetesVersion: v1.36.3
+schematicId: "@schematic.yaml"
+secretsPath: talsecret.sops.yaml
+nodes:
+  - host: tank
+    ip: 192.168.50.51
+    role: control-plane
+  - host: stone
+    ip: 192.168.50.82
+    role: control-plane
+  - host: titan
+    ip: 192.168.50.112
+    role: control-plane

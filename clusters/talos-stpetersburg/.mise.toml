@@ -1,6 +1,6 @@
 [tools]
 task = "3"
-talhelper = "latest"
+"github:postfinance/topf" = "0.6.1"
 talosctl = "latest"
 sops = "latest"
 kubectl = "latest"
@@ -31,6 +31,10 @@ description = "Apply Talos configuration to nodes"
 [tasks.apply-insecure]
 run = "task -d bootstrap/talos apply-insecure"
 description = "Apply Talos configuration to nodes in maintenance mode (initial install)"
+
+[tasks.diff]
+run = "task -d bootstrap/talos diff"
+description = "Show what apply would change on each node (exit 2 when anything differs)"
 
 [tasks.apply-staged]
 run = "task -d bootstrap/talos apply-staged"
@@ -97,9 +101,9 @@ description = "Reboot node (DISRUPTIVE) — usage: mise run reboot [node]"
 [tasks.upgrade]
 run = """
 cd bootstrap/talos
-talhelper gencommand upgrade --node "${1:-spark-0}" --extra-flags=--wait,--debug | bash -e
+topf upgrade --nodes-filter "^${1:-spark-0}$"
 """
-description = "Upgrade Talos to talconfig.yaml talosVersion — usage: mise run upgrade [node]"
+description = "Upgrade Talos to topf.yaml talosVersion — usage: mise run upgrade [node]"
 
 [tasks.k9s]
 run = "k9s --context admin@k8s.stpetersburg.internal"
@@ -107,8 +111,8 @@ description = "Launch k9s with cluster context"
 
 [tasks.iso-spark]
 run = """
-SCHEMATIC_ID=c07545af5f345c55b28c99002209a4d511632ca96774114b0db38ff6352c7b32
-TALOS_VERSION=$(grep '^talosVersion:' bootstrap/talos/talconfig.yaml | awk '{print $2}')
+SCHEMATIC_ID=$(cd bootstrap/talos && topf schematic-ids --nodes-filter '^spark-0$')
+TALOS_VERSION=$(grep '^talosVersion:' bootstrap/talos/topf.yaml | awk '{print $2}')
 echo "spark-0 schematic: $SCHEMATIC_ID @ $TALOS_VERSION"
 curl -L --progress-bar -o bootstrap/talos/metal-arm64-spark.iso \\
   "https://factory.talos.dev/image/${SCHEMATIC_ID}/${TALOS_VERSION}/metal-arm64.iso"
@@ -117,8 +121,8 @@ description = "Download spark-0 ISO (NVIDIA-flavored arm64)"
 
 [tasks.iso-orin]
 run = """
-SCHEMATIC_ID=f1b5e8899067375144c74b23ae6849ede993b6ac771248b654b521905f65b0fa
-TALOS_VERSION=$(grep '^talosVersion:' bootstrap/talos/talconfig.yaml | awk '{print $2}')
+SCHEMATIC_ID=$(cd bootstrap/talos && topf schematic-ids --nodes-filter '^orin-0$')
+TALOS_VERSION=$(grep '^talosVersion:' bootstrap/talos/topf.yaml | awk '{print $2}')
 echo "orin-0 schematic: $SCHEMATIC_ID @ $TALOS_VERSION"
 curl -L --progress-bar -o bootstrap/talos/metal-arm64-orin.iso \\
   "https://factory.talos.dev/image/${SCHEMATIC_ID}/${TALOS_VERSION}/metal-arm64.iso"
@@ -161,7 +165,7 @@ run = """
 ORIN_IP="${1?usage: mise run apply-orin-insecure <orin-ip>}"
 echo "Applying orin-0 config to $ORIN_IP (maintenance mode)"
 talosctl apply-config --insecure -n "$ORIN_IP" \\
-  --file bootstrap/talos/clusterconfig/k8s.stpetersburg.internal-orin-0.yaml
+  --file bootstrap/talos/clusterconfig/orin-0.yaml
 """
 description = "Apply orin-0 config in maintenance mode — usage: mise run apply-orin-insecure <ip>"
 

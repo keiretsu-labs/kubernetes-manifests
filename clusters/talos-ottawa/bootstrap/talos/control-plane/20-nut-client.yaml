@@ -1,0 +1,17 @@
+---
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: nut-client
+configFiles:
+  - content: |
+      # Placeholder configuration - update when NUT server is available
+      # MONITOR format: MONITOR <system> <powervalue> <username> <password> <type>
+      # Example: MONITOR ups@192.168.1.100 1 monuser secret slave
+
+      # Using localhost as placeholder to allow service to start
+      MONITOR ups@localhost 1 monuser pass slave
+      SHUTDOWNCMD "/sbin/poweroff"
+
+      # Set high warning time to avoid spam until server is configured
+      NOCOMMWARNTIME 86400
+    mountPath: /usr/local/etc/nut/upsmon.conf

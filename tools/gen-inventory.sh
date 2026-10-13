@@ -10,7 +10,7 @@
 #
 # Reads, per location under kubernetes/apps/:
 #   clusters/talos-<loc>/flux/vars/cluster-settings.yaml    cluster facts
-#   clusters/talos-<loc>/bootstrap/talos/talconfig.yaml     machines + versions
+#   clusters/talos-<loc>/bootstrap/talos/topf.yaml          machines + versions
 #   kubernetes/apps/<loc>/<ns>/*.yaml                       Flux Kustomizations
 #
 # Deliberately NOT emitted: install-disk serials (they identify physical
@@ -71,9 +71,9 @@ def settings(loc):
     return out
 
 
-def talconfig(loc):
+def topf(loc):
     p = os.path.join(root, "clusters", f"talos-{loc}", "bootstrap", "talos",
-                     "talconfig.yaml")
+                     "topf.yaml")
     if not os.path.isfile(p):
         return {}
     txt = open(p, encoding="utf-8").read()
@@ -90,14 +90,16 @@ def talconfig(loc):
         m = re.search(rf"^{key}:\s*\"?([^\"\s#]+)", txt, re.M)
         if m:
             doc[key] = m.group(1)
-    for block in re.split(r"^\s*-\s+hostname:", txt, flags=re.M)[1:]:
+    for block in re.split(r"^\s*-\s+host:", txt, flags=re.M)[1:]:
         host = re.match(r'\s*"?([\w.-]+)', block)
         if not host:
             continue
-        cp = re.search(r"^\s+controlPlane:\s*(true|false)", block, re.M)
+        ip = re.search(r"^\s+ip:\s*\"?([^\"\s#]+)", block, re.M)
+        role = re.search(r"^\s+role:\s*(\S+)", block, re.M)
         doc["nodes"].append({
-            "hostname": host.group(1),
-            "controlPlane": bool(cp and cp.group(1) == "true"),
+            "host": host.group(1),
+            "ip": ip.group(1) if ip else None,
+            "role": role.group(1) if role else None,
         })
     return doc
 
@@ -282,7 +284,7 @@ totals = []
 for loc in LOCATIONS:
     ns_map = apps_by_namespace(loc)
     n_apps = sum(len(v[0]) for v in ns_map.values())
-    tc = talconfig(loc)
+    tc = topf(loc)
     totals.append((loc, len(tc.get("nodes") or []), len(ns_map), n_apps))
 
 w("## At a glance\n\n")
@@ -314,7 +316,7 @@ FACT_KEYS = [
 
 for loc in LOCATIONS:
     st = settings(loc)
-    tc = talconfig(loc)
+    tc = topf(loc)
     ns_map = apps_by_namespace(loc)
 
     title = st.get("CLUSTER_DISPLAY_NAME") or loc
@@ -338,13 +340,10 @@ for loc in LOCATIONS:
     if nodes:
         w("| Machine | Role | Address |\n|---|---|---|\n")
         for n in nodes:
-            host = n.get("hostname", "?")
-            role = "control plane" if n.get("controlPlane") else "worker"
-            addr = n.get("ipAddress") or "—"
-            labels = n.get("nodeLabels") or {}
-            if labels:
-                role += " · " + ", ".join(
-                    f"`{k}={v}`" for k, v in sorted(labels.items()))
+            host = n.get("host", "?")
+            role = ("control plane" if n.get("role") == "control-plane"
+                    else "worker")
+            addr = n.get("ip") or "—"
             w(f"| `{host}` | {role} | `{addr}` |\n")
         w("\n")
 

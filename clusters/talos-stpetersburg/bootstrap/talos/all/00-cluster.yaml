@@ -1,0 +1,23 @@
+---
+machine:
+  certSANs:
+    - 192.168.73.25
+    - 192.168.73.206
+    - k8s.stpetersburg.internal
+    - spark-0.stpetersburg.internal
+    - spark-1.stpetersburg.internal
+    - orin-0.stpetersburg.internal
+    - 192.168.73.211
+    - default-kubernetes-stpetersburg-ingress.keiretsu.ts.net
+    - kubernetes-stpetersburg.keiretsu.ts.net
+    - kubernetes.stpetersburg.rajsingh.info
+    - kubernetes-stpetersburg.default.svc.cluster.local
+    - 127.0.0.1
+cluster:
+  network:
+    cni:
+      name: none
+    podSubnets:
+      - 10.5.0.0/16
+    serviceSubnets:
+      - 10.4.0.0/16

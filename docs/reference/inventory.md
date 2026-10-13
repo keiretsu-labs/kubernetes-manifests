@@ -62,7 +62,7 @@ diagram in the [README](../../README.md#architecture).
 | `rei` | control plane | `192.168.169.118` |
 | `asuka` | control plane | `192.168.169.117` |
 | `kaji` | control plane | `192.168.169.119` |
-| `shiro` | worker · `workload-class=specialized` | `192.168.169.116` |
+| `shiro` | worker | `192.168.169.116` |
 
 | Role | Pointer directory | Flux Kustomizations |
 |---|---|---|
@@ -259,9 +259,9 @@ Pointers whose objects land outside their directory's namespace — use the righ
 
 | Machine | Role | Address |
 |---|---|---|
-| `spark-0` | worker | `spark-0.stpetersburg.internal` |
-| `orin-0` | control plane | `orin-0.stpetersburg.internal` |
-| `spark-1` | worker | `spark-1.stpetersburg.internal` |
+| `spark-0` | worker | `192.168.73.206` |
+| `orin-0` | control plane | `192.168.73.248` |
+| `spark-1` | worker | `192.168.73.209` |
 
 | Role | Pointer directory | Flux Kustomizations |
 |---|---|---|

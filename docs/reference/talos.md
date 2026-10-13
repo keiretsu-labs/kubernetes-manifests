@@ -1,51 +1,79 @@
 # Talos bootstrap structure (`clusters/talos-<location>/bootstrap/talos/`)
 
-Each Talos cluster uses **talhelper** (`talconfig.yaml`) + per-node patches to
-generate machine configs. Managed via `mise run <task>` (Taskfile.yaml).
+Each Talos cluster is described by a [topf](https://postfinance.github.io/topf)
+`topf.yaml` plus layered patch files. topf generates the machine configs with
+the Talos machinery library and applies them node by node. Run it through
+`mise run <task>` (Taskfile.yaml) from `clusters/talos-<location>/`.
 
 ## Layout
 
 ```
 bootstrap/talos/
-├── talconfig.yaml            # cluster config: nodes, patches, schematics
-├── talsecret.sops.yaml       # encrypted secrets
-├── Taskfile.yaml             # init, genconfig, apply, upgrade, ...
-├── patches/
-│   ├── global/               # all nodes (kubelet, sysctls, hostdns,
-│   │                         #  machine-logging — IP differs per cluster:
-│   │                         #  10.<loc>.69.51:5170)
-│   ├── controller/           # control-plane only (api-access, disable-proxy,
-│   │                         #  etcd-metrics, kubelet-certs)
-│   └── node/                 # per-node overrides (shiro-intel, spark-0/1, orin-0)
-└── clusterconfig/            # generated machine configs (gitignored)
+├── topf.yaml                 # cluster name, endpoint, versions, nodes, schematic
+├── schematic*.yaml           # Image Factory customizations (topf hashes them locally)
+├── talsecret.sops.yaml       # encrypted secrets bundle (topf secretsPath)
+├── Taskfile.yaml             # init, genconfig, diff, apply, bootstrap, ...
+├── all/                      # every node (kubelet, sysctls, hostdns, hostname,
+│                             #  machine-logging — IP differs per cluster:
+│                             #  10.<loc>.69.51:5170)
+├── control-plane/            # control-plane only (api-access, disable-proxy,
+│                             #  etcd-metrics, kubelet-certs, metrics-server)
+├── worker/                   # workers only (Ottawa, St. Petersburg)
+├── node/<host>/              # per node: install disk, links/bond/VIP, overrides
+└── clusterconfig/            # rendered machine configs + talosconfig (gitignored)
 ```
 
-## talconfig.yaml essentials
+Patches merge in order `all/` → `<role>/` → `node/<host>/`, and lexically
+within a directory. `.yaml.tpl` files are Go templates (sprig available) with
+`.Node.Host`, `.Node.Role`, `.TalosVersion`, `.SchematicID` and
+`.Node.RuntimeData.TalosVersion` (the live node's version). JSON patches are not
+supported; delete a key with `$patch: delete`.
 
-- `cniConfig: { name: none }` — Cilium installed separately, kube-proxy disabled
-- Single VIP per cluster for API HA (192.168.X.25)
-- Kernel args: `net.ifnames=0`, `mitigations=off`, `apparmor=0`,
+## Workflow
+
+| Task | What it does |
+|---|---|
+| `mise run diff` | `topf apply --dry-run`: diff of every node's live config vs git; exit 2 when anything differs |
+| `mise run apply` | `topf apply`: one node at a time; aborts if a node is unhealthy, waits for each to stay Ready |
+| `mise run apply-staged` | Same, `--mode=staged` (takes effect on next reboot) |
+| `mise run genconfig` | Render `clusterconfig/<host>.yaml` and `clusterconfig/talosconfig` |
+| `mise run upgrade` | `topf upgrade`: manual fallback for tuppr; drains, one control plane at a time |
+| `mise run iso` | Download the ISO for the control-plane schematic |
+
+`mise run diff` prints Talos's dry-run summary per node. Read it before every
+apply: a summary that says the change needs a reboot means apply reboots that node.
+
+## Cluster essentials
+
+- `cluster.network.cni.name: none` — Cilium installed separately, kube-proxy disabled
+- Single VIP per cluster for API HA (192.168.X.25), a `Layer2VIPConfig` per control-plane node
+- Kernel args live in the schematics: `net.ifnames=0`, `mitigations=off`, `apparmor=0`,
   `cpufreq.default_governor=performance`
-- `clusterPodNets` / `clusterSvcNets` per location (see AGENTS.md CIDRs)
+- Pod/service subnets per location in `all/00-cluster.yaml` (see AGENTS.md CIDRs)
 
 Cluster differences:
 - **Robbinsdale:** 3 CP nodes, no workers
-- **Ottawa:** bonded X710 SFP+ NICs, AMD P-State, NUT client, i915/Intel GPU
+- **Ottawa:** bonded X710 SFP+ NICs, AMD P-State, NUT client, i915/Intel GPU on shiro (`schematic-shiro.yaml`)
 - **St. Petersburg:** arm64 (Jetson Orin + DGX Spark GB10), NVIDIA GPU
-  extensions, RDMA
+  extensions, RDMA. orin-0 has 8 GiB, so `node/orin-0/20-memory.yaml` overrides
+  the Spark-sized kubelet reservations from `all/`.
 
 ## Adding a system extension
 
 Add `- siderolabs/<extension>` to `officialExtensions` in the relevant
-schematic (`controlPlane.schematic`, `worker.schematic`, or per-node
-`.schematic`), then `talosctl upgrade` each node — it pulls a new factory
-image with the extensions baked in.
+`schematic*.yaml`, run `topf schematic-ids --submit-to-factory` once so the
+factory knows the new ID, then upgrade each node (tuppr, or `mise run upgrade`)
+— it pulls a new factory image with the extensions baked in.
 
 Gotchas (from operations):
 - `talosctl upgrade` from a workstation completes the installer but does NOT
   reboot — always follow with `talosctl reboot` and wait NotReady→Ready.
 - Talos v1.13 blocks file creation outside `/var` — use `op: overwrite` on the
   existing `20-customization.part` for containerd config dropins.
+- Talos 1.14 config documents (`KubeletConfig`, `UnattendedInstallConfig`, ...)
+  conflict with the classic v1alpha1 fields. topf picks the config contract from
+  the node's running version, so a cluster mid-upgrade needs patches that branch
+  on `.Node.RuntimeData.TalosVersion`.
 
 ## Robbinsdale tuppr rollout (2026-10-11/12)
 

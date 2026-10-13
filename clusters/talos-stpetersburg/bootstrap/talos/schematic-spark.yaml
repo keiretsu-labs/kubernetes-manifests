@@ -1,0 +1,20 @@
+---
+customization:
+  extraKernelArgs:
+    - apparmor=0
+    - init_on_alloc=0
+    - init_on_free=0
+    - mitigations=off
+    - security=none
+    - talos.auditd.disabled=1
+    - net.ifnames=0
+    - nvidia_drm.modeset=1
+    - nvidia_drm.fbdev=1
+    - talos.logging.kernel=tcp://10.73.69.51:5170/
+    - arm64.nobti
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/gvisor
+      - siderolabs/nonfree-kmod-nvidia-lts
+      - siderolabs/nvidia-container-toolkit-lts
+      - siderolabs/util-linux-tools

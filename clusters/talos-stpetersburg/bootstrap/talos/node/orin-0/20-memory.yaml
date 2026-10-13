@@ -1,0 +1,14 @@
+---
+machine:
+  kubelet:
+    extraConfig:
+      systemReserved:
+        memory: "512Mi"
+      kubeReserved:
+        memory: "512Mi"
+      evictionHard:
+        memory.available: "1Gi"
+      evictionMinimumReclaim:
+        memory.available: "512Mi"
+  sysctls:
+    vm.min_free_kbytes: "262144"

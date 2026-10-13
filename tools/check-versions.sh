@@ -4,7 +4,7 @@
 # Version invariants, mostly per cluster, so one cluster upgrading never implies
 # anything about another:
 #
-# 1. talconfig vs the tuppr upgrade CRs (Talos/Kubernetes versions).
+# 1. topf.yaml vs the tuppr upgrade CRs (Talos/Kubernetes versions).
 #    A mismatch means an upgrade touched one file but not the other. tuppr skips
 #    nodes listed in status.completedNodes, so the drift stays dormant — until
 #    any spec change bumps the CR's generation, which clears that list and makes
@@ -37,7 +37,7 @@
 #    files: runtime, charts, release manifests, schemas, dashboards, and CRDs
 #    must resolve to the same normalized upstream version.
 #
-# 5. talconfig kubernetesVersion vs what its talosVersion supports.
+# 5. topf.yaml kubernetesVersion vs what its talosVersion supports.
 #    Each Talos minor compiles a Minimum/MaximumKubernetesVersion into
 #    pkg/machinery/compatibility/talosXY, and talosctl upgrade-k8s refuses
 #    anything outside it. Renovate tracks kubelet and Talos independently, so a
@@ -124,8 +124,8 @@ rook_verified = []
 talos_k8s_verified = []
 
 for cluster in CLUSTERS:
-    talconfig = pathlib.Path(f"clusters/talos-{cluster}/bootstrap/talos/talconfig.yaml")
-    declared = yaml.safe_load(talconfig.read_text())
+    topf = pathlib.Path(f"clusters/talos-{cluster}/bootstrap/talos/topf.yaml")
+    declared = yaml.safe_load(topf.read_text())
 
     for talkey, filename, speckey in PAIRS:
         crfile = pathlib.Path(
@@ -141,7 +141,7 @@ for cluster in CLUSTERS:
         got = yaml.safe_load(raw)["spec"][speckey]["version"]
         if want != got:
             failures.append(
-                f"  {cluster}: {talconfig}\n"
+                f"  {cluster}: {topf}\n"
                 f"    {talkey}: {want}\n"
                 f"  vs {crfile}\n"
                 f"    spec.{speckey}.version: {got}"
@@ -266,15 +266,15 @@ for cluster in CLUSTERS:
         skipped.append(f"{cluster}/kubernetes-upgrade.yaml (talos k8s support)")
         continue
 
-    talconfig = pathlib.Path(f"clusters/talos-{cluster}/bootstrap/talos/talconfig.yaml")
-    declared = yaml.safe_load(talconfig.read_text())
+    topf = pathlib.Path(f"clusters/talos-{cluster}/bootstrap/talos/topf.yaml")
+    declared = yaml.safe_load(topf.read_text())
     talos, k8s = declared["talosVersion"], declared["kubernetesVersion"]
 
     talos_parsed = re.fullmatch(r"v(\d+)\.(\d+)\.\d+", talos)
     k8s_parsed = re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)", k8s)
     if not talos_parsed or not k8s_parsed:
         failures.append(
-            f"  {cluster}: {talconfig}\n"
+            f"  {cluster}: {topf}\n"
             f"    talosVersion: {talos}, kubernetesVersion: {k8s}\n"
             f"    not vX.Y.Z releases — cannot check them against Talos"
         )
@@ -285,7 +285,7 @@ for cluster in CLUSTERS:
     try:
         src = fetch_url(url)
     except (urllib.error.URLError, OSError) as err:
-        note = f"{cluster}/talconfig.yaml (could not read {url}: {err})"
+        note = f"{cluster}/topf.yaml (could not read {url}: {err})"
         if os.environ.get("CI"):
             failures.append(f"  {note}")
         else:
@@ -307,7 +307,7 @@ for cluster in CLUSTERS:
         talos_k8s_verified.append(cluster)
     else:
         failures.append(
-            f"  {cluster}: {talconfig}\n"
+            f"  {cluster}: {topf}\n"
             f"    kubernetesVersion: {k8s}\n"
             f"    talosVersion: {talos} supports Kubernetes {lo} – {hi}\n"
             f"    ({url})\n"

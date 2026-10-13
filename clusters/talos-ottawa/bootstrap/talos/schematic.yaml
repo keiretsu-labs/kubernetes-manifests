@@ -1,0 +1,25 @@
+---
+customization:
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/amd-ucode
+      - siderolabs/amdgpu
+      - siderolabs/gvisor
+      - siderolabs/kata-containers
+      - siderolabs/nut-client
+      - siderolabs/binfmt-misc
+      - siderolabs/util-linux-tools
+  extraKernelArgs:
+    - apparmor=0
+    - init_on_alloc=0
+    - init_on_free=0
+    - amd_iommu=on
+    - amd_pstate=active
+    - iommu=pt
+    - pcie_aspm=off
+    - mitigations=off
+    - security=none
+    - talos.auditd.disabled=1
+    - net.ifnames=0
+    - cpufreq.default_governor=performance
+    - talos.logging.kernel=tcp://10.169.69.51:5170/

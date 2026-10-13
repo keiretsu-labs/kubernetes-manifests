@@ -1,0 +1,4 @@
+---
+machine:
+  nodeLabels:
+    workload-class: specialized

@@ -1,0 +1,21 @@
+---
+clusterName: k8s.stpetersburg.internal
+clusterEndpoint: https://k8s.stpetersburg.internal:6443
+# renovate: datasource=custom.talos-factory depName=siderolabs/talos
+talosVersion: v1.13.11
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+kubernetesVersion: v1.36.3
+secretsPath: talsecret.sops.yaml
+nodes:
+  - host: spark-0
+    ip: 192.168.73.206
+    role: worker
+    schematicId: "@schematic-spark.yaml"
+  - host: orin-0
+    ip: 192.168.73.248
+    role: control-plane
+    schematicId: "@schematic-orin.yaml"
+  - host: spark-1
+    ip: 192.168.73.209
+    role: worker
+    schematicId: "@schematic-spark.yaml"

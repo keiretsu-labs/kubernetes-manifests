@@ -9,7 +9,7 @@ tasks:
       - |
         if [ ! -f "talsecret.sops.yaml" ]; then
             echo "Generating new Talos secrets..."
-            talhelper gensecret > talsecret.yaml
+            talosctl gen secrets -o talsecret.yaml
             echo "Encrypting secrets with PGP key..."
             sops --encrypt --pgp FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5 talsecret.yaml > talsecret.sops.yaml
             rm talsecret.yaml
@@ -19,55 +19,45 @@ tasks:
         fi
 
   genconfig:
-    desc: Generate Talos configuration files
+    desc: Render Talos machine configs and talosconfig into clusterconfig/
     cmds:
-      - talhelper genconfig
+      - topf render -o clusterconfig
+      - topf talosconfig > clusterconfig/talosconfig
+      - chmod 600 clusterconfig/talosconfig
     preconditions:
-      - sh: test -f talconfig.yaml
-        msg: Missing talconfig.yaml
+      - sh: test -f topf.yaml
+        msg: Missing topf.yaml
       - sh: test -f talsecret.sops.yaml
         msg: Missing talsecret.sops.yaml - run 'mise run init' first
 
+  diff:
+    desc: Show what apply would change on each node (exit 2 when anything differs)
+    cmd: topf apply --dry-run --confirm=false
+
   apply:
-    desc: Apply Talos configuration to nodes
-    cmds:
-      - talhelper gencommand apply | bash
-    preconditions:
-      - sh: test -d clusterconfig
-        msg: Missing clusterconfig directory - run 'mise run genconfig' first
+    desc: Apply Talos configuration node by node, waiting for each to stay Ready
+    cmd: topf apply
 
   apply-insecure:
     desc: Apply Talos configuration to nodes in maintenance mode (initial install)
-    cmds:
-      - talhelper gencommand apply --extra-flags="--insecure" | bash
-    preconditions:
-      - sh: test -d clusterconfig
-        msg: Missing clusterconfig directory - run 'mise run genconfig' first
+    cmd: topf apply
 
   apply-staged:
     desc: Stage Talos config — applied on each node's next reboot (no immediate disruption)
-    cmds:
-      - talhelper gencommand apply --extra-flags="--mode=staged" | bash
-    preconditions:
-      - sh: test -d clusterconfig
-        msg: Missing clusterconfig directory - run 'mise run genconfig' first
+    cmd: topf apply --mode=staged
 
   bootstrap:
-    desc: Bootstrap the etcd cluster on first node
-    cmds:
-      - talhelper gencommand bootstrap | bash
-    preconditions:
-      - sh: test -d clusterconfig
-        msg: Missing clusterconfig directory - run 'mise run genconfig' first
+    desc: Bootstrap the etcd cluster on the first control-plane node
+    cmd: topf apply --auto-bootstrap
 
   kubeconfig:
     desc: Fetch kubeconfig from Talos cluster
     cmds:
-      - talhelper gencommand kubeconfig --extra-flags="../../ --force" | bash
+      - talosctl kubeconfig ../../ --force -n 192.168.50.51 -e 192.168.50.51
       - chmod 600 ../../kubeconfig
     preconditions:
-      - sh: test -d clusterconfig
-        msg: Missing clusterconfig directory
+      - sh: test -f clusterconfig/talosconfig
+        msg: Missing clusterconfig/talosconfig - run 'mise run genconfig' first
 
   dashboard:
     desc: Open Talos dashboard
@@ -80,7 +70,7 @@ tasks:
   reset:
     desc: Reset nodes back to maintenance mode (DESTRUCTIVE)
     prompt: This will destroy your cluster! Continue?
-    cmd: talhelper gencommand reset --extra-flags="--reboot --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL --graceful=false --wait=false" | bash
+    cmd: topf reset --full=false --graceful=false
 
   upgrade:
     desc: Upgrade Talos on a node

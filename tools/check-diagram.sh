@@ -264,7 +264,7 @@ PATTERNS = [
     (r"(?i)\b(client[_-]?secret|auth[_-]?key|api[_-]?key|password|passwd|secret[_-]?key|access[_-]?key)\s*[:=]\s*\S", "inline credential assignment"),
     (r"[A-Za-z0-9_.+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]{2,}", "e-mail address"),
     (r"\b(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}\b", "MAC address"),
-    # Disk/board serials live in talconfig for device selection. They identify
+    # Disk/board serials live in Talos node patches for device selection. They identify
     # physical hardware and have no place in published documentation.
     (r"(?i)\bserial\s*[:=]\s*\S", "hardware serial number"),
     (r"\b(?=[0-9A-Z]{12,20}\b)(?=[0-9A-Z]*[0-9])(?=[0-9A-Z]*[A-Z])[0-9A-Z]{12,20}\b",
@@ -422,10 +422,10 @@ for loc in LOCATIONS:
                                 settings.replace(root + "/", ""))
 
     tal = os.path.join(root, "clusters", f"talos-{loc}", "bootstrap", "talos",
-                       "talconfig.yaml")
+                       "topf.yaml")
     if os.path.isfile(tal):
         txt = open(tal, encoding="utf-8").read()
-        for host in re.findall(r"^\s*-?\s*hostname:\s*\"?([A-Za-z0-9][\w.-]*)",
+        for host in re.findall(r"^\s*-?\s*host:\s*\"?([A-Za-z0-9][\w.-]*)",
                                txt, re.M):
             require_by_hand(f"{loc} node", host, tal.replace(root + "/", ""))
 
