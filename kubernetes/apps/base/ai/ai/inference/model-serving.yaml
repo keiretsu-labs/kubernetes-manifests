@@ -316,8 +316,7 @@ spec:
   startupPolicy: LeaderCreated
   leaderWorkerTemplate:
     size: 2
-    # Keep the existing per-rank model PVCs intact during the in-place runtime swap.
-    restartPolicy: None
+    restartPolicy: RecreateGroupOnPodRestart
     leaderTemplate:
       metadata:
         labels:
