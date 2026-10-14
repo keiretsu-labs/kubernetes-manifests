@@ -15,7 +15,21 @@ spec:
       name: ts
       namespace: home
       sectionName: ${CLUSTER_DOMAIN_LISTENER}
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: private
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ts
+      namespace: home
+      sectionName: wildcard-keiretsu-top-https
+  # Canonical hostname is litellm.${COMMON_DOMAIN} (CNAME already published in
+  # k8gb-common cnames.yaml). ai.${CLUSTER_DOMAIN} is a temporary alias kept
+  # so existing clients keep working; drop it once they have moved.
   hostnames:
+    - litellm.${COMMON_DOMAIN}
     - ai.${CLUSTER_DOMAIN}
   rules:
     - matches:
