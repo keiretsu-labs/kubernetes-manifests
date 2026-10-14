@@ -8,3 +8,4 @@ resources:
   - ./forgejo-auth.sops.yaml
   - ./bhaiya.yaml
   - ./kubernetes-manifests-bot-viewer.yaml
+  - ./bhaiya-ops-bot.yaml
