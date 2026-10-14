@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
         - name: cloudflare-ddns
-          image: favonia/cloudflare-ddns:latest
+          # renovate: datasource=docker depName=favonia/cloudflare-ddns
+          image: favonia/cloudflare-ddns:1.17.1
           env:
             - name: CLOUDFLARE_API_TOKEN
               valueFrom:
