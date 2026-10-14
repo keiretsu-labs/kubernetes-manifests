@@ -100,6 +100,11 @@ data:
     is not itself a restart (parent == 0) and it is still the newest pipeline for
     its ref. Push/tag/deploy are never restarted by default.
 
+    Two diagnostics are report-only: a podless corp/bhaiya
+    workspace-image-heavy workflow while its parent is active, and a terminal
+    parent with non-terminal children. Neither diagnostic cancels a pipeline.
+    The latter samples the ten newest pipelines per terminal status and repo.
+
     Only stdlib. Env: WOODPECKER_SERVER, WOODPECKER_TOKEN_FILE, IDLE_MINUTES (30),
     GRACE_MINUTES (30), DRY_RUN (false), RESTART_EVENTS (""), REPOS (optional
     comma list of repo ids), K8S_NAMESPACE (pod check; skipped if no in-cluster SA).
@@ -244,6 +249,55 @@ data:
         return bool(same) and max(q["number"] for q in same) == p["number"]
 
 
+    def observe_podless_heavy(repo, p, pods):
+        """Report the known Kubernetes-backed heavy workflow without extending R4."""
+        if pods is None or repo.get("full_name") != "corp/bhaiya":
+            return
+        idle = NOW - last_activity(p)
+        if idle <= IDLE:
+            return
+        for w in p.get("workflows") or []:
+            if w.get("state") != "running" or w.get("name") != "workspace-image-heavy":
+                continue
+            active = [s for s in w.get("children") or [] if s.get("state") == "running"]
+            if active and not any(step_pod_names(s) & pods for s in active):
+                log(action="observed", rule="R4-heavy-report", repo=repo["full_name"],
+                    number=p["number"], workflow=w["name"], idle_minutes=idle // 60,
+                    reason="running steps have no pod; parent still active")
+
+
+    def observe_terminal_children(repo):
+        """Bound terminal-state diagnostics; never send a cancel/restart request."""
+        seen = set()
+        for status in sorted(TERMINAL):
+            try:
+                recent = wp("GET", f"/api/repos/{repo['id']}/pipelines?status={status}&per_page=10") or []
+            except Exception as exc:
+                log(level="warn", msg="terminal parent scan failed", repo=repo["full_name"],
+                    status=status, error=str(exc))
+                continue
+            for summary in recent:
+                number = summary["number"]
+                if number in seen:
+                    continue
+                seen.add(number)
+                try:
+                    p = wp("GET", f"/api/repos/{repo['id']}/pipelines/{number}")
+                except Exception as exc:
+                    log(level="warn", msg="terminal parent detail failed", repo=repo["full_name"],
+                        number=number, error=str(exc))
+                    continue
+                if p.get("status") not in TERMINAL:
+                    continue
+                active = [{"workflow": w.get("name"), "step": s.get("name"), "state": s.get("state")}
+                          for w in p.get("workflows") or [] for s in w.get("children") or []
+                          if s.get("state") in ("running", "pending")]
+                if active:
+                    log(action="observed", rule="terminal-parent-active-children",
+                        repo=repo["full_name"], number=number, parent_status=p["status"],
+                        active_children=active)
+
+
     def main():
         repo_ids = REPOS or [r["id"] for r in (wp("GET", "/api/user/repos") or []) if r.get("active")]
         pods = live_pods()
@@ -258,6 +312,7 @@ data:
                 p = wp("GET", f"/api/repos/{rid}/pipelines/{summary['number']}")
                 if p.get("status") not in ("running", "pending"):
                     continue
+                observe_podless_heavy(repo, p, pods)
                 v = verdict(repo, p, pods)
                 if not v:
                     continue
@@ -280,6 +335,7 @@ data:
                         log(action="restarted", new_number=(new or {}).get("number"), **info)
                     except urllib.error.HTTPError as exc:
                         log(level="error", action="restart-failed", status=exc.code, **info)
+            observe_terminal_children(repo)
         log(action="summary", repos=repo_ids, cancelled=acted, errors=errors, dry_run=DRY, pod_check=pods is not None)
         return 1 if errors else 0
 
