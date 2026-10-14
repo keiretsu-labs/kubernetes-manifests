@@ -12,11 +12,13 @@ spec:
     # force=false: keep talosctl etcd health/member checks.
     force: false
     # Bound eviction-based drain so a stuck PDB fails the node instead of hanging.
-    drainTimeout: 20m
+    # Longer than the largest pod terminationGracePeriodSeconds (CNPG 1800s,
+    # mimir-ingester 1200s) so a graceful shutdown never fails the drain.
+    drainTimeout: 35m
     rebootMode: default
     placement: soft
-    # Give the recovered cluster a fresh, slightly longer retry window.
-    timeout: 31m
+    # Drain plus install and reboot.
+    timeout: 45m
   healthChecks:
     - apiVersion: v1
       kind: Node
