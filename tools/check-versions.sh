@@ -52,8 +52,8 @@
 #
 # 7. topf.yaml kubernetesVersion vs what each pinned component officially
 #    supports. Cilium, cert-manager, external-secrets, Envoy Gateway,
-#    CloudNativePG and descheduler each publish a support table keyed by their
-#    release; the cluster's Kubernetes minor must be listed in the row for the
+#    CloudNativePG, descheduler and Rook each publish Kubernetes support for
+#    their release; the cluster's Kubernetes minor must be listed in the row for the
 #    pinned release. Tables are read from upstream's default (or stable)
 #    branch, because support for an existing release is added there after it
 #    ships. "Tested, but not supported" does not count.
@@ -663,6 +663,13 @@ def cnpg_support(chart):
         "Supported Kubernetes versions", lambda v: f"{mm(v)}.x")(meta["appVersion"]) + (meta["appVersion"],)
 
 
+def rook_support(version):
+    url = (f"https://raw.githubusercontent.com/rook/rook/release-{mm(version)}"
+           "/Documentation/Getting-Started/Prerequisites/prerequisites.md")
+    m = re.search(r"Kubernetes versions \*\*v(\d+)\.(\d+)\*\* through \*\*v(\d+)\.(\d+)\*\*", fetch_url(url))
+    return url, ({f"{m[1]}.{n}" for n in range(int(m[2]), int(m[4]) + 1)} if m else None)
+
+
 K8S_COMPONENTS = [
     ("cilium", lambda c: f"kubernetes/apps/base/kube-system/cilium-{c}/app/helmrelease.yaml",
      pinned_chart, cilium_support),
@@ -684,6 +691,8 @@ K8S_COMPONENTS = [
      lambda p: pinned_image(p, "registry.k8s.io/descheduler/descheduler"), md_support(
          "https://raw.githubusercontent.com/kubernetes-sigs/descheduler/master/README.md",
          "Supported Kubernetes Version", lambda v: f"v{mm(v)}")),
+    ("rook-ceph", lambda c: f"kubernetes/apps/base/rook-ceph/rook-ceph-{c}/app/helmrelease.yaml"
+     if c in CEPH_CLUSTERS else None, pinned_chart, rook_support),
 ]
 
 support_cache = {}
@@ -694,6 +703,8 @@ for cluster in CLUSTERS:
     ok = True
     for name, path_for, pin, support in K8S_COMPONENTS:
         path = path_for(cluster)
+        if path is None:
+            continue
         if MARKER in pathlib.Path(path).read_text():
             skipped.append(f"{cluster}/{name} ({path})")
             continue
