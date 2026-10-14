@@ -45,6 +45,14 @@ spec:
       # Force more aggressive space reclamation
       # bluestore_prefer_deferred_size: "0"
       # bluestore_deferred_batch_ops: "16"
+  # Ceph 20.2.4 (CVE-2025-30156) adds aes256k CephX keys. Keep daemons on legacy
+  # aes and never rotate, so a rollback to 20.2.2 stays possible. Without
+  # keyType: aes, Rook sets auth_preferred_cipher/auth_service_cipher to aes256k.
+  security:
+    cephx:
+      daemon:
+        keyRotationPolicy: Disabled
+        keyType: aes
   cephVersion:
     # The container image used to launch the Ceph daemon pods (mon, mgr, osd, mds, rgw).
     # v18 is Reef, v19 is Squid
