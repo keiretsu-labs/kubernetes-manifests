@@ -1,0 +1,43 @@
+---
+# Woodpecker web UI behind tinyauth (Raj, 2026-10-14). Only the UI route is
+# targeted; webhooks/API use the woodpecker-api route, agents use gRPC.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: woodpecker-ui-tinyauth
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: woodpecker
+  extAuth:
+    failOpen: false
+    headersToExtAuth:
+      - cookie
+      - x-forwarded-proto
+      - x-forwarded-for
+      - user-agent
+    http:
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: tinyauth
+          namespace: tinyauth
+          port: 3000
+      headersToBackend:
+        - remote-user
+        - remote-email
+        - remote-name
+        - remote-groups
+      path: /api/auth/envoy?path=
+  authorization:
+    defaultAction: Deny
+    rules:
+      - action: Allow
+        name: allow-raj-kartik
+        principal:
+          headers:
+            - name: Remote-Email
+              values:
+                - rajsinghcpre@gmail.com
+                - kartikbharath@gmail.com
