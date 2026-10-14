@@ -57,3 +57,38 @@ resource "border0_policy_attachment" "ottawa_k8s" {
   policy_id = border0_policy.ottawa_k8s[each.key].id
   socket_id = each.value.socket
 }
+
+resource "border0_policy" "ottawa_pg_readonly" {
+  name    = "ottawa-pg-readonly"
+  version = "v2"
+  policy_data = jsonencode({
+    permissions = {
+      database = {
+        allowed_databases = [{
+          database            = "*"
+          allowed_query_types = ["ReadOnly"]
+        }]
+      }
+    }
+    condition = {
+      who = {
+        email           = []
+        group           = [local.groups.superuser, local.groups.member]
+        service_account = []
+      }
+      when = {
+        after              = "2022-02-02T22:22:22Z"
+        before             = null
+        time_of_day_after  = ""
+        time_of_day_before = ""
+      }
+    }
+  })
+}
+
+resource "border0_policy_attachment" "ottawa_pg_readonly" {
+  for_each = border0_socket.ottawa_pg_readonly
+
+  policy_id = border0_policy.ottawa_pg_readonly.id
+  socket_id = each.value.id
+}

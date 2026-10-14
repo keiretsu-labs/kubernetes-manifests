@@ -4,6 +4,7 @@ namespace: tailscale-pam
 resources:
   - serve-config.yaml
   - postgres.yaml
+  - pam-readonly.sops.yaml
   - statefulset.yaml
   - secret.sops.yaml
 labels:
