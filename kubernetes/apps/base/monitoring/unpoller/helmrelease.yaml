@@ -31,6 +31,11 @@ spec:
       runAsNonRoot: true
       runAsUser: 1000
       runAsGroup: 1000
+    livenessProbe:
+      httpGet:
+        path: /
+        port: tcp
+      initialDelaySeconds: 300
     dashboards:
       create: true
       grafana:
@@ -45,6 +50,7 @@ spec:
       [prometheus]
           disable = false
           http_listen = "0.0.0.0:9130"
+          interval = "4m"
           report_errors = false
       [influxdb]
           disable = true
