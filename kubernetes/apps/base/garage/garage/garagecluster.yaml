@@ -144,6 +144,11 @@ spec:
     # Site-specific pool definitions are introduced one physical site at a
     # time. The empty default makes this preparatory change topology-neutral.
     nodeLocalPools: ${GARAGE_NODE_LOCAL_POOLS:=[]}
+    # LMDB corrupts on an unclean stop (spark-0 2026-10-14 after an OOM hard
+    # reset). A periodic local snapshot gives each node a recovery point.
+    # metadataFsync stays unset (false): the operator only exposes it
+    # cluster-wide, and fsync on every node costs too much write throughput.
+    metadataAutoSnapshotInterval: "6h"
     metadata:
       size: 10Gi
       storageClassName: "${STORAGECLASS_METADATA}"

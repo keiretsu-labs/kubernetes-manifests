@@ -36,6 +36,32 @@ groups:
             the critical 2 GiB band; correlate MemAvailable with the GB10
             allocation and TensorFold serving state.
 
+      # Below the kubelet evictionHard (6Gi) on a Spark for 5m: GB10 unified
+      # memory is not counted against pod limits, so eviction may never fire
+      # and the node can lock up (spark-0 hard reset 2026-10-14).
+      - alert: StPetersburgSparkMemoryBelowEviction
+        expr: |
+          (
+            node_memory_MemAvailable_bytes{cluster="talos-stpetersburg"}
+            < 6 * 1024 * 1024 * 1024
+          )
+          and on (cluster, instance)
+          (
+            node_memory_MemTotal_bytes{cluster="talos-stpetersburg"}
+            > 100 * 1024 * 1024 * 1024
+          )
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            St. Petersburg Spark node {{ $labels.instance }} has under 6 GiB
+            of host memory available for 5 minutes.
+          description: >-
+            MemAvailable is below the kubelet hard-eviction threshold, but GB10
+            GPU/unified allocations may not trigger eviction. Risk of a node
+            lockup and unclean Garage stop; check TensorFold memory.
+
       - alert: StPetersburgSparkMemoryAvailableCritical
         expr: |
           (
