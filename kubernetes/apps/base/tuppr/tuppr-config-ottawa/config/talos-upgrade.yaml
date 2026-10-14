@@ -17,10 +17,13 @@ spec:
     # per-host ones. tuppr-owned drain (spec.drain) gave up on the first 429
     # and uncordoned, racing Rook forever (2026-10-11). Keep spec.drain unset
     # and waitForVolumeDetach off so tuppr does not take the drain back.
-    drainTimeout: 20m
+    # Longer than the largest pod terminationGracePeriodSeconds (CNPG 1800s,
+    # mimir-ingester 1200s) so a graceful shutdown never fails the drain.
+    drainTimeout: 35m
     rebootMode: powercycle
     placement: soft
-    timeout: 30m
+    # Drain plus install and reboot.
+    timeout: 45m
   healthChecks:
     - apiVersion: v1
       kind: Node
