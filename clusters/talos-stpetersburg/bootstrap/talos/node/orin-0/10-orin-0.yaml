@@ -7,9 +7,9 @@ machine:
   files:
     # 20-customization.part exists on all stpetersburg nodes; overwriting with this content
     # adds discard_unpacked_layers=false for spegel P2P caching.
-    # op: overwrite (not create) — Talos v1.13 blocks file create outside /var.
+    # op: create — Talos routes this path to the CRI controller before any checks; overwrite fails on 1.14, where the file no longer exists.
     - content: |
         [plugins."io.containerd.cri.v1.images"]
           discard_unpacked_layers = false
       path: /etc/cri/conf.d/20-customization.part
-      op: overwrite
+      op: create
