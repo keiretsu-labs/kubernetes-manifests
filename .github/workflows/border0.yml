@@ -54,7 +54,8 @@ jobs:
           for pair in \
             "AWS_ACCESS_KEY_ID:$s3:[\"stringData\"][\"AWS_ACCESS_KEY_ID\"]" \
             "AWS_SECRET_ACCESS_KEY:$s3:[\"stringData\"][\"AWS_SECRET_ACCESS_KEY\"]" \
-            "BORDER0_TOKEN:border0.sops.yaml:[\"border0_token\"]"; do
+            "BORDER0_TOKEN:border0.sops.yaml:[\"border0_token\"]" \
+            "TF_VAR_pam_readonly_password:border0.sops.yaml:[\"pam_readonly_password\"]"; do
             name=${pair%%:*}; rest=${pair#*:}; file=${rest%%:*}; path=${rest#*:}
             value=$(sops -d --extract "$path" "$file")
             echo "::add-mask::$value"

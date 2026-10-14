@@ -16,6 +16,15 @@ spec:
   storage:
     size: 10Gi
     storageClass: ceph-block-replicated
+  managed:
+    roles:
+      - name: pam_readonly
+        ensure: present
+        login: true
+        inRoles:
+          - pg_read_all_data
+        passwordSecret:
+          name: pam-readonly
   monitoring:
     enablePodMonitor: true
   plugins:

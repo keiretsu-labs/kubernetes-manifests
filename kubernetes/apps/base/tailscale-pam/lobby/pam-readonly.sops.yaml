@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: pam-readonly
+    namespace: tailscale-pam
+type: kubernetes.io/basic-auth
+stringData:
+    username: ENC[AES256_GCM,data:p4Qy7OBjCZAkQv7R,iv:ezGphGRMf8YaPJwRJH+y4Pkb/s+jJtWon330TBWcbU0=,tag:ICsRILKJZXE/3ULyRy9jyQ==,type:str]
+    password: ENC[AES256_GCM,data:IPpA3gq+LD8ayqqJyrB5Qrwek0/NgwzmAXQOIngBaxw=,iv:RfWVppu53ZJqto6ikWl0uQYeuLGpVUqybLWuihYien8=,tag:ko9kpGByStBRCrOwkxZ8Xw==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-14T14:33:31Z"
+    mac: ENC[AES256_GCM,data:n3DigU3XMMcLqmJiMzSt6gDNi/L4NocscCqM2FNBD+9dcXnsXgxTTmHunWrz/53Wj+uBJ0Ef1pO9ns0F4HyS4iHfX43VLPHjg3xEVH00ko9TKsKUes/a4ztgcch+npAqK2rFC1Im4ySZYU0MHyFB7czwnJJWeISwyO0jZw1J3lA=,iv:62tYwbfV13eoKpqmntK3WpgHF47TXs6LZFBlRsnoovo=,tag:79KGVhlQQtvvFl73EQ7nFA==,type:str]
+    pgp:
+        - created_at: "2026-10-14T14:33:31Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveAQ/7Bt3AVRigYOwyBoti654+2+0XaVWM+j7A0Q/CS/IhfjwX
+            +wvsbWFti0v4U6u7upZkAqPURPiBtjjjVpohRcxLWY2iQyd4FaEUsvA8gTx8oKUA
+            wtjHrUcnCHKmn1zHuCodnv3ku0AhPmbsXuJpT3oX1TyOlz9c6EU3XO2roo9jgk4K
+            AWye735JwtKC2dwgqBaNxHaXvJ8XyLZK3p9Wo50pVUxt2Zg4tcWz1x1NPnhS2wDZ
+            p6W5eA6hrGClXj9u+iv40CAy9dZ3YaznGcpYly7CbrNqiZKg2UCgUdWoNAQ52L4N
+            YXdW+gi+ZpCCbp3EPTYYI78svBUjoMzqAzP125eg/AtC8ylbBmsJGYv/f40pRQWx
+            ANPwq/unpLMwXfb+idMQJBU9KpD8S9P1+yWD4yc/6US1+38aYRLlfbNeJDkGoMKa
+            hUDIhB9EkcUuJ8O4angfs+xHJ0b82UJCwAaEr0pfA7B3Q7u6m4nBbDot2RpB69BG
+            DWXsi+X8OzOEWPnJ7C6AHARZr4SFHUoU8fqMnu3r5eUTZozMniU6lB6KBOv7b7Wt
+            IkCWvbC0K2AoVkvFQtyjfLgU3PExS8SaGXLp69Ok5gAuN2090yJ4SoXiOAc1kYjD
+            vzdnS2xUE8SxhaOONYHoAcBpuiCLCyKZYJNTCfGyEsXdZQx/uk55ezWuJfOLqBHU
+            aAEJAhDLZFew6lB9VBWeXnbxEf7Sed4UcXt8ews/ArFUgqS6cOjfvRG7UZ1wvm9T
+            n5vWWk3imdwXuICIKCV8tp1dHALmA/GN8gZXkXLWMFesaFHoYA06wac4t8c0y8B+
+            04RmdNVPqBy0
+            =G5wu
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.3

@@ -31,3 +31,8 @@ locals {
     ottawa = "37f5861f-c140-4bdc-9158-5325c2518262"
   }
 }
+
+variable "pam_readonly_password" {
+  type      = string
+  sensitive = true
+}

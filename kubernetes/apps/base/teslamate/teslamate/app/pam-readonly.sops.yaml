@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: pam-readonly
+    namespace: teslamate
+type: kubernetes.io/basic-auth
+stringData:
+    username: ENC[AES256_GCM,data:BfcAJJfamFRS9fha,iv:0DKNnxueQRqc0e+QjA+ZSEuRZow7d6GMzOG3S1ZP4jY=,tag:uLV00JhAbYZwXHWnc9lJ5Q==,type:str]
+    password: ENC[AES256_GCM,data:vPwAGskMB3uyz/Js1U41FPnmc2zujYyl6qfC9Q3hTng=,iv:8PlzWNisYgs4HI8jMD/eXPulgWaAj0Q7zXlKYHI9wc8=,tag:6VHrIymMapT5wos7BGPqFQ==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-14T14:33:31Z"
+    mac: ENC[AES256_GCM,data:3jOlUJu/c7wwYkNNgJyw4qLXLRQ7CuJnucZsGF7aUzY95sdbiyfzP0VHW29llskyhC0VEUReakuLaUPyXTlCE/3aczO9BU/w4r0fO5Xx5VjVBw5tfPT+nMdSRX7JIFMSyJrRXLIzcCnA8StF/ZtE6bzxdBX4XgUCLVHoTMSdJbY=,iv:qnyAounpG0PdayP5pDmfBXkM6yTccpvqkqxcBQLulK8=,tag:O5uDckiqDIl6y7K3sTgAVg==,type:str]
+    pgp:
+        - created_at: "2026-10-14T14:33:31Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveAQ/+MhGhsemADcUO7Tol40p4pO0+EquH9E9ORU4N1DQIfn1H
+            x2yCGDD9Q+mJS1UX+w0bR1NUFYtBsk4Df3OvnMCaYrF+R4uOn+EQV8cQBJouHjtf
+            fXdn0+XePHwyXmpeDD7IMymF6xBrLJGFnTnaExZ0iIU8bsiopd+siYx7U0aLvhDJ
+            r/sILwkzBMdxBWveSJ2M/sRXrwFIXjbKCqI0eBMsMxBl7m2Mh06kKm8hk9LOw/2S
+            BD4zsMVKR20NaPuQwT0jXWVbSwtJwuyA8tYxfGU6zHgnZFBX3QpbO4kuL1eD9SJH
+            6wiVIK+SS+MKtswjWTTj6dcLreirXb8aANMyZjmYvWY8R+p6bizmFpOuPI2IPUv1
+            Iw0PvXzNaMdH2vNfiuN8FOH5Z7Kn4Iajn4VrGtx54YUkNsWnchBDuF/ZwduffV4H
+            HNp7fzHiAD5+8q1Epn6WnWwu6DOOQkx52zmHPm/HI34KGr0Gnieh4/79n9JnyqUG
+            IbaMKicfmouTbvLRSByI7iywJYv71nsUixfphijAhSxwef5MhD4vusYlz0M0C2sa
+            o07PSFGsZ/t1bFJrmyNN4WR3qBe2uD64t3tDQbKeIpTx1pbIqpIbo9FyMYx8+ngO
+            jIxQWKQgWlwF6dP4W/mequOME/wpE6ZcTIGVnIYowx1eXytR68XneVh7elKoxPjU
+            aAEJAhBgLxFxh1qSFSjkE14tBu0D4Tl+396KeETLCoQWaky+JryKhhrv/qzfAW7W
+            rFAYTXYSteI0cJNYCjxiCGVYkuCWg6vZ1gD4+2FVNBeYXHBde2K/ZP3o7LcYIkIg
+            GS8I0Ehani7U
+            =J6W7
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.3

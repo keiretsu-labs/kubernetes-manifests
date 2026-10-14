@@ -5,6 +5,7 @@ namespace: forgejo
 resources:
   - bucket.yaml
   - pg.yaml
+  - pam-readonly.sops.yaml
   - helmrelease.yaml
   - httproute.yaml
   - referencegrant.yaml

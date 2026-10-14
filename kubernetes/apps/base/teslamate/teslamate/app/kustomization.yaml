@@ -4,6 +4,7 @@ namespace: teslamate
 resources:
   - namespace.yaml
   - pg.yaml
+  - pam-readonly.sops.yaml
   - deployment.yaml
   - service.yaml
   - httproute.yaml

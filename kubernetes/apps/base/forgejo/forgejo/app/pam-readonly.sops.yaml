@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: pam-readonly
+    namespace: forgejo
+type: kubernetes.io/basic-auth
+stringData:
+    username: ENC[AES256_GCM,data:RrSAV/FExgaeWY3d,iv:gRzSYrJB/V8BVSQI5yyKOS0rBjPz+YalZB7SqjhYCDs=,tag:9kMMHvgrQZz0Eh7YhLKnnw==,type:str]
+    password: ENC[AES256_GCM,data:scPLhsBT8rbQEKSyHy8ajljjl2mNQ4WaU3m7JlQudKc=,iv:oK5o+IZEKTlbyhnsToTTU89Wt4w/wKh89XYBXVrG2GE=,tag:eT1jfD4ko2IIAMvn34weJw==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-14T14:33:31Z"
+    mac: ENC[AES256_GCM,data:MqcnPcPotBKwip/2LhcAxHkIShGAQcADngqHwCc4minkXZt03gz8NH7uBP9zJ8tRZkw7wrOavH6NZIz1Q3wZdf8N+L5GIE8qa+lt9JPSwaUFQcrJASoZJ+59sJN+N3I4hBRei4MNHpGHh3QxuNbuduQjmNbszl+93296ErJS030=,iv:yOodNlBxHVfVHul9ENM5o+5FQnnERf0qC0TG5CznPmo=,tag:pJvRcltglgl9G/zD544v2w==,type:str]
+    pgp:
+        - created_at: "2026-10-14T14:33:31Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveAQ/9GANUEisqHyyxYIomRfJFDzBTgG0ANbZiZxPPaYXpBv2Y
+            d5NAsMdZRkn903+IpAWJds+SMTDKgK50cOCdU+mFp3ETs071lr4dQHD98xhFbCcS
+            wq0DS3zpJ9l+Hi+Vs0UIET34VebzFWmTYZRgAp74OFRQgOiUkzr9QAYNGTXD/NVt
+            fnbNjofSRBkxIdpwdclz3cmEmfbGoBvMxRwcJftGPHZyAbEPHe6WGi9XfnxufDOz
+            /s0NJwyRFDE6yfoyHudjhYQ/Xdc37CbY6vt+xIvCv2Ptl4sSctNZqteP1iiyUqcz
+            gaStGWkU3rYZ+UqxLPmqOZkPVtelas9ygXOYUvxIXV/3oVjy+4O4UHhqYLATij6Y
+            pPNBgLTZY3bEkQqicKdvjWwKAJg3ysvCxQ9nY5FsOxGug7/Ikz9ZbWvneBinDCY4
+            5qhpMEhRk/fs2SNSvB6GFLwlsZAKO9WUxuT6Sl2s3nH7uQGHsNUaCqRvhcmgJFfw
+            JHcAESR2oDlv0/Xt9olnqARf59DjN1Wr6fBhQGXfC5UahgpRG5OkO+GUZVcby6wU
+            vpp5skrpkKzXDvw8KjH5e8A8f6Iz0wE5eoooEy3hHg5ETSIMHk02YCXhXJheqe34
+            vx6WZHN3g+YwydieZFKfk7Zr8qWTt5XcI+pUNHw2dirUnhCssSXLA0PlETEIz4nU
+            aAEJAhCkp8D+4HPKl9ciPJpbj9LtmDxUrSYyW2qj+F2bt03mfNCas40LjcolES2g
+            FzJHJ+CzqSrwJBEmn/xXx9U/03SSsO3THOd9Bs60ZUjdC3eeMT+2hqT1QEWik23v
+            PICpmjefKhmU
+            =lo3T
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.3
