@@ -1,4 +1,3 @@
-{{- if semverCompare ">= 1.14.0-0" (.Node.RuntimeData.TalosVersion | default .TalosVersion) }}
 ---
 apiVersion: v1alpha1
 kind: KubeletConfig
@@ -38,4 +37,3 @@ machine:
     image: ghcr.io/siderolabs/kubelet:v{{ trimPrefix "v" .KubernetesVersion }}
     defaultRuntimeSeccompProfileEnabled: true
     disableManifestsDirectory: true
-{{- end }}

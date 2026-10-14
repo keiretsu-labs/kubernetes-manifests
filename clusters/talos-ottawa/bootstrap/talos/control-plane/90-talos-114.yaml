@@ -1,4 +1,3 @@
-{{- if semverCompare ">= 1.14.0-0" (.Node.RuntimeData.TalosVersion | default .TalosVersion) }}
 ---
 machine:
   nodeLabels:
@@ -15,4 +14,3 @@ $patch: delete
 apiVersion: v1alpha1
 kind: KubePrismConfig
 $patch: delete
-{{- end }}

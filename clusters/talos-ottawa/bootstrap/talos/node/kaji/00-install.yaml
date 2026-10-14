@@ -1,0 +1,6 @@
+---
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+provisioning:
+  diskSelector:
+    match: 'glob("50026B7686F78574", disk.serial) && disk.transport != "" && !disk.readonly && !disk.cdrom'

@@ -1,0 +1,13 @@
+---
+cluster:
+  allowSchedulingOnControlPlanes: true
+---
+apiVersion: v1alpha1
+kind: KubeAPIServerConfig
+certExtraSANs:
+  - 192.168.169.25
+  - default-kubernetes-ottawa-ingress.keiretsu.ts.net
+  - kubernetes-ottawa.keiretsu.ts.net
+  - kubernetes.ottawa.rajsingh.info
+  - kubernetes-ottawa.default.svc.cluster.local
+  - 127.0.0.1

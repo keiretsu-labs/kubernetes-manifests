@@ -1,0 +1,7 @@
+---
+apiVersion: v1alpha1
+kind: KubeAPIServerConfig
+resources:
+  requests:
+    cpu: 200m
+    memory: 2400Mi
