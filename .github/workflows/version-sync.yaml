@@ -25,6 +25,9 @@ on:
       - "kubernetes/apps/base/csi-driver-smb/**"
       - "kubernetes/apps/base/snapshot-controller/**"
       - "kubernetes/apps/base/media/media-*/kometa/**"
+      - "kubernetes/apps/base/cert-manager/cert-manager-common/app/**"
+      - "kubernetes/apps/base/external-secrets/external-secrets/install/**"
+      - "kubernetes/apps/base/cnpg-system/cnpg-system/**"
       - "tools/check-versions.sh"
       - ".github/workflows/version-sync.yaml"
   pull_request:
@@ -48,6 +51,9 @@ on:
       - "kubernetes/apps/base/csi-driver-smb/**"
       - "kubernetes/apps/base/snapshot-controller/**"
       - "kubernetes/apps/base/media/media-*/kometa/**"
+      - "kubernetes/apps/base/cert-manager/cert-manager-common/app/**"
+      - "kubernetes/apps/base/external-secrets/external-secrets/install/**"
+      - "kubernetes/apps/base/cnpg-system/cnpg-system/**"
       - "tools/check-versions.sh"
       - ".github/workflows/version-sync.yaml"
   workflow_dispatch:
