@@ -27,6 +27,9 @@ spec:
     - group: gateway.envoyproxy.io
       kind: SecurityPolicy
       namespace: firefly
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: woodpecker
   to:
     - group: ""
       kind: Service

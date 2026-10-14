@@ -33,7 +33,10 @@ spec:
         mountPath: /var/lib/woodpecker
       env:
         WOODPECKER_ADMIN: raj
-        WOODPECKER_OPEN: "true"
+        # Closed registration (2026-10-14): only existing users (raj, killinit,
+        # woodpecker-bot, bot-ci-reader, bot-ci-janitor, bot-bhaiya-ci) can log
+        # in; new accounts need an admin.
+        WOODPECKER_OPEN: "false"
         WOODPECKER_HOST: https://woodpecker.${COMMON_DOMAIN}
         WOODPECKER_FORGEJO: "true"
         # Keep status/API calls on the in-cluster Service. During the 2026-10-06
