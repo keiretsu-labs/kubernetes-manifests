@@ -17,7 +17,9 @@ spec:
     spec:
       containers:
         - name: garage-webui
-          image: ghcr.io/keiretsu-labs/kubernetes-manifests/garage-webadmin:latest
+          # renovate: datasource=docker depName=ghcr.io/keiretsu-labs/kubernetes-manifests/garage-webadmin
+          image: ghcr.io/keiretsu-labs/kubernetes-manifests/garage-webadmin:d49c75d
+          # digest sha256:50ce562c455c6ca0ebb8bfb909142e21df63cb8d9d8bbf02e852606407d3b1db
           ports:
             - containerPort: 80
               name: http
@@ -36,7 +38,9 @@ spec:
             limits:
               memory: 256Mi
         - name: garage-webadmin-sidecar
-          image: ghcr.io/keiretsu-labs/kubernetes-manifests/garage-webadmin-sidecar:latest
+          # renovate: datasource=docker depName=ghcr.io/keiretsu-labs/kubernetes-manifests/garage-webadmin-sidecar
+          image: ghcr.io/keiretsu-labs/kubernetes-manifests/garage-webadmin-sidecar:cfa1315
+          # digest sha256:c1f457f66e233f90589dab311071efa6958e1a1d00004479838356ab40a11660
           ports:
             - containerPort: 8080
               name: sidecar
