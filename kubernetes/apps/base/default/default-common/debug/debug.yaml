@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
       - name: network-debug
-        image: nicolaka/netshoot:latest
+        image: nicolaka/netshoot:v0.16 # renovate: container
+        # digest sha256:b09d9b21381f47a79b3cbcb30da25266dc17186ea00ae65e99fdc51396f48e70
         command: ["/bin/sh", "-c", "while true; do sleep 3600; done"]
         resources:
           requests:

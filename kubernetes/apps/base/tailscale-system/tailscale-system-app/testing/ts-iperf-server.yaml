@@ -32,7 +32,8 @@ spec:
           privileged: true
       containers:
       - name: iperf-server
-        image: nicolaka/netshoot:latest
+        image: nicolaka/netshoot:v0.16 # renovate: container
+        # digest sha256:b09d9b21381f47a79b3cbcb30da25266dc17186ea00ae65e99fdc51396f48e70
         imagePullPolicy: IfNotPresent
         command: ["/bin/sh", "-c", "iperf3 -s"]
         ports:
