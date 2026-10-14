@@ -127,6 +127,17 @@ spec:
               endpoint: ${COMMON_S3_ENDPOINT}
               bucket_name: mimir
               insecure: true
+              # Upload every block file with a single PUT, never S3 multipart.
+              # Garage runs replication_factor=3 across three sites with
+              # consistency_mode=degraded (read quorum 1), so UploadPart can
+              # read the multipart-upload table from a replica that has not
+              # seen CreateMultipartUpload yet (a node rejoining after a tuppr
+              # reboot or the hung spark-0) and answers NoSuchUpload ("Upload
+              # not found"). Shipping then fails and blocks pile up on the
+              # single ingester's PVC, and the shutdown flush retries until it
+              # outlives the drain. Chunk segments are capped at 512MiB, so a
+              # 1GiB part size keeps every object below the multipart cutoff.
+              part_size: 1073741824
         blocks_storage:
           tsdb:
             # The first rollout moves the ingester from emptyDir to RBD. Flush
