@@ -132,3 +132,20 @@ groups:
             transport (DNS, TCP 3901, Tailscale, routing, and policy).
         labels:
           severity: warning
+
+      # Garage-backed block shipping. On 2026-10-13 the Ottawa ingester failed
+      # every block upload for ~a day (Garage NoSuchUpload on multipart) while
+      # all probes above stayed green; blocks piled up on the single RF=1
+      # ingester PVC unnoticed until a tuppr drain timed out on the flush.
+      - alert: MimirIngesterBlockShippingFailing
+        expr: sum by (cluster, namespace, pod) (increase(cortex_ingester_shipper_upload_failures_total[1h])) > 0
+        for: 15m
+        annotations:
+          summary: Mimir ingester {{ $labels.pod }} is failing to ship blocks to Garage
+          description: >-
+            {{ $labels.pod }} has failed TSDB block uploads to long-term storage
+            within the last hour. Unshipped blocks only exist on the ingester
+            PVC (RF=1). Check the ingester log for "uploading new block to
+            long-term storage failed" and the Garage gateway logs.
+        labels:
+          severity: warning

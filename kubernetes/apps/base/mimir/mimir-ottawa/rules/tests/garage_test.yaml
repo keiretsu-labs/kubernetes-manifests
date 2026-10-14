@@ -133,3 +133,30 @@ tests:
       - eval_time: 5m
         alertname: GarageFederationPeerConnectivityDegraded
         exp_alerts: []
+
+  - interval: 1m
+    input_series:
+      - series: 'cortex_ingester_shipper_upload_failures_total{cluster="talos-ottawa",namespace="mimir",pod="mimir-ingester-0"}'
+        values: "0+1x30"
+      - series: 'cortex_ingester_shipper_upload_failures_total{cluster="talos-ottawa",namespace="mimir",pod="mimir-ingester-1"}'
+        values: "3+0x30"
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: MimirIngesterBlockShippingFailing
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: MimirIngesterBlockShippingFailing
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              cluster: talos-ottawa
+              namespace: mimir
+              pod: mimir-ingester-0
+            exp_annotations:
+              summary: Mimir ingester mimir-ingester-0 is failing to ship blocks to Garage
+              description: >-
+                mimir-ingester-0 has failed TSDB block uploads to long-term
+                storage within the last hour. Unshipped blocks only exist on
+                the ingester PVC (RF=1). Check the ingester log for "uploading
+                new block to long-term storage failed" and the Garage gateway
+                logs.
