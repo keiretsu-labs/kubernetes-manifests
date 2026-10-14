@@ -1,0 +1,7 @@
+# GB10 SBSA hardware watchdog: auto-reset a locked-up node (e.g. unified-memory
+# exhaustion) within minutes instead of waiting for a manual power-cycle.
+# spark-0 locked up 2026-10-14 03:40 UTC with no watchdog configured.
+apiVersion: v1alpha1
+kind: WatchdogTimerConfig
+device: /dev/watchdog0
+timeout: 5m
