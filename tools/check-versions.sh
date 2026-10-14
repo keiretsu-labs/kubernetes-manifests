@@ -50,8 +50,16 @@
 #    back and retries (Robbinsdale 2026-10-11 and 2026-10-12, 12 attempts in
 #    10 minutes, each one evicting the node's OSDs).
 #
-# Deliberate mismatches: put '# version-sync: ignore' in the tuppr, toolbox, or
-# CephCluster file.
+# 7. topf.yaml kubernetesVersion vs what each pinned component officially
+#    supports. Cilium, cert-manager, external-secrets, Envoy Gateway,
+#    CloudNativePG and descheduler each publish a support table keyed by their
+#    release; the cluster's Kubernetes minor must be listed in the row for the
+#    pinned release. Tables are read from upstream's default (or stable)
+#    branch, because support for an existing release is added there after it
+#    ships. "Tested, but not supported" does not count.
+#
+# Deliberate mismatches: put '# version-sync: ignore' in the tuppr, toolbox,
+# CephCluster, or component file.
 #
 # Usage:
 #   tools/check-versions.sh
@@ -585,6 +593,139 @@ if snapshot_expected is not None and (
         f"    CRDs: {snapshot_versions}"
     )
 
+def md_tables(text):
+    lines = text.splitlines()
+    for i in range(len(lines) - 1):
+        if lines[i].lstrip().startswith("|") and re.match(r"^\s*\|?\s*:?-{3,}", lines[i + 1]):
+            header = [c.strip() for c in lines[i].strip().strip("|").split("|")]
+            rows = []
+            for line in lines[i + 2:]:
+                if not line.lstrip().startswith("|"):
+                    break
+                rows.append([c.strip() for c in line.strip().strip("|").split("|")])
+            yield header, rows
+
+
+def md_cell(text, column, key):
+    for header, rows in md_tables(text):
+        cols = [h.lower() for h in header]
+        if column.lower() not in cols:
+            continue
+        idx = cols.index(column.lower())
+        for row in rows:
+            first = re.sub(r"[\[\]*`]", "", row[0]).strip()
+            if first == key and idx < len(row):
+                return row[idx]
+    return None
+
+
+def k8s_minors(cell):
+    found = re.findall(r"v?(\d+)\.(\d+)", cell.split("/")[0])
+    if "→" in cell and len(found) == 2:
+        (major, lo), (_, hi) = found
+        return {f"{major}.{m}" for m in range(int(lo), int(hi) + 1)}
+    return {f"{a}.{b}" for a, b in found}
+
+
+def mm(version):
+    m = re.match(r"v?(\d+)\.(\d+)", str(version))
+    return f"{m[1]}.{m[2]}"
+
+
+def pinned_chart(path):
+    return str(yaml.safe_load(pathlib.Path(path).read_text())["spec"]["chart"]["spec"]["version"])
+
+
+def pinned_image(path, repo):
+    return re.search(re.escape(repo) + r":(v?\d+\.\d+\.\d+)", pathlib.Path(path).read_text())[1]
+
+
+def cilium_support(version):
+    url = (f"https://raw.githubusercontent.com/cilium/cilium/v{mm(version)}"
+           "/Documentation/network/kubernetes/compatibility.rst")
+    m = re.search(r"^\| *(\d+\.\d+(?:, *\d+\.\d+)*) +\|", fetch_url(url), re.M)
+    return url, (k8s_minors(m[1]) if m else None)
+
+
+def md_support(url, column, key):
+    def get(version):
+        cell = md_cell(fetch_url(url), column, key(version))
+        return url, (k8s_minors(cell) if cell else None)
+    return get
+
+
+def cnpg_support(chart):
+    meta = yaml.safe_load(fetch_url(
+        "https://raw.githubusercontent.com/cloudnative-pg/charts/"
+        f"cloudnative-pg-v{chart}/charts/cloudnative-pg/Chart.yaml"))
+    return md_support(
+        "https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/main/docs/src/supported_releases.md",
+        "Supported Kubernetes versions", lambda v: f"{mm(v)}.x")(meta["appVersion"]) + (meta["appVersion"],)
+
+
+K8S_COMPONENTS = [
+    ("cilium", lambda c: f"kubernetes/apps/base/kube-system/cilium-{c}/app/helmrelease.yaml",
+     pinned_chart, cilium_support),
+    ("cert-manager", lambda c: "kubernetes/apps/base/cert-manager/cert-manager-common/app/helmrelease.yaml",
+     pinned_chart, md_support(
+         "https://raw.githubusercontent.com/cert-manager/website/master/content/docs/releases/README.md",
+         "[Supported Kubernetes / OpenShift Versions][s]", mm)),
+    ("external-secrets", lambda c: "kubernetes/apps/base/external-secrets/external-secrets/install/helmrelease.yaml",
+     pinned_chart, md_support(
+         "https://raw.githubusercontent.com/external-secrets/external-secrets/main/docs/introduction/stability-support.md",
+         "Kubernetes Version", mm)),
+    ("envoy-gateway", lambda c: "kubernetes/apps/base/envoy-gateway-system/envoy-gw-common/install/helmrelease.yaml",
+     pinned_chart, md_support(
+         "https://raw.githubusercontent.com/envoyproxy/gateway/main/site/content/en/news/releases/matrix.md",
+         "Kubernetes version", lambda v: f"v{mm(v)}")),
+    ("cloudnative-pg", lambda c: "kubernetes/apps/base/cnpg-system/cnpg-system/helmrelease.yaml",
+     pinned_chart, cnpg_support),
+    ("descheduler", lambda c: f"kubernetes/apps/base/kube-system/cilium-{c}/app/descheduler-cronjob.yaml",
+     lambda p: pinned_image(p, "registry.k8s.io/descheduler/descheduler"), md_support(
+         "https://raw.githubusercontent.com/kubernetes-sigs/descheduler/master/README.md",
+         "Supported Kubernetes Version", lambda v: f"v{mm(v)}")),
+]
+
+support_cache = {}
+k8s_component_verified = []
+for cluster in CLUSTERS:
+    k8s = yaml.safe_load(pathlib.Path(
+        f"clusters/talos-{cluster}/bootstrap/talos/topf.yaml").read_text())["kubernetesVersion"]
+    ok = True
+    for name, path_for, pin, support in K8S_COMPONENTS:
+        path = path_for(cluster)
+        if MARKER in pathlib.Path(path).read_text():
+            skipped.append(f"{cluster}/{name} ({path})")
+            continue
+        version = pin(path)
+        try:
+            if (name, version) not in support_cache:
+                support_cache[(name, version)] = support(version)
+            url, minors, *release = support_cache[(name, version)]
+            release = release[0] if release else version
+        except (urllib.error.URLError, OSError, KeyError, TypeError, yaml.YAMLError) as err:
+            note = f"{cluster}/{name} {version}: cannot read its Kubernetes support table: {err}"
+            ok = False
+            if os.environ.get("CI"):
+                failures.append(f"  {note}")
+            else:
+                skipped.append(f"{note} — offline, NOT verified")
+            continue
+        if minors is None:
+            ok = False
+            failures.append(f"  {cluster}: {name} {release} ({path})\n"
+                            f"    no support row for this release in {url}")
+        elif mm(k8s) not in minors:
+            ok = False
+            failures.append(
+                f"  {cluster}: {name} {release} ({path})\n"
+                f"    kubernetesVersion: {k8s}\n"
+                f"    {name} {mm(release)} officially supports Kubernetes {', '.join(sorted(minors, key=lambda m: tuple(map(int, m.split('.')))))}\n"
+                f"    ({url})\n"
+                f"    Upgrade {name} to a release that lists {mm(k8s)} first.")
+    if ok:
+        k8s_component_verified.append(cluster)
+
 for entry in skipped:
     print(f"  skipped (marker): {entry}")
 
@@ -593,7 +734,7 @@ if failures:
     print("\n\n".join(failures), file=sys.stderr)
     print(
         "\nFix both files, or add '# version-sync: ignore' to the tuppr, toolbox, "
-        "or CephCluster file if the difference is intentional.",
+        "CephCluster, or component file if the difference is intentional.",
         file=sys.stderr,
     )
     sys.exit(1)
@@ -605,5 +746,7 @@ print(
     f" {' '.join(rook_verified) if rook_verified else '(none verified)'}"
     f" | kubernetes supported by talos"
     f" {' '.join(talos_k8s_verified) if talos_k8s_verified else '(none verified)'}"
+    f" | kubernetes supported by components"
+    f" {' '.join(k8s_component_verified) if k8s_component_verified else '(none verified)'}"
 )
 PY
