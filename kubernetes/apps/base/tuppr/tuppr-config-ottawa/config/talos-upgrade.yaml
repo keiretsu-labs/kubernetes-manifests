@@ -17,10 +17,14 @@ spec:
     # per-host ones. tuppr-owned drain (spec.drain) gave up on the first 429
     # and uncordoned, racing Rook forever (2026-10-11). Keep spec.drain unset
     # and waitForVolumeDetach off so tuppr does not take the drain back.
-    drainTimeout: 20m
+    # 30m: must exceed mimir-ingester's terminationGracePeriodSeconds (1200s)
+    # plus the time talosctl spends evicting other pods first. At 20m the
+    # drain gave up ~6s before the ingester finished its shutdown flush
+    # (rei, 2026-10-14). timeout must stay above drainTimeout.
+    drainTimeout: 30m
     rebootMode: powercycle
     placement: soft
-    timeout: 30m
+    timeout: 40m
   healthChecks:
     - apiVersion: v1
       kind: Node
