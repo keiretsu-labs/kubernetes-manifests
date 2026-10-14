@@ -30,3 +30,8 @@ spec:
       expr: status.ceph.health != "HEALTH_ERR" && !(has(status.ceph.details) && ("PG_AVAILABILITY" in status.ceph.details || "PG_DEGRADED" in status.ceph.details || "MON_DOWN" in status.ceph.details || "OSD_DOWN" in status.ceph.details))
       description: Ceph fully recovered (no inactive/degraded PGs, all mons in quorum, no OSD down) before next node
       timeout: 30m
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
+      expr: has(status.readyInstances) && status.readyInstances == object.spec.instances
+      description: Every CNPG cluster has all instances ready before next node
+      timeout: 15m
