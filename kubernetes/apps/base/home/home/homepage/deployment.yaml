@@ -12,6 +12,8 @@ spec:
       labels:
         app: homepage
     spec:
+      seccompProfile:
+        type: RuntimeDefault
       serviceAccountName: homepage
       topologySpreadConstraints:
         - maxSkew: 1
@@ -20,6 +22,10 @@ spec:
       containers:
         - name: homepage
           image: python:3.14-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           command:
             - python3
             - /app/server.py

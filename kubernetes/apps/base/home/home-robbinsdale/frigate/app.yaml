@@ -21,9 +21,15 @@ spec:
       labels:
         app: frigate
     spec:
+      seccompProfile:
+        type: RuntimeDefault
       containers:
         - name: frigate
           image: ghcr.io/blakeblackshear/frigate:0.18.0
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           ports:
             - name: web
               containerPort: 8971
