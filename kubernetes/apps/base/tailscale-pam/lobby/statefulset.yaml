@@ -64,7 +64,7 @@ spec:
             limits:
               memory: 256Mi
         - name: tailscale
-          image: ghcr.io/tailscale/tailscale:v1.102.5
+          image: ghcr.io/tailscale/tailscale:v1.104.1
           imagePullPolicy: IfNotPresent
           env:
             - name: TS_KUBE_SECRET
