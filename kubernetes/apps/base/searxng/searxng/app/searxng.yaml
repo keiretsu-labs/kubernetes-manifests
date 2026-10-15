@@ -87,7 +87,9 @@ spec:
           mountPath: /etc/searxng
       containers:
       - name: searxng
-        image: docker.io/searxng/searxng:latest
+        # renovate: datasource=docker depName=docker.io/searxng/searxng
+        image: docker.io/searxng/searxng:2026.10.15-b00212a83
+        # digest sha256:ad273460b12390ab1ad9c6ea630dafed39045ab0b9096a85ca31f5246517c670
         ports:
         - containerPort: 8080
           name: http
