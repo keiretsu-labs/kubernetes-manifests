@@ -1,0 +1,55 @@
+rule_files:
+  - ../garage-resync.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # Errored blocks must persist 30m; a clean cluster stays quiet.
+  - interval: 1m
+    input_series:
+      - series: 'block_resync_errored_blocks{job="garage",cluster="talos-ottawa",instance="a"}'
+        values: "3+0x40"
+      - series: 'block_resync_errored_blocks{job="garage",cluster="talos-robbinsdale",instance="b"}'
+        values: "0+0x40"
+    alert_rule_test:
+      - eval_time: 29m
+        alertname: GarageResyncErrors
+        exp_alerts: []
+      - eval_time: 31m
+        alertname: GarageResyncErrors
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              cluster: talos-ottawa
+            exp_annotations:
+              summary: Garage has 3 errored resync blocks (talos-ottawa)
+              description: >-
+                Blocks have been failing background resync for 30m on the worst
+                node. Replicas are not converging; run garage layout history / the
+                resync dashboard, fix the source node, and clear via a successful
+                sync pass. Sustained errors ahead of a node removal can strand
+                partitions below quorum.
+
+  # A large queue stuck at its max fires after 2h; one that drains does not.
+  - interval: 5m
+    input_series:
+      - series: 'block_resync_queue_length{job="garage",cluster="talos-ottawa",instance="a"}'
+        values: "20000+0x40"
+      - series: 'block_resync_queue_length{job="garage",cluster="talos-robbinsdale",instance="b"}'
+        values: "50000-1000x40"
+    alert_rule_test:
+      - eval_time: 115m
+        alertname: GarageResyncBacklogNotDraining
+        exp_alerts: []
+      - eval_time: 125m
+        alertname: GarageResyncBacklogNotDraining
+        exp_alerts:
+          - exp_labels:
+              severity: info
+              cluster: talos-ottawa
+            exp_annotations:
+              summary: Garage resync queue is large and not draining (talos-ottawa)
+              description: >-
+                block_resync_queue_length has stayed above 10k and at its 2h max
+                for 2h. Expected after large layout changes; if unplanned, check
+                node connectivity and the resync worker logs.

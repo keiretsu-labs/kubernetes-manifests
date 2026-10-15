@@ -1,0 +1,47 @@
+# Namespace must be unique across every file passed to loader-job.yaml.
+namespace: pvc-capacity
+groups:
+  - name: pvc-capacity.rules
+    rules:
+      # Generic PVC fill guard: the repo only had per-namespace exemptions
+      # (bhaiya, kata attribution) and dashboards. Fires once a PVC of any
+      # namespace that exports kubelet volume stats crosses 85% for 15m.
+      - alert: PVCNearlyFull
+        expr: |
+          kubelet_volume_stats_used_bytes
+            / kubelet_volume_stats_capacity_bytes
+            >= 0.85
+          and on (cluster, namespace, persistentvolumeclaim)
+          kubelet_volume_stats_available_bytes > 0
+        for: 15m
+        annotations:
+          summary: >-
+            PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is
+            {{ $value | humanizePercentage }} full on {{ $labels.cluster }}
+          description: >-
+            The volume has been above 85% used for 15 minutes. Check for
+            logs, caches, or retained snapshots in the volume; expand the PVC
+            if the consumer supports online resize.
+        labels:
+          severity: warning
+
+      # Escalation: <10% free and falling. Distinct threshold keeps the 85%
+      # alert informational while capacity remains actionable.
+      - alert: PVCCriticalFill
+        expr: |
+          kubelet_volume_stats_used_bytes
+            / kubelet_volume_stats_capacity_bytes
+            >= 0.95
+          and on (cluster, namespace, persistentvolumeclaim)
+          kubelet_volume_stats_available_bytes > 0
+        for: 15m
+        annotations:
+          summary: >-
+            PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is
+            {{ $value | humanizePercentage }} full on {{ $labels.cluster }}
+          description: >-
+            The volume has been above 95% used for 15 minutes; writes can
+            start failing once the filesystem hits 100%. Expand the PVC or
+            free space now.
+        labels:
+          severity: warning

@@ -32,6 +32,7 @@ configMapGenerator:
       - rules/kopiur.yaml
       - rules/flux.yaml
       - rules/garage.yaml
+      - rules/garage-resync.yaml
       - rules/k8gb.yaml
       - rules/k8gb-dns.yaml
       - rules/kubeprism.yaml
@@ -45,6 +46,7 @@ configMapGenerator:
       - rules/node-health.yaml
       - rules/node-clock.yaml
       - rules/payments.yaml
+      - rules/pvc-capacity.yaml
       - rules/smartctl.yaml
       - rules/running-workload-images.yaml
       - rules/zot.yaml

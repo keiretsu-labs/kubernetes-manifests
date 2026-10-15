@@ -45,3 +45,5 @@ running-workload-images	running-workload-images.rules
 zot	zot.rules
 envoy-gateway	envoy-gateway-xds.rules
 envoy-gateway	envoy-gateway-reconcile.rules
+garage-resync	garage-resync.rules
+pvc-capacity	pvc-capacity.rules
