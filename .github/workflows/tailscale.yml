@@ -10,6 +10,9 @@ on:
     paths:
       - 'tailscale/policy.hujson'
 
+permissions:
+  contents: read
+
 jobs:
   acls:
     runs-on: ubuntu-latest
