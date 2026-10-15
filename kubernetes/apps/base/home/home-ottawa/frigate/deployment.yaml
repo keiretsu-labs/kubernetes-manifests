@@ -25,7 +25,7 @@ spec:
           resourceClaimTemplateName: frigate-gpu
       initContainers:
         - name: seed-config
-          image: ghcr.io/blakeblackshear/frigate:0.18.1-rocm
+          image: ghcr.io/blakeblackshear/frigate:0.18.2-rocm
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -44,7 +44,7 @@ spec:
               mountPath: /config-template
       containers:
         - name: frigate
-          image: ghcr.io/blakeblackshear/frigate:0.18.1-rocm
+          image: ghcr.io/blakeblackshear/frigate:0.18.2-rocm
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -85,7 +85,7 @@ spec:
             - name: cache
               mountPath: /tmp/cache
         - name: talkback-keepalive
-          image: ghcr.io/blakeblackshear/frigate:0.18.1-rocm
+          image: ghcr.io/blakeblackshear/frigate:0.18.2-rocm
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
