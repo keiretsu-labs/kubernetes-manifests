@@ -30,3 +30,4 @@ resources:
   - ./flaresolverr
   - ./maintainerr
   - ./tracearr
+  - ../stream-gate
