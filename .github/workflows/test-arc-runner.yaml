@@ -3,6 +3,9 @@ name: Test ARC Runner
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     # Load balanced across all clusters - GitHub picks first available
