@@ -7,7 +7,7 @@
 # Model (ABLIT=1): Mia-AiLab/GLM-5.3-Flash-EXL3-4bpw-TensorFold-Ablit@57edefd2f5d9b371c8345883304d5af68b52fa24 (gated; needs HF_TOKEN + terms)
 # Runtime image: v0.6.0-e66c657a433d @ sha256:14b5072e8e9918f1080153f57321415a387bc7d78cf9c9b44a7aeae2d4399ccf (upstream pin 2026-10-10)
 # Rollback: revert the env lines tagged "recipe 2026-10-13"; image and weights are unchanged by that adoption.
-# Drafter: none, --no-drafts, --parallel 4 (concurrent lanes share one KV pool; MTP is parallel-1 only). DFlash2 is CC BY-NC-ND; REQUIRE_DFLASH=0.
+# Drafter: MTP (--drafter none). DFlash2 is CC BY-NC-ND; REQUIRE_DFLASH=0.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -408,7 +408,7 @@ spec:
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 0 --master 192.168.74.1 --master-port 29551 \
               --name GLM-5.3-Flash-EXL3 --host 0.0.0.0 --port 8888 \
-              --drafter none --no-drafts --context 1048576 --parallel 4 $${THINKING_FLAG}
+              --drafter none --context 1048576 --parallel 1 $${THINKING_FLAG}
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
@@ -610,7 +610,7 @@ spec:
             fi
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 1 --master 192.168.74.1 --master-port 29551 \
-              --drafter none --no-drafts --context 1048576 --parallel 4 $${THINKING_FLAG}
+              --drafter none --context 1048576 --parallel 1 $${THINKING_FLAG}
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
