@@ -1,6 +1,7 @@
 ---
 # UI route: everything not matched by woodpecker-api below. Protected by
-# tinyauth (securitypolicy.yaml).
+# tinyauth (securitypolicy.yaml). Private gateway only — the public edge
+# keeps woodpecker-api for Forgejo webhooks and token clients.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -19,11 +20,6 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: private
-      namespace: home
-      sectionName: wildcard-keiretsu-top-https
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: public
       namespace: home
       sectionName: wildcard-keiretsu-top-https
   rules:
