@@ -1,0 +1,42 @@
+# Namespace must be unique across every file passed to loader-job.yaml.
+namespace: garage-resync
+groups:
+  - name: garage-resync.rules
+    rules:
+      # Garage background resync: the dashboard charts block_resync_errored_blocks
+      # but nothing alerted on it. Errored blocks mean replicas are NOT converging
+      # after a lost node / disk swap; the longer it lingers, the higher the risk
+      # window for a second failure. Queue depth alone is normal churn.
+      - alert: GarageResyncErrors
+        expr: max by (cluster) (block_resync_errored_blocks{job="garage"}) > 0
+        for: 30m
+        annotations:
+          summary: Garage has {{ $value }} errored resync blocks ({{ $labels.cluster }})
+          description: >-
+            Blocks have been failing background resync for 30m on the worst
+            node. Replicas are not converging; run garage layout history / the
+            resync dashboard, fix the source node, and clear via a successful
+            sync pass. Sustained errors ahead of a node removal can strand
+            partitions below quorum.
+        labels:
+          severity: warning
+
+      # Backlog pressure: a large queue that is NOT draining suggests a stuck
+      # worker or a node that never returns. Normal churn spikes then drains.
+      - alert: GarageResyncBacklogNotDraining
+        expr: |
+          max by (cluster) (block_resync_queue_length{job="garage"}) > 10000
+          and
+          (max by (cluster) (block_resync_queue_length{job="garage"})
+            >= max by (cluster) (
+              max_over_time(block_resync_queue_length{job="garage"}[2h])
+            ) - 100)
+        for: 2h
+        annotations:
+          summary: Garage resync queue is large and not draining ({{ $labels.cluster }})
+          description: >-
+            block_resync_queue_length has stayed above 10k and at its 2h max
+            for 2h. Expected after large layout changes; if unplanned, check
+            node connectivity and the resync worker logs.
+        labels:
+          severity: info
