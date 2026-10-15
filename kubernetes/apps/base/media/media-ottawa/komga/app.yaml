@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: komga
-          image: ghcr.io/gotson/komga:1.29.0
+          image: ghcr.io/gotson/komga:1.29.1
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -68,7 +68,7 @@ spec:
         # Komga scan watcher for omnibus-comics — polls for new/changed CBZs,
         # debounces, fires POST scan. Sidecar because inotify does not cross SMB.
         - name: komga-watcher
-          image: ghcr.io/gotson/komga:1.29.0
+          image: ghcr.io/gotson/komga:1.29.1
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
