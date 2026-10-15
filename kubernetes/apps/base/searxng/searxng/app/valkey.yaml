@@ -9,6 +9,8 @@ spec:
   chart:
     spec:
       chart: ./valkey
+      # chart version inside valkey-helm @ valkey-0.9.4 (GitRepository tag pins the source)
+      version: "0.9.4"
       sourceRef:
         kind: GitRepository
         name: valkey-helm
