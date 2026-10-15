@@ -181,6 +181,12 @@ spec:
         image: docker.io/rancher/local-path-provisioner:v0.0.37
         imagePullPolicy: IfNotPresent
         name: local-path-provisioner
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
         volumeMounts:
         - mountPath: /etc/config/
           name: config-volume

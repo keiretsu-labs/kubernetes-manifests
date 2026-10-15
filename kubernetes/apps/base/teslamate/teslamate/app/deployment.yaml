@@ -21,6 +21,12 @@ spec:
           ports:
             - containerPort: 4000
               name: http
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
           env:
             - name: ENCRYPTION_KEY
               valueFrom:
