@@ -13,9 +13,15 @@ spec:
       labels:
         app: mqtt
     spec:
+      seccompProfile:
+        type: RuntimeDefault
       containers:
       - name: mosquitto
         image: eclipse-mosquitto
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
         command: ['sh', '-c', 'mosquitto -c /etc/mosquitto/mosquitto.conf']
         resources:
           requests:

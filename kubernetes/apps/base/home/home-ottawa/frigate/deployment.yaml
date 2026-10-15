@@ -18,12 +18,18 @@ spec:
       labels:
         app: frigate
     spec:
+      seccompProfile:
+        type: RuntimeDefault
       resourceClaims:
         - name: gpu
           resourceClaimTemplateName: frigate-gpu
       initContainers:
         - name: seed-config
           image: ghcr.io/blakeblackshear/frigate:0.18.0-rocm
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           command:
             - sh
             - -c
@@ -39,6 +45,10 @@ spec:
       containers:
         - name: frigate
           image: ghcr.io/blakeblackshear/frigate:0.18.0-rocm
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             claims:
               - name: gpu
@@ -76,6 +86,10 @@ spec:
               mountPath: /tmp/cache
         - name: talkback-keepalive
           image: ghcr.io/blakeblackshear/frigate:0.18.0-rocm
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           command:
             - /bin/sh
             - -c
