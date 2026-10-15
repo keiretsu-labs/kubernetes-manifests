@@ -31,6 +31,7 @@ resources:
   - ./flaresolverr
   - ./maintainerr
   - ./tracearr
+  - ../stream-gate
   - ./bookorbit
   - ./audiobookshelf
   - ./suwayomi

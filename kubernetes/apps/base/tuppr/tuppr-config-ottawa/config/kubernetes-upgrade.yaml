@@ -37,3 +37,13 @@ spec:
           status.readyInstances == object.spec.instances
       description: All CNPG clusters must be healthy with all instances ready
       timeout: 15m
+    # Stream gate (docs/proposals #3672): hold node drains while media
+    # streams are live. The gate controller flips data.ready; MAX_WAIT +
+    # fail-open live gate-side so this never stalls an upgrade forever.
+    - apiVersion: v1
+      kind: ConfigMap
+      name: stream-gate-ottawa
+      namespace: media
+      expr: data.ready == "true"
+      description: No counted streams active (stream-gate) before next node
+      timeout: 6h
