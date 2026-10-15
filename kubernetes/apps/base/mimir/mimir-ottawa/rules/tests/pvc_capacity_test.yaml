@@ -1,0 +1,73 @@
+rule_files:
+  - ../pvc-capacity.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # 90% full: warning only after 15m; 50% never fires; 97% also escalates.
+  - interval: 1m
+    input_series:
+      - series: 'kubelet_volume_stats_used_bytes{cluster="talos-ottawa",namespace="media",persistentvolumeclaim="plex"}'
+        values: "90+0x30"
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-ottawa",namespace="media",persistentvolumeclaim="plex"}'
+        values: "100+0x30"
+      - series: 'kubelet_volume_stats_available_bytes{cluster="talos-ottawa",namespace="media",persistentvolumeclaim="plex"}'
+        values: "10+0x30"
+      - series: 'kubelet_volume_stats_used_bytes{cluster="talos-ottawa",namespace="media",persistentvolumeclaim="ok"}'
+        values: "50+0x30"
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-ottawa",namespace="media",persistentvolumeclaim="ok"}'
+        values: "100+0x30"
+      - series: 'kubelet_volume_stats_available_bytes{cluster="talos-ottawa",namespace="media",persistentvolumeclaim="ok"}'
+        values: "50+0x30"
+      - series: 'kubelet_volume_stats_used_bytes{cluster="talos-robbinsdale",namespace="db",persistentvolumeclaim="pg"}'
+        values: "97+0x30"
+      - series: 'kubelet_volume_stats_capacity_bytes{cluster="talos-robbinsdale",namespace="db",persistentvolumeclaim="pg"}'
+        values: "100+0x30"
+      - series: 'kubelet_volume_stats_available_bytes{cluster="talos-robbinsdale",namespace="db",persistentvolumeclaim="pg"}'
+        values: "3+0x30"
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: PVCNearlyFull
+        exp_alerts: []
+      - eval_time: 16m
+        alertname: PVCNearlyFull
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              cluster: talos-ottawa
+              namespace: media
+              persistentvolumeclaim: plex
+            exp_annotations:
+              summary: >-
+                PVC media/plex is 90% full on talos-ottawa
+              description: >-
+                The volume has been above 85% used for 15 minutes. Check for
+                logs, caches, or retained snapshots in the volume; expand the PVC
+                if the consumer supports online resize.
+          - exp_labels:
+              severity: warning
+              cluster: talos-robbinsdale
+              namespace: db
+              persistentvolumeclaim: pg
+            exp_annotations:
+              summary: >-
+                PVC db/pg is 97% full on talos-robbinsdale
+              description: >-
+                The volume has been above 85% used for 15 minutes. Check for
+                logs, caches, or retained snapshots in the volume; expand the PVC
+                if the consumer supports online resize.
+      - eval_time: 16m
+        alertname: PVCCriticalFill
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              cluster: talos-robbinsdale
+              namespace: db
+              persistentvolumeclaim: pg
+            exp_annotations:
+              summary: >-
+                PVC db/pg is 97% full on talos-robbinsdale
+              description: >-
+                The volume has been above 95% used for 15 minutes; writes can
+                start failing once the filesystem hits 100%. Expand the PVC or
+                free space now.
