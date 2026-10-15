@@ -4,4 +4,5 @@ kind: Namespace
 metadata:
   name: dragonfly-operator-system # Assuming this is the desired namespace based on the folder name
   labels:
-    kustomize.toolkit.fluxcd.io/prune: disabled 
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    pod-security.kubernetes.io/warn: restricted
