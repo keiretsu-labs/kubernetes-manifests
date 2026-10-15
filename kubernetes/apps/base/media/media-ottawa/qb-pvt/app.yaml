@@ -73,6 +73,10 @@ spec:
       - name: gluetun-qb-port-sync
         # renovate: datasource=docker depName=ghcr.io/bjw-s-labs/gluetun-qb-port-sync
         image: ghcr.io/bjw-s-labs/gluetun-qb-port-sync:0.0.4
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
         env:
         - name: GLUETUN_CONTROL_SERVER_HOST
           value: localhost
@@ -98,6 +102,10 @@ spec:
       - name: qbittorrent
         # renovate: datasource=docker depName=lscr.io/linuxserver/qbittorrent
         image: lscr.io/linuxserver/qbittorrent:5.2.4
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
         ports:
         - name: webui
           containerPort: 8080
