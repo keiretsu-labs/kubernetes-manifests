@@ -28,10 +28,10 @@ diagram in the [README](../../README.md#architecture).
 
 | Location | Talos machines | Pointer directories | Flux Kustomizations |
 |---|---:|---:|---:|
-| `ottawa` | 4 | 61 | 129 |
+| `ottawa` | 4 | 62 | 130 |
 | `robbinsdale` | 3 | 43 | 92 |
 | `stpetersburg` | 3 | 39 | 83 |
-| **total** | **10** | **143** | **304** |
+| **total** | **10** | **144** | **305** |
 
 ## Ottawa — `talos-ottawa`
 
@@ -108,6 +108,7 @@ diagram in the [README](../../README.md#architecture).
 | Fleet management | `open-cluster-management` | `ocm`, `ocm-grpc-lb` |
 | Fleet management | `open-cluster-management-agent` | `ocm-agent` |
 | GPU, RDMA and inference | `k8s-gpu-dra-driver` | `k8s-gpu-dra-driver` → ns `kube-system` |
+| Application workloads | `authtest` | `authtest` |
 | Application workloads | `bhaiya` | `bhaiya`, `bhaiya-ops-bot`, `kubernetes-manifests-bot-viewer` |
 | Application workloads | `bhaiya-v2` | `bhaiya-v2` |
 | Application workloads | `border0` | `border0` |
