@@ -5,3 +5,4 @@ metadata:
   name: agent-sandbox-system
   labels:
     kustomize.toolkit.fluxcd.io/prune: disabled
+    pod-security.kubernetes.io/warn: restricted

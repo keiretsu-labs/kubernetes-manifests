@@ -5,3 +5,4 @@ metadata:
   name: lan
   labels:
     kustomize.toolkit.fluxcd.io/prune: disabled
+    pod-security.kubernetes.io/warn: restricted
