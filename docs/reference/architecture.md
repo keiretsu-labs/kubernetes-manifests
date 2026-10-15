@@ -779,7 +779,7 @@ SOPS-encrypted.
 | Deployment | Role |
 |---|---|
 | `tinyauth` | serves `auth.keiretsu.top` (Ottawa) |
-| `tinyauth-killinit` | serves `auth.killinit.cc` — suwayomi needs a cookie scoped to `killinit.cc`, not the shared `keiretsu.top` one |
+| `tinyauth-killinit` | serves `auth.killinit.cc` — suwayomi and Ottawa `garage-webui` need a cookie scoped to `killinit.cc`, not the shared `keiretsu.top` one |
 | `tinyauth-egress` | Robbinsdale and St. Petersburg run no local Tinyauth; a compatibility ExternalName resolves to Ottawa's exported `tinyauth.tinyauth.svc.clusterset.local` Service over Cilium ClusterMesh, not a Tailscale east-west path |
 
 Tinyauth only **authenticates** (Google) and injects `Remote-User`,
@@ -803,8 +803,8 @@ or broken route rather than an obvious error on the policy itself. Widen the
 local grant when you extend extAuth past `home`/`keiretsu-top`.
 
 Ottawa carries a second, narrower grant as well: `extauth-to-tinyauth-killinit`
-admits only `media`, pointing at the `tinyauth-killinit` Service — currently
-just Suwayomi.
+admits `media` and `garage`, pointing at the `tinyauth-killinit` Service —
+Suwayomi and the Garage webadmin UI.
 
 An `EnvoyExtensionPolicy` carries a few lines of Lua that turn Tinyauth's 401
 (which carries an `x-tinyauth-location` header) into a 302 so browsers follow

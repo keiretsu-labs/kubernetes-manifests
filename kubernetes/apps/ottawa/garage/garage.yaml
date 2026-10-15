@@ -84,11 +84,12 @@ metadata:
 spec:
   dependsOn:
     - name: garage
+    - name: tinyauth-killinit
   targetNamespace: garage
   commonMetadata:
     labels:
       app.kubernetes.io/name: garage-webui
-  path: ./kubernetes/apps/base/garage/garage-webui
+  path: ./kubernetes/apps/base/garage/garage-webui-ottawa
   prune: true
   sourceRef:
     kind: GitRepository
