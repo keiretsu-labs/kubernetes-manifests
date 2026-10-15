@@ -18,6 +18,10 @@ spec:
       containers:
         - name: komga
           image: ghcr.io/gotson/komga:1.29.0
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           ports:
             - name: http
               containerPort: 25600
@@ -65,6 +69,10 @@ spec:
         # debounces, fires POST scan. Sidecar because inotify does not cross SMB.
         - name: komga-watcher
           image: ghcr.io/gotson/komga:1.29.0
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           command:
             - /bin/sh
             - -c
