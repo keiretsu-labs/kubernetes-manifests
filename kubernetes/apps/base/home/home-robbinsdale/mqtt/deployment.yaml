@@ -17,6 +17,12 @@ spec:
       - name: mosquitto
         image: eclipse-mosquitto
         command: ['sh', '-c', 'mosquitto -c /etc/mosquitto/mosquitto.conf']
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
         ports:
         - containerPort: 1883
         volumeMounts:

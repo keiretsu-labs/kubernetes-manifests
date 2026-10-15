@@ -20,6 +20,12 @@ spec:
       containers:
       - name: homeassistant
         image: homeassistant/home-assistant:2026.10
+        resources:
+          requests:
+            cpu: 250m
+            memory: 1536Mi
+          limits:
+            memory: 3Gi
         lifecycle:
           postStart:
             exec:
