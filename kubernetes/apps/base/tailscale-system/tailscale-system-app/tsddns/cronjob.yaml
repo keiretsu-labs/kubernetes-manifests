@@ -19,7 +19,9 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: tsddns
-            image: ghcr.io/rajsinghtech/tsddns:latest
+            # renovate: datasource=docker depName=ghcr.io/rajsinghtech/tsddns
+            image: ghcr.io/rajsinghtech/tsddns:sha-b500488
+            # digest sha256:99b89be5d554ce63329cdfe431b2aca010a395c2c57a8f9d400b9c30d0d6fa56
             imagePullPolicy: Always
             args:
             - "--config"

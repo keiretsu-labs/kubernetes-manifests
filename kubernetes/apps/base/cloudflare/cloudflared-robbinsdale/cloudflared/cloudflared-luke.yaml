@@ -26,7 +26,8 @@ spec:
           args:
             - --token
             - $(token)
-          image: cloudflare/cloudflared:latest
+          # renovate: datasource=docker depName=cloudflare/cloudflared
+          image: cloudflare/cloudflared:2026.10.0 # sha256:9b49eed8f6280… == latest 2026-10-05; matches cloudflared-bhaiya-ssh pin
           name: cloudflared
           env:
             - name: token

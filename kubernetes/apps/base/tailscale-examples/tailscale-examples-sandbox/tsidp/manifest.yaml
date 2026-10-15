@@ -31,7 +31,9 @@ spec:
         runAsUser: 65532
       containers:
       - name: tsidp
-        image: ghcr.io/tailscale/tsidp:latest
+        # renovate: datasource=docker depName=ghcr.io/tailscale/tsidp
+        image: ghcr.io/tailscale/tsidp:v0.0.9
+        # digest sha256:3462c9dec80b1a524b21315729ea7456e5cf9386ee4d8f0900372c99fddba0e3
         imagePullPolicy: Always
         ports:
         - containerPort: 443

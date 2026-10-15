@@ -78,7 +78,9 @@ spec:
       enableServiceLinks: false
       initContainers:
       - name: copy-settings
-        image: busybox:latest
+        # renovate: datasource=docker depName=busybox
+        image: busybox:1.37.0
+        # digest sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e
         command: ["sh", "-c", "cp /config/settings.yml /etc/searxng/settings.yml && cp /config/limiter.toml /etc/searxng/limiter.toml"]
         volumeMounts:
         - name: settings-config
