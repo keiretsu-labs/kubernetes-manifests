@@ -31,7 +31,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install pinned promtool
         env:
@@ -59,10 +59,10 @@ jobs:
       matrix:
         cluster: [talos-ottawa, talos-robbinsdale, talos-stpetersburg]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
-      - uses: home-operations/flate/action@v0.6.5
+      - uses: home-operations/flate/action@631b76b69c4e58c6f4d1cb01e23616fa61aebafa # v0.6.5
         with:
           cache: true
       - name: render gate
@@ -82,10 +82,10 @@ jobs:
       matrix:
         cluster: [talos-ottawa, talos-robbinsdale, talos-stpetersburg]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
-      - uses: home-operations/flate/action@v0.6.5
+      - uses: home-operations/flate/action@631b76b69c4e58c6f4d1cb01e23616fa61aebafa # v0.6.5
         with:
           cache: true
       - name: flate diff
@@ -127,7 +127,7 @@ jobs:
           if [ "$FLATE_EXIT" -ne 0 ]; then
             echo "::warning::flate diff exited $FLATE_EXIT for ${{ matrix.cluster }} — see the sticky PR comment"
           fi
-      - uses: marocchino/sticky-pull-request-comment@v3.0.5
+      - uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         with:
           header: flate-diff-${{ matrix.cluster }}
           path: comment.md
@@ -139,6 +139,6 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Run offline tool self-tests
         run: tools/tests/run.sh

@@ -300,7 +300,9 @@ exits  "missing file -> exit 1"     1 "$T/where.sh" foo /no/such/file.xyz
 # ---------------------------------------------------------------- flate.sh (pinned binary; no network)
 section "flate.sh (stubbed binary)"
 fstub="$(mktemp -d)"
-flate_pin="$(sed -n 's|.*home-operations/flate/action@v\([0-9][0-9.]*\).*|\1|p' \
+flate_pin="$(sed -n \
+  -e 's|.*home-operations/flate/action@[0-9a-fA-F]\{40\}[[:space:]]\{1,\}#[[:space:]]*v\([0-9][0-9.]*\).*|\1|p' \
+  -e 's|.*home-operations/flate/action@v\([0-9][0-9.]*\).*|\1|p' \
   "$ROOT/.github/workflows/flate.yaml" | sort -u | head -1)"
 flate_calls="$fstub/calls"
 cat >"$fstub/flate" <<EOF
@@ -323,7 +325,9 @@ KMAN_FLATE_BIN="$fstub/flate" FLATE_CALLS="$flate_calls" \
   "$T/flate.sh" diff all --allow-missing-secrets
 assert "explicit missing-secret flag -> no duplicate" \
   grep -q '^diff all --allow-missing-secrets$' "$flate_calls"
-assert "CI action pin matches wrapper fixture" grep -q "home-operations/flate/action@v$flate_pin" "$ROOT/.github/workflows/flate.yaml"
+assert "CI action pin matches wrapper fixture" grep -Eq \
+  "home-operations/flate/action@([0-9a-fA-F]{40}[[:space:]]+#[[:space:]]*)?v$flate_pin" \
+  "$ROOT/.github/workflows/flate.yaml"
 
 cat >"$fstub/old-flate" <<'EOF'
 #!/usr/bin/env bash

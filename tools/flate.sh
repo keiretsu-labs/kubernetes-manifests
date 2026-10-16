@@ -10,8 +10,13 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKFLOW="$ROOT/.github/workflows/flate.yaml"
 
+# CI pins the action by commit SHA with a `# vX.Y.Z` comment (Renovate digest
+# pinning). Fall back to a mutable `@vX.Y.Z` tag so older checkouts still work.
 pins="$(
-  sed -n 's|.*home-operations/flate/action@v\([0-9][0-9.]*\).*|\1|p' "$WORKFLOW" \
+  sed -n \
+    -e 's|.*home-operations/flate/action@[0-9a-fA-F]\{40\}[[:space:]]\{1,\}#[[:space:]]*v\([0-9][0-9.]*\).*|\1|p' \
+    -e 's|.*home-operations/flate/action@v\([0-9][0-9.]*\).*|\1|p' \
+    "$WORKFLOW" \
     | sort -u
 )"
 if [ -z "$pins" ] || [ "$(printf '%s\n' "$pins" | wc -l | tr -d ' ')" != 1 ]; then
