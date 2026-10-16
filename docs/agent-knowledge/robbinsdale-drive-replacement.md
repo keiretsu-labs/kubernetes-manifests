@@ -88,6 +88,21 @@ inspection finds a target OSD still in the map, or if the exact disk retains
 stale Ceph metadata. Commands marked HELD require CoS to authorize and run
 them. Do one disk completely, then repeat all gates before the next.
 
+0. **Stream-gate check (media pause; advisory until the gate controller
+   lands).** Before any drain, restart, or host reboot step, confirm media
+   serving is idle or the gate has timed out: read the ConfigMap
+   `media/stream-gate-robbinsdale` key `ready` (expect `"true"`) —
+   `tools/kc.sh rb -n media get cm stream-gate-robbinsdale -o
+   jsonpath='{.data.ready}'`. Once the stream-gate controller exists
+   (design doc `docs/proposals/tracearr-stream-gate-and-media-bots.md`,
+   "Ceph maintenance" consumer), the same signal is served as
+   `GET .../ready?scope=ceph`; that endpoint is authoritative and the
+   ConfigMap is its projection. `ready="false"` means active streams are
+   holding the gate: schedule around them or wait for the gate's MAX_WAIT
+   fail-open (6h) rather than muting anything. This mirrors the tuppr
+   health check merged in #3734 and must not replace the PG-state gates
+   in steps 1 and 3.
+
 1. **Read-only preflight.** Finish any pending monitor move first. Verify
    `ceph -s`, `ceph health detail`, `ceph pg stat`, `ceph osd tree`,
    `ceph osd df tree`, `ceph df detail`, the pool size/min_size and ratios,
