@@ -3,6 +3,7 @@
   "extends": [
     "config:recommended",
     ":dependencyDashboard",
+    "helpers:pinGitHubActionDigests",
     "github>keiretsu-labs/kubernetes-manifests//.renovate/customManagers.json",
     "github>keiretsu-labs/kubernetes-manifests//.renovate/groups.json"
   ],
@@ -38,14 +39,18 @@
   },
   "packageRules": [
     {
-      "description": "Auto merge GitHub Actions updates",
+      "description": "Auto merge GitHub Actions updates. Digests stay pinned via helpers:pinGitHubActionDigests. Releases must be 3 days old before automerge.",
       "matchManagers": ["github-actions"],
-      "automerge": true
+      "automerge": true,
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
-      "description": "Auto merge terraform updates",
+      "description": "Auto merge terraform updates, including terraform/border0 provider bumps. Releases must be 3 days old before automerge.",
       "matchManagers": ["terraform"],
-      "automerge": true
+      "automerge": true,
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
       "description": "Auto merge Go module updates",
