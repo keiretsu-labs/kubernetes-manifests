@@ -36,17 +36,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           path: head
-          token: ${{ secrets.GH_PAT }}
+          persist-credentials: false
 
       - name: Regenerate inventory from the Renovate head
         env:
           KMAN_INVENTORY_ROOT: ${{ github.workspace }}/head
         run: |
-          python3 -m pip install --quiet pyyaml
+          python3 -m pip install --quiet 'pyyaml==6.0.3'
           trusted/tools/gen-inventory.sh
 
       - name: Commit inventory as keiretsu-kman-bot
         env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
           RENOVATE_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           if git -C head diff --quiet -- docs/reference/inventory.md; then
@@ -57,4 +58,5 @@ jobs:
           git -C head config user.email '340786697+keiretsu-kman-bot[bot]@users.noreply.github.com'
           git -C head add docs/reference/inventory.md
           git -C head commit -m 'chore: regenerate deployment inventory'
-          git -C head push origin "HEAD:refs/heads/${RENOVATE_HEAD_REF}"
+          git -C head push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" \
+            "HEAD:refs/heads/${RENOVATE_HEAD_REF}"

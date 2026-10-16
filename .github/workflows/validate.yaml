@@ -30,6 +30,49 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
+      - name: Confirm dispatch matches the Renovate PR
+        id: dispatch-guard
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EXPECT_REF: ${{ github.ref_name }}
+          EXPECT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$EXPECT_REF" == renovate/* ]]; then
+            echo "dispatch ref '$EXPECT_REF' is not a renovate/* branch"
+            exit 1
+          fi
+          info=$(gh pr view "$PR_NUMBER" --json headRefName,headRefOid,author)
+          head_ref=$(printf '%s' "$info" | jq -r .headRefName)
+          head_sha=$(printf '%s' "$info" | jq -r .headRefOid)
+          author=$(printf '%s' "$info" | jq -r .author.login)
+          if [ "$head_ref" != "$EXPECT_REF" ]; then
+            echo "PR #$PR_NUMBER headRefName '$head_ref' != dispatch ref '$EXPECT_REF'"
+            exit 1
+          fi
+          if [ "$head_sha" != "$EXPECT_SHA" ]; then
+            # Checksum commits can land on the branch before the PR head OID
+            # refreshes. The dispatch SHA must be that head or a descendant.
+            cmp_status=$(gh api "repos/${GITHUB_REPOSITORY}/compare/${head_sha}...${EXPECT_SHA}" --jq .status)
+            case "$cmp_status" in
+              identical|ahead) ;;
+              *)
+                echo "PR #$PR_NUMBER headRefOid '$head_sha' is not an ancestor of dispatch sha '$EXPECT_SHA' (compare $cmp_status)"
+                exit 1
+                ;;
+            esac
+          fi
+          case "$author" in
+            renovate\[bot\]|app/renovate) ;;
+            *)
+              echo "PR #$PR_NUMBER author '$author' is not renovate[bot]"
+              exit 1
+              ;;
+          esac
+          echo "dispatch matches renovate PR #$PR_NUMBER @ $head_sha"
+
       - name: Skip non-Renovate PRs
         if: >-
           !(
@@ -38,7 +81,7 @@ jobs:
               github.event.pull_request.head.repo.full_name == github.repository &&
               startsWith(github.head_ref, 'renovate/')) ||
             (github.event_name == 'workflow_dispatch' &&
-              startsWith(github.ref_name, 'renovate/'))
+              steps.dispatch-guard.outcome == 'success')
           )
         run: echo "Not a Renovate PR, skipping validation"
 
@@ -49,7 +92,7 @@ jobs:
             github.event.pull_request.head.repo.full_name == github.repository &&
             startsWith(github.head_ref, 'renovate/')) ||
           (github.event_name == 'workflow_dispatch' &&
-            startsWith(github.ref_name, 'renovate/'))
+            steps.dispatch-guard.outcome == 'success')
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -62,8 +105,8 @@ jobs:
             github.event.pull_request.head.repo.full_name == github.repository &&
             startsWith(github.head_ref, 'renovate/')) ||
           (github.event_name == 'workflow_dispatch' &&
-            startsWith(github.ref_name, 'renovate/'))
-        run: pip3 install pyyaml --quiet
+            steps.dispatch-guard.outcome == 'success')
+        run: pip3 install 'pyyaml==6.0.3' --quiet
 
       - name: Validate changed YAML files
         if: >-
@@ -72,7 +115,7 @@ jobs:
             github.event.pull_request.head.repo.full_name == github.repository &&
             startsWith(github.head_ref, 'renovate/')) ||
           (github.event_name == 'workflow_dispatch' &&
-            startsWith(github.ref_name, 'renovate/'))
+            steps.dispatch-guard.outcome == 'success')
         run: |
           files=$(gh pr diff "${{ github.event.pull_request.number || inputs.pr_number }}" --name-only \
             | grep -E '\.ya?ml$' || true)
@@ -99,7 +142,7 @@ jobs:
         if: >-
           always() &&
           github.event_name == 'workflow_dispatch' &&
-          startsWith(github.ref_name, 'renovate/')
+          steps.dispatch-guard.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
           JOB_STATUS: ${{ job.status }}
