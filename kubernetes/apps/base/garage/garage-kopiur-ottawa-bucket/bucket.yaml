@@ -14,8 +14,10 @@ spec:
   globalAlias: kopiur-ottawa
   quotas:
     # Ottawa has the largest config set in the fleet; retain headroom for
-    # Kopia indexes and the policy retention window.
-    maxSize: 500Gi
+    # Kopia indexes and the policy retention window. Raised 500Gi -> 1Ti on
+    # 2026-10-16: kopiur-ottawa maintenance is disabled, so nothing is
+    # compacted and the bucket hit 500Gi, failing every Ottawa snapshot.
+    maxSize: 1Ti
     maxObjects: 1000000
   keyPermissions:
     - keyRef:
