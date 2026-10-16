@@ -21,8 +21,7 @@
   "assignees": [],
   "reviewers": [],
   "ignorePaths": [
-    "**/*.sops.*",
-    "**/clusterplex.yaml"
+    "**/*.sops.*"
   ],
   "ignoreDeps": ["go.temporal.io/api", "code.forgejo.org/forgejo-helm/forgejo", "vllm/vllm-openai"],
   "flux": {
