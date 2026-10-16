@@ -1,0 +1,19 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-media-services
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        # Stream gate source: Tracearr liveness (no-auth /healthz).
+        # Counted-stream gauge (bearer-auth /api/v2/streams) lands with
+        # the gate controller — stream-gate 3/4.
+        - http://tracearr.media:3000/healthz
+      labels:
+        service: media

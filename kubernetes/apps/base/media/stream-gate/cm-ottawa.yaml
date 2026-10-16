@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stream-gate-ottawa
+  namespace: media
+  labels:
+    app.kubernetes.io/name: stream-gate
+data:
+  # Written by the stream-gate controller (design doc #3672 sec.3).
+  # ready="false" while counted streams are active pauses the tuppr
+  # node-drain health check; the gate's MAX_WAIT/fail-open keeps tuppr
+  # from stalling forever. Static "true" until the gate controller
+  # lands (stream-gate 3/4).
+  ready: "true"

@@ -30,3 +30,5 @@ resources:
   - ./flaresolverr
   - ./maintainerr
   - ./tracearr
+  - probes.yaml
+  - ../stream-gate

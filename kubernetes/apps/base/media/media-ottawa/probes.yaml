@@ -49,5 +49,9 @@ spec:
         - http://komga.media:25600
         - http://shelfmark.media:8080
         - http://omnibus.media:3000
+        # Stream gate source: Tracearr liveness (no-auth /healthz).
+        # Counted-stream gauge (bearer-auth /api/v2/streams) lands with
+        # the gate controller — stream-gate 3/4.
+        - http://tracearr.media:3000/healthz
       labels:
         service: media
