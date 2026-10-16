@@ -327,6 +327,9 @@ spec:
         terminationGracePeriodSeconds: 120
         hostNetwork: true
         hostIPC: true
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
         dnsPolicy: ClusterFirstWithHostNet
         enableServiceLinks: false
         priorityClassName: ai-inference
@@ -478,6 +481,7 @@ spec:
           - { name: GLM53_KV_CAPACITY_LOG, value: "1" }
           securityContext:
             privileged: true
+            allowPrivilegeEscalation: false
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           resources:
@@ -532,6 +536,9 @@ spec:
         terminationGracePeriodSeconds: 120
         hostNetwork: true
         hostIPC: true
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
         dnsPolicy: ClusterFirstWithHostNet
         enableServiceLinks: false
         priorityClassName: ai-inference
@@ -662,6 +669,7 @@ spec:
           - { name: FLASHINFER_CUDA_ARCH_LIST, value: "12.1a" }
           securityContext:
             privileged: true
+            allowPrivilegeEscalation: false
             capabilities:
               add: ["IPC_LOCK", "SYS_RESOURCE"]
           resources:
