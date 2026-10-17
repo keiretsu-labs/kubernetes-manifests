@@ -12,6 +12,8 @@ jobs:
   label-sync:
     name: Label Sync
     runs-on: ubuntu-latest
+    # Trivial labeler API sync; observed max 0.9m -- cap backstops API hangs.
+    timeout-minutes: 15
     # Without these the default read-only GITHUB_TOKEN 403s on POST /labels and
     # every run fails silently-ish, which is how labels.yaml drifted from the
     # labels Renovate had created in the repo.
