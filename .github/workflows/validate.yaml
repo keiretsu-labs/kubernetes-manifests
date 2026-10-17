@@ -29,6 +29,9 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    # Required merge check; a hung pip/pyyaml step would stall every PR.
+    # Observed: 100 runs, max 2.5m -- 10m is ~4x ceiling with pip headroom.
+    timeout-minutes: 10
     steps:
       - name: Confirm dispatch matches the Renovate PR
         id: dispatch-guard
