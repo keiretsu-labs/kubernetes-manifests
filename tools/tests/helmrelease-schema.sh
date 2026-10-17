@@ -254,5 +254,31 @@ assert "check.sh failure keeps normalized target" \
 assert "check.sh does not render after schema failure" \
   test ! -s "$failure_make_args"
 
+argerr_root="$tmp_root/check-argerr"
+make_gate_root "$argerr_root" success
+cat >"$argerr_root/bin/make" <<EOF
+#!/usr/bin/env bash
+printf '%s\n' "\$*" >>"$argerr_root/make.args"
+exit 0
+EOF
+cat >"$argerr_root/bin/yq" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$argerr_root/bin"/*
+(
+  cd "$argerr_root"
+  PATH="$argerr_root/bin:$PATH" \
+  FAKE_SCHEMA_ARGS="$argerr_root/schema.args" \
+  FAKE_MAKE_ARGS="$argerr_root/make.args" \
+  tools/check.sh bogus-cluster >"$argerr_root/check.stdout" 2>"$argerr_root/check.stderr"
+)
+argerr_rc=$?
+assert "check.sh bad cluster fails fast" test "$argerr_rc" = 2
+assert "check.sh bad cluster names valid targets" \
+  grep -q "unknown cluster 'bogus-cluster'" "$argerr_root/check.stderr"
+assert "check.sh bad cluster does not render" \
+  test ! -s "$argerr_root/make.args"
+
 printf '\n== %d passed, %d failed ==\n' "$pass" "$fail"
 [ "$fail" = 0 ]
