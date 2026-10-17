@@ -2,7 +2,7 @@
 clusterName: k8s.killinit.internal
 clusterEndpoint: https://k8s.killinit.internal:6443
 # renovate: datasource=custom.talos-factory depName=siderolabs/talos
-talosVersion: v1.14.2
+talosVersion: v1.14.4
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.36.3
 schematicId: "@schematic.yaml"
