@@ -2,7 +2,7 @@
 clusterName: k8s.stpetersburg.internal
 clusterEndpoint: https://k8s.stpetersburg.internal:6443
 # renovate: datasource=custom.talos-factory depName=siderolabs/talos
-talosVersion: v1.14.2
+talosVersion: v1.14.3
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.36.3
 secretsPath: talsecret.sops.yaml
