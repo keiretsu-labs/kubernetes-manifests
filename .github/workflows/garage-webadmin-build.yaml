@@ -18,6 +18,12 @@ permissions:
 env:
   IMAGE: ghcr.io/${{ github.repository }}/garage-webadmin
 
+concurrency:
+  # Serialize the registry publisher: rapid pushes to the image paths must not
+  # race two builds onto the same tags. Later commits supersede earlier ones.
+  group: garage-webadmin-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
