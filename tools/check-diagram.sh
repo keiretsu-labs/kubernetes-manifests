@@ -58,7 +58,9 @@ add_dot_file() {
 add_markdown() {
   # Pull every ```dot fenced block out of a markdown file and treat the
   # concatenation as one graph, the way the diagram used to be embedded.
-  local doc="$1" out="$TMPDIR_/md-$(echo "$doc" | md5sum | cut -c1-8).dot"
+  local doc="$1"
+  # shellcheck disable=SC2155  # md5 of a verified-existing input; empty out is guarded below
+  local out="$TMPDIR_/md-$(echo "$doc" | md5sum | cut -c1-8).dot"
   awk '
     /^[[:space:]]*```dot[[:space:]]*$/ { inb=1; n++; next }
     /^[[:space:]]*```[[:space:]]*$/    { if (inb) { inb=0 }; next }
