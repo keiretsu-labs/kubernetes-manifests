@@ -12,7 +12,8 @@
   "platformAutomerge": false,
   "automergeSchedule": ["after 6pm", "before 6am"],
   "gitIgnoredAuthors": [
-    "41898282+github-actions[bot]@users.noreply.github.com"
+    "41898282+github-actions[bot]@users.noreply.github.com",
+    "340786697+keiretsu-kman-bot[bot]@users.noreply.github.com"
   ],
   "rebaseWhen": "automerging",
   "timezone": "America/Chicago",
@@ -24,7 +25,7 @@
   "ignorePaths": [
     "**/*.sops.*"
   ],
-  "ignoreDeps": ["go.temporal.io/api", "code.forgejo.org/forgejo-helm/forgejo", "vllm/vllm-openai"],
+  "ignoreDeps": ["code.forgejo.org/forgejo-helm/forgejo", "vllm/vllm-openai"],
   "flux": {
     "managerFilePatterns": ["/clusters/.+\\.ya?ml$/", "/kubernetes/.+\\.ya?ml$/"]
   },
