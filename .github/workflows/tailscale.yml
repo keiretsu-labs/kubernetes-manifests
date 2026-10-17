@@ -16,6 +16,9 @@ permissions:
 jobs:
   acls:
     runs-on: ubuntu-latest
+    # Policy push to the tailnet; observed max 1.8m -- 10m backstops a hung
+    # gitops-acl API call during an ACL-editing session.
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
