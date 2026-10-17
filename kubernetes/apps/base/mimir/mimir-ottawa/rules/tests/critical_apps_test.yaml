@@ -1,0 +1,182 @@
+rule_files:
+  - ../critical-apps.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # The Oct 15 regression: tautulli crash looping after a securityContext
+  # change. Must page within minutes, and a non-critical namespace must not.
+  - interval: 1m
+    input_series:
+      - series: 'kube_pod_container_status_waiting_reason{cluster="talos-ottawa",job="kube-state-metrics",namespace="media",pod="tautulli-0",container="app",reason="CrashLoopBackOff"}'
+        values: "1x10"
+      - series: 'kube_pod_container_status_waiting_reason{cluster="talos-ottawa",job="kube-state-metrics",namespace="default",pod="other-0",container="app",reason="CrashLoopBackOff"}'
+        values: "1x10"
+      - series: 'kube_pod_container_status_waiting_reason{cluster="talos-ottawa",job="opencost",namespace="media",pod="tautulli-0",container="app",reason="CrashLoopBackOff"}'
+        values: "1x10"
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: CriticalAppContainerWaiting
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: CriticalAppContainerWaiting
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: media
+              pod: tautulli-0
+              container: app
+              reason: CrashLoopBackOff
+              severity: critical
+              tier: critical-app
+            exp_annotations:
+              summary: Critical app media/tautulli-0 is stuck in CrashLoopBackOff
+              description: >-
+                Container app of media/tautulli-0 on talos-ottawa has been waiting in
+                CrashLoopBackOff for 3 minutes. This app is on the must-never-die
+                list; check the last rollout or merged PR.
+
+  # Restarts: 4 in 15m pages, kube-system pods outside the DNS allow-list don't.
+  - interval: 1m
+    input_series:
+      - series: 'kube_pod_container_status_restarts_total{cluster="talos-robbinsdale",job="kube-state-metrics",namespace="home",pod="mqtt-abc",container="mosquitto"}'
+        values: "0 1 2 3 4 5 5 5 5 5"
+      - series: 'kube_pod_container_status_restarts_total{cluster="talos-robbinsdale",job="kube-state-metrics",namespace="kube-system",pod="cilium-xyz",container="agent"}'
+        values: "0 1 2 3 4 5 5 5 5 5"
+      - series: 'kube_pod_container_status_restarts_total{cluster="talos-robbinsdale",job="kube-state-metrics",namespace="kube-system",pod="coredns-1",container="coredns"}'
+        values: "0 0 0 0 0 0 0 0 0 0"
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: CriticalAppRestarting
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-robbinsdale
+              namespace: home
+              pod: mqtt-abc
+              container: mosquitto
+              severity: critical
+              tier: critical-app
+            exp_annotations:
+              summary: Critical app home/mqtt-abc restarted more than 3 times in 15m
+              description: >-
+                Container mosquitto of home/mqtt-abc on talos-robbinsdale restarted
+                5 times in the last 15 minutes.
+
+  # Not Ready: running pod not Ready pages after 5m; completed Job pods do not.
+  - interval: 1m
+    input_series:
+      - series: 'kube_pod_status_ready{cluster="talos-stpetersburg",job="kube-state-metrics",namespace="home-assistant",pod="homeassistant-0",condition="true"}'
+        values: "0x10"
+      - series: 'kube_pod_status_phase{cluster="talos-stpetersburg",job="kube-state-metrics",namespace="home-assistant",pod="homeassistant-0",phase="Running"}'
+        values: "1x10"
+      - series: 'kube_pod_owner{cluster="talos-stpetersburg",job="kube-state-metrics",namespace="home-assistant",pod="homeassistant-0",owner_kind="StatefulSet",owner_name="homeassistant"}'
+        values: "1x10"
+      - series: 'kube_pod_status_ready{cluster="talos-ottawa",job="kube-state-metrics",namespace="media",pod="probe-123-x",condition="true"}'
+        values: "0x10"
+      - series: 'kube_pod_owner{cluster="talos-ottawa",job="kube-state-metrics",namespace="media",pod="probe-123-x",owner_kind="Job",owner_name="probe-123"}'
+        values: "1x10"
+      - series: 'kube_pod_status_ready{cluster="talos-ottawa",job="kube-state-metrics",namespace="media",pod="old-pod",condition="true"}'
+        values: "0x10"
+      - series: 'kube_pod_status_phase{cluster="talos-ottawa",job="kube-state-metrics",namespace="media",pod="old-pod",phase="Succeeded"}'
+        values: "1x10"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: CriticalAppPodNotReady
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: CriticalAppPodNotReady
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-stpetersburg
+              namespace: home-assistant
+              pod: homeassistant-0
+              severity: critical
+              tier: critical-app
+            exp_annotations:
+              summary: Critical app pod home-assistant/homeassistant-0 not Ready for 5m
+              description: >-
+                home-assistant/homeassistant-0 on talos-stpetersburg has not been
+                Ready for 5 minutes.
+
+  - interval: 1m
+    input_series:
+      - series: 'kube_deployment_status_replicas_unavailable{cluster="talos-ottawa",job="kube-state-metrics",namespace="cloudflare",deployment="external-dns-cloudflare-killinit-cc"}'
+        values: "1x10"
+      - series: 'kube_deployment_status_replicas_unavailable{cluster="talos-ottawa",job="kube-state-metrics",namespace="cloudflare",deployment="cloudflared"}'
+        values: "1x10"
+      - series: 'kube_statefulset_replicas{cluster="talos-ottawa",job="kube-state-metrics",namespace="media",statefulset="plex"}'
+        values: "1x10"
+      - series: 'kube_statefulset_status_replicas_ready{cluster="talos-ottawa",job="kube-state-metrics",namespace="media",statefulset="plex"}'
+        values: "0x10"
+      - series: 'kube_daemonset_status_number_unavailable{cluster="talos-ottawa",job="kube-state-metrics",namespace="kube-system",daemonset="node-local-dns"}'
+        values: "1x12"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: CriticalAppDeploymentUnavailable
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: cloudflare
+              deployment: external-dns-cloudflare-killinit-cc
+              severity: critical
+              tier: critical-app
+            exp_annotations:
+              summary: Critical deployment cloudflare/external-dns-cloudflare-killinit-cc has unavailable replicas
+              description: >-
+                cloudflare/external-dns-cloudflare-killinit-cc on talos-ottawa has had
+                1 unavailable replica(s) for 5 minutes.
+      - eval_time: 5m
+        alertname: CriticalAppStatefulSetUnavailable
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: media
+              statefulset: plex
+              severity: critical
+              tier: critical-app
+            exp_annotations:
+              summary: Critical statefulset media/plex has unready replicas
+              description: >-
+                media/plex on talos-ottawa has had
+                1 unready replica(s) for 5 minutes.
+      - eval_time: 10m
+        alertname: CriticalAppDaemonSetUnavailable
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              namespace: kube-system
+              daemonset: node-local-dns
+              severity: critical
+              tier: critical-app
+            exp_annotations:
+              summary: NodeLocal DNS unavailable on 1 node(s)
+              description: >-
+                kube-system/node-local-dns on talos-ottawa has had
+                1 unavailable pod(s) for 10 minutes; pods on
+                those nodes cannot resolve names.
+
+  - interval: 1m
+    input_series:
+      - series: 'probe_success{cluster="talos-ottawa",instance="https://plex.killinit.cc/identity",job="blackbox",service="media",target="route",critical="true"}'
+        values: "0x10"
+      - series: 'probe_success{cluster="talos-ottawa",instance="https://1.1.1.1",job="blackbox",service="internet",target="dns-public"}'
+        values: "0x10"
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: CriticalAppProbeFailed
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: CriticalAppProbeFailed
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              instance: https://plex.killinit.cc/identity
+              service: media
+              target: route
+              severity: critical
+              tier: critical-app
+            exp_annotations:
+              summary: "Critical probe failing: https://plex.killinit.cc/identity"
+              description: >-
+                The blackbox probe for https://plex.killinit.cc/identity (media) on
+                talos-ottawa has failed for 3 minutes.

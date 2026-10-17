@@ -54,4 +54,27 @@ spec:
         # the gate controller — stream-gate 3/4.
         - http://tracearr.media:3000/healthz
       labels:
+        critical: "true"
         service: media
+---
+# Outside-in: the public HTTPRoute through the gateway, so a broken route,
+# gateway or certificate pages even when the Service itself answers.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-media-routes
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://plex.${CLUSTER_DOMAIN}/identity
+        - https://tautulli.${CLUSTER_DOMAIN}
+        - https://overseerr.${CLUSTER_DOMAIN}
+      labels:
+        service: "media"
+        target: "route"
+        critical: "true"

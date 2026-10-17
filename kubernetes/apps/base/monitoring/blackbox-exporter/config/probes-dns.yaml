@@ -1,0 +1,42 @@
+---
+# CoreDNS (kube-dns Service) and the NodeLocal DNS cache on the prober's
+# own node, both answering for an in-cluster name.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-dns-cluster
+spec:
+  jobName: blackbox
+  module: dns_k8s
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - kube-dns.kube-system.svc.cluster.local:53
+        - 169.254.20.10:53
+      labels:
+        service: "dns"
+        target: "cluster-dns"
+        critical: "true"
+---
+# External resolution through CoreDNS's upstream forwarders, plus the
+# public resolver directly to tell a CoreDNS fault from an internet outage.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-dns-upstream
+spec:
+  jobName: blackbox
+  module: dns_a
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - kube-dns.kube-system.svc.cluster.local:53
+        - 1.1.1.1:53
+      labels:
+        service: "dns"
+        target: "upstream-dns"
+        critical: "true"
