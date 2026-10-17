@@ -25,7 +25,7 @@
   "ignorePaths": [
     "**/*.sops.*"
   ],
-  "ignoreDeps": ["go.temporal.io/api", "code.forgejo.org/forgejo-helm/forgejo", "vllm/vllm-openai"],
+  "ignoreDeps": ["code.forgejo.org/forgejo-helm/forgejo", "vllm/vllm-openai"],
   "flux": {
     "managerFilePatterns": ["/clusters/.+\\.ya?ml$/", "/kubernetes/.+\\.ya?ml$/"]
   },
