@@ -1475,23 +1475,27 @@ St. Petersburg runs `home-assistant` as its own namespace instead.
 
 **`LeaderWorkerSet vllm`** — replicas 1, size 2. The leader is pinned to
 `spark-0` and the worker to `spark-1`. It serves the
-`Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw` checkpoint under vLLM with TP=2,
-eager execution, a 262K-token per-request limit, and a fixed 4GiB FP8 KV
-budget; DFlash2 is retained on disk but disabled in the shared-cluster profile,
+`Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw` lineage (TensorFold Ablit quant) under
+the TensorFold runtime with TP=2, a 1,048,576-token per-request limit, and a
+1 GiB FP8 KV cache plus 8 GiB memory reserve
+(`TF_GLM_CACHE_GIB`/`TENSORFOLD_MEMORY_RESERVE_GIB`, recipe v1.7); DFlash2 is
+retained on disk but disabled in the shared-cluster profile
+(`--drafter none`),
 so **one model spans both machines**. The ranks talk over the
-`192.168.74.0/30` RDMA rail (`VLLM_HOST_IP` and `--master-addr` are the RDMA
-addresses, not the LAN ones). The served model is
+`192.168.74.0/30` RDMA rail (the `--master` address is the RDMA
+address, not the LAN one). The served model is
 `GLM-5.3-Flash-EXL3`; the `vllm` provider exposes that same stable ID. Head and
 worker have separate 200Gi model PVCs, and a preflight memory gate checks the
-unified-memory floor before vLLM starts. Each vLLM rank requests
-`90Gi` and is limited to `96Gi`; the target image supplies the SM121 sparse-MLA
+unified-memory floor before serving starts. Each rank requests
+`96Gi` and is limited to `112Gi`; the target image supplies the SM121
+sparse-MLA
 and EXL3 runtime. The image is consumed at its pinned MiaAI-Lab arm64 digest;
 there is no in-repo serving-image build. No unrelated GPU workload should be
 scheduled on either Spark without a fresh load qualification.
 
-The `model-serving` ServiceMonitor scrapes the vLLM endpoint at
-`model-serving.ai.svc.cluster.local:8000/metrics` every 15s. The blackbox `Probe
-app-vllm` hits `/health` **and** `/v1/models`, because a served-model list proves
+The `model-serving` ServiceMonitor scrapes the TensorFold endpoint at
+`model-serving.ai.svc.cluster.local:8888/metrics` every 15s. The blackbox `Probe
+app-tensorfold` hits `/health` **and** `/v1/models`, because a served-model list proves
 the weights actually loaded, which `/health` alone does not.
 `HUGGING_FACE_HUB_TOKEN` comes from a SOPS-encrypted secret.
 
@@ -1503,7 +1507,7 @@ door.
 
 ### GPU / sandbox runtime stack
 
-**`gpu-operator`** (chart 26.3.3, St. Petersburg):
+**`gpu-operator`** (chart v26.7.1, St. Petersburg; renovate-held PR bumps to v26.7.2):
 
 - driver and toolkit **disabled** — Talos extensions provide both
 - `runtimeClass nvidia`, device-plugin 1 replica per GPU, with **no
