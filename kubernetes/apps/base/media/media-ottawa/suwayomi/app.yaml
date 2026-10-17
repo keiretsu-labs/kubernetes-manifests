@@ -42,10 +42,6 @@ spec:
       containers:
         - name: suwayomi
           image: ghcr.io/suwayomi/suwayomi-server:v2.4.2422
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
           ports:
             - name: http
               containerPort: 4567

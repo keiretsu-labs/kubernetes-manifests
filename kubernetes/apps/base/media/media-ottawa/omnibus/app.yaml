@@ -27,10 +27,6 @@ spec:
         - name: omnibus
           # renovate: datasource=docker depName=ghcr.io/kbpersonal/omnibus
           image: ghcr.io/kbpersonal/omnibus:v1.4.5.2@sha256:70c743df8b20802e5f294e6addda8c3b712055af6ae3e092c74a9329b1313cb6
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
           ports:
             - name: http
               containerPort: 3000
@@ -92,10 +88,6 @@ spec:
         - name: omnibus-engine
           # renovate: datasource=docker depName=ghcr.io/kbpersonal/omnibus-engine
           image: ghcr.io/kbpersonal/omnibus-engine:v1.4.5.2@sha256:69f5405066cf9f5e191af760ea07d651841ffb8607a0ac89e3c7d56ede60cce6
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
           env:
             - name: DATABASE_URL
               valueFrom:

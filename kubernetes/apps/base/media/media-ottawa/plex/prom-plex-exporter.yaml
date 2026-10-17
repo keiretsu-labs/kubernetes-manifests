@@ -20,10 +20,6 @@ spec:
         - name: prom-plex-exporter
           # renovate: datasource=docker depName=ghcr.io/timothystewart6/prometheus-plex-exporter
           image: ghcr.io/timothystewart6/prometheus-plex-exporter:latest # sha256:90dc0799601c334f2945a3d5b4b552a06352b208a8ce88a428cf90d6c9aa51cd (upstream tags sha-7 only)
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
           imagePullPolicy: Always
           ports:
             - containerPort: 9000
