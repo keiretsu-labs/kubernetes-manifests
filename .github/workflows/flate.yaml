@@ -52,6 +52,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    # 15m ~= 5x the worst observed whole-workflow wall (6.2m incl. all jobs);
+    # the in-script KMAN_CHECK_TIMEOUT=120s guard fires long before this.
+    timeout-minutes: 15
     permissions:
       contents: read
     strategy:
@@ -74,6 +77,7 @@ jobs:
   diff:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: write
