@@ -1300,6 +1300,10 @@ rm -rf "$envfixture"
 section "merge-one.sh"
 if "$T/tests/test_merge_one.sh"; then ok "merge-one offline integration"; else bad "merge-one offline integration"; fi
 
+# ------------------------------------------------------- token.yml redaction
+section "token.yml response redaction"
+if "$T/tests/test_token_redact.sh"; then ok "token redaction filter offline tests"; else bad "token redaction filter offline tests"; fi
+
 # ---------------------------------------------------------------- summary
 printf '\n== %d passed, %d failed ==\n' "$pass" "$fail"
 [ "$fail" = 0 ]
