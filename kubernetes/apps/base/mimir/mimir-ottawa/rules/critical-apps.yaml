@@ -1,0 +1,152 @@
+# Must-never-die apps: media (Plex, Tautulli, *arrs), Immich, Home Assistant,
+# MQTT, Frigate and DNS (CoreDNS, NodeLocal DNS, k8gb CoreDNS, external-dns).
+# Raj's standing rule: these apps can never go down, so a crash loop must page
+# within minutes. The generic PodCrashLooping / PodNotReady /
+# DeploymentReplicasMismatch rules in monitoring.yaml are warning-level with
+# 15m+ windows and missed the Oct 15 securityContext breakage for two days.
+#
+# Scope is a namespace/pod allow-list, repeated per expression because PromQL
+# has no macro. kube-state-metrics only (OpenCost mirrors these series).
+# Job pods are excluded: CronJob runs (e.g. the qbittorrent port-forward probe)
+# complete or fail by design and have their own alerts.
+namespace: critical-apps
+groups:
+  - name: critical-apps.rules
+    rules:
+      - alert: CriticalAppContainerWaiting
+        expr: >-
+          max by (cluster, namespace, pod, container, reason) (
+            kube_pod_container_status_waiting_reason{job="kube-state-metrics", reason=~"CrashLoopBackOff|CreateContainerConfigError|CreateContainerError|ImagePullBackOff|ErrImagePull|RunContainerError", namespace=~"media|immich|home|home-assistant"}
+            or
+            kube_pod_container_status_waiting_reason{job="kube-state-metrics", reason=~"CrashLoopBackOff|CreateContainerConfigError|CreateContainerError|ImagePullBackOff|ErrImagePull|RunContainerError", namespace="kube-system", pod=~"coredns-.*|node-local-dns-.*"}
+            or
+            kube_pod_container_status_waiting_reason{job="kube-state-metrics", reason=~"CrashLoopBackOff|CreateContainerConfigError|CreateContainerError|ImagePullBackOff|ErrImagePull|RunContainerError", namespace=~"cloudflare|k8gb", pod=~"external-dns-.*|k8gb-coredns-.*"}
+          ) == 1
+        for: 3m
+        labels:
+          severity: critical
+          tier: critical-app
+        annotations:
+          summary: >-
+            Critical app {{ $labels.namespace }}/{{ $labels.pod }} is stuck in {{ $labels.reason }}
+          description: >-
+            Container {{ $labels.container }} of {{ $labels.namespace }}/{{ $labels.pod }}
+            on {{ $labels.cluster }} has been waiting in {{ $labels.reason }} for 3 minutes.
+            This app is on the must-never-die list; check the last rollout or merged PR.
+
+      - alert: CriticalAppRestarting
+        expr: >-
+          sum by (cluster, namespace, pod, container) (
+            increase(kube_pod_container_status_restarts_total{job="kube-state-metrics", namespace=~"media|immich|home|home-assistant"}[15m])
+            or
+            increase(kube_pod_container_status_restarts_total{job="kube-state-metrics", namespace="kube-system", pod=~"coredns-.*|node-local-dns-.*"}[15m])
+            or
+            increase(kube_pod_container_status_restarts_total{job="kube-state-metrics", namespace=~"cloudflare|k8gb", pod=~"external-dns-.*|k8gb-coredns-.*"}[15m])
+          ) > 3
+        for: 1m
+        labels:
+          severity: critical
+          tier: critical-app
+        annotations:
+          summary: >-
+            Critical app {{ $labels.namespace }}/{{ $labels.pod }} restarted more than 3 times in 15m
+          description: >-
+            Container {{ $labels.container }} of {{ $labels.namespace }}/{{ $labels.pod }}
+            on {{ $labels.cluster }} restarted {{ $value | printf "%.0f" }} times in the last 15 minutes.
+
+      - alert: CriticalAppPodNotReady
+        expr: >-
+          (
+            max by (cluster, namespace, pod) (
+              kube_pod_status_ready{job="kube-state-metrics", condition="true", namespace=~"media|immich|home|home-assistant"}
+              or
+              kube_pod_status_ready{job="kube-state-metrics", condition="true", namespace="kube-system", pod=~"coredns-.*|node-local-dns-.*"}
+              or
+              kube_pod_status_ready{job="kube-state-metrics", condition="true", namespace=~"cloudflare|k8gb", pod=~"external-dns-.*|k8gb-coredns-.*"}
+            ) == 0
+          )
+          unless on (cluster, namespace, pod)
+            max by (cluster, namespace, pod) (kube_pod_status_phase{job="kube-state-metrics", phase=~"Succeeded|Failed"} == 1)
+          unless on (cluster, namespace, pod)
+            max by (cluster, namespace, pod) (kube_pod_owner{job="kube-state-metrics", owner_kind="Job"})
+        for: 5m
+        labels:
+          severity: critical
+          tier: critical-app
+        annotations:
+          summary: >-
+            Critical app pod {{ $labels.namespace }}/{{ $labels.pod }} not Ready for 5m
+          description: >-
+            {{ $labels.namespace }}/{{ $labels.pod }} on {{ $labels.cluster }} has not been
+            Ready for 5 minutes.
+
+      - alert: CriticalAppDeploymentUnavailable
+        expr: >-
+          max by (cluster, namespace, deployment) (
+            kube_deployment_status_replicas_unavailable{job="kube-state-metrics", namespace=~"media|immich|home|home-assistant"}
+            or
+            kube_deployment_status_replicas_unavailable{job="kube-state-metrics", namespace="kube-system", deployment="coredns"}
+            or
+            kube_deployment_status_replicas_unavailable{job="kube-state-metrics", namespace=~"cloudflare|k8gb", deployment=~"external-dns-.*|k8gb-coredns"}
+          ) > 0
+        for: 5m
+        labels:
+          severity: critical
+          tier: critical-app
+        annotations:
+          summary: >-
+            Critical deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas
+          description: >-
+            {{ $labels.namespace }}/{{ $labels.deployment }} on {{ $labels.cluster }} has had
+            {{ $value | printf "%.0f" }} unavailable replica(s) for 5 minutes.
+
+      - alert: CriticalAppStatefulSetUnavailable
+        expr: >-
+          max by (cluster, namespace, statefulset) (
+            kube_statefulset_replicas{job="kube-state-metrics", namespace=~"media|immich|home|home-assistant"}
+            - kube_statefulset_status_replicas_ready{job="kube-state-metrics", namespace=~"media|immich|home|home-assistant"}
+          ) > 0
+        for: 5m
+        labels:
+          severity: critical
+          tier: critical-app
+        annotations:
+          summary: >-
+            Critical statefulset {{ $labels.namespace }}/{{ $labels.statefulset }} has unready replicas
+          description: >-
+            {{ $labels.namespace }}/{{ $labels.statefulset }} on {{ $labels.cluster }} has had
+            {{ $value | printf "%.0f" }} unready replica(s) for 5 minutes.
+
+      - alert: CriticalAppDaemonSetUnavailable
+        expr: >-
+          max by (cluster, namespace, daemonset) (
+            kube_daemonset_status_number_unavailable{job="kube-state-metrics", namespace="kube-system", daemonset="node-local-dns"}
+          ) > 0
+        for: 10m
+        labels:
+          severity: critical
+          tier: critical-app
+        annotations:
+          summary: >-
+            NodeLocal DNS unavailable on {{ $value | printf "%.0f" }} node(s)
+          description: >-
+            kube-system/node-local-dns on {{ $labels.cluster }} has had
+            {{ $value | printf "%.0f" }} unavailable pod(s) for 10 minutes; pods on
+            those nodes cannot resolve names.
+
+      # Outside-in: every Probe labelled critical="true" (in-cluster Service
+      # checks, public routes and DNS queries). ProbeFailed stays blackholed in
+      # Alertmanager for the long tail; this one pages.
+      - alert: CriticalAppProbeFailed
+        expr: >-
+          max by (cluster, instance, service, target) (probe_success{critical="true"}) == 0
+        for: 3m
+        labels:
+          severity: critical
+          tier: critical-app
+        annotations:
+          summary: >-
+            Critical probe failing: {{ $labels.instance }}
+          description: >-
+            The blackbox probe for {{ $labels.instance }} ({{ $labels.service }}) on
+            {{ $labels.cluster }} has failed for 3 minutes.
