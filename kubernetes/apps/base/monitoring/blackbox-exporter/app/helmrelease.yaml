@@ -7,6 +7,7 @@ spec:
   chartRef:
     kind: OCIRepository
     name: blackbox-exporter
+    namespace: monitoring
   interval: 1h
   values:
     fullnameOverride: *app
