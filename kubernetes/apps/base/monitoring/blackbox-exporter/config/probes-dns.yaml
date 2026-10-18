@@ -1,6 +1,6 @@
 ---
 # Cluster DNS end to end: CoreDNS (kube-dns Service) and the NodeLocal DNS
-# cache on the prober's own node must resolve an external name, which also
+# cache on the prober's own node (via the LRP) must resolve an external name, which also
 # exercises CoreDNS's upstream forwarders. 1.1.1.1 directly tells a CoreDNS
 # fault apart from an internet outage. Uses the existing dns_a module
 # (google.com A); an in-cluster-name module would change the blackbox
@@ -18,7 +18,12 @@ spec:
     staticConfig:
       static:
         - kube-dns.kube-system.svc.cluster.local:53
-        - 169.254.20.10:53
+        # kube-dns is redirected to the node's NodeLocal DNS by the Cilium
+        # LocalRedirectPolicy, so the kube-dns target already exercises it.
+        # 169.254.20.10 is never bound (-setupinterface=false) and always
+        # timed out. kube-dns-upstream hits CoreDNS directly, so a NodeLocal
+        # fault (kube-dns fails, upstream ok) is told apart from a CoreDNS one.
+        - kube-dns-upstream.kube-system.svc.cluster.local:53
         - 1.1.1.1:53
       labels:
         service: "dns"
