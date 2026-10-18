@@ -21,6 +21,9 @@ on:
 jobs:
   echo-token:
     runs-on: ubuntu-latest
+    # OIDC fetch + exchange + device list; 10m ample for 3 API calls, and the
+    # JWT/access-token masks keep logs clean on retry.
+    timeout-minutes: 10
     steps:
       - name: get OIDC token from GitHub Actions
         id: get_oidc_token
