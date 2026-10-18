@@ -12,6 +12,7 @@ blackbox	blackbox-exporter.rules
 ceph	ceph.rules
 ceph	bhaiya-sandbox.rules
 cnpg-backup-coverage	cnpg-backup-coverage.rules
+critical-apps	critical-apps.rules
 flux	flux-instance.rules
 garage	garage.rules
 job-failures	kubernetes.jobs.rules
