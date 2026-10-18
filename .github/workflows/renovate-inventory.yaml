@@ -23,6 +23,9 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository &&
       startsWith(github.event.pull_request.head.ref, 'renovate/')
     runs-on: ubuntu-latest
+    # Bot inventory regen; observed 100 runs max 3.5m -- 15m ample, backstops
+    # a wedged regen outside working hours (renovate automerge window).
+    timeout-minutes: 15
     steps:
       # pull_request_target has access to credentials. Never execute scripts
       # from the PR head; only inventory data is read from that checkout.
