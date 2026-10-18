@@ -41,7 +41,7 @@ spec:
         volumeMounts:
           - mountPath: /config
             name: homeassistant-config
-          - mountPath: /config/http-config.yaml
+          - mountPath: /config/configuration.yaml
             name: homeassistant-http-config
             subPath: configuration.yaml
       restartPolicy: Always
