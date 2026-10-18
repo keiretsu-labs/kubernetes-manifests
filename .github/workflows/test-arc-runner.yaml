@@ -10,6 +10,9 @@ jobs:
   test:
     # Load balanced across all clusters - GitHub picks first available
     runs-on: arc-runner
+    # Queue-wait + trivial echo; 10m distinguishes ARC scheduling faults
+    # (the thing this wf exists to detect) from hangs.
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

@@ -31,6 +31,9 @@ on:
 jobs:
   delete-inactive-nodes:
     runs-on: ubuntu-latest
+    # Device sweep + optional deletes via Tailscale API; 15m covers the
+    # apt install + paginated device walk; backstops a hung delete loop.
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
