@@ -8,6 +8,7 @@ spec:
   chartRef:
     kind: OCIRepository
     name: kube-prometheus-stack
+    namespace: monitoring
   install:
     remediation:
       retries: 3
