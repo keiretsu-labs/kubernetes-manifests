@@ -28,6 +28,9 @@ env:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    # plan+apply against the border0 API; observed max 13m -- 20m leaves
+    # apply-phase headroom on top of the observed envelope.
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: terraform/border0

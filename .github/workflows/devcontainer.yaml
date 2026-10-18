@@ -22,6 +22,9 @@ jobs:
     if: ${{ github.repository == 'onedr0p/cluster-template' }}
     name: publish
     runs-on: ubuntu-latest
+    # Upstream-template vestige (if-gated, permanent skip here); cap anyway so
+    # a re-enabled daily build cannot hang the runner for 360m.
+    timeout-minutes: 10
     permissions:
       contents: read
       packages: write
