@@ -16,4 +16,5 @@ spec:
         # the gate controller — stream-gate 3/4.
         - http://tracearr.media:3000/healthz
       labels:
+        critical: "true"
         service: media

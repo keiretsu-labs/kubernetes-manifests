@@ -43,3 +43,20 @@ The default API helper is
 `keiretsu-kman-bot[bot]`. `MERGE_ONE_TEST_KGH` is only for the offline tests in
 `tools/tests/test_merge_one.sh`; production runs must leave it unset. Run the
 offline cases with `tools/tests/test_merge_one.sh`.
+
+## Stream-gate (media pause) convention
+
+`merge-one.sh` has no runtime gate hook: its preflight only accepts PRs that
+touch `tools/`, `docs/`, `.renovate/`, root `README.md`, or
+`.github/renovate.json` — never cluster-applied paths — so a media-affecting
+PR is always human-merged anyway. The convention for those manual media merges
+(and any future automation) is the stream gate from
+`docs/proposals/tracearr-stream-gate-and-media-bots.md`: before merging
+anything that restarts media workloads, check the gate — ConfigMap
+`media/stream-gate-<site>` key `ready` (expect `"true"`) in the target
+clusters, or `GET .../ready?scope=media` once the gate controller exists.
+`"false"` means active streams: defer the merge to the next 6 PM–6 AM CT
+window or wait out the gate's MAX_WAIT fail-open. This is advisory until the
+controller lands (stream-gate 3/4) and mirrors the tuppr health checks from
+#3734; Renovate automerge cannot consult a runtime gate and stays
+config-owned (see the lane status file for the open question).

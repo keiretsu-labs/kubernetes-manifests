@@ -12,3 +12,4 @@ resources:
   - ./airconnect-deployment.yaml
   - ./google-assistant-secret.sops.yaml
   - ./lights-configmap.yaml
+  - ./probes.yaml

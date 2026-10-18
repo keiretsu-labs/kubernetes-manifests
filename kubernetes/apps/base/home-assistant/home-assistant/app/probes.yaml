@@ -1,0 +1,37 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-home-assistant
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - http://homeassistant.home-assistant:8123
+      labels:
+        service: "home-automation"
+        critical: "true"
+---
+# Outside-in: the public HTTPRoute through the gateway, so a broken route,
+# gateway or certificate pages even when the Service itself answers.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-home-assistant-route
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://homeassistant.${CLUSTER_DOMAIN}
+      labels:
+        service: "home-automation"
+        target: "route"
+        critical: "true"

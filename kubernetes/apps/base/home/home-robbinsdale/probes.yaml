@@ -14,6 +14,7 @@ spec:
         - http://frigate.home:5000
         - http://homeassistant.home:8123
       labels:
+        critical: "true"
         service: home-automation
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -30,5 +31,45 @@ spec:
       static:
         - k8gb-coredns.k8gb.svc.cluster.local:53
       labels:
+        critical: "true"
         service: k8gb
         target: dns
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-home-mqtt
+spec:
+  jobName: blackbox
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - mqtt.home:1883
+      labels:
+        service: "home-automation"
+        target: "mqtt"
+        critical: "true"
+---
+# Outside-in: the public HTTPRoute through the gateway, so a broken route,
+# gateway or certificate pages even when the Service itself answers.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-home-routes
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://homeassistant.${CLUSTER_DOMAIN}
+        - https://frigate.${CLUSTER_DOMAIN}
+      labels:
+        service: "home-automation"
+        target: "route"
+        critical: "true"
