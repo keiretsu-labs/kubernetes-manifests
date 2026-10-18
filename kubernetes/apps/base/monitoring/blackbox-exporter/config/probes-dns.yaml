@@ -1,31 +1,14 @@
 ---
-# CoreDNS (kube-dns Service) and the NodeLocal DNS cache on the prober's
-# own node, both answering for an in-cluster name.
+# Cluster DNS end to end: CoreDNS (kube-dns Service) and the NodeLocal DNS
+# cache on the prober's own node must resolve an external name, which also
+# exercises CoreDNS's upstream forwarders. 1.1.1.1 directly tells a CoreDNS
+# fault apart from an internet outage. Uses the existing dns_a module
+# (google.com A); an in-cluster-name module would change the blackbox
+# HelmRelease, which Flate's changed-only render cannot build today.
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
-  name: app-dns-cluster
-spec:
-  jobName: blackbox
-  module: dns_k8s
-  prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
-  targets:
-    staticConfig:
-      static:
-        - kube-dns.kube-system.svc.cluster.local:53
-        - 169.254.20.10:53
-      labels:
-        service: "dns"
-        target: "cluster-dns"
-        critical: "true"
----
-# External resolution through CoreDNS's upstream forwarders, plus the
-# public resolver directly to tell a CoreDNS fault from an internet outage.
-apiVersion: monitoring.coreos.com/v1
-kind: Probe
-metadata:
-  name: app-dns-upstream
+  name: app-dns
 spec:
   jobName: blackbox
   module: dns_a
@@ -35,8 +18,8 @@ spec:
     staticConfig:
       static:
         - kube-dns.kube-system.svc.cluster.local:53
+        - 169.254.20.10:53
         - 1.1.1.1:53
       labels:
         service: "dns"
-        target: "upstream-dns"
         critical: "true"
