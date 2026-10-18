@@ -5,10 +5,8 @@
 # PRs. Add a label here before referencing it from a Renovate rule.
 
 # Area
-- { name: "area/bootstrap",          color: "0e8a16" }
 - { name: "area/github",             color: "0e8a16" }
 - { name: "area/kubernetes",         color: "0e8a16" }
-- { name: "area/taskfile",           color: "0e8a16" }
 # Distro
 - { name: "distro/talos",            color: "ffc300" }
 # Renovate
