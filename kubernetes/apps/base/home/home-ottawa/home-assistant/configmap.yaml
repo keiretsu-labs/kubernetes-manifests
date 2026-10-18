@@ -5,8 +5,6 @@ metadata:
   name: homeassistant-http-config
   namespace: home
 data:
-  # Mounted over /config/configuration.yaml. Mirrors the PVC file plus the
-  # http block so HA accepts X-Forwarded-For from the Envoy Gateway proxies.
   configuration.yaml: |
     # Loads default set of integrations. Do not remove.
     default_config:
@@ -15,6 +13,10 @@ data:
     frontend:
       themes: !include_dir_merge_named themes
 
+    # Text to speech
+    tts:
+      - platform: google_translate
+
     automation: !include automations.yaml
     script: !include scripts.yaml
     scene: !include scenes.yaml
@@ -22,6 +24,5 @@ data:
     http:
       use_x_forwarded_for: true
       trusted_proxies:
-        # Ottawa Cilium cluster-pool pod CIDR (cluster-pool-ipv4-cidr);
-        # envoy-home-private/-ts pods in envoy-gateway-system live here.
-        - 10.3.0.0/16
+        - 10.0.0.0/8
+        - 172.16.0.0/12
