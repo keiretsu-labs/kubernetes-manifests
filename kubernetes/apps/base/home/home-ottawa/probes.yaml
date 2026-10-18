@@ -35,10 +35,9 @@ spec:
         # in-cluster prober can't reach (404 from the private gateway); probe the
         # Ottawa-local public route instead (tinyauth login page = 200).
         - https://frigate.${LOCATION}.${COMMON_DOMAIN}
-        # homeassistant.${CLUSTER_DOMAIN} is dropped until Ottawa HA has
-        # http.use_x_forwarded_for/trusted_proxies set: it 400s every proxied
-        # request today (real misconfig, tracked separately). In-cluster
-        # app-home-services still pages if HA itself goes down.
+        # HA trusts the Envoy pod CIDR (10.3.0.0/16) via .storage/http
+        # (use_x_forwarded_for), so the proxied route answers 200/302 again.
+        - https://homeassistant.${CLUSTER_DOMAIN}
       labels:
         service: "home-automation"
         target: "route"
