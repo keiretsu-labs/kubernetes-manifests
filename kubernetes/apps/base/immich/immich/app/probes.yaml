@@ -13,4 +13,25 @@ spec:
       static:
         - http://immich-server.immich:2283/api/server/ping
       labels:
+        critical: "true"
         service: immich
+---
+# Outside-in: the public HTTPRoute through the gateway, so a broken route,
+# gateway or certificate pages even when the Service itself answers.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: app-immich-route
+spec:
+  jobName: blackbox
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://immich.${CLUSTER_DOMAIN}/api/server/ping
+      labels:
+        service: "immich"
+        target: "route"
+        critical: "true"

@@ -85,3 +85,17 @@ table. Four OSDs alerting on one host is one physical SSD, not four drives.
   rollout from this warning alone. Ottawa Rook/Ceph upgrades remain a
   staffed maintenance decision while recurrence is active.
 - Do not infer this from `ceph_health_status` without `ceph health detail`.
+
+## Stream-gate before staffed maintenance
+
+Any escalation from this warning into OSD restart, node reboot, or a Rook/Ceph
+rollout is staffed maintenance: check the media pause gate first. Read
+`tools/kc.sh ot -n media get cm stream-gate-ottawa -o
+jsonpath='{.data.ready}'` — `"true"` means no counted streams are holding the
+gate. Once the stream-gate controller exists (design doc
+`docs/proposals/tracearr-stream-gate-and-media-bots.md`, "Ceph maintenance"
+consumer), the authoritative form is `GET .../ready?scope=ceph` and the
+ConfigMap is its projection. `"false"` is not a blocker: wait for the MAX_WAIT
+fail-open (6h) or reschedule, and never mute or bypass the gate flags to force
+a window. This is advisory until the controller lands and complements — never
+replaces — the PG-state gates in the runbooks above.

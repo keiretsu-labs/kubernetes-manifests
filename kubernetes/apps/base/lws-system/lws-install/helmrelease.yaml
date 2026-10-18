@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: lws
-      version: "v0.11.1"
+      version: "v1.0.0"
       sourceRef:
         kind: HelmRepository
         name: lws

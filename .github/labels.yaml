@@ -37,6 +37,17 @@
 - { name: "cluster:ottawa",          color: "ededed", description: "Scoped to the Ottawa cluster" }
 - { name: "cluster:robbinsdale",     color: "ededed", description: "Scoped to the Robbinsdale cluster" }
 - { name: "cluster:stpetersburg",    color: "ededed", description: "Scoped to the St. Petersburg cluster" }
+# App families — attached by .renovate/groups.json packageRules
+- { name: "CNI",                     color: "ededed", description: "CNI and network plugin upgrades" }
+- { name: "Database",                color: "ededed", description: "Database engine image upgrades (CloudNativePG)" }
+- { name: "Envoy-Gateway",           color: "ededed", description: "Envoy Gateway dashboards and config" }
+- { name: "Immich",                  color: "ededed", description: "Immich server and machine-learning upgrades" }
+- { name: "Mimir",                   color: "ededed", description: "Grafana Mimir and mimirtool upgrades" }
+- { name: "Monitoring",              color: "ededed", description: "Kromgo and monitoring-side upgrades" }
+- { name: "OCM",                     color: "ededed", description: "OpenClusterManagement hub and agent upgrades" }
+- { name: "Storage",                 color: "ededed", description: "CSI drivers and snapshot controller upgrades" }
+- { name: "TeslaMate",               color: "ededed", description: "TeslaMate app and dashboard upgrades" }
+- { name: "media",                   color: "ededed", description: "Media app image upgrades" }
 # Uncategorized
 - { name: "hold/upstream",           color: "ee0701" }
 # GitHub defaults still in use on open issues
