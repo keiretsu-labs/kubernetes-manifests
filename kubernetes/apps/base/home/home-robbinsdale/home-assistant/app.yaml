@@ -16,18 +16,12 @@ spec:
       labels:
         app: homeassistant
     spec:
-      seccompProfile:
-        type: RuntimeDefault
       hostNetwork: true
       nodeSelector:
         kubernetes.io/hostname: stone
       containers:
         - name: homeassistant
           image: homeassistant/home-assistant:2026.10
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
           resources:
             requests:
               cpu: 250m

@@ -11,6 +11,8 @@ on:
   # runs for those commits, including this required check.
   pull_request_target:
     branches: [main]
+  merge_group:
+    branches: [main]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -80,6 +82,7 @@ jobs:
               github.event.pull_request.user.login == 'renovate[bot]' &&
               github.event.pull_request.head.repo.full_name == github.repository &&
               startsWith(github.head_ref, 'renovate/')) ||
+            github.event_name == 'merge_group' ||
             (github.event_name == 'workflow_dispatch' &&
               steps.dispatch-guard.outcome == 'success')
           )
@@ -91,11 +94,13 @@ jobs:
             github.event.pull_request.user.login == 'renovate[bot]' &&
             github.event.pull_request.head.repo.full_name == github.repository &&
             startsWith(github.head_ref, 'renovate/')) ||
+          github.event_name == 'merge_group' ||
           (github.event_name == 'workflow_dispatch' &&
             steps.dispatch-guard.outcome == 'success')
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: ${{ github.event_name == 'merge_group' && '0' || '1' }}
           persist-credentials: false
 
       - name: Install PyYAML
@@ -104,6 +109,7 @@ jobs:
             github.event.pull_request.user.login == 'renovate[bot]' &&
             github.event.pull_request.head.repo.full_name == github.repository &&
             startsWith(github.head_ref, 'renovate/')) ||
+          github.event_name == 'merge_group' ||
           (github.event_name == 'workflow_dispatch' &&
             steps.dispatch-guard.outcome == 'success')
         run: pip3 install 'pyyaml==6.0.3' --quiet
@@ -114,11 +120,17 @@ jobs:
             github.event.pull_request.user.login == 'renovate[bot]' &&
             github.event.pull_request.head.repo.full_name == github.repository &&
             startsWith(github.head_ref, 'renovate/')) ||
+          github.event_name == 'merge_group' ||
           (github.event_name == 'workflow_dispatch' &&
             steps.dispatch-guard.outcome == 'success')
         run: |
-          files=$(gh pr diff "${{ github.event.pull_request.number || inputs.pr_number }}" --name-only \
-            | grep -E '\.ya?ml$' || true)
+          if [ "${{ github.event_name }}" = "merge_group" ]; then
+            files=$(git diff --name-only "${{ github.event.merge_group.base_sha }}" HEAD \
+              | grep -E '\.ya?ml$' || true)
+          else
+            files=$(gh pr diff "${{ github.event.pull_request.number || inputs.pr_number }}" --name-only \
+              | grep -E '\.ya?ml$' || true)
+          fi
           if [ -z "$files" ]; then
             echo "No YAML files changed"
             exit 0

@@ -350,6 +350,22 @@ def load_exemptions() -> dict[str, dict[str, str]]:
 
 
 def main() -> int:
+    # Each scan helper re-walks overlapping trees; memoize parsed docs per
+    # path for the lifetime of the run so repeated globs/rglobs parse once.
+    docs_cache: dict[Path, list] = {}
+    global load_docs
+    _load_docs_uncached = load_docs
+
+    def load_docs(path: Path):  # noqa: F811
+        if path not in docs_cache:
+            try:
+                docs_cache[path] = list(_load_docs_uncached(path))
+            except SystemExit:
+                # Unparseable/non-Kubernetes YAML: cache empty, same as the
+                # per-callSite SystemExit handling in local_path_pvcs.
+                docs_cache[path] = []
+        return iter(docs_cache[path])
+
     exemptions, out_of_band = load_exemptions()
     failures: list[str] = []
     stale: list[str] = []

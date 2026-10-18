@@ -6,3 +6,4 @@ resources:
   - ./home-assistant
   - ./frigate
   - ./unifi-webhook
+  - ./probes.yaml

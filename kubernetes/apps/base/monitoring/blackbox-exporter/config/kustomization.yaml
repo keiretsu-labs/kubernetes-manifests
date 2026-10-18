@@ -6,3 +6,4 @@ resources:
   - ./dashboard.yaml
   - ./probes-k8s-api.yaml
   - ./probes-internet.yaml
+  - ./probes-dns.yaml
