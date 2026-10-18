@@ -27,7 +27,6 @@ above; the underlying HTTPRoute is listed.
 | `cliproxy-api.${CLUSTER_DOMAIN}` | cliproxy-api (home) | cliproxy API | api token (app) |
 | `firefly.${COMMON_DOMAIN}` | firefly (firefly) | firefly UI | tinyauth (`firefly` SP) |
 | `frigate.${COMMON_DOMAIN}` / `*.${LOCATION}` | frigate (home) ottawa | frigate UI | tinyauth (`frigate-tinyauth`) |
-| `frigate.${CLUSTER_DOMAIN}` | frigate (home) robbinsdale | frigate UI | none found on route (see note) |
 | `homeassistant.${CLUSTER_DOMAIN}` | homeassistant (home-assistant) | HA UI | app login (+ long-lived tokens) |
 | `status.${CLUSTER_DOMAIN}` | gatus (monitoring, ×3 sites) | gatus status page | none (public status page) |
 | `kromgo.${CLUSTER_DOMAIN}` | kromgo (monitoring) | kromgo badges | none — intentional, badges only |
@@ -47,7 +46,7 @@ above; the underlying HTTPRoute is listed.
 
 Media family (ottawa + robbinsdale where noted): `plex`, `radarr-*` (1080p/4k/4kremux/anime), `sonarr-*`, `bazarr-*`, `lidarr`, `prowlarr`, `sabnzbd`, `autobrr`, `qb`, `qb-pvt`, `maintainerr`, `shelfmark`, `suwayomi` (tinyauth via `suwayomi-tinyauth` on killinit cookie), `omnibus`, `tracearr` — all **app login** except suwayomi; none published to Cloudflare.
 
-Infra: `grafana.${CLUSTER_DOMAIN}` (ts+private, tinyauth), `prometheus.${CLUSTER_DOMAIN}` (ts, tinyauth/OIDC), `headlamp.${CLUSTER_DOMAIN}` (ts), `hubble.${CLUSTER_DOMAIN}` (ts), `rook.${CLUSTER_DOMAIN}` (ott ts, rb private), `searxng.${CLUSTER_DOMAIN}` (ts), `opencost.${CLUSTER_DOMAIN}` (ott), `webtop.${CLUSTER_DOMAIN}` (ts), `k9s.${CLUSTER_DOMAIN}` (ts), `jetkvm.${CLUSTER_DOMAIN}` (private), `unifi-webhook.${CLUSTER_DOMAIN}` (private), `speedtest.${CLUSTER_DOMAIN}` (rb private), `homeassistant.${CLUSTER_DOMAIN}` (ott/rb private), `frigate` (rb), `garage-webui.${CLUSTER_DOMAIN}` (tinyauth-killinit), `auth.${COMMON_DOMAIN}` + killinit variant (tinyauth login itself), `forgejo.${CLUSTER_DOMAIN}` (private + ts; app OAuth/SSH), `woodpecker.${CLUSTER_DOMAIN}` (private; tinyauth on UI), `litellm` (private, bearer master key).
+Infra: `grafana.${CLUSTER_DOMAIN}` (ts+private, tinyauth), `prometheus.${CLUSTER_DOMAIN}` (ts, tinyauth/OIDC), `headlamp.${CLUSTER_DOMAIN}` (ts), `hubble.${CLUSTER_DOMAIN}` (ts), `rook.${CLUSTER_DOMAIN}` (ott ts, rb private), `searxng.${CLUSTER_DOMAIN}` (ts), `opencost.${CLUSTER_DOMAIN}` (ott), `webtop.${CLUSTER_DOMAIN}` (ts), `k9s.${CLUSTER_DOMAIN}` (ts), `jetkvm.${CLUSTER_DOMAIN}` (private), `unifi-webhook.${CLUSTER_DOMAIN}` (private), `speedtest.${CLUSTER_DOMAIN}` (rb private), `homeassistant.${CLUSTER_DOMAIN}` (ott/rb private), `frigate.${CLUSTER_DOMAIN}` (rb private; not reachable from the Internet — only Ottawa's frigate is public, behind tinyauth), `garage-webui.${CLUSTER_DOMAIN}` (tinyauth-killinit), `auth.${COMMON_DOMAIN}` + killinit variant (tinyauth login itself), `forgejo.${CLUSTER_DOMAIN}` (private + ts; app OAuth/SSH), `woodpecker.${CLUSTER_DOMAIN}` (private; tinyauth on UI), `litellm` (private, bearer master key).
 
 ## Cloudflare tunnels (non-gateway ingress path)
 
