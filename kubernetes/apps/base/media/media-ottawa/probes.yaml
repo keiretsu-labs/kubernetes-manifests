@@ -72,7 +72,9 @@ spec:
     staticConfig:
       static:
         - https://plex.${CLUSTER_DOMAIN}/identity
-        - https://tautulli.${CLUSTER_DOMAIN}
+        # /status is Tautulli's unauthenticated health endpoint; / redirects to
+        # an http:// logout URL that 404s on the https-only gateway.
+        - https://tautulli.${CLUSTER_DOMAIN}/status
         - https://overseerr.${CLUSTER_DOMAIN}
       labels:
         service: "media"
