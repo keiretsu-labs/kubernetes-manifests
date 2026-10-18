@@ -43,14 +43,16 @@ jobs:
           # Extract HTTP status and response body
           HTTP_STATUS=$(echo "$RESPONSE" | tail -n 1 | cut -d: -f2)
           RESPONSE_BODY=$(echo "$RESPONSE" | sed '$d')
-          
+
           echo "HTTP Status: $HTTP_STATUS"
-          echo "Response body: $RESPONSE_BODY"
+          # The body carries the issued access/refresh tokens; print a
+          # redacted copy (masks below only affect the masked values).
+          echo "Response body: $(echo "$RESPONSE_BODY" | jq -c 'walk(if type == "object" then with_entries(.value |= if test("token|secret|key";"i")) else . end | with_entries(.value |= (if (. | type) == "string" and (. | length) > 12 then .[0:6] + "…" + .[-4:] else . end)))')"
           
           # Check if the request was successful
           if [ "$HTTP_STATUS" != "200" ]; then
             echo "Error: Token exchange failed with status $HTTP_STATUS"
-            echo "Full response: $RESPONSE_BODY"
+            echo "Full response: $(echo "$RESPONSE_BODY" | jq -c 'walk(if type == "object" then with_entries(.value |= (if (. | type) == "string" and (. | length) > 12 then .[0:6] + "…" + .[-4:] else . end)) else . end)')"
             exit 1
           fi
           
@@ -59,7 +61,7 @@ jobs:
           
           if [ "$ACCESS_TOKEN" == "null" ] || [ -z "$ACCESS_TOKEN" ]; then
             echo "Error: No access token in response"
-            echo "Full response: $RESPONSE_BODY"
+            echo "Full response: $(echo "$RESPONSE_BODY" | jq -c 'walk(if type == "object" then with_entries(.value |= (if (. | type) == "string" and (. | length) > 12 then .[0:6] + "…" + .[-4:] else . end)) else . end)')"
             exit 1
           fi
           
