@@ -80,6 +80,21 @@ spec:
           value:
             service.cilium.io/forwarding-mode: dsr
             service.cilium.io/lb-algorithm: maglev
+    # external-dns-unifi crash-loops here (same as St. Pete #3816): UniFi
+    # gateway answers GET /records slower than external-dns's default 5s
+    # webhook read timeout. Mirror the St. Pete 60s timeouts on this site.
+    - target:
+        group: helm.toolkit.fluxcd.io
+        version: v2
+        kind: HelmRelease
+        name: external-dns-unifi
+      patch: |-
+        - op: add
+          path: /spec/values/extraArgs/-
+          value: --webhook-provider-read-timeout=60s
+        - op: add
+          path: /spec/values/extraArgs/-
+          value: --webhook-provider-write-timeout=60s
   prune: true
   sourceRef:
     kind: GitRepository
