@@ -5,6 +5,9 @@ metadata:
   name: mqtt
 spec:
   replicas: 1
+  # RWO PVC: RollingUpdate deadlocks on Multi-Attach (see #3823).
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mqtt
