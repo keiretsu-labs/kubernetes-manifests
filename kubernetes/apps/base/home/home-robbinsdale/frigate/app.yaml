@@ -24,6 +24,11 @@ spec:
       containers:
         - name: frigate
           image: ghcr.io/blakeblackshear/frigate:0.18.2
+          env:
+            # Broker = robbinsdale home/mqtt LoadBalancer (mqtt/service.yaml).
+            # The PVC config.yaml can reference this as `host: "{FRIGATE_MQTT_HOST}"`.
+            - name: FRIGATE_MQTT_HOST
+              value: "10.50.10.11"
           ports:
             - name: web
               containerPort: 8971
