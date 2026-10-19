@@ -5,6 +5,16 @@ metadata:
   name: mqtt
 spec:
   replicas: 1
+  # RWO PVC: the default RollingUpdate (maxSurge 25%) deadlocks on Multi-Attach
+  # (see #3823). maxSurge 0 / maxUnavailable 1 stops the old pod first, which
+  # behaves like Recreate for 1 replica. We don't use `type: Recreate` because
+  # Flux server-side apply can't drop the defaulted rollingUpdate block, and
+  # the API rejects that combination.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: mqtt
