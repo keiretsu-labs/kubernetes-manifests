@@ -28,8 +28,7 @@ spec:
       mon_osd_auto_mark_in: "true"
   # Ceph 20.2.4 (CVE-2025-30156): rotate daemon CephX keys to aes256k.
   # keyGeneration 2 is a one-shot bump; Rook restarts daemons to pick up new keys.
-  # Do not set keyType — Rook autodetects aes256k on Tentacle. CSI keys are a
-  # later PR (kernel 6.18 hosts; CSI aes256k wants kernel 7.0+).
+  # Do not set keyType — Rook autodetects aes256k on Tentacle.
   # keyRotation.enabled is OSD LUKS rotation (unrelated); keep the CRD default.
   security:
     keyRotation:
@@ -38,6 +37,15 @@ spec:
       daemon:
         keyRotationPolicy: KeyGeneration
         keyGeneration: 2
+      # HOLD: CSI aes256k needs Linux kernel 7.0+ (FIPS 7.2+). Robbinsdale
+      # nodes are 6.18.54-talos. Merging this will rotate CSI keys and can
+      # break existing RBD mounts. Do not merge until kernels are 7.0+ or Raj
+      # explicitly accepts the risk. keepPriorKeyCountMax 1 retains the aes
+      # key for in-use mounts during a later node-drain migration.
+      csi:
+        keyRotationPolicy: KeyGeneration
+        keyGeneration: 2
+        keepPriorKeyCountMax: 1
   cephVersion:
     # The container image used to launch the Ceph daemon pods (mon, mgr, osd, mds, rgw).
     # v18 is Reef, v19 is Squid
