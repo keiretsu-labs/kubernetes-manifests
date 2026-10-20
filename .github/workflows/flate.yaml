@@ -94,6 +94,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
+      - name: Install pinned aqua for the generated-data gate
+        env:
+          AQUA_VERSION: v2.64.0
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 3 \
+            "https://github.com/aquaproj/aqua/releases/download/${AQUA_VERSION}/aqua_linux_amd64.tar.gz" \
+            -o "$RUNNER_TEMP/aqua.tar.gz"
+          tar -xzf "$RUNNER_TEMP/aqua.tar.gz" -C "$RUNNER_TEMP" aqua
+          install -m 0755 "$RUNNER_TEMP/aqua" /usr/local/bin/aqua
       - uses: home-operations/flate/action@631b76b69c4e58c6f4d1cb01e23616fa61aebafa # v0.6.5
         with:
           cache: true
