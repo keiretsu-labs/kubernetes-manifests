@@ -47,7 +47,7 @@ spec:
               mountPath: /config
       containers:
         - name: plex
-          image: ghcr.io/home-operations/plex-next:1.43.4.10903
+          image: ghcr.io/home-operations/plex-next:1.43.5.11029
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
