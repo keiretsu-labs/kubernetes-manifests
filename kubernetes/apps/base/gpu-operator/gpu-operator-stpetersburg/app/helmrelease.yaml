@@ -23,6 +23,32 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  # v26.7.2 rewrote the cleanup-gpucluster/upgrade-crd hook Jobs' pod specs;
+  # the hooks are one-shot per release, so a finished Job is safe to reap and
+  # ttlSecondsAfterFinished lets Flux replace it instead of failing the apply
+  # on an immutable spec.template change. 1h covers slow CRD upgrades; the
+  # Job objects are recreated by the next release either way.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              group: batch
+              version: v1
+              kind: Job
+              name: gpu-operator-cleanup-gpucluster
+            patch: |-
+              - op: add
+                path: /spec/ttlSecondsAfterFinished
+                value: 3600
+          - target:
+              group: batch
+              version: v1
+              kind: Job
+              name: gpu-operator-upgrade-crd
+            patch: |-
+              - op: add
+                path: /spec/ttlSecondsAfterFinished
+                value: 3600
   values:
     # Talos provides NVIDIA driver and container-toolkit via system extensions
     # (nonfree-kmod-nvidia-lts, nvidia-container-toolkit-lts). gpu-operator
