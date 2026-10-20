@@ -97,11 +97,13 @@ jobs:
       - name: Install pinned aqua for the generated-data gate
         env:
           AQUA_VERSION: v2.64.0
+          AQUA_SHA256: b276e927ee2f4dc214831708c0843a91007bafa06f2f9fcd6ee1fd73fd165598
         run: |
           set -euo pipefail
           curl --fail --silent --show-error --location --retry 3 \
             "https://github.com/aquaproj/aqua/releases/download/${AQUA_VERSION}/aqua_linux_amd64.tar.gz" \
             -o "$RUNNER_TEMP/aqua.tar.gz"
+          printf '%s  %s\n' "${AQUA_SHA256}" "$RUNNER_TEMP/aqua.tar.gz" | sha256sum --check --status
           tar -xzf "$RUNNER_TEMP/aqua.tar.gz" -C "$RUNNER_TEMP" aqua
           install -m 0755 "$RUNNER_TEMP/aqua" /usr/local/bin/aqua
       - uses: home-operations/flate/action@631b76b69c4e58c6f4d1cb01e23616fa61aebafa # v0.6.5
