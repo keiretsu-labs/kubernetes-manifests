@@ -35,14 +35,18 @@ check_aqua_checksums() {
   local output="$CHECK_TMP/aqua.log"
   local aqua_rc=0
 
+  if ! command -v "$aqua_command" >/dev/null 2>&1; then
+    # Graceful skip: aqua is optional locally. The gate records the skip so a
+    # silent stale-checksums regression cannot hide behind a missing binary on
+    # machines that never installed it; CI always has it via flate.yaml.
+    echo "skip: aqua not found; checksums freshness unverified (install via \`aqua i\`)"
+    return 0
+  fi
   if [[ "$aqua_command" == */* ]]; then
     [ -x "$aqua_command" ] || {
       echo "aqua executable not found: $aqua_command"
       return 1
     }
-  elif ! command -v "$aqua_command" >/dev/null 2>&1; then
-    echo "aqua executable not found; install the CI-pinned Aqua release first"
-    return 1
   fi
 
   [ -s "$checksum_file" ] || {
