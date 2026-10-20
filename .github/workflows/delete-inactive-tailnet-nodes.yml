@@ -146,7 +146,7 @@ jobs:
           
           # Convert tags input to array
           IFS=',' read -ra TAGS_ARRAY <<< "${{ inputs.tags }}"
-          echo "Looking for devices with tags: ${TAGS_ARRAY[@]}"
+          echo "Looking for devices with tags: ${TAGS_ARRAY[*]}"
           
           # Get current date in seconds
           CURRENT_DATE=$(date +%s)
@@ -208,7 +208,7 @@ jobs:
       - name: Display devices to delete
         run: |
           echo "=== Devices to Delete ==="
-          if [ $(jq '. | length' /tmp/devices_to_delete.json) -eq 0 ]; then
+          if [ "$(jq '. | length' /tmp/devices_to_delete.json)" -eq 0 ]; then
             echo "No devices found matching the criteria"
           else
             jq -r '.[] | "Device: \(.name) | ID: \(.id) | Inactive Days: \(.inactive_days) | Last Seen: \(.last_seen)"' /tmp/devices_to_delete.json
