@@ -208,7 +208,7 @@ jobs:
       - name: Display devices to delete
         run: |
           echo "=== Devices to Delete ==="
-          if [ $(jq '. | length' /tmp/devices_to_delete.json) -eq 0 ]; then
+          if [ "$(jq '. | length' /tmp/devices_to_delete.json)" -eq 0 ]; then
             echo "No devices found matching the criteria"
           else
             jq -r '.[] | "Device: \(.name) | ID: \(.id) | Inactive Days: \(.inactive_days) | Last Seen: \(.last_seen)"' /tmp/devices_to_delete.json
