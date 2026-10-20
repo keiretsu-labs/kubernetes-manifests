@@ -9,6 +9,10 @@
 # are intentionally excluded: they read direct Gateway addresses rather than
 # the exposed-hostname resolution path and need separate target semantics.
 #
+# Per-cluster local-target records (one local target by design) are excluded
+# from the target-set checks. k8gb <1.0 named them `localtargets-<host>`;
+# k8gb 1.0.x also publishes `localtargets.<host>`, so match both separators.
+#
 # Keep this namespace unique across every file passed to mimirtool.
 namespace: k8gb-dns
 groups:
@@ -20,7 +24,7 @@ groups:
             k8gb_endpoint_status_num{
               namespace="k8gb",
               name=~"gatus-status|garage-s3-cdn|hubble|keiretsu-web",
-              dns_name!~"localtargets-.*"
+              dns_name!~"localtargets[-.].*"
             }[5m]
           ) < 3
         for: 1m
@@ -41,7 +45,7 @@ groups:
             k8gb_endpoint_status_num{
               namespace="k8gb",
               name=~"dashboard-cdn|forgejo|opencost|velero|zot-public",
-              dns_name!~"localtargets-.*"
+              dns_name!~"localtargets[-.].*"
             }[5m]
           ) < 1
         for: 1m
@@ -71,7 +75,7 @@ groups:
               k8gb_endpoint_status_num{
                 namespace="k8gb",
                 name=~"gatus-status|garage-s3-cdn|hubble|keiretsu-web",
-                dns_name!~"localtargets-.*"
+                dns_name!~"localtargets[-.].*"
               }[5m]
             ) < 3
             or
@@ -79,7 +83,7 @@ groups:
               k8gb_endpoint_status_num{
                 namespace="k8gb",
                 name=~"dashboard-cdn|forgejo|opencost|velero|zot-public",
-                dns_name!~"localtargets-.*"
+                dns_name!~"localtargets[-.].*"
               }[5m]
             ) < 1
           )
