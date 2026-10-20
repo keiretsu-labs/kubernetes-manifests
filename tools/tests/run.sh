@@ -388,7 +388,7 @@ for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.s
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
   check-mimir-rules.sh check-velero-pvc-coverage.sh check-flux-envsubst.py \
-  check-helmrelease-schema.sh check-immutable-jobs.py; do
+  check-helmrelease-schema.sh check-immutable-jobs.py check-generated.sh; do
   printf '#!/usr/bin/env bash\nexit 0\n' >"$gate_root/tools/$helper"
   chmod +x "$gate_root/tools/$helper"
 done
@@ -438,7 +438,7 @@ for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.s
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
   check-mimir-rules.sh check-velero-pvc-coverage.sh check-flux-envsubst.py \
-  check-helmrelease-schema.sh check-immutable-jobs.py; do
+  check-helmrelease-schema.sh check-immutable-jobs.py check-generated.sh; do
   cat >"$watchdog_tmp/tools/$helper" <<'EOF'
 #!/usr/bin/env bash
 IFS= read -r _ <"$WATCHDOG_READY"
@@ -535,7 +535,7 @@ for helper in check-mimir-promql.sh check-versions.sh check-notification-scope.s
   check-cliproxy-pi-bridge.sh check-inference-dashboard-wiring.sh orphans.sh \
   check-zot-upload-affinity.sh check-bhaiya-limits.sh \
   check-mimir-rules.sh check-velero-pvc-coverage.sh check-flux-envsubst.py \
-  check-helmrelease-schema.sh check-immutable-jobs.py; do
+  check-helmrelease-schema.sh check-immutable-jobs.py check-generated.sh; do
   printf '#!/usr/bin/env bash\nexit 0\n' >"$wedge_gate_root/tools/$helper"
   chmod +x "$wedge_gate_root/tools/$helper"
 done

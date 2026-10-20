@@ -188,6 +188,12 @@ run_capped "zot-upload-affinity" tools/check-zot-upload-affinity.sh
 run_capped "bhaiya-limits" bash tools/check-bhaiya-limits.sh
 run_capped "mimir-rule-load-path" tools/check-mimir-rules.sh
 run_capped "velero-pvc-coverage" tools/check-velero-pvc-coverage.sh
+# Generated artifacts (inventory, diagrams, aqua checksums, schema provenance).
+# Needs aqua on PATH; the CI-pinned binary ships in the flate runner image and
+# locally via `aqua i`. Skipped under --quick, which is syntax-only by contract.
+if [ "${QUICK:-0}" != 1 ]; then
+  run_capped "generated-data" tools/check-generated.sh
+fi
 if [ -n "$TARGET" ]; then
   run_capped "flux-envsubst" tools/check-flux-envsubst.py "${TARGET#talos-}"
 else
