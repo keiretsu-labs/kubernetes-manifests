@@ -146,7 +146,7 @@ jobs:
           
           # Convert tags input to array
           IFS=',' read -ra TAGS_ARRAY <<< "${{ inputs.tags }}"
-          echo "Looking for devices with tags: ${TAGS_ARRAY[@]}"
+          echo "Looking for devices with tags: ${TAGS_ARRAY[*]}"
           
           # Get current date in seconds
           CURRENT_DATE=$(date +%s)
