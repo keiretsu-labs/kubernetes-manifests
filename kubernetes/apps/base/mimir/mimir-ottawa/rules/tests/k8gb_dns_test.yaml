@@ -1,0 +1,55 @@
+rule_files:
+  - ../k8gb-dns.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # k8gb 1.0.x publishes per-cluster local-target records under both
+  # `localtargets-<host>` and `localtargets.<host>`. Each holds only the local
+  # cluster's target by design, so neither form may trip the target-set
+  # alerts while the replicated record still carries all three clusters.
+  - interval: 1m
+    input_series:
+      - series: 'k8gb_endpoint_status_num{cluster="talos-ottawa",namespace="k8gb",name="hubble",dns_name="hubble.cdn.keiretsu.top"}'
+        values: "3+0x10"
+      - series: 'k8gb_endpoint_status_num{cluster="talos-ottawa",namespace="k8gb",name="hubble",dns_name="localtargets-hubble.cdn.keiretsu.top"}'
+        values: "1+0x10"
+      - series: 'k8gb_endpoint_status_num{cluster="talos-ottawa",namespace="k8gb",name="hubble",dns_name="localtargets.hubble.cdn.keiretsu.top"}'
+        values: "1+0x10"
+      - series: 'k8gb_endpoint_status_num{cluster="talos-ottawa",namespace="k8gb",name="forgejo",dns_name="forgejo.cdn.keiretsu.top"}'
+        values: "1+0x10"
+      - series: 'k8gb_endpoint_status_num{cluster="talos-ottawa",namespace="k8gb",name="forgejo",dns_name="localtargets.forgejo.cdn.keiretsu.top"}'
+        values: "0+0x10"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: K8gbReplicatedTargetSetIncomplete
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: K8gbOttawaOnlyTargetMissing
+        exp_alerts: []
+
+  # A replicated record that really lost a cluster still pages.
+  - interval: 1m
+    input_series:
+      - series: 'k8gb_endpoint_status_num{cluster="talos-robbinsdale",namespace="k8gb",name="hubble",dns_name="hubble.cdn.keiretsu.top"}'
+        values: "2+0x10"
+      - series: 'k8gb_endpoint_status_num{cluster="talos-robbinsdale",namespace="k8gb",name="hubble",dns_name="localtargets.hubble.cdn.keiretsu.top"}'
+        values: "1+0x10"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: K8gbReplicatedTargetSetIncomplete
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-robbinsdale
+              namespace: k8gb
+              name: hubble
+              dns_name: hubble.cdn.keiretsu.top
+              severity: critical
+            exp_annotations:
+              summary: >-
+                k8gb GSLB hubble has an incomplete published target set
+              description: >-
+                hubble (hubble.cdn.keiretsu.top) published fewer than
+                three targets during the last five minutes; the expected set is
+                Ottawa, Robbinsdale, and St. Petersburg. This is the user-visible
+                GSLB failure signal even when the k8gb pod and CoreDNS remain Ready.
