@@ -6,6 +6,7 @@ resources:
   - service-mesh.yaml
   - httproute.yaml
   - secret.yaml
+  - forgejo-oidc.sops.yaml
   - referencegrant.yaml
   - pvc.yaml
 # tinyauth-config is generated (not a static manifest) so its name carries a

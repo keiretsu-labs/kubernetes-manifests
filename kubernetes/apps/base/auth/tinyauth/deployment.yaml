@@ -57,8 +57,8 @@ spec:
             - name: TINYAUTH_OIDC_CLIENTS_FORGEJO_CLIENTSECRET
               valueFrom:
                 secretKeyRef:
-                  name: tinyauth-secret
-                  key: forgejo-oidc-client-secret
+                  name: tinyauth-forgejo-oidc
+                  key: client-secret
             - name: TINYAUTH_OIDC_CLIENTS_FORGEJO_TRUSTEDREDIRECTURIS
               value: https://forgejo.keiretsu.top/user/oauth2/Tinyauth/callback
             - name: TINYAUTH_OIDC_CLIENTS_FORGEJO_NAME
