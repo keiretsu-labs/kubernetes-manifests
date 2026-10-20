@@ -64,7 +64,7 @@ data:
         ttl 30
         fallthrough
       }
-      forward . 1.1.1.1
+      forward . 1.1.1.1 1.0.0.1 8.8.8.8
     }
     ts.net {
       errors
