@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: tinyauth-forgejo-oidc
+    namespace: tinyauth
+type: Opaque
+stringData:
+    client-secret: ENC[AES256_GCM,data:0qU1CT8uOeWdW+dHOnLPYAAzKHlBy4NshoaVGOsdrmIhE7EJR42jVv7FEEhREGKd/uaM9V3s5R4XAzkKV8NKFA==,iv:/hTzVrO6qHXz4E15r1+eP8dF8f3qLuQkn17+I3HZfNI=,tag:CCMKHJST3nYbvVy3/encww==,type:str]
+sops:
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-20T15:53:11Z"
+    mac: ENC[AES256_GCM,data:hTHUBlnnZMvmdHVcAmNbNQw4kYVSbvJ5c/1r0LadPL0mPA979cR5dpFfdLAYvTtkSONaFSF9gW0MV0Rq4AiHnheQibRdaahPaY0EyxqZ5V3CnEuoWkYfe6lQ48+3c7yIdckgyb39M4Q2LKuTyRy9lb2KKjChv8KxjcAssinrdGo=,iv:uEf7sJfzUJvEVwrGACwyjRJ3oyEYDtZ0f/Zu1cvNvLM=,tag:6R5fc0JretdFrM6f0L3kpA==,type:str]
+    pgp:
+        - created_at: "2026-10-20T15:53:11Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hQIMA0HSi2TJaWveAQ/8C3kTDELq4tVssD/QU4714TNz35L+zyL3Gyg/A8kUgo3Y
+            lTJ+FPalLEmcM1XYDXduECZNuY6Dv7PoniUsnoEDXQj2HZtqKqsp6DCP88x8YmJj
+            D5uEu41Eu7KCPzsV8BrYTLfaiwwM5CMAgEghgEtpD3cl/VCJd6tKsvQPysP0hFPx
+            jjz1xiMEaPKT26adOl0EqBy1H+XCbeekl7F5EQDtI+YIiEzvxIgOCpHiOnVzBxO0
+            MsfEIhAsLUmDLc40fXPvcxch76iTSdcYcM2dh2fhHwRSd0W/sroQqP/igfCK+Mjc
+            Vc4UqcVAzWKmfAWJRGnYceYCtz66yG2/NuZdA/hM4f7PRnb06Nt0VtZCpNf6IRfA
+            zrq2yoKkqKVQ8UiXabvb3Kxbf87cpg1A+TJn6m1XKEqZZ+nf8kxkq/kFpYJJkV8A
+            EmJ8bUoakyDEETpgkxhma3Cc9kmWNv0n2ucCb5Ntwp92dPrmdjTvSjpwEyvafNKJ
+            uhhwIxE4cr7VMTXzlXzXtj+pjDmrspygYxTfbv5CdF4EJehnZ3293MpdFPEn6vwq
+            v1+cbMoYLx8Wl58XgSFtfyzyGlyIpPC4urp3KvZpR3NUQ/uEGsEnF8UcCyRsoN/4
+            eAdSgjnt2zbPkDhnKkcF/GMriWY/P3KLQpR3G+0168w9vHf7HPuSctIxKbgOF13S
+            XAGPEJvD5psuc/9pLi9v2HiaKvKQ9B9Yb+FaryVaxcWJrTXRZ7rYycOFhx21DtUX
+            8jql3sVXZb5TafUa+8obwFRPhYFz8U7h8H638xiDjyzZqAjgnENgKlyO9KUF
+            =Kbou
+            -----END PGP MESSAGE-----
+          fp: FAC8E7C3A2BC7DEE58A01C5928E1AB8AF0CF07A5
+    version: 3.13.3
