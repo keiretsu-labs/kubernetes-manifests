@@ -47,7 +47,7 @@
 - { name: "TeslaMate",               color: "ededed", description: "TeslaMate app and dashboard upgrades" }
 - { name: "media",                   color: "ededed", description: "Media app image upgrades" }
 # Uncategorized
-- { name: "hold/upstream",           color: "ee0701" }
+- { name: "hold/upstream",           color: "ee0701", description: "Blocked on an upstream fix" }
 # GitHub defaults still in use on open issues
 - { name: "Bug",                     color: "d73a4a", description: "Something isn't working" }
 - { name: "Documentation",           color: "0075ca", description: "Improvements or additions to documentation" }
