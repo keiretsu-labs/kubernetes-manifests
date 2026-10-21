@@ -44,15 +44,18 @@ BackendTrafficPolicy on the *plain* lane, not an extAuth knob.
 
 Consequences, assessed:
 
-- **extAuth request path inherits chart defaults** (EG v1.9.x extAuth
-  timeout default; body forwarded per `headersToExtAuth`, no body buffering
-  override). All 14 policies target browser/UI routes whose
+- **extAuth request path inherits chart defaults** (no override; body
+  forwarded per `headersToExtAuth`, no body buffering override). All 14 policies target browser/UI routes whose
   payloads are cookies+headers only; none proxies large uploads *through*
-  the extAuth check differently from the backend path. A 10s default against
-  tinyauth (same-cluster Service, sub-ms RTT, 2 replicas behind PDB-less
-  singleton — see PDB census) has no observed stall surface; the 10-19
-  status pass found no extAuth-related 504s.
-- **No drift**: the 3 `failOpen:false` vs 11 unset is the only variance and
+  the extAuth check differently from the backend path. The default timeout
+  applies against `tinyauth` (same-cluster Service, sub-ms RTT) — both
+  tinyauth and tinyauth-killinit Deployments are `replicas: 1`
+  (deployment.yaml:6 each) with no PodDisruptionBudget in the namespace
+  (live `get pdb -n tinyauth` empty ×3; consistent with the 10-19 PDB
+  census: singletons deliberately PDB-less so drains stay unblocked). A
+  node drain therefore briefly removes the extAuth path entirely — an
+  accepted property of the singleton design, not a timeout problem.
+- **No drift**: the 5 explicit `failOpen: false` vs 9 unset is the only variance and
   it is *safer* on the explicit side (failOpen default is false in EG; the
   unset majority is default-identical, verified against chart v1.9.2
   defaults). One knob, one value class — nothing to reconcile.
@@ -88,11 +91,13 @@ state.
 - R1: tinyauth itself (ghcr.io/tinyauthapp/tinyauth:v5.2.0) exposes no
   request body/timeout env knobs in its deployment; a pathological tinyauth
   hang would surface as extAuth 500/503 with `failOpen:false` = hard gate on
-  3 routes (cliproxy/firefly/garage-webui/teslamate/woodpecker explicit).
-  Mitigation would be an extAuth `timeout` override — only worth adding if
-  observed; none observed in access logs (10-21 log census: no 504 pattern).
-- R2: 11 of 14 policies could state `failOpen: false` explicitly for
-  grep-ability; cosmetic.
+  the 5 explicit-false routes (cliproxy/firefly/garage-webui/teslamate/
+  woodpecker) — and effectively on all 14, since unset also means
+  fail-on-error. Mitigation would be an extAuth `timeout` override — only
+  worth adding if observed; no source-verified 504 pattern is on record here
+  (git-metadata audit; no log claim made).
+- R2: 9 of 14 policies (rows 4–12) could state `failOpen: false` explicitly
+  for grep-ability; cosmetic.
 
 ## Verdict
 
