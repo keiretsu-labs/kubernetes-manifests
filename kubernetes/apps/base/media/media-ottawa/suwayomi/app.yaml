@@ -41,7 +41,7 @@ spec:
             runAsUser: 0
       containers:
         - name: suwayomi
-          image: ghcr.io/suwayomi/suwayomi-server:v2.4.2434
+          image: ghcr.io/suwayomi/suwayomi-server:v2.4.2435
           ports:
             - name: http
               containerPort: 4567
