@@ -23,7 +23,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: firefly-mcp
-          image: ghcr.io/daften/fireflyiii-mcp:0.5.4@sha256:53271591fb8910185dbeb5ebff1fdef50aa7ec0752fdc2252f0986a2535e9bb2
+          image: ghcr.io/daften/fireflyiii-mcp:0.5.5@sha256:e0d422ff33d0aeb0ee95264548834531d25c5b4440509108377c97b584abedea
           imagePullPolicy: IfNotPresent
           command: [node, dist/index.js]
           args:
