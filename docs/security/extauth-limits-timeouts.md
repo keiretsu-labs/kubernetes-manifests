@@ -1,14 +1,25 @@
 # EnvoyGateway SecurityPolicy extAuth: body-size / timeout posture
 
-Census date: 2026-10-21. Git-metadata audit only (no live mutation). Scope:
-every `kind: SecurityPolicy` with an `extAuth` block, every
+Census date: 2026-10-21. **Git-metadata audit of the manifests in this
+repository, plus one live read-only Ottawa cross-check** (no mutation; the
+tinyauth namespace exists on Ottawa only). Scope: every repo-tracked
+`kind: SecurityPolicy` with an `extAuth` block, every
 `BackendTrafficPolicy`/`ClientTrafficPolicy` body/timeout knob, and the ADR
 0009 coupling context. Companion to the 10-19 timeout/retry census
 (status §2026-10-19; zot-public retry, plex/webtop streaming, bhaiya limits)
 — that pass covered *backend* timeouts; this one covers the *extAuth filter*
 plane and per-route body limits, and reconciles both against ADR 0009.
 
-## extAuth fleet census — 14 policies, one shape
+**Population note.** Live Ottawa serves 69 SecurityPolicies: 19 Flux-managed
+from this repo + 50 bhaiya-controller-generated (`app.kubernetes.io/
+managed-by: bhaiya` — per-workspace `secpol-*` families and v2-control
+policies; 49 of the 69 carry `extAuth`). This census covers **only the 14
+repo-tracked extAuth policies**; controller-generated ones are owned by
+bhaiya's own GitOps and are excluded here (their shape is
+workspace-scoped allowlists, same tinyauth backend — no body/timeout knobs
+observed on the live set either, but that is bhaiya-repo territory).
+
+## repo-tracked extAuth census — 14 policies, one shape
 
 | # | SecurityPolicy | target HTTPRoute(s) | failOpen | extAuth svc | body/timeout knobs in policy |
 |---|---|---|---|---|---|
@@ -50,9 +61,9 @@ Consequences, assessed:
   the extAuth check differently from the backend path. The default timeout
   applies against `tinyauth` (same-cluster Service, sub-ms RTT) — both
   tinyauth and tinyauth-killinit Deployments are `replicas: 1`
-  (deployment.yaml:6 each) with no PodDisruptionBudget in the namespace
-  (live `get pdb -n tinyauth` empty ×3; consistent with the 10-19 PDB
-  census: singletons deliberately PDB-less so drains stay unblocked). A
+  (deployment.yaml:6 each) and no PodDisruptionBudget exists for them in
+  any manifest (repo-wide grep; the 10-19 PDB census found singletons
+  deliberately PDB-less so drains stay unblocked). A
   node drain therefore briefly removes the extAuth path entirely — an
   accepted property of the singleton design, not a timeout problem.
 - **No drift**: the 5 explicit `failOpen: false` vs 9 unset is the only variance and
@@ -101,8 +112,8 @@ state.
 
 ## Verdict
 
-**NO-FINDING requiring change.** The extAuth plane is knob-free by coherence:
-uniform 14-policy shape, defaults correct for the browser-CRUD traffic
+**NO-FINDING requiring change.** The repo-tracked extAuth plane is knob-free
+by coherence: uniform 14-policy shape, defaults correct for the browser-CRUD traffic
 class, the single body limit fleet-wide (bhaiya 8Mi) is where uploads
 actually flow, and ADR 0009's extensionManager risk does not intersect the
 SecurityPolicy path. No PR; census recorded here.
