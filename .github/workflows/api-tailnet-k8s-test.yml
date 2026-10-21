@@ -35,6 +35,9 @@ jobs:
     env:
       # renovate: datasource=docker depName=kindest/node
       KIND_NODE_IMAGE: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+      # Same redaction as token.yml (tools/tests/test_token_redact.sh):
+      # every string value over 12 chars is cut to head…tail.
+      REDACT: 'def redact: if type == "string" and length > 12 then .[0:6] + "…" + .[-4:] else . end; walk(if type == "object" then with_entries(.value |= (if (. | type) == "object" or (. | type) == "array" then . else redact end)) else . end)'
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -67,7 +70,6 @@ jobs:
           echo "Creating tailnet: $TAILNET_NAME"
           
           RESPONSE=$(./tailscale/scripts/create-tailnet.sh "${{ steps.get_access_token.outputs.access_token }}" "$TAILNET_NAME")
-          echo "$RESPONSE"
 
           # Try new format first (dnsName), fallback to legacy format (tailnetName)
           FULL_TAILNET_NAME=$(echo "$RESPONSE" | jq -r '.dnsName // .tailnetName')
@@ -75,8 +77,12 @@ jobs:
           TAILNET_OAUTH_CLIENT_ID=$(echo "$RESPONSE" | jq -r '.oauthClient.id // .oauthClient.oauthClientID')
           # Try new format first (secret), fallback to legacy format (oauthClientSecret)
           TAILNET_OAUTH_CLIENT_SECRET=$(echo "$RESPONSE" | jq -r '.oauthClient.secret // .oauthClient.oauthClientSecret')
-          
+
+          # Mask before anything is printed: the response carries the new
+          # tailnet's OAuth client secret, and run logs on this public repo
+          # are world-readable. Print only a redacted copy.
           echo "::add-mask::$TAILNET_OAUTH_CLIENT_SECRET"
+          echo "$RESPONSE" | jq -c "$REDACT"
           echo "full_tailnet_name=$FULL_TAILNET_NAME" >> $GITHUB_OUTPUT
           echo "tailnet_oauth_client_id=$TAILNET_OAUTH_CLIENT_ID" >> $GITHUB_OUTPUT
           echo "tailnet_oauth_client_secret=$TAILNET_OAUTH_CLIENT_SECRET" >> $GITHUB_OUTPUT
@@ -102,12 +108,13 @@ jobs:
         run: |
           echo "Creating OAuth client for Kubernetes operator..."
           RESPONSE=$(./tailscale/scripts/create-oauth-client.sh "${{ steps.get_tailnet_token.outputs.tailnet_access_token }}" "${{ steps.create_tailnet.outputs.full_tailnet_name }}" "k8s-operator" "CI test K8s operator")
-          echo "$RESPONSE"
-          
+
           K8S_OAUTH_CLIENT_ID=$(echo "$RESPONSE" | jq -r '.id')
           K8S_OAUTH_CLIENT_SECRET=$(echo "$RESPONSE" | jq -r '.key')
-          
+
+          # Mask before printing; `.key` is the client secret.
           echo "::add-mask::$K8S_OAUTH_CLIENT_SECRET"
+          echo "$RESPONSE" | jq -c "$REDACT"
           echo "k8s_oauth_client_id=$K8S_OAUTH_CLIENT_ID" >> $GITHUB_OUTPUT
           echo "k8s_oauth_client_secret=$K8S_OAUTH_CLIENT_SECRET" >> $GITHUB_OUTPUT
 
