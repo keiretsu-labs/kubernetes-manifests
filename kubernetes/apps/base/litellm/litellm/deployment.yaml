@@ -28,7 +28,7 @@ spec:
       initContainers:
         - name: database-migrations
           # renovate: datasource=docker depName=ghcr.io/berriai/litellm-database
-          image: ghcr.io/berriai/litellm-database:v1.106.1@sha256:233f6fee10b475e30b5db671fd48bfa4626442f3f99a15ec197f2fbe724948c4
+          image: ghcr.io/berriai/litellm-database:v1.106.2@sha256:35f2cec3a14bb297e08bfab56c1fc377432bc4071aaf71978fdff043a5d91e79
           imagePullPolicy: IfNotPresent
           command:
             - python
@@ -57,7 +57,7 @@ spec:
       containers:
         - name: litellm
           # renovate: datasource=docker depName=ghcr.io/berriai/litellm
-          image: ghcr.io/berriai/litellm:v1.106.1@sha256:1acf80698f7eb47021b0bf5aed01ba9e80098cf74cdb3e588515bdd48a129fa6
+          image: ghcr.io/berriai/litellm:v1.106.2@sha256:7294b90f868c5c38c99b83021c7ba46f9b439e95f8e32964c925c7d2563a03f7
           imagePullPolicy: IfNotPresent
           args:
             - --config
