@@ -718,6 +718,49 @@ assert "stale generator -> restores the worktree" \
   test "$(git hash-object "$ROOT/aqua-checksums.json")" = "$gchecks_hash"
 rm -rf "$gstub"
 
+# ------------------------------------------------------- HelmRelease schema provenance shape
+# The gate (check-generated.sh) asserts the provenance hash and fluxVersion
+# agreement; this fixture asserts the lock's shape offline so a key rename is
+# caught by the self-tests too, not only by the render-gate path.
+section "HelmRelease schema provenance shape"
+provshape="$(mktemp)"
+if python3 - "$T/schemas/helm-controller-v1.6.5/provenance.json" >"$provshape" 2>&1 <<'PY'
+import json, pathlib, sys
+
+lock = json.loads(pathlib.Path(sys.argv[1]).read_text())
+required = {
+    "schemaVersion",
+    "fluxVersion",
+    "helmControllerVersion",
+    "validatorVersion",
+    "crdSource",
+    "crdSourceSha256",
+    "generatedSchemaSha256",
+}
+missing = required - lock.keys()
+if missing:
+    raise SystemExit(f"provenance keys missing: {sorted(missing)}")
+for key in ("fluxVersion", "helmControllerVersion", "validatorVersion"):
+    if not isinstance(lock[key], str) or not lock[key]:
+        raise SystemExit(f"{key} must be a non-empty string")
+for key in ("crdSourceSha256", "generatedSchemaSha256"):
+    value = lock[key]
+    if not (isinstance(value, str) and len(value) == 64):
+        raise SystemExit(f"{key} must be a 64-char sha256")
+    int(value, 16)
+if not lock["crdSource"].startswith("https://github.com/fluxcd/"):
+    raise SystemExit(f"unexpected crdSource: {lock['crdSource']}")
+print("ok")
+PY
+then
+  ok "provenance lock has the full gate-consumed key set"
+  assert "provenance shape check prints ok" grep -q '^ok$' <"$provshape"
+else
+  bad "provenance lock has the full gate-consumed key set"
+  sed 's/^/    /' "$provshape"
+fi
+rm -f "$provshape"
+
 # ---------------------------------------------------------------- check-diagram.sh
 section "check-diagram.sh"
 dtmp="$(mktemp -d)"
