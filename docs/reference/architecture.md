@@ -84,7 +84,7 @@ The local gate must pass before commit:
 | `tools/tests/run.sh` | offline self-tests for `tools/` |
 | `make diff` | rendered diff vs `origin/main` |
 
-GitHub Actions workflows — sixteen on disk:
+GitHub Actions workflows — nineteen on disk:
 
 - `flate.yaml` — render matrix plus a sticky rendered-diff comment per cluster
 - `validate.yaml` — YAML parse gate on Renovate PRs
@@ -94,7 +94,7 @@ GitHub Actions workflows — sixteen on disk:
 - `tailscale-full-config-status.yml` — reports the tailnet's full-config state
 - `api-tailnet-k8s-test.yml` — ephemeral-tailnet operator E2E
 - `delete-inactive-tailnet-nodes.yml` — tag-filtered device reaping
-- `token.yml`, `release.yaml`, `label-sync.yaml`, `devcontainer.yaml`
+- `token.yml`, `label-sync.yaml`
 - `garage-webadmin-build.yaml`, `garage-webadmin-sidecar-build.yaml`
 - `aqua-checksums.yaml`, `test-arc-runner.yaml`
 
