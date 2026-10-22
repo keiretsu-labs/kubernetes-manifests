@@ -30,10 +30,21 @@
       "customType": "regex",
       "description": "Process known CloudNativePG imageName fields as Docker dependencies",
       "managerFilePatterns": [
-        "/^kubernetes/apps/base/(?:immich/.+/app|teslamate/teslamate/app|media/media-ottawa/bookorbit)/(?:pg|postgres)\\.yaml$/"
+        "/^kubernetes/apps/base/(?:immich/.+/app|teslamate/teslamate/app|media/media-ottawa/bookorbit|media/media-(?:ottawa|robbinsdale)/tracearr)/(?:pg|postgres)\\.yaml$/"
       ],
       "matchStrings": [
         "imageName:\\s*[\"']?(?<depName>(?:[a-z0-9.-]+(?::[0-9]+)?/)+[a-z0-9._/-]+):(?<currentValue>[^\"'\\s]+)[\"']?"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Process CloudNativePG image-volume extension references (spec.postgresql.extensions[].image.reference) as Docker dependencies, digest included",
+      "managerFilePatterns": [
+        "/^kubernetes/apps/base/.+/(?:pg|postgres)\\.yaml$/"
+      ],
+      "matchStrings": [
+        "reference:\\s*[\"']?(?<depName>(?:[a-z0-9.-]+(?::[0-9]+)?/)+[a-z0-9._/-]+):(?<currentValue>[^@\"'\\s]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?[\"']?"
       ],
       "datasourceTemplate": "docker"
     },

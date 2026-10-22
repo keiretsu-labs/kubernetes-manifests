@@ -28,7 +28,7 @@ spec:
     extensions:
       - name: timescaledb
         image:
-          reference: ghcr.io/adampetrovic/timescaledb-cnpg:2.31.0-18-trixie
+          reference: ghcr.io/adampetrovic/timescaledb-cnpg:2.31.0-18-trixie@sha256:70cc9bbc66e5d94b83fa1dd1bc1f75cb619fda8bf08f63e76d1617155314ce57
     parameters:
       timescaledb.license: "timescale"
       timescaledb.telemetry_level: "off"

@@ -193,9 +193,22 @@ jobs:
       - name: Run offline tool self-tests
         run: tools/tests/run.sh
 
+  cnpg-extensions:
+    name: CNPG extension load test
+    needs: changes
+    if: needs.changes.outputs.flate == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: CREATE EXTENSION for every image-volume extension on its Cluster's imageName
+        run: tools/check-cnpg-extensions.sh
+
   flate-gate:
     name: flate-gate
-    needs: [changes, mimir-rule-tests, test, tool-self-tests]
+    needs: [changes, mimir-rule-tests, test, tool-self-tests, cnpg-extensions]
     if: always()
     runs-on: ubuntu-latest
     permissions: {}
