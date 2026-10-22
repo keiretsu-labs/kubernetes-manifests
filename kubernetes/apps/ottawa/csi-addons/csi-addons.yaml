@@ -20,3 +20,8 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 5m
+  # Upstream deploy/controller ships the controller as :latest. Pin it to the
+  # digest this cluster already runs so the image only changes via a reviewed PR.
+  images:
+    - name: quay.io/csiaddons/k8s-controller
+      digest: sha256:dac4158cb49b5796b942a716b368a0bce4f571da386ac395bd2c111f4f9329de
