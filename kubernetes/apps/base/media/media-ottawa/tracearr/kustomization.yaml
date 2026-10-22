@@ -7,6 +7,7 @@ resources:
 - pvc.yaml
 - httproute.yaml
 - postgres.yaml
+- database.yaml
 - s3-backup.yaml
 - dragonfly.yaml
 - secret.yaml

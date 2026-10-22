@@ -1,0 +1,14 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: tracearr
+spec:
+  cluster:
+    name: tracearr-postgres
+  name: tracearr
+  owner: tracearr
+  databaseReclaimPolicy: retain
+  extensions:
+    - name: timescaledb
+      ensure: present
