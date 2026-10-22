@@ -336,6 +336,14 @@
       "automerge": false
     },
     {
+      "description": "tracearr-postgres: the TimescaleDB image-volume extension is built against the newest PostgreSQL 18 minor, so the CNPG operand image and the extension move in one PR. Minor/patch/digest automerge; the CNPG extension load test in flate-gate (tools/check-cnpg-extensions.sh) blocks any pair that cannot CREATE EXTENSION. Must stay after the critical review block.",
+      "matchFileNames": ["kubernetes/apps/base/media/media-*/tracearr/postgres.yaml"],
+      "matchPackageNames": ["ghcr.io/cloudnative-pg/postgresql", "ghcr.io/adampetrovic/timescaledb-cnpg"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "tracearr-postgres",
+      "automerge": true
+    },
+    {
       "description": "Auto merge Kopiur chart upgrades. The published chart carries the controller, webhook, and mover image digests for the chart release; inherit them so Renovate opens one effective update.",
       "matchManagers": ["flux"],
       "matchDepNames": ["kopiur"],
