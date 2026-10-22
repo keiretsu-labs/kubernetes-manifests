@@ -49,7 +49,7 @@ jobs:
             echo "dispatch ref '$EXPECT_REF' is not a renovate/* branch"
             exit 1
           fi
-          info=$(gh pr view "$PR_NUMBER" --json headRefName,headRefOid,author)
+          info=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefName,headRefOid,author)
           head_ref=$(printf '%s' "$info" | jq -r .headRefName)
           head_sha=$(printf '%s' "$info" | jq -r .headRefOid)
           author=$(printf '%s' "$info" | jq -r .author.login)
