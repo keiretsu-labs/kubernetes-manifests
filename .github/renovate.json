@@ -101,6 +101,12 @@
       "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
+      "description": "The Kromgo config schema (github-tags) carries a release timestamp but the ghcr image does not, so the 3-day age hold above let the image run ahead of the schema and version-sync failed the group (#3808). The schema URL is editor metadata, not a workload: let it move with the image.",
+      "matchDatasources": ["github-tags"],
+      "matchPackageNames": ["home-operations/kromgo"],
+      "minimumReleaseAge": "0 days"
+    },
+    {
       "description": "Group ARC controller and runner scale set together",
       "matchPackageNames": ["gha-runner-scale-set", "gha-runner-scale-set-controller"],
       "matchFileNames": [
