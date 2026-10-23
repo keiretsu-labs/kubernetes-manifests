@@ -16,7 +16,7 @@ spec:
       containers:
       - name: proxyt
         # renovate: datasource=docker depName=ghcr.io/jaxxstorm/proxyt
-        image: ghcr.io/jaxxstorm/proxyt:v0.0.7
+        image: ghcr.io/jaxxstorm/proxyt:v0.1.2
         # digest sha256:c92a39918672f8e9fed36ea87e228f2f4c0228789d1264546dfccf1735ba9d73
         ports:
         - containerPort: 80
