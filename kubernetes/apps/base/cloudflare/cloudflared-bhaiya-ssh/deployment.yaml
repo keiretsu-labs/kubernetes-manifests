@@ -33,7 +33,7 @@ spec:
               app.kubernetes.io/component: bhaiya-ssh-tunnel
       containers:
         - name: cloudflared
-          image: cloudflare/cloudflared:2026.10.1
+          image: cloudflare/cloudflared:2026.10.2
           args:
             - tunnel
             - --no-autoupdate
