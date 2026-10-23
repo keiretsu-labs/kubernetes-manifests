@@ -20,7 +20,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
       containers:
       - name: tracearr
-        image: ghcr.io/connorgallopo/tracearr:3.0.0
+        image: ghcr.io/connorgallopo/tracearr:3.1.1
         ports:
         - name: http
           containerPort: 3000
