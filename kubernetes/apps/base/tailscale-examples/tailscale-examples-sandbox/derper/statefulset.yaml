@@ -19,7 +19,7 @@ spec:
       containers:
       - name: derper
         # renovate: datasource=docker depName=ghcr.io/erisa/ts-derper
-        image: ghcr.io/erisa/ts-derper:v1.102.2
+        image: ghcr.io/erisa/ts-derper:v1.104.2
         # digest sha256:52c326e93b4634f2bc2a9879a748f2742b049d66240c38de10209ecd1356056f
         env:
         - name: TS_DERP_HOSTNAME
