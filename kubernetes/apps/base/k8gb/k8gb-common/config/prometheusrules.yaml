@@ -23,15 +23,17 @@ spec:
           labels:
             severity: warning
 
+        # NotFound is expected on geo-standby clusters (single-home GSLBs show
+        # NotFound there by design); only the primary serving cluster paging
+        # keeps this actionable instead of 8x standing noise.
         - alert: K8gbGslbNotFound
           expr: |
-            k8gb_gslb_service_status_num{status="NotFound"} > 0
+            k8gb_gslb_service_status_num{status="NotFound",cluster=~"ottawa|talos-ottawa"} > 0
           for: 5m
           annotations:
             summary: >-
               GSLB {{ $labels.exported_namespace }}/{{ $labels.name }} has {{ $value }}
-              host(s) in NotFound status (single-home on another cluster is
-              expected for geo-standby; page only if ottawa also flips).
+              host(s) in NotFound status on the primary cluster.
           labels:
             severity: critical
 
