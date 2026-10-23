@@ -36,6 +36,10 @@ concurrency:
 jobs:
   diagram:
     runs-on: ubuntu-latest
+    # Required-ish docs gate; a hung apt would silently burn the 360m default
+    # (observed: #3901, 2026-10-22, apt-get emitted nothing for 6h).
+    # Measured: 100 runs, ~4m compute p95 -- 15m is ~4x ceiling.
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
