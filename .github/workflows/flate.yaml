@@ -24,6 +24,7 @@ concurrency:
 jobs:
   changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     outputs:
@@ -211,6 +212,7 @@ jobs:
     needs: [changes, mimir-rule-tests, test, tool-self-tests, cnpg-extensions]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions: {}
     steps:
       - name: Fail unless every gated job passed or was skipped
