@@ -32,6 +32,15 @@ spec:
       # image:
       #   repo: ghcr.io/rajsinghtech/tailscale/k8s-operator
       #   tag: "80"
+      # The kube-apiserver ProxyGroup (<location>-k8s) uses the operator's
+      # K8S_PROXY_IMAGE, which defaults to tailscale/k8s-proxy:latest with
+      # imagePullPolicy Always. Pin it to the operator's release (same bits
+      # the pods already run) so a restart can't pull a different build.
+      # Bump together with the chart version above.
+      extraEnv:
+        - name: K8S_PROXY_IMAGE
+          # renovate: datasource=docker depName=tailscale/k8s-proxy
+          value: tailscale/k8s-proxy:v1.104.1@sha256:09d8cc745913a5137a1928ffd83a8076c92ddd562e221085b68131b6a2a1619c
       hostname: "${LOCATION}-k8s-operator"
       logging: "info" # info, debug, dev
       priorityClassName: "infra-critical"
