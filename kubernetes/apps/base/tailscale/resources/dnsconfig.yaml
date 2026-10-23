@@ -8,7 +8,11 @@ spec:
     replicas: 2
     image:
       # repo: ghcr.io/rajsinghtech/k8s-nameserver
-      tag: unstable
+      # Was the floating `unstable` dev tag, which left the clusters on
+      # different (and months-old) dev builds. Track the operator's stable
+      # release instead (the upstream default is now `stable`), digest-pinned.
+      # renovate: datasource=docker depName=tailscale/k8s-nameserver
+      tag: v1.104.1@sha256:80548900cd9858a9c9637faa28208cb2f117c5fc0fd7d613a53ede86740bae69
 ---
 apiVersion: v1
 kind: Service
