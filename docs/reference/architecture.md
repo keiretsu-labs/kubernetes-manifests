@@ -1476,7 +1476,7 @@ St. Petersburg runs `home-assistant` as its own namespace instead.
 **`LeaderWorkerSet vllm`** — replicas 1, size 2. The leader is pinned to
 `spark-0` and the worker to `spark-1`. It serves the
 `Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw` lineage (TensorFold Ablit quant) under
-the TensorFold runtime with TP=2, a 1,048,576-token per-request limit, and a
+the TensorFold runtime with TP=2, a 524,288-token per-request limit, and a
 1 GiB FP8 KV cache plus 8 GiB memory reserve
 (`TF_GLM_CACHE_GIB`/`TENSORFOLD_MEMORY_RESERVE_GIB`, recipe v1.7); DFlash2 is
 retained on disk but disabled in the shared-cluster profile
