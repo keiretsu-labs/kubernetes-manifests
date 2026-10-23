@@ -22,7 +22,10 @@ spec:
   values:
     instance:
       distribution:
-        version: "2.x"
+        # Patch releases roll out on their own; a new Flux minor (2.10) is a
+        # deliberate one-line bump here, like other critical-family upgrades,
+        # instead of landing on all three clusters the moment it is published.
+        version: "2.9.x"
         registry: ghcr.io/fluxcd
       cluster:
         networkPolicy: false
