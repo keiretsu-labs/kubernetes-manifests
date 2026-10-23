@@ -408,7 +408,7 @@ spec:
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 0 --master 192.168.74.1 --master-port 29551 \
               --name GLM-5.3-Flash-EXL3 --host 0.0.0.0 --port 8888 \
-              --drafter none --context 1048576 --parallel 1 $${THINKING_FLAG}
+              --drafter none --context 524288 --parallel 1 $${THINKING_FLAG}
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }
@@ -610,7 +610,7 @@ spec:
             fi
             exec tensorfold serve /models/qwen38 \
               --tp 2 --rank 1 --master 192.168.74.1 --master-port 29551 \
-              --drafter none --context 1048576 --parallel 1 $${THINKING_FLAG}
+              --drafter none --context 524288 --parallel 1 $${THINKING_FLAG}
           env:
           - { name: HF_HUB_OFFLINE, value: "1" }
           - { name: TENSORFOLD_NO_UPDATE_CHECK, value: "1" }

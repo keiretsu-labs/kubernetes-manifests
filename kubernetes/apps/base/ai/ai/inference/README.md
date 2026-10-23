@@ -27,7 +27,7 @@ terms. Serving still runs `HF_HUB_OFFLINE=1`. DFlash2 is not downloaded
 | Setting | Initial value |
 | --- | --- |
 | `DRAFTER` | `mtp` (`--drafter none`); one concurrent stream |
-| `CONTEXT` | `1048576` (`--context 1048576`) |
+| `CONTEXT` | `524288` (`--context 524288`) |
 | Vision | disabled; language-only (`LANGUAGE_MODEL_ONLY=1`) |
 | KV cache | FP8; `TF_GLM_CACHE_GIB=1` |
 | Memory reserve | `TENSORFOLD_MEMORY_RESERVE_GIB=4.5` |
@@ -206,7 +206,7 @@ Service directly:
 | Base URL | `http://cliproxy.cliproxy.svc.cluster.local:8317/v1` |
 | Model | `vllm/GLM-5.3-Flash-EXL3` |
 | `wire_api` | `responses` (Codex custom providers use the Responses API) |
-| Context window | 1,048,576 tokens |
+| Context window | 524,288 tokens |
 
 Example Codex provider block:
 
