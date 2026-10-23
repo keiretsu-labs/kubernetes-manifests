@@ -164,7 +164,7 @@ if namespace["metadata_alias_sources"].get(glm_alias) != glm_source:
     raise SystemExit(f"{glm_alias} must resolve metadata from {glm_source}")
 glm_override = namespace["metadata_override"](glm_alias)
 if glm_override != {
-    "context_window": 1048576,
+    "context_window": 524288,
     "max_tokens": 8192,
     "name": "GLM-5.3 Flash EXL3",
     "reasoning": True,
@@ -197,7 +197,7 @@ served = namespace["resolved_metadata"](
     [],
     {},
 )
-if served.get("context_window") != 1048576:
+if served.get("context_window") != 524288:
     raise SystemExit(f"published window must match TensorFold's configured context: {served!r}")
 if served.get("max_tokens") != 8192:
     raise SystemExit(f"curated output cap must clamp the catalog value: {served!r}")
@@ -235,7 +235,7 @@ if narrow.get("max_tokens") != 4096:
 
 # Pin the clamp itself, independent of whatever the override table holds today.
 probe = {"context_window": 16384, "max_tokens": 4096}
-namespace["apply_override"](probe, {"context_window": 1048576, "max_tokens": 8192, "name": "x"})
+namespace["apply_override"](probe, {"context_window": 524288, "max_tokens": 8192, "name": "x"})
 if probe != {"context_window": 16384, "max_tokens": 4096, "name": "x"}:
     raise SystemExit(f"apply_override must clamp limits down, never up: {probe!r}")
 
