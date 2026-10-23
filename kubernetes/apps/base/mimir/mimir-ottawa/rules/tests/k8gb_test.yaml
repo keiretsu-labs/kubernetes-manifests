@@ -1,54 +1,81 @@
+# Fixtures for the two k8gb availability alerts after the v1.0.1 metric
+# rename: the old k8gb_gslb_ingress_hosts_per_status is gone from the tsdb, so
+# both exprs must evaluate against k8gb_gslb_service_status_num. K8gbGslbNotFound
+# is scoped to the primary cluster because geo-standby clusters show NotFound on
+# single-home GSLBs by design (8x standing noise if unscoped).
 rule_files:
   - ../k8gb.yaml
 
 evaluation_interval: 1m
 
 tests:
-  # k8gb retains metric series after a GSLB is removed. A retired object with
-  # no healthy records and only a NotFound service status must not page.
+  # Healthy primary: no alerts anywhere.
   - interval: 1m
     input_series:
-      - series: 'k8gb_gslb_healthy_records{cluster="talos-robbinsdale",name="velero",namespace="keiretsu-top"}'
-        values: "0+0x10"
-      - series: 'k8gb_gslb_service_status_num{cluster="talos-robbinsdale",name="velero",namespace="keiretsu-top",status="Healthy"}'
-        values: "0+0x10"
-      - series: 'k8gb_gslb_service_status_num{cluster="talos-robbinsdale",name="velero",namespace="keiretsu-top",status="Unhealthy"}'
-        values: "0+0x10"
-      - series: 'k8gb_gslb_service_status_num{cluster="talos-robbinsdale",name="velero",namespace="keiretsu-top",status="NotFound"}'
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-ottawa",namespace="k8gb",exported_namespace="media",name="plex",status="Healthy"}'
+        values: "1+0x10"
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-robbinsdale",namespace="k8gb",exported_namespace="media",name="plex",status="NotFound"}'
         values: "1+0x10"
     alert_rule_test:
-      - eval_time: 5m
-        alertname: K8gbNoHealthyRecords
+      - eval_time: 10m
+        alertname: K8gbGslbUnhealthy
         exp_alerts: []
       - eval_time: 10m
-        alertname: K8gbNoHealthyRecords
+        alertname: K8gbGslbNotFound
         exp_alerts: []
 
-  # A live GSLB with an unhealthy backend remains actionable even though it
-  # has zero healthy DNS records.
+  # Primary cluster degrades: Unhealthy fires with the exported_namespace/name
+  # identity from the renamed metric.
   - interval: 1m
     input_series:
-      - series: 'k8gb_gslb_healthy_records{cluster="talos-ottawa",name="velero",namespace="keiretsu-top"}'
-        values: "0+0x10"
-      - series: 'k8gb_gslb_service_status_num{cluster="talos-ottawa",name="velero",namespace="keiretsu-top",status="Healthy"}'
-        values: "0+0x10"
-      - series: 'k8gb_gslb_service_status_num{cluster="talos-ottawa",name="velero",namespace="keiretsu-top",status="Unhealthy"}'
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-ottawa",namespace="k8gb",exported_namespace="media",name="plex",status="Unhealthy"}'
         values: "1+0x10"
-      - series: 'k8gb_gslb_service_status_num{cluster="talos-ottawa",name="velero",namespace="keiretsu-top",status="NotFound"}'
-        values: "0+0x10"
     alert_rule_test:
       - eval_time: 4m
-        alertname: K8gbNoHealthyRecords
+        alertname: K8gbGslbUnhealthy
         exp_alerts: []
-      - eval_time: 5m
-        alertname: K8gbNoHealthyRecords
+      - eval_time: 6m
+        alertname: K8gbGslbUnhealthy
         exp_alerts:
           - exp_labels:
               cluster: talos-ottawa
-              name: velero
-              namespace: keiretsu-top
-              severity: critical
+              exported_namespace: media
+              name: plex
+              namespace: k8gb
+              severity: warning
+              status: Unhealthy
             exp_annotations:
-              summary: >-
-                GSLB velero in keiretsu-top has zero healthy DNS records while
-                k8gb still reports a serving or unhealthy backend.
+              summary: GSLB media/plex has 1 unhealthy host(s).
+
+  # Geo-standby NotFound must NOT page (regression guard for the 8x false
+  # positives the unscoped expr produced on robbinsdale/stpetersburg).
+  - interval: 1m
+    input_series:
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-robbinsdale",namespace="k8gb",exported_namespace="keiretsu-top",name="forgejo",status="NotFound"}'
+        values: "1+0x10"
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: K8gbGslbNotFound
+        exp_alerts: []
+
+  # Primary-cluster NotFound (single-home app lost on ottawa) does page.
+  - interval: 1m
+    input_series:
+      - series: 'k8gb_gslb_service_status_num{cluster="talos-ottawa",namespace="k8gb",exported_namespace="keiretsu-top",name="forgejo",status="NotFound"}'
+        values: "1+0x10"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: K8gbGslbNotFound
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: K8gbGslbNotFound
+        exp_alerts:
+          - exp_labels:
+              cluster: talos-ottawa
+              exported_namespace: keiretsu-top
+              name: forgejo
+              namespace: k8gb
+              severity: critical
+              status: NotFound
+            exp_annotations:
+              summary: GSLB keiretsu-top/forgejo has 1 host(s) in NotFound status on the primary cluster.

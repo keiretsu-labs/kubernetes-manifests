@@ -3,25 +3,29 @@ namespace: k8gb
 groups:
   - name: k8gb.rules
     rules:
+      # k8gb v1.0.1 renamed ingress_hosts_per_status; service_status_num is
+      # the live metric (labels: status, exported_namespace, name, cluster).
       - alert: K8gbGslbUnhealthy
         expr: |
-          k8gb_gslb_ingress_hosts_per_status{status="Unhealthy"} > 0
+          k8gb_gslb_service_status_num{status="Unhealthy"} > 0
         for: 5m
         annotations:
           summary: >-
-            GSLB {{ $labels.name }} in {{ $labels.namespace }} has {{ $value }}
+            GSLB {{ $labels.exported_namespace }}/{{ $labels.name }} has {{ $value }}
             unhealthy host(s).
         labels:
           severity: warning
 
+      # NotFound is expected on geo-standby clusters (single-home GSLBs show
+      # NotFound there by design); only the primary serving cluster pages.
       - alert: K8gbGslbNotFound
         expr: |
-          k8gb_gslb_ingress_hosts_per_status{status="NotFound"} > 0
+          k8gb_gslb_service_status_num{status="NotFound",cluster=~"ottawa|talos-ottawa"} > 0
         for: 5m
         annotations:
           summary: >-
-            GSLB {{ $labels.name }} in {{ $labels.namespace }} has {{ $value }}
-            host(s) in NotFound status.
+            GSLB {{ $labels.exported_namespace }}/{{ $labels.name }} has {{ $value }}
+            host(s) in NotFound status on the primary cluster.
         labels:
           severity: critical
 
