@@ -53,7 +53,7 @@ spec:
       containers:
       - name: coredns
         # renovate: datasource=docker depName=coredns/coredns
-        image: coredns/coredns:1.14.7
+        image: coredns/coredns:1.15.0
         # digest sha256:82b57287b29beb757c740dbbe68f2d4723da94715b563fffad5c13438b71b14a
         imagePullPolicy: IfNotPresent
         args: ["-conf", "/etc/coredns/Corefile"]
