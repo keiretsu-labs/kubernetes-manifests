@@ -45,7 +45,7 @@ spec:
       image: nginx
     - name: ts-sidecar
       imagePullPolicy: IfNotPresent
-      image: "ghcr.io/tailscale/tailscale:v1.104.1"
+      image: "ghcr.io/tailscale/tailscale:v1.104.2"
       volumeMounts:
         - name: authkey
           mountPath: "/var/run/tailscale"
