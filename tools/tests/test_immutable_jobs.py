@@ -58,3 +58,79 @@ assert guard.violations(before, selector) == [(('mimir', 'mimir-rules'), ['selec
 unrelated = deepcopy(after)
 unrelated[0]['kind'] = 'CronJob'
 assert not guard.violations(before, unrelated)
+# --- CLI exit-path coverage: exercise main()'s 0/1 branches offline. -------
+# main() normally needs a git worktree and flate renders. Stub only the
+# boundary functions (production code untouched) and feed synthetic Jobs.
+
+def _main_with_jobs(jobs_a, jobs_b):
+    from types import SimpleNamespace as _NS
+    import unittest.mock as mock
+
+    def fake_run(args, **_):
+        return _NS(returncode=0, stdout="abc123\n", stderr="")
+
+    renders = iter([jobs_b, jobs_a])  # current, previous — per render() call pair
+
+    def render(tree, other, cluster, env):
+        return next(renders)
+
+    with mock.patch("sys.argv", ["check-immutable-jobs.py", "talos-ottawa"]), \
+         mock.patch.object(guard, "run", fake_run), \
+         mock.patch.object(guard, "changed_files",
+                           return_value=[Path("kubernetes/apps/base/mimir/x.yaml")]), \
+         mock.patch.object(guard, "raw_job_roots", return_value=[]), \
+         mock.patch.object(guard, "render", side_effect=render):
+        return guard.main()
+
+
+def _job(spec_overrides=None, annotations=None):
+    job = deepcopy(before[0])
+    job["kind"] = "Job"
+    if spec_overrides:
+        job["spec"].update(spec_overrides)
+    if annotations:
+        job["metadata"]["annotations"] = annotations
+    return [job]
+
+
+# Mutable-only delta -> no findings -> exit 0
+assert _main_with_jobs(_job({"backoffLimit": 3}), _job({"backoffLimit": 9})) == 0
+
+# Immutable-field patch (template) with no remedy -> findings -> exit 1
+old = _job()
+new = deepcopy(old)
+new[0]["spec"]["template"]["spec"]["restartPolicy"] = "Never"
+assert _main_with_jobs(old, new) == 1
+
+# Same immutable patch but ttlSecondsAfterFinished set -> remedy -> exit 0
+remedied = deepcopy(new)
+remedied[0]["spec"]["ttlSecondsAfterFinished"] = 0
+assert _main_with_jobs(new, remedied) == 0
+
+# Same immutable patch but force annotation -> remedy -> exit 0
+forced = deepcopy(new)
+forced[0]["metadata"]["annotations"] = {guard.FORCE: "enabled"}
+assert _main_with_jobs(new, forced) == 0
+
+# Render failure inside main -> RuntimeError -> CLI contract exit 2 (main raises)
+def boom(*_a, **_k):
+    raise RuntimeError("synthetic render failure")
+
+from types import SimpleNamespace as _NS
+import unittest.mock as mock
+
+def fake_run(args, **_):
+    return _NS(returncode=0, stdout="abc123\n", stderr="")
+
+with mock.patch("sys.argv", ["check-immutable-jobs.py", "talos-ottawa"]), \
+     mock.patch.object(guard, "run", fake_run), \
+     mock.patch.object(guard, "changed_files",
+                       return_value=[Path("kubernetes/apps/base/mimir/x.yaml")]), \
+     mock.patch.object(guard, "raw_job_roots", return_value=[]), \
+     mock.patch.object(guard, "render", side_effect=boom):
+    try:
+        guard.main()
+        raised = False
+    except RuntimeError:
+        raised = True
+assert raised
