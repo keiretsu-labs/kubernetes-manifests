@@ -138,18 +138,6 @@ spec:
                 round=$$((round + 1))
               done
 
-              # A missing forwarded port is not a bad draw, so rotating cannot fix it.
-              # gluetun's nat-pmp request is refused outright when the Proton wireguard
-              # key was generated without NAT-PMP (Port Forwarding) enabled, and every
-              # server refuses it identically. Fail so the alert fires, but leave the
-              # tunnel alone rather than restarting it every 5 minutes forever.
-              if [ "$${prev_noport}" = "1" ]; then
-                echo "$${reason} - gluetun's nat-pmp request is refused, which no restart or"
-                echo "server change can fix; regenerate the proton wireguard key with"
-                echo "NAT-PMP (Port Forwarding) enabled"
-                exit 1
-              fi
-
               echo "$${reason} - rotating vpn server"
               curl -sS --max-time 30 -X PUT -H 'Content-Type: application/json' \
                 -d '{"status":"stopped"}' "$${API}/v1/vpn/status"

@@ -1,0 +1,96 @@
+rule_files:
+  - ../media.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # The newest probe Job failed, so the probe rotated the VPN.
+  - interval: 1m
+    input_series:
+      - series: 'kube_job_status_start_time{namespace="media",job="kube-state-metrics",job_name="qbittorrent-portforward-probe-1"}'
+        values: "100+0x30"
+      - series: 'kube_job_status_failed{namespace="media",job="kube-state-metrics",job_name="qbittorrent-portforward-probe-1"}'
+        values: "0+0x30"
+      - series: 'kube_job_status_start_time{namespace="media",job="kube-state-metrics",job_name="qbittorrent-portforward-probe-2"}'
+        values: "400+0x30"
+      - series: 'kube_job_status_failed{namespace="media",job="kube-state-metrics",job_name="qbittorrent-portforward-probe-2",reason="BackoffLimitExceeded"}'
+        values: "1+0x30"
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: QbittorrentVpnRotated
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: QbittorrentVpnRotated
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              cronjob: qbittorrent-portforward-probe
+            exp_annotations:
+              summary: qbittorrent-portforward-probe reports port forwarding is not working
+              description: >-
+                The most recent port-forward probe run failed and rotated the VPN.
+                Either it found the forwarded port unreachable on two rounds a minute
+                apart, or gluetun had no forwarded port at all after a refused NAT-PMP
+                request, which gluetun does not retry. The Job logs distinguish
+                the two. Firing on every run with no forwarded port means the Proton
+                wireguard key lacks NAT-PMP (Port Forwarding). Only clusters that
+                actually port forward run this to completion; Robbinsdale deliberately runs
+                without port forwarding and short-circuits instead.
+
+  # A later successful Job clears the alert while the failed Job is still retained.
+  - interval: 1m
+    input_series:
+      - series: 'kube_job_status_start_time{namespace="media",job="kube-state-metrics",job_name="qbittorrent-pvt-portforward-probe-1"}'
+        values: "400+0x30"
+      - series: 'kube_job_status_failed{namespace="media",job="kube-state-metrics",job_name="qbittorrent-pvt-portforward-probe-1",reason="BackoffLimitExceeded"}'
+        values: "1+0x30"
+      - series: 'kube_job_status_start_time{namespace="media",job="kube-state-metrics",job_name="qbittorrent-pvt-portforward-probe-2"}'
+        values: "_x10 700+0x20"
+      - series: 'kube_job_status_failed{namespace="media",job="kube-state-metrics",job_name="qbittorrent-pvt-portforward-probe-2"}'
+        values: "_x10 0+0x20"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: QbittorrentVpnRotated
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              cronjob: qbittorrent-pvt-portforward-probe
+            exp_annotations:
+              summary: qbittorrent-pvt-portforward-probe reports port forwarding is not working
+              description: >-
+                The most recent port-forward probe run failed and rotated the VPN.
+                Either it found the forwarded port unreachable on two rounds a minute
+                apart, or gluetun had no forwarded port at all after a refused NAT-PMP
+                request, which gluetun does not retry. The Job logs distinguish
+                the two. Firing on every run with no forwarded port means the Proton
+                wireguard key lacks NAT-PMP (Port Forwarding). Only clusters that
+                actually port forward run this to completion; Robbinsdale deliberately runs
+                without port forwarding and short-circuits instead.
+      - eval_time: 20m
+        alertname: QbittorrentVpnRotated
+        exp_alerts: []
+
+  # No successful run in over 30 minutes.
+  - interval: 1m
+    input_series:
+      - series: 'kube_cronjob_status_last_successful_time{namespace="media",cronjob="qbittorrent-portforward-probe"}'
+        values: "0+0x60"
+      - series: 'kube_cronjob_status_last_successful_time{namespace="media",cronjob="qbittorrent-pvt-portforward-probe"}'
+        values: "0+60x60"
+    alert_rule_test:
+      - eval_time: 35m
+        alertname: QbittorrentPortForwardProbeStale
+        exp_alerts: []
+      - eval_time: 45m
+        alertname: QbittorrentPortForwardProbeStale
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              namespace: media
+              cronjob: qbittorrent-portforward-probe
+            exp_annotations:
+              summary: qbittorrent-portforward-probe has not succeeded in 30 minutes
+              description: >-
+                The port-forward probe last completed successfully more than 30 minutes
+                ago. Either it is failing to run at all, or it has been rotating
+                continuously. Port-forward reachability is unmonitored until this clears.

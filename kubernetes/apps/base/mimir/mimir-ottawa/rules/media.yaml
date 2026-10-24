@@ -47,12 +47,12 @@ groups:
           summary: >-
             {{ $labels.cronjob }} reports port forwarding is not working
           description: >-
-            The most recent port-forward probe run failed. Either it found the
-            forwarded port unreachable on two rounds a minute apart and rotated
-            the VPN without converging on a usable exit address, or gluetun has no
-            forwarded port at all — its NAT-PMP request is refused when the Proton
-            wireguard key was generated without NAT-PMP (Port Forwarding), which no
-            rotation can fix. The Job logs distinguish the two. Only clusters that
+            The most recent port-forward probe run failed and rotated the VPN.
+            Either it found the forwarded port unreachable on two rounds a minute
+            apart, or gluetun had no forwarded port at all after a refused NAT-PMP
+            request, which gluetun does not retry. The Job logs distinguish
+            the two. Firing on every run with no forwarded port means the Proton
+            wireguard key lacks NAT-PMP (Port Forwarding). Only clusters that
             actually port forward run this to completion; Robbinsdale deliberately runs
             without port forwarding and short-circuits instead.
         labels:
