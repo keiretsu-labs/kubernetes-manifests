@@ -51,8 +51,7 @@ groups:
             Either it found the forwarded port unreachable on two rounds a minute
             apart, or gluetun had no forwarded port at all after a refused NAT-PMP
             request, which gluetun does not retry. The Job logs distinguish
-            the two. Firing on every run with no forwarded port means the Proton
-            wireguard key lacks NAT-PMP (Port Forwarding). Only clusters that
+            the two. Only clusters that
             actually port forward run this to completion; Robbinsdale deliberately runs
             without port forwarding and short-circuits instead.
         labels:

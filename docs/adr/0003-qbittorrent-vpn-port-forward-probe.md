@@ -44,8 +44,9 @@ persists across both rounds. gluetun v3.41.3 treats a single refused NAT-PMP dat
 fatal (passteque/gluetun#3462, fixed after v3.41.3) and never retries the first port forward
 after a tunnel comes up (passteque/gluetun#3470), so one refusal leaves the port at 0 for the
 life of the tunnel. The refusal is per connection, not per key: `node-dk-06` forwarded a port
-on 2026-10-17 and refused on 2026-10-23 with the same key. A key without NAT-PMP would show
-up as `QbittorrentVpnRotated` firing on every run.
+on 2026-10-17 and refused on 2026-10-23 with the same key. Ottawa's Proton WireGuard keys
+are always generated with NAT-PMP, so a zero port is never a key problem and the probe has
+no key-specific branch.
 
 `QbittorrentVpnRotated` counts rotations over an hour rather than testing a failed Job for
 presence: `kube_job_status_failed` stays above zero for as long as `failedJobsHistoryLimit`
