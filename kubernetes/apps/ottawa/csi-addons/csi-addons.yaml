@@ -24,4 +24,4 @@ spec:
   # digest this cluster already runs so the image only changes via a reviewed PR.
   images:
     - name: quay.io/csiaddons/k8s-controller
-      digest: sha256:dac4158cb49b5796b942a716b368a0bce4f571da386ac395bd2c111f4f9329de
+      digest: sha256:17bdc689596561d9b8624771d53070677713934178d5d283a1d6738ca81963ff
