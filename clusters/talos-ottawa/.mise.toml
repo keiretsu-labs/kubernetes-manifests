@@ -1,6 +1,6 @@
 [tools]
 task = "3"
-"github:postfinance/topf" = "0.6.1"
+"github:postfinance/topf" = "0.6.2"
 talosctl = "latest"
 sops = "latest"
 kubectl = "latest"
