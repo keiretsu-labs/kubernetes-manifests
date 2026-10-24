@@ -84,7 +84,8 @@ The local gate must pass before commit:
 | `tools/tests/run.sh` | offline self-tests for `tools/` |
 | `make diff` | rendered diff vs `origin/main` |
 
-GitHub Actions workflows — nineteen on disk:
+GitHub Actions workflows — nineteen on disk
+([full index: trigger, purpose, merge-queue participation](workflows.md)):
 
 - `flate.yaml` — render matrix plus a sticky rendered-diff comment per cluster
 - `validate.yaml` — YAML parse gate on Renovate PRs
