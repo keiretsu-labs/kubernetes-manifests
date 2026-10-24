@@ -39,9 +39,13 @@ Ottawa is the only cluster that port forwards. Robbinsdale runs the same qBittor
 deliberately without it, so its gluetun reports `{"port":0,"ports":[]}` and its NAT-PMP
 request is refused (`10.2.0.1:5351: recvfrom: connection refused`) — expected, not a fault,
 and not something to "fix" by regenerating keys or restarting pods. Its probe therefore
-keeps treating a zero port as nothing to do. Only Ottawa's probe treats a persistent zero
-as a failure, and even there it exits non-zero *without* rotating: a refused NAT-PMP request
-is identical on every server, so rotating would restart the tunnel every 5 minutes forever.
+keeps treating a zero port as nothing to do. Ottawa's probe rotates on a zero port that
+persists across both rounds. gluetun v3.41.3 treats a single refused NAT-PMP datagram as
+fatal (passteque/gluetun#3462, fixed after v3.41.3) and never retries the first port forward
+after a tunnel comes up (passteque/gluetun#3470), so one refusal leaves the port at 0 for the
+life of the tunnel. The refusal is per connection, not per key: `node-dk-06` forwarded a port
+on 2026-10-17 and refused on 2026-10-23 with the same key. A key without NAT-PMP would show
+up as `QbittorrentVpnRotated` firing on every run.
 
 `QbittorrentVpnRotated` counts rotations over an hour rather than testing a failed Job for
 presence: `kube_job_status_failed` stays above zero for as long as `failedJobsHistoryLimit`

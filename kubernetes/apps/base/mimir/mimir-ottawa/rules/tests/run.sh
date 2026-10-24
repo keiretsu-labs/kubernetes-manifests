@@ -78,7 +78,7 @@ while IFS= read -r test_file; do
       break
     fi
     if [ ! -f "$temp_rule" ]; then
-      if ! sed -E '/^namespace:[[:space:]]+[^[:space:]]+[[:space:]]*$/d' \
+      if ! sed -E -e '/^namespace:[[:space:]]+[^[:space:]]+[[:space:]]*$/d' -e 's/\$\$/$/g' \
         "$source_rule" >"$temp_rule" 2>"$tmpdir/sed-$tested_fixtures.log"; then
         record_failure "$fixture_name" "$tmpdir/sed-$tested_fixtures.log"
         fixture_failed=1
